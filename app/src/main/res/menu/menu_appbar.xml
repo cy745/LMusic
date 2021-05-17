@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/appbar_play"
+        android:icon="@drawable/ic_play_line"
+        android:title="Play"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/appbar_pause"
+        android:icon="@drawable/ic_pause_line"
+        android:title="Pause"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/appbar_add_folder"
+        android:checkable="false"
+        android:enabled="true"
+        android:icon="@drawable/ic_folder_add_line"
+        android:title="Auto add song"
+        android:visible="true"
+        app:showAsAction="collapseActionView" />
+</menu>
