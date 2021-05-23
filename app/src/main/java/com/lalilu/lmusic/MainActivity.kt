@@ -1,8 +1,7 @@
 package com.lalilu.lmusic
 
 import android.content.Intent
-import android.graphics.Color
-import android.os.Build
+import android.media.AudioManager
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -18,7 +17,6 @@ import com.lalilu.lmusic.utils.MediaUtils
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.viewmodel.MusicDataBaseViewModel
 import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
-import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
 
 class MainActivity : AppCompatActivity() {
@@ -28,20 +26,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         PermissionUtils.requestPermission(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         viewModel = MusicDataBaseViewModel.getInstance(application)
-        musicConn = MusicServiceConn()
 
+        musicConn = MusicServiceConn()
         bindService(Intent(this, MusicService::class.java).also {
             startService(it)
         }, musicConn, BIND_AUTO_CREATE)
 
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        setContentScrimColorFromPaletteDraweeView(
+        ColorAnimator.setContentScrimColorFromPaletteDraweeView(
             binding.playingSongAlbumPic,
             binding.collapsingToolbarLayout
         )
@@ -66,41 +63,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        PermissionUtils.returnPermissionCheck(this, requestCode)
-    }
-
-    private fun setContentScrimColorFromPaletteDraweeView(
-        imageView: PaletteDraweeView,
-        ctLayout: CollapsingToolbarLayout
-    ) {
-        imageView.palette.observeForever {
-            if (it != null) {
-                var oldColor =
-                    imageView.oldPalette?.getDarkVibrantColor(Color.LTGRAY) ?: Color.LTGRAY
-                if (isLightColor(oldColor)) oldColor =
-                    imageView.oldPalette?.getDarkMutedColor(Color.LTGRAY) ?: Color.LTGRAY
-                var plColor = it.getDarkVibrantColor(Color.LTGRAY)
-                if (isLightColor(plColor)) plColor = it.getDarkMutedColor(Color.LTGRAY)
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    ColorAnimator(oldColor, plColor).setColorChangedListener { color ->
-                        ctLayout.setContentScrimColor(color)
-                    }.start(600)
-                } else {
-                    ctLayout.setContentScrimColor(plColor)
-                }
-            }
-        }
-    }
-
-    private fun isLightColor(color: Int): Boolean {
-        val darkness =
-            1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255
-        return darkness < 0.5
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.appbar_play -> {
@@ -116,6 +78,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        PermissionUtils.returnPermissionCheck(this, requestCode)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        volumeControlStream = AudioManager.STREAM_MUSIC
     }
 
     override fun onDestroy() {

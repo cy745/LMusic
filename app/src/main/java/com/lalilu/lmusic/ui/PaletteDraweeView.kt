@@ -1,4 +1,4 @@
-package com.lalilu.lmusic
+package com.lalilu.lmusic.ui
 
 import android.content.Context
 import android.graphics.Bitmap

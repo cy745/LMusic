@@ -9,7 +9,7 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <com.lalilu.lmusic.SquareAppBarLayout
+    <com.lalilu.lmusic.ui.SquareAppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -27,7 +27,7 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
             app:statusBarScrim="@android:color/transparent">
 
-            <com.lalilu.lmusic.PaletteDraweeView
+            <com.lalilu.lmusic.ui.PaletteDraweeView
                 android:id="@+id/playing_song_album_pic"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -59,7 +59,7 @@
                 app:layout_collapseMode="pin"
                 app:title="NowPlaying..." />
         </net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout>
-    </com.lalilu.lmusic.SquareAppBarLayout>
+    </com.lalilu.lmusic.ui.SquareAppBarLayout>
 
 
     <androidx.recyclerview.widget.RecyclerView

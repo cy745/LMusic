@@ -14,7 +14,7 @@ import com.lalilu.lmusic.utils.convertor.*
 
 @Database(
     entities = [Song::class, Album::class, Artist::class],
-    version = 1, exportSchema = false
+    version = 2, exportSchema = false
 )
 @TypeConverters(
     value = [

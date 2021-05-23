@@ -1,46 +1,21 @@
 package com.lalilu.lmusic.service
 
+import android.app.Service
 import android.content.Intent
 import android.os.Binder
-import android.os.Bundle
 import android.os.IBinder
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.NonNull
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.media.MediaBrowserServiceCompat
 import com.lalilu.lmusic.MusicPlayer
 import com.lalilu.lmusic.entity.Song
 import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
 
-class MusicService : MediaBrowserServiceCompat(), LifecycleOwner {
-    private val TAG: String? = MusicService::class.simpleName
+class MusicService : Service(), LifecycleOwner {
     private val mBinder: MusicBinder = MusicBinder()
     private val musicPlayer: MusicPlayer = MusicPlayer(this)
     private val mLifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
-
-    private var mediaSession: MediaSessionCompat? = null
-    private lateinit var stateBuilder: PlaybackStateCompat.Builder
-
-    override fun onGetRoot(
-        clientPackageName: String,
-        clientUid: Int,
-        rootHints: Bundle?
-    ): BrowserRoot {
-        return BrowserRoot("test", null)
-    }
-
-    override fun onLoadChildren(
-        parentId: String,
-        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
-    ) {
-        result.detach()
-
-        TODO("Not yet implemented")
-    }
 
     inner class MusicBinder : Binder() {
         private var songList: List<Song> = ArrayList()
@@ -78,7 +53,6 @@ class MusicService : MediaBrowserServiceCompat(), LifecycleOwner {
         fun setDuration(duration: Number) = musicPlayer.setDuration(duration)
     }
 
-
     private fun initObserver() {
         MusicServiceViewModel.getInstance().getPlayingSong().observe(this, {
             mBinder.setSong(it)
@@ -92,27 +66,6 @@ class MusicService : MediaBrowserServiceCompat(), LifecycleOwner {
         super.onCreate()
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         initObserver()
-
-        mediaSession = MediaSessionCompat(baseContext, TAG).apply {
-            setFlags(
-                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-                        or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-            )
-
-            stateBuilder = PlaybackStateCompat.Builder()
-                .setActions(
-                    PlaybackStateCompat.ACTION_PLAY
-                            or PlaybackStateCompat.ACTION_PLAY_PAUSE
-                )
-
-            setPlaybackState(stateBuilder.build())
-
-            setCallback(object : MediaSessionCompat.Callback() {
-
-            })
-
-            setSessionToken(sessionToken)
-        }
     }
 
     override fun onStart(intent: Intent?, startId: Int) {
@@ -129,7 +82,6 @@ class MusicService : MediaBrowserServiceCompat(), LifecycleOwner {
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
         return super.onUnbind(intent)
     }
-
 
     override fun onDestroy() {
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
