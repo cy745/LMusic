@@ -5,7 +5,7 @@ import com.facebook.drawee.backends.pipeline.Fresco
 import com.lalilu.lmusic.database.MusicDatabase
 import com.lalilu.lmusic.viewmodel.MusicDataBaseViewModel
 
-class Application : Application() {
+class MusicApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 

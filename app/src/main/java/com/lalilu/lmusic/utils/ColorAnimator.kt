@@ -5,17 +5,53 @@ import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.lalilu.lmusic.ui.PaletteDraweeView
+import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
 @SuppressLint("Recycle")
 @RequiresApi(Build.VERSION_CODES.O)
 class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
     ValueAnimator.AnimatorUpdateListener {
-    var rFrom: Float = 0f
-    var gFrom: Float = 0f
-    var bFrom: Float = 0f
-    var rTo: Float = 0f
-    var gTo: Float = 0f
-    var bTo: Float = 0f
+    private var rFrom: Float = 0f
+    private var gFrom: Float = 0f
+    private var bFrom: Float = 0f
+    private var rTo: Float = 0f
+    private var gTo: Float = 0f
+    private var bTo: Float = 0f
+
+    companion object {
+        fun setContentScrimColorFromPaletteDraweeView(
+            imageView: PaletteDraweeView,
+            ctLayout: CollapsingToolbarLayout
+        ) {
+            imageView.palette.observeForever {
+                if (it != null) {
+                    var oldColor =
+                        imageView.oldPalette?.getDarkVibrantColor(Color.LTGRAY) ?: Color.LTGRAY
+                    if (isLightColor(oldColor)) oldColor =
+                        imageView.oldPalette?.getDarkMutedColor(Color.LTGRAY) ?: Color.LTGRAY
+                    var plColor = it.getDarkVibrantColor(Color.LTGRAY)
+                    if (isLightColor(plColor)) plColor = it.getDarkMutedColor(Color.LTGRAY)
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        ColorAnimator(oldColor, plColor).setColorChangedListener { color ->
+                            ctLayout.setContentScrimColor(color)
+                        }.start(600)
+                    } else {
+                        ctLayout.setContentScrimColor(plColor)
+                    }
+                }
+            }
+        }
+
+        fun isLightColor(color: Int): Boolean {
+            val darkness =
+                1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(
+                    color
+                )) / 255
+            return darkness < 0.5
+        }
+    }
 
     private lateinit var listen: ((Int) -> Unit)
 

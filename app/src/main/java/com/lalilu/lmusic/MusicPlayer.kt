@@ -12,8 +12,15 @@ class MusicPlayer(private val context: Context) {
     private lateinit var player: MediaPlayer
     private var prepared: Boolean = false
     private var shaper: VolumeShaper? = null
+    private var config: VolumeShaper.Configuration? = null
 
     init {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            config = VolumeShaper.Configuration.Builder().setDuration(200)
+                .setInterpolatorType(VolumeShaper.Configuration.INTERPOLATOR_TYPE_LINEAR)
+                .setCurve(floatArrayOf(0f, 1f), floatArrayOf(0f, 1f))
+                .build()
+        }
         reCreate()
     }
 
@@ -24,12 +31,8 @@ class MusicPlayer(private val context: Context) {
     fun setSong(song: Song) {
         player.reset()
         player.setDataSource(context, song.songUri)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val config = VolumeShaper.Configuration.Builder().setDuration(200)
-                .setInterpolatorType(VolumeShaper.Configuration.INTERPOLATOR_TYPE_LINEAR)
-                .setCurve(floatArrayOf(0f, 1f), floatArrayOf(0f, 1f))
-                .build()
-            shaper = player.createVolumeShaper(config)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && config != null) {
+            shaper = player.createVolumeShaper(config!!)
         }
         player.setOnPreparedListener {
             prepared = true

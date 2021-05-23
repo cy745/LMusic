@@ -13,9 +13,9 @@ class Song {
     var songTitle: String = ""
     var songSize: Long = 0
     var songUri: Uri = Uri.EMPTY
-    var artist: String = ""
-
-    var duration: Long = 0
+    var songArtist: String = ""
+    var songDuration: Long = 0
+    var songType: String = ""
 
     var albumId: Long = 0
     var albumTitle: String = ""
@@ -27,14 +27,14 @@ class Song {
 
     fun getInsertTimeText(): String = Date(insertTime).toLocaleString()
     fun getLastPlayTimeText(): String = Date(lastPlayTime).toLocaleString()
-    fun getDurationText(): String = durationToString(duration)
+    fun getDurationText(): String = durationToString(songDuration)
 
     override fun equals(other: Any?): Boolean {
         if (other is Song) {
             if (other.songId != songId) return false
             if (other.songTitle != songTitle) return false
-            if (other.artist != artist) return false
-            if (other.duration != duration) return false
+            if (other.songArtist != songArtist) return false
+            if (other.songDuration != songDuration) return false
             if (other.albumId != albumId) return false
             if (other.albumTitle != albumTitle) return false
             if (other.insertTime != insertTime) return false
@@ -49,8 +49,8 @@ class Song {
         result = 31 * result + songTitle.hashCode()
         result = 31 * result + songSize.hashCode()
         result = 31 * result + songUri.hashCode()
-        result = 31 * result + artist.hashCode()
-        result = 31 * result + duration.hashCode()
+        result = 31 * result + songArtist.hashCode()
+        result = 31 * result + songDuration.hashCode()
         result = 31 * result + albumId.hashCode()
         result = 31 * result + albumTitle.hashCode()
         result = 31 * result + albumArtist.hashCode()
@@ -66,8 +66,9 @@ class Song {
                 "songTitle='$songTitle', " + "\n" +
                 "songSize=$songSize, " + "\n" +
                 "songUri=$songUri, " + "\n" +
-                "artist='$artist', " + "\n" +
-                "duration=$duration, " + "\n" +
+                "songArtist='$songArtist', " + "\n" +
+                "songDuration=$songDuration, " + "\n" +
+                "songType=$songType, " + "\n" +
                 "albumId=$albumId, " + "\n" +
                 "albumTitle='$albumTitle', " + "\n" +
                 "albumArtist='$albumArtist', " + "\n" +
