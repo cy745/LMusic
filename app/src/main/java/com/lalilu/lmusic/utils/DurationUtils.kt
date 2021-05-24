@@ -3,8 +3,10 @@ package com.lalilu.lmusic.utils
 class DurationUtils {
     companion object {
         fun durationToString(duration: Number): String {
-            val temp =
-                if (duration.toLong() > 10000) duration.toLong().div(1000) else duration.toLong()
+            var temp = duration.toLong().div(1000)
+            if (temp < 1) {
+                temp *= 1000
+            }
 
             val min = temp.div(60)
             val sec = temp % 60

@@ -62,7 +62,7 @@ class MusicListAdapter(private val context: Activity) :
         }
 
         private fun swapSong() {
-            val temp = ArrayList<Song>(songList)
+            val temp = ArrayList(songList)
             Collections.swap(temp, temp.indexOf(binding.song as Song), 0)
             setSongList(temp)
         }
