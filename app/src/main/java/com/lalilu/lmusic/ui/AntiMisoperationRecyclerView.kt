@@ -19,10 +19,7 @@ class AntiMisOperationRecyclerView @JvmOverloads constructor(
     }
 
     override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-        if (isMisOperation(e.rawX, limitpadding, width - limitpadding)) {
-            return true
-        }
-        return false
+        return isMisOperation(e.rawX, limitpadding, width - limitpadding)
     }
 
     override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {

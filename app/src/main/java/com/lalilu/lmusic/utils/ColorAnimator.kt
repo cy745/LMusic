@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.palette.graphics.Palette
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
@@ -21,15 +22,17 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
 
     companion object {
         fun setContentScrimColorFromPaletteDraweeView(
-            imageView: PaletteDraweeView,
+            paletteDraweeView: PaletteDraweeView,
             ctLayout: CollapsingToolbarLayout
         ) {
-            imageView.palette.observeForever {
+            paletteDraweeView.palette.observeForever {
                 if (it != null) {
                     var oldColor =
-                        imageView.oldPalette?.getDarkVibrantColor(Color.LTGRAY) ?: Color.LTGRAY
+                        paletteDraweeView.oldPalette?.getDarkVibrantColor(Color.LTGRAY)
+                            ?: Color.LTGRAY
                     if (isLightColor(oldColor)) oldColor =
-                        imageView.oldPalette?.getDarkMutedColor(Color.LTGRAY) ?: Color.LTGRAY
+                        paletteDraweeView.oldPalette?.getDarkMutedColor(Color.LTGRAY)
+                            ?: Color.LTGRAY
                     var plColor = it.getDarkVibrantColor(Color.LTGRAY)
                     if (isLightColor(plColor)) plColor = it.getDarkMutedColor(Color.LTGRAY)
 
@@ -41,6 +44,15 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
                         ctLayout.setContentScrimColor(plColor)
                     }
                 }
+            }
+        }
+
+        fun getPaletteFromFromPaletteDraweeView(
+            paletteDraweeView: PaletteDraweeView,
+            callback: (color: Palette) -> Unit
+        ) {
+            paletteDraweeView.palette.observeForever {
+                if (it != null) callback(it)
             }
         }
 
@@ -60,11 +72,13 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
         return this
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onAnimationUpdate(animation: ValueAnimator) {
         val value = animation.animatedValue as Float
         val rResult = rFrom + (rTo - rFrom) * value
         val gResult = gFrom + (gTo - gFrom) * value
         val bResult = bFrom + (bTo - bFrom) * value
+
         val result = Color.rgb(rResult, gResult, bResult)
         listen.invoke(result)
     }

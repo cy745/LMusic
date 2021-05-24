@@ -97,6 +97,7 @@ class MusicPlayer(private val context: Context) {
     fun setDuration(duration: Number) {
         if (prepared || player.isPlaying) {
             player.seekTo(duration.toInt())
+            play()
         }
     }
 

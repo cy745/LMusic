@@ -75,8 +75,10 @@
             android:id="@+id/musicRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipToPadding="false"
             android:fadingEdgeLength="40dp"
             android:overScrollMode="never"
+            android:paddingBottom="100dp"
             android:requiresFadingEdge="vertical"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 

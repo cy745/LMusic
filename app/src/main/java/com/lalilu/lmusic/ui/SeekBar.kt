@@ -83,6 +83,11 @@ class SeekBar @JvmOverloads constructor(
         }
     }
 
+    fun setThumbColor(color: Int) {
+        paint.color = color
+        invalidate()
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -101,8 +106,9 @@ class SeekBar @JvmOverloads constructor(
                 rawX = -1f
                 rawY = -1f
                 if (downDuration != nowDuration) {
-                    println("seek to $nowDuration")
                     callback(nowDuration)
+                } else {
+                    performClick()
                 }
                 this.animate()
                     .scaleX(1f)
@@ -110,23 +116,19 @@ class SeekBar @JvmOverloads constructor(
                     .setDuration(scaleDuration)
                     .start()
             }
-            MotionEvent.ACTION_POINTER_UP -> {
-                touching = false
-            }
             MotionEvent.ACTION_MOVE -> {
                 if (touching) {
                     deltaX = (event.rawX - rawX)
                     deltaY = (event.rawY - rawY)
-                    // Y轴用于取消拖动进度条
-                    if (deltaY < -300) {
-                        touching = false
-                    }
                     rawX = event.rawX
                     progress = clamp(
                         progress + deltaX * sensitivity,
                         maxProgress, minProgress
-                    )
+                    ).toDouble()
                 }
+            }
+            MotionEvent.ACTION_POINTER_UP -> {
+                touching = false
             }
         }
         invalidate()
@@ -154,6 +156,8 @@ class SeekBar @JvmOverloads constructor(
         val textCenterHeight = (height + textPaint.textSize) / 2f - 5
         val offsetTemp = nowDurationTextWidth + textPadding * 2
         nowDurationTextOffset = if (offsetTemp < progressWidth) progressWidth else offsetTemp
+
+        paint.alpha = clamp(progressWidth / radius / 2 * 255, 255, 0).toInt()
 
         // draw background
         canvas.drawRoundRect(
@@ -187,7 +191,7 @@ class SeekBar @JvmOverloads constructor(
         )
     }
 
-    private fun clamp(num: Number, max: Number, min: Number): Double {
+    private fun clamp(num: Number, max: Number, min: Number): Number {
         if (num.toDouble() < min.toDouble()) {
             return min.toDouble()
         }

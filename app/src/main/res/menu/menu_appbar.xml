@@ -17,7 +17,7 @@
         android:checkable="false"
         android:enabled="true"
         android:icon="@drawable/ic_folder_add_line"
-        android:title="Auto add song"
+        android:title="Scan song"
         android:visible="true"
         app:showAsAction="collapseActionView" />
 </menu>

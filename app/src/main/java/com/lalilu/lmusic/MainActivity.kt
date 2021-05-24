@@ -43,6 +43,9 @@ class MainActivity : AppCompatActivity() {
             binding.playingSongAlbumPic,
             binding.collapsingToolbarLayout
         )
+        ColorAnimator.getPaletteFromFromPaletteDraweeView(binding.playingSongAlbumPic) {
+            binding.seekBar.setThumbColor(it.getDarkVibrantColor(0))
+        }
 
         binding.musicRecyclerView.adapter = MusicListAdapter(this)
         binding.musicRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -58,8 +61,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         dataBaseViewModel.getSongsLiveDate().observeForever {
-            (binding.musicRecyclerView.adapter as MusicListAdapter).setSongList(it)
-            MusicServiceViewModel.getInstance().getSongList().postValue(it)
+            if (it != null) {
+                (binding.musicRecyclerView.adapter as MusicListAdapter).setSongList(it)
+                serviceViewModel.getSongList().postValue(it)
+            }
         }
 
         serviceViewModel.getPlayingSong().observeForever {
@@ -70,6 +75,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         serviceViewModel.getShowingDuration().observeForever {
+            println("seek to $it")
             binding.seekBar.updateDuration(it)
         }
     }
