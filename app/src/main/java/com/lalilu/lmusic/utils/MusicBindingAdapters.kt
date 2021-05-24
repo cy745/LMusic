@@ -9,7 +9,6 @@ class MusicBindingAdapters {
         @BindingAdapter("app:iconRec")
         @JvmStatic
         fun setIcon(imageView: ImageView, string: String) {
-            println(string.uppercase())
             if (string.uppercase().contains("FLAC")) {
                 imageView.setImageResource(R.drawable.ic_flac)
             }

@@ -10,9 +10,9 @@ import com.lalilu.lmusic.entity.Song
 
 class MusicPlayer(private val context: Context) {
     private lateinit var player: MediaPlayer
+    private lateinit var shaper: VolumeShaper
+    private lateinit var config: VolumeShaper.Configuration
     private var prepared: Boolean = false
-    private var shaper: VolumeShaper? = null
-    private var config: VolumeShaper.Configuration? = null
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -31,8 +31,8 @@ class MusicPlayer(private val context: Context) {
     fun setSong(song: Song) {
         player.reset()
         player.setDataSource(context, song.songUri)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && config != null) {
-            shaper = player.createVolumeShaper(config!!)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            shaper = player.createVolumeShaper(config)
         }
         player.setOnPreparedListener {
             prepared = true
@@ -65,7 +65,11 @@ class MusicPlayer(private val context: Context) {
         if (prepared) {
             player.start()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                shaper?.apply(VolumeShaper.Operation.PLAY)
+                try {
+                    shaper.apply(VolumeShaper.Operation.PLAY)
+                } catch (e: IllegalStateException) {
+                    println(e.localizedMessage)
+                }
             }
         }
     }
@@ -74,7 +78,12 @@ class MusicPlayer(private val context: Context) {
         if (player.isPlaying) {
             player.pause()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                shaper?.apply(VolumeShaper.Operation.REVERSE)
+                try {
+                    shaper.apply(VolumeShaper.Operation.REVERSE)
+                } catch (e: IllegalStateException) {
+                    println(e.localizedMessage)
+
+                }
             }
         }
     }
