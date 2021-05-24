@@ -86,6 +86,12 @@ class MusicPlayer(private val context: Context) {
     }
 
     fun setDuration(duration: Number) {
-        player.seekTo(duration.toInt())
+        if (prepared || player.isPlaying) {
+            player.seekTo(duration.toInt())
+        }
+    }
+
+    fun getDuration(): Int {
+        return player.currentPosition
     }
 }

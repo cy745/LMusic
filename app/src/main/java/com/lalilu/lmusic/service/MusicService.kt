@@ -11,11 +11,15 @@ import androidx.lifecycle.LifecycleRegistry
 import com.lalilu.lmusic.MusicPlayer
 import com.lalilu.lmusic.entity.Song
 import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MusicService : Service(), LifecycleOwner {
     private val mBinder: MusicBinder = MusicBinder()
     private val musicPlayer: MusicPlayer = MusicPlayer(this)
     private val mLifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
+    private lateinit var serviceViewModel: MusicServiceViewModel
+    private lateinit var durationTimer: Timer
 
     inner class MusicBinder : Binder() {
         private var songList: List<Song> = ArrayList()
@@ -51,20 +55,32 @@ class MusicService : Service(), LifecycleOwner {
         }
 
         fun setDuration(duration: Number) = musicPlayer.setDuration(duration)
+        fun getDuration() = musicPlayer.getDuration()
     }
 
     private fun initObserver() {
-        MusicServiceViewModel.getInstance().getPlayingSong().observe(this, {
+        serviceViewModel.getPlayingSong().observe(this, {
             mBinder.setSong(it)
         })
-        MusicServiceViewModel.getInstance().getSongList().observe(this, {
+        serviceViewModel.getSongList().observe(this, {
             mBinder.setSongList(it)
         })
+        serviceViewModel.getPlayingDuration().observe(this, {
+            mBinder.setDuration(it)
+        })
+        durationTimer = Timer()
+        durationTimer.schedule(object : TimerTask() {
+            override fun run() {
+                serviceViewModel.getShowingDuration()
+                    .postValue(mBinder.getDuration().toLong())
+            }
+        }, 0, 1000)
     }
 
     override fun onCreate() {
         super.onCreate()
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        serviceViewModel = MusicServiceViewModel.getInstance()
         initObserver()
     }
 
@@ -84,8 +100,12 @@ class MusicService : Service(), LifecycleOwner {
     }
 
     override fun onDestroy() {
+        durationTimer.cancel()
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        MusicServiceViewModel.getInstance().getPlayingSong().removeObservers(this)
+        serviceViewModel.getPlayingSong().removeObservers(this)
+        serviceViewModel.getPlayingDuration().removeObservers(this)
+        serviceViewModel.getShowingDuration().removeObservers(this)
+        serviceViewModel.getSongList().removeObservers(this)
         super.onDestroy()
     }
 

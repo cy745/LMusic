@@ -7,6 +7,13 @@ import com.lalilu.lmusic.entity.Song
 class MusicServiceViewModel private constructor() : ViewModel() {
     private var playingSong: MutableLiveData<Song> = MutableLiveData()
     private var songList: MutableLiveData<List<Song>> = MutableLiveData()
+    private var playingDuration: MutableLiveData<Long> = MutableLiveData(0L)
+    private var showingDuration: MutableLiveData<Long> = MutableLiveData(0L)
+
+    fun getPlayingSong(): MutableLiveData<Song> = playingSong
+    fun getSongList(): MutableLiveData<List<Song>> = songList
+    fun getPlayingDuration(): MutableLiveData<Long> = playingDuration
+    fun getShowingDuration(): MutableLiveData<Long> = showingDuration
 
     companion object {
         @Volatile
@@ -19,7 +26,4 @@ class MusicServiceViewModel private constructor() : ViewModel() {
             return mInstance!!
         }
     }
-
-    fun getPlayingSong(): MutableLiveData<Song> = playingSong
-    fun getSongList(): MutableLiveData<List<Song>> = songList
 }
