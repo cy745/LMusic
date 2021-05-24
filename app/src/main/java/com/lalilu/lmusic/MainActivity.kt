@@ -18,7 +18,6 @@ import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.viewmodel.MusicDataBaseViewModel
 import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
 
-
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var dataBaseViewModel: MusicDataBaseViewModel
@@ -53,6 +52,9 @@ class MainActivity : AppCompatActivity() {
         }
         binding.seekBar.setOnActionUp {
             serviceViewModel.getPlayingDuration().postValue(it)
+        }
+        binding.seekBar.setOnClickListener {
+            musicConn.binder?.toggle()
         }
 
         dataBaseViewModel.getSongsLiveDate().observeForever {

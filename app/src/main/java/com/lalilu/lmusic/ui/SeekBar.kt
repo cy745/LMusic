@@ -63,6 +63,8 @@ class SeekBar @JvmOverloads constructor(
         val a = context.obtainStyledAttributes(
             attrs, R.styleable.SeekBar, defStyleAttr, 0
         )
+        a.recycle()
+
         paint = Paint(Paint.ANTI_ALIAS_FLAG).also {
             it.color = Color.DKGRAY
         }
@@ -79,13 +81,9 @@ class SeekBar @JvmOverloads constructor(
             it.color = Color.WHITE
             it.isSubpixelText = true
         }
-
-        a.recycle()
     }
 
-
     override fun onTouchEvent(event: MotionEvent): Boolean {
-
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 touching = true
@@ -102,9 +100,6 @@ class SeekBar @JvmOverloads constructor(
                 touching = false
                 rawX = -1f
                 rawY = -1f
-                println("downDuration: $downDuration")
-                println("nowDuration: $nowDuration")
-
                 if (downDuration != nowDuration) {
                     println("seek to $nowDuration")
                     callback(nowDuration)
@@ -138,13 +133,29 @@ class SeekBar @JvmOverloads constructor(
         return true
     }
 
+    private var progressWidth: Float = 0F
+    private var sumDurationText = ""
+    private var sumDurationTextWidth: Float = 0F
+    private var nowDurationText = ""
+    private var nowDurationTextWidth: Float = 0F
+    private var nowDurationTextOffset: Float = 0F
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+
+        progressWidth = (progress * width).toFloat()
         nowDuration = (progress * sumDuration).toLong()
 
-        val progressWidth = progress * width
+        sumDurationText = DurationUtils.durationToString(sumDuration)
+        sumDurationTextWidth = textPaint.measureText(sumDurationText)
+        nowDurationText = DurationUtils.durationToString(nowDuration)
+        nowDurationTextWidth = textPaintWhite.measureText(nowDurationText)
 
+        val textCenterHeight = (height + textPaint.textSize) / 2f - 5
+        val offsetTemp = nowDurationTextWidth + textPadding * 2
+        nowDurationTextOffset = if (offsetTemp < progressWidth) progressWidth else offsetTemp
+
+        // draw background
         canvas.drawRoundRect(
             0f,
             0f,
@@ -155,31 +166,23 @@ class SeekBar @JvmOverloads constructor(
             backgroundPaint
         )
 
-        val duration1 = DurationUtils.durationToString(sumDuration)
-        val textWidth1 = textPaint.measureText(duration1)
+        // draw sumDuration
         canvas.drawText(
-            duration1,
-            width - textWidth1 - textPadding,
-            (height + textPaint.textSize) / 2f - 5,
+            sumDurationText,
+            width - sumDurationTextWidth - textPadding,
+            textCenterHeight,
             textPaint
         )
 
+        // draw thumb
         canvas.drawRoundRect(
-            0f, 0f,
-            progressWidth.toFloat(), height.toFloat(), radius, radius, paint
+            0f, 0f, progressWidth, height.toFloat(), radius, radius, paint
         )
 
-        val duration2 = DurationUtils.durationToString(nowDuration)
-        val textWidth2 = textPaintWhite.measureText(duration2)
-        val textLeft: Float = if (textWidth2 + textPadding * 2 < progressWidth) {
-            progressWidth.toFloat()
-        } else {
-            textWidth2 + textPadding * 2
-        }
+        // draw nowDuration
         canvas.drawText(
-            duration2,
-            textLeft - textWidth2 - textPadding,
-            (height + textPaint.textSize) / 2f - 5,
+            nowDurationText, nowDurationTextOffset - nowDurationTextWidth - textPadding,
+            textCenterHeight,
             textPaintWhite
         )
     }
