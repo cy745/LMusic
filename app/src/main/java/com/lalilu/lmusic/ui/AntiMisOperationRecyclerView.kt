@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 class AntiMisOperationRecyclerView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : RecyclerView(context, attrs, defStyleAttr), RecyclerView.OnItemTouchListener {
-    var limitpadding = 40
+    private var limitPadding = 40
 
     init {
         addOnItemTouchListener(this)
@@ -19,7 +19,7 @@ class AntiMisOperationRecyclerView @JvmOverloads constructor(
     }
 
     override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-        return isMisOperation(e.rawX, limitpadding, width - limitpadding)
+        return isMisOperation(e.rawX, limitPadding, width - limitPadding)
     }
 
     override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {
