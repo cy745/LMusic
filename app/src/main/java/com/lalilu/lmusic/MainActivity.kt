@@ -75,7 +75,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         serviceViewModel.getShowingDuration().observeForever {
-            println("seek to $it")
             binding.seekBar.updateDuration(it)
         }
     }
