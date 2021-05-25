@@ -76,15 +76,14 @@ class MusicPlayer(private val context: Context) {
 
     fun pause() {
         if (player.isPlaying) {
-            player.pause()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 try {
                     shaper.apply(VolumeShaper.Operation.REVERSE)
                 } catch (e: IllegalStateException) {
                     println(e.localizedMessage)
-
                 }
             }
+            player.pause()
         }
     }
 
@@ -92,10 +91,11 @@ class MusicPlayer(private val context: Context) {
         if (player.isPlaying) {
             player.pause()
         }
+        player.reset()
     }
 
     fun setDuration(duration: Number) {
-        if (prepared || player.isPlaying) {
+        if (prepared) {
             player.seekTo(duration.toInt())
             play()
         }

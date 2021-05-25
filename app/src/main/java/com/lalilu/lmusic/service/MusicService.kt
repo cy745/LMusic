@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.service
 
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
@@ -10,6 +11,9 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import com.lalilu.lmusic.MusicPlayer
 import com.lalilu.lmusic.entity.Song
+import com.lalilu.lmusic.utils.NotificationUtils
+import com.lalilu.lmusic.utils.cancelNotifications
+import com.lalilu.lmusic.utils.sendNotification
 import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
 import java.util.*
 import kotlin.collections.ArrayList
@@ -20,6 +24,7 @@ class MusicService : Service(), LifecycleOwner {
     private val mLifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
     private lateinit var serviceViewModel: MusicServiceViewModel
     private lateinit var durationTimer: Timer
+    private lateinit var notificationManager: NotificationManager
 
     inner class MusicBinder : Binder() {
         private var songList: List<Song> = ArrayList()
@@ -28,7 +33,10 @@ class MusicService : Service(), LifecycleOwner {
         fun toggle() = musicPlayer.toggle()
         fun play() = musicPlayer.play()
         fun pause() = musicPlayer.pause()
-        fun stop() = musicPlayer.stop()
+        fun stop() {
+            notificationManager.cancelNotifications()
+            musicPlayer.stop()
+        }
 
         fun next() {
             val index = songList.indexOf(playingSong)
@@ -43,6 +51,12 @@ class MusicService : Service(), LifecycleOwner {
         }
 
         fun setSong(song: Song) {
+            notificationManager.sendNotification(
+                song.songTitle,
+                NotificationUtils.playerChannelName + "_ID",
+                applicationContext
+            )
+
             playingSong = song
             musicPlayer.setSong(song)
             musicPlayer.setOnCompletionListener {
@@ -70,23 +84,27 @@ class MusicService : Service(), LifecycleOwner {
         })
         durationTimer = Timer()
         durationTimer.schedule(object : TimerTask() {
+            var temp: Long = 0L
             override fun run() {
-                serviceViewModel.getShowingDuration()
-                    .postValue(mBinder.getDuration().toLong())
+                val nowDuration = mBinder.getDuration().toLong()
+                if (temp != nowDuration) serviceViewModel.getShowingDuration()
+                    .postValue(nowDuration)
+                temp = nowDuration
             }
-        }, 0, 1000)
+        }, 0, 16)
     }
 
     override fun onCreate() {
         super.onCreate()
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         serviceViewModel = MusicServiceViewModel.getInstance()
+        notificationManager = NotificationUtils.getInstance(application).getNotificationManager()
         initObserver()
     }
 
     override fun onStart(intent: Intent?, startId: Int) {
         super.onStart(intent, startId)
-        mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START);
+        mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
     }
 
     override fun onBind(intent: Intent): IBinder {
