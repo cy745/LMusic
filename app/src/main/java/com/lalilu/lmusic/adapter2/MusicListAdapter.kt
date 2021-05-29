@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.adapter
+package com.lalilu.lmusic.adapter2
 
 import android.app.Activity
 import android.view.LayoutInflater
@@ -10,8 +10,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.lmusic.MusicApplication
 import com.lalilu.lmusic.R
-import com.lalilu.lmusic.dao.SongDao
-import com.lalilu.lmusic.database.MusicDatabase
 import com.lalilu.lmusic.databinding.ItemSongBinding
 import com.lalilu.lmusic.entity.Song
 import com.lalilu.lmusic.utils.SongDiffCallback
@@ -20,17 +18,9 @@ import java.util.*
 class MusicListAdapter(
     private val context: Activity,
     private val itemClickListener: (song: Song) -> Unit
-) :
-    RecyclerView.Adapter<MusicListAdapter.SongHolder>() {
+) : RecyclerView.Adapter<MusicListAdapter.SongHolder>() {
     private var songList: List<Song> = ArrayList()
     private var audioMediaScanner = (context.application as MusicApplication).audioMediaScanner
-    private var songDao: SongDao = MusicDatabase.getInstance(context).songDao()
-    private lateinit var recyclerView: RecyclerView
-
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-        this.recyclerView = recyclerView
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.item_song, parent, false)
@@ -54,16 +44,12 @@ class MusicListAdapter(
             binding.root.setOnClickListener {
                 binding.song?.let { itemClickListener(it) }
                 swapSong()
-                recyclerView.scrollToPosition(0)
             }
             binding.root.setOnLongClickListener {
                 Toast.makeText(
                     context, (binding.song as Song).toString(), Toast.LENGTH_SHORT
                 ).show()
                 true
-            }
-            removeBtn.setOnClickListener {
-                songDao.delete(binding.song as Song)
             }
         }
 

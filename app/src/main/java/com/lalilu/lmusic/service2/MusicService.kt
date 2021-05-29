@@ -134,8 +134,7 @@ class MusicService : MediaBrowserServiceCompat() {
                 .putString(
                     MediaMetadata.METADATA_KEY_ART_URI,
                     audioMediaScanner.loadThumbnail(song).toString()
-                )
-                .build()
+                ).build()
             resultList.add(
                 MediaBrowserCompat.MediaItem(
                     metaDate.description,

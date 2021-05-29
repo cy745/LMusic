@@ -22,6 +22,10 @@ class MusicBrowser constructor(private val context: Activity) {
         }
     }
 
+    fun bindSongList() {
+
+    }
+
     init {
         connectionCallback = MusicConnectionCallback()
         controllerCallback = MusicControllerCallback()
@@ -50,9 +54,11 @@ class MusicBrowser constructor(private val context: Activity) {
             children: MutableList<MediaBrowserCompat.MediaItem>
         ) {
             println("[MusicSubscriptionCallback]#onChildrenLoaded: $parentId")
+            for (item: MediaBrowserCompat.MediaItem in children) {
+                println(item.mediaId + " || " + item.toString())
+            }
         }
     }
-
     inner class MusicControllerCallback : MediaControllerCompat.Callback() {
         override fun onSessionReady() {
             println("[MusicControllerCallback]#onSessionReady")

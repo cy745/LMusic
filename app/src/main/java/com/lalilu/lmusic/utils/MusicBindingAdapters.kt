@@ -1,7 +1,9 @@
 package com.lalilu.lmusic.utils
 
+import android.net.Uri
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
+import com.facebook.drawee.view.SimpleDraweeView
 import com.lalilu.lmusic.R
 
 class MusicBindingAdapters {
@@ -21,6 +23,12 @@ class MusicBindingAdapters {
             if (string.uppercase().contains("APE")) {
                 imageView.setImageResource(R.drawable.ic_ape)
             }
+        }
+
+        @BindingAdapter("app:pictureUri")
+        @JvmStatic
+        fun setPictureUri(simpleDraweeView: SimpleDraweeView, uri: Uri) {
+            simpleDraweeView.setImageURI(uri)
         }
     }
 }
