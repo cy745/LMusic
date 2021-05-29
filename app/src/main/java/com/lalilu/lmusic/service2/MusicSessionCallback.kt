@@ -8,7 +8,7 @@ import android.support.v4.media.session.MediaSessionCompat
 class MusicSessionCallback constructor(private val musicPlayer: MusicPlayer) :
     MediaSessionCompat.Callback() {
 
-    override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
+    override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
         return super.onMediaButtonEvent(mediaButtonEvent)
     }
 

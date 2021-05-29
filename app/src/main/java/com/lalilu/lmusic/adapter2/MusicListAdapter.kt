@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.adapter2
 
 import android.app.Activity
+import android.support.v4.media.MediaBrowserCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,61 +9,77 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.lalilu.lmusic.MusicApplication
 import com.lalilu.lmusic.R
-import com.lalilu.lmusic.databinding.ItemSongBinding
-import com.lalilu.lmusic.entity.Song
-import com.lalilu.lmusic.utils.SongDiffCallback
+import com.lalilu.lmusic.databinding.ItemSongMediaItemBinding
+import com.lalilu.lmusic.utils.MediaItemDiffCallback
 import java.util.*
+
+interface UpdatableAdapter<T> {
+    fun updateList(list: List<T>)
+}
 
 class MusicListAdapter(
     private val context: Activity,
-    private val itemClickListener: (song: Song) -> Unit
-) : RecyclerView.Adapter<MusicListAdapter.SongHolder>() {
-    private var songList: List<Song> = ArrayList()
-    private var audioMediaScanner = (context.application as MusicApplication).audioMediaScanner
+    private val itemClickListener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
+) : RecyclerView.Adapter<MusicListAdapter.SongHolder>(),
+    UpdatableAdapter<MediaBrowserCompat.MediaItem> {
+
+    private var mediaItemList: List<MediaBrowserCompat.MediaItem> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.item_song, parent, false)
+        val view =
+            LayoutInflater.from(context).inflate(R.layout.item_song_media_item, parent, false)
         return SongHolder(view, itemClickListener)
     }
 
-    override fun getItemCount(): Int = songList.size
+    override fun getItemCount(): Int = mediaItemList.size
 
     override fun onBindViewHolder(holder: SongHolder, position: Int) {
-        holder.binding.song = songList[position]
+        holder.binding.mediaItem = mediaItemList[position]
     }
 
     inner class SongHolder(
         itemView: View,
-        itemClickListener: (song: Song) -> Unit
+        itemClickListener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
-        var binding = ItemSongBinding.bind(itemView)
+        var binding = ItemSongMediaItemBinding.bind(itemView)
         var removeBtn: ImageButton = binding.songRemove
 
         init {
             binding.root.setOnClickListener {
-                binding.song?.let { itemClickListener(it) }
-                swapSong()
+                binding.mediaItem?.let { itemClickListener(it) }
+                swapMediaItem()
             }
             binding.root.setOnLongClickListener {
                 Toast.makeText(
-                    context, (binding.song as Song).toString(), Toast.LENGTH_SHORT
+                    context,
+                    (binding.mediaItem as MediaBrowserCompat.MediaItem).toString(),
+                    Toast.LENGTH_SHORT
                 ).show()
                 true
             }
         }
 
-        private fun swapSong() {
-            val temp = ArrayList(songList)
-            Collections.swap(temp, temp.indexOf(binding.song as Song), 0)
-            setSongList(temp)
+        private fun swapMediaItem() {
+            val temp = ArrayList(mediaItemList)
+            Collections.swap(
+                temp,
+                temp.indexOf(binding.mediaItem as MediaBrowserCompat.MediaItem),
+                0
+            )
+            setList(temp)
         }
     }
 
-    fun setSongList(list: List<Song>) {
-        val result = DiffUtil.calculateDiff(SongDiffCallback(songList, list), true)
+    fun setList(list: List<MediaBrowserCompat.MediaItem>) {
+        val result = DiffUtil.calculateDiff(MediaItemDiffCallback(mediaItemList, list), true)
         result.dispatchUpdatesTo(this)
-        songList = list
+        mediaItemList = list
+    }
+
+    override fun updateList(list: List<MediaBrowserCompat.MediaItem>) {
+        val result = DiffUtil.calculateDiff(MediaItemDiffCallback(mediaItemList, list), true)
+        result.dispatchUpdatesTo(this)
+        mediaItemList = list
     }
 }
