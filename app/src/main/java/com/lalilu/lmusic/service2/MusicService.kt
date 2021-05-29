@@ -3,15 +3,20 @@ package com.lalilu.lmusic.service2
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.Color
-import android.media.session.PlaybackState
+import android.media.MediaMetadata
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import com.lalilu.lmusic.MusicApplication
 import com.lalilu.lmusic.R
+import com.lalilu.lmusic.database.MusicDatabase
+import com.lalilu.lmusic.entity.Song
+import com.lalilu.lmusic.utils.AudioMediaScanner
 import com.lalilu.lmusic.utils.NotificationUtils
 
 class MusicService : MediaBrowserServiceCompat() {
@@ -21,10 +26,16 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
     private lateinit var mediaSession: MediaSessionCompat
-    private var musicSessionCallback = MusicSessionCallback()
+    private lateinit var audioMediaScanner: AudioMediaScanner
+    private lateinit var musicPlayer: MusicPlayer
+    private lateinit var musicSessionCallback: MusicSessionCallback
 
     override fun onCreate() {
         super.onCreate()
+        audioMediaScanner = (application as MusicApplication).audioMediaScanner
+
+        musicPlayer = MusicPlayer(this)
+        musicSessionCallback = MusicSessionCallback(musicPlayer)
 
         // 构造可跳转到 launcher activity 的 PendingIntent
         val sessionActivityPendingIntent =
@@ -98,7 +109,7 @@ class MusicService : MediaBrowserServiceCompat() {
         clientPackageName: String,
         clientUid: Int,
         rootHints: Bundle?
-    ): BrowserRoot? {
+    ): BrowserRoot {
         return BrowserRoot(Access_ID, null)
     }
 
@@ -108,24 +119,31 @@ class MusicService : MediaBrowserServiceCompat() {
     ) {
         if (parentId == Empty_ID) return
 
-        val list: MutableList<MediaBrowserCompat.MediaItem> = ArrayList()
+        val songList = MusicDatabase.getInstance(this).songDao().getAll()
+        val resultList: MutableList<MediaBrowserCompat.MediaItem> = ArrayList()
 
-//        val metaDate = MediaMetadataCompat.Builder()
-//            .putString(MediaMetadata.METADATA_KEY_TITLE, "null")
-//            .putString(MediaMetadata.METADATA_KEY_ALBUM, "test")
-//            .putString(MediaMetadata.METADATA_KEY_ARTIST, "")
-//            .putString(MediaMetadata.METADATA_KEY_ART_URI, "")
-//            .putString(MediaMetadata.METADATA_KEY_DURATION, "")
-//            .putString(MediaMetadata.METADATA_KEY_MEDIA_ID, "")
-//            .putString(MediaMetadata.METADATA_KEY_MEDIA_URI, "")
-//            .putString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI, "")
-//            .build()
+        for (song: Song in songList) {
+            val metaDate = MediaMetadataCompat.Builder()
+                .putString(MediaMetadata.METADATA_KEY_TITLE, song.songTitle)
+                .putString(MediaMetadata.METADATA_KEY_ALBUM, song.albumId.toString())
+                .putString(MediaMetadata.METADATA_KEY_ARTIST, song.albumArtist)
+                .putLong(MediaMetadata.METADATA_KEY_DURATION, song.songDuration)
+                .putString(MediaMetadata.METADATA_KEY_MEDIA_ID, song.songId.toString())
+                .putString(MediaMetadata.METADATA_KEY_MEDIA_URI, song.songUri.toString())
+                .putString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI, song.albumUri.toString())
+                .putString(
+                    MediaMetadata.METADATA_KEY_ART_URI,
+                    audioMediaScanner.loadThumbnail(song).toString()
+                )
+                .build()
+            resultList.add(
+                MediaBrowserCompat.MediaItem(
+                    metaDate.description,
+                    MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+                )
+            )
+        }
 
-//        val mediaItem = MediaBrowserCompat.MediaItem(
-//            metaDate.description,
-//            MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
-//        )
-//        list.add(mediaItem)
-        result.sendResult(list)
+        result.sendResult(resultList)
     }
 }

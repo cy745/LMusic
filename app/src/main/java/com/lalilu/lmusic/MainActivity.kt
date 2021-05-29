@@ -1,12 +1,8 @@
 package com.lalilu.lmusic
 
-import android.content.ComponentName
 import android.content.Intent
 import android.media.AudioManager
 import android.os.Bundle
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.session.MediaControllerCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -16,6 +12,7 @@ import com.lalilu.lmusic.adapter.MusicListAdapter
 import com.lalilu.lmusic.databinding.ActivityMainBinding
 import com.lalilu.lmusic.service.MusicService
 import com.lalilu.lmusic.service.MusicServiceConn
+import com.lalilu.lmusic.service2.MusicBrowser
 import com.lalilu.lmusic.utils.AudioMediaScanner
 import com.lalilu.lmusic.utils.ColorAnimator
 import com.lalilu.lmusic.utils.PermissionUtils
@@ -28,14 +25,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var serviceViewModel: MusicServiceViewModel
     private lateinit var musicConn: MusicServiceConn
 
-    private lateinit var mediaBrowser: MediaBrowserCompat
-    private lateinit var controllerCallback: MediaControllerCompat.Callback
+    private lateinit var mediaBrowser: MusicBrowser
     private lateinit var audioMediaScanner: AudioMediaScanner
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PermissionUtils.requestPermission(this)
 
+        mediaBrowser = MusicBrowser(this)
         audioMediaScanner = (application as MusicApplication).audioMediaScanner
         dataBaseViewModel = MusicDataBaseViewModel.getInstance(application)
         serviceViewModel = MusicServiceViewModel.getInstance()
@@ -92,24 +89,6 @@ class MainActivity : AppCompatActivity() {
             binding.seekBar.updateDuration(it)
         }
 
-        val connectionCallback = object : MediaBrowserCompat.ConnectionCallback() {
-            override fun onConnected() {
-                super.onConnected()
-                println("[MediaBrowserCompat] #onConnected")
-            }
-        }
-
-        controllerCallback = object : MediaControllerCompat.Callback() {
-            override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-                super.onPlaybackStateChanged(state)
-                println("[state]: " + state?.state)
-            }
-        }
-        mediaBrowser = MediaBrowserCompat(
-            this,
-            ComponentName(this, com.lalilu.lmusic.service2.MusicService::class.java),
-            connectionCallback, null
-        )
     }
 
     override fun onStart() {
@@ -119,8 +98,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        MediaControllerCompat.getMediaController(this)
-            ?.unregisterCallback(controllerCallback)
         mediaBrowser.disconnect()
     }
 

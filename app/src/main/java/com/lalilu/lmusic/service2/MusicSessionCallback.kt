@@ -5,37 +5,34 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 
-class MusicSessionCallback : MediaSessionCompat.Callback() {
+class MusicSessionCallback constructor(private val musicPlayer: MusicPlayer) :
+    MediaSessionCompat.Callback() {
 
     override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
         return super.onMediaButtonEvent(mediaButtonEvent)
     }
 
     override fun onPrepare() {
-        super.onPrepare()
+        musicPlayer.prepare()
     }
 
     override fun onPlay() {
-        super.onPlay()
+        musicPlayer.play()
     }
 
     override fun onPlayFromUri(uri: Uri?, extras: Bundle?) {
-        super.onPlayFromUri(uri, extras)
+        musicPlayer.setDataSource(uri ?: return)
     }
 
     override fun onPause() {
-        super.onPause()
-    }
-
-    override fun onSkipToNext() {
-        super.onSkipToNext()
+        musicPlayer.pause()
     }
 
     override fun onStop() {
-        super.onStop()
+        musicPlayer.stop()
     }
 
     override fun onSeekTo(pos: Long) {
-        super.onSeekTo(pos)
+        musicPlayer.seekTo(pos)
     }
 }
