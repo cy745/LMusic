@@ -91,7 +91,7 @@ class MusicService : Service(), LifecycleOwner {
                     .postValue(nowDuration)
                 temp = nowDuration
             }
-        }, 0, 16)
+        }, 0, 1000)
     }
 
     override fun onCreate() {

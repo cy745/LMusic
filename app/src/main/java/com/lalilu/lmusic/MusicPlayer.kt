@@ -101,7 +101,8 @@ class MusicPlayer(private val context: Context) {
         }
     }
 
+    // ERROR (-38,0) ,获取duration前需保证mediaPlayer已设置数据源
     fun getDuration(): Int {
-        return player.currentPosition
+        return if (prepared) player.currentPosition else 0
     }
 }

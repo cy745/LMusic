@@ -20,6 +20,14 @@
             android:name="com.lalilu.lmusic.service.MusicService"
             android:enabled="true"
             android:exported="false" />
+        <service
+            android:name=".service2.MusicService"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
 
         <activity
             android:name="com.lalilu.lmusic.MainActivity"
