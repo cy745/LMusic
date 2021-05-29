@@ -49,12 +49,12 @@ class NotificationUtils private constructor(application: Application) {
             val notificationChannel = NotificationChannel(
                 channelID,
                 channelName,
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_HIGH
             )
             notificationChannel.enableLights(true)
             notificationChannel.lightColor = Color.RED
-            notificationChannel.enableVibration(true)
-            notificationChannel.description = "Time for breakfast"
+            notificationChannel.enableVibration(false)
+//            notificationChannel.description = "Time for breakfast"
             notificationManager.createNotificationChannel(notificationChannel)
         }
     }
