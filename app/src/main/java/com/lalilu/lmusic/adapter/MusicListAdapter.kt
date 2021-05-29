@@ -8,7 +8,6 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.lalilu.lmusic.MusicApplication
 import com.lalilu.lmusic.R
 import com.lalilu.lmusic.dao.SongDao
 import com.lalilu.lmusic.database.MusicDatabase
@@ -23,7 +22,6 @@ class MusicListAdapter(
 ) :
     RecyclerView.Adapter<MusicListAdapter.SongHolder>() {
     private var songList: List<Song> = ArrayList()
-    private var audioMediaScanner = (context.application as MusicApplication).audioMediaScanner
     private var songDao: SongDao = MusicDatabase.getInstance(context).songDao()
     private lateinit var recyclerView: RecyclerView
 

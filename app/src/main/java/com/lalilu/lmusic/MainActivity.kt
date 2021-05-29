@@ -8,7 +8,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.lalilu.lmusic.adapter.MusicListAdapter
+import com.lalilu.lmusic.adapter2.MusicListAdapter
 import com.lalilu.lmusic.databinding.ActivityMainBinding
 import com.lalilu.lmusic.service.MusicService
 import com.lalilu.lmusic.service.MusicServiceConn
@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         PermissionUtils.requestPermission(this)
 
-        mediaBrowser = MusicBrowser(this)
         audioMediaScanner = (application as MusicApplication).audioMediaScanner
         dataBaseViewModel = MusicDataBaseViewModel.getInstance(application)
         serviceViewModel = MusicServiceViewModel.getInstance()
@@ -46,6 +45,7 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+
         ColorAnimator.setContentScrimColorFromPaletteDraweeView(
             binding.playingSongAlbumPic,
             binding.collapsingToolbarLayout
@@ -54,9 +54,14 @@ class MainActivity : AppCompatActivity() {
             binding.seekBar.setThumbColor(it.getDarkVibrantColor(0))
         }
 
+
         binding.musicRecyclerView.adapter = MusicListAdapter(this) {
-            serviceViewModel.getPlayingSong().postValue(it)
+//            serviceViewModel.getPlayingSong().postValue(it)
+            println(it)
         }
+
+        mediaBrowser = MusicBrowser(this, binding.musicRecyclerView.adapter as MusicListAdapter)
+
         binding.musicRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.toolbar.setOnClickListener {
             binding.musicRecyclerView.smoothScrollToPosition(0)
@@ -69,25 +74,25 @@ class MainActivity : AppCompatActivity() {
             musicConn.binder?.toggle()
         }
 
-        dataBaseViewModel.getSongsLiveDate().observeForever {
-            if (it != null) {
-                (binding.musicRecyclerView.adapter as MusicListAdapter).setSongList(it)
-                serviceViewModel.getSongList().postValue(it)
-            }
-        }
+//        dataBaseViewModel.getSongsLiveDate().observeForever {
+//            if (it != null) {
+//                (binding.musicRecyclerView.adapter as MusicListAdapter).setSongList(it)
+//                serviceViewModel.getSongList().postValue(it)
+//            }
+//        }
 
-        serviceViewModel.getPlayingSong().observeForever {
-            if (it != null) {
-                binding.collapsingToolbarLayout.title = it.songTitle
-                binding.playingSongAlbumPic.setImageURI(
-                    audioMediaScanner.loadThumbnail(it), this
-                )
-                binding.seekBar.setSumDuration(it.songDuration)
-            }
-        }
-        serviceViewModel.getShowingDuration().observeForever {
-            binding.seekBar.updateDuration(it)
-        }
+//        serviceViewModel.getPlayingSong().observeForever {
+//            if (it != null) {
+//                binding.collapsingToolbarLayout.title = it.songTitle
+//                binding.playingSongAlbumPic.setImageURI(
+//                    audioMediaScanner.loadThumbnail(it), this
+//                )
+//                binding.seekBar.setSumDuration(it.songDuration)
+//            }
+//        }
+//        serviceViewModel.getShowingDuration().observeForever {
+//            binding.seekBar.updateDuration(it)
+//        }
 
     }
 
