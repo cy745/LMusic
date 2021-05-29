@@ -16,6 +16,7 @@ class Song {
     var songArtist: String = ""
     var songDuration: Long = 0
     var songType: String = ""
+    var songArtUri: Uri = Uri.EMPTY
 
     var albumId: Long = 0
     var albumTitle: String = ""

@@ -58,8 +58,9 @@ class AudioMediaScanner constructor(context: Context) {
                 val album = getAlbum(song)
 
                 if (song != null) {
-                    songDao.insert(song)
                     saveThumbnailToSandBox(context, song)
+                    song.songArtUri = loadThumbnail(song)
+                    songDao.insert(song)
                 }
                 if (album != null) albumDao.insert(album)
             } while (cursor.moveToNext())
