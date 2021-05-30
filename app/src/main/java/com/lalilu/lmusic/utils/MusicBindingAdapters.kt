@@ -7,7 +7,7 @@ import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import com.facebook.drawee.view.SimpleDraweeView
 import com.lalilu.lmusic.R
-import com.lalilu.lmusic.service2.MusicService.Companion.SongType
+import com.lalilu.lmusic.service2.MusicService.Companion.Song_Type
 
 class MusicBindingAdapters {
     companion object {
@@ -51,7 +51,7 @@ class MusicBindingAdapters {
         }
 
         fun getSongTypeFromExtra(extra: Bundle): String {
-            return extra.getString(SongType, "mp3")
+            return extra.getString(Song_Type, "mp3")
         }
     }
 }

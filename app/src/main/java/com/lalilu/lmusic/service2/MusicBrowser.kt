@@ -6,18 +6,23 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.lifecycle.MutableLiveData
 import com.lalilu.lmusic.adapter2.UpdatableAdapter
 
 class MusicBrowser constructor(
     private val context: Activity,
     private val adapterToUpdate: UpdatableAdapter<MediaBrowserCompat.MediaItem>
 ) {
+    var playbackStateCompat = MutableLiveData<PlaybackStateCompat>(null)
+    var mediaMetadataCompat = MutableLiveData<MediaMetadataCompat>(null)
+
     private var mediaBrowser: MediaBrowserCompat
     private var controllerCallback: MusicControllerCallback
     private var connectionCallback: MusicConnectionCallback
     private var subscriptionCallback: MusicSubscriptionCallback
     private lateinit var mediaController: MediaControllerCompat
 
+    fun isConnected() = mediaBrowser.isConnected
     fun connect() = mediaBrowser.connect()
     fun disconnect() {
         if (mediaBrowser.isConnected) {
@@ -35,11 +40,16 @@ class MusicBrowser constructor(
             ComponentName(context, MusicService::class.java),
             connectionCallback, null
         )
+        adapterToUpdate.setOnItemClickListener {
+            println("[setOnItemClickListener]: ${it.mediaId}")
+            mediaController.transportControls.playFromMediaId(it.mediaId, null)
+            mediaController.transportControls.play()
+        }
     }
 
     inner class MusicConnectionCallback : MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
-            println("[MusicConnectionCallback] #onConnected")
+            println("[MusicConnectionCallback]#onConnected")
             mediaBrowser.sessionToken.also { token ->
                 mediaController = MediaControllerCompat(context, token)
                 mediaController.registerCallback(controllerCallback)
@@ -63,14 +73,18 @@ class MusicBrowser constructor(
     }
 
     inner class MusicControllerCallback : MediaControllerCompat.Callback() {
+        override fun onSessionReady() {
+            println("[MusicControllerCallback]#onSessionReady")
+        }
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-            println("[state]: " + state?.state)
+            playbackStateCompat.postValue(state ?: return)
+            println("[MusicControllerCallback]#onPlaybackStateChanged: " + state.state)
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
+            mediaMetadataCompat.postValue(metadata ?: return)
             println("[MusicControllerCallback]#onMetadataChanged")
         }
-
     }
 }

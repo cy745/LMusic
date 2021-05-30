@@ -16,15 +16,16 @@ import java.util.*
 
 interface UpdatableAdapter<T> {
     fun updateList(list: List<T>)
+    fun setOnItemClickListener(listener: (mediaItem: T) -> Unit)
 }
 
 class MusicListAdapter(
     private val context: Activity,
-    private val itemClickListener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
 ) : RecyclerView.Adapter<MusicListAdapter.SongHolder>(),
     UpdatableAdapter<MediaBrowserCompat.MediaItem> {
 
     private var mediaItemList: List<MediaBrowserCompat.MediaItem> = ArrayList()
+    private lateinit var itemClickListener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongHolder {
         val view =
@@ -36,6 +37,16 @@ class MusicListAdapter(
 
     override fun onBindViewHolder(holder: SongHolder, position: Int) {
         holder.binding.mediaItem = mediaItemList[position]
+    }
+
+    private lateinit var recyclerView: RecyclerView
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        this.recyclerView = recyclerView
+    }
+
+    fun scrollToTop() {
+        recyclerView.scrollToPosition(0)
     }
 
     inner class SongHolder(
@@ -61,13 +72,13 @@ class MusicListAdapter(
         }
 
         private fun swapMediaItem() {
-            val temp = ArrayList(mediaItemList)
-            Collections.swap(
-                temp,
-                temp.indexOf(binding.mediaItem as MediaBrowserCompat.MediaItem),
-                0
-            )
+            val temp = LinkedList(mediaItemList)
+            val mediaItem = binding.mediaItem as MediaBrowserCompat.MediaItem
+            temp.remove(mediaItem)
+            temp.addFirst(mediaItem)
+//            Collections.swap(temp, temp.indexOf(mediaItem), 0)
             setList(temp)
+            scrollToTop()
         }
     }
 
@@ -81,5 +92,9 @@ class MusicListAdapter(
         val result = DiffUtil.calculateDiff(MediaItemDiffCallback(mediaItemList, list), true)
         result.dispatchUpdatesTo(this)
         mediaItemList = list
+    }
+
+    override fun setOnItemClickListener(listener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit) {
+        this.itemClickListener = listener
     }
 }

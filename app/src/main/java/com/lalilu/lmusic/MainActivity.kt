@@ -55,10 +55,10 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        binding.musicRecyclerView.adapter = MusicListAdapter(this) {
+//        binding.musicRecyclerView.adapter = MusicListAdapter(this) {
 //            serviceViewModel.getPlayingSong().postValue(it)
-            println(it)
-        }
+//        }
+        binding.musicRecyclerView.adapter = MusicListAdapter(this)
 
         mediaBrowser = MusicBrowser(this, binding.musicRecyclerView.adapter as MusicListAdapter)
 
@@ -93,12 +93,13 @@ class MainActivity : AppCompatActivity() {
 //        serviceViewModel.getShowingDuration().observeForever {
 //            binding.seekBar.updateDuration(it)
 //        }
-
     }
 
     override fun onStart() {
         super.onStart()
-        mediaBrowser.connect()
+        if (!mediaBrowser.isConnected()) {
+            mediaBrowser.connect()
+        }
     }
 
     override fun onStop() {
