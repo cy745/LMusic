@@ -42,45 +42,11 @@ class MainActivity : AppCompatActivity() {
             startService(it)
         }, musicConn, BIND_AUTO_CREATE)
 
-
         setContentView(binding.root)
-        setSupportActionBar(binding.toolbar)
 
-        ColorAnimator.setContentScrimColorFromPaletteDraweeView(
-            binding.playingSongAlbumPic,
-            binding.collapsingToolbarLayout
-        )
-        ColorAnimator.getPaletteFromFromPaletteDraweeView(binding.playingSongAlbumPic) {
-            binding.seekBar.setThumbColor(it.getDarkVibrantColor(0))
-        }
-
-
-//        binding.musicRecyclerView.adapter = MusicListAdapter(this) {
-//            serviceViewModel.getPlayingSong().postValue(it)
-//        }
-        binding.musicRecyclerView.adapter = MusicListAdapter(this)
-
-        mediaBrowser = MusicBrowser(this, binding.musicRecyclerView.adapter as MusicListAdapter)
-
-        binding.musicRecyclerView.layoutManager = LinearLayoutManager(this)
-        binding.toolbar.setOnClickListener {
-            binding.musicRecyclerView.smoothScrollToPosition(0)
-            binding.appbar.setExpanded(true, true)
-        }
-        binding.seekBar.setOnActionUp {
-            serviceViewModel.getPlayingDuration().postValue(it)
-        }
-        binding.seekBar.setOnClickListener {
-            musicConn.binder?.toggle()
-        }
-
-//        dataBaseViewModel.getSongsLiveDate().observeForever {
-//            if (it != null) {
-//                (binding.musicRecyclerView.adapter as MusicListAdapter).setSongList(it)
-//                serviceViewModel.getSongList().postValue(it)
-//            }
-//        }
-
+        initToolBar()
+        initRecyclerView()
+        initSeekBar()
 //        serviceViewModel.getPlayingSong().observeForever {
 //            if (it != null) {
 //                binding.collapsingToolbarLayout.title = it.songTitle
@@ -90,6 +56,45 @@ class MainActivity : AppCompatActivity() {
 //                binding.seekBar.setSumDuration(it.songDuration)
 //            }
 //        }
+    }
+
+    private fun initRecyclerView() {
+//        binding.musicRecyclerView.adapter = MusicListAdapter(this) {
+//            serviceViewModel.getPlayingSong().postValue(it)
+//        }
+        binding.musicRecyclerView.adapter = MusicListAdapter(this)
+        mediaBrowser = MusicBrowser(this, binding.musicRecyclerView.adapter as MusicListAdapter)
+        binding.musicRecyclerView.layoutManager = LinearLayoutManager(this)
+//        dataBaseViewModel.getSongsLiveDate().observeForever {
+//            if (it != null) {
+//                (binding.musicRecyclerView.adapter as MusicListAdapter).setSongList(it)
+//                serviceViewModel.getSongList().postValue(it)
+//            }
+//        }
+    }
+
+    private fun initToolBar() {
+        setSupportActionBar(binding.toolbar)
+        ColorAnimator.setContentScrimColorFromPaletteDraweeView(
+            binding.playingSongAlbumPic,
+            binding.collapsingToolbarLayout
+        )
+        binding.toolbar.setOnClickListener {
+            binding.musicRecyclerView.smoothScrollToPosition(0)
+            binding.appbar.setExpanded(true, true)
+        }
+    }
+
+    private fun initSeekBar() {
+        ColorAnimator.getPaletteFromFromPaletteDraweeView(binding.playingSongAlbumPic) {
+            binding.seekBar.setThumbColor(it.getDarkVibrantColor(0))
+        }
+        binding.seekBar.setOnActionUp {
+            serviceViewModel.getPlayingDuration().postValue(it)
+        }
+        binding.seekBar.setOnClickListener {
+            musicConn.binder?.toggle()
+        }
 //        serviceViewModel.getShowingDuration().observeForever {
 //            binding.seekBar.updateDuration(it)
 //        }
@@ -97,9 +102,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (!mediaBrowser.isConnected()) {
-            mediaBrowser.connect()
-        }
+        println("[onStart]")
+        mediaBrowser.connect()
     }
 
     override fun onStop() {
@@ -111,11 +115,13 @@ class MainActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.appbar_play -> {
                 Toast.makeText(this, "开始", Toast.LENGTH_SHORT).show()
-                musicConn.binder?.play()
+//                musicConn.binder?.play()
+                mediaBrowser.mediaController.transportControls.play()
             }
             R.id.appbar_pause -> {
                 Toast.makeText(this, "暂停", Toast.LENGTH_SHORT).show()
-                musicConn.binder?.pause()
+//                musicConn.binder?.pause()
+                mediaBrowser.mediaController.transportControls.pause()
             }
             R.id.appbar_add_folder -> {
                 audioMediaScanner.updateSongDataBase(this)
@@ -136,7 +142,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unbindService(musicConn)
+//        unbindService(musicConn)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

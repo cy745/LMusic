@@ -76,7 +76,6 @@ class MusicListAdapter(
             val mediaItem = binding.mediaItem as MediaBrowserCompat.MediaItem
             temp.remove(mediaItem)
             temp.addFirst(mediaItem)
-//            Collections.swap(temp, temp.indexOf(mediaItem), 0)
             setList(temp)
             scrollToTop()
         }

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.notification
 
 import android.app.Application
 import android.app.NotificationChannel
@@ -8,10 +8,16 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
+import android.support.v4.media.MediaDescriptionCompat
+import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmusic.MainActivity
 import com.lalilu.lmusic.R
+import com.lalilu.lmusic.service2.MusicService
 import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
 
 private const val NOTIFICATION_ID = 0
@@ -58,6 +64,52 @@ class NotificationUtils private constructor(application: Application) {
             notificationManager.createNotificationChannel(notificationChannel)
         }
     }
+}
+
+fun MusicService.sendNotification(
+    mediaSession: MediaSessionCompat,
+    controller: MediaControllerCompat,
+    description: MediaDescriptionCompat,
+    channelId: String
+) {
+    val builder = NotificationCompat.Builder(this, channelId)
+        .setContentTitle(description.title)
+        .setContentText(description.subtitle)
+        .setSubText(description.description)
+//        .setLargeIcon(description.iconBitmap)
+
+        .setContentIntent(controller.sessionActivity)
+
+        .setDeleteIntent(
+            MediaButtonReceiver.buildMediaButtonPendingIntent(
+                this, PlaybackStateCompat.ACTION_STOP
+            )
+        )
+
+        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+
+        .setSmallIcon(R.drawable.ic_launcher_foreground)
+        .setColor(Color.DKGRAY)
+        .addAction(
+            NotificationCompat.Action(
+                R.drawable.ic_pause_line, "pause",
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                    this, PlaybackStateCompat.ACTION_PLAY_PAUSE
+                )
+            )
+        )
+        .setStyle(
+            androidx.media.app.NotificationCompat.MediaStyle()
+                .setMediaSession(mediaSession.sessionToken)
+                .setShowActionsInCompactView(0)
+                .setShowCancelButton(true)
+                .setCancelButtonIntent(
+                    MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        this, PlaybackStateCompat.ACTION_STOP
+                    )
+                )
+        )
+    this.startForeground(10, builder.build())
 }
 
 fun NotificationManager.sendNotification(

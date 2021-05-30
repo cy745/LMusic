@@ -1,25 +1,28 @@
 package com.lalilu.lmusic.service2
 
 import android.app.PendingIntent
-import android.media.MediaMetadata
+import android.content.Intent
 import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.ArrayMap
 import androidx.media.MediaBrowserServiceCompat
 import com.lalilu.lmusic.database.MusicDatabase
 import com.lalilu.lmusic.entity.Song
+import com.lalilu.lmusic.notification.NotificationUtils.Companion.playerChannelName
+import com.lalilu.lmusic.notification.sendNotification
+import com.lalilu.lmusic.utils.toMediaMeta
 import java.util.*
-import kotlin.collections.LinkedHashMap
 
 class MusicService : MediaBrowserServiceCompat() {
+    private val tag = MusicService::class.java.name
+
     companion object {
         const val Access_ID = "access_id"
         const val Empty_ID = "empty_id"
-        const val Tag_Name = "MusicService"
         const val Song_Type = "song_type"
     }
 
@@ -29,7 +32,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private lateinit var musicPlayer: MediaPlayer
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var musicSessionCallback: MusicSessionCallback
-    private val resultList: LinkedHashMap<String, MediaBrowserCompat.MediaItem> = LinkedHashMap()
+    private val resultList: ArrayMap<String, MediaBrowserCompat.MediaItem> = ArrayMap()
 
     override fun onCreate() {
         super.onCreate()
@@ -54,7 +57,7 @@ class MusicService : MediaBrowserServiceCompat() {
                         PlaybackStateCompat.ACTION_PAUSE
             ).build()
 
-        mediaSession = MediaSessionCompat(this, Tag_Name).apply {
+        mediaSession = MediaSessionCompat(this, tag).apply {
             setFlags(
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
                         MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
@@ -63,8 +66,11 @@ class MusicService : MediaBrowserServiceCompat() {
             setPlaybackState(playbackState)
             setCallback(musicSessionCallback)
             setSessionToken(sessionToken)
-            isActive = true
         }
+    }
+
+    override fun onDestroy() {
+        musicSessionCallback.onStop()
     }
 
     inner class MusicSessionCallback : MediaSessionCompat.Callback(),
@@ -87,10 +93,19 @@ class MusicService : MediaBrowserServiceCompat() {
 
         override fun onPlay() {
             if (prepared) {
+                this@MusicService.startService(Intent(this@MusicService, MusicService::class.java))
+                mediaSession.isActive = true
+
                 musicPlayer.start()
                 playbackState = PlaybackStateCompat.Builder()
                     .setState(PlaybackStateCompat.STATE_PLAYING, 0, 1.0f).build()
                 mediaSession.setPlaybackState(playbackState)
+                this@MusicService.sendNotification(
+                    mediaSession,
+                    mediaSession.controller,
+                    metadataCompat.description,
+                    playerChannelName + "_ID"
+                )
             }
         }
 
@@ -109,7 +124,8 @@ class MusicService : MediaBrowserServiceCompat() {
                     playbackState = PlaybackStateCompat.Builder()
                         .setState(PlaybackStateCompat.STATE_BUFFERING, 0, 1.0f)
                         .build()
-                    metadataCompat = mediaItemExtraToMeta(metadata.description.extras)
+                    metadataCompat =
+                        extras?.toMediaMeta() ?: metadata.description.extras!!.toMediaMeta()
                     mediaSession.setPlaybackState(playbackState)
                     mediaSession.setMetadata(metadataCompat)
                     onPrepare()
@@ -120,45 +136,28 @@ class MusicService : MediaBrowserServiceCompat() {
             }
         }
 
-        override fun onPlayFromUri(uri: Uri?, extras: Bundle?) {
-            if (playbackState.state ==
-                PlaybackStateCompat.STATE_NONE or
-                PlaybackStateCompat.STATE_PAUSED or
-                PlaybackStateCompat.STATE_PLAYING
-            ) {
-                musicPlayer.reset()
-                musicPlayer.setDataSource(this@MusicService, uri ?: return)
-                playbackState = PlaybackStateCompat.Builder()
-                    .setState(PlaybackStateCompat.STATE_CONNECTING, 0, 1.0f)
-                    .build()
-                metadataCompat = mediaItemExtraToMeta(extras)
-                mediaSession.setPlaybackState(playbackState)
-                mediaSession.setMetadata(metadataCompat)
-                onPrepare()
-            }
-        }
-
         override fun onPause() {
             if (playbackState.state == PlaybackStateCompat.STATE_PLAYING) {
                 musicPlayer.pause()
                 playbackState = PlaybackStateCompat.Builder()
                     .setState(PlaybackStateCompat.STATE_PAUSED, 0, 1.0f).build()
                 mediaSession.setPlaybackState(playbackState)
+                this@MusicService.stopForeground(false)
             }
+
         }
 
         override fun onSkipToNext() {
             val now = metadataCompat.description.mediaId
-            val iterator = resultList.keys.iterator()
-            while (iterator.hasNext()) {
-                if (iterator.next() == now) {
-                    onPlayFromMediaId(iterator.next(), null)
-                    break
-                }
-            }
+            var index = resultList.indexOfKey(now)
+            index = if (index + 1 >= resultList.size) 0 else index + 1
+            onPlayFromMediaId(resultList.keyAt(index), null)
         }
 
         override fun onStop() {
+            println("[onStop]")
+            stopSelf()
+            mediaSession.isActive = false
             musicPlayer.stop()
             prepared = false
         }
@@ -180,6 +179,7 @@ class MusicService : MediaBrowserServiceCompat() {
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
+        result.detach()
         if (parentId == Empty_ID) return
         val songList = MusicDatabase.getInstance(this).songDao().getAll()
         resultList.clear()
@@ -187,46 +187,6 @@ class MusicService : MediaBrowserServiceCompat() {
             resultList[song.songId.toString()] = song.toMediaItem()
         }
         result.sendResult(resultList.values.toMutableList())
-    }
-
-    private fun mediaItemExtraToMeta(extras: Bundle?): MediaMetadataCompat {
-        if (extras == null) return MediaMetadataCompat.Builder().build()
-        try {
-            return MediaMetadataCompat.Builder()
-                .putString(
-                    MediaMetadata.METADATA_KEY_TITLE,
-                    extras.getString(MediaMetadata.METADATA_KEY_TITLE)
-                )
-                .putString(
-                    MediaMetadataCompat.METADATA_KEY_MEDIA_URI,
-                    extras.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)
-                )
-                .putString(
-                    MediaMetadata.METADATA_KEY_MEDIA_ID,
-                    extras.getString(MediaMetadata.METADATA_KEY_MEDIA_ID)
-                )
-                .putString(
-                    MediaMetadata.METADATA_KEY_ARTIST,
-                    extras.getString(MediaMetadata.METADATA_KEY_ARTIST)
-                )
-                .putString(
-                    MediaMetadata.METADATA_KEY_ART_URI,
-                    extras.getString(MediaMetadata.METADATA_KEY_ART_URI)
-                )
-                .putString(
-                    MediaMetadata.METADATA_KEY_ALBUM,
-                    extras.getString(MediaMetadata.METADATA_KEY_ALBUM)
-                )
-                .putLong(
-                    MediaMetadata.METADATA_KEY_DURATION,
-                    extras.getLong(MediaMetadata.METADATA_KEY_DURATION)
-                )
-                .putString(Song_Type, extras.getString(Song_Type))
-                .build()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return MediaMetadataCompat.Builder().build()
-        }
     }
 }
 

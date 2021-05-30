@@ -20,15 +20,12 @@ class MusicBrowser constructor(
     private var controllerCallback: MusicControllerCallback
     private var connectionCallback: MusicConnectionCallback
     private var subscriptionCallback: MusicSubscriptionCallback
-    private lateinit var mediaController: MediaControllerCompat
+    lateinit var mediaController: MediaControllerCompat
 
-    fun isConnected() = mediaBrowser.isConnected
     fun connect() = mediaBrowser.connect()
     fun disconnect() {
-        if (mediaBrowser.isConnected) {
-            mediaController.unregisterCallback(controllerCallback)
-            mediaBrowser.disconnect()
-        }
+        mediaController.unregisterCallback(controllerCallback)
+        mediaBrowser.disconnect()
     }
 
     init {
@@ -52,9 +49,9 @@ class MusicBrowser constructor(
             println("[MusicConnectionCallback]#onConnected")
             mediaBrowser.sessionToken.also { token ->
                 mediaController = MediaControllerCompat(context, token)
-                mediaController.registerCallback(controllerCallback)
                 MediaControllerCompat.setMediaController(context, mediaController)
             }
+            mediaController.registerCallback(controllerCallback)
             mediaBrowser.subscribe(MusicService.Access_ID, subscriptionCallback)
         }
     }

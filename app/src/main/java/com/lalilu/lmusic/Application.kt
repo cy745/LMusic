@@ -3,8 +3,8 @@ package com.lalilu.lmusic
 import android.app.Application
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.lalilu.lmusic.database.MusicDatabase
+import com.lalilu.lmusic.notification.NotificationUtils
 import com.lalilu.lmusic.utils.AudioMediaScanner
-import com.lalilu.lmusic.utils.NotificationUtils
 import com.lalilu.lmusic.viewmodel.MusicDataBaseViewModel
 import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
 
