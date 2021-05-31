@@ -39,6 +39,7 @@ fun Bundle.toMediaMeta(): MediaMetadataCompat {
             .putString(MusicService.Song_Type, this.getString(MusicService.Song_Type))
             .build()
     } catch (e: java.lang.Exception) {
+        e.printStackTrace()
         MediaMetadataCompat.Builder().build()
     }
 }

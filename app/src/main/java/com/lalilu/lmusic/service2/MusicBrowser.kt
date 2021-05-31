@@ -66,6 +66,8 @@ class MusicBrowser constructor(
             children: MutableList<MediaBrowserCompat.MediaItem>
         ) {
             adapterToUpdate.updateList(children)
+            mediaMetadataCompat.postValue(mediaController.metadata)
+            playbackStateCompat.postValue(mediaController.playbackState)
             println("[MusicSubscriptionCallback]#onChildrenLoaded: $parentId")
             for (item: MediaBrowserCompat.MediaItem in children) {
                 println(item.mediaId + " || " + item.toString())

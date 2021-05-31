@@ -2,7 +2,9 @@ package com.lalilu.lmusic
 
 import android.content.Intent
 import android.media.AudioManager
+import android.media.MediaMetadata
 import android.os.Bundle
+import android.support.v4.media.session.PlaybackStateCompat
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -94,8 +96,24 @@ class MainActivity : AppCompatActivity() {
             serviceViewModel.getPlayingDuration().postValue(it)
         }
         binding.seekBar.setOnClickListener {
-            mediaBrowser.mediaController.transportControls.pause()
+            mediaBrowser.mediaController.transportControls.sendCustomAction(
+                PlaybackStateCompat.ACTION_PLAY_PAUSE.toString(), null
+            )
 //            musicConn.binder?.toggle()
+        }
+        mediaBrowser.mediaMetadataCompat.observeForever {
+            if (it == null) return@observeForever
+            println(
+                "[METADATA_KEY_DURATION]" +
+                        it.getLong(MediaMetadata.METADATA_KEY_DURATION)
+            )
+            binding.seekBar.setSumDuration(
+                it.getLong(MediaMetadata.METADATA_KEY_DURATION)
+            )
+        }
+        mediaBrowser.playbackStateCompat.observeForever {
+            if (it == null) return@observeForever
+            binding.seekBar.setNewestDuration(it)
         }
 //        serviceViewModel.getShowingDuration().observeForever {
 //            binding.seekBar.updateDuration(it)
@@ -138,7 +156,9 @@ class MainActivity : AppCompatActivity() {
                 mediaBrowser.mediaController.transportControls.pause()
             }
             R.id.appbar_add_folder -> {
-                audioMediaScanner.updateSongDataBase(this)
+                Thread {
+                    audioMediaScanner.updateSongDataBase(this)
+                }.start()
             }
         }
         return super.onOptionsItemSelected(item)
