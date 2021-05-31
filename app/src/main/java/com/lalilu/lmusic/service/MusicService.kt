@@ -13,7 +13,7 @@ import com.lalilu.lmusic.MusicPlayer
 import com.lalilu.lmusic.entity.Song
 import com.lalilu.lmusic.notification.NotificationUtils
 import com.lalilu.lmusic.notification.cancelNotifications
-import com.lalilu.lmusic.notification.sendNotification
+import com.lalilu.lmusic.notification.sendPlayerNotification
 import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
 import java.util.*
 import kotlin.collections.ArrayList
@@ -51,7 +51,7 @@ class MusicService : Service(), LifecycleOwner {
         }
 
         fun setSong(song: Song) {
-            notificationManager.sendNotification(
+            notificationManager.sendPlayerNotification(
                 song.songTitle,
                 NotificationUtils.playerChannelName + "_ID",
                 applicationContext

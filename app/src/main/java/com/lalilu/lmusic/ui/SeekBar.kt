@@ -4,12 +4,15 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.SystemClock
+import android.support.v4.media.session.PlaybackStateCompat
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import com.lalilu.lmusic.R
 import com.lalilu.lmusic.utils.DurationUtils
+import java.util.*
 
 class SeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -49,6 +52,29 @@ class SeekBar @JvmOverloads constructor(
     fun setSumDuration(duration: Long) {
         sumDuration = duration
         invalidate()
+    }
+
+    private var positionTimer: Timer? = null
+
+    fun setNewestDuration(playbackStateCompat: PlaybackStateCompat) {
+        var currentDuration =
+            SystemClock.elapsedRealtime() - playbackStateCompat.lastPositionUpdateTime + playbackStateCompat.position
+        positionTimer?.cancel()
+        if (playbackStateCompat.state == PlaybackStateCompat.STATE_PLAYING) {
+            positionTimer = Timer()
+            positionTimer?.schedule(object : TimerTask() {
+                override fun run() {
+                    updateDuration(currentDuration)
+                    if (currentDuration >= sumDuration) {
+                        updateDuration(0)
+                        this.cancel()
+                    }
+                    currentDuration += 100
+                }
+            }, 0, 100)
+        } else {
+            updateDuration(currentDuration)
+        }
     }
 
     fun updateDuration(duration: Long) {

@@ -1,14 +1,11 @@
 package com.lalilu.lmusic.entity
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.media.MediaMetadata
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
-import androidx.core.net.toFile
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.lalilu.lmusic.service2.MusicService
@@ -41,7 +38,6 @@ class Song {
 
     fun toMediaItem(): MediaBrowserCompat.MediaItem {
         val description = MediaDescriptionCompat.Builder()
-            .setIconBitmap(loadBitmapFromUri(songArtUri, 400))
             .setIconUri(this.songArtUri)
             .setMediaUri(this.songUri)
             .setTitle(this.songTitle)
@@ -63,27 +59,6 @@ class Song {
             description,
             MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
         )
-    }
-
-    private fun loadBitmapFromUri(uri: Uri, toSize: Int): Bitmap? {
-        val outOption = BitmapFactory.Options().also {
-            it.inJustDecodeBounds = true
-        }
-        BitmapFactory.decodeStream(uri.toFile().inputStream(), null, outOption)
-
-        val outWidth = outOption.outWidth
-        val outHeight = outOption.outHeight
-        if (outWidth == -1 || outHeight == -1) return null
-
-        var scaleValue: Int = if (outWidth > toSize) outWidth / toSize else toSize / outWidth
-        if (scaleValue < 1) scaleValue = 1
-
-        outOption.also {
-            it.inJustDecodeBounds = false
-            it.inSampleSize = scaleValue
-        }
-
-        return BitmapFactory.decodeStream(uri.toFile().inputStream(), null, outOption)
     }
 
     override fun equals(other: Any?): Boolean {
