@@ -87,11 +87,7 @@ class MusicListAdapter(
         mediaItemList = list
     }
 
-    override fun updateList(list: List<MediaBrowserCompat.MediaItem>) {
-        val result = DiffUtil.calculateDiff(MediaItemDiffCallback(mediaItemList, list), true)
-        result.dispatchUpdatesTo(this)
-        mediaItemList = list
-    }
+    override fun updateList(list: List<MediaBrowserCompat.MediaItem>) = setList(list)
 
     override fun setOnItemClickListener(listener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit) {
         this.itemClickListener = listener

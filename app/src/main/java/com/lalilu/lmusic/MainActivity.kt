@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lalilu.lmusic.adapter2.MusicListAdapter
 import com.lalilu.lmusic.databinding.ActivityMainBinding
-import com.lalilu.lmusic.service.MusicService
 import com.lalilu.lmusic.service.MusicServiceConn
 import com.lalilu.lmusic.service2.MusicBrowser
 import com.lalilu.lmusic.utils.AudioMediaScanner
@@ -37,16 +36,19 @@ class MainActivity : AppCompatActivity() {
         serviceViewModel = MusicServiceViewModel.getInstance()
         binding = ActivityMainBinding.inflate(layoutInflater)
 
-        musicConn = MusicServiceConn()
-        bindService(Intent(this, MusicService::class.java).also {
-            startService(it)
-        }, musicConn, BIND_AUTO_CREATE)
+        mediaBrowser = MusicBrowser(this)
+
+//        musicConn = MusicServiceConn()
+//        bindService(Intent(this, MusicService::class.java).also {
+//            startService(it)
+//        }, musicConn, BIND_AUTO_CREATE)
 
         setContentView(binding.root)
 
         initToolBar()
         initRecyclerView()
         initSeekBar()
+        bindUiToBrowser()
 //        serviceViewModel.getPlayingSong().observeForever {
 //            if (it != null) {
 //                binding.collapsingToolbarLayout.title = it.songTitle
@@ -63,7 +65,6 @@ class MainActivity : AppCompatActivity() {
 //            serviceViewModel.getPlayingSong().postValue(it)
 //        }
         binding.musicRecyclerView.adapter = MusicListAdapter(this)
-        mediaBrowser = MusicBrowser(this, binding.musicRecyclerView.adapter as MusicListAdapter)
         binding.musicRecyclerView.layoutManager = LinearLayoutManager(this)
 //        dataBaseViewModel.getSongsLiveDate().observeForever {
 //            if (it != null) {
@@ -93,11 +94,24 @@ class MainActivity : AppCompatActivity() {
             serviceViewModel.getPlayingDuration().postValue(it)
         }
         binding.seekBar.setOnClickListener {
-            musicConn.binder?.toggle()
+            mediaBrowser.mediaController.transportControls.pause()
+//            musicConn.binder?.toggle()
         }
 //        serviceViewModel.getShowingDuration().observeForever {
 //            binding.seekBar.updateDuration(it)
 //        }
+    }
+
+    private fun bindUiToBrowser() {
+        mediaBrowser.mediaMetadataCompat.observeForever {
+            if (it == null) return@observeForever
+            binding.collapsingToolbarLayout.title = it.description.title
+            binding.playingSongAlbumPic.setImageURI(
+                it.description.iconUri, this
+            )
+        }
+
+        mediaBrowser.setAdapterToUpdate(binding.musicRecyclerView.adapter as MusicListAdapter)
     }
 
     override fun onStart() {

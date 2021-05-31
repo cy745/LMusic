@@ -10,8 +10,7 @@ import androidx.lifecycle.MutableLiveData
 import com.lalilu.lmusic.adapter2.UpdatableAdapter
 
 class MusicBrowser constructor(
-    private val context: Activity,
-    private val adapterToUpdate: UpdatableAdapter<MediaBrowserCompat.MediaItem>
+    private val context: Activity
 ) {
     var playbackStateCompat = MutableLiveData<PlaybackStateCompat>(null)
     var mediaMetadataCompat = MutableLiveData<MediaMetadataCompat>(null)
@@ -21,6 +20,16 @@ class MusicBrowser constructor(
     private var connectionCallback: MusicConnectionCallback
     private var subscriptionCallback: MusicSubscriptionCallback
     lateinit var mediaController: MediaControllerCompat
+    private lateinit var adapterToUpdate: UpdatableAdapter<MediaBrowserCompat.MediaItem>
+
+    fun setAdapterToUpdate(adapterToUpdate: UpdatableAdapter<MediaBrowserCompat.MediaItem>) {
+        this.adapterToUpdate = adapterToUpdate
+        this.adapterToUpdate.setOnItemClickListener {
+            println("[setOnItemClickListener]: ${it.mediaId}")
+            mediaController.transportControls.playFromMediaId(it.mediaId, null)
+            mediaController.transportControls.play()
+        }
+    }
 
     fun connect() = mediaBrowser.connect()
     fun disconnect() {
@@ -37,11 +46,6 @@ class MusicBrowser constructor(
             ComponentName(context, MusicService::class.java),
             connectionCallback, null
         )
-        adapterToUpdate.setOnItemClickListener {
-            println("[setOnItemClickListener]: ${it.mediaId}")
-            mediaController.transportControls.playFromMediaId(it.mediaId, null)
-            mediaController.transportControls.play()
-        }
     }
 
     inner class MusicConnectionCallback : MediaBrowserCompat.ConnectionCallback() {

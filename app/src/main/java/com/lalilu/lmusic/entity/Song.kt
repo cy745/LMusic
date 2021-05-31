@@ -1,11 +1,14 @@
 package com.lalilu.lmusic.entity
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.MediaMetadata
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import androidx.core.net.toFile
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.lalilu.lmusic.service2.MusicService
@@ -38,13 +41,14 @@ class Song {
 
     fun toMediaItem(): MediaBrowserCompat.MediaItem {
         val description = MediaDescriptionCompat.Builder()
+            .setIconBitmap(loadBitmapFromUri(songArtUri, 400))
             .setIconUri(this.songArtUri)
             .setMediaUri(this.songUri)
             .setTitle(this.songTitle)
             .setMediaId(this.songId.toString())
             .setSubtitle(this.songArtist)
-            .setDescription("")
-            .setSubtitle("")
+            .setDescription(this.songArtist)
+            .setSubtitle(this.albumTitle)
             .setExtras(Bundle().also {
                 it.putString(MediaMetadata.METADATA_KEY_TITLE, this.songTitle)
                 it.putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, this.songUri.toString())
@@ -61,16 +65,25 @@ class Song {
         )
     }
 
-    fun toMediaMeta(): MediaMetadataCompat {
-        return MediaMetadataCompat.Builder()
-            .putString(MediaMetadata.METADATA_KEY_TITLE, this.songTitle)
-            .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, this.songUri.toString())
-            .putString(MediaMetadata.METADATA_KEY_MEDIA_ID, this.songId.toString())
-            .putString(MediaMetadata.METADATA_KEY_ARTIST, this.songArtist)
-            .putString(MediaMetadata.METADATA_KEY_ART_URI, this.songArtUri.toString())
-            .putString(MediaMetadata.METADATA_KEY_ALBUM, this.albumTitle)
-            .putLong(MediaMetadata.METADATA_KEY_DURATION, this.songDuration)
-            .putString(MusicService.Song_Type, this.songType).build()
+    private fun loadBitmapFromUri(uri: Uri, toSize: Int): Bitmap? {
+        val outOption = BitmapFactory.Options().also {
+            it.inJustDecodeBounds = true
+        }
+        BitmapFactory.decodeStream(uri.toFile().inputStream(), null, outOption)
+
+        val outWidth = outOption.outWidth
+        val outHeight = outOption.outHeight
+        if (outWidth == -1 || outHeight == -1) return null
+
+        var scaleValue: Int = if (outWidth > toSize) outWidth / toSize else toSize / outWidth
+        if (scaleValue < 1) scaleValue = 1
+
+        outOption.also {
+            it.inJustDecodeBounds = false
+            it.inSampleSize = scaleValue
+        }
+
+        return BitmapFactory.decodeStream(uri.toFile().inputStream(), null, outOption)
     }
 
     override fun equals(other: Any?): Boolean {
