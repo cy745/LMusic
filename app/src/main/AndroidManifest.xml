@@ -8,16 +8,27 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 
     <application
-        android:label="@string/app_name"
-        android:name="com.lalilu.lmusic.MusicApplication"
+        android:name=".MusicApplication"
         android:allowBackup="true"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:icon="@mipmap/ic_launcher"
-        android:supportsRtl="true"
+        android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
         android:theme="@style/Theme.Music">
+
+        <receiver android:name="androidx.media.session.MediaButtonReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".MusicNoisyReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
         <service
-            android:name="com.lalilu.lmusic.service.MusicService"
+            android:name=".service.MusicService"
             android:enabled="true"
             android:exported="false" />
         <service
@@ -25,12 +36,13 @@
             android:enabled="true"
             android:exported="false">
             <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
 
         <activity
-            android:name="com.lalilu.lmusic.MainActivity"
+            android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait">
             <intent-filter>

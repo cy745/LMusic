@@ -76,8 +76,8 @@ fun MusicService.sendNotification(
         .setContentTitle(description.title)
         .setContentText(description.subtitle)
         .setSubText(description.description)
-//        .setLargeIcon(description.iconBitmap)
-
+        .setLargeIcon(description.iconBitmap)
+        .setSmallIcon(R.drawable.ic_launcher_foreground)
         .setContentIntent(controller.sessionActivity)
 
         .setDeleteIntent(
@@ -88,8 +88,15 @@ fun MusicService.sendNotification(
 
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
-        .setSmallIcon(R.drawable.ic_launcher_foreground)
         .setColor(Color.DKGRAY)
+        .addAction(
+            NotificationCompat.Action(
+                R.drawable.ic_play_line, "play",
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                    this, PlaybackStateCompat.ACTION_PLAY
+                )
+            )
+        )
         .addAction(
             NotificationCompat.Action(
                 R.drawable.ic_pause_line, "pause",
@@ -98,11 +105,13 @@ fun MusicService.sendNotification(
                 )
             )
         )
+
         .setStyle(
             androidx.media.app.NotificationCompat.MediaStyle()
                 .setMediaSession(mediaSession.sessionToken)
                 .setShowActionsInCompactView(0)
                 .setShowCancelButton(true)
+                .setShowActionsInCompactView()
                 .setCancelButtonIntent(
                     MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this, PlaybackStateCompat.ACTION_STOP

@@ -1,15 +1,21 @@
 package com.lalilu.lmusic.service2
 
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.ArrayMap
+import android.view.KeyEvent
 import androidx.media.MediaBrowserServiceCompat
+import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmusic.database.MusicDatabase
 import com.lalilu.lmusic.entity.Song
 import com.lalilu.lmusic.notification.NotificationUtils.Companion.playerChannelName
@@ -73,8 +79,43 @@ class MusicService : MediaBrowserServiceCompat() {
         musicSessionCallback.onStop()
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        MediaButtonReceiver.handleIntent(mediaSession, intent)
+        return super.onStartCommand(intent, flags, startId)
+    }
+
     inner class MusicSessionCallback : MediaSessionCompat.Callback(),
-        MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
+        MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener,
+        AudioManager.OnAudioFocusChangeListener {
+        override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
+            if (Intent.ACTION_MEDIA_BUTTON == mediaButtonEvent.action) {
+                val event = mediaButtonEvent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+                if (event != null) {
+                    val action = event.action
+                    val keyCode = event.keyCode
+                    println(keyCode)
+                    if (action == KeyEvent.ACTION_DOWN) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_MEDIA_PLAY -> onPlay()
+                            KeyEvent.KEYCODE_MEDIA_PAUSE -> onPause()
+                            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> onPlayPause()
+                            KeyEvent.KEYCODE_MEDIA_NEXT -> onSkipToNext()
+                            KeyEvent.KEYCODE_MEDIA_PREVIOUS -> onSkipToPrevious()
+                        }
+                    }
+                }
+            }
+            println("[onMediaButtonEvent]: ${mediaButtonEvent.action.toString()}")
+            return super.onMediaButtonEvent(mediaButtonEvent)
+        }
+
+        private fun onPlayPause() {
+            if (playbackState.state == PlaybackStateCompat.STATE_PLAYING) {
+                onPause()
+            } else {
+                onPlay()
+            }
+        }
 
         override fun onPrepared(mp: MediaPlayer?) {
             println("[MusicSessionCallback]#onPrepared")
@@ -92,8 +133,24 @@ class MusicService : MediaBrowserServiceCompat() {
         }
 
         override fun onPlay() {
+            val am = this@MusicService.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                am.requestAudioFocus(
+                    AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                        .setOnAudioFocusChangeListener(this)
+                        .build()
+                )
+            } else {
+                am.requestAudioFocus(
+                    this,
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN
+                )
+            }
+            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
+
             if (prepared) {
-                this@MusicService.startService(Intent(this@MusicService, MusicService::class.java))
+                startService(Intent(this@MusicService, MusicService::class.java))
                 mediaSession.isActive = true
 
                 musicPlayer.start()
@@ -124,8 +181,7 @@ class MusicService : MediaBrowserServiceCompat() {
                     playbackState = PlaybackStateCompat.Builder()
                         .setState(PlaybackStateCompat.STATE_BUFFERING, 0, 1.0f)
                         .build()
-                    metadataCompat =
-                        extras?.toMediaMeta() ?: metadata.description.extras!!.toMediaMeta()
+                    metadataCompat = metadata.description.extras!!.toMediaMeta()
                     mediaSession.setPlaybackState(playbackState)
                     mediaSession.setMetadata(metadataCompat)
                     onPrepare()
@@ -144,7 +200,6 @@ class MusicService : MediaBrowserServiceCompat() {
                 mediaSession.setPlaybackState(playbackState)
                 this@MusicService.stopForeground(false)
             }
-
         }
 
         override fun onSkipToNext() {
@@ -154,8 +209,25 @@ class MusicService : MediaBrowserServiceCompat() {
             onPlayFromMediaId(resultList.keyAt(index), null)
         }
 
+        override fun onSkipToPrevious() {
+            val now = metadataCompat.description.mediaId
+            var index = resultList.indexOfKey(now)
+            index = if (index - 1 <= 0) resultList.size - 1 else index - 1
+            onPlayFromMediaId(resultList.keyAt(index), null)
+        }
+
         override fun onStop() {
             println("[onStop]")
+            val am = this@MusicService.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                am.abandonAudioFocusRequest(
+                    AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                        .setOnAudioFocusChangeListener(this)
+                        .build()
+                )
+            } else {
+                am.abandonAudioFocus(this)
+            }
             stopSelf()
             mediaSession.isActive = false
             musicPlayer.stop()
@@ -164,6 +236,13 @@ class MusicService : MediaBrowserServiceCompat() {
 
         override fun onSeekTo(pos: Long) {
             musicPlayer.seekTo(pos.toInt())
+        }
+
+        override fun onAudioFocusChange(focusChange: Int) {
+            println("[onAudioFocusChange]: $focusChange")
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                onPause()
+            }
         }
     }
 
