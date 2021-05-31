@@ -7,12 +7,10 @@ import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lalilu.lmusic.adapter2.MusicListAdapter
 import com.lalilu.lmusic.databinding.ActivityMainBinding
-import com.lalilu.lmusic.service.MusicServiceConn
 import com.lalilu.lmusic.service2.MusicBrowser
 import com.lalilu.lmusic.utils.AudioMediaScanner
 import com.lalilu.lmusic.utils.ColorAnimator
@@ -24,7 +22,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var dataBaseViewModel: MusicDataBaseViewModel
     private lateinit var serviceViewModel: MusicServiceViewModel
-    private lateinit var musicConn: MusicServiceConn
 
     private lateinit var mediaBrowser: MusicBrowser
     private lateinit var audioMediaScanner: AudioMediaScanner
@@ -40,40 +37,17 @@ class MainActivity : AppCompatActivity() {
 
         mediaBrowser = MusicBrowser(this)
 
-//        musicConn = MusicServiceConn()
-//        bindService(Intent(this, MusicService::class.java).also {
-//            startService(it)
-//        }, musicConn, BIND_AUTO_CREATE)
-
         setContentView(binding.root)
 
         initToolBar()
         initRecyclerView()
         initSeekBar()
         bindUiToBrowser()
-//        serviceViewModel.getPlayingSong().observeForever {
-//            if (it != null) {
-//                binding.collapsingToolbarLayout.title = it.songTitle
-//                binding.playingSongAlbumPic.setImageURI(
-//                    audioMediaScanner.loadThumbnail(it), this
-//                )
-//                binding.seekBar.setSumDuration(it.songDuration)
-//            }
-//        }
     }
 
     private fun initRecyclerView() {
-//        binding.musicRecyclerView.adapter = MusicListAdapter(this) {
-//            serviceViewModel.getPlayingSong().postValue(it)
-//        }
         binding.musicRecyclerView.adapter = MusicListAdapter(this)
         binding.musicRecyclerView.layoutManager = LinearLayoutManager(this)
-//        dataBaseViewModel.getSongsLiveDate().observeForever {
-//            if (it != null) {
-//                (binding.musicRecyclerView.adapter as MusicListAdapter).setSongList(it)
-//                serviceViewModel.getSongList().postValue(it)
-//            }
-//        }
     }
 
     private fun initToolBar() {
@@ -99,14 +73,9 @@ class MainActivity : AppCompatActivity() {
             mediaBrowser.mediaController.transportControls.sendCustomAction(
                 PlaybackStateCompat.ACTION_PLAY_PAUSE.toString(), null
             )
-//            musicConn.binder?.toggle()
         }
         mediaBrowser.mediaMetadataCompat.observeForever {
             if (it == null) return@observeForever
-            println(
-                "[METADATA_KEY_DURATION]" +
-                        it.getLong(MediaMetadata.METADATA_KEY_DURATION)
-            )
             binding.seekBar.setSumDuration(
                 it.getLong(MediaMetadata.METADATA_KEY_DURATION)
             )
@@ -115,9 +84,6 @@ class MainActivity : AppCompatActivity() {
             if (it == null) return@observeForever
             binding.seekBar.setNewestDuration(it)
         }
-//        serviceViewModel.getShowingDuration().observeForever {
-//            binding.seekBar.updateDuration(it)
-//        }
     }
 
     private fun bindUiToBrowser() {
@@ -146,13 +112,9 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.appbar_play -> {
-                Toast.makeText(this, "开始", Toast.LENGTH_SHORT).show()
-//                musicConn.binder?.play()
                 mediaBrowser.mediaController.transportControls.play()
             }
             R.id.appbar_pause -> {
-                Toast.makeText(this, "暂停", Toast.LENGTH_SHORT).show()
-//                musicConn.binder?.pause()
                 mediaBrowser.mediaController.transportControls.pause()
             }
             R.id.appbar_add_folder -> {
@@ -172,11 +134,6 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         volumeControlStream = AudioManager.STREAM_MUSIC
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-//        unbindService(musicConn)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
