@@ -1,22 +1,62 @@
 package com.lalilu.lmusic
 
 import androidx.recyclerview.widget.DiffUtil
+import com.lalilu.lmusic.utils.Mathf
 import java.util.*
 import kotlin.collections.LinkedHashMap
 
 class LMusicList<K, V> {
-    private var mList = LinkedList<K>()
+    private var mOrderList = LinkedList<K>()
     private val mDataList = LinkedHashMap<K, V>()
+    private var mNowItem: V? = null
+    private var mNowPosition: Int = 0
 
-    fun size() = mList.size
+    fun size() = mOrderList.size
+    fun getOrderList(): LinkedList<K> = mOrderList
+
+    fun getNowItem(): V? {
+        return mNowItem ?: mDataList[mOrderList[mNowPosition]]
+    }
+
+    fun last(): V? {
+        mNowPosition = Mathf.clamp(0, mOrderList.size - 1, mNowPosition - 1)
+        mNowItem = mDataList[mOrderList[mNowPosition]]
+        return mNowItem
+    }
+
+    fun next(): V? {
+        mNowPosition = Mathf.clamp(0, mOrderList.size - 1, mNowPosition + 1)
+        mNowItem = mDataList[mOrderList[mNowPosition]]
+        return mNowItem
+    }
+
+    fun getShowingListWithOffsetPosition(position: Int): V? {
+        return mDataList[mOrderList[mNowPosition + position]]
+    }
+
+    fun jumpTo(key: K?): V? {
+        key ?: return null
+        mOrderList.remove(key)
+        mOrderList.add(mNowPosition, key)
+        mNowPosition = mOrderList.indexOf(key)
+        mNowItem = mDataList[key]
+        return mNowItem
+    }
+
+    fun moveTo(key: K?): V? {
+        key ?: return null
+        mNowPosition = mOrderList.indexOf(key)
+        mNowItem = mDataList[key]
+        return mNowItem
+    }
 
     fun setValueIn(key: K, value: V) {
         mDataList[key] = value
-        if (!mList.contains(key)) mList.add(key)
+        if (!mOrderList.contains(key)) mOrderList.add(key)
     }
 
     fun getSelectedByPosition(position: Int): V? {
-        return mDataList[mList[position]]
+        return mDataList[mOrderList[position]]
     }
 
     fun getSelectedByKey(key: K?): V? {
@@ -24,42 +64,38 @@ class LMusicList<K, V> {
         return mDataList[key]
     }
 
-    fun getOrderList(): LinkedList<K> {
-        return mList
-    }
-
     fun getOrderDataList(): List<V> {
-        return mList.map { mDataList[it] ?: return emptyList() }
+        return mOrderList.map { mDataList[it] ?: return emptyList() }
     }
 
     fun swapSelectedToTop(key: K?) {
-        Companion.swapSelectedToTop(mList, key)
+        Companion.swapSelectedToTop(mOrderList, key)
     }
 
     fun swapSelectedToBottom(key: K?) {
-        Companion.swapSelectedToBottom(mList, key)
+        Companion.swapSelectedToBottom(mOrderList, key)
     }
 
     fun getNextByKey(key: K): V? {
-        var next = mList.indexOf(key) + 1
-        if (next >= mList.size) next = 0
-        val nextKey = mList[next]
+        var next = mOrderList.indexOf(key) + 1
+        if (next >= mOrderList.size) next = 0
+        val nextKey = mOrderList[next]
         return mDataList[nextKey]
     }
 
     fun getPreviousByKey(key: K): V? {
-        var previous = mList.indexOf(key) - 1
-        if (previous < 0) previous = mList.size - 1
-        val previousKey = mList[previous]
+        var previous = mOrderList.indexOf(key) - 1
+        if (previous < 0) previous = mOrderList.size - 1
+        val previousKey = mOrderList[previous]
         return mDataList[previousKey]
     }
 
     fun getDiffCallBack(newList: List<K>): LMusicListDiffCallback<K> {
-        return LMusicListDiffCallback(mList, newList)
+        return LMusicListDiffCallback(mOrderList, newList)
     }
 
     fun setNewOrderList(newList: LinkedList<K>) {
-        mList = newList
+        mOrderList = newList
     }
 
     companion object {
