@@ -7,7 +7,7 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
-import com.lalilu.lmusic.adapter2.UpdatableAdapter
+import com.lalilu.lmusic.adapter2.MusicListAdapter
 
 class MusicBrowser constructor(
     private val context: Activity
@@ -20,9 +20,9 @@ class MusicBrowser constructor(
     private var connectionCallback: MusicConnectionCallback
     private var subscriptionCallback: MusicSubscriptionCallback
     lateinit var mediaController: MediaControllerCompat
-    private lateinit var adapterToUpdate: UpdatableAdapter<MediaBrowserCompat.MediaItem>
+    private lateinit var adapterToUpdate: MusicListAdapter
 
-    fun setAdapterToUpdate(adapterToUpdate: UpdatableAdapter<MediaBrowserCompat.MediaItem>) {
+    fun setAdapterToUpdate(adapterToUpdate: MusicListAdapter) {
         this.adapterToUpdate = adapterToUpdate
         this.adapterToUpdate.setOnItemClickListener {
             println("[setOnItemClickListener]: ${it.mediaId}")
@@ -65,7 +65,7 @@ class MusicBrowser constructor(
             parentId: String,
             children: MutableList<MediaBrowserCompat.MediaItem>
         ) {
-            adapterToUpdate.updateList(children)
+            adapterToUpdate.setDataIn(children)
             mediaMetadataCompat.postValue(mediaController.metadata)
             playbackStateCompat.postValue(mediaController.playbackState)
             println("[MusicSubscriptionCallback]#onChildrenLoaded: $parentId")
@@ -76,10 +76,6 @@ class MusicBrowser constructor(
     }
 
     inner class MusicControllerCallback : MediaControllerCompat.Callback() {
-        override fun onSessionReady() {
-            println("[MusicControllerCallback]#onSessionReady")
-        }
-
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             playbackStateCompat.postValue(state ?: return)
             println("[MusicControllerCallback]#onPlaybackStateChanged: " + state.state)
