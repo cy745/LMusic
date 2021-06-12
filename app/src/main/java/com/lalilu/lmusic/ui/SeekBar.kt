@@ -13,10 +13,31 @@ import android.view.View
 import com.lalilu.lmusic.R
 import com.lalilu.lmusic.utils.DurationUtils
 import java.util.*
+import kotlin.concurrent.schedule
+
+fun PlaybackStateCompat.getPositionByNow(): Long {
+    return this.position + (this.playbackSpeed * (SystemClock.elapsedRealtime() - this.lastPositionUpdateTime)).toLong()
+}
 
 class SeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
+    private var positionTimer: Timer? = null
+
+    fun updateNowPosition(playbackStateCompat: PlaybackStateCompat) {
+        var currentDuration = playbackStateCompat.getPositionByNow()
+        positionTimer?.cancel()
+        if (playbackStateCompat.state == PlaybackStateCompat.STATE_PLAYING) {
+            positionTimer = Timer()
+            positionTimer?.schedule(0, 100) {
+                updateDuration(currentDuration)
+                currentDuration += 100
+                if (currentDuration >= sumDuration) this.cancel()
+            }
+        } else {
+            updateDuration(currentDuration)
+        }
+    }
 
     private var downDuration: Long = -1L
 
@@ -25,15 +46,16 @@ class SeekBar @JvmOverloads constructor(
 
     private var textPadding: Long = 40L
     private var textHeight: Float = 45f
-    private var textPaintWhite: TextPaint
-    private var textPaint: TextPaint
+
     private var paint: Paint
+    private var textPaint: TextPaint
+    private var textPaintWhite: TextPaint
     private var backgroundPaint: Paint
     private var touching: Boolean = false
 
-    private var scaleDuration = 200L
-    private var scaleTo = 1.1f
     private var radius = 30f
+    private var scaleAnimatorTo = 1.1f
+    private var scaleAnimatorDuration = 200L
 
     private var rawX: Float = -1f
     private var rawY: Float = -1f
@@ -54,30 +76,7 @@ class SeekBar @JvmOverloads constructor(
         invalidate()
     }
 
-    private var positionTimer: Timer? = null
-
-    fun setNewestDuration(playbackStateCompat: PlaybackStateCompat) {
-        var currentDuration =
-            SystemClock.elapsedRealtime() - playbackStateCompat.lastPositionUpdateTime + playbackStateCompat.position
-        positionTimer?.cancel()
-        if (playbackStateCompat.state == PlaybackStateCompat.STATE_PLAYING) {
-            positionTimer = Timer()
-            positionTimer?.schedule(object : TimerTask() {
-                override fun run() {
-                    updateDuration(currentDuration)
-                    if (currentDuration >= sumDuration) {
-                        updateDuration(0)
-                        this.cancel()
-                    }
-                    currentDuration += 100
-                }
-            }, 0, 100)
-        } else {
-            updateDuration(currentDuration)
-        }
-    }
-
-    fun updateDuration(duration: Long) {
+    private fun updateDuration(duration: Long) {
         if (!touching) {
             nowDuration = duration
             progress = nowDuration / sumDuration.toDouble()
@@ -122,9 +121,9 @@ class SeekBar @JvmOverloads constructor(
                 rawY = event.rawY
                 downDuration = nowDuration
                 this.animate()
-                    .scaleX(scaleTo)
-                    .scaleY(scaleTo)
-                    .setDuration(scaleDuration)
+                    .scaleX(scaleAnimatorTo)
+                    .scaleY(scaleAnimatorTo)
+                    .setDuration(scaleAnimatorDuration)
                     .start()
             }
             MotionEvent.ACTION_UP -> {
@@ -139,7 +138,7 @@ class SeekBar @JvmOverloads constructor(
                 this.animate()
                     .scaleX(1f)
                     .scaleY(1f)
-                    .setDuration(scaleDuration)
+                    .setDuration(scaleAnimatorDuration)
                     .start()
             }
             MotionEvent.ACTION_MOVE -> {
@@ -218,12 +217,10 @@ class SeekBar @JvmOverloads constructor(
     }
 
     private fun clamp(num: Number, max: Number, min: Number): Number {
-        if (num.toDouble() < min.toDouble()) {
-            return min.toDouble()
-        }
-        if (num.toDouble() > max.toDouble()) {
-            return max.toDouble()
-        }
+        if (num.toDouble() < min.toDouble()) return min.toDouble()
+        if (num.toDouble() > max.toDouble()) return max.toDouble()
         return num.toDouble()
     }
+
+
 }
