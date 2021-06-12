@@ -2,6 +2,7 @@ package com.lalilu.lmusic.adapter2
 
 import android.app.Activity
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,22 +10,18 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.lalilu.lmusic.LMusicList
 import com.lalilu.lmusic.R
 import com.lalilu.lmusic.databinding.ItemSongMediaItemBinding
-import com.lalilu.lmusic.utils.MediaItemDiffCallback
+import com.lalilu.lmusic.service2.MusicBrowser
 import java.util.*
-
-interface UpdatableAdapter<T> {
-    fun updateList(list: List<T>)
-    fun setOnItemClickListener(listener: (mediaItem: T) -> Unit)
-}
 
 class MusicListAdapter(
     private val context: Activity,
-) : RecyclerView.Adapter<MusicListAdapter.SongHolder>(),
-    UpdatableAdapter<MediaBrowserCompat.MediaItem> {
+    private val musicBrowser: MusicBrowser
+) : RecyclerView.Adapter<MusicListAdapter.SongHolder>() {
 
-    private var mediaItemList: List<MediaBrowserCompat.MediaItem> = ArrayList()
+    private val mediaItemList: LMusicList<String, MediaBrowserCompat.MediaItem> = LMusicList()
     private lateinit var itemClickListener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongHolder {
@@ -33,10 +30,10 @@ class MusicListAdapter(
         return SongHolder(view, itemClickListener)
     }
 
-    override fun getItemCount(): Int = mediaItemList.size
+    override fun getItemCount(): Int = mediaItemList.size()
 
     override fun onBindViewHolder(holder: SongHolder, position: Int) {
-        holder.binding.mediaItem = mediaItemList[position]
+        holder.binding.mediaItem = mediaItemList.getSelectedByPosition(position)
     }
 
     private lateinit var recyclerView: RecyclerView
@@ -45,8 +42,12 @@ class MusicListAdapter(
         this.recyclerView = recyclerView
     }
 
-    fun scrollToTop() {
+    private fun scrollToTop() {
         recyclerView.scrollToPosition(0)
+    }
+
+    fun setOnItemClickListener(listener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit) {
+        this.itemClickListener = listener
     }
 
     inner class SongHolder(
@@ -59,7 +60,6 @@ class MusicListAdapter(
         init {
             binding.root.setOnClickListener {
                 binding.mediaItem?.let { itemClickListener(it) }
-                swapMediaItem()
             }
             binding.root.setOnLongClickListener {
                 Toast.makeText(
@@ -70,26 +70,34 @@ class MusicListAdapter(
                 true
             }
         }
+    }
 
-        private fun swapMediaItem() {
-            val temp = LinkedList(mediaItemList)
-            val mediaItem = binding.mediaItem as MediaBrowserCompat.MediaItem
-            temp.remove(mediaItem)
-            temp.addFirst(mediaItem)
-            setList(temp)
-            scrollToTop()
+    private fun swapMediaItem(mediaId: String?) {
+        val temp = LinkedList(mediaItemList.getOrderList())
+        LMusicList.swapSelectedToBottom(temp, oldMetaData?.description?.mediaId ?: return)
+        LMusicList.swapSelectedToTop(temp, mediaId ?: return)
+        updateListOrder(temp)
+    }
+
+    private var oldMetaData: MediaMetadataCompat? = null
+    fun setDataIn(list: List<MediaBrowserCompat.MediaItem>) {
+        list.forEach {
+            mediaItemList.setValueIn(it.mediaId ?: return, it)
         }
+        musicBrowser.mediaMetadataCompat.observeForever {
+            if (it == null) return@observeForever
+            swapMediaItem(it.description.mediaId)
+            oldMetaData = it
+        }
+        notifyDataSetChanged()
+        val temp = LinkedList(list.map { it.mediaId ?: return })
+        updateListOrder(temp)
     }
 
-    fun setList(list: List<MediaBrowserCompat.MediaItem>) {
-        val result = DiffUtil.calculateDiff(MediaItemDiffCallback(mediaItemList, list), true)
-        result.dispatchUpdatesTo(this)
-        mediaItemList = list
-    }
-
-    override fun updateList(list: List<MediaBrowserCompat.MediaItem>) = setList(list)
-
-    override fun setOnItemClickListener(listener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit) {
-        this.itemClickListener = listener
+    private fun updateListOrder(list: LinkedList<String>) {
+        val result = DiffUtil.calculateDiff(mediaItemList.getDiffCallBack(list), true)
+        result.dispatchUpdatesTo(this@MusicListAdapter)
+        scrollToTop()
+        mediaItemList.setNewOrderList(list)
     }
 }
