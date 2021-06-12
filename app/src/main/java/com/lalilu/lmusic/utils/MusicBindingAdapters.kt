@@ -30,28 +30,28 @@ class MusicBindingAdapters {
 
         @BindingAdapter("app:pictureUri")
         @JvmStatic
-        fun setPictureUri(simpleDraweeView: SimpleDraweeView, uri: Uri) {
-            simpleDraweeView.setImageURI(uri)
+        fun setPictureUri(simpleDraweeView: SimpleDraweeView?, uri: Uri?) {
+            simpleDraweeView?.setImageURI(uri)
         }
 
-        fun getDurationFromExtra(extra: Bundle): String {
+        fun getDurationFromExtra(extra: Bundle?): String {
             return DurationUtils.durationToString(
-                extra.getLong(
+                extra?.getLong(
                     MediaMetadata.METADATA_KEY_DURATION,
                     0
-                )
+                ) ?: 0
             )
         }
 
-        fun getArtistFromExtra(extra: Bundle): String {
-            return extra.getString(
+        fun getArtistFromExtra(extra: Bundle?): String {
+            return extra?.getString(
                 MediaMetadata.METADATA_KEY_ARTIST,
                 "someone..."
-            )
+            ) ?: "someone..."
         }
 
-        fun getSongTypeFromExtra(extra: Bundle): String {
-            return extra.getString(Song_Type, "mp3")
+        fun getSongTypeFromExtra(extra: Bundle?): String {
+            return extra?.getString(Song_Type, "mp3") ?: "mp3"
         }
     }
 }
