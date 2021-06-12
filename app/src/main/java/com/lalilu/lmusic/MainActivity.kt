@@ -15,13 +15,9 @@ import com.lalilu.lmusic.service2.MusicBrowser
 import com.lalilu.lmusic.utils.AudioMediaScanner
 import com.lalilu.lmusic.utils.ColorAnimator
 import com.lalilu.lmusic.utils.PermissionUtils
-import com.lalilu.lmusic.viewmodel.MusicDataBaseViewModel
-import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var dataBaseViewModel: MusicDataBaseViewModel
-    private lateinit var serviceViewModel: MusicServiceViewModel
 
     private lateinit var mediaBrowser: MusicBrowser
     private lateinit var audioMediaScanner: AudioMediaScanner
@@ -29,14 +25,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PermissionUtils.requestPermission(this)
-
-        audioMediaScanner = (application as MusicApplication).audioMediaScanner
-        dataBaseViewModel = MusicDataBaseViewModel.getInstance(application)
-        serviceViewModel = MusicServiceViewModel.getInstance()
-        binding = ActivityMainBinding.inflate(layoutInflater)
-
         mediaBrowser = MusicBrowser(this)
 
+        audioMediaScanner = (application as MusicApplication).audioMediaScanner
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         initToolBar()
@@ -46,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView() {
-        binding.musicRecyclerView.adapter = MusicListAdapter(this)
+        binding.musicRecyclerView.adapter = MusicListAdapter(this, mediaBrowser)
         binding.musicRecyclerView.layoutManager = LinearLayoutManager(this)
     }
 
@@ -67,24 +59,15 @@ class MainActivity : AppCompatActivity() {
             binding.seekBar.setThumbColor(it.getDarkVibrantColor(0))
         }
         binding.seekBar.setOnActionUp {
-            serviceViewModel.getPlayingDuration().postValue(it)
+            mediaBrowser.mediaController.transportControls.seekTo(it)
         }
         binding.seekBar.setOnClickListener {
             mediaBrowser.mediaController.transportControls.sendCustomAction(
                 PlaybackStateCompat.ACTION_PLAY_PAUSE.toString(), null
             )
         }
-        mediaBrowser.mediaMetadataCompat.observeForever {
-            if (it == null) return@observeForever
-            binding.seekBar.setSumDuration(
-                it.getLong(MediaMetadata.METADATA_KEY_DURATION)
-            )
-        }
-        mediaBrowser.playbackStateCompat.observeForever {
-            if (it == null) return@observeForever
-            binding.seekBar.setNewestDuration(it)
-        }
     }
+
 
     private fun bindUiToBrowser() {
         mediaBrowser.mediaMetadataCompat.observeForever {
@@ -93,9 +76,17 @@ class MainActivity : AppCompatActivity() {
             binding.playingSongAlbumPic.setImageURI(
                 it.description.iconUri, this
             )
+            binding.seekBar.setSumDuration(
+                it.getLong(MediaMetadata.METADATA_KEY_DURATION)
+            )
         }
-
-        mediaBrowser.setAdapterToUpdate(binding.musicRecyclerView.adapter as MusicListAdapter)
+        mediaBrowser.playbackStateCompat.observeForever {
+            if (it == null) return@observeForever
+            binding.seekBar.updateNowPosition(it)
+        }
+        mediaBrowser.setAdapterToUpdate(
+            binding.musicRecyclerView.adapter as MusicListAdapter
+        )
     }
 
     override fun onStart() {
