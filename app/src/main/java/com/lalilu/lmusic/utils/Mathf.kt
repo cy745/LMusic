@@ -7,5 +7,12 @@ class Mathf {
             if (num.toDouble() > max.toDouble()) return min
             return num
         }
+
+        fun clampInLoop(min: Int, max: Int, num: Int, offset: Int): Int {
+            if (num + offset < min) return max + (num + offset) + 1
+            if (num + offset > max) return min + (num + offset - max) - 1
+            return num + offset
+        }
+
     }
 }
