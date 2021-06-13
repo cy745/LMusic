@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView() {
-        binding.musicRecyclerView.adapter = MusicListAdapter(this, mediaBrowser)
+        binding.musicRecyclerView.adapter = MusicListAdapter(this)
         binding.musicRecyclerView.layoutManager = LinearLayoutManager(this)
     }
 
@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             binding.seekBar.setThumbColor(it.getDarkVibrantColor(0))
         }
         binding.seekBar.setOnActionUp {
-            mediaBrowser.mediaController.transportControls.seekTo(it)
+            mediaBrowser.mediaController.transportControls?.seekTo(it)
         }
         binding.seekBar.setOnClickListener {
             mediaBrowser.mediaController.transportControls.sendCustomAction(
