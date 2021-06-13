@@ -5,18 +5,12 @@ import com.lalilu.lmusic.utils.Mathf
 import java.util.*
 import kotlin.collections.LinkedHashMap
 
-class LMusicList<K, V> {
-    private var mOrderList = LinkedList<K>()
-    private val mDataList = LinkedHashMap<K, V>()
-    private var mNowItem: V? = null
-    private var mNowPosition: Int = 0
-
+open class LMusicList<K, V> {
+    var mOrderList = LinkedList<K>()
+    val mDataList = LinkedHashMap<K, V>()
+    var mNowItem: V? = null
+    var mNowPosition: Int = 0
     fun size() = mOrderList.size
-    fun getOrderList(): LinkedList<K> = mOrderList
-
-    fun getNowItem(): V? {
-        return mNowItem ?: mDataList[mOrderList[mNowPosition]]
-    }
 
     fun last(): V? {
         mNowPosition = Mathf.clamp(0, mOrderList.size - 1, mNowPosition - 1)
@@ -36,8 +30,6 @@ class LMusicList<K, V> {
 
     fun jumpTo(key: K?): V? {
         key ?: return null
-        mOrderList.remove(key)
-        mOrderList.add(mNowPosition, key)
         mNowPosition = mOrderList.indexOf(key)
         mNowItem = mDataList[key]
         return mNowItem
@@ -55,61 +47,14 @@ class LMusicList<K, V> {
         if (!mOrderList.contains(key)) mOrderList.add(key)
     }
 
-    fun getSelectedByPosition(position: Int): V? {
-        return mDataList[mOrderList[position]]
-    }
-
-    fun getSelectedByKey(key: K?): V? {
-        key ?: return null
-        return mDataList[key]
-    }
-
     fun getOrderDataList(): List<V> {
         return mOrderList.map { mDataList[it] ?: return emptyList() }
     }
 
-    fun swapSelectedToTop(key: K?) {
-        Companion.swapSelectedToTop(mOrderList, key)
-    }
-
-    fun swapSelectedToBottom(key: K?) {
-        Companion.swapSelectedToBottom(mOrderList, key)
-    }
-
-    fun getNextByKey(key: K): V? {
-        var next = mOrderList.indexOf(key) + 1
-        if (next >= mOrderList.size) next = 0
-        val nextKey = mOrderList[next]
-        return mDataList[nextKey]
-    }
-
-    fun getPreviousByKey(key: K): V? {
-        var previous = mOrderList.indexOf(key) - 1
-        if (previous < 0) previous = mOrderList.size - 1
-        val previousKey = mOrderList[previous]
-        return mDataList[previousKey]
-    }
-
-    fun getDiffCallBack(newList: List<K>): LMusicListDiffCallback<K> {
-        return LMusicListDiffCallback(mOrderList, newList)
-    }
-
-    fun setNewOrderList(newList: LinkedList<K>) {
-        mOrderList = newList
-    }
-
     companion object {
-        fun <K> swapSelectedToTop(list: LinkedList<K>, key: K?) {
-            key ?: return
-            list.remove(key)
-            list.add(0, key)
-        }
-
-        fun <K> swapSelectedToBottom(list: LinkedList<K>, key: K?) {
-            key ?: return
-            list.remove(key)
-            list.add(key)
-        }
+        const val LIST_TRANSFORM_ACTION = "list_transform_action"
+        const val ACTION_JUMP_TO = 0
+        const val ACTION_MOVE_TO = 1
 
         class LMusicListDiffCallback<K> constructor(
             private val oldList: List<K>,
