@@ -16,10 +16,11 @@ import com.lalilu.lmusic.databinding.ItemSongMediaItemBinding
 import com.lalilu.lmusic.service2.MusicBrowser
 import java.util.*
 
-class MusicListAdapter(
-    private val context: Activity,
-    private val musicBrowser: MusicBrowser
-) : RecyclerView.Adapter<MusicListAdapter.SongHolder>() {
+class MusicListAdapter(private val context: Activity) :
+    RecyclerView.Adapter<MusicListAdapter.SongHolder>() {
+
+    private val mList: LMusicListInAdapter<String, MediaBrowserCompat.MediaItem> =
+        LMusicListInAdapter()
 
     private val mediaItemList: LMusicList<String, MediaBrowserCompat.MediaItem> = LMusicList()
     private lateinit var itemClickListener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
@@ -42,13 +43,7 @@ class MusicListAdapter(
         this.recyclerView = recyclerView
     }
 
-    private fun scrollToTop() {
-        recyclerView.scrollToPosition(0)
-    }
-
-    fun setOnItemClickListener(listener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit) {
-        this.itemClickListener = listener
-    }
+    private fun scrollToTop() = recyclerView.scrollToPosition(0)
 
     inner class SongHolder(
         itemView: View,
@@ -58,46 +53,27 @@ class MusicListAdapter(
         var removeBtn: ImageButton = binding.songRemove
 
         init {
-            binding.root.setOnClickListener {
-                binding.mediaItem?.let { itemClickListener(it) }
-            }
+            binding.root.setOnClickListener { binding.mediaItem?.let { itemOnClick(it) } }
             binding.root.setOnLongClickListener {
-                Toast.makeText(
-                    context,
-                    (binding.mediaItem as MediaBrowserCompat.MediaItem).toString(),
-                    Toast.LENGTH_SHORT
-                ).show()
+                binding.mediaItem?.let { itemOnLongClick(it) }
                 true
             }
         }
     }
 
-    private fun swapMediaItem(mediaId: String?) {
-        val temp = LinkedList(mediaItemList.getOrderList())
-        LMusicList.swapSelectedToBottom(temp, oldMetaData?.description?.mediaId ?: return)
-        LMusicList.swapSelectedToTop(temp, mediaId ?: return)
-        updateListOrder(temp)
-    }
-
-    private var oldMetaData: MediaMetadataCompat? = null
     fun setDataIn(list: List<MediaBrowserCompat.MediaItem>) {
-        list.forEach {
-            mediaItemList.setValueIn(it.mediaId ?: return, it)
-        }
-        musicBrowser.mediaMetadataCompat.observeForever {
-            if (it == null) return@observeForever
-            swapMediaItem(it.description.mediaId)
-            oldMetaData = it
-        }
-        notifyDataSetChanged()
-        val temp = LinkedList(list.map { it.mediaId ?: return })
-        updateListOrder(temp)
+        list.forEach { mList.setValueIn(it.mediaId ?: return, it) }
+        mList.updateShowList()
     }
 
-    private fun updateListOrder(list: LinkedList<String>) {
-        val result = DiffUtil.calculateDiff(mediaItemList.getDiffCallBack(list), true)
-        result.dispatchUpdatesTo(this@MusicListAdapter)
-        scrollToTop()
-        mediaItemList.setNewOrderList(list)
+    fun setMetaDataLiveData(mediaMetadataCompat: MutableLiveData<MediaMetadataCompat>) {
+        mediaMetadataCompat.observeForever {
+            it ?: return@observeForever
+            when (it.description?.extras?.get(LMusicList.LIST_TRANSFORM_ACTION)) {
+                LMusicList.ACTION_JUMP_TO -> mList.jumpTo(it.description.mediaId)
+                LMusicList.ACTION_MOVE_TO -> mList.moveTo(it.description.mediaId)
+                else -> mList.moveTo(it.description.mediaId ?: return@observeForever)
+            }
+        }
     }
 }
