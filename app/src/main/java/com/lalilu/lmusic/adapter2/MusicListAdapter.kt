@@ -7,13 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
-import android.widget.Toast
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.lmusic.LMusicList
 import com.lalilu.lmusic.R
 import com.lalilu.lmusic.databinding.ItemSongMediaItemBinding
-import com.lalilu.lmusic.service2.MusicBrowser
+import com.lalilu.lmusic.utils.Mathf
 import java.util.*
 
 class MusicListAdapter(private val context: Activity) :
@@ -22,19 +22,27 @@ class MusicListAdapter(private val context: Activity) :
     private val mList: LMusicListInAdapter<String, MediaBrowserCompat.MediaItem> =
         LMusicListInAdapter()
 
-    private val mediaItemList: LMusicList<String, MediaBrowserCompat.MediaItem> = LMusicList()
-    private lateinit var itemClickListener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
+    private lateinit var itemOnClick: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
+    private lateinit var itemOnLongClick: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongHolder {
-        val view =
-            LayoutInflater.from(context).inflate(R.layout.item_song_media_item, parent, false)
-        return SongHolder(view, itemClickListener)
+    fun setOnItemClickListener(listener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit) {
+        this.itemOnClick = listener
     }
 
-    override fun getItemCount(): Int = mediaItemList.size()
+    fun setOnItemLongClickListener(listener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit) {
+        this.itemOnLongClick = listener
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongHolder {
+        val view = LayoutInflater.from(context)
+            .inflate(R.layout.item_song_media_item, parent, false)
+        return SongHolder(view, itemOnClick, itemOnLongClick)
+    }
+
+    override fun getItemCount(): Int = mList.size()
 
     override fun onBindViewHolder(holder: SongHolder, position: Int) {
-        holder.binding.mediaItem = mediaItemList.getSelectedByPosition(position)
+        holder.binding.mediaItem = mList.getShowItemByPosition(position)
     }
 
     private lateinit var recyclerView: RecyclerView
@@ -47,7 +55,8 @@ class MusicListAdapter(private val context: Activity) :
 
     inner class SongHolder(
         itemView: View,
-        itemClickListener: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
+        itemOnClick: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit,
+        itemOnLongClick: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
         var binding = ItemSongMediaItemBinding.bind(itemView)
         var removeBtn: ImageButton = binding.songRemove
