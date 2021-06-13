@@ -24,25 +24,33 @@ open class LMusicList<K, V> {
         return mNowItem
     }
 
-    fun getShowingListWithOffsetPosition(position: Int): V? {
-        return mDataList[mOrderList[mNowPosition + position]]
-    }
-
-    fun jumpTo(key: K?): V? {
+    open fun playByKey(key: K?): V? {
         key ?: return null
         mNowPosition = mOrderList.indexOf(key)
         mNowItem = mDataList[key]
         return mNowItem
     }
 
-    fun moveTo(key: K?): V? {
+    open fun jumpTo(key: K?): V? {
+        key ?: return null
+
+        mOrderList.remove(key)
+        mOrderList.add(mNowPosition, key)
+
+        mNowPosition = mOrderList.indexOf(key)
+        mNowItem = mDataList[key]
+        return mNowItem
+    }
+
+    open fun moveTo(key: K?): V? {
         key ?: return null
         mNowPosition = mOrderList.indexOf(key)
         mNowItem = mDataList[key]
         return mNowItem
     }
 
-    fun setValueIn(key: K, value: V) {
+    open fun setValueIn(key: K?, value: V?) {
+        if (key == null || value == null) return
         mDataList[key] = value
         if (!mOrderList.contains(key)) mOrderList.add(key)
     }
