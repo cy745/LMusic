@@ -34,7 +34,9 @@ class AudioMediaScanner constructor(context: Context) {
         return Uri.fromFile(File("$standardDirectory/${song.songId}"))
     }
 
+    private var running: Boolean = false
     fun updateSongDataBase(context: Context) {
+        if (running) return
         val songDao = MusicDatabase.getInstance(context).songDao()
         val albumDao = MusicDatabase.getInstance(context).albumDao()
 
@@ -68,6 +70,7 @@ class AudioMediaScanner constructor(context: Context) {
             println("[found no song]")
         }
         cursor.close()
+        running = false
     }
 
 
