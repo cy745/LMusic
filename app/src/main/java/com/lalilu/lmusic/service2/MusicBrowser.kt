@@ -2,11 +2,13 @@ package com.lalilu.lmusic.service2
 
 import android.app.Activity
 import android.content.ComponentName
+import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
+import com.lalilu.lmusic.LMusicList
 import com.lalilu.lmusic.adapter2.MusicListAdapter
 
 class MusicBrowser constructor(
@@ -24,10 +26,17 @@ class MusicBrowser constructor(
 
     fun setAdapterToUpdate(adapterToUpdate: MusicListAdapter) {
         this.adapterToUpdate = adapterToUpdate
-        this.adapterToUpdate.setOnItemClickListener {
-            println("[setOnItemClickListener]: ${it.mediaId}")
-            mediaController.transportControls.playFromMediaId(it.mediaId, null)
-            mediaController.transportControls.play()
+        this.adapterToUpdate.setOnItemClickListener { mediaItem ->
+            println("[setOnItemClickListener]: ${mediaItem.mediaId}")
+            mediaController.transportControls.playFromMediaId(mediaItem.mediaId, Bundle().also {
+                it.putInt(LMusicList.LIST_TRANSFORM_ACTION, LMusicList.ACTION_MOVE_TO)
+            })
+        }
+        this.adapterToUpdate.setOnItemLongClickListener { mediaItem ->
+            println("[setOnItemLongClickListener]: ${mediaItem.mediaId}")
+            mediaController.transportControls.playFromMediaId(mediaItem.mediaId, Bundle().also {
+                it.putInt(LMusicList.LIST_TRANSFORM_ACTION, LMusicList.ACTION_JUMP_TO)
+            })
         }
     }
 
@@ -66,6 +75,7 @@ class MusicBrowser constructor(
             children: MutableList<MediaBrowserCompat.MediaItem>
         ) {
             adapterToUpdate.setDataIn(children)
+            adapterToUpdate.setMetaDataLiveData(mediaMetadataCompat)
             mediaMetadataCompat.postValue(mediaController.metadata)
             playbackStateCompat.postValue(mediaController.playbackState)
             println("[MusicSubscriptionCallback]#onChildrenLoaded: $parentId")
