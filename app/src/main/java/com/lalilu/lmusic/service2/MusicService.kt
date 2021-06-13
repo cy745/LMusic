@@ -106,10 +106,10 @@ class MusicService : MediaBrowserServiceCompat() {
         }
 
         private fun onPlayPause() {
-            if (nowPlaybackState.state == PlaybackStateCompat.STATE_PLAYING) {
-                onPause()
-            } else {
-                onPlay()
+            when (nowPlaybackState.state) {
+                PlaybackStateCompat.STATE_PLAYING -> onPause()
+                PlaybackStateCompat.STATE_PAUSED -> onPlay()
+                else -> println("[onPlayPause]: ${nowPlaybackState.state}")
             }
         }
 
@@ -133,15 +133,12 @@ class MusicService : MediaBrowserServiceCompat() {
                 || nowPlaybackState.state == PlaybackStateCompat.STATE_PLAYING
             ) {
                 musicPlayer.reset()
-                mList.swapSelectedToBottom(nowMetadata?.description?.mediaId)
-                mList.swapSelectedToTop(mediaId)
-                val mediaItem = mList.getSelectedByKey(mediaId) ?: return
-
-                musicPlayer.setDataSource(
-                    this@MusicService, mediaItem.description.mediaUri ?: return
-                )
+                val mediaItem = mList.playByKey(mediaId) ?: return
+                val mediaUri = mediaItem.description.mediaUri ?: return
+                val metadata = mediaItem.description.extras!!.toMediaMeta()
+                musicPlayer.setDataSource(this@MusicService, mediaUri)
                 notifyPlayStateChange(PlaybackStateCompat.STATE_BUFFERING)
-                notifyMetaDateChange(mediaItem.description.extras!!.toMediaMeta())
+                notifyMetaDateChange(metadata)
                 onPrepare()
             }
         }
@@ -155,13 +152,12 @@ class MusicService : MediaBrowserServiceCompat() {
         }
 
         override fun onSkipToPrevious() {
-            val previous =
-                mList.getPreviousByKey(nowMetadata?.description?.mediaId ?: return) ?: return
+            val previous = mList.last() ?: return
             onPlayFromMediaId(previous.mediaId, null)
         }
 
         override fun onSkipToNext() {
-            val next = mList.getNextByKey(nowMetadata?.description?.mediaId ?: return) ?: return
+            val next = mList.next() ?: return
             onPlayFromMediaId(next.mediaId, null)
         }
 
