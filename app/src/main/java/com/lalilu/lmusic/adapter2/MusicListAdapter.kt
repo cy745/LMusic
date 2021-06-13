@@ -85,4 +85,42 @@ class MusicListAdapter(private val context: Activity) :
             }
         }
     }
+
+    inner class LMusicListInAdapter<K, V> : LMusicList<K, V>() {
+        private var mShowList = LinkedList<K>()
+        fun getShowItemByPosition(position: Int): V? {
+            return mDataList[mShowList[position]]
+        }
+
+        override fun playByKey(key: K?): V? {
+            return super.playByKey(key).also { updateShowList() }
+        }
+
+        override fun jumpTo(key: K?): V? {
+            return super.jumpTo(key).also { updateShowList() }
+        }
+
+        override fun moveTo(key: K?): V? {
+            return super.moveTo(key).also { updateShowList() }
+        }
+
+        override fun setValueIn(key: K?, value: V?) {
+            super.setValueIn(key, value).also { updateShowList() }
+        }
+
+        fun updateShowList() {
+            val temp = LinkedList<K>()
+            for (i in 0 until mOrderList.size) {
+                temp.add(i, mOrderList[Mathf.clampInLoop(0, mOrderList.size - 1, mNowPosition, i)])
+            }
+            val result = DiffUtil.calculateDiff(getDiffCallBack(temp), true)
+            result.dispatchUpdatesTo(this@MusicListAdapter)
+            mShowList = temp
+            scrollToTop()
+        }
+
+        private fun getDiffCallBack(newList: List<K>): Companion.LMusicListDiffCallback<K> {
+            return Companion.LMusicListDiffCallback(mShowList, newList)
+        }
+    }
 }
