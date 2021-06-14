@@ -7,31 +7,49 @@ import android.content.Context
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
-import android.view.animation.AccelerateInterpolator
 import com.lalilu.lmusic.service2.MusicService
 
 class LMusicAudioManager constructor(private val service: MusicService) :
     AudioManager.OnAudioFocusChangeListener {
 
-    fun fadeStart() = volumeAnimator.start()
-    fun fadePause() = volumeAnimator.reverse()
+    var nowVolume = 0f
 
-    private var volumeAnimator: ValueAnimator = ValueAnimator.ofFloat(0f, 1f).also {
-        it.addUpdateListener { v ->
-            val value = v.animatedValue as Float
-            service.musicPlayer.setVolume(value, value)
+    private var volumeAnimator: ValueAnimator? = null
+
+    fun fadeStart() {
+        if (volumeAnimator != null) volumeAnimator?.cancel()
+        volumeAnimator = ValueAnimator.ofFloat(nowVolume, 1f).also {
+            it.duration = (nowVolume / 1 * 400).toLong()
+            it.addUpdateListener { v ->
+                val value = v.animatedValue as Float
+                nowVolume = value
+                service.musicPlayer.setVolume(value, value)
+            }
+            it.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    if (!service.musicPlayer.isPlaying) service.musicPlayer.start()
+                }
+            })
         }
-        it.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator?, isReverse: Boolean) {
-                if (!isReverse) service.musicPlayer.start()
-            }
+        volumeAnimator?.start()
+    }
 
-            override fun onAnimationEnd(animation: Animator?, isReverse: Boolean) {
-                if (isReverse) service.musicPlayer.pause()
+    fun fadePause() {
+        if (volumeAnimator != null) volumeAnimator?.cancel()
+        volumeAnimator = ValueAnimator.ofFloat(nowVolume, 0f).also {
+            it.duration = (nowVolume / 1 * 400).toLong()
+            it.addUpdateListener { v ->
+                val value = v.animatedValue as Float
+                nowVolume = value
+                service.musicPlayer.setVolume(value, value)
             }
-        })
-        it.duration = 400
-        it.interpolator = AccelerateInterpolator()
+            it.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    if (service.musicPlayer.isPlaying) service.musicPlayer.pause()
+                }
+            })
+        }
+        volumeAnimator?.start()
     }
 
     fun abandonAudioFocus() {
