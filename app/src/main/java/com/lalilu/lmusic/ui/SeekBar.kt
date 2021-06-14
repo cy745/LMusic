@@ -66,10 +66,7 @@ class SeekBar @JvmOverloads constructor(
     private var minProgress: Float = 0f
     private var sensitivity: Float = 0.0015f
 
-    private lateinit var callback: (selectDuration: Long) -> Unit
-    fun setOnActionUp(callback: (selectDuration: Long) -> Unit) {
-        this.callback = callback
-    }
+    lateinit var onActionUp: (selectDuration: Long) -> Unit
 
     fun setSumDuration(duration: Long) {
         sumDuration = duration
@@ -127,11 +124,11 @@ class SeekBar @JvmOverloads constructor(
                     .start()
             }
             MotionEvent.ACTION_UP -> {
-                touching = false
+                positionTimer?.cancel()
                 rawX = -1f
                 rawY = -1f
                 if (downDuration != nowDuration) {
-                    callback(nowDuration)
+                    onActionUp(nowDuration)
                 } else {
                     performClick()
                 }
@@ -140,6 +137,7 @@ class SeekBar @JvmOverloads constructor(
                     .scaleY(1f)
                     .setDuration(scaleAnimatorDuration)
                     .start()
+                touching = false
             }
             MotionEvent.ACTION_MOVE -> {
                 if (touching) {

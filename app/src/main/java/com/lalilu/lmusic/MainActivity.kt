@@ -103,7 +103,8 @@ class MainActivity : AppCompatActivity() {
         binding.musicRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.musicRecyclerView.itemAnimator = FadeInAnimator(OvershootInterpolator()).apply {
             this.addDuration = 300
-            this.moveDuration = 300
+            this.moveDuration = 200
+            this.removeDuration = 50
         }
         ItemTouchHelper(ItemTouchCallback(binding.musicRecyclerView.adapter as MusicListAdapter)).attachToRecyclerView(
             binding.musicRecyclerView
@@ -126,7 +127,7 @@ class MainActivity : AppCompatActivity() {
         ColorAnimator.getPaletteFromFromPaletteDraweeView(binding.playingSongAlbumPic) {
             binding.seekBar.setThumbColor(it.getAutomaticColor())
         }
-        binding.seekBar.setOnActionUp {
+        binding.seekBar.onActionUp = {
             mediaBrowser.mediaController.transportControls?.seekTo(it)
         }
         binding.seekBar.setOnClickListener {
