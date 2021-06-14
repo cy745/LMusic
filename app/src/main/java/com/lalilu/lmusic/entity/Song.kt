@@ -55,10 +55,7 @@ class Song {
                 it.putLong(MediaMetadata.METADATA_KEY_DURATION, this.songDuration)
                 it.putString(MusicService.SONG_TYPE, this.songType)
             }).build()
-        return MediaBrowserCompat.MediaItem(
-            description,
-            MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
-        )
+        return MediaBrowserCompat.MediaItem(description, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)
     }
 
     override fun equals(other: Any?): Boolean {
