@@ -14,18 +14,18 @@ class MusicBindingAdapters {
         @BindingAdapter("app:iconRec")
         @JvmStatic
         fun setIcon(imageView: ImageView, string: String) {
-            if (string.uppercase().contains("FLAC")) {
-                imageView.setImageResource(R.drawable.ic_flac)
+            println("setIcon: $string")
+            val strings = string.split("/")
+            val result = when (strings[strings.size - 1].uppercase()) {
+                "FLAC" -> R.drawable.ic_flac
+                "WAV" -> R.drawable.ic_wav
+                "X-WAV" -> R.drawable.ic_wav
+                "APE" -> R.drawable.ic_ape
+                "MPEG" -> R.drawable.ic_mp3
+                "MP3" -> R.drawable.ic_mp3
+                else -> R.drawable.ic_mp3
             }
-            if (string.uppercase().contains("WAV")) {
-                imageView.setImageResource(R.drawable.ic_wav)
-            }
-            if (string.uppercase().contains("APE")) {
-                imageView.setImageResource(R.drawable.ic_ape)
-            }
-            if (string.uppercase().contains("MP3")) {
-                imageView.setImageResource(R.drawable.ic_mp3)
-            }
+            imageView.setImageResource(result)
         }
 
         @BindingAdapter("app:pictureUri")
