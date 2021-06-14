@@ -42,6 +42,10 @@ def roomVersion = "2.3.0"
 def fastJsonVersion = "1.1.72.android"
 
 dependencies {
+    // https://github.com/wasabeef/recyclerview-animators
+    // Apache-2.0
+    implementation 'jp.wasabeef:recyclerview-animators:4.0.2'
+
     // 权限请求框架：https://github.com/getActivity/XXPermissions
     // Apache-2.0
     implementation 'com.github.getActivity:XXPermissions:11.0'
