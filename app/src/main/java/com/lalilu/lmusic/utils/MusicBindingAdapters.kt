@@ -11,28 +11,28 @@ import com.lalilu.lmusic.service2.MusicService.Companion.SONG_TYPE
 
 class MusicBindingAdapters {
     companion object {
-        @BindingAdapter("app:iconRec")
-        @JvmStatic
-        fun setIcon(imageView: ImageView, string: String) {
-            val strings = string.split("/")
-            val result = when (strings[strings.size - 1].uppercase()) {
-                "FLAC" -> R.drawable.ic_flac
-                "WAV" -> R.drawable.ic_wav
-                "X-WAV" -> R.drawable.ic_wav
-                "APE" -> R.drawable.ic_ape
-                "MPEG" -> R.drawable.ic_mp3
-                "MP3" -> R.drawable.ic_mp3
-                else -> R.drawable.ic_mp3
-            }
-            imageView.setImageResource(result)
-        }
-
-        @BindingAdapter("app:pictureUri")
-        @JvmStatic
-        fun setPictureUri(simpleDraweeView: SimpleDraweeView?, uri: Uri?) {
-            simpleDraweeView?.setImageURI(uri)
-        }
-
+//        @BindingAdapter("iconRec")
+//        @JvmStatic
+//        fun setIcon(imageView: ImageView, string: String) {
+//            val strings = string.split("/")
+//            val result = when (strings[strings.size - 1].uppercase()) {
+//                "FLAC" -> R.drawable.ic_flac
+//                "WAV" -> R.drawable.ic_wav
+//                "X-WAV" -> R.drawable.ic_wav
+//                "APE" -> R.drawable.ic_ape
+//                "MPEG" -> R.drawable.ic_mp3
+//                "MP3" -> R.drawable.ic_mp3
+//                else -> R.drawable.ic_mp3
+//            }
+//            imageView.setImageResource(result)
+//        }
+//
+//        @BindingAdapter("pictureUri")
+//        @JvmStatic
+//        fun setPictureUri(simpleDraweeView: SimpleDraweeView?, uri: Uri?) {
+//            simpleDraweeView?.setImageURI(uri)
+//        }
+//
         fun getDurationFromExtra(extra: Bundle?): String {
             return DurationUtils.durationToString(
                 extra?.getLong(
