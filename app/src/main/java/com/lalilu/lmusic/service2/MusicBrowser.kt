@@ -26,13 +26,13 @@ class MusicBrowser constructor(
 
     fun setAdapterToUpdate(adapterToUpdate: MusicListAdapter) {
         this.adapterToUpdate = adapterToUpdate
-        this.adapterToUpdate.setOnItemClickListener { mediaItem ->
+        this.adapterToUpdate.itemOnClick = { mediaItem ->
             println("[setOnItemClickListener]: ${mediaItem.mediaId}")
             mediaController.transportControls.playFromMediaId(mediaItem.mediaId, Bundle().also {
                 it.putInt(LMusicList.LIST_TRANSFORM_ACTION, LMusicList.ACTION_MOVE_TO)
             })
         }
-        this.adapterToUpdate.setOnItemLongClickListener { mediaItem ->
+        this.adapterToUpdate.itemOnLongClick = { mediaItem ->
             println("[setOnItemLongClickListener]: ${mediaItem.mediaId}")
             mediaController.transportControls.playFromMediaId(mediaItem.mediaId, Bundle().also {
                 it.putInt(LMusicList.LIST_TRANSFORM_ACTION, LMusicList.ACTION_JUMP_TO)
@@ -65,7 +65,7 @@ class MusicBrowser constructor(
                 MediaControllerCompat.setMediaController(context, mediaController)
             }
             mediaController.registerCallback(controllerCallback)
-            mediaBrowser.subscribe(MusicService.Access_ID, subscriptionCallback)
+            mediaBrowser.subscribe(MusicService.ACCESS_ID, subscriptionCallback)
         }
     }
 
