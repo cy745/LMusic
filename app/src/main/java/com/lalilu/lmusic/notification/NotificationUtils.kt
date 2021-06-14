@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.support.v4.media.session.MediaSessionCompat
@@ -62,10 +61,6 @@ class NotificationUtils private constructor(application: Application) {
                 channelName,
                 NotificationManager.IMPORTANCE_HIGH
             )
-            notificationChannel.enableLights(true)
-            notificationChannel.lightColor = Color.RED
-            notificationChannel.enableVibration(false)
-//            notificationChannel.description = "Time for breakfast"
             notificationManager.createNotificationChannel(notificationChannel)
         }
     }
@@ -149,7 +144,11 @@ fun loadBitmapFromUri(uri: Uri, toSize: Int): Bitmap? {
     val outOption = BitmapFactory.Options().also {
         it.inJustDecodeBounds = true
     }
-    BitmapFactory.decodeStream(uri.toFile().inputStream(), null, outOption)
+    try {
+        BitmapFactory.decodeStream(uri.toFile().inputStream(), null, outOption)
+    } catch (e: Exception) {
+        return null
+    }
 
     val outWidth = outOption.outWidth
     val outHeight = outOption.outHeight

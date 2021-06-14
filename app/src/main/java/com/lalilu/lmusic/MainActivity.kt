@@ -179,8 +179,8 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.appbar_scan_song -> {
                 Thread {
+                    mediaBrowser.disconnect()
                     audioMediaScanner.updateSongDataBase(this) {
-                        mediaBrowser.disconnect()
                         mediaBrowser.connect()
                     }
                 }.start()

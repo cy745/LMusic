@@ -23,11 +23,12 @@ class LMusicAudioManager constructor(private val service: MusicService) :
             it.addUpdateListener { v ->
                 val value = v.animatedValue as Float
                 nowVolume = value
-                service.musicPlayer.setVolume(value, value)
+                service.musicPlayer?.setVolume(value, value)
             }
             it.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator?) {
-                    if (!service.musicPlayer.isPlaying) service.musicPlayer.start()
+                    if (service.musicPlayer == null) return
+                    if (!service.musicPlayer!!.isPlaying) service.musicPlayer?.start()
                 }
             })
         }
@@ -41,11 +42,12 @@ class LMusicAudioManager constructor(private val service: MusicService) :
             it.addUpdateListener { v ->
                 val value = v.animatedValue as Float
                 nowVolume = value
-                service.musicPlayer.setVolume(value, value)
+                service.musicPlayer?.setVolume(value, value)
             }
             it.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
-                    if (service.musicPlayer.isPlaying) service.musicPlayer.pause()
+                    if (service.musicPlayer == null) return
+                    if (service.musicPlayer!!.isPlaying) service.musicPlayer?.pause()
                 }
             })
         }
