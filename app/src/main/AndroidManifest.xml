@@ -5,7 +5,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".LMusicApplication"
@@ -24,11 +23,6 @@
         </receiver>
         <receiver
             android:name=".MusicNoisyReceiver"
-            android:enabled="true"
-            android:exported="false" />
-
-        <service
-            android:name=".service.MusicService"
             android:enabled="true"
             android:exported="false" />
         <service
