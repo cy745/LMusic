@@ -36,7 +36,7 @@ fun Bundle.toMediaMeta(): MediaMetadataCompat {
                 MediaMetadata.METADATA_KEY_DURATION,
                 this.getLong(MediaMetadata.METADATA_KEY_DURATION)
             )
-            .putString(MusicService.Song_Type, this.getString(MusicService.Song_Type))
+            .putString(MusicService.SONG_TYPE, this.getString(MusicService.SONG_TYPE))
             .build()
     } catch (e: java.lang.Exception) {
         e.printStackTrace()
