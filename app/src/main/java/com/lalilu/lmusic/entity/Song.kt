@@ -53,7 +53,7 @@ class Song {
                 it.putString(MediaMetadata.METADATA_KEY_ART_URI, this.songArtUri.toString())
                 it.putString(MediaMetadata.METADATA_KEY_ALBUM, this.albumTitle)
                 it.putLong(MediaMetadata.METADATA_KEY_DURATION, this.songDuration)
-                it.putString(MusicService.Song_Type, this.songType)
+                it.putString(MusicService.SONG_TYPE, this.songType)
             }).build()
         return MediaBrowserCompat.MediaItem(
             description,
