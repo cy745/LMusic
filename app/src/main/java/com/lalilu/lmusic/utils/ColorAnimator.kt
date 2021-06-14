@@ -27,14 +27,8 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
         ) {
             paletteDraweeView.palette.observeForever {
                 if (it != null) {
-                    var oldColor =
-                        paletteDraweeView.oldPalette?.getDarkVibrantColor(Color.LTGRAY)
-                            ?: Color.LTGRAY
-                    if (isLightColor(oldColor)) oldColor =
-                        paletteDraweeView.oldPalette?.getDarkMutedColor(Color.LTGRAY)
-                            ?: Color.LTGRAY
-                    var plColor = it.getDarkVibrantColor(Color.LTGRAY)
-                    if (isLightColor(plColor)) plColor = it.getDarkMutedColor(Color.LTGRAY)
+                    val oldColor = paletteDraweeView.oldPalette.getAutomaticColor()
+                    val plColor = it.getAutomaticColor()
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         ColorAnimator(oldColor, plColor).setColorChangedListener { color ->
@@ -52,7 +46,7 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
             callback: (color: Palette) -> Unit
         ) {
             paletteDraweeView.palette.observeForever {
-                if (it != null) callback(it)
+                it?.let { palette -> callback(palette) }
             }
         }
 
@@ -108,4 +102,12 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
         bTo = Color.valueOf(toColor).blue()
         return this
     }
+}
+
+fun Palette?.getAutomaticColor(): Int {
+    if (this == null) return Color.DKGRAY
+    var oldColor = this.getDarkVibrantColor(Color.LTGRAY)
+    if (ColorAnimator.isLightColor(oldColor))
+        oldColor = this.getDarkMutedColor(Color.LTGRAY)
+    return oldColor
 }
