@@ -12,9 +12,12 @@ import com.lalilu.lmusic.entity.Album
 import com.lalilu.lmusic.entity.Song
 import java.io.File
 import java.io.FileOutputStream
+import java.util.logging.Logger
 
 
 class AudioMediaScanner constructor(context: Context) {
+    private val logger = Logger.getLogger(this.javaClass.name)
+
     @Volatile
     private var standardDirectory: File =
         context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
@@ -35,7 +38,7 @@ class AudioMediaScanner constructor(context: Context) {
     }
 
     private var running: Boolean = false
-    fun updateSongDataBase(context: Context) {
+    fun updateSongDataBase(context: Context, callback: () -> Unit?) {
         if (running) return
         val songDao = MusicDatabase.getInstance(context).songDao()
         val albumDao = MusicDatabase.getInstance(context).albumDao()
@@ -64,12 +67,15 @@ class AudioMediaScanner constructor(context: Context) {
                     song.songArtUri = loadThumbnail(song)
                     songDao.insert(song)
                 }
-                if (album != null) albumDao.insert(album)
+                if (album != null) {
+                    albumDao.insert(album)
+                }
             } while (cursor.moveToNext())
         } else {
-            println("[found no song]")
+            logger.info("[FOUND NO SONG]")
         }
         cursor.close()
+        callback()
         running = false
     }
 
