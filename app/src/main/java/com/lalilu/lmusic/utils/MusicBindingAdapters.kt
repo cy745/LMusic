@@ -14,7 +14,6 @@ class MusicBindingAdapters {
         @BindingAdapter("app:iconRec")
         @JvmStatic
         fun setIcon(imageView: ImageView, string: String) {
-            println("setIcon: $string")
             val strings = string.split("/")
             val result = when (strings[strings.size - 1].uppercase()) {
                 "FLAC" -> R.drawable.ic_flac
