@@ -35,6 +35,29 @@ public class StatusBarUtil {
         }
     }
 
+
+    public static void textColorChangeToLight(Activity activity) {
+        int uiOption = activity.getWindow().getDecorView().getSystemUiVisibility();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            activity.getWindow().getDecorView()
+                    .getWindowInsetsController()
+                    .setSystemBarsAppearance(0, APPEARANCE_LIGHT_STATUS_BARS);
+        } else {
+            activity.getWindow().getDecorView().setSystemUiVisibility(uiOption & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
+    }
+
+    public static void textColorChangeToDark(Activity activity) {
+        int uiOption = activity.getWindow().getDecorView().getSystemUiVisibility();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            activity.getWindow().getDecorView()
+                    .getWindowInsetsController()
+                    .setSystemBarsAppearance(APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS);
+        } else {
+            activity.getWindow().getDecorView().setSystemUiVisibility(uiOption | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.R)
     public static void textColorChange_R(Activity activity) {
         if (isDarkMode(activity)) {
