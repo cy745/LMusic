@@ -2,6 +2,9 @@ package com.lalilu.lmusic.ui
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.util.AttributeSet
 import androidx.lifecycle.MutableLiveData
@@ -32,6 +35,16 @@ class PaletteDraweeView @JvmOverloads constructor(
                 override fun process(bitmap: Bitmap) {
                     oldPalette = palette.value
                     palette.postValue(Palette.from(bitmap).generate())
+                    addShadow(
+                        bitmap, Color.argb(55, 0, 0, 0),
+                        Color.TRANSPARENT, GradientDrawable.Orientation.TOP_BOTTOM,
+                        0, 0, bitmap.width, bitmap.height / 4
+                    )
+                    addShadow(
+                        bitmap, Color.argb(55, 0, 0, 0),
+                        Color.TRANSPARENT, GradientDrawable.Orientation.BOTTOM_TOP,
+                        0, (bitmap.height * 0.75).toInt(), bitmap.width, bitmap.height
+                    )
                     super.process(bitmap)
                 }
             })
@@ -39,5 +52,26 @@ class PaletteDraweeView @JvmOverloads constructor(
         controllerBuilder.imageRequest = imageRequestBuilder.build()
         controllerBuilder.autoPlayAnimations = true
         controller = controllerBuilder.build()
+    }
+
+    private var mBackShadowDrawableLR: GradientDrawable? = null
+    fun addShadow(
+        bm: Bitmap,
+        fromColor: Int,
+        toColor: Int,
+        Orientation: GradientDrawable.Orientation,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int
+    ): Bitmap {
+        val mBackShadowColors = intArrayOf(fromColor, toColor)
+        mBackShadowDrawableLR =
+            GradientDrawable(Orientation, mBackShadowColors)
+        mBackShadowDrawableLR!!.gradientType = GradientDrawable.LINEAR_GRADIENT
+        mBackShadowDrawableLR!!.setBounds(left, top, right, bottom)
+        val canvas = Canvas(bm)
+        mBackShadowDrawableLR!!.draw(canvas)
+        return bm
     }
 }
