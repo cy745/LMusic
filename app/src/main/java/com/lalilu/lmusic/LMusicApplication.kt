@@ -5,11 +5,10 @@ import com.facebook.drawee.backends.pipeline.Fresco
 import com.lalilu.lmusic.database.MusicDatabase
 import com.lalilu.lmusic.notification.NotificationUtils
 import com.lalilu.lmusic.utils.AudioMediaScanner
-import com.lalilu.lmusic.viewmodel.LMusicViewModel
 import com.lalilu.lmusic.viewmodel.MusicDataBaseViewModel
 import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
 
-class MusicApplication : Application() {
+class LMusicApplication : Application() {
     lateinit var audioMediaScanner: AudioMediaScanner
 
     override fun onCreate() {
@@ -19,7 +18,6 @@ class MusicApplication : Application() {
         NotificationUtils.getInstance(this)
         MusicDatabase.getInstance(this)
         MusicDataBaseViewModel.getInstance(this)
-        LMusicViewModel.getInstance()
         MusicServiceViewModel.getInstance()
         Fresco.initialize(this)
     }
