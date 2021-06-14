@@ -45,21 +45,7 @@
                     app:layout_collapseMode="parallax"
                     app:layout_collapseParallaxMultiplier="0.7"
                     fresco:actualImageScaleType="centerCrop"
-                    fresco:placeholderImage="@drawable/pixiv_7954130_p0"
                     fresco:placeholderImageScaleType="centerCrop" />
-
-                <View
-                    android:layout_width="wrap_content"
-                    android:layout_height="100dp"
-                    android:background="@drawable/black_mask_top"
-                    android:fitsSystemWindows="true" />
-
-                <View
-                    android:layout_width="wrap_content"
-                    android:layout_height="100dp"
-                    android:layout_gravity="bottom"
-                    android:background="@drawable/black_mask_bottom"
-                    android:fitsSystemWindows="true" />
 
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
