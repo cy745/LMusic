@@ -22,6 +22,7 @@ import com.lalilu.lmusic.MainActivity
 import com.lalilu.lmusic.R
 import com.lalilu.lmusic.notification.NotificationUtils.Companion.playerChannelName
 import com.lalilu.lmusic.service2.MusicService
+import com.lalilu.lmusic.utils.getAutomaticColor
 import com.lalilu.lmusic.viewmodel.MusicServiceViewModel
 
 private const val NOTIFICATION_ID = 0
@@ -86,7 +87,7 @@ fun MusicService.sendPlayerNotification(
         )
     val bitmap = loadBitmapFromUri(description.iconUri!!, 400)
     val palette = if (bitmap != null) Palette.from(bitmap).generate() else null
-    val color = palette?.getDarkVibrantColor(Color.DKGRAY) ?: Color.DKGRAY
+    val color = palette.getAutomaticColor()
     val channelId = playerChannelName + "_ID"
 
     val builder = NotificationCompat.Builder(this, channelId)
