@@ -3,6 +3,7 @@ package com.lalilu.lmusic.service2
 import android.app.PendingIntent
 import android.content.Intent
 import android.media.AudioManager
+import android.media.MediaMetadata
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
@@ -24,9 +25,11 @@ class MusicService : MediaBrowserServiceCompat() {
     private val tag = MusicService::class.java.name
 
     companion object {
-        const val Access_ID = "access_id"
-        const val Empty_ID = "empty_id"
-        const val Song_Type = "song_type"
+        const val ACCESS_ID = "access_id"
+        const val EMPTY_ID = "empty_id"
+        const val SONG_TYPE = "song_type"
+        const val ACTION_SWIPED_SONG = "action_swiped_song"
+        const val ACTION_MOVE_SONG = "action_swiped_song"
     }
 
     lateinit var musicPlayer: MediaPlayer
@@ -113,9 +116,9 @@ class MusicService : MediaBrowserServiceCompat() {
             }
         }
 
-        override fun onPrepared(mp: MediaPlayer?) = onPlay()
         override fun onCompletion(mp: MediaPlayer?) = onSkipToNext()
         override fun onPrepare() = musicPlayer.prepare()
+        override fun onPrepared(mp: MediaPlayer?) = onPlay()
 
         override fun onPlay() {
             val result = lMusicAudioManager.getAudioFocus()
@@ -162,14 +165,19 @@ class MusicService : MediaBrowserServiceCompat() {
         }
 
         override fun onCustomAction(action: String?, extras: Bundle?) {
-            if (action == PlaybackStateCompat.ACTION_PLAY_PAUSE.toString()) {
-                onPlayPause()
+            when (action) {
+                PlaybackStateCompat.ACTION_PLAY_PAUSE.toString() -> {
+                    onPlayPause()
+                }
+                ACTION_SWIPED_SONG -> {
+                    val mediaId = extras?.get(MediaMetadata.METADATA_KEY_MEDIA_ID) ?: return
+                    mList.mOrderList.remove(mediaId)
+                }
             }
             super.onCustomAction(action, extras)
         }
 
         override fun onStop() {
-            println("[onStop]")
             mediaSession.isActive = false
             lMusicAudioManager.abandonAudioFocus()
             musicPlayer.stop()
@@ -201,7 +209,7 @@ class MusicService : MediaBrowserServiceCompat() {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot {
-        return BrowserRoot(Access_ID, null)
+        return BrowserRoot(ACCESS_ID, null)
     }
 
     override fun onLoadChildren(
@@ -209,7 +217,7 @@ class MusicService : MediaBrowserServiceCompat() {
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         result.detach()
-        if (parentId == Empty_ID) return
+        if (parentId == EMPTY_ID) return
         val songList = MusicDatabase.getInstance(this).songDao().getAll()
 
         for (song: Song in songList) {
