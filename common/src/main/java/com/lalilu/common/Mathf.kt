@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.common
 
 class Mathf {
     companion object {
@@ -13,6 +13,5 @@ class Mathf {
             if (num + offset > max) return min + (num + offset - max) - 1
             return num + offset
         }
-
     }
 }

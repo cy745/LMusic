@@ -1,6 +1,6 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.common
 
-class DurationUtils {
+class TextUtils {
     companion object {
         fun durationToString(duration: Number): String {
             var temp = duration.toLong().div(1000)

@@ -10,8 +10,8 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import com.lalilu.common.TextUtils
 import com.lalilu.lmusic.R
-import com.lalilu.lmusic.utils.DurationUtils
 import java.util.*
 import kotlin.concurrent.schedule
 
@@ -171,9 +171,9 @@ class SeekBar @JvmOverloads constructor(
         progressWidth = (progress * width).toFloat()
         nowDuration = (progress * sumDuration).toLong()
 
-        sumDurationText = DurationUtils.durationToString(sumDuration)
+        sumDurationText = TextUtils.durationToString(sumDuration)
         sumDurationTextWidth = textPaint.measureText(sumDurationText)
-        nowDurationText = DurationUtils.durationToString(nowDuration)
+        nowDurationText = TextUtils.durationToString(nowDuration)
         nowDurationTextWidth = textPaintWhite.measureText(nowDurationText)
 
         val textCenterHeight = (height + textPaint.textSize) / 2f - 5
@@ -219,6 +219,4 @@ class SeekBar @JvmOverloads constructor(
         if (num.toDouble() > max.toDouble()) return max.toDouble()
         return num.toDouble()
     }
-
-
 }

@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.adapter2.ItemTouch
 import com.lalilu.lmusic.adapter2.MusicListAdapter
 import com.lalilu.lmusic.databinding.ActivityMainBinding
@@ -20,7 +21,7 @@ import com.lalilu.lmusic.service2.MusicBrowser
 import com.lalilu.lmusic.service2.MusicService.Companion.ACTION_MOVE_SONG
 import com.lalilu.lmusic.service2.MusicService.Companion.ACTION_SWIPED_SONG
 import com.lalilu.lmusic.utils.*
-import com.lalilu.media.LMusicMediaContainer
+import com.lalilu.media.LMusicMediaModule
 import jp.wasabeef.recyclerview.animators.FadeInAnimator
 import kotlin.math.abs
 
@@ -179,7 +180,7 @@ class MainActivity : AppCompatActivity() {
             R.id.appbar_scan_song -> {
                 Thread {
                     mediaBrowser.disconnect()
-                    LMusicMediaContainer.getInstance(null).mediaScanner.updateSongDataBase {
+                    LMusicMediaModule.getInstance(null).mediaScanner.updateSongDataBase {
                         mediaBrowser.connect()
                     }
                 }.start()
