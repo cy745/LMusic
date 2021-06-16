@@ -4,7 +4,10 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -13,6 +16,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toFile
 import androidx.media.app.NotificationCompat.MediaStyle
 import androidx.media.session.MediaButtonReceiver
 import androidx.palette.graphics.Palette
@@ -125,5 +129,30 @@ class LMusicNotificationManager constructor(private val mService: Context) {
             mChannel.setShowBadge(false)
             notificationManager.createNotificationChannel(mChannel)
         }
+    }
+
+    private fun loadBitmapFromUri(uri: Uri, toSize: Int): Bitmap? {
+        val outOption = BitmapFactory.Options().also {
+            it.inJustDecodeBounds = true
+        }
+        try {
+            BitmapFactory.decodeStream(uri.toFile().inputStream(), null, outOption)
+        } catch (e: Exception) {
+            return null
+        }
+
+        val outWidth = outOption.outWidth
+        val outHeight = outOption.outHeight
+        if (outWidth == -1 || outHeight == -1) return null
+
+        var scaleValue: Int = if (outWidth > toSize) outWidth / toSize else toSize / outWidth
+        if (scaleValue < 1) scaleValue = 1
+
+        outOption.also {
+            it.inJustDecodeBounds = false
+            it.inSampleSize = scaleValue
+        }
+
+        return BitmapFactory.decodeStream(uri.toFile().inputStream(), null, outOption)
     }
 }

@@ -14,13 +14,12 @@ import android.view.KeyEvent
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
-import com.lalilu.lmusic.LMusicAudioManager
-import com.lalilu.lmusic.LMusicList
-import com.lalilu.lmusic.database.MusicDatabase
-import com.lalilu.lmusic.entity.Song
+import com.lalilu.lmusic.*
 import com.lalilu.lmusic.notification.LMusicNotificationManager
 import com.lalilu.lmusic.notification.LMusicNotificationManager.Companion.NOTIFICATION_ID
 import com.lalilu.lmusic.utils.toMediaMeta
+import com.lalilu.media.LMusicMediaContainer
+import com.lalilu.media.entity.LMusicMediaItem
 import java.util.*
 
 class MusicService : MediaBrowserServiceCompat() {
@@ -268,10 +267,10 @@ class MusicService : MediaBrowserServiceCompat() {
     ) {
         result.detach()
         if (parentId == EMPTY_ID) return
-        val songList = MusicDatabase.getInstance(this).songDao().getAll()
+        val songList = LMusicMediaContainer.getInstance(null).database.mediaItemDao().getAll()
 
-        for (song: Song in songList) {
-            val mediaItem = song.toMediaItem()
+        for (lMusicMediaItem: LMusicMediaItem in songList) {
+            val mediaItem = lMusicMediaItem.toMediaItem()
             mList.setValueIn(mediaItem.mediaId.toString(), mediaItem)
         }
         result.sendResult(mList.getOrderDataList().toMutableList())
