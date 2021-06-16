@@ -6,26 +6,26 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.lalilu.media.dao.LMusicAlbumDao
-import com.lalilu.media.dao.LMusicMediaItemDao
+import com.lalilu.media.dao.LMusicMediaDao
 import com.lalilu.media.database.convertor.AlbumConvertor
 import com.lalilu.media.database.convertor.SongConvertor
 import com.lalilu.media.database.convertor.UriConvertor
 import com.lalilu.media.entity.LMusicAlbum
-import com.lalilu.media.entity.LMusicMediaItem
+import com.lalilu.media.entity.LMusicMedia
 
 @Database(
-    entities = [LMusicMediaItem::class, LMusicAlbum::class],
-    version = 5, exportSchema = false
+    entities = [LMusicMedia::class, LMusicAlbum::class],
+    version = 1, exportSchema = false
 )
 @TypeConverters(
     value = [
         AlbumConvertor::class,
         SongConvertor::class,
-        UriConvertor::class
+        UriConvertor::class,
     ]
 )
 abstract class LMusicDatabase : RoomDatabase() {
-    abstract fun mediaItemDao(): LMusicMediaItemDao
+    abstract fun mediaItemDao(): LMusicMediaDao
     abstract fun albumDao(): LMusicAlbumDao
 
     companion object {

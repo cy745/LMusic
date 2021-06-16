@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.palette.graphics.Palette
+import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
@@ -49,18 +50,9 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
                 it?.let { palette -> callback(palette) }
             }
         }
-
-        fun isLightColor(color: Int): Boolean {
-            val darkness =
-                1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(
-                    color
-                )) / 255
-            return darkness < 0.5
-        }
     }
 
     private lateinit var listen: ((Int) -> Unit)
-
     fun setColorChangedListener(listen: ((Int) -> Unit)): ColorAnimator {
         this.listen = listen
         return this
@@ -75,11 +67,6 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
 
         val result = Color.rgb(rResult, gResult, bResult)
         listen.invoke(result)
-    }
-
-    override fun setDuration(duration: Long): ValueAnimator {
-        super.setDuration(duration)
-        return this@ColorAnimator
     }
 
     fun start(duration: Number) {
@@ -102,12 +89,4 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
         bTo = Color.valueOf(toColor).blue()
         return this
     }
-}
-
-fun Palette?.getAutomaticColor(): Int {
-    if (this == null) return Color.DKGRAY
-    var oldColor = this.getDarkVibrantColor(Color.LTGRAY)
-    if (ColorAnimator.isLightColor(oldColor))
-        oldColor = this.getDarkMutedColor(Color.LTGRAY)
-    return oldColor
 }

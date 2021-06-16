@@ -17,9 +17,8 @@ import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmusic.*
 import com.lalilu.lmusic.notification.LMusicNotificationManager
 import com.lalilu.lmusic.notification.LMusicNotificationManager.Companion.NOTIFICATION_ID
-import com.lalilu.lmusic.utils.toMediaMeta
-import com.lalilu.media.LMusicMediaContainer
-import com.lalilu.media.entity.LMusicMediaItem
+import com.lalilu.media.LMusicMediaModule
+import com.lalilu.media.toMediaItem
 import java.util.*
 
 class MusicService : MediaBrowserServiceCompat() {
@@ -28,7 +27,6 @@ class MusicService : MediaBrowserServiceCompat() {
     companion object {
         const val ACCESS_ID = "access_id"
         const val EMPTY_ID = "empty_id"
-        const val SONG_TYPE = "song_type"
         const val ACTION_SWIPED_SONG = "action_swiped_song"
         const val ACTION_MOVE_SONG = "action_swiped_song"
     }
@@ -36,14 +34,14 @@ class MusicService : MediaBrowserServiceCompat() {
     var musicPlayer: MediaPlayer? = null
     lateinit var musicSessionCallback: MusicSessionCallback
 
-    private var nowMetadata: MediaMetadataCompat? = null
+    private lateinit var nowMetadata: MediaMetadataCompat
     private lateinit var nowPlaybackState: PlaybackStateCompat
 
-    private lateinit var mNotificationManager: LMusicNotificationManager
     private lateinit var mediaSession: MediaSessionCompat
-    private lateinit var lMusicAudioManager: LMusicAudioManager
+    private lateinit var mAudioManager: LMusicAudioManager
+    private lateinit var mNotificationManager: LMusicNotificationManager
 
-    private val mList: LMusicList<String, MediaBrowserCompat.MediaItem> = LMusicList()
+    private val mList: LMusicList<String, MediaMetadataCompat> = LMusicList()
     private var isInForeGroundState = false
 
     fun recreatePlayer() {
@@ -57,7 +55,7 @@ class MusicService : MediaBrowserServiceCompat() {
         super.onCreate()
         mNotificationManager = LMusicNotificationManager(this)
         musicSessionCallback = MusicSessionCallback()
-        lMusicAudioManager = LMusicAudioManager(this)
+        mAudioManager = LMusicAudioManager(this)
         recreatePlayer()
 
         // 构造可跳转到 launcher activity 的 PendingIntent
@@ -141,47 +139,46 @@ class MusicService : MediaBrowserServiceCompat() {
         override fun onPrepared(mp: MediaPlayer?) = onPlay()
 
         override fun onPlay() {
-            val result = lMusicAudioManager.getAudioFocus()
+            val result = mAudioManager.getAudioFocus()
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
 
             mediaSession.isActive = true
-            lMusicAudioManager.fadeStart()
+            mAudioManager.fadeStart()
             notifyPlayStateChange(PlaybackStateCompat.STATE_PLAYING)
         }
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-//            println("[onPlayFromMediaId]: $mediaId")
+            println("[onPlayFromMediaId]: $mediaId")
             if (nowPlaybackState.state == PlaybackStateCompat.STATE_NONE
                 || nowPlaybackState.state == PlaybackStateCompat.STATE_PAUSED
                 || nowPlaybackState.state == PlaybackStateCompat.STATE_PLAYING
             ) {
                 if (musicPlayer == null) recreatePlayer()
                 musicPlayer?.reset()
-                val mediaItem = mList.playByKey(mediaId) ?: return
-                val mediaUri = mediaItem.description.mediaUri ?: return
-                val metadata = mediaItem.description.extras!!.toMediaMeta()
+                val mediaMetaData = mList.playByKey(mediaId) ?: return
+                val mediaUri = mediaMetaData.description.mediaUri ?: return
                 musicPlayer?.setDataSource(this@MusicService, mediaUri)
                 notifyPlayStateChange(PlaybackStateCompat.STATE_BUFFERING)
-                notifyMetaDateChange(metadata)
+                notifyMetaDateChange(mediaMetaData)
                 onPrepare()
             }
         }
 
         override fun onPause() {
             if (nowPlaybackState.state == PlaybackStateCompat.STATE_PLAYING) {
-                lMusicAudioManager.fadePause()
+                mAudioManager.fadePause()
                 notifyPlayStateChange(PlaybackStateCompat.STATE_PAUSED)
             }
         }
 
         override fun onSkipToPrevious() {
             val previous = mList.last() ?: return
-            onPlayFromMediaId(previous.mediaId, null)
+            onPlayFromMediaId(previous.description.mediaId, null)
         }
 
         override fun onSkipToNext() {
             val next = mList.next() ?: return
-            onPlayFromMediaId(next.mediaId, null)
+            onPlayFromMediaId(next.description.mediaId, null)
         }
 
         override fun onCustomAction(action: String?, extras: Bundle?) {
@@ -194,12 +191,11 @@ class MusicService : MediaBrowserServiceCompat() {
                     mList.mOrderList.remove(mediaId)
                 }
             }
-//            super.onCustomAction(action, extras)
         }
 
         override fun onStop() {
             mediaSession.isActive = false
-            lMusicAudioManager.abandonAudioFocus()
+            mAudioManager.abandonAudioFocus()
             if (musicPlayer != null) {
                 musicPlayer!!.reset()
                 musicPlayer!!.release()
@@ -267,13 +263,19 @@ class MusicService : MediaBrowserServiceCompat() {
     ) {
         result.detach()
         if (parentId == EMPTY_ID) return
-        val songList = LMusicMediaContainer.getInstance(null).database.mediaItemDao().getAll()
 
-        for (lMusicMediaItem: LMusicMediaItem in songList) {
-            val mediaItem = lMusicMediaItem.toMediaItem()
-            mList.setValueIn(mediaItem.mediaId.toString(), mediaItem)
+        val metadataList = LMusicMediaModule.getInstance(null)
+            .mediaScanner.getMediaMetaData()
+
+        metadataList.forEach { metadata ->
+            metadata.description?.mediaId?.let {
+                mList.setValueIn(it, metadata)
+            }
         }
-        result.sendResult(mList.getOrderDataList().toMutableList())
+
+        result.sendResult(mList.getOrderDataList().map {
+            it.toMediaItem()
+        }.toMutableList())
     }
 }
 

@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.lmusic.LMusicList
 import com.lalilu.lmusic.R
 import com.lalilu.lmusic.databinding.ItemSongMediaItemBinding
-import com.lalilu.lmusic.utils.Mathf
+import com.lalilu.common.Mathf
 import java.util.*
 
 interface ItemTouch {

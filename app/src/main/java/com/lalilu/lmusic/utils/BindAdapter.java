@@ -8,8 +8,9 @@ import android.widget.ImageView;
 import androidx.databinding.BindingAdapter;
 
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.lalilu.common.GlobalCommon;
+import com.lalilu.common.TextUtils;
 import com.lalilu.lmusic.R;
-import com.lalilu.media.common.GlobalCommon;
 
 public class BindAdapter {
     @BindingAdapter("iconRec")
@@ -41,14 +42,17 @@ public class BindAdapter {
     }
 
     public static String getDurationFromExtra(Bundle extra) {
-        return DurationUtils.Companion.durationToString(extra.getLong(MediaMetadataCompat.METADATA_KEY_DURATION, 0));
+        if (extra == null) return "null";
+        return TextUtils.Companion.durationToString(extra.getLong(MediaMetadataCompat.METADATA_KEY_DURATION, 0));
     }
 
     public static String getArtistFromExtra(Bundle extra) {
+        if (extra == null) return "null";
         return extra.getString(MediaMetadataCompat.METADATA_KEY_ARTIST, "someone...");
     }
 
     public static String getSongTypeFromExtra(Bundle extra) {
+        if (extra == null) return "null";
         return extra.getString(GlobalCommon.MEDIA_MIME_TYPE, "mp3");
     }
 }

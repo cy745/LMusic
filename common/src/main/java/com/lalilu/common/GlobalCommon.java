@@ -1,4 +1,4 @@
-package com.lalilu.media.common;
+package com.lalilu.common;
 
 public class GlobalCommon {
     public final static String MEDIA_MIME_TYPE = "media_mime_type";
