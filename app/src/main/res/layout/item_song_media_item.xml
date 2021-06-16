@@ -5,12 +5,7 @@
     xmlns:fresco="http://schemas.android.com/apk/res-auto">
 
     <data>
-
-        <import type="com.lalilu.lmusic.utils.MusicBindingAdapters" />
-
-        <variable
-            name="bindingUtils"
-            type="MusicBindingAdapters" />
+        <import type="com.lalilu.lmusic.utils.BindAdapter" />
 
         <variable
             name="mediaItem"
@@ -54,7 +49,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:text="@{bindingUtils.Companion.getArtistFromExtra(mediaItem.description.extras)}"
+            android:text="@{BindAdapter.getArtistFromExtra(mediaItem.description.extras)}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/song_duration"
             app:layout_constraintStart_toEndOf="@+id/song_album_pic"
@@ -65,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
-            android:text="@{bindingUtils.Companion.getDurationFromExtra(mediaItem.description.extras)}"
+            android:text="@{BindAdapter.getDurationFromExtra(mediaItem.description.extras)}"
             android:textAlignment="center"
             app:layout_constraintBottom_toBottomOf="@+id/song_singer"
             app:layout_constraintEnd_toEndOf="parent"
@@ -75,7 +70,7 @@
             android:id="@+id/song_type"
             android:layout_width="wrap_content"
             android:layout_height="20dp"
-            iconRec="@{bindingUtils.Companion.getSongTypeFromExtra(mediaItem.description.extras)}"
+            iconRec="@{BindAdapter.getSongTypeFromExtra(mediaItem.description.extras)}"
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toEndOf="@+id/song_duration"
             app:layout_constraintStart_toStartOf="@+id/song_duration"

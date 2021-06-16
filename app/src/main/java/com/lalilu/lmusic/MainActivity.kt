@@ -20,6 +20,7 @@ import com.lalilu.lmusic.service2.MusicBrowser
 import com.lalilu.lmusic.service2.MusicService.Companion.ACTION_MOVE_SONG
 import com.lalilu.lmusic.service2.MusicService.Companion.ACTION_SWIPED_SONG
 import com.lalilu.lmusic.utils.*
+import com.lalilu.media.LMusicMediaContainer
 import jp.wasabeef.recyclerview.animators.FadeInAnimator
 import kotlin.math.abs
 
@@ -28,14 +29,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var mediaBrowser: MusicBrowser
-    private lateinit var audioMediaScanner: AudioMediaScanner
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        PermissionUtils.requestPermission(this)
         mediaBrowser = MusicBrowser(this)
 
-        audioMediaScanner = (application as LMusicApplication).audioMediaScanner
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -180,7 +179,7 @@ class MainActivity : AppCompatActivity() {
             R.id.appbar_scan_song -> {
                 Thread {
                     mediaBrowser.disconnect()
-                    audioMediaScanner.updateSongDataBase(this) {
+                    LMusicMediaContainer.getInstance(null).mediaScanner.updateSongDataBase {
                         mediaBrowser.connect()
                     }
                 }.start()
