@@ -2,6 +2,7 @@ package com.lalilu.lmusic.service2
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.AudioManager
 import android.media.MediaMetadata
 import android.media.MediaPlayer
@@ -21,42 +22,35 @@ import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.toMediaItem
 import java.util.*
 
+
 class MusicService : MediaBrowserServiceCompat() {
     private val tag = MusicService::class.java.name
 
     companion object {
         const val ACCESS_ID = "access_id"
-        const val EMPTY_ID = "empty_id"
         const val ACTION_SWIPED_SONG = "action_swiped_song"
         const val ACTION_MOVE_SONG = "action_swiped_song"
+        const val LAST_PLAYED_SONG = "last_played_song"
     }
 
-    var musicPlayer: MediaPlayer? = null
+    lateinit var lastPlaySongSP: SharedPreferences
     lateinit var musicSessionCallback: MusicSessionCallback
-
-    private lateinit var nowMetadata: MediaMetadataCompat
-    private lateinit var nowPlaybackState: PlaybackStateCompat
-
     private lateinit var mediaSession: MediaSessionCompat
-    private lateinit var mAudioManager: LMusicAudioManager
+    private lateinit var mAudioFocusManager: LMusicAudioFocusManager
     private lateinit var mNotificationManager: LMusicNotificationManager
+    private lateinit var mMusicPlayback: MusicPlayback
 
     private val mList: LMusicList<String, MediaMetadataCompat> = LMusicList()
     private var isInForeGroundState = false
-
-    fun recreatePlayer() {
-        musicPlayer = MediaPlayer().also {
-            it.setOnPreparedListener(musicSessionCallback)
-            it.setOnCompletionListener(musicSessionCallback)
-        }
-    }
+    private var mMetadataPrepared: MediaMetadataCompat? = null
 
     override fun onCreate() {
         super.onCreate()
+        lastPlaySongSP = getSharedPreferences(LAST_PLAYED_SONG, MODE_PRIVATE)
         mNotificationManager = LMusicNotificationManager(this)
         musicSessionCallback = MusicSessionCallback()
-        mAudioManager = LMusicAudioManager(this)
-        recreatePlayer()
+        mAudioFocusManager = LMusicAudioFocusManager(this, musicSessionCallback)
+        mMusicPlayback = MusicPlayback(musicSessionCallback)
 
         // 构造可跳转到 launcher activity 的 PendingIntent
         val sessionActivityPendingIntent =
@@ -64,41 +58,19 @@ class MusicService : MediaBrowserServiceCompat() {
                 PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_UPDATE_CURRENT)
             }
 
-        nowPlaybackState = PlaybackStateCompat.Builder()
-            .setState(PlaybackStateCompat.STATE_NONE, 0, 1.0f)
-            .setActions(
-                PlaybackStateCompat.ACTION_PLAY or
-                        PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                        PlaybackStateCompat.ACTION_PAUSE or
-                        PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
-                        PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
-                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-            ).build()
+        val flags = MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
 
         mediaSession = MediaSessionCompat(this, tag).apply {
-            setFlags(
-                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
-                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-            )
+            setFlags(flags)
             setSessionActivity(sessionActivityPendingIntent)
-            setPlaybackState(nowPlaybackState)
             setCallback(musicSessionCallback)
             setSessionToken(sessionToken)
         }
     }
 
-    override fun onDestroy() {
-        musicSessionCallback.onStop()
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return super.onStartCommand(intent, flags, startId)
-    }
-
     inner class MusicSessionCallback : MediaSessionCompat.Callback(),
-        MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
+        MusicPlayback.MusicPlaybackListener, AudioManager.OnAudioFocusChangeListener {
 
         override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
             if (mediaButtonEvent.action != Intent.ACTION_MEDIA_BUTTON)
@@ -120,55 +92,64 @@ class MusicService : MediaBrowserServiceCompat() {
             return super.onMediaButtonEvent(mediaButtonEvent)
         }
 
-        private fun onPlayPause() {
-            when (nowPlaybackState.state) {
-                PlaybackStateCompat.STATE_PLAYING -> onPause()
-                PlaybackStateCompat.STATE_PAUSED -> onPlay()
-                else -> println("[onPlayPause]: ${nowPlaybackState.state}")
+        override fun onAudioFocusChange(focusChange: Int) {
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS) onPause()
+        }
+
+        override fun notifyNewPlayBackState(state: PlaybackStateCompat) {
+            mediaSession.setPlaybackState(state)
+            val notification = mNotificationManager.getNotification(mediaSession)
+            when (state.state) {
+                PlaybackStateCompat.STATE_PLAYING -> {
+                    if (!isInForeGroundState) {
+                        val intent = Intent(this@MusicService, MusicService::class.java)
+                        ContextCompat.startForegroundService(this@MusicService, intent)
+                        isInForeGroundState = true
+                    }
+                    startForeground(NOTIFICATION_ID, notification)
+                }
+                PlaybackStateCompat.STATE_PAUSED -> {
+                    stopForeground(false)
+                    mNotificationManager.notificationManager.notify(NOTIFICATION_ID, notification)
+                }
+                PlaybackStateCompat.STATE_STOPPED -> {
+                    stopForeground(true)
+                    stopSelf()
+                    isInForeGroundState = false
+                }
             }
         }
 
-        override fun onCompletion(mp: MediaPlayer?) {
-            onSkipToNext()
-        }
-
-        override fun onPrepare() {
-            musicPlayer?.prepare()
-        }
-
-        override fun onPrepared(mp: MediaPlayer?) = onPlay()
+        override fun onCompletion(mp: MediaPlayer?) = onSkipToNext()
+        override fun onSeekTo(pos: Long) = mMusicPlayback.seekTo(pos)
+        override fun onPause() = mMusicPlayback.pause()
+        private fun onPlayPause() = mMusicPlayback.toggle()
 
         override fun onPlay() {
-            val result = mAudioManager.getAudioFocus()
+            val result = mAudioFocusManager.getAudioFocus()
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
 
-            mediaSession.isActive = true
-            mAudioManager.fadeStart()
-            notifyPlayStateChange(PlaybackStateCompat.STATE_PLAYING)
+            onPrepare()
+            val mediaUri = mList.getNowItem()?.description?.mediaUri ?: return
+            mMusicPlayback.playFromUri(mediaUri, this@MusicService)
         }
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
             println("[onPlayFromMediaId]: $mediaId")
-            if (nowPlaybackState.state == PlaybackStateCompat.STATE_NONE
-                || nowPlaybackState.state == PlaybackStateCompat.STATE_PAUSED
-                || nowPlaybackState.state == PlaybackStateCompat.STATE_PLAYING
-            ) {
-                if (musicPlayer == null) recreatePlayer()
-                musicPlayer?.reset()
-                val mediaMetaData = mList.playByKey(mediaId) ?: return
-                val mediaUri = mediaMetaData.description.mediaUri ?: return
-                musicPlayer?.setDataSource(this@MusicService, mediaUri)
-                notifyPlayStateChange(PlaybackStateCompat.STATE_BUFFERING)
-                notifyMetaDateChange(mediaMetaData)
-                onPrepare()
-            }
+            val mediaMetaData = mList.playByKey(mediaId) ?: return
+            val mediaUri = mediaMetaData.description.mediaUri ?: return
+            mMusicPlayback.playFromUri(mediaUri, this@MusicService)
+            onPrepare()
         }
 
-        override fun onPause() {
-            if (nowPlaybackState.state == PlaybackStateCompat.STATE_PLAYING) {
-                mAudioManager.fadePause()
-                notifyPlayStateChange(PlaybackStateCompat.STATE_PAUSED)
-            }
+        override fun onPrepare() {
+            if (mMetadataPrepared == mList.getNowItem()) return
+            mMetadataPrepared = mList.getNowItem()
+            mediaSession.setMetadata(mMetadataPrepared)
+            lastPlaySongSP.edit().putString(
+                "mediaId", mMetadataPrepared?.description?.mediaId
+            ).apply()
+            mediaSession.isActive = true
         }
 
         override fun onSkipToPrevious() {
@@ -195,58 +176,14 @@ class MusicService : MediaBrowserServiceCompat() {
 
         override fun onStop() {
             mediaSession.isActive = false
-            mAudioManager.abandonAudioFocus()
-            if (musicPlayer != null) {
-                musicPlayer!!.reset()
-                musicPlayer!!.release()
-                musicPlayer = null
-            }
-            notifyPlayStateChange(PlaybackStateCompat.STATE_STOPPED)
-        }
-
-        override fun onSeekTo(pos: Long) {
-            musicPlayer?.seekTo(pos.toInt())
-            notifyPlayStateChange(PlaybackStateCompat.STATE_PLAYING)
+            mAudioFocusManager.abandonAudioFocus()
+            mMusicPlayback.stop()
         }
     }
 
-    fun notifyMetaDateChange(metadata: MediaMetadataCompat) {
-        nowMetadata = metadata
-        mediaSession.setMetadata(nowMetadata)
-    }
-
-    fun notifyPlayStateChange(state: Int) {
-        nowPlaybackState = PlaybackStateCompat.Builder()
-            .setState(
-                state,
-                if (musicPlayer == null) 0 else musicPlayer!!.currentPosition.toLong(),
-                1.0f
-            ).build()
-        mediaSession.setPlaybackState(nowPlaybackState)
-
-        when (state) {
-            PlaybackStateCompat.STATE_PLAYING -> {
-                val notification = mNotificationManager.getNotification(mediaSession)
-                if (!isInForeGroundState) {
-                    ContextCompat.startForegroundService(
-                        this@MusicService,
-                        Intent(this@MusicService, MusicService::class.java)
-                    )
-                    isInForeGroundState = true
-                }
-                startForeground(NOTIFICATION_ID, notification)
-            }
-            PlaybackStateCompat.STATE_PAUSED -> {
-                stopForeground(false)
-                val notification = mNotificationManager.getNotification(mediaSession)
-                mNotificationManager.notificationManager.notify(NOTIFICATION_ID, notification)
-            }
-            PlaybackStateCompat.STATE_STOPPED -> {
-                stopForeground(true)
-                stopSelf()
-                isInForeGroundState = false
-            }
-        }
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        MediaButtonReceiver.handleIntent(mediaSession, intent)
+        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onGetRoot(
@@ -262,8 +199,6 @@ class MusicService : MediaBrowserServiceCompat() {
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         result.detach()
-        if (parentId == EMPTY_ID) return
-
         val metadataList = LMusicMediaModule.getInstance(null)
             .mediaScanner.getMediaMetaData()
 
@@ -276,6 +211,13 @@ class MusicService : MediaBrowserServiceCompat() {
         result.sendResult(mList.getOrderDataList().map {
             it.toMediaItem()
         }.toMutableList())
+
+        if (mMetadataPrepared == null) {
+            val mediaId = lastPlaySongSP.getString("mediaId", null) ?: return
+            val metadata = mList.playByKey(mediaId) ?: return
+            mMetadataPrepared = metadata
+            mediaSession.setMetadata(metadata)
+        }
     }
 }
 
