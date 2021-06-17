@@ -61,7 +61,7 @@ class SeekBar @JvmOverloads constructor(
     private var rawY: Float = -1f
     private var deltaX: Float = 0f
     private var deltaY: Float = 0f
-    private var progress: Double = 0.6
+    private var progress: Double = 0.0
     private var maxProgress: Float = 1f
     private var minProgress: Float = 0f
     private var sensitivity: Float = 0.0015f

@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        PermissionUtils.requestPermission(this)
+        PermissionUtils.requestPermission(this)
         mediaBrowser = MusicBrowser(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
