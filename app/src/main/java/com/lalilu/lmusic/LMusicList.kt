@@ -12,6 +12,14 @@ open class LMusicList<K, V> {
     var mNowPosition: Int = 0
     fun size() = mOrderList.size
 
+    fun getNowItem(): V? {
+        return if (mNowItem == null) {
+            mDataList[mOrderList[mNowPosition]]
+        } else {
+            mNowItem
+        }
+    }
+
     fun last(): V? {
         mNowPosition = Mathf.clamp(0, mOrderList.size - 1, mNowPosition - 1)
         mNowItem = mDataList[mOrderList[mNowPosition]]
