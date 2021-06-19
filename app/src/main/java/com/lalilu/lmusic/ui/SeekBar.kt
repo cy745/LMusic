@@ -10,8 +10,8 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import com.lalilu.R
 import com.lalilu.common.TextUtils
-import com.lalilu.lmusic.R
 import java.util.*
 import kotlin.concurrent.schedule
 

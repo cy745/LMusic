@@ -9,10 +9,10 @@ import android.view.ViewGroup
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.lalilu.R
 import com.lalilu.common.Mathf
+import com.lalilu.databinding.ItemSongMediaItemBinding
 import com.lalilu.lmusic.LMusicList
-import com.lalilu.lmusic.R
-import com.lalilu.lmusic.databinding.ItemSongMediaItemBinding
 import java.util.*
 
 interface ItemTouch {

@@ -8,9 +8,9 @@ import android.widget.ImageView;
 import androidx.databinding.BindingAdapter;
 
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.lalilu.R;
 import com.lalilu.common.GlobalCommon;
 import com.lalilu.common.TextUtils;
-import com.lalilu.lmusic.R;
 
 public class BindAdapter {
     @BindingAdapter("iconRec")

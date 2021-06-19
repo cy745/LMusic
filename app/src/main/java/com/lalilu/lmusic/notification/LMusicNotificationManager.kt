@@ -16,9 +16,9 @@ import androidx.core.content.ContextCompat
 import androidx.media.app.NotificationCompat.MediaStyle
 import androidx.media.session.MediaButtonReceiver
 import androidx.palette.graphics.Palette
+import com.lalilu.R
 import com.lalilu.common.bitmap.BitmapUtils
 import com.lalilu.common.getAutomaticColor
-import com.lalilu.lmusic.R
 
 
 class LMusicNotificationManager constructor(private val mService: Context) {

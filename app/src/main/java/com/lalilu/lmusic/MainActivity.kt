@@ -13,10 +13,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
+import com.lalilu.databinding.ActivityMainBinding
 import com.lalilu.lmusic.adapter2.ItemTouch
 import com.lalilu.lmusic.adapter2.MusicListAdapter
-import com.lalilu.lmusic.databinding.ActivityMainBinding
 import com.lalilu.lmusic.service2.MusicBrowser
 import com.lalilu.lmusic.service2.MusicService.Companion.ACTION_MOVE_SONG
 import com.lalilu.lmusic.service2.MusicService.Companion.ACTION_SWIPED_SONG
