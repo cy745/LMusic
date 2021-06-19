@@ -7,7 +7,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -54,17 +53,29 @@
                     android:layout_height="50dp"
                     app:layout_collapseMode="pin"
                     app:title="LMusic..." />
+
+                <com.lalilu.lmusic.ui.LMusicTabLayout
+                    android:id="@+id/tabLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top"
+                    android:layout_marginStart="10dp"
+                    app:layout_collapseMode="parallax"
+                    app:layout_collapseParallaxMultiplier="0.6"
+                    app:tabIndicatorColor="@android:color/transparent"
+                    app:tabIndicatorFullWidth="false"
+                    app:tabMode="scrollable"
+                    app:tabRippleColor="#10FFFFFF"
+                    app:tabUnboundedRipple="false" />
             </net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout>
         </com.lalilu.lmusic.ui.SquareAppBarLayout>
 
-
-        <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
-            android:id="@+id/musicRecyclerView"
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/musicViewPager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:overScrollMode="never"
-            android:paddingBottom="128dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
