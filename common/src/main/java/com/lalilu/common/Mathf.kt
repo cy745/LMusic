@@ -3,6 +3,12 @@ package com.lalilu.common
 class Mathf {
     companion object {
         fun <T : Number> clamp(min: T, max: T, num: T): T {
+            if (num.toDouble() < min.toDouble()) return min
+            if (num.toDouble() > max.toDouble()) return max
+            return num
+        }
+
+        fun <T : Number> clampInLoop(min: T, max: T, num: T): T {
             if (num.toDouble() < min.toDouble()) return max
             if (num.toDouble() > max.toDouble()) return min
             return num

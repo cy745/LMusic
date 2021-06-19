@@ -21,13 +21,13 @@ open class LMusicList<K, V> {
     }
 
     fun last(): V? {
-        mNowPosition = Mathf.clamp(0, mOrderList.size - 1, mNowPosition - 1)
+        mNowPosition = Mathf.clampInLoop(0, mOrderList.size - 1, mNowPosition - 1)
         mNowItem = mDataList[mOrderList[mNowPosition]]
         return mNowItem
     }
 
     fun next(): V? {
-        mNowPosition = Mathf.clamp(0, mOrderList.size - 1, mNowPosition + 1)
+        mNowPosition = Mathf.clampInLoop(0, mOrderList.size - 1, mNowPosition + 1)
         mNowItem = mDataList[mOrderList[mNowPosition]]
         return mNowItem
     }
