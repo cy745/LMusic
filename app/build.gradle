@@ -42,6 +42,8 @@ def roomVersion = "2.3.0"
 def fastJsonVersion = "1.1.72.android"
 
 dependencies {
+    implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
+
     // https://github.com/wasabeef/recyclerview-animators
     // Apache-2.0
     implementation 'jp.wasabeef:recyclerview-animators:4.0.2'
