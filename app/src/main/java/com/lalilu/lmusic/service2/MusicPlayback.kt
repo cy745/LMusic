@@ -104,6 +104,14 @@ class MusicPlayback(private val playbackListener: MusicPlaybackListener) :
         mState = newState
 
         val state = PlaybackStateCompat.Builder()
+            .setActions(
+                PlaybackStateCompat.ACTION_PLAY or
+                        PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                        PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
+                        PlaybackStateCompat.ACTION_PAUSE or
+                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+            )
             .setState(mState, getPosition(), 1.0f)
         playbackListener.notifyNewPlayBackState(state.build())
     }
