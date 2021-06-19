@@ -1,12 +1,11 @@
 package com.lalilu.lmusic.adapter2
 
-import android.app.Activity
+import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
@@ -20,7 +19,7 @@ interface ItemTouch {
     fun onItemSwiped(viewHolder: RecyclerView.ViewHolder)
 }
 
-open class MusicListAdapter(private val context: Activity) :
+open class MusicListAdapter(private val context: Context) :
     RecyclerView.Adapter<MusicListAdapter.SongHolder>(), ItemTouch {
 
     private val mList: LMusicListInAdapter<String, MediaBrowserCompat.MediaItem> =
@@ -89,14 +88,12 @@ open class MusicListAdapter(private val context: Activity) :
         mList.updateShowList()
     }
 
-    fun setMetaDataLiveData(mediaMetadataCompat: MutableLiveData<MediaMetadataCompat>) {
-        mediaMetadataCompat.observeForever {
-            it ?: return@observeForever
-            when (it.description?.extras?.get(LMusicList.LIST_TRANSFORM_ACTION)) {
-                LMusicList.ACTION_JUMP_TO -> mList.jumpTo(it.description.mediaId)
-                LMusicList.ACTION_MOVE_TO -> mList.moveTo(it.description.mediaId)
-                else -> mList.moveTo(it.description.mediaId ?: return@observeForever)
-            }
+    fun updateByMetadata(metadata: MediaMetadataCompat?) {
+        metadata ?: return
+        when (metadata.description?.extras?.get(LMusicList.LIST_TRANSFORM_ACTION)) {
+            LMusicList.ACTION_JUMP_TO -> mList.jumpTo(metadata.description.mediaId)
+            LMusicList.ACTION_MOVE_TO -> mList.moveTo(metadata.description.mediaId)
+            else -> mList.moveTo(metadata.description.mediaId ?: return)
         }
     }
 
