@@ -2,8 +2,10 @@ package com.lalilu.lmusic.service2
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.media.AudioManager
+import android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY
 import android.media.MediaMetadata
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -21,6 +23,7 @@ import com.lalilu.lmusic.notification.LMusicNotificationManager.Companion.NOTIFI
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.toMediaItem
 import java.util.*
+import java.util.logging.Logger
 
 
 class MusicService : MediaBrowserServiceCompat() {
@@ -38,6 +41,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mAudioFocusManager: LMusicAudioFocusManager
     private lateinit var mNotificationManager: LMusicNotificationManager
+    private lateinit var mNoisyReceiver: MusicNoisyReceiver
     private lateinit var mMusicPlayback: MusicPlayback
 
     private val mList: LMusicList<String, MediaMetadataCompat> = LMusicList()
@@ -51,6 +55,11 @@ class MusicService : MediaBrowserServiceCompat() {
         musicSessionCallback = MusicSessionCallback()
         mAudioFocusManager = LMusicAudioFocusManager(this, musicSessionCallback)
         mMusicPlayback = MusicPlayback(musicSessionCallback)
+        mNoisyReceiver = MusicNoisyReceiver().also {
+            it.onBecomingNoisyCallback = {
+                musicSessionCallback.onPause()
+            }
+        }
 
         // 构造可跳转到 launcher activity 的 PendingIntent
         val sessionActivityPendingIntent =
@@ -72,6 +81,8 @@ class MusicService : MediaBrowserServiceCompat() {
     inner class MusicSessionCallback : MediaSessionCompat.Callback(),
         MusicPlayback.MusicPlaybackListener, AudioManager.OnAudioFocusChangeListener {
 
+        private val logger = Logger.getLogger(this.javaClass.name)
+
         override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
             if (mediaButtonEvent.action != Intent.ACTION_MEDIA_BUTTON)
                 return super.onMediaButtonEvent(mediaButtonEvent)
@@ -88,7 +99,7 @@ class MusicService : MediaBrowserServiceCompat() {
                     KeyEvent.KEYCODE_MEDIA_PREVIOUS -> onSkipToPrevious()
                 }
             }
-            println("[onMediaButtonEvent]: ${mediaButtonEvent.action.toString()}")
+            logger.info("[onMediaButtonEvent]: ${mediaButtonEvent.action.toString()}")
             return super.onMediaButtonEvent(mediaButtonEvent)
         }
 
@@ -129,16 +140,20 @@ class MusicService : MediaBrowserServiceCompat() {
             val result = mAudioFocusManager.getAudioFocus()
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
 
-            onPrepare()
-            val mediaUri = mList.getNowItem()?.description?.mediaUri ?: return
-            mMusicPlayback.playFromUri(mediaUri, this@MusicService)
+            val mediaId = mList.getNowItem()?.description?.mediaId ?: return
+            onPlayFromMediaId(mediaId, null)
         }
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-            println("[onPlayFromMediaId]: $mediaId")
+            logger.info("[onPlayFromMediaId]: $mediaId")
+
             val mediaMetaData = mList.playByKey(mediaId) ?: return
             val mediaUri = mediaMetaData.description.mediaUri ?: return
+
             mMusicPlayback.playFromUri(mediaUri, this@MusicService)
+
+            val filter = IntentFilter().also { it.addAction(ACTION_AUDIO_BECOMING_NOISY) }
+            registerReceiver(mNoisyReceiver, filter)
             onPrepare()
         }
 
@@ -177,6 +192,7 @@ class MusicService : MediaBrowserServiceCompat() {
         override fun onStop() {
             mediaSession.isActive = false
             mAudioFocusManager.abandonAudioFocus()
+            unregisterReceiver(mNoisyReceiver)
             mMusicPlayback.stop()
         }
     }
