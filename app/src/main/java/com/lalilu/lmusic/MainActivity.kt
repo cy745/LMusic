@@ -1,115 +1,61 @@
 package com.lalilu.lmusic
 
 import android.content.Intent
-import android.graphics.Canvas
 import android.media.AudioManager
 import android.media.MediaMetadata
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.Menu
 import android.view.MenuItem
-import android.view.animation.OvershootInterpolator
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.databinding.ActivityMainBinding
-import com.lalilu.lmusic.adapter2.ItemTouch
-import com.lalilu.lmusic.adapter2.MusicListAdapter
+import com.lalilu.lmusic.fragment.LMusicFragmentStateAdapter
+import com.lalilu.lmusic.fragment.LMusicViewModel
+import com.lalilu.lmusic.fragment.NowPlayListFragment
+import com.lalilu.lmusic.fragment.PlayingFragment
 import com.lalilu.lmusic.service2.MusicBrowser
-import com.lalilu.lmusic.service2.MusicService.Companion.ACTION_MOVE_SONG
-import com.lalilu.lmusic.service2.MusicService.Companion.ACTION_SWIPED_SONG
 import com.lalilu.lmusic.utils.*
 import com.lalilu.media.LMusicMediaModule
-import jp.wasabeef.recyclerview.animators.FadeInAnimator
-import kotlin.math.abs
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
+    private lateinit var mViewModel: LMusicViewModel
     private lateinit var mediaBrowser: MusicBrowser
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PermissionUtils.requestPermission(this)
         mediaBrowser = MusicBrowser(this)
-
+        mViewModel = LMusicViewModel.getInstance(application)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        initViewPager()
         initToolBar()
-        initRecyclerView()
         initSeekBar()
         bindUiToBrowser()
+        initTabLayout()
     }
 
-    class ItemTouchCallback(private val itemTouch: ItemTouch) : ItemTouchHelper.Callback() {
-
-        override fun getMovementFlags(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder
-        ): Int {
-            val swipeFlags = ItemTouchHelper.RIGHT
-            return makeMovementFlags(0, swipeFlags);
-        }
-
-        override fun onMove(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            target: RecyclerView.ViewHolder
-        ): Boolean {
-            return itemTouch.onItemMove(viewHolder)
-        }
-
-        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            itemTouch.onItemSwiped(viewHolder)
-        }
-
-        override fun onChildDraw(
-            c: Canvas,
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            dX: Float,
-            dY: Float,
-            actionState: Int,
-            isCurrentlyActive: Boolean
-        ) {
-            if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-                //滑动时改变Item的透明度
-                val alpha: Float = 1 - abs(dX) / viewHolder.itemView.width
-                viewHolder.itemView.alpha = alpha
-            }
-            val x = (dX * 0.7).toFloat()
-            super.onChildDraw(c, recyclerView, viewHolder, x, dY, actionState, isCurrentlyActive)
-        }
+    private fun initTabLayout() {
+        binding.tabLayout.bindToViewPager(binding.musicViewPager)
     }
 
-    private fun initRecyclerView() {
-        binding.musicRecyclerView.adapter = MusicListAdapter(this)
-        (binding.musicRecyclerView.adapter as MusicListAdapter).itemOnMove = { mediaId ->
-            mediaBrowser.mediaController.transportControls.sendCustomAction(
-                ACTION_MOVE_SONG,
-                Bundle().also { it.putString(MediaMetadata.METADATA_KEY_MEDIA_ID, mediaId) }
-            )
-        }
-        (binding.musicRecyclerView.adapter as MusicListAdapter).itemOnSwiped = { mediaId ->
-            mediaBrowser.mediaController.transportControls.sendCustomAction(
-                ACTION_SWIPED_SONG,
-                Bundle().also { it.putString(MediaMetadata.METADATA_KEY_MEDIA_ID, mediaId) }
-            )
-        }
-        binding.musicRecyclerView.layoutManager = LinearLayoutManager(this)
-        binding.musicRecyclerView.itemAnimator = FadeInAnimator(OvershootInterpolator()).apply {
-            this.addDuration = 300
-            this.moveDuration = 200
-            this.removeDuration = 50
-        }
-        ItemTouchHelper(ItemTouchCallback(binding.musicRecyclerView.adapter as MusicListAdapter)).attachToRecyclerView(
-            binding.musicRecyclerView
-        )
+    private fun initViewPager() {
+        val musicViewPager = binding.musicViewPager
+        musicViewPager.adapter = LMusicFragmentStateAdapter(this)
+        val adapter = musicViewPager.adapter as LMusicFragmentStateAdapter
+        adapter.addFragment(NowPlayListFragment())
+        adapter.addFragment(PlayingFragment())
+
+        val child = musicViewPager.getChildAt(0) as View
+        if (child is RecyclerView) child.overScrollMode = View.OVER_SCROLL_NEVER
     }
 
     private fun initToolBar() {
@@ -118,10 +64,10 @@ class MainActivity : AppCompatActivity() {
             binding.playingSongAlbumPic,
             binding.collapsingToolbarLayout
         )
-        binding.toolbar.setOnClickListener {
-            binding.musicRecyclerView.smoothScrollToPosition(0)
-            binding.appbar.setExpanded(true, true)
-        }
+//        binding.toolbar.setOnClickListener {
+//            binding.musicViewPager.smoothScrollToPosition(0)
+//            binding.appbar.setExpanded(true, true)
+//        }
     }
 
     private fun initSeekBar() {
@@ -138,9 +84,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun bindUiToBrowser() {
-        mediaBrowser.mediaMetadataCompat.observeForever {
+        mViewModel.metadata.observeForever {
             if (it == null) return@observeForever
             binding.collapsingToolbarLayout.title = it.description.title
             binding.playingSongAlbumPic.setImageURI(
@@ -150,13 +95,10 @@ class MainActivity : AppCompatActivity() {
                 it.getLong(MediaMetadata.METADATA_KEY_DURATION)
             )
         }
-        mediaBrowser.playbackStateCompat.observeForever {
+        mViewModel.playBackState.observeForever {
             if (it == null) return@observeForever
             binding.seekBar.updateNowPosition(it)
         }
-        mediaBrowser.setAdapterToUpdate(
-            binding.musicRecyclerView.adapter as MusicListAdapter
-        )
     }
 
     override fun onStart() {
@@ -204,6 +146,4 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_appbar, menu)
         return super.onCreateOptionsMenu(menu)
     }
-
-
 }
