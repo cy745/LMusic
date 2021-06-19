@@ -1,47 +1,47 @@
 package com.lalilu.lmusic.utils
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
 import android.media.MediaPlayer
+import androidx.dynamicanimation.animation.FloatPropertyCompat
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 
 class LMusicVolumeManager(private val mPlayer: MediaPlayer) {
     private var nowVolume = 0f
-    private var volumeAnimator: ValueAnimator? = null
+    private var mSpringAnimation: SpringAnimation? = null
+
+    private fun reCreateSpringAnimation() {
+        mSpringAnimation =
+            SpringAnimation(mPlayer, volumePropertyCompat, 1f).apply {
+                this.spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+                this.spring.stiffness = SpringForce.STIFFNESS_VERY_LOW
+                this.addEndListener { _, canceled, value, _ ->
+                    if (!canceled && value == 0f) mPlayer.pause()
+                }
+            }
+    }
 
     fun fadeStart() {
-        if (volumeAnimator != null) volumeAnimator?.cancel()
-        volumeAnimator = ValueAnimator.ofFloat(nowVolume, 1f).also {
-            it.duration = (nowVolume / 1 * 400).toLong()
-            it.addUpdateListener { v ->
-                val value = v.animatedValue as Float
-                nowVolume = value
-                mPlayer.setVolume(value, value)
-            }
-            it.addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator?) {
-                    if (!mPlayer.isPlaying) mPlayer.start()
-                }
-            })
-        }
-        volumeAnimator?.start()
+        if (mSpringAnimation == null) reCreateSpringAnimation()
+        mSpringAnimation?.cancel()
+        if (!mPlayer.isPlaying) mPlayer.start()
+        mSpringAnimation?.animateToFinalPosition(1f)
     }
 
     fun fadePause() {
-        if (volumeAnimator != null) volumeAnimator?.cancel()
-        volumeAnimator = ValueAnimator.ofFloat(nowVolume, 0f).also {
-            it.duration = (nowVolume / 1 * 400).toLong()
-            it.addUpdateListener { v ->
-                val value = v.animatedValue as Float
-                nowVolume = value
-                mPlayer.setVolume(value, value)
-            }
-            it.addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    if (mPlayer.isPlaying) mPlayer.pause()
-                }
-            })
-        }
-        volumeAnimator?.start()
+        if (mSpringAnimation == null) reCreateSpringAnimation()
+        mSpringAnimation?.cancel()
+        mSpringAnimation?.animateToFinalPosition(0f)
     }
+
+    private val volumePropertyCompat =
+        object : FloatPropertyCompat<MediaPlayer>("volume") {
+            override fun getValue(`object`: MediaPlayer?): Float {
+                return nowVolume
+            }
+
+            override fun setValue(`object`: MediaPlayer?, value: Float) {
+                `object`?.setVolume(value, value)
+                nowVolume = value
+            }
+        }
 }
