@@ -64,19 +64,20 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
         consumed: IntArray,
         type: Int
     ) {
-        val nextPosition = child.bottom - dy
+        var nextPosition = child.bottom - dy
         if (mAppbarState == AppBarState.STATE_EXPANDED && nextPosition > mAppbarHeight) {
+            if (child.bottom >= mDraweeHeight && dy < 0) {
+                val percent = 1 - (child.bottom - mDraweeHeight) / MAX_ZOOM_HEIGHT.toFloat()
+                val calcDy = dy * percent
+                nextPosition = child.bottom - calcDy.toInt()
+            }
             zoomDrawee(child, nextPosition)
             mSpringAnimation?.cancel()
 
             consumed[1] = when {
-                nextPosition < mDraweeHeight -> {
-                    dy - (mDraweeHeight - nextPosition)
-                }
-                nextPosition > mDraweeHeight + MAX_ZOOM_HEIGHT -> {
-                    dy + (nextPosition - (mDraweeHeight + MAX_ZOOM_HEIGHT))
-                }
-                else -> dy
+                nextPosition >= mDraweeHeight
+                        && nextPosition <= mDraweeHeight + MAX_ZOOM_HEIGHT -> Int.MAX_VALUE
+                else -> 0
             }
             if (child.bottom <= mDraweeHeight) {
                 super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type)
