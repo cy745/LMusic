@@ -14,14 +14,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
 import com.lalilu.databinding.FragmentNowPlayingBinding
 import com.lalilu.lmusic.LMusicList
-import com.lalilu.lmusic.adapter2.MusicListAdapter
+import com.lalilu.lmusic.adapter2.LMusicNowPlayingAdapter
 import com.lalilu.lmusic.service2.MusicService
 import com.lalilu.lmusic.utils.ItemTouchCallback
 import jp.wasabeef.recyclerview.animators.FadeInAnimator
 
 class LMusicNowPlayingFragment : Fragment() {
     private lateinit var mRecyclerView: RecyclerView
-    private lateinit var mAdapter: MusicListAdapter
+    private lateinit var mAdapter: LMusicNowPlayingAdapter
     private lateinit var mViewModel: LMusicViewModel
     private var mediaControllerCompat: MediaControllerCompat? = null
 
@@ -58,15 +58,16 @@ class LMusicNowPlayingFragment : Fragment() {
         mViewModel.mediaList.observeForever { it?.let { mAdapter.setDataIn(it) } }
         mViewModel.metadata.observeForever { it?.let { mAdapter.updateByMetadata(it) } }
         mViewModel.mediaController.observeForever { it?.let { mediaControllerCompat = it } }
+        mViewModel.mNowPlayingRecyclerView.postValue(mRecyclerView)
+        mViewModel.mNowPlayingAdapter.postValue(mAdapter)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         mRecyclerView = FragmentNowPlayingBinding.bind(view).nowPlayingRecyclerView
-        mRecyclerView.adapter = MusicListAdapter(requireContext())
-        mAdapter = mRecyclerView.adapter as MusicListAdapter
+        mRecyclerView.adapter = LMusicNowPlayingAdapter(requireContext())
+        mAdapter = mRecyclerView.adapter as LMusicNowPlayingAdapter
         mViewModel = LMusicViewModel.getInstance(null)
 
-        mRecyclerView.isNestedScrollingEnabled = false
         mRecyclerView.layoutManager = LinearLayoutManager(context)
         mRecyclerView.itemAnimator = FadeInAnimator(OvershootInterpolator()).apply {
             this.addDuration = 300
