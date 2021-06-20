@@ -25,6 +25,8 @@ class LMusicPlayListFragment : Fragment() {
                 mAdapter.notifyDataSetChanged()
             }
         }
+        mViewModel.mPlayListRecyclerView.postValue(mRecyclerView)
+        mViewModel.mPlayListAdapter.postValue(mAdapter)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -33,7 +35,6 @@ class LMusicPlayListFragment : Fragment() {
         mAdapter = mRecyclerView.adapter as LMusicPlayListAdapter
         mViewModel = LMusicViewModel.getInstance(null)
 
-        mRecyclerView.isNestedScrollingEnabled = false
         mRecyclerView.layoutManager = LinearLayoutManager(context)
         mRecyclerView.itemAnimator = FadeInAnimator(OvershootInterpolator()).apply {
             this.addDuration = 300

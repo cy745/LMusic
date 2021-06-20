@@ -11,6 +11,7 @@ class LMusicApplication : Application() {
         super.onCreate()
         LMusicMediaModule.getInstance(this)
         LMusicViewModel.getInstance(this)
+        LMusicPlayListManager.getInstance(this)
         Fresco.initialize(this)
     }
 }

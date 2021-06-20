@@ -63,17 +63,18 @@ class MainActivity : AppCompatActivity() {
         playlist.forEach { title ->
             dao.insert(LMusicPlayList().also {
                 it.playListTitle = title
+                it.mediaIdList.add("未来有你・初音未来2018中国巡演")
+                it.mediaIdList.add("初音ミク")
+                it.mediaIdList.add("很chill的R&B歌单 节奏布鲁斯 欧美")
+                it.mediaIdList.add("花 影 海 夜 夏 | 荒岛自制卡带®")
             })
-        }
-        dao.getAll().forEach {
-            println(it)
         }
 
         initViewPager()
         initToolBar()
         initSeekBar()
-        bindUiToBrowser()
         initTabLayout()
+        bindUiToBrowser()
     }
 
     private fun initTabLayout() {
@@ -89,6 +90,7 @@ class MainActivity : AppCompatActivity() {
 
         val child = musicViewPager.getChildAt(0) as View
         if (child is RecyclerView) child.overScrollMode = View.OVER_SCROLL_NEVER
+        mViewModel.mViewPager2.postValue(musicViewPager)
     }
 
     private fun initToolBar() {
@@ -97,10 +99,10 @@ class MainActivity : AppCompatActivity() {
             binding.playingSongAlbumPic,
             binding.collapsingToolbarLayout
         )
-//        binding.toolbar.setOnClickListener {
-//            binding.musicViewPager.smoothScrollToPosition(0)
-//            binding.appbar.setExpanded(true, true)
-//        }
+        binding.toolbar.setOnClickListener {
+            binding.appbar.setExpanded(true, true)
+        }
+        mViewModel.mAppBar.postValue(binding.appbar)
     }
 
     private fun initSeekBar() {
@@ -152,6 +154,9 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.appbar_pause -> {
                 mediaBrowser.mediaController.transportControls.pause()
+            }
+            R.id.appbar_create_playlist -> {
+                LMusicPlayListManager.getInstance(null).createPlayList()
             }
             R.id.appbar_scan_song -> {
                 Thread {
