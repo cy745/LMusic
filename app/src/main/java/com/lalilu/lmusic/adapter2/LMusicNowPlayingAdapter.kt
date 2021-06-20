@@ -14,8 +14,8 @@ import com.lalilu.databinding.ItemSongMediaItemBinding
 import com.lalilu.lmusic.LMusicList
 import java.util.*
 
-class MusicListAdapter(private val context: Context) :
-    RecyclerView.Adapter<MusicListAdapter.SongHolder>() {
+class LMusicNowPlayingAdapter(private val context: Context) :
+    RecyclerView.Adapter<LMusicNowPlayingAdapter.SongHolder>() {
 
     private val mList: LMusicListInAdapter<String, MediaBrowserCompat.MediaItem> =
         LMusicListInAdapter()
@@ -32,7 +32,7 @@ class MusicListAdapter(private val context: Context) :
     }
 
     fun onItemMove(viewHolder: RecyclerView.ViewHolder): Boolean {
-        val mediaItem = (viewHolder as MusicListAdapter.SongHolder).binding.mediaItem
+        val mediaItem = (viewHolder as LMusicNowPlayingAdapter.SongHolder).binding.mediaItem
             ?: return true
         val mediaId = mediaItem.mediaId ?: return true
         itemOnMove?.let { it(mediaId) }
@@ -40,7 +40,7 @@ class MusicListAdapter(private val context: Context) :
     }
 
     fun onItemSwiped(viewHolder: RecyclerView.ViewHolder) {
-        val mediaItem = (viewHolder as MusicListAdapter.SongHolder).binding.mediaItem
+        val mediaItem = (viewHolder as LMusicNowPlayingAdapter.SongHolder).binding.mediaItem
             ?: return
         val mediaId = mediaItem.mediaId ?: return
         mList.mOrderList.remove(mediaId)
@@ -52,16 +52,6 @@ class MusicListAdapter(private val context: Context) :
 
     override fun onBindViewHolder(holder: SongHolder, position: Int) {
         holder.binding.mediaItem = mList.getShowItemByPosition(position)
-    }
-
-    private lateinit var recyclerView: RecyclerView
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-        this.recyclerView = recyclerView
-    }
-
-    private fun scrollToTop() {
-        recyclerView.scrollToPosition(0)
     }
 
     inner class SongHolder(
@@ -128,9 +118,8 @@ class MusicListAdapter(private val context: Context) :
                 temp.add(i, mOrderList[Mathf.clampInLoop(0, mOrderList.size - 1, mNowPosition, i)])
             }
             val result = DiffUtil.calculateDiff(getDiffCallBack(temp))
-            result.dispatchUpdatesTo(this@MusicListAdapter)
+            result.dispatchUpdatesTo(this@LMusicNowPlayingAdapter)
             mShowList = temp
-            scrollToTop()
         }
 
         private fun getDiffCallBack(newList: List<K>): Companion.LMusicListDiffCallback<K> {

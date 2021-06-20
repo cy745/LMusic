@@ -3,10 +3,10 @@ package com.lalilu.lmusic.utils
 import android.graphics.Canvas
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.lalilu.lmusic.adapter2.MusicListAdapter
+import com.lalilu.lmusic.adapter2.LMusicNowPlayingAdapter
 import kotlin.math.abs
 
-class ItemTouchCallback(private val adapter: MusicListAdapter) : ItemTouchHelper.Callback() {
+class ItemTouchCallback(private val adapter: LMusicNowPlayingAdapter) : ItemTouchHelper.Callback() {
 
     override fun getMovementFlags(
         recyclerView: RecyclerView,
