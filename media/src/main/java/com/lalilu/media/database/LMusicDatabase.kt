@@ -9,7 +9,7 @@ import com.lalilu.media.dao.LMusicAlbumDao
 import com.lalilu.media.dao.LMusicMediaDao
 import com.lalilu.media.dao.LMusicPlayListDao
 import com.lalilu.media.database.convertor.AlbumConvertor
-import com.lalilu.media.database.convertor.MediaIdListConvertor
+import com.lalilu.media.database.convertor.MediaIdTreeSetConvertor
 import com.lalilu.media.database.convertor.SongConvertor
 import com.lalilu.media.database.convertor.UriConvertor
 import com.lalilu.media.entity.LMusicAlbum
@@ -18,11 +18,11 @@ import com.lalilu.media.entity.LMusicPlayList
 
 @Database(
     entities = [LMusicMedia::class, LMusicAlbum::class, LMusicPlayList::class],
-    version = 3, exportSchema = false
+    version = 4, exportSchema = false
 )
 @TypeConverters(
     value = [
-        MediaIdListConvertor::class,
+        MediaIdTreeSetConvertor::class,
         AlbumConvertor::class,
         SongConvertor::class,
         UriConvertor::class,

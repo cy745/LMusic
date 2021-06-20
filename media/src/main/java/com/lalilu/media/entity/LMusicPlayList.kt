@@ -3,6 +3,7 @@ package com.lalilu.media.entity
 import android.net.Uri
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.*
 
 @Entity(tableName = "lmusic_playlist")
 class LMusicPlayList {
@@ -14,5 +15,5 @@ class LMusicPlayList {
     var insertTime: Long = System.currentTimeMillis()
     var lastPlayTime: Long = System.currentTimeMillis()
 
-    var mediaIdList: MutableList<String> = mutableListOf()
+    var mediaIdList: TreeSet<String> = TreeSet()
 }
