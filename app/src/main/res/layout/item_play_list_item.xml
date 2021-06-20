@@ -19,6 +19,7 @@
             android:id="@+id/play_list_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.25"
@@ -32,8 +33,10 @@
             android:background="@drawable/item_click_background"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/play_list_title">
+            app:layout_constraintTop_toBottomOf="@+id/play_list_title"
+            app:layout_constraintVertical_bias="0.0">
 
             <com.facebook.drawee.view.SimpleDraweeView
                 android:id="@+id/play_list_pic"
@@ -55,6 +58,45 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/ic_delete_bin_line" />
+
+            <TextView
+                android:id="@+id/play_list_first"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="10dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                app:layout_constraintEnd_toStartOf="@+id/play_list_delete"
+                app:layout_constraintStart_toEndOf="@+id/play_list_pic"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/play_list_second"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="10dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/play_list_delete"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/play_list_pic"
+                app:layout_constraintTop_toBottomOf="@+id/play_list_first" />
+
+            <TextView
+                android:id="@+id/play_list_third"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="10dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                app:layout_constraintEnd_toStartOf="@+id/play_list_delete"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/play_list_pic"
+                app:layout_constraintTop_toBottomOf="@id/play_list_second" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
