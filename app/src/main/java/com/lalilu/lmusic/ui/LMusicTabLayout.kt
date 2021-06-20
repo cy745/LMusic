@@ -36,7 +36,6 @@ class LMusicTabLayout @JvmOverloads constructor(
 
             textView.text = text
             textView.letterSpacing = letterSpacing
-            println(textPaint.measureText(text).toInt())
             textView.layoutParams.width =
                 (textPaint.measureText(text) * (1 + letterSpacing)).toInt()
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
