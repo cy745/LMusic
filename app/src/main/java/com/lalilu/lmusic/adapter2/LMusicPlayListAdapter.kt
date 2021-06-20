@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlayListItemBinding
 import com.lalilu.media.entity.LMusicPlayList
+import java.util.*
 
 class LMusicPlayListAdapter(private val context: Context) :
     RecyclerView.Adapter<LMusicPlayListAdapter.PlayListItemHolder>() {
@@ -15,6 +16,16 @@ class LMusicPlayListAdapter(private val context: Context) :
 
     override fun onBindViewHolder(holder: PlayListItemHolder, position: Int) {
         holder.binding.playListTitle.text = playLists[position].playListTitle
+
+        val treeSet = playLists[position].mediaIdList
+        holder.binding.playListFirst.text = getTreeSetItemByIndex(treeSet, 0)
+        holder.binding.playListSecond.text = getTreeSetItemByIndex(treeSet, 1)
+        holder.binding.playListThird.text = getTreeSetItemByIndex(treeSet, 2)
+    }
+
+    private fun <T> getTreeSetItemByIndex(treeSet: TreeSet<T>, index: Int): T? {
+        val size = treeSet.size
+        return if (index <= size - 1) treeSet.elementAt(index) else null
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayListItemHolder {
