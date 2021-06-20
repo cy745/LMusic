@@ -7,6 +7,11 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
+import com.lalilu.lmusic.adapter2.LMusicNowPlayingAdapter
+import com.lalilu.lmusic.adapter2.LMusicPlayListAdapter
+import com.lalilu.lmusic.ui.SquareAppBarLayout
 import com.lalilu.media.LMusicMediaModule
 import org.jetbrains.annotations.Nullable
 
@@ -17,6 +22,15 @@ class LMusicViewModel private constructor(application: Application) :
     val metadata = MutableLiveData<MediaMetadataCompat>(null)
     val playBackState = MutableLiveData<PlaybackStateCompat>(null)
     val mediaController = MutableLiveData<MediaControllerCompat>(null)
+
+    val mAppBar = MutableLiveData<SquareAppBarLayout>(null)
+    val mViewPager2 = MutableLiveData<ViewPager2>(null)
+    val mNowPlayingRecyclerView = MutableLiveData<RecyclerView>(null)
+    val mNowPlayingAdapter = MutableLiveData<LMusicNowPlayingAdapter>(null)
+    val mPlayListRecyclerView = MutableLiveData<RecyclerView>(null)
+    val mPlayListAdapter = MutableLiveData<LMusicPlayListAdapter>(null)
+
+    val nowPlayingList = MutableLiveData<MutableList<MediaBrowserCompat.MediaItem>>(null)
     val playlist = mediaDatabase.playlistDao().getAllLiveData()
 
     companion object {
