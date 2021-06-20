@@ -5,13 +5,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayListBinding
+import com.lalilu.lmusic.adapter2.MusicListAdapter
 
 class LMusicPlayListFragment : Fragment() {
+    private lateinit var mRecyclerView: RecyclerView
+    private lateinit var mAdapter: MusicListAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        FragmentPlayListBinding.bind(view)
+        mRecyclerView = FragmentPlayListBinding.bind(view).playListRecyclerView
         super.onViewCreated(view, savedInstanceState)
     }
 

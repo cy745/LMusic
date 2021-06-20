@@ -14,13 +14,8 @@ import com.lalilu.databinding.ItemSongMediaItemBinding
 import com.lalilu.lmusic.LMusicList
 import java.util.*
 
-interface ItemTouch {
-    fun onItemMove(viewHolder: RecyclerView.ViewHolder): Boolean
-    fun onItemSwiped(viewHolder: RecyclerView.ViewHolder)
-}
-
-open class MusicListAdapter(private val context: Context) :
-    RecyclerView.Adapter<MusicListAdapter.SongHolder>(), ItemTouch {
+class MusicListAdapter(private val context: Context) :
+    RecyclerView.Adapter<MusicListAdapter.SongHolder>() {
 
     private val mList: LMusicListInAdapter<String, MediaBrowserCompat.MediaItem> =
         LMusicListInAdapter()
@@ -36,7 +31,7 @@ open class MusicListAdapter(private val context: Context) :
         return SongHolder(view, itemOnClick, itemOnLongClick)
     }
 
-    override fun onItemMove(viewHolder: RecyclerView.ViewHolder): Boolean {
+    fun onItemMove(viewHolder: RecyclerView.ViewHolder): Boolean {
         val mediaItem = (viewHolder as MusicListAdapter.SongHolder).binding.mediaItem
             ?: return true
         val mediaId = mediaItem.mediaId ?: return true
@@ -44,7 +39,7 @@ open class MusicListAdapter(private val context: Context) :
         return true
     }
 
-    override fun onItemSwiped(viewHolder: RecyclerView.ViewHolder) {
+    fun onItemSwiped(viewHolder: RecyclerView.ViewHolder) {
         val mediaItem = (viewHolder as MusicListAdapter.SongHolder).binding.mediaItem
             ?: return
         val mediaId = mediaItem.mediaId ?: return
