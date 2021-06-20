@@ -6,12 +6,21 @@
         android:id="@+id/appbar_play"
         android:icon="@drawable/ic_play_line"
         android:title="Play"
+        android:visible="false"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/appbar_pause"
         android:icon="@drawable/ic_pause_line"
         android:title="Pause"
+        android:visible="false"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/appbar_create_playlist"
+        android:enabled="true"
+        android:icon="@drawable/ic_play_list_add_line"
+        android:title="Create Playlist"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/appbar_scan_song"
         android:checkable="false"
