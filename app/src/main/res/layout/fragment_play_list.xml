@@ -5,21 +5,17 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:overScrollMode="never"
-    tools:context=".lmusic.fragment.PlayingFragment">
+    tools:context=".lmusic.fragment.LMusicPlayListFragment">
 
-    <LinearLayout
+    <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
+        android:id="@+id/playListRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:overScrollMode="never">
-
-        <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
-            android:id="@+id/musicRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:nestedScrollingEnabled="false"
-            android:overScrollMode="never"
-            android:paddingBottom="128dp" />
-    </LinearLayout>
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:nestedScrollingEnabled="false"
+        android:overScrollMode="never"
+        android:paddingBottom="128dp" />
 </androidx.core.widget.NestedScrollView>
+
+
+

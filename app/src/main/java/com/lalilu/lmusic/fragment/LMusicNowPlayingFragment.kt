@@ -12,14 +12,14 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
-import com.lalilu.databinding.FragmentPlayListBinding
+import com.lalilu.databinding.FragmentNowPlayingBinding
 import com.lalilu.lmusic.LMusicList
 import com.lalilu.lmusic.adapter2.MusicListAdapter
 import com.lalilu.lmusic.service2.MusicService
 import com.lalilu.lmusic.utils.ItemTouchCallback
 import jp.wasabeef.recyclerview.animators.FadeInAnimator
 
-class NowPlayListFragment : Fragment() {
+class LMusicNowPlayingFragment : Fragment() {
     private lateinit var mRecyclerView: RecyclerView
     private lateinit var mAdapter: MusicListAdapter
     private lateinit var mViewModel: LMusicViewModel
@@ -56,16 +56,15 @@ class NowPlayListFragment : Fragment() {
 
     private fun initializeObserver() {
         mViewModel.mediaList.observeForever { it?.let { mAdapter.setDataIn(it) } }
-        mViewModel.mediaController.observeForever { it?.let { mediaControllerCompat = it } }
         mViewModel.metadata.observeForever { it?.let { mAdapter.updateByMetadata(it) } }
+        mViewModel.mediaController.observeForever { it?.let { mediaControllerCompat = it } }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        mRecyclerView = FragmentPlayListBinding.bind(view).musicRecyclerView
+        mRecyclerView = FragmentNowPlayingBinding.bind(view).nowPlayingRecyclerView
         mRecyclerView.adapter = MusicListAdapter(requireContext())
         mAdapter = mRecyclerView.adapter as MusicListAdapter
         mViewModel = LMusicViewModel.getInstance(null)
-        bindToMediaController()
 
         mRecyclerView.isNestedScrollingEnabled = false
         mRecyclerView.layoutManager = LinearLayoutManager(context)
@@ -77,14 +76,14 @@ class NowPlayListFragment : Fragment() {
         ItemTouchHelper(ItemTouchCallback(mAdapter))
             .attachToRecyclerView(mRecyclerView)
 
+        bindToMediaController()
         initializeObserver()
-        super.onViewCreated(view, savedInstanceState)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_play_list, container, false)
+        return inflater.inflate(R.layout.fragment_now_playing, container, false)
     }
 }

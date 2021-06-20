@@ -15,8 +15,8 @@ import com.lalilu.common.getAutomaticColor
 import com.lalilu.databinding.ActivityMainBinding
 import com.lalilu.lmusic.fragment.LMusicFragmentStateAdapter
 import com.lalilu.lmusic.fragment.LMusicViewModel
-import com.lalilu.lmusic.fragment.NowPlayListFragment
-import com.lalilu.lmusic.fragment.PlayingFragment
+import com.lalilu.lmusic.fragment.LMusicNowPlayingFragment
+import com.lalilu.lmusic.fragment.LMusicPlayListFragment
 import com.lalilu.lmusic.service2.MusicBrowser
 import com.lalilu.lmusic.utils.*
 import com.lalilu.media.LMusicMediaModule
@@ -51,8 +51,8 @@ class MainActivity : AppCompatActivity() {
         val musicViewPager = binding.musicViewPager
         musicViewPager.adapter = LMusicFragmentStateAdapter(this)
         val adapter = musicViewPager.adapter as LMusicFragmentStateAdapter
-        adapter.addFragment(NowPlayListFragment())
-        adapter.addFragment(PlayingFragment())
+        adapter.addFragment(LMusicNowPlayingFragment())
+        adapter.addFragment(LMusicPlayListFragment())
 
         val child = musicViewPager.getChildAt(0) as View
         if (child is RecyclerView) child.overScrollMode = View.OVER_SCROLL_NEVER
