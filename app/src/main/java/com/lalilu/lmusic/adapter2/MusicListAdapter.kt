@@ -25,10 +25,10 @@ open class MusicListAdapter(private val context: Context) :
     private val mList: LMusicListInAdapter<String, MediaBrowserCompat.MediaItem> =
         LMusicListInAdapter()
 
-    lateinit var itemOnClick: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
-    lateinit var itemOnLongClick: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
-    lateinit var itemOnMove: (mediaId: String) -> Unit
-    lateinit var itemOnSwiped: (mediaId: String) -> Unit
+    var itemOnClick: ((mediaItem: MediaBrowserCompat.MediaItem) -> Unit)? = null
+    var itemOnLongClick: ((mediaItem: MediaBrowserCompat.MediaItem) -> Unit)? = null
+    var itemOnMove: ((mediaId: String) -> Unit)? = null
+    var itemOnSwiped: ((mediaId: String) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongHolder {
         val view = LayoutInflater.from(context)
@@ -40,7 +40,7 @@ open class MusicListAdapter(private val context: Context) :
         val mediaItem = (viewHolder as MusicListAdapter.SongHolder).binding.mediaItem
             ?: return true
         val mediaId = mediaItem.mediaId ?: return true
-        itemOnMove(mediaId)
+        itemOnMove?.let { it(mediaId) }
         return true
     }
 
@@ -50,7 +50,7 @@ open class MusicListAdapter(private val context: Context) :
         val mediaId = mediaItem.mediaId ?: return
         mList.mOrderList.remove(mediaId)
         mList.updateShowList()
-        itemOnSwiped(mediaId)
+        itemOnSwiped?.let { it(mediaId) }
     }
 
     override fun getItemCount(): Int = mList.size()
@@ -65,21 +65,29 @@ open class MusicListAdapter(private val context: Context) :
         this.recyclerView = recyclerView
     }
 
-    private fun scrollToTop() = recyclerView.scrollToPosition(0)
+    private fun scrollToTop() {
+        recyclerView.scrollToPosition(0)
+    }
 
     inner class SongHolder(
         itemView: View,
-        itemOnClick: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit,
-        itemOnLongClick: (mediaItem: MediaBrowserCompat.MediaItem) -> Unit
+        itemOnClick: ((mediaItem: MediaBrowserCompat.MediaItem) -> Unit)?,
+        itemOnLongClick: ((mediaItem: MediaBrowserCompat.MediaItem) -> Unit)?
     ) : RecyclerView.ViewHolder(itemView) {
         var binding = ItemSongMediaItemBinding.bind(itemView)
 
         init {
-            binding.root.setOnClickListener { binding.mediaItem?.let { itemOnClick(it) } }
-//            binding.root.setOnLongClickListener {
-//                binding.mediaItem?.let { itemOnLongClick(it) }
-//                true
-//            }
+            binding.root.setOnClickListener {
+                binding.mediaItem?.let {
+                    if (itemOnClick != null) itemOnClick(it)
+                }
+            }
+            binding.root.setOnLongClickListener {
+                binding.mediaItem?.let {
+                    if (itemOnLongClick != null) itemOnLongClick(it)
+                }
+                true
+            }
         }
     }
 
@@ -124,7 +132,7 @@ open class MusicListAdapter(private val context: Context) :
             for (i in 0 until mOrderList.size) {
                 temp.add(i, mOrderList[Mathf.clampInLoop(0, mOrderList.size - 1, mNowPosition, i)])
             }
-            val result = DiffUtil.calculateDiff(getDiffCallBack(temp), true)
+            val result = DiffUtil.calculateDiff(getDiffCallBack(temp))
             result.dispatchUpdatesTo(this@MusicListAdapter)
             mShowList = temp
             scrollToTop()
