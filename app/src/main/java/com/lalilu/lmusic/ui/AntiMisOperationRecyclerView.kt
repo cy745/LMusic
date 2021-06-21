@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -12,6 +13,17 @@ class AntiMisOperationRecyclerView @JvmOverloads constructor(
 
     private var limitPadding = 40
     var totalScrollY = 0
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(e: MotionEvent?): Boolean {
+        val location = IntArray(2)
+        this.getLocationInWindow(location)
+
+        val result = e?.action == MotionEvent.ACTION_MOVE
+                && location[1] > measuredWidth
+        requestDisallowInterceptTouchEvent(result)
+        return super.onTouchEvent(e)
+    }
 
     init {
         addOnItemTouchListener(object : OnItemTouchListener {
