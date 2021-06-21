@@ -12,6 +12,7 @@ abstract class AppBarOnStateChange : AppBarLayout.OnOffsetChangedListener {
 
     override fun onOffsetChanged(appBarLayout: AppBarLayout?, verticalOffset: Int) {
         if (appBarLayout == null) return
+        onStatePercentage(1 + verticalOffset.toFloat() / appBarLayout.totalScrollRange)
         if (verticalOffset == 0) {
             if (mCurrentState != AppBarState.STATE_EXPANDED) onStateChanged(
                 appBarLayout,
@@ -32,6 +33,8 @@ abstract class AppBarOnStateChange : AppBarLayout.OnOffsetChangedListener {
             mCurrentState = AppBarState.STATE_INTERMEDIATE
         }
     }
+
+    open fun onStatePercentage(percent: Float){}
 
     abstract fun onStateChanged(appBarLayout: AppBarLayout?, state: AppBarState)
 }
