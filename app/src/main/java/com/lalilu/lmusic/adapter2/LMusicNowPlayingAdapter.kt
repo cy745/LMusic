@@ -12,6 +12,7 @@ import com.lalilu.R
 import com.lalilu.common.Mathf
 import com.lalilu.databinding.ItemSongMediaItemBinding
 import com.lalilu.lmusic.LMusicList
+import com.lalilu.lmusic.fragment.LMusicViewModel
 import java.util.*
 
 class LMusicNowPlayingAdapter(private val context: Context) :
@@ -120,6 +121,8 @@ class LMusicNowPlayingAdapter(private val context: Context) :
             val result = DiffUtil.calculateDiff(getDiffCallBack(temp))
             result.dispatchUpdatesTo(this@LMusicNowPlayingAdapter)
             mShowList = temp
+            LMusicViewModel.getInstance(null)
+                .mNowPlayingRecyclerView.value?.scrollToPosition(0)
         }
 
         private fun getDiffCallBack(newList: List<K>): Companion.LMusicListDiffCallback<K> {
