@@ -12,9 +12,6 @@ class LMusicPlayListManager private constructor(application: Application) {
         mViewModel.mViewPager2.value?.currentItem = 1
         mViewModel.mAppBar.value?.setExpanded(true, true)
 
-        mViewModel.nowPlayingList.value?.forEach { it ->
-            it.mediaId
-        }
     }
 
     companion object {
