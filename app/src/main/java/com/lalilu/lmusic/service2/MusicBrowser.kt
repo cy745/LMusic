@@ -17,11 +17,11 @@ class MusicBrowser constructor(private val context: Activity) {
     private var controllerCallback: MusicControllerCallback
     private var connectionCallback: MusicConnectionCallback
     private var subscriptionCallback: MusicSubscriptionCallback
-    lateinit var mediaController: MediaControllerCompat
+    var mediaController: MediaControllerCompat? = null
 
     fun connect() = mediaBrowser.connect()
     fun disconnect() {
-        mediaController.unregisterCallback(controllerCallback)
+        mediaController?.unregisterCallback(controllerCallback)
         mediaBrowser.disconnect()
     }
 
@@ -43,7 +43,7 @@ class MusicBrowser constructor(private val context: Activity) {
                 mediaController = MediaControllerCompat(context, token)
                 MediaControllerCompat.setMediaController(context, mediaController)
             }
-            mediaController.registerCallback(controllerCallback)
+            mediaController?.registerCallback(controllerCallback)
             mediaBrowser.subscribe(MusicService.ACCESS_ID, subscriptionCallback)
         }
     }
@@ -55,8 +55,8 @@ class MusicBrowser constructor(private val context: Activity) {
         ) {
             mViewModel.mediaList.postValue(children)
             mViewModel.mediaController.postValue(this@MusicBrowser.mediaController)
-            mViewModel.metadata.postValue(mediaController.metadata)
-            mViewModel.playBackState.postValue(mediaController.playbackState)
+            mViewModel.metadata.postValue(mediaController?.metadata)
+            mViewModel.playBackState.postValue(mediaController?.playbackState)
             logger.info("[MusicSubscriptionCallback]#onChildrenLoaded: $parentId")
         }
     }
