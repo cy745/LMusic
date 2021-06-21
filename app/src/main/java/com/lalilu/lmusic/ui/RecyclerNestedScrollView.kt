@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.lmusic.fragment.LMusicViewModel
 import com.lalilu.lmusic.utils.AppBarOnStateChange
 
