@@ -10,17 +10,17 @@ import android.view.animation.OvershootInterpolator
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
 import com.lalilu.databinding.FragmentNowPlayingBinding
 import com.lalilu.lmusic.LMusicList
 import com.lalilu.lmusic.adapter2.LMusicNowPlayingAdapter
 import com.lalilu.lmusic.service2.MusicService
+import com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
 import com.lalilu.lmusic.utils.ItemTouchCallback
 import jp.wasabeef.recyclerview.animators.FadeInAnimator
 
 class LMusicNowPlayingFragment : Fragment() {
-    private lateinit var mRecyclerView: RecyclerView
+    private lateinit var mRecyclerView: AntiMisOperationRecyclerView
     private lateinit var mAdapter: LMusicNowPlayingAdapter
     private lateinit var mViewModel: LMusicViewModel
     private var mediaControllerCompat: MediaControllerCompat? = null
