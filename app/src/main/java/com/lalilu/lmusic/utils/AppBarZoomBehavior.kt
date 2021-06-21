@@ -2,6 +2,7 @@ package com.lalilu.lmusic.utils
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.dynamicanimation.animation.FloatPropertyCompat
@@ -14,7 +15,6 @@ import com.lalilu.common.Mathf
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import com.lalilu.lmusic.utils.AppBarOnStateChange.AppBarState
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
-
 
 class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
     AppBarLayout.Behavior(context, attrs) {
@@ -29,6 +29,7 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
     private var mAppbarHeight = -1          //记录AppbarLayout原始高度
     private var mDraweeHeight = -1          //记录ImageView原始高度
     private var mAppbarState = AppBarState.STATE_EXPANDED
+    private var isRecoveryFinish = true
 
     override fun onLayoutChild(
         parent: CoordinatorLayout,
@@ -39,12 +40,15 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
         return super.onLayoutChild(parent, abl, layoutDirection)
     }
 
+    override fun onTouchEvent(
+        parent: CoordinatorLayout,
+        child: AppBarLayout,
+        ev: MotionEvent
+    ): Boolean {
+        return super.onTouchEvent(parent, child, ev) && isRecoveryFinish
+    }
+
     private fun initialize(appBarLayout: AppBarLayout) {
-        this.setDragCallback(object : AppBarLayout.Behavior.DragCallback() {
-            override fun canDrag(appBarLayout: AppBarLayout): Boolean {
-                return false
-            }
-        })
         appBarLayout.clipChildren = false
 
         appBarLayout.addOnOffsetChangedListener(object : AppBarOnStateChange() {
@@ -72,11 +76,13 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
     ) {
         var nextPosition = child.bottom - dy
         if (mAppbarState == AppBarState.STATE_EXPANDED && nextPosition > mAppbarHeight) {
+
             if (child.bottom >= mDraweeHeight && dy < 0) {
                 val percent = 1 - (child.bottom - mDraweeHeight) / MAX_ZOOM_HEIGHT.toFloat()
                 val calcDy = dy * percent
                 nextPosition = child.bottom - calcDy.toInt()
             }
+
             zoomDrawee(child, nextPosition)
             mSpringAnimation?.cancel()
 
@@ -125,8 +131,12 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
                 SpringAnimation(abl, appBarLayoutFloatProperty, mDraweeHeight.toFloat()).apply {
                     this.spring.dampingRatio = DAMPING_RATIO_NO_BOUNCY
                     this.spring.stiffness = STIFFNESS_LOW
+                    this.addEndListener { _, cancel, _, _ ->
+                        if (!cancel) isRecoveryFinish = true
+                    }
                 }
         }
+        isRecoveryFinish = false
         mSpringAnimation!!.cancel()
         mSpringAnimation!!.animateToFinalPosition(position.toFloat())
     }
