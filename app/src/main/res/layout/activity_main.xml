@@ -23,9 +23,11 @@
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:layout_behavior="com.lalilu.lmusic.utils.AppBarZoomBehavior">
+            app:layout_behavior="com.lalilu.lmusic.utils.AppBarZoomBehavior"
+            app:liftOnScroll="true"
+            app:liftOnScrollTargetViewId="@id/musicViewPager">
 
-            <com.lalilu.lmusic.ui.MyCollapsingToolbarLayout
+            <net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
                 android:id="@+id/collapsingToolbarLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -66,14 +68,13 @@
                     app:tabMode="scrollable"
                     app:tabRippleColor="#10FFFFFF"
                     app:tabUnboundedRipple="false" />
-            </com.lalilu.lmusic.ui.MyCollapsingToolbarLayout>
+            </net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout>
         </com.lalilu.lmusic.ui.SquareAppBarLayout>
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/musicViewPager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false"
             android:overScrollMode="never"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 

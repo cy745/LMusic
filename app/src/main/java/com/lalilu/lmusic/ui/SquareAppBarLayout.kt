@@ -2,7 +2,6 @@ package com.lalilu.lmusic.ui
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.MotionEvent
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.lmusic.utils.AppBarOnStateChange
 import com.lalilu.lmusic.utils.AppBarOnStateChange.AppBarState
