@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.databinding.ActivityMainBinding
@@ -82,15 +83,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViewPager() {
-        val musicViewPager = binding.musicViewPager
-        musicViewPager.adapter = LMusicFragmentStateAdapter(this)
-        val adapter = musicViewPager.adapter as LMusicFragmentStateAdapter
+        binding.musicViewPager.adapter = LMusicFragmentStateAdapter(this)
+        val adapter = binding.musicViewPager.adapter as LMusicFragmentStateAdapter
         adapter.addFragment(LMusicNowPlayingFragment())
         adapter.addFragment(LMusicPlayListFragment())
 
-        val child = musicViewPager.getChildAt(0) as View
+        val child = binding.musicViewPager.getChildAt(0) as View
         if (child is RecyclerView) child.overScrollMode = View.OVER_SCROLL_NEVER
-        mViewModel.mViewPager2.postValue(musicViewPager)
+
+        binding.musicViewPager.registerOnPageChangeCallback(object :
+            ViewPager2.OnPageChangeCallback() {
+
+//            override fun onPageSelected(position: Int) {
+//                val mAppBarState = mViewModel.mAppBar.value?.mAppbarState ?: return
+//                val recyclerView = when (position) {
+//                    0 -> mViewModel.mNowPlayingRecyclerView.value
+//                    1 -> mViewModel.mPlayListRecyclerView.value
+//                    else -> null
+//                } ?: return
+//                if (recyclerView.totalScrollY > 0 && mAppBarState == AppBarOnStateChange.AppBarState.STATE_EXPANDED) {
+//                    mViewModel.mAppBar.value?.setExpanded(false, true)
+//                }
+//            }
+        })
+        mViewModel.mViewPager2.postValue(binding.musicViewPager)
     }
 
     private fun initToolBar() {
@@ -100,7 +116,17 @@ class MainActivity : AppCompatActivity() {
             binding.collapsingToolbarLayout
         )
         binding.toolbar.setOnClickListener {
-            binding.appbar.setExpanded(true, true)
+            if (binding.appbar.mAppbarState == AppBarOnStateChange.AppBarState.STATE_COLLAPSED) {
+                val recyclerView = when (binding.musicViewPager.currentItem) {
+                    0 -> mViewModel.mNowPlayingRecyclerView.value
+                    1 -> mViewModel.mPlayListRecyclerView.value
+                    else -> null
+                } ?: return@setOnClickListener
+                if (recyclerView.totalScrollY > 0) {
+                    binding.appbar.setExpanded(true, true)
+                    recyclerView.smoothScrollToPosition(0)
+                }
+            }
         }
         mViewModel.mAppBar.postValue(binding.appbar)
     }
