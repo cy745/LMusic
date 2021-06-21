@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.lalilu.R
+import com.lalilu.common.Mathf
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.databinding.ActivityMainBinding
 import com.lalilu.lmusic.fragment.LMusicFragmentStateAdapter
@@ -22,6 +23,7 @@ import com.lalilu.lmusic.service2.MusicBrowser
 import com.lalilu.lmusic.utils.*
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.entity.LMusicPlayList
+import kotlin.math.abs
 
 
 class MainActivity : AppCompatActivity() {
@@ -84,6 +86,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun initViewPager() {
         binding.musicViewPager.adapter = LMusicFragmentStateAdapter(this)
+        binding.musicViewPager.offscreenPageLimit = 1
+        binding.musicViewPager.setPageTransformer { page, position ->
+            page.alpha = Mathf.clamp(0f, 1f, 1 - abs(position))
+        }
         val adapter = binding.musicViewPager.adapter as LMusicFragmentStateAdapter
         adapter.addFragment(LMusicNowPlayingFragment())
         adapter.addFragment(LMusicPlayListFragment())
@@ -136,10 +142,10 @@ class MainActivity : AppCompatActivity() {
             binding.seekBar.setThumbColor(it.getAutomaticColor())
         }
         binding.seekBar.onActionUp = {
-            mediaBrowser.mediaController.transportControls?.seekTo(it)
+            mediaBrowser.mediaController?.transportControls?.seekTo(it)
         }
         binding.seekBar.setOnClickListener {
-            mediaBrowser.mediaController.transportControls.sendCustomAction(
+            mediaBrowser.mediaController?.transportControls?.sendCustomAction(
                 PlaybackStateCompat.ACTION_PLAY_PAUSE.toString(), null
             )
         }
@@ -176,10 +182,10 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.appbar_play -> {
-                mediaBrowser.mediaController.transportControls.play()
+                mediaBrowser.mediaController?.transportControls?.play()
             }
             R.id.appbar_pause -> {
-                mediaBrowser.mediaController.transportControls.pause()
+                mediaBrowser.mediaController?.transportControls?.pause()
             }
             R.id.appbar_create_playlist -> {
                 LMusicPlayListManager.getInstance(null).createPlayList()
