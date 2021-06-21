@@ -40,9 +40,15 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
     }
 
     private fun initialize(appBarLayout: AppBarLayout) {
+        this.setDragCallback(object : AppBarLayout.Behavior.DragCallback() {
+            override fun canDrag(appBarLayout: AppBarLayout): Boolean {
+                return false
+            }
+        })
         appBarLayout.clipChildren = false
 
         appBarLayout.addOnOffsetChangedListener(object : AppBarOnStateChange() {
+            override fun onStatePercentage(percent: Float) {}
             override fun onStateChanged(appBarLayout: AppBarLayout?, state: AppBarState) {
                 mAppbarState = state
             }
