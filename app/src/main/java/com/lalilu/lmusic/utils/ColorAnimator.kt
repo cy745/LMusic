@@ -33,10 +33,10 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         ColorAnimator(oldColor, plColor).setColorChangedListener { color ->
-                            ctLayout.setContentScrimColor(color)
+                            ctLayout.setBackgroundColor(color)
                         }.start(600)
                     } else {
-                        ctLayout.setContentScrimColor(plColor)
+                        ctLayout.setBackgroundColor(plColor)
                     }
                 }
             }
