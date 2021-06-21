@@ -25,13 +25,12 @@
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:layout_behavior="com.lalilu.lmusic.utils.AppBarZoomBehavior">
 
-            <net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
+            <com.lalilu.lmusic.ui.MyCollapsingToolbarLayout
                 android:id="@+id/collapsingToolbarLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:fitsSystemWindows="true"
                 app:collapsedTitleTextAppearance="@style/collapsedTitleText"
-                app:contentScrim="?attr/colorPrimaryVariant"
                 app:expandedTitleTextAppearance="@style/expandedTitleText"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
                 app:statusBarScrim="@android:color/transparent">
@@ -67,7 +66,7 @@
                     app:tabMode="scrollable"
                     app:tabRippleColor="#10FFFFFF"
                     app:tabUnboundedRipple="false" />
-            </net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout>
+            </com.lalilu.lmusic.ui.MyCollapsingToolbarLayout>
         </com.lalilu.lmusic.ui.SquareAppBarLayout>
 
         <androidx.viewpager2.widget.ViewPager2
