@@ -4,7 +4,9 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.ViewCompat
 import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce.DAMPING_RATIO_NO_BOUNCY
@@ -12,6 +14,7 @@ import androidx.dynamicanimation.animation.SpringForce.STIFFNESS_LOW
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.R
 import com.lalilu.common.Mathf
+import com.lalilu.lmusic.fragment.LMusicViewModel
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import com.lalilu.lmusic.utils.AppBarOnStateChange.AppBarState
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
@@ -26,10 +29,9 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
     private var mSpringAnimation: SpringAnimation? = null
     private var mCollapsingToolbarLayout: CollapsingToolbarLayout? = null
 
-    private var mAppbarHeight = -1          //记录AppbarLayout原始高度
-    private var mDraweeHeight = -1          //记录ImageView原始高度
+    private var mAppbarHeight = -1
+    private var mDraweeHeight = -1
     private var mAppbarState = AppBarState.STATE_EXPANDED
-    private var isRecoveryFinish = true
 
     override fun onLayoutChild(
         parent: CoordinatorLayout,
@@ -40,29 +42,62 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
         return super.onLayoutChild(parent, abl, layoutDirection)
     }
 
-    override fun onTouchEvent(
-        parent: CoordinatorLayout,
-        child: AppBarLayout,
-        ev: MotionEvent
-    ): Boolean {
-        return super.onTouchEvent(parent, child, ev) && isRecoveryFinish
-    }
-
     private fun initialize(appBarLayout: AppBarLayout) {
         appBarLayout.clipChildren = false
 
         appBarLayout.addOnOffsetChangedListener(object : AppBarOnStateChange() {
-            override fun onStatePercentage(percent: Float) {}
             override fun onStateChanged(appBarLayout: AppBarLayout?, state: AppBarState) {
                 mAppbarState = state
             }
         })
 
+        val mViewModel = LMusicViewModel.getInstance(null)
         mAppbarHeight = appBarLayout.height - appBarLayout.totalScrollRange
         mDraweeView = appBarLayout.findViewById(R.id.playing_song_album_pic)
         mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.collapsingToolbarLayout)
+        nestedChildView = mViewModel.mViewPager2.value?.getChildAt(0) as ViewGroup?
 
         mDraweeView?.let { mDraweeHeight = it.height }
+    }
+
+    private var lastX = -1F
+    private var lastY = -1F
+    private var nestedChildView: ViewGroup? = null
+
+    override fun onTouchEvent(
+        parent: CoordinatorLayout,
+        child: AppBarLayout,
+        ev: MotionEvent
+    ): Boolean {
+        nestedChildView ?: return super.onTouchEvent(parent, child, ev)
+
+        when (ev.action) {
+            MotionEvent.ACTION_DOWN -> {
+                lastY = ev.rawY
+                lastX = ev.rawX
+                nestedChildView!!.startNestedScroll(
+                    ViewCompat.SCROLL_AXIS_VERTICAL
+                )
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val dy = -(ev.rawY - lastY).toInt()
+                nestedChildView!!.dispatchNestedPreScroll(
+                    0, dy, null, null
+                )
+                nestedChildView!!.dispatchNestedScroll(
+                    0, 0, 0,
+                    dy, null
+                )
+                lastY = ev.rawY
+                lastX = ev.rawX
+            }
+            MotionEvent.ACTION_UP -> {
+                nestedChildView!!.stopNestedScroll()
+                lastX = -1F
+                lastY = -1F
+            }
+        }
+        return true
     }
 
     override fun onNestedPreScroll(
@@ -131,12 +166,8 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
                 SpringAnimation(abl, appBarLayoutFloatProperty, mDraweeHeight.toFloat()).apply {
                     this.spring.dampingRatio = DAMPING_RATIO_NO_BOUNCY
                     this.spring.stiffness = STIFFNESS_LOW
-                    this.addEndListener { _, cancel, _, _ ->
-                        if (!cancel) isRecoveryFinish = true
-                    }
                 }
         }
-        isRecoveryFinish = false
         mSpringAnimation!!.cancel()
         mSpringAnimation!!.animateToFinalPosition(position.toFloat())
     }
