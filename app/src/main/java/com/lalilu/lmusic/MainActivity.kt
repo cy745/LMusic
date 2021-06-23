@@ -19,10 +19,10 @@ import com.lalilu.lmusic.fragment.LMusicFragmentStateAdapter
 import com.lalilu.lmusic.fragment.LMusicNowPlayingFragment
 import com.lalilu.lmusic.fragment.LMusicPlayListFragment
 import com.lalilu.lmusic.fragment.LMusicViewModel
-import com.lalilu.lmusic.service2.MusicBrowser
 import com.lalilu.lmusic.utils.*
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.entity.LMusicPlayList
+import com.lalilu.player.LMusicPlayerModule
 import kotlin.math.abs
 
 
@@ -30,14 +30,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var mViewModel: LMusicViewModel
-    private lateinit var mediaBrowser: MusicBrowser
+    private lateinit var playerModule: LMusicPlayerModule
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        PermissionUtils.requestPermission(this)
-        mediaBrowser = MusicBrowser(this)
+//        PermissionUtils.requestPermission(this)
+        playerModule = LMusicPlayerModule.getInstance(application)
+        playerModule.initMusicBrowser(this)
+
         mViewModel = LMusicViewModel.getInstance(application)
         binding = ActivityMainBinding.inflate(layoutInflater)
+
         setContentView(binding.root)
 
         val playlist = mutableListOf<String>().apply {
@@ -100,17 +103,17 @@ class MainActivity : AppCompatActivity() {
         binding.musicViewPager.registerOnPageChangeCallback(object :
             ViewPager2.OnPageChangeCallback() {
 
-//            override fun onPageSelected(position: Int) {
-//                val mAppBarState = mViewModel.mAppBar.value?.mAppbarState ?: return
-//                val recyclerView = when (position) {
-//                    0 -> mViewModel.mNowPlayingRecyclerView.value
-//                    1 -> mViewModel.mPlayListRecyclerView.value
-//                    else -> null
-//                } ?: return
-//                if (recyclerView.totalScrollY > 0 && mAppBarState == AppBarOnStateChange.AppBarState.STATE_EXPANDED) {
-//                    mViewModel.mAppBar.value?.setExpanded(false, true)
-//                }
-//            }
+            override fun onPageSelected(position: Int) {
+                val mAppBarState = mViewModel.mAppBar.value?.mAppbarState ?: return
+                val recyclerView = when (position) {
+                    0 -> mViewModel.mNowPlayingRecyclerView.value
+                    1 -> mViewModel.mPlayListRecyclerView.value
+                    else -> null
+                } ?: return
+                if (recyclerView.totalScrollY > 0 && mAppBarState == AppBarOnStateChange.AppBarState.STATE_EXPANDED) {
+                    mViewModel.mAppBar.value?.setExpanded(false, true)
+                }
+            }
         })
         mViewModel.mViewPager2.postValue(binding.musicViewPager)
     }
@@ -142,17 +145,17 @@ class MainActivity : AppCompatActivity() {
             binding.seekBar.setThumbColor(it.getAutomaticColor())
         }
         binding.seekBar.onActionUp = {
-            mediaBrowser.mediaController?.transportControls?.seekTo(it)
+            playerModule.mediaController.value?.transportControls?.seekTo(it)
         }
         binding.seekBar.setOnClickListener {
-            mediaBrowser.mediaController?.transportControls?.sendCustomAction(
+            playerModule.mediaController.value?.transportControls?.sendCustomAction(
                 PlaybackStateCompat.ACTION_PLAY_PAUSE.toString(), null
             )
         }
     }
 
     private fun bindUiToBrowser() {
-        mViewModel.metadata.observeForever {
+        playerModule.metadata.observeForever {
             if (it == null) return@observeForever
             binding.collapsingToolbarLayout.title = it.description.title
             binding.playingSongAlbumPic.setImageURI(
@@ -162,7 +165,7 @@ class MainActivity : AppCompatActivity() {
                 it.getLong(MediaMetadata.METADATA_KEY_DURATION)
             )
         }
-        mViewModel.playBackState.observeForever {
+        playerModule.playBackState.observeForever {
             if (it == null) return@observeForever
             binding.seekBar.updateNowPosition(it)
         }
@@ -171,30 +174,30 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         println("[onStart]")
-        mediaBrowser.connect()
+        playerModule.connect()
     }
 
     override fun onStop() {
         super.onStop()
-        mediaBrowser.disconnect()
+        playerModule.disconnect()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.appbar_play -> {
-                mediaBrowser.mediaController?.transportControls?.play()
+                playerModule.mediaController.value?.transportControls?.play()
             }
             R.id.appbar_pause -> {
-                mediaBrowser.mediaController?.transportControls?.pause()
+                playerModule.mediaController.value?.transportControls?.pause()
             }
             R.id.appbar_create_playlist -> {
                 LMusicPlayListManager.getInstance(null).createPlayList()
             }
             R.id.appbar_scan_song -> {
                 Thread {
-                    mediaBrowser.disconnect()
+                    playerModule.disconnect()
                     LMusicMediaModule.getInstance(null).mediaScanner.updateSongDataBase {
-                        mediaBrowser.connect()
+                        playerModule.connect()
                     }
                 }.start()
             }

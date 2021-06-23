@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/lmusic.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/lmusic.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/common/lmusic.common.iml" filepath="$PROJECT_DIR$/.idea/modules/common/lmusic.common.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/media/lmusic.media.iml" filepath="$PROJECT_DIR$/.idea/modules/media/lmusic.media.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/player/lmusic.player.iml" filepath="$PROJECT_DIR$/.idea/modules/player/lmusic.player.iml" />
     </modules>
   </component>
 </project>

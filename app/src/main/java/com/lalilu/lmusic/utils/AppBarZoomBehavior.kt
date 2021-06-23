@@ -81,13 +81,7 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
             }
             MotionEvent.ACTION_MOVE -> {
                 val dy = -(ev.rawY - lastY).toInt()
-                nestedChildView!!.dispatchNestedPreScroll(
-                    0, dy, null, null
-                )
-                nestedChildView!!.dispatchNestedScroll(
-                    0, 0, 0,
-                    dy, null
-                )
+                nestedChildScrollBy(nestedChildView!!, dy)
                 lastY = ev.rawY
                 lastX = ev.rawX
             }
@@ -98,6 +92,16 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
             }
         }
         return true
+    }
+
+    private fun nestedChildScrollBy(nestedChildView: ViewGroup, dy: Int) {
+        nestedChildView.dispatchNestedPreScroll(
+            0, dy, null, null
+        )
+        nestedChildView.dispatchNestedScroll(
+            0, 0, 0,
+            dy, null
+        )
     }
 
     override fun onNestedPreScroll(

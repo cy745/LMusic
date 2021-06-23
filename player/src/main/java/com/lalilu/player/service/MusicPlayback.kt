@@ -4,7 +4,7 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import android.support.v4.media.session.PlaybackStateCompat
-import com.lalilu.lmusic.utils.LMusicVolumeManager
+import com.lalilu.player.manager.LMusicVolumeManager
 
 
 class MusicPlayback(private val playbackListener: MusicPlaybackListener) :

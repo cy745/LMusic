@@ -1,7 +1,6 @@
-package com.lalilu.lmusic
+package com.lalilu.common
 
 import androidx.recyclerview.widget.DiffUtil
-import com.lalilu.common.Mathf
 import java.util.*
 import kotlin.collections.LinkedHashMap
 

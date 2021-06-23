@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.notification
+package com.lalilu.player.manager
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -16,7 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.media.app.NotificationCompat.MediaStyle
 import androidx.media.session.MediaButtonReceiver
 import androidx.palette.graphics.Palette
-import com.lalilu.R
+import com.lalilu.common.R
 import com.lalilu.common.bitmap.BitmapUtils
 import com.lalilu.common.getAutomaticColor
 
@@ -118,7 +118,7 @@ class LMusicNotificationManager constructor(private val mService: Context) {
         val name = playerChannelName
         val id = playerChannelName + "_ID"
         if (notificationManager.getNotificationChannel(id) == null) {
-            val importance = NotificationManager.IMPORTANCE_HIGH
+            val importance = NotificationManager.IMPORTANCE_LOW
             val mChannel = NotificationChannel(id, name, importance)
             mChannel.description = "播放器控制器通道，关闭后将无法从在状态栏上控制播放器。"
             mChannel.enableLights(true)

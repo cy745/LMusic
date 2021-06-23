@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.service2
+package com.lalilu.player.service
 
 import android.app.PendingIntent
 import android.content.Intent
@@ -17,14 +17,17 @@ import android.view.KeyEvent
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import com.lalilu.common.LMusicList
 import com.lalilu.lmusic.*
-import com.lalilu.lmusic.notification.LMusicNotificationManager
-import com.lalilu.lmusic.notification.LMusicNotificationManager.Companion.NOTIFICATION_ID
+import com.lalilu.lmusic.service2.MusicPlayback
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.toMediaItem
+import com.lalilu.player.manager.LMusicAudioFocusManager
+import com.lalilu.player.manager.LMusicNotificationManager
+import com.lalilu.player.manager.LMusicNotificationManager.Companion.NOTIFICATION_ID
+import com.lalilu.player.manager.MusicNoisyReceiver
 import java.util.*
 import java.util.logging.Logger
-
 
 class MusicService : MediaBrowserServiceCompat() {
     private val tag = MusicService::class.java.name

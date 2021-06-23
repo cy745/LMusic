@@ -10,7 +10,6 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import com.lalilu.R
 import com.lalilu.common.TextUtils
 import java.util.*
 import kotlin.concurrent.schedule
@@ -47,10 +46,23 @@ class SeekBar @JvmOverloads constructor(
     private var textPadding: Long = 40L
     private var textHeight: Float = 45f
 
-    private var paint: Paint
-    private var textPaint: TextPaint
-    private var textPaintWhite: TextPaint
-    private var backgroundPaint: Paint
+    private var paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).also {
+        it.color = Color.DKGRAY
+    }
+    private var textPaint: TextPaint = TextPaint().also {
+        it.textSize = textHeight
+        it.color = Color.BLACK
+        it.isSubpixelText = true
+    }
+    private var textPaintWhite: TextPaint = TextPaint().also {
+        it.textSize = textHeight
+        it.color = Color.WHITE
+        it.isSubpixelText = true
+    }
+    private var backgroundPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).also {
+        it.color = Color.argb(50, 100, 100, 100)
+    }
+
     private var touching: Boolean = false
 
     private var radius = 30f
@@ -78,30 +90,6 @@ class SeekBar @JvmOverloads constructor(
             nowDuration = duration
             progress = nowDuration / sumDuration.toDouble()
             invalidate()
-        }
-    }
-
-    init {
-        val a = context.obtainStyledAttributes(
-            attrs, R.styleable.SeekBar, defStyleAttr, 0
-        )
-        a.recycle()
-
-        paint = Paint(Paint.ANTI_ALIAS_FLAG).also {
-            it.color = Color.DKGRAY
-        }
-        backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
-            it.color = Color.argb(50, 100, 100, 100)
-        }
-        textPaint = TextPaint().also {
-            it.textSize = textHeight
-            it.color = Color.BLACK
-            it.isSubpixelText = true
-        }
-        textPaintWhite = TextPaint().also {
-            it.textSize = textHeight
-            it.color = Color.WHITE
-            it.isSubpixelText = true
         }
     }
 

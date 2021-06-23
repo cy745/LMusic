@@ -80,4 +80,5 @@ dependencies {
 
     implementation project(":media")
     implementation project(":common")
+    implementation project(":player")
 }
