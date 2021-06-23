@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+<!--    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />-->
 
     <application
         android:name=".lmusic.LMusicApplication"
@@ -18,7 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Music"
         tools:ignore="AllowBackup">
-        <receiver android:name=".lmusic.MusicNoisyReceiver">
+        <receiver android:name=".player.manager.MusicNoisyReceiver">
             <intent-filter>
                 <action android:name="android.media.AUDIO_BECOMING_NOISY" />
             </intent-filter>
@@ -31,7 +31,7 @@
         </receiver>
 
         <service
-            android:name=".lmusic.service2.MusicService"
+            android:name=".player.service.MusicService"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
@@ -48,6 +48,7 @@
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.APP_MUSIC" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>

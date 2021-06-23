@@ -11,15 +11,17 @@ import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayListBinding
 import com.lalilu.lmusic.adapter2.LMusicPlayListAdapter
 import com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
+import com.lalilu.player.LMusicPlayerModule
 import jp.wasabeef.recyclerview.animators.FadeInAnimator
 
 class LMusicPlayListFragment : Fragment() {
     private lateinit var mRecyclerView: AntiMisOperationRecyclerView
     private lateinit var mAdapter: LMusicPlayListAdapter
     private lateinit var mViewModel: LMusicViewModel
+    private lateinit var playerModule: LMusicPlayerModule
 
     private fun initializeObserver() {
-        mViewModel.playlist.observeForever {
+        playerModule.playlist.observeForever {
             it?.let {
                 mAdapter.playLists = it.toMutableList()
                 mAdapter.notifyDataSetChanged()
@@ -34,6 +36,7 @@ class LMusicPlayListFragment : Fragment() {
         mRecyclerView.adapter = LMusicPlayListAdapter(requireContext())
         mAdapter = mRecyclerView.adapter as LMusicPlayListAdapter
         mViewModel = LMusicViewModel.getInstance(null)
+        playerModule = LMusicPlayerModule.getInstance(null)
 
         mRecyclerView.layoutManager = LinearLayoutManager(context)
         mRecyclerView.itemAnimator = FadeInAnimator(OvershootInterpolator()).apply {

@@ -1,10 +1,10 @@
-package com.lalilu.lmusic
+package com.lalilu.player.manager
 
 import android.content.Context
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
-import com.lalilu.lmusic.service2.MusicService
+import com.lalilu.player.service.MusicService
 
 class LMusicAudioFocusManager constructor(
     private val service: MusicService,

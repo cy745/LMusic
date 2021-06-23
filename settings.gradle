@@ -2,3 +2,4 @@ rootProject.name = "lmusic"
 include ':app'
 include ':media'
 include ':common'
+include ':player'

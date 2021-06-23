@@ -9,9 +9,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
+import com.lalilu.common.LMusicList
 import com.lalilu.common.Mathf
 import com.lalilu.databinding.ItemSongMediaItemBinding
-import com.lalilu.lmusic.LMusicList
 import com.lalilu.lmusic.fragment.LMusicViewModel
 import java.util.*
 

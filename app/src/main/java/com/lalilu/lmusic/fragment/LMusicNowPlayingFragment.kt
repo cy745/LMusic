@@ -11,18 +11,20 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lalilu.R
+import com.lalilu.common.LMusicList
 import com.lalilu.databinding.FragmentNowPlayingBinding
-import com.lalilu.lmusic.LMusicList
 import com.lalilu.lmusic.adapter2.LMusicNowPlayingAdapter
-import com.lalilu.lmusic.service2.MusicService
 import com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
 import com.lalilu.lmusic.utils.ItemTouchCallback
+import com.lalilu.player.LMusicPlayerModule
+import com.lalilu.player.service.MusicService
 import jp.wasabeef.recyclerview.animators.FadeInAnimator
 
 class LMusicNowPlayingFragment : Fragment() {
     private lateinit var mRecyclerView: AntiMisOperationRecyclerView
     private lateinit var mAdapter: LMusicNowPlayingAdapter
     private lateinit var mViewModel: LMusicViewModel
+    private lateinit var playerModule: LMusicPlayerModule
     private var mediaControllerCompat: MediaControllerCompat? = null
 
     private fun bindToMediaController() {
@@ -55,9 +57,9 @@ class LMusicNowPlayingFragment : Fragment() {
     }
 
     private fun initializeObserver() {
-        mViewModel.mediaList.observeForever { it?.let { mAdapter.setDataIn(it) } }
-        mViewModel.metadata.observeForever { it?.let { mAdapter.updateByMetadata(it) } }
-        mViewModel.mediaController.observeForever { it?.let { mediaControllerCompat = it } }
+        playerModule.mediaList.observeForever { it?.let { mAdapter.setDataIn(it) } }
+        playerModule.metadata.observeForever { it?.let { mAdapter.updateByMetadata(it) } }
+        playerModule.mediaController.observeForever { it?.let { mediaControllerCompat = it } }
         mViewModel.mNowPlayingRecyclerView.postValue(mRecyclerView)
         mViewModel.mNowPlayingAdapter.postValue(mAdapter)
     }
@@ -67,6 +69,7 @@ class LMusicNowPlayingFragment : Fragment() {
         mRecyclerView.adapter = LMusicNowPlayingAdapter(requireContext())
         mAdapter = mRecyclerView.adapter as LMusicNowPlayingAdapter
         mViewModel = LMusicViewModel.getInstance(null)
+        playerModule = LMusicPlayerModule.getInstance(null)
 
         mRecyclerView.layoutManager = LinearLayoutManager(context)
         mRecyclerView.itemAnimator = FadeInAnimator(OvershootInterpolator()).apply {

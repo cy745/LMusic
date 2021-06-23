@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.player.manager
 
 import android.media.MediaPlayer
 import androidx.dynamicanimation.animation.FloatPropertyCompat

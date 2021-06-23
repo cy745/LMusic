@@ -1,4 +1,4 @@
-package com.lalilu.lmusic
+package com.lalilu.player.manager
 
 import android.content.BroadcastReceiver
 import android.content.Context
