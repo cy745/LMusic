@@ -51,11 +51,11 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
             }
         })
 
-        val mViewModel = LMusicViewModel.getInstance(null)
+//        val mViewModel = LMusicViewModel.getInstance(null)
         mAppbarHeight = appBarLayout.height - appBarLayout.totalScrollRange
         mDraweeView = appBarLayout.findViewById(R.id.playing_song_album_pic)
         mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.collapsingToolbarLayout)
-        nestedChildView = mViewModel.mViewPager2.value?.getChildAt(0) as ViewGroup?
+//        nestedChildView = mViewModel.mViewPager2.value?.getChildAt(0) as ViewGroup?
 
         mDraweeView?.let { mDraweeHeight = it.height }
     }
