@@ -11,6 +11,7 @@ import com.lalilu.common.bitmap.BitmapUtils
 import com.lalilu.media.database.LMusicDatabase
 import com.lalilu.media.entity.LMusicAlbum
 import com.lalilu.media.entity.LMusicMedia
+import com.lalilu.media.entity.LMusicPlayList
 import java.io.File
 import java.util.logging.Logger
 
@@ -19,6 +20,7 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
     private val logger = Logger.getLogger(this.javaClass.name)
     private val mediaItemDao = database.mediaItemDao()
     private val albumDao = database.albumDao()
+    private val playListDao = database.playlistDao()
 
     @Volatile
     private var standardDirectory: File =
@@ -28,6 +30,7 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
     private var running: Boolean = false
     fun updateSongDataBase(callback: () -> Unit?) {
         if (running) return
+        playListDao.deleteAll()
         mediaItemDao.deleteAll()
         albumDao.deleteAll()
 
@@ -42,6 +45,10 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
             externalUri, null, selection, selectionArgs, null
         )
 
+        val playList = LMusicPlayList().also {
+            it.playListId = 0
+            it.playListTitle = "全部"
+        }
         if (cursor!!.moveToFirst()) {
             do {
                 val song = getSong(cursor)
@@ -54,6 +61,10 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
                     )
                     song.mediaArtUri = BitmapUtils.loadThumbnail(standardDirectory, song.mediaId)
                     mediaItemDao.insert(song)
+                    if (playList.playListArtUri == Uri.EMPTY) {
+                        playList.playListArtUri = song.mediaArtUri
+                    }
+                    playList.mediaIdList.add("${song.mediaTitle} - ${song.mediaArtist}")
                 }
                 if (album != null) {
                     albumDao.insert(album)
@@ -62,6 +73,7 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
         } else {
             logger.info("[FOUND NO SONG]")
         }
+        playListDao.insert(playList)
         cursor.close()
         callback()
         running = false
@@ -69,6 +81,10 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
 
     fun getMediaMetaData(): List<MediaMetadataCompat> {
         return mediaItemDao.getAll().map { it.toMediaMetaData() }
+    }
+
+    fun getPlayList(): List<LMusicPlayList> {
+        return playListDao.getAll()
     }
 
     companion object {

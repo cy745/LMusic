@@ -5,6 +5,11 @@
 
     <data>
 
+        <import type="com.lalilu.lmusic.utils.BindAdapter" />
+
+        <variable
+            name="playList"
+            type="com.lalilu.media.entity.LMusicPlayList" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -17,8 +22,9 @@
 
         <TextView
             android:id="@+id/play_list_title"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@{playList.playListTitle}"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -40,6 +46,7 @@
 
             <com.facebook.drawee.view.SimpleDraweeView
                 android:id="@+id/play_list_pic"
+                pictureUri="@{playList.playListArtUri}"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:scaleType="centerCrop"
@@ -48,26 +55,16 @@
                 app:layout_constraintTop_toTopOf="parent"
                 fresco:placeholderImage="@color/gray_600" />
 
-            <ImageButton
-                android:id="@+id/play_list_delete"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="10dp"
-                android:layout_marginBottom="10dp"
-                android:background="#00FFFFFF"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:srcCompat="@drawable/ic_delete_bin_line" />
-
             <TextView
                 android:id="@+id/play_list_first"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="25dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginEnd="25dp"
                 android:ellipsize="end"
                 android:singleLine="true"
-                app:layout_constraintEnd_toStartOf="@+id/play_list_delete"
+                app:layout_constraintBottom_toTopOf="@+id/play_list_second"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/play_list_pic"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -76,12 +73,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="25dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginEnd="25dp"
                 android:ellipsize="end"
                 android:singleLine="true"
+                app:layout_constraintBottom_toTopOf="@+id/play_list_third"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/play_list_delete"
-                app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toEndOf="@+id/play_list_pic"
                 app:layout_constraintTop_toBottomOf="@+id/play_list_first" />
 
@@ -90,13 +86,13 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="25dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginEnd="25dp"
                 android:ellipsize="end"
                 android:singleLine="true"
-                app:layout_constraintEnd_toStartOf="@+id/play_list_delete"
-                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/play_list_pic"
-                app:layout_constraintTop_toBottomOf="@id/play_list_second" />
+                app:layout_constraintTop_toBottomOf="@+id/play_list_second" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

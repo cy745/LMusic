@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:fresco="http://schemas.android.com/apk/res-auto">
+    xmlns:fresco="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <import type="com.lalilu.lmusic.utils.BindAdapter" />
 
         <variable
@@ -19,6 +20,7 @@
 
         <com.facebook.drawee.view.SimpleDraweeView
             android:id="@+id/song_album_pic"
+            pictureUri="@{mediaItem.description.iconUri}"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_marginStart="20dp"
@@ -26,7 +28,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            pictureUri="@{mediaItem.description.iconUri}"
             fresco:placeholderImage="@color/gray_600" />
 
         <TextView
@@ -72,9 +73,9 @@
 
         <ImageView
             android:id="@+id/song_type"
+            iconRec="@{BindAdapter.getSongTypeFromExtra(mediaItem.description.extras)}"
             android:layout_width="wrap_content"
             android:layout_height="20dp"
-            iconRec="@{BindAdapter.getSongTypeFromExtra(mediaItem.description.extras)}"
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toEndOf="@+id/song_duration"
             app:layout_constraintStart_toStartOf="@+id/song_duration"
