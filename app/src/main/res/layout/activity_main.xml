@@ -59,7 +59,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="top"
-                    android:layout_marginStart="10dp"
                     app:layout_collapseMode="parallax"
                     app:layout_collapseParallaxMultiplier="0.6"
                     app:tabIndicatorColor="@android:color/transparent"
