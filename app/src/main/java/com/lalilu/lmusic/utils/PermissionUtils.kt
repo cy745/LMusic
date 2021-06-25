@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.utils
 
+import android.app.Activity
 import android.content.Context
 import android.widget.Toast
 import com.hjq.permissions.OnPermissionCallback
@@ -8,9 +9,9 @@ import com.hjq.permissions.XXPermissions
 
 class PermissionUtils {
     companion object {
-        fun requestPermission(context: Context) {
+        fun requestPermission(context: Activity) {
             XXPermissions.with(context)
-                .permission(Permission.MANAGE_EXTERNAL_STORAGE)
+                .permission(Permission.READ_EXTERNAL_STORAGE)
                 .request(object : OnPermissionCallback {
                     override fun onGranted(permissions: List<String>, all: Boolean) {
                         if (all) {

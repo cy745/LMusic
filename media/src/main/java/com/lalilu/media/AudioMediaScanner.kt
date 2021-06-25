@@ -26,10 +26,9 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
     private var standardDirectory: File =
         mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
 
-
     private var running: Boolean = false
-    fun updateSongDataBase(callback: () -> Unit?) {
-        if (running) return
+    fun updateSongDataBase(callback: (String) -> Unit?) {
+        if (running) return else running = true
         playListDao.deleteAll()
         mediaItemDao.deleteAll()
         albumDao.deleteAll()
@@ -45,37 +44,32 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
             externalUri, null, selection, selectionArgs, null
         )
 
+        val count = cursor?.count
         val playList = LMusicPlayList().also {
             it.playListId = 0
             it.playListTitle = "全部"
         }
-        if (cursor!!.moveToFirst()) {
-            do {
-                val song = getSong(cursor)
-                val album = getAlbum(song)
+        while (cursor!!.moveToNext()) {
+            val song = getSong(cursor)
+            val album = getAlbum(song)
 
-                if (song != null) {
-                    BitmapUtils.saveThumbnailToSandBox(
-                        mContext, standardDirectory,
-                        song.mediaId, song.mediaUri
-                    )
-                    song.mediaArtUri = BitmapUtils.loadThumbnail(standardDirectory, song.mediaId)
-                    mediaItemDao.insert(song)
-                    if (playList.playListArtUri == Uri.EMPTY) {
-                        playList.playListArtUri = song.mediaArtUri
-                    }
-                    playList.mediaIdList.add("${song.mediaTitle} - ${song.mediaArtist}")
+            song?.let {
+                BitmapUtils.saveThumbnailToSandBox(
+                    mContext, standardDirectory,
+                    it.mediaId, it.mediaUri
+                )
+                it.mediaArtUri = BitmapUtils.loadThumbnail(standardDirectory, it.mediaId)
+                mediaItemDao.insert(it)
+                if (playList.playListArtUri == Uri.EMPTY) {
+                    playList.playListArtUri = it.mediaArtUri
                 }
-                if (album != null) {
-                    albumDao.insert(album)
-                }
-            } while (cursor.moveToNext())
-        } else {
-            logger.info("[FOUND NO SONG]")
+                playList.mediaIdList.add("${it.mediaTitle} - ${it.mediaArtist}")
+            }
+            album?.let { albumDao.insert(album) }
         }
         playListDao.insert(playList)
         cursor.close()
-        callback()
+        callback("扫描完成: $count EXTERNAL_CONTENT_URI: ${MediaStore.Files.getContentUri("external")}")
         running = false
     }
 
@@ -104,7 +98,7 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
             }
         }
 
-        private fun getSong(cursor: Cursor): LMusicMedia? {
+        private fun getSong(cursor: Cursor): LMusicMedia {
             return LMusicMedia().also {
                 it.mediaId = getLong(cursor, MediaStore.Audio.Media._ID)
                 it.mediaSize = getLong(cursor, MediaStore.Audio.Media.SIZE)
