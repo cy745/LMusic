@@ -4,11 +4,11 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Build
+import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.palette.graphics.Palette
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.ui.PaletteDraweeView
-import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
 @SuppressLint("Recycle")
 @RequiresApi(Build.VERSION_CODES.O)
@@ -22,9 +22,9 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
     private var bTo: Float = 0f
 
     companion object {
-        fun setContentScrimColorFromPaletteDraweeView(
+        fun setBackgroundColorFromPalette(
             paletteDraweeView: PaletteDraweeView,
-            ctLayout: CollapsingToolbarLayout
+            viewGroup: ViewGroup
         ) {
             paletteDraweeView.palette.observeForever {
                 if (it != null) {
@@ -33,10 +33,10 @@ class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         ColorAnimator(oldColor, plColor).setColorChangedListener { color ->
-                            ctLayout.setBackgroundColor(color)
+                            viewGroup.setBackgroundColor(color)
                         }.start(600)
                     } else {
-                        ctLayout.setBackgroundColor(plColor)
+                        viewGroup.setBackgroundColor(plColor)
                     }
                 }
             }

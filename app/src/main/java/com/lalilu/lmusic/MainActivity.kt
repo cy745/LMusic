@@ -118,9 +118,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun initToolBar() {
         setSupportActionBar(binding.toolbar)
-        ColorAnimator.setContentScrimColorFromPaletteDraweeView(
+        ColorAnimator.setBackgroundColorFromPalette(
             binding.playingSongAlbumPic,
-            binding.collapsingToolbarLayout
+            binding.appbar
         )
         binding.toolbar.setOnClickListener {
             if (binding.appbar.mAppbarState == AppBarOnStateChange.AppBarState.STATE_COLLAPSED) {
