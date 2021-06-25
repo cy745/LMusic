@@ -14,7 +14,6 @@ import androidx.dynamicanimation.animation.SpringForce.STIFFNESS_LOW
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.R
 import com.lalilu.common.Mathf
-import com.lalilu.lmusic.fragment.LMusicViewModel
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import com.lalilu.lmusic.utils.AppBarOnStateChange.AppBarState
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
@@ -38,11 +37,11 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
         abl: AppBarLayout,
         layoutDirection: Int
     ): Boolean {
-        initialize(abl)
+        initialize(parent, abl)
         return super.onLayoutChild(parent, abl, layoutDirection)
     }
 
-    private fun initialize(appBarLayout: AppBarLayout) {
+    private fun initialize(parent: CoordinatorLayout, appBarLayout: AppBarLayout) {
         appBarLayout.clipChildren = false
 
         appBarLayout.addOnOffsetChangedListener(object : AppBarOnStateChange() {
@@ -51,11 +50,10 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
             }
         })
 
-//        val mViewModel = LMusicViewModel.getInstance(null)
         mAppbarHeight = appBarLayout.height - appBarLayout.totalScrollRange
         mDraweeView = appBarLayout.findViewById(R.id.playing_song_album_pic)
         mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.collapsingToolbarLayout)
-//        nestedChildView = mViewModel.mViewPager2.value?.getChildAt(0) as ViewGroup?
+        nestedChildView = (parent.getChildAt(1) as ViewGroup).getChildAt(0) as ViewGroup?
 
         mDraweeView?.let { mDraweeHeight = it.height }
     }
@@ -158,9 +156,7 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
         target: View,
         type: Int
     ) {
-        if (abl.bottom > mDraweeHeight) {
-            recoveryToPosition(abl, mDraweeHeight)
-        }
+        if (abl.bottom > mDraweeHeight) recoveryToPosition(abl, mDraweeHeight)
         super.onStopNestedScroll(coordinatorLayout, abl, target, type)
     }
 
