@@ -17,7 +17,7 @@ class LMusicTabLayout @JvmOverloads constructor(
 ) : TabLayout(context, attrs, defStyleAttr), TabLayout.OnTabSelectedListener {
     private val maxPx = 45f
     private val minPx = 40f
-    private val letterSpacing = 0.1f
+    private val letterSpacing = 0.05f
     private val offsetPx = maxPx - minPx
     private val textPaint = TextPaint().also {
         it.textSize = maxPx
@@ -37,7 +37,7 @@ class LMusicTabLayout @JvmOverloads constructor(
             textView.text = text
             textView.letterSpacing = letterSpacing
             textView.layoutParams.width =
-                (textPaint.measureText(text) * (1 + letterSpacing)).toInt()
+                (textPaint.measureText(text) * (1 + 2 * letterSpacing)).toInt()
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
             textView.alpha = alpha
             textView.setTextColor(Color.WHITE)
