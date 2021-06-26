@@ -59,16 +59,19 @@ class MainActivity : AppCompatActivity() {
     private fun initMediaScanner() {
         mediaScanner.setOnScanCallback(object :
             MediaScanner.OnScanCallback<LMusicMedia> {
+            var total = 0
             override fun onScanStart(totalCount: Int) {
-                binding.collapsingToolbarLayout
+                total = totalCount
             }
 
             override fun onScanFinish(totalCount: Int) {
                 playerModule.disconnect()
                 playerModule.connect()
+                binding.collapsingToolbarLayout.title = "扫描完成：共${totalCount}首"
             }
 
             override fun onScanProgress(nowCount: Int, item: LMusicMedia) {
+                binding.collapsingToolbarLayout.title = "扫描中：${nowCount}/${total}"
             }
         })
     }
