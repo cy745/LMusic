@@ -28,7 +28,7 @@
         </receiver>
 
         <service
-            android:name=".player.service.MusicService"
+            android:name=".player.service.LMusicService"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

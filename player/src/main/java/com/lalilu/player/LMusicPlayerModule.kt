@@ -10,6 +10,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.lalilu.media.LMusicMediaModule
+import com.lalilu.player.service.LMusicService
 import com.lalilu.player.service.MusicService
 import org.jetbrains.annotations.Nullable
 import java.util.logging.Logger
@@ -36,7 +37,7 @@ class LMusicPlayerModule private constructor(application: Application) :
         controllerCallback = MusicControllerCallback()
         subscriptionCallback = MusicSubscriptionCallback()
         mediaBrowser = MediaBrowserCompat(
-            activity, ComponentName(activity, MusicService::class.java),
+            activity, ComponentName(activity, LMusicService::class.java),
             connectionCallback, null
         )
     }
