@@ -25,6 +25,7 @@ class BitmapUtils {
             outputStream.write(embeddedPic)
             outputStream.flush()
             outputStream.close()
+            metadataRetriever.release()
         }
 
         fun loadThumbnail(path: File, mediaItemId: Long): Uri {
