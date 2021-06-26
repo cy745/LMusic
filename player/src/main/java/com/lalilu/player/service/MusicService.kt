@@ -219,7 +219,7 @@ class MusicService : MediaBrowserServiceCompat() {
     ) {
         result.detach()
         val metadataList = LMusicMediaModule.getInstance(null)
-            .mediaScanner.getMediaMetaData()
+            .getMediaMetaData()
 
         metadataList.forEach { metadata ->
             metadata.description?.mediaId?.let {

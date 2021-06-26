@@ -8,7 +8,6 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -22,6 +21,9 @@ import com.lalilu.lmusic.fragment.LMusicPlayListFragment
 import com.lalilu.lmusic.fragment.LMusicViewModel
 import com.lalilu.lmusic.utils.*
 import com.lalilu.media.LMusicMediaModule
+import com.lalilu.media.entity.LMusicMedia
+import com.lalilu.media.scanner.LMusicMediaScanner
+import com.lalilu.media.scanner.MediaScanner
 import com.lalilu.player.LMusicPlayerModule
 import kotlin.math.abs
 
@@ -31,23 +33,44 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mViewModel: LMusicViewModel
     private lateinit var playerModule: LMusicPlayerModule
+    private lateinit var mediaScanner: LMusicMediaScanner
+    private lateinit var playlistManager: LMusicPlayListManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PermissionUtils.requestPermission(this)
         playerModule = LMusicPlayerModule.getInstance(application)
         playerModule.initMusicBrowser(this)
-
+        playlistManager = LMusicPlayListManager.getInstance(application)
         mViewModel = LMusicViewModel.getInstance(application)
+        mediaScanner = LMusicMediaModule.getInstance(application).mediaScanner
         binding = ActivityMainBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
 
+        initMediaScanner()
         initViewPager()
         initToolBar()
         initSeekBar()
         initTabLayout()
         bindUiToBrowser()
+    }
+
+    private fun initMediaScanner() {
+        mediaScanner.setOnScanCallback(object :
+            MediaScanner.OnScanCallback<LMusicMedia> {
+            override fun onScanStart(totalCount: Int) {
+                binding.collapsingToolbarLayout
+            }
+
+            override fun onScanFinish(totalCount: Int) {
+                playerModule.disconnect()
+                playerModule.connect()
+            }
+
+            override fun onScanProgress(nowCount: Int, item: LMusicMedia) {
+            }
+        })
     }
 
     private fun initTabLayout() {
@@ -69,7 +92,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.musicViewPager.registerOnPageChangeCallback(object :
             ViewPager2.OnPageChangeCallback() {
-
             override fun onPageSelected(position: Int) {
                 val mAppBarState = mViewModel.mAppBar.value?.mAppbarState ?: return
                 val recyclerView = when (position) {
@@ -157,20 +179,8 @@ class MainActivity : AppCompatActivity() {
             R.id.appbar_pause -> {
                 playerModule.mediaController.value?.transportControls?.pause()
             }
-            R.id.appbar_create_playlist -> {
-                LMusicPlayListManager.getInstance(null).createPlayList()
-            }
-            R.id.appbar_scan_song -> {
-                Thread {
-                    LMusicMediaModule.getInstance(null).mediaScanner.updateSongDataBase {
-                        runOnUiThread {
-                            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
-                        }
-                        playerModule.disconnect()
-                        playerModule.connect()
-                    }
-                }.start()
-            }
+            R.id.appbar_create_playlist -> playlistManager.createPlayList()
+            R.id.appbar_scan_song -> mediaScanner.scanStart(this)
         }
         return super.onOptionsItemSelected(item)
     }

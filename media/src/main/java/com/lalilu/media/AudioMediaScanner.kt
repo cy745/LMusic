@@ -44,7 +44,6 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
             externalUri, null, selection, selectionArgs, null
         )
 
-        val count = cursor?.count
         val playList = LMusicPlayList().also {
             it.playListId = 0
             it.playListTitle = "全部"
@@ -53,7 +52,7 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
             val song = getSong(cursor)
             val album = getAlbum(song)
 
-            song?.let {
+            song.let {
                 BitmapUtils.saveThumbnailToSandBox(
                     mContext, standardDirectory,
                     it.mediaId, it.mediaUri
@@ -69,7 +68,7 @@ class AudioMediaScanner constructor(private val mContext: Context, database: LMu
         }
         playListDao.insert(playList)
         cursor.close()
-        callback("扫描完成: $count EXTERNAL_CONTENT_URI: ${MediaStore.Files.getContentUri("external")}")
+        callback("扫描完成: EXTERNAL_CONTENT_URI: ${MediaStore.Files.getContentUri("external")}")
         running = false
     }
 
