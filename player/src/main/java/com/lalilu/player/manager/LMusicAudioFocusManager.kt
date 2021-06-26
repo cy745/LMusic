@@ -1,42 +1,49 @@
 package com.lalilu.player.manager
 
+import android.app.Service
 import android.content.Context
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
-import com.lalilu.player.service.MusicService
 
 class LMusicAudioFocusManager constructor(
-    private val service: MusicService,
-    private val listener: AudioManager.OnAudioFocusChangeListener
-) {
+    private val service: Service
+) : AudioManager.OnAudioFocusChangeListener {
+    var onAudioFocusChangeListener: AudioManager.OnAudioFocusChangeListener? = null
+
     fun abandonAudioFocus() {
         val am = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             am.abandonAudioFocusRequest(
                 AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                    .setOnAudioFocusChangeListener(listener)
+                    .setOnAudioFocusChangeListener(this)
                     .build()
             )
         } else {
-            am.abandonAudioFocus(listener)
+            am.abandonAudioFocus(this)
         }
     }
 
-    fun getAudioFocus(): Int {
+    fun requestAudioFocus(): Int {
         val am = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             am.requestAudioFocus(
                 AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                    .setOnAudioFocusChangeListener(listener)
+                    .setOnAudioFocusChangeListener(this)
                     .build()
             )
         } else {
             am.requestAudioFocus(
-                listener,
+                this,
                 AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN
             )
+        }
+    }
+
+    override fun onAudioFocusChange(focusChange: Int) {
+        onAudioFocusChangeListener?.let {
+            onAudioFocusChangeListener!!.onAudioFocusChange(focusChange)
         }
     }
 }
