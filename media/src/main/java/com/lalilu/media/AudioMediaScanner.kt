@@ -15,7 +15,7 @@ import com.lalilu.media.entity.LMusicPlayList
 import java.io.File
 import java.util.logging.Logger
 
-
+@Deprecated("已被LMusicMediaScanner取代")
 class AudioMediaScanner constructor(private val mContext: Context, database: LMusicDatabase) {
     private val logger = Logger.getLogger(this.javaClass.name)
     private val mediaItemDao = database.mediaItemDao()
