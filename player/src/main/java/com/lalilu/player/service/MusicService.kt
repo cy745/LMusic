@@ -18,8 +18,6 @@ import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.common.LMusicList
-import com.lalilu.lmusic.*
-import com.lalilu.lmusic.service2.MusicPlayback
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.toMediaItem
 import com.lalilu.player.manager.LMusicAudioFocusManager
@@ -29,6 +27,7 @@ import com.lalilu.player.manager.MusicNoisyReceiver
 import java.util.*
 import java.util.logging.Logger
 
+@Deprecated("乱七八糟，已被LMusicService取代")
 class MusicService : MediaBrowserServiceCompat() {
     private val tag = MusicService::class.java.name
 
@@ -56,13 +55,13 @@ class MusicService : MediaBrowserServiceCompat() {
         lastPlaySongSP = getSharedPreferences(LAST_PLAYED_SONG, MODE_PRIVATE)
         mNotificationManager = LMusicNotificationManager(this)
         musicSessionCallback = MusicSessionCallback()
-        mAudioFocusManager = LMusicAudioFocusManager(this, musicSessionCallback)
+        mAudioFocusManager = LMusicAudioFocusManager(this)
         mMusicPlayback = MusicPlayback(musicSessionCallback)
-        mNoisyReceiver = MusicNoisyReceiver().also {
-            it.onBecomingNoisyCallback = {
-                musicSessionCallback.onPause()
-            }
-        }
+//        mNoisyReceiver = MusicNoisyReceiver().also {
+//            it.onBecomingNoisyListener = {
+//                musicSessionCallback.onPause()
+//            }
+//        }
 
         // 构造可跳转到 launcher activity 的 PendingIntent
         val sessionActivityPendingIntent =
@@ -140,7 +139,7 @@ class MusicService : MediaBrowserServiceCompat() {
         private fun onPlayPause() = mMusicPlayback.toggle()
 
         override fun onPlay() {
-            val result = mAudioFocusManager.getAudioFocus()
+            val result = mAudioFocusManager.requestAudioFocus()
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
 
             val mediaId = mList.getNowItem()?.description?.mediaId ?: return

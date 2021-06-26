@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.service2
+package com.lalilu.player.service
 
 import android.content.Context
 import android.media.MediaPlayer
@@ -6,7 +6,7 @@ import android.net.Uri
 import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.player.manager.LMusicVolumeManager
 
-
+@Deprecated("已被LMusicPlayback取代")
 class MusicPlayback(private val playbackListener: MusicPlaybackListener) :
     MediaPlayer.OnPreparedListener {
 
@@ -115,6 +115,4 @@ class MusicPlayback(private val playbackListener: MusicPlaybackListener) :
             .setState(mState, getPosition(), 1.0f)
         playbackListener.notifyNewPlayBackState(state.build())
     }
-
-
 }
