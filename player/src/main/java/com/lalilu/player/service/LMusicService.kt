@@ -17,6 +17,7 @@ import androidx.media.session.MediaButtonReceiver
 import com.lalilu.common.LMusicList
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.toMediaItem
+import com.lalilu.player.LMusicPlayerModule
 import com.lalilu.player.manager.LMusicAudioFocusManager
 import com.lalilu.player.manager.LMusicNotificationManager
 import com.lalilu.player.manager.MusicNoisyReceiver
@@ -172,6 +173,12 @@ class LMusicService : MediaBrowserServiceCompat() {
                 "mediaId", mMetadataPrepared?.description?.mediaId
             ).apply()
             mediaSession.isActive = true
+
+            LMusicPlayerModule.getInstance(application).mediaList.postValue(
+                mList.getOrderAndShowDataList().map {
+                    it.toMediaItem()
+                }.toMutableList()
+            )
         }
     }
 
@@ -202,7 +209,7 @@ class LMusicService : MediaBrowserServiceCompat() {
             }
         }
 
-        result.sendResult(mList.getOrderDataList().map {
+        result.sendResult(mList.getOrderAndShowDataList().map {
             it.toMediaItem()
         }.toMutableList())
 
