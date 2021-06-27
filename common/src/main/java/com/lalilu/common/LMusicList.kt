@@ -101,6 +101,20 @@ open class LMusicList<K, V> {
         }
     }
 
+    /**
+     *  传入一个新的有序的带有Key的List用于替换掉mOrderList中的元素,
+     *  以此达到更新列表顺序的目的
+     */
+    fun updateOrderByNewList(newList: List<K>) {
+        val first = mOrderList.indexOf(newList[0])
+        val size = newList.size
+        if (mOrderList.size > size) mOrderList.clear()
+        for (i: Int in 0 until size) {
+            val position = Mathf.clampInLoop(0, size - 1, i, first)
+            mOrderList[position] = newList[i]
+        }
+    }
+
     companion object {
         const val LIST_TRANSFORM_ACTION = "list_transform_action"
         const val ACTION_JUMP_TO = 0
