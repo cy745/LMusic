@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# BaseRecyclerViewAdapterHelper 混淆
+# https://github.com/CymChad/BaseRecyclerViewAdapterHelper/blob/master/library/proguard-rules.pro
+-keep class com.chad.library.adapter.** {
+*;
+}
