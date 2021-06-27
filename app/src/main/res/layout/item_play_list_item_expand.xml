@@ -14,7 +14,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/item_click_background"
+        android:background="@drawable/item_click_background_daynight"
         android:minHeight="200dp"
         android:padding="20dp">
 
