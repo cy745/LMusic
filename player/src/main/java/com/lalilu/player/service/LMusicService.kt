@@ -28,7 +28,8 @@ class LMusicService : MediaBrowserServiceCompat() {
     companion object {
         const val ACCESS_ID = "access_id"
         const val ACTION_SWIPED_SONG = "action_swiped_song"
-        const val ACTION_MOVE_SONG = "action_swiped_song"
+        const val ACTION_MOVED_SONG = "action_moved_song"
+        const val NEW_MEDIA_ORDER_LIST = "new_media_order_list"
         const val LAST_PLAYED_SONG = "last_played_song"
     }
 
@@ -84,8 +85,13 @@ class LMusicService : MediaBrowserServiceCompat() {
                     playBack.playAndPause()
                 }
                 ACTION_SWIPED_SONG -> {
-                    val mediaId = extras?.get(MediaMetadata.METADATA_KEY_MEDIA_ID) ?: return
-                    mList.mOrderList.removeAt(mList.mOrderList.indexOf(mediaId))
+                    val mediaId = extras?.getString(MediaMetadata.METADATA_KEY_MEDIA_ID) ?: return
+                    println(mediaId)
+                    mList.mOrderList.remove(mediaId)
+                }
+                ACTION_MOVED_SONG -> {
+                    val mediaList = extras?.getStringArrayList(NEW_MEDIA_ORDER_LIST) ?: return
+                    mList.updateOrderByNewList(mediaList)
                 }
             }
         }
@@ -167,6 +173,7 @@ class LMusicService : MediaBrowserServiceCompat() {
             val filter =
                 IntentFilter().also { it.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY) }
             registerReceiver(mNoisyReceiver, filter)
+            //todo registerReceiver 需判断是否已注册
             mMetadataPrepared = metadata
             mediaSession.setMetadata(mMetadataPrepared)
             mLastPlaySongSP.edit().putString(

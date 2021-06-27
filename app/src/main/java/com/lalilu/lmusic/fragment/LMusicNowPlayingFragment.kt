@@ -45,7 +45,7 @@ class LMusicNowPlayingFragment : Fragment() {
         }
         mAdapter.itemOnMove = { mediaId ->
             mediaControllerCompat?.transportControls?.sendCustomAction(
-                LMusicService.ACTION_MOVE_SONG,
+                LMusicService.ACTION_MOVED_SONG,
                 Bundle().also { it.putString(MediaMetadata.METADATA_KEY_MEDIA_ID, mediaId) }
             )
         }
