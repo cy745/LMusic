@@ -15,10 +15,7 @@ import com.lalilu.R
 import com.lalilu.common.Mathf
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.databinding.ActivityMainBinding
-import com.lalilu.lmusic.fragment.LMusicFragmentStateAdapter
-import com.lalilu.lmusic.fragment.LMusicNowPlayingFragment
-import com.lalilu.lmusic.fragment.LMusicPlayListFragment
-import com.lalilu.lmusic.fragment.LMusicViewModel
+import com.lalilu.lmusic.fragment.*
 import com.lalilu.lmusic.utils.*
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.entity.LMusicMedia
@@ -87,7 +84,7 @@ class MainActivity : AppCompatActivity() {
             page.alpha = Mathf.clamp(0f, 1f, 1 - abs(position))
         }
         val adapter = binding.musicViewPager.adapter as LMusicFragmentStateAdapter
-        adapter.addFragment(LMusicNowPlayingFragment())
+        adapter.addFragment(LMusicPlayingFragment())
         adapter.addFragment(LMusicPlayListFragment())
 
         val child = binding.musicViewPager.getChildAt(0) as View
