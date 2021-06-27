@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr name="main_background" format="color" />
+
+    <attr name="daynight_1" format="color" />
+    <attr name="daynight_0.9" format="color" />
+    <attr name="daynight_0.5" format="color" />
+    <attr name="daynight_0.1" format="color" />
+    <attr name="daynight_0" format="color" />
+
 </resources>

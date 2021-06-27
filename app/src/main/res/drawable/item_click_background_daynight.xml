@@ -4,6 +4,6 @@
         <color android:color="@android:color/transparent" />
     </item>
     <item android:state_pressed="false">
-        <color android:color="@color/white" />
+        <color android:color="?attr/daynight_1" />
     </item>
 </selector>

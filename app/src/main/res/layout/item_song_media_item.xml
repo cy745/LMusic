@@ -16,7 +16,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:background="@drawable/item_click_background">
+        android:background="@drawable/item_click_background_daynight"
+        android:theme="@style/Theme.Music">
 
         <com.facebook.drawee.view.SimpleDraweeView
             android:id="@+id/song_album_pic"
@@ -38,7 +39,7 @@
             android:layout_marginEnd="20dp"
             android:letterSpacing="0.05"
             android:text="@{mediaItem.description.title}"
-            android:textColor="@color/black"
+            android:textColor="?attr/daynight_0"
             android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@+id/song_singer"
             app:layout_constraintEnd_toStartOf="@+id/song_type"

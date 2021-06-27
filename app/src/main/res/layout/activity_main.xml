@@ -20,6 +20,7 @@
             android:id="@+id/mAppBarLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/colorPrimaryVariant"
             android:fitsSystemWindows="true"
             android:theme="@style/Theme.Music"
             app:layout_behavior="com.lalilu.lmusic.utils.AppBarZoomBehavior"
