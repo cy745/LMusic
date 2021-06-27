@@ -9,8 +9,12 @@ import com.lalilu.media.entity.LMusicPlayList
 
 @Dao
 interface LMusicPlayListDao {
-    // onConflict 用于处理出现重复数据的情况
-    @Insert(entity = LMusicPlayList::class, onConflict = OnConflictStrategy.IGNORE)
+    /**
+     * onConflict 用于处理出现重复数据的情况
+     * REPLACE 出现重复则替换掉
+     *
+     */
+    @Insert(entity = LMusicPlayList::class, onConflict = OnConflictStrategy.REPLACE)
     fun insert(lMusicPlayList: LMusicPlayList)
 
     @Query("DELETE FROM lmusic_playlist")
