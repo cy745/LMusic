@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:paddingBottom="20dp"
             android:text="@{playList.playListTitle}"
-            android:textColor="@color/black"
+            android:textColor="?attr/daynight_0"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
