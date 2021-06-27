@@ -15,6 +15,7 @@ import com.lalilu.databinding.ItemSongMediaItemBinding
 import com.lalilu.lmusic.fragment.LMusicViewModel
 import java.util.*
 
+@Deprecated("过于复杂，使用BaseQuickAdapter简化替代了")
 class LMusicNowPlayingAdapter(private val context: Context) :
     RecyclerView.Adapter<LMusicNowPlayingAdapter.SongHolder>() {
 

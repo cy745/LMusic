@@ -17,9 +17,10 @@ import com.lalilu.lmusic.adapter2.LMusicNowPlayingAdapter
 import com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
 import com.lalilu.lmusic.utils.ItemTouchCallback
 import com.lalilu.player.LMusicPlayerModule
-import com.lalilu.player.service.MusicService
+import com.lalilu.player.service.LMusicService
 import jp.wasabeef.recyclerview.animators.FadeInAnimator
 
+@Deprecated("重写简化为LMusicPlayingFragment")
 class LMusicNowPlayingFragment : Fragment() {
     private lateinit var mRecyclerView: AntiMisOperationRecyclerView
     private lateinit var mAdapter: LMusicNowPlayingAdapter
@@ -44,13 +45,13 @@ class LMusicNowPlayingFragment : Fragment() {
         }
         mAdapter.itemOnMove = { mediaId ->
             mediaControllerCompat?.transportControls?.sendCustomAction(
-                MusicService.ACTION_MOVE_SONG,
+                LMusicService.ACTION_MOVE_SONG,
                 Bundle().also { it.putString(MediaMetadata.METADATA_KEY_MEDIA_ID, mediaId) }
             )
         }
         mAdapter.itemOnSwiped = { mediaId ->
             mediaControllerCompat?.transportControls?.sendCustomAction(
-                MusicService.ACTION_SWIPED_SONG,
+                LMusicService.ACTION_SWIPED_SONG,
                 Bundle().also { it.putString(MediaMetadata.METADATA_KEY_MEDIA_ID, mediaId) }
             )
         }
@@ -61,7 +62,7 @@ class LMusicNowPlayingFragment : Fragment() {
         playerModule.metadata.observeForever { it?.let { mAdapter.updateByMetadata(it) } }
         playerModule.mediaController.observeForever { it?.let { mediaControllerCompat = it } }
         mViewModel.mNowPlayingRecyclerView.postValue(mRecyclerView)
-        mViewModel.mNowPlayingAdapter.postValue(mAdapter)
+//        mViewModel.mNowPlayingAdapter.postValue(mAdapter)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
