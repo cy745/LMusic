@@ -90,6 +90,17 @@ open class LMusicList<K, V> {
         return mOrderList.map { mDataList[it] ?: return emptyList() }
     }
 
+    /**
+     * 根据mOrderList的顺序和当前正在播放的歌曲位置获取mDataList的values
+     */
+    fun getOrderAndShowDataList(): List<V> {
+        return mOrderList.map {
+            val position =
+                Mathf.clampInLoop(0, mOrderList.size - 1, mOrderList.indexOf(it), mNowPosition)
+            mDataList[mOrderList[position]] ?: return emptyList()
+        }
+    }
+
     companion object {
         const val LIST_TRANSFORM_ACTION = "list_transform_action"
         const val ACTION_JUMP_TO = 0
