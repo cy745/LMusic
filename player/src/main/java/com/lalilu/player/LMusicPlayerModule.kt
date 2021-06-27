@@ -11,7 +11,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.player.service.LMusicService
-import com.lalilu.player.service.MusicService
 import org.jetbrains.annotations.Nullable
 import java.util.logging.Logger
 
@@ -56,7 +55,7 @@ class LMusicPlayerModule private constructor(application: Application) :
                 MediaControllerCompat.setMediaController(activity, controller)
             }
             controller.registerCallback(controllerCallback)
-            mediaBrowser.subscribe(MusicService.ACCESS_ID, subscriptionCallback)
+            mediaBrowser.subscribe(LMusicService.ACCESS_ID, subscriptionCallback)
             mediaController.postValue(controller)
             logger.info("[MusicConnectionCallback]#onConnected")
         }
