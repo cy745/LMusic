@@ -12,10 +12,12 @@ import kotlin.collections.LinkedHashMap
  *  数据统统从setValueIn输入
  *
  */
+@Deprecated("过于复杂，替换为com.lalilu.player.LMusicList")
 open class LMusicList<K, V> {
     var mOrderList = LinkedList<K>()
     val mDataList = LinkedHashMap<K, V>()
     var mNowItem: V? = null
+    var mNowKey: K? = null
     var mNowPosition: Int = 0
     fun size() = mOrderList.size
 
@@ -30,12 +32,18 @@ open class LMusicList<K, V> {
         }
     }
 
+    fun getNowKey(): K? {
+        println(mNowPosition)
+        return mOrderList[mNowPosition]
+    }
+
     /**
      *  Item选中指针向前移动
      */
     fun last(): V? {
         mNowPosition = Mathf.clampInLoop(0, mOrderList.size - 1, mNowPosition - 1)
-        mNowItem = mDataList[mOrderList[mNowPosition]]
+        mNowKey = mOrderList[mNowPosition]
+        mNowItem = mDataList[mNowKey]
         return mNowItem
     }
 
@@ -44,7 +52,8 @@ open class LMusicList<K, V> {
      */
     fun next(): V? {
         mNowPosition = Mathf.clampInLoop(0, mOrderList.size - 1, mNowPosition + 1)
-        mNowItem = mDataList[mOrderList[mNowPosition]]
+        mNowKey = mOrderList[mNowPosition]
+        mNowItem = mDataList[mNowKey]
         return mNowItem
     }
 
@@ -53,6 +62,7 @@ open class LMusicList<K, V> {
      */
     open fun playByKey(key: K?): V? {
         key ?: return null
+        mNowKey = key
         mNowPosition = mOrderList.indexOf(key)
         mNowItem = mDataList[key]
         return mNowItem
@@ -108,10 +118,13 @@ open class LMusicList<K, V> {
     fun updateOrderByNewList(newList: List<K>) {
         val first = mOrderList.indexOf(newList[0])
         val size = newList.size
-        if (mOrderList.size > size) mOrderList.clear()
         for (i: Int in 0 until size) {
             val position = Mathf.clampInLoop(0, size - 1, i, first)
-            mOrderList[position] = newList[i]
+            if (position >= mOrderList.size) {
+                mOrderList.add(newList[i])
+            } else {
+                mOrderList[position] = newList[i]
+            }
         }
     }
 

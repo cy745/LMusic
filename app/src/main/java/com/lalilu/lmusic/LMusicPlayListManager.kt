@@ -6,7 +6,6 @@ import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.entity.LMusicPlayList
 import com.lalilu.player.LMusicPlayerModule
 import org.jetbrains.annotations.Nullable
-import java.util.*
 
 class LMusicPlayListManager private constructor(application: Application) {
     private val mViewModel = LMusicViewModel.getInstance(application)
@@ -19,16 +18,20 @@ class LMusicPlayListManager private constructor(application: Application) {
         val playerModule = LMusicPlayerModule.getInstance(null)
         val iconUri = playerModule.metadata.value?.description?.iconUri
         val title = playerModule.metadata.value?.description?.title
-        val playList = TreeSet(playerModule.mediaList.value?.map {
-            it.description.title.toString()
-        })
+
+        val playList = linkedMapOf<String, String>()
+        playerModule.mediaList.value?.forEach {
+//            if (it.mediaId != null) {
+//                playList[it.mediaId!!] = it.description.title.toString()
+//            }
+        }
 
         LMusicMediaModule.getInstance(null).database.playlistDao()
             .insert(LMusicPlayList().also {
                 it.playListId = 0
                 it.playListTitle = "歌单: $title"
                 it.playListArtUri = iconUri
-                it.mediaIdList = playList
+//                it.mediaIdList = playList
             })
     }
 

@@ -14,13 +14,13 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
-import com.lalilu.common.LMusicList
 import com.lalilu.media.LMusicMediaModule
-import com.lalilu.media.toMediaItem
+import com.lalilu.player.LMusicList
 import com.lalilu.player.LMusicPlayerModule
 import com.lalilu.player.manager.LMusicAudioFocusManager
 import com.lalilu.player.manager.LMusicNotificationManager
 import com.lalilu.player.manager.MusicNoisyReceiver
+import java.util.*
 
 class LMusicService : MediaBrowserServiceCompat() {
     private val tag = this.javaClass.name
@@ -29,10 +29,14 @@ class LMusicService : MediaBrowserServiceCompat() {
         const val ACCESS_ID = "access_id"
         const val ACTION_SWIPED_SONG = "action_swiped_song"
         const val ACTION_MOVED_SONG = "action_moved_song"
+        const val ACTION_PLAY_PAUSE = "play_and_pause"
         const val NEW_MEDIA_ORDER_LIST = "new_media_order_list"
         const val LAST_PLAYED_SONG = "last_played_song"
+        val becomingNoisyFilter =
+            IntentFilter().apply { addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY) }
     }
 
+    private lateinit var mList: LMusicList
     private lateinit var mLastPlaySongSP: SharedPreferences
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mSessionCallback: LMusicSessionCompactCallback
@@ -40,11 +44,12 @@ class LMusicService : MediaBrowserServiceCompat() {
     private lateinit var mAudioFocusManager: LMusicAudioFocusManager
     private lateinit var mNoisyReceiver: MusicNoisyReceiver
 
-    private val mList: LMusicList<String, MediaMetadataCompat> = LMusicList()
     private var mMetadataPrepared: MediaMetadataCompat? = null
 
     override fun onCreate() {
         super.onCreate()
+        val musicDao = LMusicMediaModule.getInstance(null).database.musicDao()
+        mList = LMusicList(musicDao)
         mLastPlaySongSP = getSharedPreferences(LAST_PLAYED_SONG, MODE_PRIVATE)
         mNotificationManager = LMusicNotificationManager(this)
         mNoisyReceiver = MusicNoisyReceiver()
@@ -71,8 +76,7 @@ class LMusicService : MediaBrowserServiceCompat() {
     }
 
     inner class LMusicSessionCompactCallback : MediaSessionCompat.Callback(),
-        Playback.OnPlayerCallback,
-        AudioManager.OnAudioFocusChangeListener,
+        Playback.OnPlayerCallback, AudioManager.OnAudioFocusChangeListener,
         MusicNoisyReceiver.OnBecomingNoisyListener {
         private val playBack: LMusicPlayback =
             LMusicPlayback(this@LMusicService, mList)
@@ -81,17 +85,18 @@ class LMusicService : MediaBrowserServiceCompat() {
 
         override fun onCustomAction(action: String?, extras: Bundle?) {
             when (action) {
-                PlaybackStateCompat.ACTION_PLAY_PAUSE.toString() -> {
-                    playBack.playAndPause()
-                }
+                ACTION_PLAY_PAUSE -> playBack.playAndPause()
                 ACTION_SWIPED_SONG -> {
                     val mediaId = extras?.getString(MediaMetadata.METADATA_KEY_MEDIA_ID) ?: return
-                    println(mediaId)
-                    mList.mOrderList.remove(mediaId)
+                    if (mediaId == mList.getNowMediaId()) onSkipToNext()
+                    mList.removeMediaId(mediaId)
                 }
                 ACTION_MOVED_SONG -> {
                     val mediaList = extras?.getStringArrayList(NEW_MEDIA_ORDER_LIST) ?: return
                     mList.updateOrderByNewList(mediaList)
+                    LMusicPlayerModule.getInstance(application).mediaList.postValue(
+                        mList.getOrderAndShowDataList().toMutableList()
+                    )
                 }
             }
         }
@@ -170,21 +175,17 @@ class LMusicService : MediaBrowserServiceCompat() {
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-            val filter =
-                IntentFilter().also { it.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY) }
-            registerReceiver(mNoisyReceiver, filter)
-            //todo registerReceiver 需判断是否已注册
+            if (!mediaSession.isActive) {
+                registerReceiver(mNoisyReceiver, becomingNoisyFilter)
+            }
             mMetadataPrepared = metadata
             mediaSession.setMetadata(mMetadataPrepared)
             mLastPlaySongSP.edit().putString(
                 "mediaId", mMetadataPrepared?.description?.mediaId
             ).apply()
             mediaSession.isActive = true
-
             LMusicPlayerModule.getInstance(application).mediaList.postValue(
-                mList.getOrderAndShowDataList().map {
-                    it.toMediaItem()
-                }.toMutableList()
+                mList.getOrderAndShowDataList().toMutableList()
             )
         }
     }
@@ -207,24 +208,21 @@ class LMusicService : MediaBrowserServiceCompat() {
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         result.detach()
-        val metadataList = LMusicMediaModule.getInstance(null)
-            .getMediaMetaData()
-
-        metadataList.forEach { metadata ->
-            metadata.description?.mediaId?.let {
-                mList.setValueIn(it, metadata)
-            }
+        val musicDao = LMusicMediaModule.getInstance(null).database.musicDao()
+        musicDao.getAllId()?.map {
+            mList.setDataIn(it.toString())
         }
 
-        result.sendResult(mList.getOrderAndShowDataList().map {
-            it.toMediaItem()
-        }.toMutableList())
-
+        result.sendResult(mutableListOf())
         if (mMetadataPrepared == null) {
             val mediaId = mLastPlaySongSP.getString("mediaId", null) ?: return
-            val metadata = mList.playByKey(mediaId) ?: return
+            val metadata = mList.getMetadataByMediaId(mediaId) ?: return
+            mList.playByMediaId(mediaId) ?: return
             mMetadataPrepared = metadata
             mediaSession.setMetadata(metadata)
         }
+        LMusicPlayerModule.getInstance(application).mediaList.postValue(
+            mList.getOrderAndShowDataList().toMutableList()
+        )
     }
 }

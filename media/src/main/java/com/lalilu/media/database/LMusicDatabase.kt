@@ -5,33 +5,33 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.lalilu.media.dao.LMusicAlbumDao
-import com.lalilu.media.dao.LMusicMediaDao
 import com.lalilu.media.dao.LMusicPlayListDao
-import com.lalilu.media.database.convertor.AlbumConvertor
-import com.lalilu.media.database.convertor.MediaIdTreeSetConvertor
-import com.lalilu.media.database.convertor.SongConvertor
+import com.lalilu.media.dao.MusicDao
+import com.lalilu.media.dao.PlayListDao
 import com.lalilu.media.database.convertor.UriConvertor
-import com.lalilu.media.entity.LMusicAlbum
-import com.lalilu.media.entity.LMusicMedia
 import com.lalilu.media.entity.LMusicPlayList
+import com.lalilu.media.entity.Music
+import com.lalilu.media.entity.PlayList
+import com.lalilu.media.entity.PlaylistMusicCrossRef
 
 @Database(
-    entities = [LMusicMedia::class, LMusicAlbum::class, LMusicPlayList::class],
-    version = 4, exportSchema = false
+    entities = [
+        LMusicPlayList::class,
+        Music::class,
+        PlayList::class,
+        PlaylistMusicCrossRef::class
+    ],
+    version = 1, exportSchema = false
 )
 @TypeConverters(
     value = [
-        MediaIdTreeSetConvertor::class,
-        AlbumConvertor::class,
-        SongConvertor::class,
         UriConvertor::class,
     ]
 )
 abstract class LMusicDatabase : RoomDatabase() {
     abstract fun playlistDao(): LMusicPlayListDao
-    abstract fun mediaItemDao(): LMusicMediaDao
-    abstract fun albumDao(): LMusicAlbumDao
+    abstract fun playListDao(): PlayListDao
+    abstract fun musicDao(): MusicDao
 
     companion object {
         private const val DataBaseName = "MusicDataBase"
