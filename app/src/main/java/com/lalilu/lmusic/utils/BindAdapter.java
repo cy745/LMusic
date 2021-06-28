@@ -36,6 +36,18 @@ public class BindAdapter {
         imageView.setImageResource(result);
     }
 
+    public static String durationToString(Number duration) {
+        long temp = duration.longValue() / 1000;
+        if (temp < 1) {
+            temp *= 1000;
+        }
+
+        long min = temp / 60;
+        long sec = temp % 60;
+        return (min < 10 ? "0" : " ") + min + ":" +
+                (sec < 10 ? "0" : " ") + sec;
+    }
+
     @BindingAdapter("pictureUri")
     public static void setPictureUri(SimpleDraweeView simpleDraweeView, Uri uri) {
         simpleDraweeView.setImageURI(uri);

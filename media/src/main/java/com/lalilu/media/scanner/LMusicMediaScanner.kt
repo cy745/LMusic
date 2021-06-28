@@ -1,6 +1,5 @@
 package com.lalilu.media.scanner
 
-import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
@@ -9,7 +8,7 @@ import android.provider.MediaStore
 import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 import com.lalilu.common.bitmap.BitmapUtils
 import com.lalilu.media.database.LMusicDatabase
-import com.lalilu.media.entity.LMusicMedia
+import com.lalilu.media.entity.Music
 import java.io.File
 
 /**
@@ -18,9 +17,9 @@ import java.io.File
 class LMusicMediaScanner(
     private val mContext: Context,
     database: LMusicDatabase
-) : BaseMediaScanner<LMusicMedia>() {
-    private val mediaItemDao = database.mediaItemDao()
-    private var onScanCallback: MediaScanner.OnScanCallback<LMusicMedia>? = null
+) : BaseMediaScanner<Music>() {
+    private val musicDao = database.musicDao()
+    private var onScanCallback: MediaScanner.OnScanCallback<Music>? = null
     private var standardDirectory: File =
         mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
 
@@ -32,13 +31,13 @@ class LMusicMediaScanner(
             arrayOf((500 * 1024).toString(), (30 * 1000).toString(), "<unknown>")
     }
 
-    fun setOnScanCallback(callback: MediaScanner.OnScanCallback<LMusicMedia>)
+    fun setOnScanCallback(callback: MediaScanner.OnScanCallback<Music>)
             : LMusicMediaScanner {
         this.onScanCallback = callback
         return this
     }
 
-    override fun onScanProgress(nowCount: Int, item: LMusicMedia) {
+    override fun onScanProgress(nowCount: Int, item: Music) {
         onScanCallback?.onScanProgress(nowCount, item)
     }
 
@@ -46,7 +45,7 @@ class LMusicMediaScanner(
      * 清空歌曲数据库并回调onScanStart
      */
     override fun onScanStart(totalCount: Int) {
-        mediaItemDao.deleteAll()
+        musicDao.deleteAll()
         onScanCallback?.onScanStart(totalCount)
     }
 
@@ -59,35 +58,40 @@ class LMusicMediaScanner(
      *  提取音频文件中嵌入的封面并存到应用的私有空间中，
      *  最后将LMusicMedia存入数据库
      */
-    override fun onScanForEach(cursor: Cursor): LMusicMedia {
-        return getLMusicMedia(cursor).also {
+    override fun onScanForEach(cursor: Cursor): Music {
+        return getMusic(cursor).also {
             BitmapUtils.saveThumbnailToSandBox(
                 mContext, standardDirectory,
-                it.mediaId, it.mediaUri
+                it.musicId, it.musicUri
             )
-            it.mediaArtUri =
-                BitmapUtils.loadThumbnail(standardDirectory, it.mediaId)
-            mediaItemDao.insert(it)
+            it.musicArtUri =
+                BitmapUtils.loadThumbnail(standardDirectory, it.musicId)
+            musicDao.insert(it)
         }
     }
 
     companion object {
         private val externalAlbumUri: Uri = Uri.parse("content://media/external/audio/albumart")
 
-        private fun getLMusicMedia(cursor: Cursor): LMusicMedia {
-            return LMusicMedia().also {
-                it.mediaId = getLong(cursor, MediaStore.Audio.Media._ID)
-                it.mediaSize = getLong(cursor, MediaStore.Audio.Media.SIZE)
-                it.mediaArtist = getString(cursor, MediaStore.Audio.Artists.ARTIST)
-                it.mediaDuration = getLong(cursor, MediaStore.Audio.Media.DURATION)
-                it.mediaTitle = getString(cursor, MediaStore.Audio.Media.TITLE)
-                it.mediaMimeType = getString(cursor, MediaStore.Audio.Media.MIME_TYPE)
-                it.albumId = getLong(cursor, MediaStore.Audio.Albums.ALBUM_ID)
-                it.albumTitle = getString(cursor, MediaStore.Audio.Albums.ALBUM)
-                it.albumArtist = getString(cursor, MediaStore.Audio.Albums.ARTIST)
-                it.albumUri = ContentUris.withAppendedId(externalAlbumUri, it.albumId)
-                it.mediaUri = Uri.withAppendedPath(EXTERNAL_CONTENT_URI, it.mediaId.toString())
-            }
+        private fun getMusic(cursor: Cursor): Music {
+            val mediaId = getLong(cursor, MediaStore.Audio.Media._ID)
+            val mediaSize = getLong(cursor, MediaStore.Audio.Media.SIZE)
+            val mediaArtist = getString(cursor, MediaStore.Audio.Artists.ARTIST)
+            val mediaDuration = getLong(cursor, MediaStore.Audio.Media.DURATION)
+            val mediaTitle = getString(cursor, MediaStore.Audio.Media.TITLE)
+            val mediaMimeType = getString(cursor, MediaStore.Audio.Media.MIME_TYPE)
+            val mediaUri = Uri.withAppendedPath(EXTERNAL_CONTENT_URI, mediaId.toString())
+            val albumTitle = getString(cursor, MediaStore.Audio.Albums.ALBUM)
+            return Music(
+                mediaId,
+                mediaTitle,
+                mediaSize,
+                mediaDuration,
+                mediaArtist,
+                mediaMimeType,
+                mediaUri,
+                albumTitle
+            )
         }
 
         private fun getString(cursor: Cursor, string: String): String {

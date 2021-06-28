@@ -4,7 +4,6 @@ import android.content.Intent
 import android.media.AudioManager
 import android.media.MediaMetadata
 import android.os.Bundle
-import android.support.v4.media.session.PlaybackStateCompat
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -18,10 +17,11 @@ import com.lalilu.databinding.ActivityMainBinding
 import com.lalilu.lmusic.fragment.*
 import com.lalilu.lmusic.utils.*
 import com.lalilu.media.LMusicMediaModule
-import com.lalilu.media.entity.LMusicMedia
+import com.lalilu.media.entity.Music
 import com.lalilu.media.scanner.LMusicMediaScanner
 import com.lalilu.media.scanner.MediaScanner
 import com.lalilu.player.LMusicPlayerModule
+import com.lalilu.player.service.LMusicService
 import kotlin.math.abs
 
 
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initMediaScanner() {
         mediaScanner.setOnScanCallback(object :
-            MediaScanner.OnScanCallback<LMusicMedia> {
+            MediaScanner.OnScanCallback<Music> {
             var total = 0
             override fun onScanStart(totalCount: Int) {
                 total = totalCount
@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
                 binding.collapsingToolbarLayout.title = "扫描完成：共${totalCount}首"
             }
 
-            override fun onScanProgress(nowCount: Int, item: LMusicMedia) {
+            override fun onScanProgress(nowCount: Int, item: Music) {
                 binding.collapsingToolbarLayout.title = "扫描中：${nowCount}/${total}"
             }
         })
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
             override fun onPageSelected(position: Int) {
                 val mAppBarState = mViewModel.mAppBar.value?.mAppbarState ?: return
                 val recyclerView = when (position) {
-                    0 -> mViewModel.mNowPlayingRecyclerView.value
+                    0 -> mViewModel.mPlayingRecyclerView.value
                     1 -> mViewModel.mPlayListRecyclerView.value
                     else -> null
                 } ?: return
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
         binding.toolbar.setOnClickListener {
             if (binding.mAppBarLayout.mAppbarState == AppBarOnStateChange.AppBarState.STATE_COLLAPSED) {
                 val recyclerView = when (binding.musicViewPager.currentItem) {
-                    0 -> mViewModel.mNowPlayingRecyclerView.value
+                    0 -> mViewModel.mPlayingRecyclerView.value
                     1 -> mViewModel.mPlayListRecyclerView.value
                     else -> null
                 } ?: return@setOnClickListener
@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.seekBar.setOnClickListener {
             playerModule.mediaController.value?.transportControls?.sendCustomAction(
-                PlaybackStateCompat.ACTION_PLAY_PAUSE.toString(), null
+                LMusicService.ACTION_PLAY_PAUSE, null
             )
         }
     }

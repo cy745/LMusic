@@ -41,7 +41,6 @@ android {
 dependencies {
     // https://github.com/CymChad/BaseRecyclerViewAdapterHelper
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.6'
-    implementation "io.reactivex.rxjava3:rxjava:3.0.13"
     implementation 'androidx.palette:palette-ktx:1.0.0'
 
     implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'

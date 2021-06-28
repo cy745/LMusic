@@ -21,7 +21,7 @@ class LMusicPlayerModule private constructor(application: Application) :
     private val mediaDatabase = LMusicMediaModule.getInstance(application).database
     val playlist = mediaDatabase.playlistDao().getAllLiveData()
 
-    val mediaList = MutableLiveData<MutableList<MediaBrowserCompat.MediaItem>>(null)
+    val mediaList = MutableLiveData<MutableList<String>>(null)
     val metadata = MutableLiveData<MediaMetadataCompat>(null)
     val playBackState = MutableLiveData<PlaybackStateCompat>(null)
     val mediaController = MutableLiveData<MediaControllerCompat>(null)
@@ -67,7 +67,7 @@ class LMusicPlayerModule private constructor(application: Application) :
             children: MutableList<MediaBrowserCompat.MediaItem>
         ) {
             val controller = mediaController.value
-            this@LMusicPlayerModule.mediaList.postValue(children)
+//            this@LMusicPlayerModule.mediaList.postValue(children)
             this@LMusicPlayerModule.mediaController.postValue(controller)
             this@LMusicPlayerModule.metadata.postValue(controller?.metadata)
             this@LMusicPlayerModule.playBackState.postValue(controller?.playbackState)

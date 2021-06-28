@@ -15,8 +15,8 @@ class LMusicViewModel private constructor(application: Application) :
 
     val mAppBar = MutableLiveData<SquareAppBarLayout>(null)
     val mViewPager2 = MutableLiveData<ViewPager2>(null)
-    val mNowPlayingRecyclerView = MutableLiveData<AntiMisOperationRecyclerView>(null)
-    val mNowPlayingAdapter = MutableLiveData<LMusicPlayingAdapter>(null)
+    val mPlayingRecyclerView = MutableLiveData<AntiMisOperationRecyclerView>(null)
+    val mPlayingAdapter = MutableLiveData<LMusicPlayingAdapter>(null)
     val mPlayListRecyclerView = MutableLiveData<AntiMisOperationRecyclerView>(null)
     val mPlayListAdapter = MutableLiveData<LMusicPlayListAdapter>(null)
 

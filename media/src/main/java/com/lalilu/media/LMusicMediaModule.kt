@@ -1,7 +1,6 @@
 package com.lalilu.media
 
 import android.app.Application
-import android.support.v4.media.MediaMetadataCompat
 import androidx.lifecycle.AndroidViewModel
 import com.lalilu.media.database.LMusicDatabase
 import com.lalilu.media.scanner.LMusicMediaScanner
@@ -12,10 +11,6 @@ class LMusicMediaModule private constructor(application: Application) :
 
     val database: LMusicDatabase = LMusicDatabase.getInstance(application)
     val mediaScanner = LMusicMediaScanner(application, database)
-
-    fun getMediaMetaData(): List<MediaMetadataCompat> {
-        return database.mediaItemDao().getAll().map { it.toMediaMetaData() }
-    }
 
     companion object {
         @Volatile

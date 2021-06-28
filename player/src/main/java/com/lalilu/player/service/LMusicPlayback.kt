@@ -4,9 +4,8 @@ import android.content.Context
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
-import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import com.lalilu.common.LMusicList
+import com.lalilu.player.LMusicList
 import com.lalilu.player.manager.LMusicAudioFocusManager
 import com.lalilu.player.manager.LMusicVolumeManager
 
@@ -14,11 +13,11 @@ import com.lalilu.player.manager.LMusicVolumeManager
  *  Playback的一个实现，使用LMusicList作为歌曲队列容器，
  *  歌曲切换逻辑取决于LMusicList
  *  @param mContext 用于MediaPlayer#setDataSource(Context,Uri)中
- *  @param mList 传入一个带有歌曲的LMusicList进行操作
+ *  @param mList 传入一个只包含MediaId的LMusicList进行操作
  */
 open class LMusicPlayback(
     private val mContext: Context,
-    private val mList: LMusicList<String, MediaMetadataCompat>
+    private val mList: LMusicList
 ) : Playback {
     private var mediaPlayer: MediaPlayer? = null
     private var mVolumeManager: LMusicVolumeManager? = null
@@ -52,7 +51,7 @@ open class LMusicPlayback(
             mVolumeManager?.fadeStart()
             // mediaPlayer!!.start()
         } else {
-            val uri = mList.getNowItem()?.description?.mediaUri ?: return
+            val uri = mList.getNowUri() ?: return
             playByUri(uri)
             return
         }
@@ -113,7 +112,7 @@ open class LMusicPlayback(
      *  @param mediaId 歌曲在MediaStore中分配得到的唯一标识
      */
     override fun playByMediaId(mediaId: String?) {
-        val uri = mList.playByKey(mediaId)?.description?.mediaUri ?: return
+        val uri = mList.playByMediaId(mediaId) ?: return
         playByUri(uri)
     }
 
@@ -121,7 +120,7 @@ open class LMusicPlayback(
      *  播放下一首
      */
     override fun next() {
-        val uri = mList.next()?.description?.mediaUri ?: return
+        val uri = mList.next() ?: return
         playByUri(uri)
     }
 
@@ -130,7 +129,7 @@ open class LMusicPlayback(
      *  播放上一首
      */
     override fun previous() {
-        val uri = mList.last()?.description?.mediaUri ?: return
+        val uri = mList.previous() ?: return
         playByUri(uri)
     }
 
@@ -184,6 +183,6 @@ open class LMusicPlayback(
      *  回调更新MediaMetadata
      */
     override fun onMetadataChanged() {
-        onPlayerCallback?.onMetadataChanged(mList.getNowItem())
+        onPlayerCallback?.onMetadataChanged(mList.getNowMetadata())
     }
 }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
@@ -49,28 +48,34 @@ class LMusicPlayListAdapter(private val context: Context) :
             PLAYLIST_EXPANDED -> {
                 val binding = (holder as PlayListItemExpandHolder).binding
                 binding.playList = playLists[position]
-                binding.childList.adapter =
-                    ArrayAdapter(
-                        context,
-                        R.layout.item_play_list_item_expand_list_item,
-                        playLists[position].mediaIdList.toList()
-                    )
+//                binding.childList.adapter =
+//                    ArrayAdapter(
+//                        context,
+//                        R.layout.item_play_list_item_expand_list_item,
+//                        playLists[position].mediaIdList.values.toList()
+//                    )
             }
             else -> {
                 val binding = (holder as PlayListItemHolder).binding
                 binding.playList = playLists[position]
 
-                val treeSet = playLists[position].mediaIdList
-                binding.playListFirst.text = getTreeSetItemByIndex(treeSet, 0)
-                binding.playListSecond.text = getTreeSetItemByIndex(treeSet, 1)
-                binding.playListThird.text = getTreeSetItemByIndex(treeSet, 2)
+//                val map = playLists[position].mediaIdList
+//                binding.playListFirst.text = getItemInLinkedHashMapByIndex(map, 0)
+//                binding.playListSecond.text = getItemInLinkedHashMapByIndex(map, 1)
+//                binding.playListThird.text = getItemInLinkedHashMapByIndex(map, 2)
             }
         }
     }
 
-    private fun <T> getTreeSetItemByIndex(treeSet: TreeSet<T>, index: Int): T? {
-        val size = treeSet.size
-        return if (index <= size - 1) treeSet.elementAt(index) else null
+    private fun <T> getItemInLinkedHashMapByIndex(map: LinkedHashMap<T, T>, index: Int): T? {
+        val iterator = map.entries.iterator()
+        var result: T? = null
+        for (i: Int in 0..index) {
+            if (iterator.hasNext()) {
+                result = iterator.next().value
+            }
+        }
+        return result
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

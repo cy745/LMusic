@@ -2,6 +2,7 @@ package com.lalilu.lmusic
 
 import android.app.Application
 import com.facebook.drawee.backends.pipeline.Fresco
+import com.facebook.imagepipeline.core.ImagePipelineConfig
 import com.hjq.permissions.XXPermissions
 import com.lalilu.lmusic.fragment.LMusicViewModel
 import com.lalilu.media.LMusicMediaModule
@@ -16,6 +17,9 @@ class LMusicApplication : Application() {
         LMusicPlayerModule.getInstance(this)
         LMusicViewModel.getInstance(this)
         LMusicPlayListManager.getInstance(this)
-        Fresco.initialize(this)
+        val config = ImagePipelineConfig.newBuilder(this)
+            .setDownsampleEnabled(true)
+            .build()
+        Fresco.initialize(this, config)
     }
 }
