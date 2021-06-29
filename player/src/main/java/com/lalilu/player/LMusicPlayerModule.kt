@@ -19,7 +19,7 @@ class LMusicPlayerModule private constructor(application: Application) :
     private val logger = Logger.getLogger(this.javaClass.name)
 
     private val mediaDatabase = LMusicMediaModule.getInstance(application).database
-    val playlist = mediaDatabase.playlistDao().getAllLiveData()
+    val playlist = mediaDatabase.playListDao().getAllLiveData()
 
     val mediaList = MutableLiveData<MutableList<String>>(null)
     val metadata = MutableLiveData<MediaMetadataCompat>(null)

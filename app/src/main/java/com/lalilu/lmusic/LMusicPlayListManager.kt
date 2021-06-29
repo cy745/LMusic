@@ -3,36 +3,28 @@ package com.lalilu.lmusic
 import android.app.Application
 import com.lalilu.lmusic.fragment.LMusicViewModel
 import com.lalilu.media.LMusicMediaModule
-import com.lalilu.media.entity.LMusicPlayList
+import com.lalilu.media.entity.Playlist
 import com.lalilu.player.LMusicPlayerModule
 import org.jetbrains.annotations.Nullable
 
 class LMusicPlayListManager private constructor(application: Application) {
     private val mViewModel = LMusicViewModel.getInstance(application)
+    private val mediaModule = LMusicMediaModule.getInstance(application)
+    private val playerModule = LMusicPlayerModule.getInstance(application)
 
     fun createPlayList() {
         mViewModel.mPlayListRecyclerView.value?.smoothScrollToPosition(0)
         mViewModel.mViewPager2.value?.currentItem = 1
         mViewModel.mAppBar.value?.setExpanded(true, true)
 
-        val playerModule = LMusicPlayerModule.getInstance(null)
         val iconUri = playerModule.metadata.value?.description?.iconUri
-        val title = playerModule.metadata.value?.description?.title
+        val title = playerModule.metadata.value?.description?.title.toString()
 
-        val playList = linkedMapOf<String, String>()
-        playerModule.mediaList.value?.forEach {
-//            if (it.mediaId != null) {
-//                playList[it.mediaId!!] = it.description.title.toString()
-//            }
-        }
-
-        LMusicMediaModule.getInstance(null).database.playlistDao()
-            .insert(LMusicPlayList().also {
-                it.playListId = 0
-                it.playListTitle = "歌单: $title"
-                it.playListArtUri = iconUri
-//                it.mediaIdList = playList
-            })
+        println(playerModule.mediaList.value)
+        mediaModule.database.playListDao().insertPlaylistByList(
+            Playlist(1, iconUri, title),
+            playerModule.mediaList.value
+        )
     }
 
     companion object {

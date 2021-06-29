@@ -14,6 +14,7 @@ class SamplingDraweeView @JvmOverloads constructor(
 
     override fun setImageURI(uri: Uri?, callerContext: Any?) {
         super.setImageURI(uri, callerContext)
+        if (uri == null) return
         val controllerBuilder = controllerBuilder
 
         controllerBuilder.setOldController(controller).callerContext = callerContext

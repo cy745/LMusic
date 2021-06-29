@@ -9,7 +9,7 @@
         <import type="com.lalilu.lmusic.utils.BindAdapter" />
 
         <variable
-            name="media"
+            name="music"
             type="com.lalilu.media.entity.Music" />
     </data>
 
@@ -21,7 +21,7 @@
 
         <com.lalilu.lmusic.ui.SamplingDraweeView
             android:id="@+id/song_album_pic"
-            pictureUri="@{media.musicArtUri}"
+            pictureUri="@{music.musicArtUri}"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_marginStart="20dp"
@@ -38,7 +38,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:letterSpacing="0.05"
-            android:text="@{media.musicTitle}"
+            android:text="@{music.musicTitle}"
             android:textColor="?attr/daynight_0"
             android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@+id/song_singer"
@@ -53,7 +53,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:letterSpacing="0.05"
-            android:text="@{media.musicArtist}"
+            android:text="@{music.musicArtist}"
             android:textSize="12sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -66,7 +66,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
-            android:text="@{BindAdapter.durationToString(media.musicDuration)}"
+            android:text="@{BindAdapter.durationToString(music.musicDuration)}"
             android:textAlignment="center"
             app:layout_constraintBottom_toBottomOf="@+id/song_singer"
             app:layout_constraintEnd_toEndOf="parent"
@@ -74,7 +74,7 @@
 
         <ImageView
             android:id="@+id/song_type"
-            iconRec="@{media.musicMimeType}"
+            iconRec="@{music.musicMimeType}"
             android:layout_width="wrap_content"
             android:layout_height="20dp"
             app:layout_constraintBottom_toTopOf="@+id/song_duration"

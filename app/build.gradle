@@ -18,7 +18,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 2
-        versionName "1.2.7"
+        versionName "1.2.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -39,8 +39,6 @@ android {
 
 
 dependencies {
-    // https://github.com/CymChad/BaseRecyclerViewAdapterHelper
-    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.6'
     implementation 'androidx.palette:palette-ktx:1.0.0'
 
     implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
@@ -83,4 +81,7 @@ dependencies {
     implementation project(":media")
     implementation project(":common")
     implementation project(":player")
+
+    // https://github.com/CymChad/BaseRecyclerViewAdapterHelper
+    implementation(name:'baseRecyclerViewAdapter',ext:'aar')
 }
