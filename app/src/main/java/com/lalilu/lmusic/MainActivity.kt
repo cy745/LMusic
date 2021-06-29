@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         }
         val adapter = binding.musicViewPager.adapter as LMusicFragmentStateAdapter
         adapter.addFragment(LMusicPlayingFragment())
-        adapter.addFragment(LMusicPlayListFragment())
+        adapter.addFragment(LMusicPlaylistFragment())
 
         val child = binding.musicViewPager.getChildAt(0) as View
         if (child is RecyclerView) child.overScrollMode = View.OVER_SCROLL_NEVER

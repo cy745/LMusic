@@ -5,7 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager2.widget.ViewPager2
 import com.lalilu.lmusic.adapter.LMusicPlayingAdapter
-import com.lalilu.lmusic.adapter2.LMusicPlayListAdapter
+import com.lalilu.lmusic.adapter.LMusicPlaylistAdapter
 import com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
 import com.lalilu.lmusic.ui.SquareAppBarLayout
 import org.jetbrains.annotations.Nullable
@@ -18,7 +18,7 @@ class LMusicViewModel private constructor(application: Application) :
     val mPlayingRecyclerView = MutableLiveData<AntiMisOperationRecyclerView>(null)
     val mPlayingAdapter = MutableLiveData<LMusicPlayingAdapter>(null)
     val mPlayListRecyclerView = MutableLiveData<AntiMisOperationRecyclerView>(null)
-    val mPlayListAdapter = MutableLiveData<LMusicPlayListAdapter>(null)
+    val mPlayListAdapter = MutableLiveData<LMusicPlaylistAdapter>(null)
 
     companion object {
         @Volatile

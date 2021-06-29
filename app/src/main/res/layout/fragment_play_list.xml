@@ -7,8 +7,9 @@
     android:clipToPadding="false"
     android:fillViewport="true"
     android:overScrollMode="never"
+    android:paddingTop="20dp"
     android:paddingBottom="128dp"
-    tools:context=".lmusic.fragment.LMusicPlayListFragment" />
+    tools:context=".lmusic.fragment.LMusicPlaylistFragment" />
 
 
 

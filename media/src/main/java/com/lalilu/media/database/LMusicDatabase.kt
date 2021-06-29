@@ -5,20 +5,17 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.lalilu.media.dao.LMusicPlayListDao
 import com.lalilu.media.dao.MusicDao
 import com.lalilu.media.dao.PlayListDao
 import com.lalilu.media.database.convertor.UriConvertor
-import com.lalilu.media.entity.LMusicPlayList
 import com.lalilu.media.entity.Music
-import com.lalilu.media.entity.PlayList
+import com.lalilu.media.entity.Playlist
 import com.lalilu.media.entity.PlaylistMusicCrossRef
 
 @Database(
     entities = [
-        LMusicPlayList::class,
         Music::class,
-        PlayList::class,
+        Playlist::class,
         PlaylistMusicCrossRef::class
     ],
     version = 1, exportSchema = false
@@ -29,7 +26,6 @@ import com.lalilu.media.entity.PlaylistMusicCrossRef
     ]
 )
 abstract class LMusicDatabase : RoomDatabase() {
-    abstract fun playlistDao(): LMusicPlayListDao
     abstract fun playListDao(): PlayListDao
     abstract fun musicDao(): MusicDao
 

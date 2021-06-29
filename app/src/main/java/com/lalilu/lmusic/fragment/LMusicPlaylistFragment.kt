@@ -8,21 +8,26 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayListBinding
-import com.lalilu.lmusic.adapter2.LMusicPlayListAdapter
+import com.lalilu.lmusic.adapter.LMusicPlaylistAdapter
 import com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
+import com.lalilu.media.LMusicMediaModule
 import com.lalilu.player.LMusicPlayerModule
 
-class LMusicPlayListFragment : Fragment() {
+class LMusicPlaylistFragment : Fragment() {
     private lateinit var mRecyclerView: AntiMisOperationRecyclerView
-    private lateinit var mAdapter: LMusicPlayListAdapter
+    private lateinit var mAdapter: LMusicPlaylistAdapter
     private lateinit var mViewModel: LMusicViewModel
     private lateinit var playerModule: LMusicPlayerModule
+    private lateinit var mediaModule: LMusicMediaModule
 
     private fun initializeObserver() {
         playerModule.playlist.observeForever {
             it?.let {
-                mAdapter.playLists = it.toMutableList()
-                mAdapter.notifyDataSetChanged()
+                val list = it.map { playlist ->
+                    mediaModule.database.playListDao()
+                        .getPlaylistWithSongsById(playlist.playlistId!!)
+                }
+                mAdapter.setList(list)
             }
         }
         mViewModel.mPlayListRecyclerView.postValue(mRecyclerView)
@@ -31,12 +36,12 @@ class LMusicPlayListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         mRecyclerView = FragmentPlayListBinding.bind(view).playListRecyclerView
-        mRecyclerView.adapter = LMusicPlayListAdapter(requireContext())
-        mAdapter = mRecyclerView.adapter as LMusicPlayListAdapter
+        mRecyclerView.layoutManager = LinearLayoutManager(context)
+        mRecyclerView.adapter = LMusicPlaylistAdapter()
+        mAdapter = mRecyclerView.adapter as LMusicPlaylistAdapter
+        mediaModule = LMusicMediaModule.getInstance(null)
         mViewModel = LMusicViewModel.getInstance(null)
         playerModule = LMusicPlayerModule.getInstance(null)
-
-        mRecyclerView.layoutManager = LinearLayoutManager(context)
         initializeObserver()
     }
 
