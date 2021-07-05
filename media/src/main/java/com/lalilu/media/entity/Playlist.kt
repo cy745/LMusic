@@ -7,8 +7,9 @@ import androidx.room.PrimaryKey
 @Entity
 data class Playlist(
     @PrimaryKey(autoGenerate = true)
-    var playlistId: Long? = null,
+    var playlistId: Long = 0,
     var playlistArt: Uri? = Uri.EMPTY,
     var playlistTitle: String = "",
-    var playlistCreateTime: Long = System.currentTimeMillis()
+    var playlistCreateTime: Long = System.currentTimeMillis(),
+    var playlistOrder: ArrayList<Long> = ArrayList()
 )

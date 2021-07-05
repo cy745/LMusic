@@ -16,7 +16,6 @@ class SamplingDraweeView @JvmOverloads constructor(
         super.setImageURI(uri, callerContext)
         if (uri == null) return
         val controllerBuilder = controllerBuilder
-
         controllerBuilder.setOldController(controller).callerContext = callerContext
 
         val imageRequestBuilder = ImageRequestBuilder.newBuilderWithSource(uri)
@@ -26,5 +25,4 @@ class SamplingDraweeView @JvmOverloads constructor(
         controllerBuilder.autoPlayAnimations = true
         controller = controllerBuilder.build()
     }
-
 }

@@ -6,7 +6,7 @@
 
     <data>
 
-        <import type="com.lalilu.lmusic.utils.BindAdapter" />
+        <import type="com.lalilu.lmusic.binding_adapter.BindAdapter" />
 
         <variable
             name="music"

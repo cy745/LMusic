@@ -16,13 +16,21 @@ interface MusicDao {
     @Query("DELETE FROM music")
     fun deleteAll()
 
-    @Query("SELECT * FROM music WHERE musicId = (:id)")
-    fun getMusicById(id: String?): Music?
-
     @Query("SELECT musicId FROM music")
     fun getAllId(): List<Long>?
 
+    @Query("SELECT * FROM music")
+    fun getAll(): List<Music>
+
+    @Query("SELECT * FROM music WHERE musicId = (:id)")
+    fun getMusicById(id: Long?): Music?
+
+    @Query("SELECT * FROM music WHERE musicId = (:id)")
+    fun getMusicById(id: String?): Music?
+
+    @Query("SELECT musicUri FROM music WHERE musicId = (:id)")
+    fun getUriById(id: Long): Uri?
+
     @Query("SELECT musicUri FROM music WHERE musicId = (:id)")
     fun getUriById(id: String): Uri?
-
 }

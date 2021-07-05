@@ -2,9 +2,7 @@ package com.lalilu.media.entity
 
 import android.net.Uri
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.chad.library.adapter.base.entity.node.BaseNode
 
 @Entity
 data class Music(
@@ -18,6 +16,10 @@ data class Music(
     var musicUri: Uri = Uri.EMPTY,
     var albumTitle: String = "",
     var musicArtUri: Uri = Uri.EMPTY,
-    @Ignore
-    override val childNode: MutableList<BaseNode>? = null,
-) : BaseNode()
+) {
+    override fun equals(other: Any?): Boolean {
+        if (other !is Music) return false
+        if (other.musicId != this.musicId) return false
+        return true
+    }
+}

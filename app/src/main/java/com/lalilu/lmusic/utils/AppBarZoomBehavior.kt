@@ -51,8 +51,8 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
         })
 
         mAppbarHeight = appBarLayout.height - appBarLayout.totalScrollRange
-        mDraweeView = appBarLayout.findViewById(R.id.playing_song_album_pic)
-        mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.collapsingToolbarLayout)
+        mDraweeView = appBarLayout.findViewById(R.id.fm_top_pic)
+        mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.fm_collapse_layout)
         nestedChildView = (parent.getChildAt(1) as ViewGroup).getChildAt(0) as ViewGroup?
 
         mDraweeView?.let { mDraweeHeight = it.height }

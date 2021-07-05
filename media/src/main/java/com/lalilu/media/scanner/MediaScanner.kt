@@ -12,10 +12,10 @@ interface MediaScanner<T> {
     /**
      * 扫描结果回调
      */
-    interface OnScanCallback<T> {
-        fun onScanStart(totalCount: Int)
-        fun onScanFinish(totalCount: Int)
-        fun onScanProgress(nowCount: Int, item: T)
+    abstract class OnScanCallback<T> {
+        open fun onScanStart(totalCount: Int) {}
+        open fun onScanFinish(totalCount: Int) {}
+        open fun onScanProgress(nowCount: Int, item: T) {}
     }
 
     /**

@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.lalilu.lmusic.ui.AntiMisOperationRecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/playListRecyclerView"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:clipToPadding="false"
-    android:fillViewport="true"
-    android:overScrollMode="never"
-    android:paddingTop="20dp"
-    android:paddingBottom="128dp"
-    tools:context=".lmusic.fragment.LMusicPlaylistFragment" />
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.lalilu.lmusic.state.PlaylistFragmentViewModel" />
+
+        <variable
+            name="playlistAdapter"
+            type="com.lalilu.lmusic.adapter.LMusicPlaylistAdapter" />
+    </data>
+
+    <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
+        android:id="@+id/playListRecyclerView"
+        adapter="@{playlistAdapter}"
+        setPlayList="@{vm.playlist}"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:paddingTop="20dp"
+        android:paddingBottom="128dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+</layout>
 
 
 

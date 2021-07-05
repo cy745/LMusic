@@ -45,7 +45,4 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     implementation project(":common")
-
-    // https://github.com/CymChad/BaseRecyclerViewAdapterHelper
-    implementation(name:'baseRecyclerViewAdapter',ext:'aar')
 }
