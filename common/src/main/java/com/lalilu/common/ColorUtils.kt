@@ -20,5 +20,13 @@ class ColorUtils {
                 )) / 255
             return darkness < 0.5
         }
+
+        fun getAutomaticColor(palette: Palette?): Int {
+            if (palette == null) return Color.DKGRAY
+            var oldColor = palette.getDarkVibrantColor(Color.LTGRAY)
+            if (isLightColor(oldColor))
+                oldColor = palette.getDarkMutedColor(Color.LTGRAY)
+            return oldColor
+        }
     }
 }

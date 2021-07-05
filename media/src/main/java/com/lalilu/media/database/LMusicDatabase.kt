@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.lalilu.media.dao.MusicDao
 import com.lalilu.media.dao.PlayListDao
+import com.lalilu.media.database.convertor.ArrayListConvertor
 import com.lalilu.media.database.convertor.UriConvertor
 import com.lalilu.media.entity.Music
 import com.lalilu.media.entity.Playlist
@@ -23,6 +24,7 @@ import com.lalilu.media.entity.PlaylistMusicCrossRef
 @TypeConverters(
     value = [
         UriConvertor::class,
+        ArrayListConvertor::class
     ]
 )
 abstract class LMusicDatabase : RoomDatabase() {

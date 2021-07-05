@@ -24,11 +24,13 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:alpha="0.1"
+        android:ellipsize="none"
+        android:maxLines="1"
         android:textColor="?attr/daynight_0"
         android:textSize="130sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
 

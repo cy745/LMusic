@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fresco="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.lalilu.lmusic.state.MainViewModel" />
+
+        <variable
+            name="pagerAdapter"
+            type="com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:overScrollMode="never">
+
+        <com.lalilu.lmusic.ui.SquareAppBarLayout
+            android:id="@+id/fm_appbar_layout"
+            bgPalette="@{vm.nowBgPalette}"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimaryVariant"
+            android:fitsSystemWindows="true"
+            app:layout_behavior="com.lalilu.lmusic.utils.AppBarZoomBehavior">
+
+            <net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
+                android:id="@+id/fm_collapse_layout"
+                bindTitle="@{vm.nowPlayingMusic.musicTitle}"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:collapsedTitleTextAppearance="@style/collapsedTitleText"
+                app:contentScrim="@android:color/transparent"
+                app:expandedTitleTextAppearance="@style/expandedTitleText"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+                app:statusBarScrim="@android:color/transparent">
+
+                <com.lalilu.lmusic.ui.PaletteDraweeView
+                    android:id="@+id/fm_top_pic"
+                    artUri="@{vm.nowPlayingMusic.musicArtUri}"
+                    bgColorLiveData="@{vm.nowBgPalette}"
+                    callerContext="@{context}"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="top"
+                    android:fitsSystemWindows="true"
+                    app:layout_collapseMode="parallax"
+                    app:layout_collapseParallaxMultiplier="0.7"
+                    fresco:actualImageScaleType="centerCrop" />
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/fm_toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:minHeight="?attr/actionBarSize"
+                    app:layout_collapseMode="pin"
+                    app:title="LMusic..." />
+
+                <com.lalilu.lmusic.ui.LMusicTabLayout
+                    android:id="@+id/fm_tab_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top"
+                    app:layout_collapseMode="parallax"
+                    app:layout_collapseParallaxMultiplier="0.6"
+                    app:tabIndicatorColor="@android:color/transparent"
+                    app:tabIndicatorFullWidth="false"
+                    app:tabMode="scrollable"
+                    app:tabRippleColor="#10FFFFFF"
+                    app:tabUnboundedRipple="false" />
+            </net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout>
+        </com.lalilu.lmusic.ui.SquareAppBarLayout>
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/fm_viewpager"
+            adapter="@{pagerAdapter}"
+            currentItem="@{vm.nowPageInt}"
+            offscreenPageLimit="@{1}"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

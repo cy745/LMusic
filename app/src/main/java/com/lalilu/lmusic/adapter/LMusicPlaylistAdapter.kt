@@ -2,13 +2,16 @@ package com.lalilu.lmusic.adapter
 
 import android.view.View
 import com.chad.library.adapter.base.BaseNodeAdapter
+import com.chad.library.adapter.base.entity.node.BaseExpandNode
 import com.chad.library.adapter.base.entity.node.BaseNode
 import com.chad.library.adapter.base.provider.BaseNodeProvider
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.lalilu.R
+import com.lalilu.lmusic.adapter.node.FirstNode
+import com.lalilu.lmusic.adapter.node.SecondNode
 import com.lalilu.lmusic.ui.SamplingDraweeView
 import com.lalilu.media.entity.Music
-import com.lalilu.media.entity.PlaylistWithMusics
+import com.lalilu.media.entity.Playlist
 
 class LMusicPlaylistAdapter : BaseNodeAdapter() {
     companion object {
@@ -18,14 +21,14 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
     }
 
     init {
-        addFullSpanNodeProvider(RootNodeProvider())
+        addNodeProvider(RootNodeProvider())
         addNodeProvider(SecondNodeProvider())
     }
 
     override fun getItemType(data: List<BaseNode>, position: Int): Int {
         return when (data[position]) {
-            is PlaylistWithMusics -> NODE_PLAYLIST
-            is Music -> NODE_MUSIC
+            is FirstNode<*> -> NODE_PLAYLIST
+            is SecondNode<*> -> NODE_MUSIC
             else -> -1
         }
     }
@@ -35,7 +38,8 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
         override val layoutId: Int = R.layout.item_playlist
 
         override fun convert(helper: BaseViewHolder, item: BaseNode) {
-            val playlist = (item as PlaylistWithMusics).playlist ?: return
+            val playlist = (item as FirstNode<*>).data as Playlist
+
             val lastTime = System.currentTimeMillis() - playlist.playlistCreateTime
             val min = lastTime / 1000 / 60
             val result = when {
@@ -44,25 +48,38 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
                 min > 60 -> "${min / 60} 小时前"
                 else -> "···"
             }
+
             helper.setText(R.id.playlist_title, playlist.playlistTitle)
             helper.setText(R.id.playlist_last_time, result)
             helper.getView<SamplingDraweeView>(R.id.playlist_pic)
                 .setImageURI(playlist.playlistArt, context)
         }
 
+
         override fun convert(helper: BaseViewHolder, item: BaseNode, payloads: List<Any>) {
-            if (!payloads.contains(PAY_LOAD)) {
-                convert(helper, item)
+            payloads.forEach {
+                if (it is Int && it == PAY_LOAD) {
+                }
             }
         }
 
         override fun onClick(helper: BaseViewHolder, view: View, data: BaseNode, position: Int) {
-            getAdapter()?.expandOrCollapse(
-                position,
-                animate = true,
-                notify = true,
-                parentPayload = listOf(PAY_LOAD)
-            )
+            val node = data as BaseExpandNode
+            if (node.isExpanded) {
+                getAdapter()?.collapse(
+                    position,
+                    animate = true,
+                    notify = true,
+                    parentPayload = PAY_LOAD
+                )
+            } else {
+                getAdapter()?.expandAndCollapseOther(
+                    position,
+                    animate = true,
+                    notify = true,
+                    expandPayload = PAY_LOAD
+                )
+            }
         }
     }
 
@@ -71,9 +88,19 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
         override val layoutId: Int = R.layout.item_playlist_expand
 
         override fun convert(helper: BaseViewHolder, item: BaseNode) {
-            val music = item as Music
-            helper.setText(R.id.music_order, helper.layoutPosition.toString())
+            val music = (item as SecondNode<*>).data as Music
             helper.setText(R.id.music_title, music.musicTitle)
+            helper.setText(R.id.music_order, music.musicTitle)
+        }
+
+        override fun onClick(helper: BaseViewHolder, view: View, data: BaseNode, position: Int) {
+            val adapter = getAdapter() as BaseNodeAdapter
+            val parentPosition = adapter.findParentNode(position)
+
+            adapter.getOnItemLongClickListener()
+                ?.onItemLongClick(adapter, view, parentPosition)
+            adapter.getOnItemChildClickListener()
+                ?.onItemChildClick(adapter, view, position)
         }
     }
 }

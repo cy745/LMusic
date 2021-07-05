@@ -20,7 +20,7 @@ class PaletteDraweeView @JvmOverloads constructor(
 ) : SimpleDraweeView(context, attrs, defStyleAttr) {
     var palette: MutableLiveData<Palette> = MutableLiveData(null)
     var oldPalette: Palette? = null
-
+    var colorLiveData: MutableLiveData<Palette> = MutableLiveData(null)
 
     override fun setImageURI(uri: Uri?, callerContext: Any?) {
         super.setImageURI(uri, callerContext)
@@ -34,7 +34,9 @@ class PaletteDraweeView @JvmOverloads constructor(
             .setPostprocessor(object : BasePostprocessor() {
                 override fun process(bitmap: Bitmap) {
                     oldPalette = palette.value
-                    palette.postValue(Palette.from(bitmap).generate())
+                    val pt = Palette.from(bitmap).generate()
+                    palette.postValue(pt)
+                    colorLiveData.postValue(pt)
                     addShadow(
                         bitmap, Color.argb(55, 0, 0, 0),
                         Color.TRANSPARENT, GradientDrawable.Orientation.TOP_BOTTOM,
