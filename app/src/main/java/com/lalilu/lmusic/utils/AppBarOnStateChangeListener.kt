@@ -3,7 +3,7 @@ package com.lalilu.lmusic.utils
 import com.google.android.material.appbar.AppBarLayout
 import kotlin.math.abs
 
-abstract class AppBarOnStateChange : AppBarLayout.OnOffsetChangedListener {
+abstract class AppBarOnStateChangeListener : AppBarLayout.OnOffsetChangedListener {
     enum class AppBarState {
         STATE_EXPANDED, STATE_COLLAPSED, STATE_INTERMEDIATE
     }

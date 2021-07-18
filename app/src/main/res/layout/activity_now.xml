@@ -29,7 +29,7 @@
             app:navGraph="@navigation/nav_main"
             tools:layout="@layout/fragment_main" />
 
-        <com.lalilu.lmusic.ui.SeekBar
+        <com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
             android:id="@+id/ma_seekBar"
             bgPalette="@{vm.nowBgPalette}"
             android:layout_width="0dp"

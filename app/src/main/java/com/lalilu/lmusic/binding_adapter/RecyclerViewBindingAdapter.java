@@ -13,7 +13,7 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.lalilu.common.ColorUtils;
 import com.lalilu.lmusic.adapter.LMusicPlayingAdapter;
 import com.lalilu.lmusic.ui.PaletteDraweeView;
-import com.lalilu.lmusic.ui.SeekBar;
+import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar;
 import com.lalilu.lmusic.utils.ColorAnimator;
 import com.lalilu.media.entity.Music;
 
@@ -64,7 +64,7 @@ public class RecyclerViewBindingAdapter {
             value = {"bgPalette"},
             requireAll = false
     )
-    public static void setSeekBarBGColor(SeekBar seekBar, Palette palette) {
+    public static void setSeekBarBGColor(LMusicSeekBar seekBar, Palette palette) {
         if (palette != null) {
             seekBar.setThumbColor(ColorUtils.Companion.getAutomaticColor(palette));
         }

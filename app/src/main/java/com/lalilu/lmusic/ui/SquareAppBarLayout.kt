@@ -3,8 +3,8 @@ package com.lalilu.lmusic.ui
 import android.content.Context
 import android.util.AttributeSet
 import com.google.android.material.appbar.AppBarLayout
-import com.lalilu.lmusic.utils.AppBarOnStateChange
-import com.lalilu.lmusic.utils.AppBarOnStateChange.AppBarState
+import com.lalilu.lmusic.utils.AppBarOnStateChangeListener
+import com.lalilu.lmusic.utils.AppBarOnStateChangeListener.AppBarState
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
 class SquareAppBarLayout @JvmOverloads constructor(
@@ -24,7 +24,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
     }
 
     init {
-        addOnOffsetChangedListener(object : AppBarOnStateChange() {
+        addOnOffsetChangedListener(object : AppBarOnStateChangeListener() {
             override fun onStatePercentage(percent: Float) {
                 paletteDraweeView?.let { it.alpha = percent }
             }
