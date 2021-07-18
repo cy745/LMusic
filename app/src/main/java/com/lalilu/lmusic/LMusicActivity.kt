@@ -13,6 +13,7 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.MainActivityViewModel
+import com.lalilu.lmusic.utils.OnSeekBarChangeListenerAdapter
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.entity.Music
@@ -49,10 +50,12 @@ class LMusicActivity : BaseActivity() {
         }
         playerModule.playBackState.observe(this) {
             if (it == null) return@observe
-            seekBar.updateNowPosition(it)
+            seekBar.updatePosition(it)
         }
-        seekBar.onActionUp = {
-            playerModule.mediaController.value?.transportControls?.seekTo(it)
+        seekBar.onSeekBarChangeListener = object : OnSeekBarChangeListenerAdapter() {
+            override fun onStopTrackingTouch(position: Long) {
+                playerModule.mediaController.value?.transportControls?.seekTo(position)
+            }
         }
         mEvent.nowBgPalette.observe(this) {
             mState.nowBgPalette.postValue(it)

@@ -15,7 +15,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.R
 import com.lalilu.common.Mathf
 import com.lalilu.lmusic.ui.PaletteDraweeView
-import com.lalilu.lmusic.utils.AppBarOnStateChange.AppBarState
+import com.lalilu.lmusic.utils.AppBarOnStateChangeListener.AppBarState
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
 class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
@@ -44,7 +44,7 @@ class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
     private fun initialize(parent: CoordinatorLayout, appBarLayout: AppBarLayout) {
         appBarLayout.clipChildren = false
 
-        appBarLayout.addOnOffsetChangedListener(object : AppBarOnStateChange() {
+        appBarLayout.addOnOffsetChangedListener(object : AppBarOnStateChangeListener() {
             override fun onStateChanged(appBarLayout: AppBarLayout?, state: AppBarState) {
                 mAppbarState = state
             }
