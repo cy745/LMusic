@@ -20,7 +20,7 @@ class LMusicSeekBar @JvmOverloads constructor(
     override fun updatePosition(playbackStateCompat: PlaybackStateCompat) {
         var currentDuration = getPositionFromPlaybackStateCompat(playbackStateCompat)
         positionTimer?.cancel()
-        if (playbackStateCompat.state == PlaybackStateCompat.STATE_PLAYING) {
+        if (playbackStateCompat.state == PlaybackStateCompat.STATE_PLAYING)
             positionTimer = Timer().apply {
                 this.schedule(0, 16) {
                     updatePosition(currentDuration)
@@ -28,15 +28,18 @@ class LMusicSeekBar @JvmOverloads constructor(
                     if (currentDuration >= sumDuration) this.cancel()
                 }
             }
-        } else {
-            updatePosition(currentDuration)
-        }
+        else updatePosition(currentDuration)
     }
 
     override fun updatePosition(position: Long) {
         if (!touching) {
             nowDuration = position
             progress = nowDuration.toDouble() / sumDuration.toDouble()
+            when (progress) {
+                maxProgress.toDouble() -> onProgressMax()
+                minProgress.toDouble() -> onProgressMin()
+                in 0.1..0.9 -> onProgressMiddle()
+            }
             invalidate()
         }
     }
@@ -47,8 +50,7 @@ class LMusicSeekBar @JvmOverloads constructor(
             onTouchUpWithChange()
             onSeekBarChangeListener?.onStopTrackingTouch(nowDuration)
         } else {
-            rootView.performHapticFeedback(31011);
-            performClick()
+            onSeekBarChangeListener?.onClick()
         }
     }
 

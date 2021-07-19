@@ -3,6 +3,7 @@ package com.lalilu.lmusic
 import android.media.AudioManager
 import android.media.MediaMetadata
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import android.view.Menu
 import android.view.MenuItem
 import androidx.databinding.library.baseAdapters.BR
@@ -19,6 +20,8 @@ import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.entity.Music
 import com.lalilu.media.entity.Playlist
 import com.lalilu.media.scanner.MediaScanner
+import java.util.*
+import kotlin.collections.ArrayList
 
 class LMusicActivity : BaseActivity() {
     private lateinit var mState: MainActivityViewModel
@@ -55,6 +58,27 @@ class LMusicActivity : BaseActivity() {
         seekBar.onSeekBarChangeListener = object : OnSeekBarChangeListenerAdapter() {
             override fun onStopTrackingTouch(position: Long) {
                 playerModule.mediaController.value?.transportControls?.seekTo(position)
+            }
+
+            override fun onProgressToMax() {
+                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
+            }
+
+            override fun onProgressToMin() {
+                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
+            }
+
+            override fun onProgressToMiddle() {
+                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
+            }
+
+            override fun onLongClickStart() {
+                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
+            }
+
+            override fun onLongClickEnd() {
+                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
+                mState.seekBarClick()
             }
         }
         mEvent.nowBgPalette.observe(this) {
