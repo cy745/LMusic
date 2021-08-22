@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
+import com.chad.library.adapter.base.BaseNodeAdapter
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.LMusicPlaylistAdapter
 import com.lalilu.lmusic.adapter.node.FirstNode
@@ -28,23 +29,22 @@ class PlaylistFragment : BaseFragment() {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter = LMusicPlaylistAdapter()
-        mAdapter.setOnItemLongClickListener { adapter, _, position ->
-            try {
-                val node = adapter.data[position] as FirstNode<*>
-                val playlist = node.data as Playlist
+        mAdapter.onPlaylistSelectedListener = object : LMusicPlaylistAdapter.OnSelectedListener {
+            override fun onSelected(
+                adapter: BaseNodeAdapter,
+                parentPosition: Int,
+                musicPosition: Int
+            ) {
+                val parent = adapter.data[parentPosition] as FirstNode<*>
+                val child = adapter.data[musicPosition] as SecondNode<*>
+
+                val playlist = parent.data as Playlist
+                val music = child.data as Music
 
                 mEvent.nowPlaylistId.value = playlist.playlistId
-            } catch (e: Exception) {
-                println(e.message)
+                playerModule.mediaController.value?.transportControls
+                    ?.playFromMediaId(music.musicId.toString(), null)
             }
-            true
-        }
-        mAdapter.setOnItemChildClickListener { adapter, _, position ->
-            val node = adapter.data[position] as SecondNode<*>
-            val music = node.data as Music
-
-            playerModule.mediaController.value?.transportControls
-                ?.playFromMediaId(music.musicId.toString(), null)
         }
 
         return DataBindingConfig(R.layout.fragment_play_list, BR.vm, mState)
