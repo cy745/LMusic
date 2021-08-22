@@ -1,12 +1,10 @@
 package com.lalilu.lmusic.ui.seekbar
 
 import android.content.Context
-import android.os.Handler
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import com.lalilu.lmusic.utils.OnSeekBarChangeListenerAdapter
-import kotlin.math.abs
 
 abstract class BaseSeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -38,7 +36,6 @@ abstract class BaseSeekBar @JvmOverloads constructor(
                 downX = event.rawX
                 downY = event.rawY
                 onTouchDown()
-                onTouchLongClickStart()
                 this.animate()
                     .scaleX(scaleAnimatorTo)
                     .scaleY(scaleAnimatorTo)
@@ -49,9 +46,7 @@ abstract class BaseSeekBar @JvmOverloads constructor(
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_CANCEL -> {
                 touching = false
-                if (!isLongClickStarted) onTouchUp()
-                onTouchLongClickCancel()
-                onTouchLongClickEnd()
+                onTouchUp()
                 this.animate()
                     .scaleX(1f)
                     .scaleY(1f)
@@ -59,10 +54,7 @@ abstract class BaseSeekBar @JvmOverloads constructor(
                     .start()
             }
             MotionEvent.ACTION_MOVE -> {
-                if (touching && !isLongClickStarted) {
-                    if (abs(event.rawX - downX) > 20) {
-                        onTouchLongClickCancel()
-                    }
+                if (touching) {
                     updateProgress(event, true)
                     onTouchMove()
                 }
@@ -70,42 +62,6 @@ abstract class BaseSeekBar @JvmOverloads constructor(
         }
         invalidate()
         return true
-    }
-
-    private var longClickDelay = 100L
-    private val longClickHandler = Handler(context.mainLooper)
-    private var isLongClickStarted = false
-    private var longClickStartTime = -1L
-
-    private val longClickStart = Runnable {
-        longClickStartTime = System.currentTimeMillis()
-        isLongClickStarted = true
-        touching = false
-        onSeekBarChangeListener?.onLongClickStart()
-    }
-
-    override fun onTouchLongClickStart() {
-        longClickHandler.postDelayed(longClickStart, longClickDelay)
-    }
-
-    override fun onTouchLongClickEnd() {
-        if (isLongClickStarted) {
-            isLongClickStarted = false
-            val delay = System.currentTimeMillis() - longClickStartTime
-            println(delay)
-            if (delay < 100) {
-                handler.postDelayed({
-                    onSeekBarChangeListener?.onLongClickEnd()
-                }, 100 - delay)
-            } else {
-                onSeekBarChangeListener?.onLongClickEnd()
-            }
-        }
-    }
-
-    override fun onTouchLongClickCancel() {
-        longClickHandler.removeCallbacks(longClickStart)
-        onSeekBarChangeListener?.onLongClickCancel()
     }
 
     override fun updateProgress(event: MotionEvent, moving: Boolean) {

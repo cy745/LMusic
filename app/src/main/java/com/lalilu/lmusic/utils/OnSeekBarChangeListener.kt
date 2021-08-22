@@ -13,7 +13,4 @@ abstract class OnSeekBarChangeListenerAdapter {
 
     // 处理点击和点击释放的事件
     open fun onClick() {}
-    open fun onLongClickStart() {}
-    open fun onLongClickEnd() {}
-    open fun onLongClickCancel() {}
 }
