@@ -14,9 +14,6 @@ interface AbstractSeekBar {
     fun onTouchUpWithChange()
     fun onTouchMove()
     fun onTouchDown()
-    fun onTouchLongClickStart()
-    fun onTouchLongClickEnd()
-    fun onTouchLongClickCancel()
 
     // 边缘进度相关周期函数
     fun onProgressMax()
