@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.HapticFeedbackConstants
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.databinding.library.baseAdapters.BR
 import com.lalilu.R
 import com.lalilu.databinding.ActivityNowBinding
@@ -114,6 +115,12 @@ class LMusicActivity : BaseActivity() {
                         mEvent.allPlaylistRequest.requestData()
                         mEvent.nowPlaylistRequest.requestData()
 
+                    }
+
+                    override fun onScanException(msg: String?) {
+                        runOnUiThread {
+                            Toast.makeText(this@LMusicActivity, msg, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }).scanStart(this)
             }

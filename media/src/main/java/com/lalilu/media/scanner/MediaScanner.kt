@@ -16,6 +16,7 @@ interface MediaScanner<T> {
         open fun onScanStart(totalCount: Int) {}
         open fun onScanFinish(totalCount: Int) {}
         open fun onScanProgress(nowCount: Int, item: T) {}
+        open fun onScanException(msg: String?) {}
     }
 
     /**
