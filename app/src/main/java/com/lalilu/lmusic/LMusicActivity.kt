@@ -13,6 +13,7 @@ import com.lalilu.lmusic.base.BaseActivity
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
+import com.lalilu.lmusic.service.LMusicService
 import com.lalilu.lmusic.state.MainActivityViewModel
 import com.lalilu.lmusic.utils.OnSeekBarChangeListenerAdapter
 import com.lalilu.lmusic.utils.PermissionUtils
@@ -58,6 +59,13 @@ class LMusicActivity : BaseActivity() {
         seekBar.onSeekBarChangeListener = object : OnSeekBarChangeListenerAdapter() {
             override fun onStopTrackingTouch(position: Long) {
                 playerModule.mediaController.value?.transportControls?.seekTo(position)
+            }
+
+            override fun onClick() {
+                playerModule.mediaController.value?.transportControls?.sendCustomAction(
+                    LMusicService.ACTION_PLAY_PAUSE, null
+                )
+                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
             }
 
             override fun onProgressToMax() {
