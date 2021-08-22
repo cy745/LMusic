@@ -20,6 +20,12 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
         const val PAY_LOAD = 2
     }
 
+    interface OnSelectedListener {
+        fun onSelected(adapter: BaseNodeAdapter, parentPosition: Int, musicPosition: Int)
+    }
+
+    var onPlaylistSelectedListener: OnSelectedListener? = null
+
     init {
         addNodeProvider(RootNodeProvider())
         addNodeProvider(SecondNodeProvider())
@@ -57,10 +63,6 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
 
 
         override fun convert(helper: BaseViewHolder, item: BaseNode, payloads: List<Any>) {
-            payloads.forEach {
-                if (it is Int && it == PAY_LOAD) {
-                }
-            }
         }
 
         override fun onClick(helper: BaseViewHolder, view: View, data: BaseNode, position: Int) {
@@ -83,7 +85,7 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
         }
     }
 
-    class SecondNodeProvider : BaseNodeProvider() {
+    inner class SecondNodeProvider : BaseNodeProvider() {
         override val itemViewType: Int = NODE_MUSIC
         override val layoutId: Int = R.layout.item_playlist_expand
 
@@ -97,10 +99,7 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
             val adapter = getAdapter() as BaseNodeAdapter
             val parentPosition = adapter.findParentNode(position)
 
-            adapter.getOnItemLongClickListener()
-                ?.onItemLongClick(adapter, view, parentPosition)
-            adapter.getOnItemChildClickListener()
-                ?.onItemChildClick(adapter, view, position)
+            onPlaylistSelectedListener?.onSelected(adapter, parentPosition, position)
         }
     }
 }
