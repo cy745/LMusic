@@ -71,15 +71,6 @@ class LMusicActivity : BaseActivity() {
             override fun onProgressToMiddle() {
                 seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
             }
-
-            override fun onLongClickStart() {
-                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
-            }
-
-            override fun onLongClickEnd() {
-                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
-                mState.seekBarClick()
-            }
         }
         mEvent.nowBgPalette.observe(this) {
             mState.nowBgPalette.postValue(it)
