@@ -1,14 +1,14 @@
 package com.lalilu.lmusic.ui.seekbar
 
+import android.app.Activity
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
+import android.graphics.*
 import android.os.SystemClock
 import android.support.v4.media.session.PlaybackStateCompat
 import android.text.TextPaint
 import android.util.AttributeSet
 import com.lalilu.common.TextUtils
+import com.lalilu.lmusic.utils.DarkModeUtil
 import java.util.*
 import kotlin.concurrent.schedule
 
@@ -89,19 +89,17 @@ class LMusicSeekBar @JvmOverloads constructor(
     private var paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).also {
         it.color = Color.DKGRAY
     }
-    private var textPaint: TextPaint = TextPaint().also {
+    private var textPaintDayNight = TextPaint(Paint.ANTI_ALIAS_FLAG).also {
         it.textSize = textHeight
         it.color = Color.BLACK
         it.isSubpixelText = true
     }
-    private var textPaintWhite: TextPaint = TextPaint().also {
+    private var textPaintWhite = TextPaint(Paint.ANTI_ALIAS_FLAG).also {
         it.textSize = textHeight
         it.color = Color.WHITE
         it.isSubpixelText = true
     }
-    private var backgroundPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).also {
-        it.color = Color.argb(50, 100, 100, 100)
-    }
+    private val backgroundColor = Color.argb(50, 100, 100, 100)
 
     private var progressWidth: Float = 0F
     private var sumDurationText = ""
@@ -110,44 +108,44 @@ class LMusicSeekBar @JvmOverloads constructor(
     private var nowDurationTextWidth: Float = 0F
     private var nowDurationTextOffset: Float = 0F
 
+    private var rect = RectF()
+    private var path = Path()
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        rect.set(0f, 0f, width.toFloat(), height.toFloat())
+        path.addRoundRect(rect, radius, radius, Path.Direction.CW)
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-
-//        val destinyWidth = (progress * width).toFloat()
-//        progressWidth =
-//            clamp(progressWidth + (destinyWidth - progressWidth) * 0.1f, destinyWidth, 0).toFloat()
 
         progressWidth = (progress * width).toFloat()
         nowDuration = (progress * sumDuration).toLong()
 
         sumDurationText = TextUtils.durationToString(sumDuration)
-        sumDurationTextWidth = textPaint.measureText(sumDurationText)
         nowDurationText = TextUtils.durationToString(nowDuration)
+        sumDurationTextWidth = textPaintDayNight.measureText(sumDurationText)
         nowDurationTextWidth = textPaintWhite.measureText(nowDurationText)
 
-        val textCenterHeight = (height + textPaint.textSize) / 2f - 5
+        val textCenterHeight = (height + textPaintDayNight.textSize) / 2f - 5
         val offsetTemp = nowDurationTextWidth + textPadding * 2
-        nowDurationTextOffset = if (offsetTemp < progressWidth) progressWidth else offsetTemp
 
-        paint.alpha = clamp(progressWidth / radius / 2 * 255, 255, 0).toInt()
+        nowDurationTextOffset =
+            if (offsetTemp < progressWidth) progressWidth else offsetTemp
+        textPaintDayNight.color =
+            if (DarkModeUtil.isDarkMode(context as Activity)) Color.WHITE else Color.BLACK
+
+        canvas.clipPath(path)
 
         // draw background
-        canvas.drawRoundRect(
-            0f,
-            0f,
-            width.toFloat(),
-            height.toFloat(),
-            radius,
-            radius,
-            backgroundPaint
-        )
+        canvas.drawColor(backgroundColor)
 
         // draw sumDuration
         canvas.drawText(
             sumDurationText,
             width - sumDurationTextWidth - textPadding,
             textCenterHeight,
-            textPaint
+            textPaintDayNight
         )
 
         // draw thumb
