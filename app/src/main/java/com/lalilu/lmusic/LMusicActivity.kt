@@ -2,11 +2,13 @@ package com.lalilu.lmusic
 
 import android.media.AudioManager
 import android.media.MediaMetadata
+import android.os.Build
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.databinding.library.baseAdapters.BR
 import com.lalilu.R
 import com.lalilu.databinding.ActivityNowBinding
@@ -68,6 +70,7 @@ class LMusicActivity : BaseActivity() {
                 playerModule.mediaController.value?.transportControls?.seekTo(position)
             }
 
+            @RequiresApi(Build.VERSION_CODES.O_MR1)
             override fun onClick() {
                 playerModule.mediaController.value?.transportControls?.sendCustomAction(
                     LMusicService.ACTION_PLAY_PAUSE, null
@@ -75,14 +78,17 @@ class LMusicActivity : BaseActivity() {
                 seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
             }
 
+            @RequiresApi(Build.VERSION_CODES.O_MR1)
             override fun onProgressToMax() {
                 seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
             }
 
+            @RequiresApi(Build.VERSION_CODES.O_MR1)
             override fun onProgressToMin() {
                 seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
             }
 
+            @RequiresApi(Build.VERSION_CODES.O_MR1)
             override fun onProgressToMiddle() {
                 seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
             }
