@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:alpha="0.3"
-        android:text="EMPTY"
+        android:text="@string/empty_tips"
         android:textColor="?attr/daynight_0"
         android:textSize="100sp"
         android:textStyle="bold"

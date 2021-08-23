@@ -3,8 +3,6 @@
     <style name="Theme.Music" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/colorPrimary</item>
-<!--        <item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>-->
-<!--        <item name="colorOnPrimary">@color/colorOnPrimary</item>-->
 
         <item name="color_main">@color/colorPrimary</item>
         <item name="color_main_variant">@color/colorPrimaryVariant</item>

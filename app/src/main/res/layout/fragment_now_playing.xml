@@ -16,14 +16,14 @@
 
     <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
         android:id="@+id/nowPlayingRecyclerView"
-        adapter="@{playingAdapter}"
-        setMusicList="@{vm.musicList}"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:fillViewport="true"
         android:overScrollMode="never"
         android:paddingBottom="128dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        app:adapter="@{playingAdapter}"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:setMusicList="@{vm.musicList}" />
 
 </layout>

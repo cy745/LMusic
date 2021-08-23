@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/appbar_play"
         android:icon="@drawable/ic_play_line"
-        android:title="Play"
+        android:title="@string/text_button_play"
         android:visible="false"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/appbar_pause"
         android:icon="@drawable/ic_pause_line"
-        android:title="Pause"
+        android:title="@string/text_button_pause"
         android:visible="false"
         app:showAsAction="always" />
     <item
         android:id="@+id/appbar_create_playlist"
         android:enabled="true"
         android:icon="@drawable/ic_play_list_add_line"
-        android:title="Create Playlist"
+        android:title="@string/text_button_create_playlist"
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item
@@ -26,7 +26,7 @@
         android:checkable="false"
         android:enabled="true"
         android:icon="@drawable/ic_scan_line"
-        android:title="Scan song"
+        android:title="@string/text_button_scan_song"
         android:visible="true"
         app:showAsAction="ifRoom" />
 </menu>
