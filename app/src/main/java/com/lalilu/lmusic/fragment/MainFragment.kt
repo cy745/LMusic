@@ -2,10 +2,8 @@ package com.lalilu.lmusic.fragment
 
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import androidx.databinding.library.baseAdapters.BR
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.ViewPager2
 import com.lalilu.R
 import com.lalilu.databinding.FragmentMainBinding
 import com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter
@@ -36,8 +34,8 @@ class MainFragment : BaseFragment() {
     }
 
     override fun loadInitData() {
-        (mBinding as FragmentMainBinding).fmTabLayout
-            .bindToViewPager((mBinding as FragmentMainBinding).fmViewpager)
+        val binding = (mBinding as FragmentMainBinding)
+        binding.fmTabLayout.bindToViewPager(binding.fmViewpager)
 
         mState.nowBgPalette.observe(viewLifecycleOwner) {
             mEvent.nowBgPalette.postValue(it)
@@ -52,9 +50,10 @@ class MainFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mActivity!!.setSupportActionBar((mBinding as FragmentMainBinding).fmToolbar)
-        val viewPager = (view as ViewGroup).findViewById<ViewPager2>(R.id.fm_viewpager)
-        val child = viewPager.getChildAt(0)
+        val binding = (mBinding as FragmentMainBinding)
+        mActivity!!.setSupportActionBar(binding.fmToolbar)
+
+        val child = binding.fmViewpager.getChildAt(0)
         if (child is RecyclerView) child.overScrollMode = View.OVER_SCROLL_NEVER
     }
 }
