@@ -20,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/music_order"
+        android:id="@+id/music_title_bg"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:alpha="0.1"
