@@ -48,15 +48,21 @@ class LMusicActivity : BaseActivity() {
         PermissionUtils.requestPermission(this)
 
         val seekBar = (mBinding as ActivityNowBinding).maSeekBar
+
+        // 从 metadata 中获取歌曲的总时长传递给 SeekBar
         playerModule.metadata.observe(this) {
             if (it == null) return@observe
             val sum = it.getLong(MediaMetadata.METADATA_KEY_DURATION)
             seekBar.setSumDuration(sum)
         }
+
+        // 从 playbackState 中获取歌曲的播放进度传递给 SeekBar
         playerModule.playBackState.observe(this) {
             if (it == null) return@observe
             seekBar.updatePosition(it)
         }
+
+        // 为 SeekBar 添加监听器
         seekBar.onSeekBarChangeListener = object : OnSeekBarChangeListenerAdapter() {
             override fun onStopTrackingTouch(position: Long) {
                 playerModule.mediaController.value?.transportControls?.seekTo(position)
@@ -81,6 +87,8 @@ class LMusicActivity : BaseActivity() {
                 seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
             }
         }
+
+        // mEvent 的背景色和 mState 的背景色进行绑定
         mEvent.nowBgPalette.observe(this) {
             mState.nowBgPalette.postValue(it)
         }
