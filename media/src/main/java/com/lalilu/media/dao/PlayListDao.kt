@@ -34,6 +34,9 @@ interface PlayListDao {
         }
     }
 
+    @Query("DELETE FROM playlist WHERE playlistId = :playlistId")
+    fun deletePlaylistById(playlistId: Long)
+
     fun getPlaylistWithSongsByIdWithOrder(id: Long): PlaylistWithMusics? {
         val playlist = getPlaylistWithSongsById(id) ?: return null
         val orderList = playlist.playlist?.playlistOrder ?: return playlist
