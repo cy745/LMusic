@@ -25,57 +25,37 @@ import java.util.List;
 
 public class RecyclerViewBindingAdapter {
 
-    @BindingAdapter(
-            value = {"artUri", "callerContext"}
-    )
+    @BindingAdapter(value = {"artUri", "callerContext"})
     public static void setNowPlayingMusicArtUri(
             PaletteDraweeView paletteDraweeView,
             Uri uri, Context callerContext) {
-        if (uri != null) {
-            paletteDraweeView.setImageURI(uri, callerContext);
-        }
+        if (uri == null) return;
+        paletteDraweeView.setImageURI(uri, callerContext);
     }
 
-    @BindingAdapter(
-            value = {"bindTitle"},
-            requireAll = false
-    )
+    @BindingAdapter(value = {"bindTitle"}, requireAll = false)
     public static void setNowPlayingMusicTitle(CollapsingToolbarLayout collapsingToolbarLayout, String title) {
         collapsingToolbarLayout.setTitle(title);
     }
 
-    @BindingAdapter(
-            value = {"bgColorLiveData"},
-            requireAll = false
-    )
+    @BindingAdapter(value = {"bgColorLiveData"}, requireAll = false)
     public static void setBGColorLiveData(PaletteDraweeView paletteDraweeView, MutableLiveData<Palette> liveData) {
         paletteDraweeView.setColorLiveData(liveData);
     }
 
-    @BindingAdapter(
-            value = {"bgPalette"},
-            requireAll = false
-    )
+    @BindingAdapter(value = {"bgPalette"}, requireAll = false)
     public static void setAppbarBGColor(AppBarLayout appBarLayout, Palette palette) {
-        if (palette != null) {
-            ColorAnimator.Companion.setBgColorFromPalette(palette, appBarLayout);
-        }
+        if (palette == null) return;
+        ColorAnimator.Companion.setBgColorFromPalette(palette, appBarLayout);
     }
 
-    @BindingAdapter(
-            value = {"bgPalette"},
-            requireAll = false
-    )
+    @BindingAdapter(value = {"bgPalette"}, requireAll = false)
     public static void setSeekBarBGColor(LMusicSeekBar seekBar, Palette palette) {
-        if (palette != null) {
-            seekBar.setThumbColor(ColorUtils.Companion.getAutomaticColor(palette));
-        }
+        if (palette == null) return;
+        seekBar.setThumbColor(ColorUtils.Companion.getAutomaticColor(palette));
     }
 
-    @BindingAdapter(
-            value = {"setMusicList"},
-            requireAll = false
-    )
+    @BindingAdapter(value = {"setMusicList"}, requireAll = false)
     public static void setMusicList(RecyclerView recyclerView, List<Music> list) {
         if (recyclerView.getAdapter() != null && list != null) {
             LMusicPlayingAdapter adapter = (LMusicPlayingAdapter) recyclerView.getAdapter();
@@ -93,14 +73,9 @@ public class RecyclerViewBindingAdapter {
         }
     }
 
-    @BindingAdapter(
-            value = {"setPlayList"},
-            requireAll = false
-    )
+    @BindingAdapter(value = {"setPlayList"}, requireAll = false)
     public static void setPlayList(RecyclerView recyclerView, List<FirstNode<Playlist>> list) {
-        if (recyclerView.getAdapter() != null && list != null) {
-            BaseNodeAdapter adapter = (BaseNodeAdapter) recyclerView.getAdapter();
-            adapter.setList(list);
-        }
+        if (recyclerView.getAdapter() == null || list == null) return;
+        ((BaseNodeAdapter) recyclerView.getAdapter()).setList(list);
     }
 }
