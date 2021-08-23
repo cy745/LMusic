@@ -22,9 +22,9 @@ class LMusicSeekBar @JvmOverloads constructor(
         positionTimer?.cancel()
         if (playbackStateCompat.state == PlaybackStateCompat.STATE_PLAYING)
             positionTimer = Timer().apply {
-                this.schedule(0, 16) {
+                this.schedule(0, 1000) {
                     updatePosition(currentDuration)
-                    currentDuration += 16
+                    currentDuration += 1000
                     if (currentDuration >= sumDuration) this.cancel()
                 }
             }
