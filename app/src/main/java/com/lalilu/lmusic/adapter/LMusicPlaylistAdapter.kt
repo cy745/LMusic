@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.adapter
 
 import android.view.View
+import android.widget.ImageButton
 import com.chad.library.adapter.base.BaseNodeAdapter
 import com.chad.library.adapter.base.entity.node.BaseExpandNode
 import com.chad.library.adapter.base.entity.node.BaseNode
@@ -22,6 +23,7 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
 
     interface OnSelectedListener {
         fun onSelected(adapter: BaseNodeAdapter, parentPosition: Int, musicPosition: Int)
+        fun onDeleted(playlistId: Long)
     }
 
     var onPlaylistSelectedListener: OnSelectedListener? = null
@@ -39,7 +41,7 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
         }
     }
 
-    class RootNodeProvider : BaseNodeProvider() {
+    inner class RootNodeProvider : BaseNodeProvider() {
         override val itemViewType: Int = NODE_PLAYLIST
         override val layoutId: Int = R.layout.item_playlist
 
@@ -59,27 +61,20 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
             helper.setText(R.id.playlist_last_time, result)
             helper.getView<SamplingDraweeView>(R.id.playlist_pic)
                 .setImageURI(playlist.playlistArt, context)
-        }
-
-
-        override fun convert(helper: BaseViewHolder, item: BaseNode, payloads: List<Any>) {
+            helper.getView<ImageButton>(R.id.playlist_delete).setOnClickListener {
+                onPlaylistSelectedListener?.onDeleted(playlist.playlistId)
+            }
         }
 
         override fun onClick(helper: BaseViewHolder, view: View, data: BaseNode, position: Int) {
             val node = data as BaseExpandNode
             if (node.isExpanded) {
                 getAdapter()?.collapse(
-                    position,
-                    animate = true,
-                    notify = true,
-                    parentPayload = PAY_LOAD
+                    position, animate = true, notify = true, parentPayload = PAY_LOAD
                 )
             } else {
                 getAdapter()?.expandAndCollapseOther(
-                    position,
-                    animate = true,
-                    notify = true,
-                    expandPayload = PAY_LOAD
+                    position, animate = true, notify = true, expandPayload = PAY_LOAD
                 )
             }
         }
@@ -92,7 +87,7 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
         override fun convert(helper: BaseViewHolder, item: BaseNode) {
             val music = (item as SecondNode<*>).data as Music
             helper.setText(R.id.music_title, music.musicTitle)
-            helper.setText(R.id.music_order, music.musicTitle)
+            helper.setText(R.id.music_title_bg, music.musicTitle)
         }
 
         override fun onClick(helper: BaseViewHolder, view: View, data: BaseNode, position: Int) {
