@@ -1,36 +1,53 @@
 package com.lalilu.lmusic.manager
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.media.MediaPlayer
 import androidx.dynamicanimation.animation.FloatPropertyCompat
-import androidx.dynamicanimation.animation.SpringAnimation
-import androidx.dynamicanimation.animation.SpringForce
 
 class LMusicVolumeManager(private val mPlayer: MediaPlayer) {
     private var nowVolume = 0f
-    private var mSpringAnimation: SpringAnimation? = null
+    private var valueAnimator: ValueAnimator? = null
 
-    private fun reCreateSpringAnimation() {
-        mSpringAnimation =
-            SpringAnimation(mPlayer, volumePropertyCompat, 1f).apply {
-                this.spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-                this.spring.stiffness = SpringForce.STIFFNESS_VERY_LOW
-                this.addEndListener { _, canceled, value, _ ->
-                    if (!canceled && value == 0f) mPlayer.pause()
+    private fun reCreateAnimation() {
+        valueAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            var isReversed = false
+            var startValue = 0f
+
+            this.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?, isReverse: Boolean) {
+                    startValue = volumePropertyCompat.getValue(mPlayer)
+                    isReversed = isReverse
                 }
+
+                override fun onAnimationEnd(animation: Animator?, isReverse: Boolean) {
+                    if (isReverse && animatedValue as Float == 0f) {
+                        mPlayer.pause()
+                    }
+                }
+            })
+            this.addUpdateListener {
+                var value = it.animatedValue as Float
+
+                value =
+                    if (isReversed) startValue * value else startValue + (1 - startValue) * value
+                volumePropertyCompat.setValue(mPlayer, value)
             }
+        }
     }
 
     fun fadeStart() {
-        if (mSpringAnimation == null) reCreateSpringAnimation()
-        mSpringAnimation?.cancel()
+        if (valueAnimator == null) reCreateAnimation()
+        valueAnimator?.cancel()
         if (!mPlayer.isPlaying) mPlayer.start()
-        mSpringAnimation?.animateToFinalPosition(1f)
+        valueAnimator?.start()
     }
 
     fun fadePause() {
-        if (mSpringAnimation == null) reCreateSpringAnimation()
-        mSpringAnimation?.cancel()
-        mSpringAnimation?.animateToFinalPosition(0f)
+        if (valueAnimator == null) reCreateAnimation()
+        valueAnimator?.cancel()
+        valueAnimator?.reverse()
     }
 
     private val volumePropertyCompat =
