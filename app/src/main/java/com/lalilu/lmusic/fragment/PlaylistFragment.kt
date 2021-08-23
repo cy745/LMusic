@@ -11,6 +11,7 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.PlaylistFragmentViewModel
+import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.entity.Music
 import com.lalilu.media.entity.Playlist
 
@@ -47,6 +48,13 @@ class PlaylistFragment : BaseFragment() {
                 mEvent.nowPlaylistId.value = playlist.playlistId
                 playerModule.mediaController.value?.transportControls
                     ?.playFromMediaId(music.musicId.toString(), null)
+            }
+
+            override fun onDeleted(playlistId: Long) {
+                LMusicMediaModule.getInstance(requireActivity().application)
+                    .database.playListDao()
+                    .deletePlaylistById(playlistId)
+                mEvent.allPlaylistRequest.requestData()
             }
         }
 
