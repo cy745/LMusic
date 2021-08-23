@@ -125,7 +125,7 @@ class LMusicService : BaseService() {
         }
 
         override fun onAudioFocusChange(focusChange: Int) {
-            if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
                 playback.pause()
             }
         }
