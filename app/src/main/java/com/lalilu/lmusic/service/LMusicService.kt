@@ -19,8 +19,18 @@ import com.lalilu.lmusic.state.LMusicServiceViewModel
 class LMusicService : BaseService() {
     companion object {
         const val ACTION_PLAY_PAUSE = "play_and_pause"
-        val becomingNoisyFilter =
-            IntentFilter().apply { addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY) }
+
+        const val defaultActions = PlaybackStateCompat.ACTION_PLAY or
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
+                PlaybackStateCompat.ACTION_PAUSE or
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+
+        const val defaultFlags = MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+
+        val becomingNoisyFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
     }
 
     private lateinit var mState: LMusicServiceViewModel
@@ -50,11 +60,8 @@ class LMusicService : BaseService() {
                 PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_UPDATE_CURRENT)
             }
 
-        val flags = MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
-                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-
         mediaSession = MediaSessionCompat(this, tag).apply {
-            setFlags(flags)
+            setFlags(defaultFlags)
             setSessionActivity(sessionActivityPendingIntent)
             setCallback(mSessionCallback)
             setSessionToken(sessionToken)
@@ -79,15 +86,11 @@ class LMusicService : BaseService() {
 
         override fun onPlaybackStateChanged(newState: Int) {
             val state = PlaybackStateCompat.Builder()
-                .setActions(
-                    PlaybackStateCompat.ACTION_PLAY or
-                            PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                            PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
-                            PlaybackStateCompat.ACTION_PAUSE or
-                            PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-                ).setState(newState, playback.getPosition(), 1.0f).build()
+                .setActions(defaultActions)
+                .setState(newState, playback.getPosition(), 1.0f)
+                .build()
             mediaSession.setPlaybackState(state)
+
             val notification = mNotificationManager.getNotification(mediaSession)
             when (state.state) {
                 PlaybackStateCompat.STATE_PLAYING -> {
@@ -98,8 +101,7 @@ class LMusicService : BaseService() {
                 PlaybackStateCompat.STATE_PAUSED -> {
                     stopForeground(false)
                     mNotificationManager.notificationManager.notify(
-                        LMusicNotificationManager.NOTIFICATION_ID,
-                        notification
+                        LMusicNotificationManager.NOTIFICATION_ID, notification
                     )
                 }
                 PlaybackStateCompat.STATE_STOPPED -> {
@@ -125,8 +127,11 @@ class LMusicService : BaseService() {
         }
 
         override fun onAudioFocusChange(focusChange: Int) {
-            if (focusChange == AudioManager.AUDIOFOCUS_LOSS || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
-                playback.pause()
+            when (focusChange) {
+                AudioManager.AUDIOFOCUS_LOSS,
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                    playback.pause()
+                }
             }
         }
 
