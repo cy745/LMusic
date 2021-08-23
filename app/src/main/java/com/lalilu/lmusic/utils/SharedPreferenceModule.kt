@@ -1,16 +1,19 @@
 package com.lalilu.lmusic.utils
 
 import android.app.Application
+import android.content.SharedPreferences
 import org.jetbrains.annotations.Nullable
 
-class SharedPreferenceModule(application: Application) {
-    val lastPlaySp = application.getSharedPreferences(LAST_PLAY_SP, 0)
+/**
+ *  SharedPreferenceModule 单例，避免多次创建实例
+ */
+class SharedPreferenceModule private constructor(application: Application) {
+    val lastPlaySp: SharedPreferences = application.getSharedPreferences(LAST_PLAY_SP, 0)
 
     companion object {
         const val LAST_PLAY_SP = "last_play_sp"
         const val LAST_MUSIC_ID = "last_music_id"
         const val LAST_PLAYLIST_ID = "last_playlist_id"
-
 
         @Volatile
         private var instance: SharedPreferenceModule? = null
