@@ -15,8 +15,6 @@
 
     <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
         android:id="@+id/playListRecyclerView"
-        adapter="@{playlistAdapter}"
-        setPlayList="@{vm.playlist}"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
@@ -24,7 +22,9 @@
         android:overScrollMode="never"
         android:paddingTop="20dp"
         android:paddingBottom="128dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        app:adapter="@{playlistAdapter}"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:setPlayList="@{vm.playlist}" />
 </layout>
 
 

@@ -30,7 +30,10 @@ class LMusicTabLayout @JvmOverloads constructor(
 
             val view = inflate(context, R.layout.item_tab_layout, null)
             val textView = ItemTabLayoutBinding.bind(view).tabText
-            val text = if (tab.isSelected) "正在播放" else "歌单"
+
+            val text = context.resources.getString(
+                if (tab.isSelected) R.string.text_tab_now_playing else R.string.text_tab_playlists
+            )
             val textSize = if (tab.isSelected) maxPx else minPx
             val alpha = if (tab.isSelected) 1f else 0.3f
 
