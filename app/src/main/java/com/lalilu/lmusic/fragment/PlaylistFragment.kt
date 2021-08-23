@@ -29,6 +29,9 @@ class PlaylistFragment : BaseFragment() {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter = LMusicPlaylistAdapter()
+        // 添加 item 被选中时的处理逻辑
+        // 将选中的 playlist 的 id 传递到 mEvent 中，切换当前正在播放的歌单
+        // 将选中的 music 的 musicId 传递给 mediaController，让其根据 musicId 播放指定歌曲
         mAdapter.onPlaylistSelectedListener = object : LMusicPlaylistAdapter.OnSelectedListener {
             override fun onSelected(
                 adapter: BaseNodeAdapter,
@@ -54,6 +57,7 @@ class PlaylistFragment : BaseFragment() {
     override fun loadInitData() {
         mAdapter.setEmptyView(R.layout.item_empty_view)
 
+        // 根据获取到的 playlists 构建歌单在 RecyclerView 中的层级结构
         mEvent.allPlaylistRequest.getData().observe(viewLifecycleOwner) {
             mState.playlist.postValue(it.map { playlist ->
                 FirstNode(playlist.musics?.map { music ->
@@ -61,6 +65,7 @@ class PlaylistFragment : BaseFragment() {
                 }, playlist.playlist)
             }.toMutableList())
         }
+        // 请求更新获取 playlists
         mEvent.allPlaylistRequest.requestData()
     }
 }
