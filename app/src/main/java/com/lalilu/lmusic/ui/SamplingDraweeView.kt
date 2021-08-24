@@ -7,6 +7,9 @@ import com.facebook.drawee.view.SimpleDraweeView
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 
+/**
+ * 默认提供重采样大小功能的 DraweeView
+ */
 class SamplingDraweeView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : SimpleDraweeView(context, attrs, defStyleAttr) {

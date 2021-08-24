@@ -14,7 +14,9 @@ import com.facebook.imagepipeline.request.BasePostprocessor
 import com.facebook.imagepipeline.request.ImageRequest
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 
-
+/**
+ * 包含提取图片主题色功能的 DraweeView
+ */
 class PaletteDraweeView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : SimpleDraweeView(context, attrs, defStyleAttr) {
@@ -37,6 +39,8 @@ class PaletteDraweeView @JvmOverloads constructor(
                     val pt = Palette.from(bitmap).generate()
                     palette.postValue(pt)
                     colorLiveData.postValue(pt)
+
+                    // 为图片添加上下的内阴影
                     addShadow(
                         bitmap, Color.argb(55, 0, 0, 0),
                         Color.TRANSPARENT, GradientDrawable.Orientation.TOP_BOTTOM,
@@ -57,6 +61,10 @@ class PaletteDraweeView @JvmOverloads constructor(
     }
 
     private var mBackShadowDrawableLR: GradientDrawable? = null
+
+    /**
+     * 为 bitmap 添加内阴影的方法
+     */
     fun addShadow(
         bm: Bitmap,
         fromColor: Int,
