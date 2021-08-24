@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import com.lalilu.lmusic.utils.OnSeekBarChangeListenerAdapter
 
 abstract class BaseSeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -113,7 +112,7 @@ abstract class BaseSeekBar @JvmOverloads constructor(
         progressIsMin = false
     }
 
-    protected fun clamp(num: Number, max: Number, min: Number): Number {
+    private fun clamp(num: Number, max: Number, min: Number): Number {
         if (num.toDouble() < min.toDouble()) return min.toDouble()
         if (num.toDouble() > max.toDouble()) return max.toDouble()
         return num.toDouble()

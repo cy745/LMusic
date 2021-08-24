@@ -18,7 +18,7 @@ import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.service.LMusicService
 import com.lalilu.lmusic.state.MainActivityViewModel
-import com.lalilu.lmusic.utils.OnSeekBarChangeListenerAdapter
+import com.lalilu.lmusic.ui.seekbar.OnSeekBarChangeListenerAdapter
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.entity.Music
