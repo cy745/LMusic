@@ -1,10 +1,10 @@
-package com.lalilu.lmusic.ui
+package com.lalilu.lmusic.ui.appbar
 
 import android.content.Context
 import android.util.AttributeSet
 import com.google.android.material.appbar.AppBarLayout
-import com.lalilu.lmusic.utils.AppBarOnStateChangeListener
-import com.lalilu.lmusic.utils.AppBarOnStateChangeListener.AppBarState
+import com.lalilu.lmusic.ui.PaletteDraweeView
+import com.lalilu.lmusic.ui.appbar.AppBarOnStateChangeListener.AppBarState
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
 class SquareAppBarLayout @JvmOverloads constructor(
