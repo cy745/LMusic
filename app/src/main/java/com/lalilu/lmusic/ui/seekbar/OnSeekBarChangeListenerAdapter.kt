@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.ui.seekbar
 
 abstract class OnSeekBarChangeListenerAdapter {
     // 处理进度变化的事件
