@@ -20,14 +20,14 @@
         android:fitsSystemWindows="true"
         android:overScrollMode="never">
 
-        <com.lalilu.lmusic.ui.SquareAppBarLayout
+        <com.lalilu.lmusic.ui.appbar.SquareAppBarLayout
             android:id="@+id/fm_appbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/colorPrimaryVariant"
             android:fitsSystemWindows="true"
             app:bgPalette="@{vm.nowBgPalette}"
-            app:layout_behavior="com.lalilu.lmusic.utils.AppBarZoomBehavior">
+            app:layout_behavior="com.lalilu.lmusic.ui.appbar.AppBarZoomBehavior">
 
             <net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
                 android:id="@+id/fm_collapse_layout"
@@ -74,7 +74,7 @@
                     app:tabRippleColor="#10FFFFFF"
                     app:tabUnboundedRipple="false" />
             </net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout>
-        </com.lalilu.lmusic.ui.SquareAppBarLayout>
+        </com.lalilu.lmusic.ui.appbar.SquareAppBarLayout>
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/fm_viewpager"

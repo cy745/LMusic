@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.ui.appbar
 
 import com.google.android.material.appbar.AppBarLayout
 import kotlin.math.abs

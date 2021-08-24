@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.ui.appbar
 
 import android.content.Context
 import android.util.AttributeSet
@@ -15,7 +15,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.R
 import com.lalilu.common.Mathf
 import com.lalilu.lmusic.ui.PaletteDraweeView
-import com.lalilu.lmusic.utils.AppBarOnStateChangeListener.AppBarState
+import com.lalilu.lmusic.ui.appbar.AppBarOnStateChangeListener.AppBarState
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
 class AppBarZoomBehavior(context: Context, attrs: AttributeSet) :
