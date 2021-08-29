@@ -21,8 +21,6 @@ class PaletteDraweeView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : SimpleDraweeView(context, attrs, defStyleAttr) {
     var palette: MutableLiveData<Palette> = MutableLiveData(null)
-    var oldPalette: Palette? = null
-    var colorLiveData: MutableLiveData<Palette> = MutableLiveData(null)
 
     override fun setImageURI(uri: Uri?, callerContext: Any?) {
         super.setImageURI(uri, callerContext)
@@ -35,10 +33,7 @@ class PaletteDraweeView @JvmOverloads constructor(
             .setProgressiveRenderingEnabled(true)
             .setPostprocessor(object : BasePostprocessor() {
                 override fun process(bitmap: Bitmap) {
-                    oldPalette = palette.value
-                    val pt = Palette.from(bitmap).generate()
-                    palette.postValue(pt)
-                    colorLiveData.postValue(pt)
+                    palette.postValue(Palette.from(bitmap).generate())
 
                     // 为图片添加上下的内阴影
                     addShadow(
