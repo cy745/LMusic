@@ -4,21 +4,22 @@ import com.google.android.material.appbar.AppBarLayout
 import kotlin.math.abs
 
 abstract class AppBarOnStateChangeListener : AppBarLayout.OnOffsetChangedListener {
-    enum class AppBarState {
-        STATE_EXPANDED, STATE_COLLAPSED, STATE_INTERMEDIATE
+    companion object {
+        const val STATE_EXPANDED = 0
+        const val STATE_COLLAPSED = 1
+        const val STATE_INTERMEDIATE = 2
     }
 
-    private var mCurrentState: AppBarState = AppBarState.STATE_EXPANDED
+    private var mCurrentState: Int = STATE_EXPANDED
 
-    override fun onOffsetChanged(appBarLayout: AppBarLayout?, verticalOffset: Int) {
-        if (appBarLayout == null) return
-        onStatePercentage(1 + verticalOffset.toFloat() / appBarLayout.totalScrollRange)
+    override fun onOffsetChanged(appBarLayout: AppBarLayout, verticalOffset: Int) {
+        val percent = 1 + verticalOffset.toFloat() / appBarLayout.totalScrollRange
+        onStatePercentage(percent)
+
         val nextState = when {
-            abs(verticalOffset) == 0 ->
-                AppBarState.STATE_EXPANDED
-            abs(verticalOffset) >= appBarLayout.totalScrollRange ->
-                AppBarState.STATE_COLLAPSED
-            else -> AppBarState.STATE_INTERMEDIATE
+            verticalOffset >= 0 -> STATE_EXPANDED
+            abs(verticalOffset) >= appBarLayout.totalScrollRange -> STATE_COLLAPSED
+            else -> STATE_INTERMEDIATE
         }
         if (nextState != mCurrentState) onStateChanged(appBarLayout, nextState)
         mCurrentState = nextState
@@ -26,5 +27,5 @@ abstract class AppBarOnStateChangeListener : AppBarLayout.OnOffsetChangedListene
 
     open fun onStatePercentage(percent: Float) {}
 
-    abstract fun onStateChanged(appBarLayout: AppBarLayout?, state: AppBarState)
+    abstract fun onStateChanged(appBarLayout: AppBarLayout?, state: Int)
 }
