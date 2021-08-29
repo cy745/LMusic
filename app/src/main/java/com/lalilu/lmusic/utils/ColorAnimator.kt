@@ -1,120 +1,34 @@
 package com.lalilu.lmusic.utils
 
 import android.animation.ValueAnimator
-import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Build
 import android.view.ViewGroup
 import androidx.palette.graphics.Palette
 import com.lalilu.common.getAutomaticColor
-import com.lalilu.lmusic.ui.PaletteDraweeView
 
-@SuppressLint("Recycle")
-class ColorAnimator constructor(fromColor: Int, toColor: Int) : ValueAnimator(),
-    ValueAnimator.AnimatorUpdateListener {
-    private var rFrom: Float = 0f
-    private var gFrom: Float = 0f
-    private var bFrom: Float = 0f
-    private var rTo: Float = 0f
-    private var gTo: Float = 0f
-    private var bTo: Float = 0f
-
+class ColorAnimator {
     companion object {
-        fun setBackgroundColorFromPalette(
-            paletteDraweeView: PaletteDraweeView,
-            viewGroup: ViewGroup
-        ) {
-            paletteDraweeView.palette.observeForever {
-                if (it != null) {
-                    val oldColor = paletteDraweeView.oldPalette.getAutomaticColor()
-                    val plColor = it.getAutomaticColor()
+        private var oldColor: Int = Color.DKGRAY
+        private var transitionDuration = 600L
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        ColorAnimator(oldColor, plColor).setColorChangedListener { color ->
-                            viewGroup.setBackgroundColor(color)
-                        }.start(600)
-                    } else {
-                        viewGroup.setBackgroundColor(plColor)
-                    }
-                }
-            }
-        }
-
-        private var oldPalette: Palette? = null
         fun setBgColorFromPalette(
             palette: Palette,
             viewGroup: ViewGroup
         ) {
-            val oldColor = oldPalette?.getAutomaticColor() ?: Color.DKGRAY
             val plColor = palette.getAutomaticColor()
-            oldPalette = palette
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                ColorAnimator(oldColor, plColor).setColorChangedListener { color ->
-                    viewGroup.setBackgroundColor(color)
-                }.start(600)
+                ValueAnimator.ofArgb(oldColor, plColor).apply {
+                    duration = transitionDuration
+                    addUpdateListener {
+                        val color = it.animatedValue as Int
+                        viewGroup.setBackgroundColor(color)
+                    }
+                }.start()
             } else {
                 viewGroup.setBackgroundColor(plColor)
             }
+            oldColor = plColor
         }
-
-        fun getPaletteFromFromPaletteDraweeView(
-            paletteDraweeView: PaletteDraweeView,
-            callback: (color: Palette) -> Unit
-        ) {
-            paletteDraweeView.palette.observeForever {
-                it?.let { palette -> callback(palette) }
-            }
-        }
-    }
-
-    private lateinit var listen: ((Int) -> Unit)
-    fun setColorChangedListener(listen: ((Int) -> Unit)): ColorAnimator {
-        this.listen = listen
-        return this
-    }
-
-    override fun onAnimationUpdate(animation: ValueAnimator) {
-        val value = animation.animatedValue as Float
-        val rResult = rFrom + (rTo - rFrom) * value
-        val gResult = gFrom + (gTo - gFrom) * value
-        val bResult = bFrom + (bTo - bFrom) * value
-
-        val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Color.rgb(rResult, gResult, bResult)
-        } else {
-            Color.rgb(rResult.toInt(), gResult.toInt(), bResult.toInt())
-        }
-        listen.invoke(result)
-    }
-
-    fun start(duration: Number) {
-        this.duration = duration.toLong()
-        start()
-    }
-
-    init {
-        this.setFloatValues(0f, 1f)
-        this.setColor(fromColor, toColor)
-        this.addUpdateListener(this)
-    }
-
-    private fun setColor(fromColor: Int, toColor: Int): ColorAnimator {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            rFrom = Color.valueOf(fromColor).red()
-            gFrom = Color.valueOf(fromColor).green()
-            bFrom = Color.valueOf(fromColor).blue()
-            rTo = Color.valueOf(toColor).red()
-            gTo = Color.valueOf(toColor).green()
-            bTo = Color.valueOf(toColor).blue()
-        } else {
-            rFrom = Color.red(fromColor).toFloat()
-            gFrom = Color.green(fromColor).toFloat()
-            bFrom = Color.blue(fromColor).toFloat()
-            rTo = Color.red(toColor).toFloat()
-            gTo = Color.green(toColor).toFloat()
-            bTo = Color.blue(toColor).toFloat()
-        }
-        return this
     }
 }
