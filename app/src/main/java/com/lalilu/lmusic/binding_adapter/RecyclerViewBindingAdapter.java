@@ -38,9 +38,9 @@ public class RecyclerViewBindingAdapter {
         collapsingToolbarLayout.setTitle(title);
     }
 
-    @BindingAdapter(value = {"bgColorLiveData"}, requireAll = false)
-    public static void setBGColorLiveData(PaletteDraweeView paletteDraweeView, MutableLiveData<Palette> liveData) {
-        paletteDraweeView.setColorLiveData(liveData);
+    @BindingAdapter(value = {"bgPaletteLiveData"}, requireAll = false)
+    public static void setBGPaletteLiveData(PaletteDraweeView paletteDraweeView, MutableLiveData<Palette> liveData) {
+        paletteDraweeView.setPalette(liveData);
     }
 
     @BindingAdapter(value = {"bgPalette"}, requireAll = false)
