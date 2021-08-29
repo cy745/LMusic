@@ -46,7 +46,7 @@ class PaletteDraweeView @JvmOverloads constructor(
                 val matrix = Matrix()
 
                 val scaleWidth = samplingValue.toFloat() / width
-                val scaleHeight = samplingValue.toFloat() / width
+                val scaleHeight = samplingValue.toFloat() / height
                 matrix.postScale(scaleWidth, scaleHeight)
 
                 samplingBitmap = Bitmap.createBitmap(
