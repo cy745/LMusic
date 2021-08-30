@@ -5,6 +5,7 @@ import android.os.Build
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.*
+import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.dynamicanimation.animation.FloatPropertyCompat
@@ -193,6 +194,11 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet) :
         mCollapsingToolbarLayout?.top = (maxExpandHeight / 2 * value).toInt()
         mCollapsingToolbarLayout?.bottom =
             (mDraweeHeight + maxExpandHeight * animatePercent).toInt()
+
+        // 文字透明过渡插值器
+        val interpolation = AccelerateDecelerateInterpolator().getInterpolation(animatePercent)
+        val alpha = ((1 - interpolation) * 255).toInt()
+        mCollapsingToolbarLayout?.textAlpha(alpha)
 
         if (dragPercent.isNaN()) return
         when {
