@@ -173,9 +173,9 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet) :
 
         val offsetPosition = abl.bottom - mDraweeHeight
         val scaleValue = abl.bottom / mDraweeHeight.toFloat()
-        val animatePercent = offsetPosition / maxExpandHeight.toFloat()
+        val animatePercent = Mathf.clamp(0F, 1F, offsetPosition / maxExpandHeight.toFloat())
 
-        // 根据 offsetPosition 计算出拖动使得与最近边距离的百分比
+        // 根据 offsetPosition 计算出拖动时与最近边距离的百分比
         val dragPercent = when (offsetPosition) {
             in 0..maxDragHeight -> offsetPosition / maxDragHeight.toFloat()
             in (maxExpandHeight - maxDragHeight)..maxExpandHeight -> {
@@ -187,7 +187,12 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet) :
         mDraweeView?.blurBg(animatePercent)
         mDraweeView?.scaleX = scaleValue
         mDraweeView?.scaleY = scaleValue
-        mCollapsingToolbarLayout?.translationY = offsetPosition / 2f
+        mDraweeView?.translationY = offsetPosition / 2f
+
+        val value = if (animatePercent in 0F..0.5F) animatePercent else 1 - animatePercent
+        mCollapsingToolbarLayout?.top = (maxExpandHeight / 2 * value).toInt()
+        mCollapsingToolbarLayout?.bottom =
+            (mDraweeHeight + maxExpandHeight * animatePercent).toInt()
 
         if (dragPercent.isNaN()) return
         when {
