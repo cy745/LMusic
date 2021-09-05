@@ -350,7 +350,7 @@ public class CollapsingToolbarLayout extends FrameLayout {
      * 实现自定义透明度
      */
     private boolean textAlpha = false;
-    private int textAlphaValue = 0;
+    private int textAlphaValue = 255;
 
     /**
      * 实现自定义配置文字的透明度
@@ -378,7 +378,7 @@ public class CollapsingToolbarLayout extends FrameLayout {
         // Let the collapsing text helper draw its text
         if (mCollapsingTitleEnabled && mDrawCollapsingTitle) {
             // 判断是否需要让文字变透明
-            if (textAlpha) mCollapsingTextHelper.draw(canvas, textAlphaValue);
+            if (textAlpha || textAlphaValue == 0) mCollapsingTextHelper.draw(canvas, textAlphaValue);
             else mCollapsingTextHelper.draw(canvas);
 
             // 重置状态
