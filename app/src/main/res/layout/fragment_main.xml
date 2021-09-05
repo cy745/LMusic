@@ -23,7 +23,7 @@
         <com.lalilu.lmusic.ui.appbar.SquareAppBarLayout
             android:id="@+id/fm_appbar_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="@color/colorPrimaryVariant"
             android:fitsSystemWindows="true"
             app:bgPalette="@{vm.nowBgPalette}"
