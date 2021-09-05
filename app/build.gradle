@@ -45,6 +45,11 @@ dependencies {
     // Apache-2.0
     // implementation 'jp.wasabeef:recyclerview-animators:4.0.2'
 
+    // https://mvnrepository.com/artifact/com.tencent/mmkv
+    // https://github.com/Tencent/MMKV
+    // BSD License
+    implementation 'com.tencent:mmkv:1.2.10'
+
     // https://github.com/CymChad/BaseRecyclerViewAdapterHelper
     // MIT License
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.6'
