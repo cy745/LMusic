@@ -13,6 +13,9 @@ import com.lalilu.common.ThreadPoolUtils
 abstract class BaseMediaScanner<T> : MediaScanner<T> {
     private var mExecutor = ThreadPoolUtils.newFixedThreadPool(1)
 
+    /**
+     * contentResolver 所需参数
+     */
     var selection: String? = null
     var projection: Array<String>? = null
     var selectionArgs: Array<String>? = null
