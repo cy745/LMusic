@@ -7,11 +7,9 @@ import com.lalilu.common.Mathf
 import com.lalilu.lmusic.domain.request.AllPlayListRequest
 import com.lalilu.lmusic.domain.request.NowPlaylistRequest
 import com.lalilu.lmusic.domain.request.PageRequest
-import com.lalilu.lmusic.utils.SharedPreferenceModule
-import com.lalilu.lmusic.utils.SharedPreferenceModule.Companion.LAST_MUSIC_ID
-import com.lalilu.lmusic.utils.SharedPreferenceModule.Companion.LAST_PLAYLIST_ID
 import com.lalilu.media.LMusicMediaModule
 import com.lalilu.media.entity.Music
+import com.tencent.mmkv.MMKV
 
 /**
  *  为数据的全局同步而设置的 ViewModel ，即 mEvent，
@@ -27,20 +25,23 @@ class SharedViewModel : ViewModel() {
     val nowPlaylistRequest = NowPlaylistRequest()
     val allPlaylistRequest = AllPlayListRequest()
     val pageRequest = PageRequest()
+    val mmkv = MMKV.defaultMMKV()
+
+    companion object {
+        const val LAST_MUSIC_ID = "last_music_id"
+        const val LAST_PLAYLIST_ID = "last_playlist_id"
+    }
 
     init {
-        // 记录最后一次播放信息的 SharedPreference
-        val lastPlaySp = SharedPreferenceModule.getInstance(null).lastPlaySp
-
         // 监听正在播放中的 playlistId
         nowPlaylistId.observeForever {
-            // 如果 nowPlaylistId 的 value 为空则从 lastPlaySp 获取信息
-            // 否则将其写入 lastPlaySp
+            // 如果 nowPlaylistId 的 value 为空则从 mmkv 获取信息
+            // 否则将其写入 mmkv 的映射区
             var playlistId = it
             if (playlistId == null) {
-                playlistId = lastPlaySp.getLong(LAST_PLAYLIST_ID, 0)
+                playlistId = mmkv.decodeLong(LAST_PLAYLIST_ID, 0)
             } else {
-                lastPlaySp.edit().putLong(LAST_PLAYLIST_ID, it).apply()
+                mmkv.encode(LAST_PLAYLIST_ID, it)
             }
 
             // 根据 playlistId 更新指定的 playlist 到 nowPlaylistRequest
@@ -49,17 +50,17 @@ class SharedViewModel : ViewModel() {
 
         // 监听正在播放中的 music
         nowPlayingMusic.observeForever { music ->
-            // 如果 music 为空，则从 lastPlaySp 中获取上一次播放的 musicId
+            // 如果 music 为空，则从 mmkv 获取上一次播放的 musicId
             // 并向数据库请求该 musicId 对应的 music
-            // 否则将 music 的 musicId 存入 lastPlaySp
+            // 否则将 music 的 musicId 存入 mmkv 的映射区
             var nowMusic = music
             if (nowMusic == null) {
-                val musicId = lastPlaySp.getLong(LAST_MUSIC_ID, 0)
+                val musicId = mmkv.decodeLong(LAST_MUSIC_ID, 0)
                 val database = LMusicMediaModule.getInstance(null).database
                 nowMusic = database.musicDao().getMusicById(musicId)
                 nowMusic?.let { nowPlayingMusic.postValue(nowMusic) }
             } else {
-                lastPlaySp.edit().putLong(LAST_MUSIC_ID, music.musicId).apply()
+                mmkv.encode(LAST_MUSIC_ID, music.musicId)
             }
 
             // 根据正在播放的 music 改变 playlist 的顺序
