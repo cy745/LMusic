@@ -20,7 +20,7 @@ import com.lalilu.lmusic.ui.appbar.AppBarOnStateChangeListener.Companion.STATE_E
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
 
-class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet) :
+class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = null) :
     AppBarLayout.Behavior(context, attrs) {
 
     private var mDraweeView: PaletteDraweeView? = null
@@ -29,9 +29,11 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet) :
 
     private var mAppbarHeight = -1
     private var mDraweeHeight = -1
-    private var mAppbarState = STATE_EXPANDED
     private var maxExpandHeight = 200
     private var maxDragHeight = 200
+
+    private var fullyExpend = false
+    private var mAppbarState = STATE_EXPANDED
 
     /**
      *  在布局子控件时进行初始化
@@ -54,14 +56,19 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet) :
             override fun onStateChanged(appBarLayout: AppBarLayout?, state: Int) {
                 mAppbarState = state
             }
+
+            override fun onStatePercentage(percent: Float) {
+                mDraweeView?.let { it.alpha = percent }
+            }
         })
 
-        mAppbarHeight = appBarLayout.height - appBarLayout.totalScrollRange
         mDraweeView = appBarLayout.findViewById(R.id.fm_top_pic)
         mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.fm_collapse_layout)
         nestedChildView = (parent.getChildAt(1) as ViewGroup).getChildAt(0) as ViewGroup?
 
-        mDraweeView?.let { mDraweeHeight = it.height }
+        // 修复 Appbar 收起后无法再次展开的问题
+        mAppbarHeight = if (mAppbarHeight == -1) appBarLayout.height - appBarLayout.totalScrollRange else mAppbarHeight
+        mDraweeHeight = mDraweeView?.height ?: 0
 
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         maxExpandHeight = when {
@@ -163,14 +170,17 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet) :
         }
     }
 
-    private var fullyExpend = false
 
     /**
      *  重新定位各个控件的大小和位置
      */
     private fun resizeChild(abl: AppBarLayout, nextPosition: Int) {
+        val appbar = (abl as SquareAppBarLayout)
+
         // 限定 appbar 的高度在指定范围内
-        abl.bottom = Mathf.clamp(mDraweeHeight, mDraweeHeight + maxExpandHeight, nextPosition)
+        val bottom = Mathf.clamp(mDraweeHeight, mDraweeHeight + maxExpandHeight, nextPosition)
+        appbar.bottom = bottom
+        appbar.mBottom = bottom
 
         val offsetPosition = abl.bottom - mDraweeHeight
         val scaleValue = abl.bottom / mDraweeHeight.toFloat()
@@ -192,8 +202,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet) :
 
         val value = if (animatePercent in 0F..0.5F) animatePercent else 1 - animatePercent
         mCollapsingToolbarLayout?.top = (maxExpandHeight / 2 * value).toInt()
-        mCollapsingToolbarLayout?.bottom =
-            (mDraweeHeight + maxExpandHeight * animatePercent).toInt()
+        mCollapsingToolbarLayout?.bottom = (mDraweeHeight + maxExpandHeight * animatePercent).toInt()
 
         // 文字透明过渡插值器
         val interpolation = AccelerateDecelerateInterpolator().getInterpolation(animatePercent)
@@ -202,24 +211,30 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet) :
 
         if (dragPercent.isNaN()) return
         when {
-            dragPercent in 0.05F..0.6F && fullyExpend -> {
-                fullyExpend = false
-            }
+            dragPercent in 0.05F..0.6F && fullyExpend -> fullyExpend = false
             dragPercent in 0.6F..1F && !fullyExpend -> {
                 fullyExpend = true
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                    abl.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
-                }
+                onDragToBottom(abl)
             }
             dragPercent in -1F..-0.6F && fullyExpend -> {
                 fullyExpend = false
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                    abl.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
-                }
+                onDragToTop(abl)
             }
-            dragPercent in -0.6F..-0.05F && !fullyExpend -> {
-                fullyExpend = true
-            }
+            dragPercent in -0.6F..-0.05F && !fullyExpend -> fullyExpend = true
+
+        }
+        appbar.fullyExpend = fullyExpend
+    }
+
+    private fun onDragToTop(view: View) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
+        }
+    }
+
+    private fun onDragToBottom(view: View) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
         }
     }
 
