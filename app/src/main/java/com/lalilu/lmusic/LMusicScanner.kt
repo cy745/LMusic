@@ -5,9 +5,14 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import com.lalilu.lmusic.utils.BitmapUtils
 import com.lalilu.lmusic.domain.entity.LSong
+import com.lalilu.lmusic.utils.BitmapUtils
+import org.jaudiotagger.audio.AudioFileIO
+import org.jaudiotagger.tag.FieldKey
 import java.io.File
+import java.util.logging.Level
+import java.util.logging.Logger
+
 
 class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
     var onScanCallback: MediaScanner.OnScanCallback<LSong>? = null
@@ -47,6 +52,8 @@ class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
 
     @Throws
     override fun onScanForEach(cursor: Cursor): LSong {
+        Logger.getLogger("org.jaudiotagger").level = Level.OFF
+
         val titleColumn = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE) // 标题，音乐名称
         val songIdColumn = cursor.getColumnIndex(MediaStore.Audio.Media._ID) // 音乐 id
         val mediaDuration = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION) // 音乐时长
@@ -59,6 +66,7 @@ class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
 
         val id = cursor.getLong(songIdColumn)
         val uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id.toString())
+
 
         return LSong(
             mId = id,
@@ -81,8 +89,15 @@ class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
             it.mArtUri = BitmapUtils.saveThumbnailToSandBox(
                 mContext, standardDirectory, it.mId, uri
             )
-            println(it.mArtUri)
-
+            try {
+                // TODO: 2021/9/6 仍有部分歌曲无法获取到内嵌歌词
+                val audioTag = AudioFileIO.read(File(it.mLocalInfo!!.mData)).tag
+                audioTag.getFields(FieldKey.LYRICS).apply {
+                    if (this.isNotEmpty()) it.mLocalInfo?.mLyric = this[0].toString()
+                }
+            } catch (e: Exception) {
+                println("audioFile:" + e.message)
+            }
         }
     }
 }
