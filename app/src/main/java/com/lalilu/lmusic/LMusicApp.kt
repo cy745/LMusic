@@ -9,12 +9,18 @@ import com.lalilu.media.LMusicMediaModule
 import com.tencent.mmkv.MMKV
 
 class LMusicApp : BaseApplication() {
+    lateinit var playlistMMKV: LMusicPlaylistMMKV
+    lateinit var lmusicScanner: LMusicScanner
 
     override fun onCreate() {
         super.onCreate()
         MMKV.initialize(this)
         XXPermissions.setScopedStorage(true)
         LMusicPlayerModule.getInstance(this)
+
+        playlistMMKV = LMusicPlaylistMMKV()
+        lmusicScanner = LMusicScanner(this)
+
         LMusicMediaModule.getInstance(this)
         val config = ImagePipelineConfig.newBuilder(this)
             .setDownsampleEnabled(true)
