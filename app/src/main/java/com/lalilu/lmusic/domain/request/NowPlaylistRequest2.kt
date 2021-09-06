@@ -16,7 +16,6 @@ class NowPlaylistRequest2 : BaseRequest<LPlaylist>() {
             requestData()
             return
         }
-        // getPlaylistWithSongsByIdWithOrder 获取到的 playlist 保持存储时的顺序
         val playlist = lMusicPlaylistMMKV.readPlaylistById(value)
         if (playlist != null) postData(playlist) else requestData()
     }
