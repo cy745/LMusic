@@ -3,6 +3,7 @@ package com.lalilu.lmusic.fragment
 import androidx.databinding.library.baseAdapters.BR
 import com.chad.library.adapter.base.BaseNodeAdapter
 import com.lalilu.R
+import com.lalilu.lmusic.LMusicPlaylistMMKV
 import com.lalilu.lmusic.adapter.LMusicPlaylistAdapter
 import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.adapter.node.SecondNode
@@ -11,9 +12,8 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.PlaylistFragmentViewModel
-import com.lalilu.media.LMusicMediaModule
-import com.lalilu.media.entity.Music
-import com.lalilu.media.entity.Playlist
+import com.lalilu.lmusic.domain.entity.LPlaylist
+import com.lalilu.lmusic.domain.entity.LSong
 
 class PlaylistFragment : BaseFragment() {
     private lateinit var mState: PlaylistFragmentViewModel
@@ -42,18 +42,16 @@ class PlaylistFragment : BaseFragment() {
                 val parent = adapter.data[parentPosition] as FirstNode<*>
                 val child = adapter.data[musicPosition] as SecondNode<*>
 
-                val playlist = parent.data as Playlist
-                val music = child.data as Music
+                val playlist = parent.data as LPlaylist
+                val song = child.data as LSong
 
-                mEvent.nowPlaylistId.value = playlist.playlistId
+                mEvent.nowPlaylistId.value = playlist.id
                 playerModule.mediaController.value?.transportControls
-                    ?.playFromMediaId(music.musicId.toString(), null)
+                    ?.playFromMediaId(song.mId.toString(), null)
             }
 
             override fun onDeleted(playlistId: Long) {
-                LMusicMediaModule.getInstance(requireActivity().application)
-                    .database.playListDao()
-                    .deletePlaylistById(playlistId)
+                LMusicPlaylistMMKV.getInstance().deletePlaylistById(playlistId)
                 mEvent.allPlaylistRequest.requestData()
             }
         }
@@ -67,11 +65,11 @@ class PlaylistFragment : BaseFragment() {
 
         // 根据获取到的 playlists 构建歌单在 RecyclerView 中的层级结构
         mEvent.allPlaylistRequest.getData().observe(viewLifecycleOwner) {
-            mState.playlist.postValue(it.map { playlist ->
-                FirstNode(playlist.musics?.map { music ->
-                    SecondNode(null, music)
-                }, playlist.playlist)
-            }.toMutableList())
+            mState.playlist.postValue(it.map { lPlaylist ->
+                FirstNode(lPlaylist.songs?.map { lSong ->
+                    SecondNode(null, lSong)
+                }, lPlaylist)
+            })
         }
         // 请求更新获取 playlists
         mEvent.allPlaylistRequest.requestData()

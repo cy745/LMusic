@@ -73,7 +73,7 @@ class LMusicService : BaseService() {
             mSessionCallback.playback.nowPlaylist.value = it
         }
         mState.nowPlayingMusic.observeForever {
-            mEvent.nowPlayingMusic.postValue(it)
+            mEvent.nowPlayingId.postValue(it.mId)
         }
     }
 
@@ -140,6 +140,7 @@ class LMusicService : BaseService() {
         }
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+            println(mediaId)
             playback.playByMediaId(mediaId?.toLong())
         }
 

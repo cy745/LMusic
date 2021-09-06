@@ -6,31 +6,32 @@ import com.chad.library.adapter.base.module.DraggableModule
 import com.chad.library.adapter.base.viewholder.BaseDataBindingHolder
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlayingBinding
-import com.lalilu.media.entity.Music
+import com.lalilu.lmusic.domain.entity.LSong
 
 class LMusicPlayingAdapter :
-    BaseQuickAdapter<Music, BaseDataBindingHolder<ItemPlayingBinding>>(
+    BaseQuickAdapter<LSong, BaseDataBindingHolder<ItemPlayingBinding>>(
         R.layout.item_playing
     ), DraggableModule {
 
-    override fun convert(holder: BaseDataBindingHolder<ItemPlayingBinding>, item: Music) {
+    override fun convert(holder: BaseDataBindingHolder<ItemPlayingBinding>, item: LSong) {
         val binding = holder.dataBinding ?: return
-        binding.music = item
+        binding.song = item
     }
 
+
     init {
-        setDiffCallback(DiffMusic())
+        setDiffCallback(DiffSong())
         setEmptyView(R.layout.item_empty_view)
     }
 
-    class DiffMusic : DiffUtil.ItemCallback<Music>() {
-        override fun areItemsTheSame(oldItem: Music, newItem: Music): Boolean {
-            return oldItem.musicId == newItem.musicId
+    class DiffSong : DiffUtil.ItemCallback<LSong>() {
+        override fun areItemsTheSame(oldItem: LSong, newItem: LSong): Boolean {
+            return oldItem.mId == newItem.mId
         }
 
-        override fun areContentsTheSame(oldItem: Music, newItem: Music): Boolean {
-            return oldItem.musicId == newItem.musicId &&
-                    oldItem.musicTitle == newItem.musicTitle
+        override fun areContentsTheSame(oldItem: LSong, newItem: LSong): Boolean {
+            return oldItem.mId == newItem.mId &&
+                    oldItem.mTitle == newItem.mTitle
         }
     }
 }

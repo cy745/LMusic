@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.binding_adapter;
 
+import android.content.Context;
 import android.net.Uri;
 import android.widget.ImageView;
 
@@ -44,8 +45,8 @@ public class BindAdapter {
                 (sec < 10 ? "0" : " ") + sec;
     }
 
-    @BindingAdapter("pictureUri")
-    public static void setPictureUri(SimpleDraweeView simpleDraweeView, Uri uri) {
-        simpleDraweeView.setImageURI(uri);
+    @BindingAdapter(value = {"pictureUri", "callerContext"}, requireAll = false)
+    public static void setPictureUri(SimpleDraweeView simpleDraweeView, Uri uri, Context callerContext) {
+        simpleDraweeView.setImageURI(uri, callerContext);
     }
 }

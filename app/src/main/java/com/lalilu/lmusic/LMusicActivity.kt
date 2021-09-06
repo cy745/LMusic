@@ -20,18 +20,14 @@ import com.lalilu.lmusic.service.LMusicService
 import com.lalilu.lmusic.state.MainActivityViewModel
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarChangeListenerAdapter
 import com.lalilu.lmusic.utils.PermissionUtils
-import com.lalilu.media.LMusicMediaModule
-import com.lalilu.media.entity.Music
-import com.lalilu.media.entity.Playlist
-import com.lalilu.media.scanner.MediaScanner
+import com.lalilu.lmusic.domain.entity.LSong
+import com.tencent.mmkv.MMKV
 import java.util.*
-import kotlin.collections.ArrayList
 
 class LMusicActivity : BaseActivity() {
     private lateinit var mState: MainActivityViewModel
     private lateinit var mEvent: SharedViewModel
     private lateinit var playerModule: LMusicPlayerModule
-    private lateinit var mediaModule: LMusicMediaModule
 
     override fun initViewModel() {
         mState = getActivityViewModel(MainActivityViewModel::class.java)
@@ -44,7 +40,6 @@ class LMusicActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mediaModule = LMusicMediaModule.getInstance(application)
         playerModule = LMusicPlayerModule.getInstance(application)
         playerModule.initMusicBrowser(this)
         PermissionUtils.requestPermission(this)
@@ -109,34 +104,49 @@ class LMusicActivity : BaseActivity() {
                 playerModule.mediaController.value?.transportControls?.pause()
             }
             R.id.appbar_create_playlist -> {
-                val iconUri = mEvent.nowPlayingMusic.value?.musicArtUri
-                val title = "歌单：" + mEvent.nowPlayingMusic.value?.musicTitle
-
-                val musics = mEvent.nowPlaylistRequest.getData().value
-                    ?: return super.onOptionsItemSelected(item)
-
-                mediaModule.database.playListDao().insertPlaylistByList(
-                    Playlist(playlistArt = iconUri, playlistTitle = title),
-                    ArrayList(musics.map { it.musicId })
-                )
-                mEvent.allPlaylistRequest.requestData()
+                MMKV.defaultMMKV().decodeLong(SharedViewModel.LAST_PLAYLIST_ID, 0)
+                runOnUiThread {
+                    Toast.makeText(
+                        this@LMusicActivity,
+                        "${MMKV.defaultMMKV().decodeLong(SharedViewModel.LAST_PLAYLIST_ID, 0)}," +
+                                " ${
+                                    MMKV.defaultMMKV().decodeLong(SharedViewModel.LAST_MUSIC_ID, 0)
+                                }",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
             R.id.appbar_scan_song -> {
-                mediaModule.mediaScanner.setOnScanCallback(object :
-                    MediaScanner.OnScanCallback<Music>() {
-                    override fun onScanFinish(totalCount: Int) {
-                        println("scan done, sum: $totalCount")
-                        mEvent.allPlaylistRequest.requestData()
-                        mEvent.nowPlaylistRequest.requestData()
+                (application as LMusicApp).lmusicScanner.setOnScanCallback(
+                    object : MediaScanner.OnScanCallback<LSong>() {
+                        override fun onScanFinish(totalCount: Int) {
+                            runOnUiThread {
+                                Toast.makeText(
+                                    this@LMusicActivity,
+                                    "scan done, sum: $totalCount",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            mEvent.allPlaylistRequest.requestData()
+                            mEvent.nowPlaylistRequest.requestData()
+                        }
 
-                    }
+                        override fun onScanStart(totalCount: Int) {
+                            (application as LMusicApp).playlistMMKV.deleteAllLocalSong()
+                            println("cleared")
+                        }
 
-                    override fun onScanException(msg: String?) {
-                        runOnUiThread {
-                            Toast.makeText(this@LMusicActivity, msg, Toast.LENGTH_SHORT).show()
+                        override fun onScanProgress(nowCount: Int, item: LSong) {
+                            (application as LMusicApp).playlistMMKV.saveSongToLocalPlaylist(item)
+                        }
+
+                        override fun onScanException(msg: String?) {
+                            runOnUiThread {
+                                Toast.makeText(this@LMusicActivity, msg, Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
-                }).scanStart(this)
+                ).scanStart(this)
             }
         }
         return super.onOptionsItemSelected(item)

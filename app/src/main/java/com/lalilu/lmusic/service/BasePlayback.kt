@@ -7,11 +7,11 @@ import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
-import com.lalilu.common.Mathf
+import com.lalilu.lmusic.utils.Mathf
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import com.lalilu.lmusic.manager.LMusicVolumeManager
 
-abstract class BasePlayback<T>(
+abstract class BasePlayback<T, K>(
     private val mContext: Context
 ) : Playback {
     private var mediaPlayer: MediaPlayer? = null
@@ -20,7 +20,7 @@ abstract class BasePlayback<T>(
     protected var mAudioFocusManager: LMusicAudioFocusManager? = null
     protected var onPlayerCallback: Playback.OnPlayerCallback? = null
 
-    open val nowPlaylist: MutableLiveData<List<T>> = MutableLiveData()
+    open val nowPlaylist: MutableLiveData<K> = MutableLiveData()
     open val nowPlaying: MutableLiveData<T> = MutableLiveData()
 
     private var isPrepared = false
@@ -28,7 +28,7 @@ abstract class BasePlayback<T>(
     abstract fun getUriFromNowItem(nowPlaying: T): Uri
     abstract fun getIdFromItem(item: T): Long
     abstract fun getMetaDataFromItem(item: T): MediaMetadataCompat
-    abstract fun getItemById(list: List<T>, mediaId: Long): T?
+    abstract fun getItemById(list: K, mediaId: Long): T?
 
     override fun play() {
         mediaPlayer ?: rebuild()
@@ -93,10 +93,13 @@ abstract class BasePlayback<T>(
         nowPlaylist.value ?: return
         val list = nowPlaylist.value!!
 
-        val next = Mathf.clampInLoop(0, list.size - 1, list.indexOf(nowPlaying.value) + 1)
-        nowPlaying.value = list[next]
-
-        playByUri(getUriFromNowItem(list[next]))
+        val next =
+            Mathf.clampInLoop(
+                0, getSizeFromList(list) - 1,
+                getIndexOfFromList(list, nowPlaying.value!!) + 1
+            )
+        nowPlaying.value = getItemFromListByIndex(list, next)
+        playByUri(getUriFromNowItem(getItemFromListByIndex(list, next)))
     }
 
     override fun previous() {
@@ -104,10 +107,18 @@ abstract class BasePlayback<T>(
         nowPlaylist.value ?: return
         val list = nowPlaylist.value!!
 
-        val previous = Mathf.clampInLoop(0, list.size - 1, list.indexOf(nowPlaying.value) - 1)
-        nowPlaying.value = list[previous]
-        playByUri(getUriFromNowItem(list[previous]))
+        val previous =
+            Mathf.clampInLoop(
+                0, getSizeFromList(list) - 1,
+                getIndexOfFromList(list, nowPlaying.value!!) - 1
+            )
+        nowPlaying.value = getItemFromListByIndex(list, previous)
+        playByUri(getUriFromNowItem(getItemFromListByIndex(list, previous)))
     }
+
+    abstract fun getSizeFromList(list: K): Int
+    abstract fun getIndexOfFromList(list: K, item: T): Int
+    abstract fun getItemFromListByIndex(list: K, index: Int): T
 
     override fun stop() {
         isPrepared = false

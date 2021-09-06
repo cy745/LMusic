@@ -11,8 +11,8 @@ import com.lalilu.R
 import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.adapter.node.SecondNode
 import com.lalilu.lmusic.ui.SamplingDraweeView
-import com.lalilu.media.entity.Music
-import com.lalilu.media.entity.Playlist
+import com.lalilu.lmusic.domain.entity.LPlaylist
+import com.lalilu.lmusic.domain.entity.LSong
 
 class LMusicPlaylistAdapter : BaseNodeAdapter() {
     companion object {
@@ -46,23 +46,23 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
         override val layoutId: Int = R.layout.item_playlist
 
         override fun convert(helper: BaseViewHolder, item: BaseNode) {
-            val playlist = (item as FirstNode<*>).data as Playlist
+            val playlist = (item as FirstNode<*>).data as LPlaylist
 
-            val lastTime = System.currentTimeMillis() - playlist.playlistCreateTime
-            val min = lastTime / 1000 / 60
-            val result = when {
-                min < 5 -> "刚刚"
-                min in 5..59 -> "$min 分前"
-                min > 60 -> "${min / 60} 小时前"
-                else -> "···"
-            }
+//            val lastTime = System.currentTimeMillis() - playlist.playlistCreateTime
+//            val min = lastTime / 1000 / 60
+//            val result = when {
+//                min < 5 -> "刚刚"
+//                min in 5..59 -> "$min 分前"
+//                min > 60 -> "${min / 60} 小时前"
+//                else -> "···"
+//            }
+//            helper.setText(R.id.playlist_last_time, result)
 
-            helper.setText(R.id.playlist_title, playlist.playlistTitle)
-            helper.setText(R.id.playlist_last_time, result)
+            helper.setText(R.id.playlist_title, playlist.title)
             helper.getView<SamplingDraweeView>(R.id.playlist_pic)
-                .setImageURI(playlist.playlistArt, context)
+                .setImageURI(playlist.artUri, context)
             helper.getView<ImageButton>(R.id.playlist_delete).setOnClickListener {
-                onPlaylistSelectedListener?.onDeleted(playlist.playlistId)
+                onPlaylistSelectedListener?.onDeleted(playlist.id)
             }
         }
 
@@ -85,9 +85,9 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
         override val layoutId: Int = R.layout.item_playlist_expand
 
         override fun convert(helper: BaseViewHolder, item: BaseNode) {
-            val music = (item as SecondNode<*>).data as Music
-            helper.setText(R.id.music_title, music.musicTitle)
-            helper.setText(R.id.music_title_bg, music.musicTitle)
+            val song = (item as SecondNode<*>).data as LSong
+            helper.setText(R.id.music_title, song.mTitle)
+            helper.setText(R.id.music_title_bg, song.mTitle)
         }
 
         override fun onClick(helper: BaseViewHolder, view: View, data: BaseNode, position: Int) {

@@ -1,4 +1,4 @@
-package com.lalilu.common
+package com.lalilu.lmusic.utils
 
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor

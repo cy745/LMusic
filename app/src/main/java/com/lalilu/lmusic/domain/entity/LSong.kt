@@ -1,8 +1,8 @@
-package com.lalilu.media.entity
+package com.lalilu.lmusic.domain.entity
 
 import android.net.Uri
 import android.os.Parcelable
-import androidx.room.Embedded
+import android.text.TextUtils
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -10,16 +10,19 @@ data class LSong(
     var mId: Long,
     var mTitle: String,
     var mType: Int = SONG_TYPE_LOCAL,
-    var mArtUri: String? = null,
+    var mArtUri: Uri? = null,
     var mArtist: List<Artist>? = null,
 
-    @Embedded
     var mAlbum: AlbumInfo? = null,
 
-    @Embedded
     var mLocalInfo: LocalInfo? = null
 
 ) : Parcelable {
+
+    fun getArtistText(): String {
+        if (this.mArtist == null) return "null"
+        return TextUtils.join(" / ", this.mArtist!!.map { it.name })
+    }
 
     companion object {
         const val SONG_TYPE_LOCAL = 0
@@ -42,9 +45,7 @@ data class LSong(
         var mSize: Long = 0,
         var mDuration: Long = 0,
         var mMimeType: String? = null
-    ) : Parcelable {
-        fun getUri(): Uri = Uri.parse(mData)
-    }
+    ) : Parcelable
 
     /**
      * 本地信息

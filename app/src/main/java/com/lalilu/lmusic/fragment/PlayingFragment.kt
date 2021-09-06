@@ -12,7 +12,7 @@ import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.PlayingFragmentViewModel
 import com.lalilu.lmusic.utils.OnItemDragAdapter
 import com.lalilu.lmusic.utils.OnItemSwipedAdapter
-import com.lalilu.media.entity.Music
+import com.lalilu.lmusic.domain.entity.LSong
 
 class PlayingFragment : BaseFragment() {
     private lateinit var mState: PlayingFragmentViewModel
@@ -33,24 +33,30 @@ class PlayingFragment : BaseFragment() {
         mAdapter.draggableModule.isSwipeEnabled = true
         mAdapter.draggableModule.setOnItemDragListener(object : OnItemDragAdapter() {
             override fun onItemDragEnd(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-                mEvent.nowPlaylistRequest.postData(mAdapter.data)
+                mEvent.nowPlaylistRequest.postData(mEvent.nowPlaylistRequest.getData().value.also {
+                    it?.songs = ArrayList(mAdapter.data)
+                })
             }
         })
         mAdapter.draggableModule.setOnItemSwipeListener(object : OnItemSwipedAdapter() {
             var mediaId: Long = 0
             override fun onItemSwipeStart(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-                mediaId = mAdapter.getItem(pos).musicId
+                mediaId = mAdapter.getItem(pos).mId
             }
 
             override fun onItemSwiped(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-                mEvent.nowPlaylistRequest.postData(mAdapter.data)
+                mEvent.nowPlaylistRequest.postData(mEvent.nowPlaylistRequest.getData().value.also {
+                    it?.songs = ArrayList(mAdapter.data)
+                })
             }
         })
 
         mAdapter.setOnItemClickListener { adapter, _, position ->
-            val music = adapter.data[position] as Music
+            val song = adapter.data[position] as LSong
+
+            println(song.toString())
             playerModule.mediaController.value?.transportControls
-                ?.playFromMediaId(music.musicId.toString(), null)
+                ?.playFromMediaId(song.mId.toString(), null)
         }
 
         return DataBindingConfig(R.layout.fragment_now_playing, BR.vm, mState)

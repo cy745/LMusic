@@ -1,4 +1,4 @@
-package com.lalilu.common
+package com.lalilu.lmusic.utils
 
 class Mathf {
     companion object {

@@ -1,4 +1,4 @@
-package com.lalilu.media.entity
+package com.lalilu.lmusic.domain.entity
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

@@ -5,9 +5,8 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import com.lalilu.common.bitmap.BitmapUtils
-import com.lalilu.media.entity.LSong
-import com.lalilu.media.scanner.MediaScanner
+import com.lalilu.lmusic.utils.BitmapUtils
+import com.lalilu.lmusic.domain.entity.LSong
 import java.io.File
 
 class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
@@ -22,6 +21,10 @@ class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
                 "and ${MediaStore.Audio.Artists.ARTIST} != ?"
         selectionArgs =
             arrayOf((500 * 1024).toString(), (30 * 1000).toString(), "<unknown>")
+    }
+
+    override fun onScanStart(totalCount: Int) {
+        onScanCallback?.onScanStart(totalCount)
     }
 
     fun setOnScanCallback(callback: MediaScanner.OnScanCallback<LSong>)
@@ -66,7 +69,7 @@ class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
                 albumTitle = cursor.getString(albumTitleColumn)
             ),
             mLocalInfo = LSong.LocalInfo(
-                mData = uri.toString(),
+                mData = cursor.getString(dataColumn),
                 mSize = cursor.getLong(sizeColumn),
                 mDuration = cursor.getLong(mediaDuration),
                 mMimeType = cursor.getString(mimeTypeColumn)
@@ -78,6 +81,8 @@ class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
             it.mArtUri = BitmapUtils.saveThumbnailToSandBox(
                 mContext, standardDirectory, it.mId, uri
             )
+            println(it.mArtUri)
+
         }
     }
 }

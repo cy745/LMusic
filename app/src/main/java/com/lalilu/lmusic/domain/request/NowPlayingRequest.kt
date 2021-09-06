@@ -1,20 +1,20 @@
 package com.lalilu.lmusic.domain.request
 
+import com.lalilu.lmusic.LMusicPlaylistMMKV
 import com.lalilu.lmusic.domain.BaseRequest
-import com.lalilu.media.LMusicMediaModule
-import com.lalilu.media.entity.Music
+import com.lalilu.lmusic.domain.entity.LSong
 
-class NowPlayingRequest : BaseRequest<Music>() {
-    val database = LMusicMediaModule.getInstance(null).database
+class NowPlayingRequest : BaseRequest<LSong>() {
+    val lMusicPlaylistMMKV = LMusicPlaylistMMKV.getInstance()
 
     override fun requestData(value: Any?) {
-        println(value)
         if (value == null || value !is Long) {
             requestData()
             return
         }
-        val music = database.musicDao().getMusicById(value)
-        if (music != null) postData(music) else requestData()
+
+        val song = lMusicPlaylistMMKV.readLocalSongById(value)
+        if (song != null) setData(song) else requestData()
     }
 
     override fun requestData() {

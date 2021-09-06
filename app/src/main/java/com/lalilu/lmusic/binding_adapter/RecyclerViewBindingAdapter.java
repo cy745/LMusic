@@ -10,18 +10,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.chad.library.adapter.base.BaseNodeAdapter;
 import com.google.android.material.appbar.AppBarLayout;
-import com.lalilu.common.ColorUtils;
 import com.lalilu.lmusic.adapter.LMusicPlayingAdapter;
 import com.lalilu.lmusic.adapter.node.FirstNode;
 import com.lalilu.lmusic.ui.PaletteDraweeView;
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar;
 import com.lalilu.lmusic.utils.ColorAnimator;
-import com.lalilu.media.entity.Music;
-import com.lalilu.media.entity.Playlist;
+import com.lalilu.lmusic.domain.entity.LPlaylist;
+import com.lalilu.lmusic.utils.ColorUtils;
 
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout;
 
 import java.util.List;
+import java.util.Objects;
 
 public class RecyclerViewBindingAdapter {
 
@@ -55,26 +55,26 @@ public class RecyclerViewBindingAdapter {
         seekBar.setThumbColor(ColorUtils.Companion.getAutomaticColor(palette));
     }
 
-    @BindingAdapter(value = {"setMusicList"}, requireAll = false)
-    public static void setMusicList(RecyclerView recyclerView, List<Music> list) {
+    @BindingAdapter(value = {"setLPlaylist"}, requireAll = false)
+    public static void setLPlaylist(RecyclerView recyclerView, LPlaylist list) {
         if (recyclerView.getAdapter() != null && list != null) {
             LMusicPlayingAdapter adapter = (LMusicPlayingAdapter) recyclerView.getAdapter();
 
             if (adapter.getData().size() > 0) {
-                long id = adapter.getData().get(0).getMusicId();
-                adapter.setDiffNewData(list, () -> {
-                    if (id != list.get(0).getMusicId()) {
+                long id = adapter.getData().get(0).getMId();
+                adapter.setDiffNewData(list.getSongs(), () -> {
+                    if (id != Objects.requireNonNull(list.getSongs()).get(0).getMId()) {
                         recyclerView.scrollToPosition(0);
                     }
                 });
             } else {
-                adapter.setDiffNewData(list, () -> recyclerView.scrollToPosition(0));
+                adapter.setDiffNewData(list.getSongs(), () -> recyclerView.scrollToPosition(0));
             }
         }
     }
 
-    @BindingAdapter(value = {"setPlayList"}, requireAll = false)
-    public static void setPlayList(RecyclerView recyclerView, List<FirstNode<Playlist>> list) {
+    @BindingAdapter(value = {"setLPlayLists"}, requireAll = false)
+    public static void setLPlayLists(RecyclerView recyclerView, List<FirstNode<LPlaylist>> list) {
         if (recyclerView.getAdapter() == null || list == null) return;
         ((BaseNodeAdapter) recyclerView.getAdapter()).setList(list);
     }
