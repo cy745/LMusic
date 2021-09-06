@@ -14,13 +14,13 @@ import com.lalilu.R
 import com.lalilu.databinding.ActivityNowBinding
 import com.lalilu.lmusic.base.BaseActivity
 import com.lalilu.lmusic.base.DataBindingConfig
+import com.lalilu.lmusic.domain.entity.LSong
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.service.LMusicService
 import com.lalilu.lmusic.state.MainActivityViewModel
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarChangeListenerAdapter
 import com.lalilu.lmusic.utils.PermissionUtils
-import com.lalilu.lmusic.domain.entity.LSong
 import com.tencent.mmkv.MMKV
 import java.util.*
 
@@ -127,8 +127,8 @@ class LMusicActivity : BaseActivity() {
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
-                            mEvent.allPlaylistRequest.requestData()
-                            mEvent.nowPlaylistRequest.requestData()
+                            mEvent.allPlaylistRequest.requireData()
+                            mEvent.nowPlaylistRequest.requireData()
                         }
 
                         override fun onScanStart(totalCount: Int) {
