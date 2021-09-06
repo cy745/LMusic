@@ -11,21 +11,25 @@ import java.io.FileOutputStream
 
 class BitmapUtils {
     companion object {
+
+        @Throws
         fun saveThumbnailToSandBox(
             context: Context,
             path: File,
             mediaItemId: Long,
             mediaItemUri: Uri
-        ) {
+        ): String? {
             val metadataRetriever = MediaMetadataRetriever()
             metadataRetriever.setDataSource(context, mediaItemUri)
 
-            val embeddedPic = metadataRetriever.embeddedPicture ?: return
+            val embeddedPic = metadataRetriever.embeddedPicture ?: return null
             val outputStream = FileOutputStream("$path/${mediaItemId}")
             outputStream.write(embeddedPic)
             outputStream.flush()
             outputStream.close()
             metadataRetriever.release()
+
+            return "$path/${mediaItemId}"
         }
 
         fun loadThumbnail(path: File, mediaItemId: Long): Uri {
