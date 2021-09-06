@@ -54,7 +54,6 @@ class PlayingFragment : BaseFragment() {
         mAdapter.setOnItemClickListener { adapter, _, position ->
             val song = adapter.data[position] as LSong
 
-            println(song.toString())
             playerModule.mediaController.value?.transportControls
                 ?.playFromMediaId(song.mId.toString(), null)
         }
