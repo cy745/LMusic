@@ -53,6 +53,13 @@
                     app:layout_collapseParallaxMultiplier="0.7"
                     fresco:actualImageScaleType="centerCrop" />
 
+                <com.dirror.lyricviewx.LyricViewX
+                    android:id="@+id/fm_lyric_view_x"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha="0"
+                    app:lrcPadding="48dp" />
+
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/fm_toolbar"
                     android:layout_width="match_parent"
