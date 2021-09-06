@@ -12,11 +12,8 @@ data class LSong(
     var mType: Int = SONG_TYPE_LOCAL,
     var mArtUri: Uri? = null,
     var mArtist: List<Artist>? = null,
-
     var mAlbum: AlbumInfo? = null,
-
     var mLocalInfo: LocalInfo? = null
-
 ) : Parcelable {
 
     fun getArtistText(): String {
@@ -44,7 +41,8 @@ data class LSong(
         var mData: String,
         var mSize: Long = 0,
         var mDuration: Long = 0,
-        var mMimeType: String? = null
+        var mMimeType: String? = null,
+        var mLyric: String? = null
     ) : Parcelable
 
     /**
