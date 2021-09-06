@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 
 abstract class BaseRequest<T> {
     protected val data = MutableLiveData<T>()
+    open fun requireData() {}
     open fun requestData() {}
     open fun requestData(value: Any?) {}
 

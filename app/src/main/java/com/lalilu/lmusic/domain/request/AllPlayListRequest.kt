@@ -8,6 +8,10 @@ class AllPlayListRequest : BaseRequest<ArrayList<LPlaylist>>() {
     private val lMusicPlaylistMMKV = LMusicPlaylistMMKV.getInstance()
 
     override fun requestData() {
+        setData(lMusicPlaylistMMKV.readAllPlaylist().playlists)
+    }
+
+    override fun requireData() {
         postData(lMusicPlaylistMMKV.readAllPlaylist().playlists)
     }
 }

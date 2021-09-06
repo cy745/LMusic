@@ -23,4 +23,8 @@ class NowPlaylistRequest : BaseRequest<LPlaylist>() {
     override fun requestData() {
         setData(lMusicPlaylistMMKV.readLocalPlaylist())
     }
+
+    override fun requireData() {
+        postData(lMusicPlaylistMMKV.readLocalPlaylist())
+    }
 }
