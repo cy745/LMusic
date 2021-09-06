@@ -11,7 +11,7 @@ import com.lalilu.lmusic.utils.ThreadPoolUtils
  *
  */
 abstract class BaseMediaScanner<T> : MediaScanner<T> {
-    private var mExecutor = ThreadPoolUtils.newFixedThreadPool(1)
+    private var mExecutor = ThreadPoolUtils.newCachedThreadPool()
 
     /**
      * contentResolver 所需参数
