@@ -133,7 +133,6 @@ class LMusicActivity : BaseActivity() {
 
                         override fun onScanStart(totalCount: Int) {
                             (application as LMusicApp).playlistMMKV.deleteAllLocalSong()
-                            println("cleared")
                         }
 
                         override fun onScanProgress(nowCount: Int, item: LSong) {

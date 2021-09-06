@@ -1,9 +1,9 @@
 package com.lalilu.lmusic
 
 import android.os.Parcelable
-import com.lalilu.lmusic.utils.SnowFlakeUtils
 import com.lalilu.lmusic.domain.entity.LPlaylist
 import com.lalilu.lmusic.domain.entity.LSong
+import com.lalilu.lmusic.utils.SnowFlakeUtils
 import com.tencent.mmkv.MMKV
 import kotlinx.parcelize.Parcelize
 
@@ -55,7 +55,6 @@ class LMusicPlaylistMMKV private constructor() {
         saveLocalPlaylist(readLocalPlaylist().also {
             it.songs?.clear()
             it.songs = ArrayList()
-            println("clear完成, size: ${it.songs?.size}")
         })
     }
 
@@ -74,7 +73,6 @@ class LMusicPlaylistMMKV private constructor() {
     fun saveSongToLocalPlaylist(song: LSong) {
         saveLocalPlaylist(readLocalPlaylist().also {
             if (it.songs?.indexOf(song) == -1) {
-                println(song.mTitle)
                 it.songs?.add(song)
             }
         })
