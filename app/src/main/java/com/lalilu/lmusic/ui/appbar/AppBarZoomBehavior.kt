@@ -12,11 +12,12 @@ import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce.DAMPING_RATIO_NO_BOUNCY
 import androidx.dynamicanimation.animation.SpringForce.STIFFNESS_LOW
+import com.dirror.lyricviewx.LyricViewX
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.R
-import com.lalilu.lmusic.utils.Mathf
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import com.lalilu.lmusic.ui.appbar.AppBarOnStateChangeListener.Companion.STATE_EXPANDED
+import com.lalilu.lmusic.utils.Mathf
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
 
@@ -26,6 +27,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
     private var mDraweeView: PaletteDraweeView? = null
     private var mSpringAnimation: SpringAnimation? = null
     private var mCollapsingToolbarLayout: CollapsingToolbarLayout? = null
+    private var mLyricViewX: LyricViewX? = null
 
     private var mAppbarHeight = -1
     private var mDraweeHeight = -1
@@ -64,10 +66,12 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
 
         mDraweeView = appBarLayout.findViewById(R.id.fm_top_pic)
         mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.fm_collapse_layout)
+        mLyricViewX = appBarLayout.findViewById(R.id.fm_lyric_view_x)
         nestedChildView = (parent.getChildAt(1) as ViewGroup).getChildAt(0) as ViewGroup?
 
         // 修复 Appbar 收起后无法再次展开的问题
-        mAppbarHeight = if (mAppbarHeight == -1) appBarLayout.height - appBarLayout.totalScrollRange else mAppbarHeight
+        mAppbarHeight =
+            if (mAppbarHeight == -1) appBarLayout.height - appBarLayout.totalScrollRange else mAppbarHeight
         mDraweeHeight = mDraweeView?.height ?: 0
 
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -202,12 +206,17 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
 
         val value = if (animatePercent in 0F..0.5F) animatePercent else 1 - animatePercent
         mCollapsingToolbarLayout?.top = (maxExpandHeight / 2 * value).toInt()
-        mCollapsingToolbarLayout?.bottom = (mDraweeHeight + maxExpandHeight * animatePercent).toInt()
+        mCollapsingToolbarLayout?.bottom =
+            (mDraweeHeight + maxExpandHeight * animatePercent).toInt()
+
+        mLyricViewX?.top = (maxExpandHeight / 4 * animatePercent).toInt()
+        mLyricViewX?.bottom = (mDraweeHeight + maxExpandHeight / 2 * animatePercent).toInt()
 
         // 文字透明过渡插值器
         val interpolation = AccelerateDecelerateInterpolator().getInterpolation(animatePercent)
         val alpha = ((1 - interpolation) * 255).toInt()
         mCollapsingToolbarLayout?.textAlpha(alpha)
+        mLyricViewX?.alpha = interpolation
 
         if (dragPercent.isNaN()) return
         when {
