@@ -54,22 +54,18 @@ data class LSong(
         var name: String
     ) : Parcelable
 
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
         other as LSong
 
-        if (mTitle != other.mTitle) return false
-        if (mType != other.mType) return false
+        if (mId != other.mId) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = mTitle.hashCode()
-        result = 31 * result + mType
-        return result
+        return mId.hashCode()
     }
 }
