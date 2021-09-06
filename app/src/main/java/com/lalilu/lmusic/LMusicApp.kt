@@ -5,7 +5,6 @@ import com.facebook.imagepipeline.core.ImagePipelineConfig
 import com.hjq.permissions.XXPermissions
 import com.lalilu.lmusic.base.BaseApplication
 import com.lalilu.lmusic.service.LMusicPlayerModule
-import com.lalilu.media.LMusicMediaModule
 import com.tencent.mmkv.MMKV
 
 class LMusicApp : BaseApplication() {
@@ -18,10 +17,9 @@ class LMusicApp : BaseApplication() {
         XXPermissions.setScopedStorage(true)
         LMusicPlayerModule.getInstance(this)
 
-        playlistMMKV = LMusicPlaylistMMKV()
+        playlistMMKV = LMusicPlaylistMMKV.getInstance()
         lmusicScanner = LMusicScanner(this)
 
-        LMusicMediaModule.getInstance(this)
         val config = ImagePipelineConfig.newBuilder(this)
             .setDownsampleEnabled(true)
             .build()

@@ -40,7 +40,7 @@ class MainFragment : BaseFragment() {
         mState.nowBgPalette.observe(viewLifecycleOwner) {
             mEvent.nowBgPalette.postValue(it)
         }
-        mEvent.nowPlayingMusic.observe(viewLifecycleOwner) {
+        mEvent.nowPlayingRequest.getData().observe(viewLifecycleOwner) {
             it?.let { mState.nowPlayingMusic.postValue(it) }
         }
         mEvent.pageRequest.getData().observe(viewLifecycleOwner) {

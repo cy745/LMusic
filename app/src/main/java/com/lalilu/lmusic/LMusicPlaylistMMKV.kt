@@ -2,8 +2,8 @@ package com.lalilu.lmusic
 
 import android.os.Parcelable
 import com.lalilu.lmusic.utils.SnowFlakeUtils
-import com.lalilu.media.entity.LPlaylist
-import com.lalilu.media.entity.LSong
+import com.lalilu.lmusic.domain.entity.LPlaylist
+import com.lalilu.lmusic.domain.entity.LSong
 import com.tencent.mmkv.MMKV
 import kotlinx.parcelize.Parcelize
 
@@ -44,9 +44,28 @@ class LMusicPlaylistMMKV private constructor() {
      */
     fun readLocalSongById(id: Long): LSong? {
         readLocalPlaylist().songs?.let { songs ->
-            return songs[songs.indexOf(LSong(id, ""))]
+            val index = songs.indexOf(LSong(id, ""))
+            if (index == -1) return null
+            return songs[index]
         }
         return null
+    }
+
+    fun deleteAllLocalSong() {
+        saveLocalPlaylist(readLocalPlaylist().also {
+            it.songs?.clear()
+            it.songs = ArrayList()
+            println("clear完成, size: ${it.songs?.size}")
+        })
+    }
+
+    /**
+     * 通过Id删除歌曲
+     */
+    fun deleteLocalSongById(id: Long) {
+        saveLocalPlaylist(readLocalPlaylist().also {
+            it.songs?.remove(LSong(id, ""))
+        })
     }
 
     /**
@@ -55,6 +74,7 @@ class LMusicPlaylistMMKV private constructor() {
     fun saveSongToLocalPlaylist(song: LSong) {
         saveLocalPlaylist(readLocalPlaylist().also {
             if (it.songs?.indexOf(song) == -1) {
+                println(song.mTitle)
                 it.songs?.add(song)
             }
         })
@@ -83,8 +103,19 @@ class LMusicPlaylistMMKV private constructor() {
      */
     fun readPlaylistById(id: Long): LPlaylist? {
         readAllPlaylist().also {
-            return it.playlists[it.playlists.indexOf(LPlaylist(id, ""))]
+            val index = it.playlists.indexOf(LPlaylist(id, ""))
+            if (index == -1) return null
+            return it.playlists[index]
         }
+    }
+
+    /**
+     * 通过歌单Id删除歌单
+     */
+    fun deletePlaylistById(id: Long) {
+        saveAllPlaylist(readAllPlaylist().also {
+            it.playlists.remove(LPlaylist(id, ""))
+        })
     }
 
     /**

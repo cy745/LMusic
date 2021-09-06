@@ -3,7 +3,7 @@ package com.lalilu.lmusic
 import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-import com.lalilu.common.ThreadPoolUtils
+import com.lalilu.lmusic.utils.ThreadPoolUtils
 
 /**
  * MediaScanner接口的基础实现，仍需要实现onScanForEach函数，

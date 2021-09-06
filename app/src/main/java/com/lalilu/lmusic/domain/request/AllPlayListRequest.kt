@@ -1,13 +1,13 @@
 package com.lalilu.lmusic.domain.request
 
+import com.lalilu.lmusic.LMusicPlaylistMMKV
 import com.lalilu.lmusic.domain.BaseRequest
-import com.lalilu.media.LMusicMediaModule
-import com.lalilu.media.entity.PlaylistWithMusics
+import com.lalilu.lmusic.domain.entity.LPlaylist
 
-class AllPlayListRequest : BaseRequest<List<PlaylistWithMusics>>() {
+class AllPlayListRequest : BaseRequest<ArrayList<LPlaylist>>() {
+    private val lMusicPlaylistMMKV = LMusicPlaylistMMKV.getInstance()
+
     override fun requestData() {
-        val database = LMusicMediaModule.getInstance(null).database
-        val list = database.playListDao().getPlaylistWithSongs()
-        postData(list)
+        postData(lMusicPlaylistMMKV.readAllPlaylist().playlists)
     }
 }

@@ -1,4 +1,4 @@
-package com.lalilu.common
+package com.lalilu.lmusic.utils
 
 import android.graphics.Color
 import androidx.palette.graphics.Palette

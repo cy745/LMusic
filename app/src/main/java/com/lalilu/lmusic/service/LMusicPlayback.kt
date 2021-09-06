@@ -6,15 +6,16 @@ import android.support.v4.media.MediaMetadataCompat
 import androidx.lifecycle.MutableLiveData
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import com.lalilu.lmusic.state.LMusicServiceViewModel
-import com.lalilu.media.entity.Music
-import com.lalilu.media.toMediaMetaData
+import com.lalilu.lmusic.domain.entity.LPlaylist
+import com.lalilu.lmusic.domain.entity.LSong
+import com.lalilu.lmusic.utils.toMediaMetaData
 
 class LMusicPlayback(
     mContext: Context,
     mState: LMusicServiceViewModel
-) : BasePlayback<Music>(mContext) {
-    override val nowPlaying: MutableLiveData<Music> = mState.nowPlayingMusic
-    override val nowPlaylist: MutableLiveData<List<Music>> = mState.nowPlayingList
+) : BasePlayback<LSong, LPlaylist>(mContext) {
+    override val nowPlaying: MutableLiveData<LSong> = mState.nowPlayingMusic
+    override val nowPlaylist: MutableLiveData<LPlaylist> = mState.nowPlayingList
 
     fun setAudioFocusManager(mAudioFocusManager: LMusicAudioFocusManager): LMusicPlayback {
         this.mAudioFocusManager = mAudioFocusManager
@@ -26,21 +27,33 @@ class LMusicPlayback(
         return this
     }
 
-    override fun getUriFromNowItem(nowPlaying: Music): Uri {
-        return nowPlaying.musicUri
+    override fun getUriFromNowItem(nowPlaying: LSong): Uri {
+        return Uri.parse(nowPlaying.mLocalInfo?.mData)
     }
 
-    override fun getIdFromItem(item: Music): Long {
-        return item.musicId
+    override fun getIdFromItem(item: LSong): Long {
+        return item.mId
     }
 
-    override fun getMetaDataFromItem(item: Music): MediaMetadataCompat {
+    override fun getMetaDataFromItem(item: LSong): MediaMetadataCompat {
         return item.toMediaMetaData()
     }
 
-    override fun getItemById(list: List<Music>, mediaId: Long): Music? {
-        val position = list.indexOf(Music(mediaId))
-        if (position == -1) return null
-        return list[position]
+    override fun getItemById(list: LPlaylist, mediaId: Long): LSong? {
+        val position = list.songs?.indexOf(LSong(mediaId, ""))
+        if (position == -1 || position == null) return null
+        return list.songs?.get(position)
+    }
+
+    override fun getSizeFromList(list: LPlaylist): Int {
+        return list.songs?.size ?: 0
+    }
+
+    override fun getIndexOfFromList(list: LPlaylist, item: LSong): Int {
+        return list.songs?.indexOf(item) ?: -1
+    }
+
+    override fun getItemFromListByIndex(list: LPlaylist, index: Int): LSong {
+        return list.songs?.get(index)!!
     }
 }

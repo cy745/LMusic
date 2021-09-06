@@ -1,4 +1,4 @@
-package com.lalilu.common.bitmap
+package com.lalilu.lmusic.utils
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -18,7 +18,7 @@ class BitmapUtils {
             path: File,
             mediaItemId: Long,
             mediaItemUri: Uri
-        ): String? {
+        ): Uri? {
             val metadataRetriever = MediaMetadataRetriever()
             metadataRetriever.setDataSource(context, mediaItemUri)
 
@@ -29,7 +29,7 @@ class BitmapUtils {
             outputStream.close()
             metadataRetriever.release()
 
-            return "$path/${mediaItemId}"
+            return loadThumbnail(path, mediaItemId)
         }
 
         fun loadThumbnail(path: File, mediaItemId: Long): Uri {

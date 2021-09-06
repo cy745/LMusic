@@ -14,7 +14,7 @@ import androidx.dynamicanimation.animation.SpringForce.DAMPING_RATIO_NO_BOUNCY
 import androidx.dynamicanimation.animation.SpringForce.STIFFNESS_LOW
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.R
-import com.lalilu.common.Mathf
+import com.lalilu.lmusic.utils.Mathf
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import com.lalilu.lmusic.ui.appbar.AppBarOnStateChangeListener.Companion.STATE_EXPANDED
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout

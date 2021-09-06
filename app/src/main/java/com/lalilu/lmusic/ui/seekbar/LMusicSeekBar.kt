@@ -7,7 +7,7 @@ import android.os.SystemClock
 import android.support.v4.media.session.PlaybackStateCompat
 import android.text.TextPaint
 import android.util.AttributeSet
-import com.lalilu.common.TextUtils
+import com.lalilu.lmusic.utils.TextUtils
 import com.lalilu.lmusic.utils.DarkModeUtil
 import java.util.*
 import kotlin.concurrent.schedule
