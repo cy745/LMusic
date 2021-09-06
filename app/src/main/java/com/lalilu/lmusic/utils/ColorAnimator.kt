@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.os.Build
 import android.view.ViewGroup
 import androidx.palette.graphics.Palette
-import com.lalilu.common.getAutomaticColor
 
 class ColorAnimator {
     companion object {
