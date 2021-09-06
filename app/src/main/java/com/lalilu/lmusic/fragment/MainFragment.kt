@@ -1,20 +1,29 @@
 package com.lalilu.lmusic.fragment
 
 import android.os.Bundle
+import android.support.v4.media.session.PlaybackStateCompat
 import android.view.View
 import androidx.databinding.library.baseAdapters.BR
 import androidx.recyclerview.widget.RecyclerView
+import com.dirror.lyricviewx.OnPlayClickListener
 import com.lalilu.R
 import com.lalilu.databinding.FragmentMainBinding
 import com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter
 import com.lalilu.lmusic.base.BaseFragment
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.event.SharedViewModel
+import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.MainViewModel
+import com.lalilu.lmusic.utils.Mathf.Companion.getPositionFromPlaybackStateCompat
+import java.util.*
+import kotlin.concurrent.schedule
 
 class MainFragment : BaseFragment() {
     private lateinit var mState: MainViewModel
     private lateinit var mEvent: SharedViewModel
+    private lateinit var playerModule: LMusicPlayerModule
+    private var positionTimer: Timer? = null
+
 
     private var mPagerAdapter: LMusicFragmentStateAdapter? = null
     override var delayLoadDuration: Long = 100
@@ -22,6 +31,7 @@ class MainFragment : BaseFragment() {
     override fun initViewModel() {
         mState = getFragmentViewModel(MainViewModel::class.java)
         mEvent = getApplicationViewModel(SharedViewModel::class.java)
+        playerModule = LMusicPlayerModule.getInstance(requireActivity().application)
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
@@ -36,6 +46,7 @@ class MainFragment : BaseFragment() {
     override fun loadInitData() {
         val binding = (mBinding as FragmentMainBinding)
         binding.fmTabLayout.bindToViewPager(binding.fmViewpager)
+        binding.fmLyricViewX.setLabel("暂无歌词")
 
         mState.nowBgPalette.observe(viewLifecycleOwner) {
             mEvent.nowBgPalette.postValue(it)
@@ -45,6 +56,23 @@ class MainFragment : BaseFragment() {
         }
         mEvent.pageRequest.getData().observe(viewLifecycleOwner) {
             it?.let { mState.nowPageInt.postValue(it) }
+        }
+        mState.nowPlayingMusic.observe(viewLifecycleOwner) {
+            val lyric = it.mLocalInfo?.mLyric
+            binding.fmLyricViewX.loadLyric(lyric)
+        }
+        playerModule.playBackState.observe(viewLifecycleOwner) {
+            it ?: return@observe
+            var currentDuration = getPositionFromPlaybackStateCompat(it)
+
+            positionTimer?.cancel()
+            if (it.state == PlaybackStateCompat.STATE_PLAYING)
+                positionTimer = Timer().apply {
+                    this.schedule(0, 1000) {
+                        binding.fmLyricViewX.updateTime(currentDuration)
+                        currentDuration += 1000
+                    }
+                }
         }
     }
 
