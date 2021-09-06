@@ -9,11 +9,11 @@ import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.adapter.node.SecondNode
 import com.lalilu.lmusic.base.BaseFragment
 import com.lalilu.lmusic.base.DataBindingConfig
+import com.lalilu.lmusic.domain.entity.LPlaylist
+import com.lalilu.lmusic.domain.entity.LSong
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.PlaylistFragmentViewModel
-import com.lalilu.lmusic.domain.entity.LPlaylist
-import com.lalilu.lmusic.domain.entity.LSong
 
 class PlaylistFragment : BaseFragment() {
     private lateinit var mState: PlaylistFragmentViewModel
@@ -52,7 +52,7 @@ class PlaylistFragment : BaseFragment() {
 
             override fun onDeleted(playlistId: Long) {
                 LMusicPlaylistMMKV.getInstance().deletePlaylistById(playlistId)
-                mEvent.allPlaylistRequest.requestData()
+                mEvent.allPlaylistRequest.requireData()
             }
         }
 
