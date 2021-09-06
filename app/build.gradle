@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-parcelize'
     id 'kotlin-kapt'
 }
 
@@ -24,6 +25,11 @@ android {
         }
     }
 
+    kotlinOptions {
+        jvmTarget = '1.8'
+        useIR = true
+    }
+
     buildTypes {
         release {
             minifyEnabled true
@@ -35,9 +41,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
 }
 
 dependencies {
@@ -48,7 +51,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.tencent/mmkv
     // https://github.com/Tencent/MMKV
     // BSD License
-    implementation 'com.tencent:mmkv:1.2.10'
+    implementation 'com.tencent:mmkv-static:1.2.10'
 
     // https://github.com/CymChad/BaseRecyclerViewAdapterHelper
     // MIT License
