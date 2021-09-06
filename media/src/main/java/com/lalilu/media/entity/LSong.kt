@@ -6,7 +6,7 @@ import androidx.room.Embedded
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Song(
+data class LSong(
     var mTitle: String,
     var mType: Int = SONG_TYPE_LOCAL,
     var mArtUri: String? = null,
@@ -47,7 +47,7 @@ data class Song(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as Song
+        other as LSong
 
         if (mTitle != other.mTitle) return false
         if (mType != other.mType) return false
