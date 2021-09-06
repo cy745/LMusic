@@ -7,20 +7,31 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class LSong(
+    var mId: Long,
     var mTitle: String,
     var mType: Int = SONG_TYPE_LOCAL,
     var mArtUri: String? = null,
     var mArtist: ArrayList<Artist>? = null,
 
     @Embedded
-    var mLocalInfo: LocalInfo?
+    var mAlbum: AlbumInfo? = null,
+
+    @Embedded
+    var mLocalInfo: LocalInfo? = null
 
 ) : Parcelable {
 
     companion object {
         const val SONG_TYPE_LOCAL = 0
         const val SONG_TYPE_NETWORK = 1
+
     }
+
+    @Parcelize
+    data class AlbumInfo(
+        var albumId: Long = 0,
+        var albumTitle: String? = null
+    ) : Parcelable
 
     /**
      * 本地信息
@@ -29,7 +40,8 @@ data class LSong(
     data class LocalInfo(
         var mData: String,
         var mSize: Long = 0,
-        var mDuration: Long = 0
+        var mDuration: Long = 0,
+        var mMimeType: String? = null
     ) : Parcelable {
         fun getUri(): Uri = Uri.parse(mData)
     }
