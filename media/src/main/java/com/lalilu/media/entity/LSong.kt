@@ -11,7 +11,7 @@ data class LSong(
     var mTitle: String,
     var mType: Int = SONG_TYPE_LOCAL,
     var mArtUri: String? = null,
-    var mArtist: ArrayList<Artist>? = null,
+    var mArtist: List<Artist>? = null,
 
     @Embedded
     var mAlbum: AlbumInfo? = null,
