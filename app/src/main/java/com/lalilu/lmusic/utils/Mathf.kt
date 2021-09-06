@@ -1,5 +1,8 @@
 package com.lalilu.lmusic.utils
 
+import android.os.SystemClock
+import android.support.v4.media.session.PlaybackStateCompat
+
 class Mathf {
     companion object {
         fun <T : Number> clamp(min: T, max: T, num: T): T {
@@ -18,6 +21,12 @@ class Mathf {
             if (num + offset < min) return max + (num + offset) + 1
             if (num + offset > max) return min + (num + offset - max) - 1
             return num + offset
+        }
+
+        fun getPositionFromPlaybackStateCompat(playbackStateCompat: PlaybackStateCompat): Long {
+            return playbackStateCompat.position +
+                    (playbackStateCompat.playbackSpeed *
+                            (SystemClock.elapsedRealtime() - playbackStateCompat.lastPositionUpdateTime)).toLong()
         }
     }
 }

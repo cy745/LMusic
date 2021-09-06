@@ -3,12 +3,12 @@ package com.lalilu.lmusic.ui.seekbar
 import android.app.Activity
 import android.content.Context
 import android.graphics.*
-import android.os.SystemClock
 import android.support.v4.media.session.PlaybackStateCompat
 import android.text.TextPaint
 import android.util.AttributeSet
-import com.lalilu.lmusic.utils.TextUtils
 import com.lalilu.lmusic.utils.DarkModeUtil
+import com.lalilu.lmusic.utils.Mathf.Companion.getPositionFromPlaybackStateCompat
+import com.lalilu.lmusic.utils.TextUtils
 import java.util.*
 import kotlin.concurrent.schedule
 
@@ -159,9 +159,5 @@ class LMusicSeekBar @JvmOverloads constructor(
             textCenterHeight,
             textPaintWhite
         )
-    }
-
-    private fun getPositionFromPlaybackStateCompat(playbackStateCompat: PlaybackStateCompat): Long {
-        return playbackStateCompat.position + (playbackStateCompat.playbackSpeed * (SystemClock.elapsedRealtime() - playbackStateCompat.lastPositionUpdateTime)).toLong()
     }
 }
