@@ -140,7 +140,6 @@ class LMusicService : BaseService() {
         }
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-            println(mediaId)
             playback.playByMediaId(mediaId?.toLong())
         }
 
