@@ -236,14 +236,18 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
     }
 
     private fun onDragToTop(view: View) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
+        } else {
+            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
         }
     }
 
     private fun onDragToBottom(view: View) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
+        } else {
+            view.performHapticFeedback(31011)
         }
     }
 
