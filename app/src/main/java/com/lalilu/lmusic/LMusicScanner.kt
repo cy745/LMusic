@@ -93,9 +93,8 @@ class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
             try {
                 // TODO: 2021/9/6 仍有部分歌曲无法获取到内嵌歌词,原因查明： LyricViewX 无法显示 USLT 歌词
                 val audioTag = AudioFileIO.read(File(it.mLocalInfo!!.mData)).tag
-                audioTag.getFields(FieldKey.LYRICS).apply {
-                    if (this.isNotEmpty()) it.mLocalInfo?.mLyric = this[0].toString()
-                }
+                val lyric = audioTag.getFields(FieldKey.LYRICS)
+                if (lyric.isNotEmpty()) it.mLocalInfo?.mLyric = lyric[0].toString()
             } catch (e: Exception) {
                 println("audioFile:" + e.message)
             }
