@@ -39,6 +39,7 @@ data class LSong(
     @Parcelize
     data class LocalInfo(
         var mData: String,
+        var mUri: Uri,
         var mSize: Long = 0,
         var mDuration: Long = 0,
         var mMimeType: String? = null,
