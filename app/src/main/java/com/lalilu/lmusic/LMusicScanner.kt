@@ -77,6 +77,7 @@ class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
                 albumTitle = cursor.getString(albumTitleColumn)
             ),
             mLocalInfo = LSong.LocalInfo(
+                mUri = uri,
                 mData = cursor.getString(dataColumn),
                 mSize = cursor.getLong(sizeColumn),
                 mDuration = cursor.getLong(mediaDuration),
