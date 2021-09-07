@@ -23,5 +23,10 @@
 # BaseRecyclerViewAdapterHelper 混淆
 # https://github.com/CymChad/BaseRecyclerViewAdapterHelper/blob/master/library/proguard-rules.pro
 -keep class com.chad.library.adapter.** {
-*;
+    *;
+}
+
+# jaudiotagger release打包后可能会出现MP3格式无法读取歌词的问题
+-keep class org.jaudiotagger.tag.** {
+    *;
 }
