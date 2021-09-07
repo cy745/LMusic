@@ -2,13 +2,10 @@ package com.lalilu.lmusic
 
 import android.media.AudioManager
 import android.media.MediaMetadata
-import android.os.Build
 import android.os.Bundle
-import android.view.HapticFeedbackConstants
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.databinding.library.baseAdapters.BR
 import com.lalilu.R
 import com.lalilu.databinding.ActivityNowBinding
@@ -20,6 +17,7 @@ import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.service.LMusicService
 import com.lalilu.lmusic.state.MainActivityViewModel
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarChangeListenerAdapter
+import com.lalilu.lmusic.utils.HapticUtils
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.tencent.mmkv.MMKV
 import java.util.*
@@ -65,27 +63,23 @@ class LMusicActivity : BaseActivity() {
                 playerModule.mediaController.value?.transportControls?.seekTo(position)
             }
 
-            @RequiresApi(Build.VERSION_CODES.O_MR1)
             override fun onClick() {
                 playerModule.mediaController.value?.transportControls?.sendCustomAction(
                     LMusicService.ACTION_PLAY_PAUSE, null
                 )
-                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
+                HapticUtils.haptic(seekBar.rootView)
             }
 
-            @RequiresApi(Build.VERSION_CODES.O_MR1)
             override fun onProgressToMax() {
-                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
+                HapticUtils.haptic(seekBar.rootView)
             }
 
-            @RequiresApi(Build.VERSION_CODES.O_MR1)
             override fun onProgressToMin() {
-                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
+                HapticUtils.haptic(seekBar.rootView)
             }
 
-            @RequiresApi(Build.VERSION_CODES.O_MR1)
             override fun onProgressToMiddle() {
-                seekBar.rootView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
+                HapticUtils.haptic(seekBar.rootView)
             }
         }
 
