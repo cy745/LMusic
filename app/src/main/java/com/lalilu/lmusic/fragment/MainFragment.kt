@@ -5,7 +5,6 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.view.View
 import androidx.databinding.library.baseAdapters.BR
 import androidx.recyclerview.widget.RecyclerView
-import com.dirror.lyricviewx.OnPlayClickListener
 import com.lalilu.R
 import com.lalilu.databinding.FragmentMainBinding
 import com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter
@@ -23,7 +22,6 @@ class MainFragment : BaseFragment() {
     private lateinit var mEvent: SharedViewModel
     private lateinit var playerModule: LMusicPlayerModule
     private var positionTimer: Timer? = null
-
 
     private var mPagerAdapter: LMusicFragmentStateAdapter? = null
     override var delayLoadDuration: Long = 100
