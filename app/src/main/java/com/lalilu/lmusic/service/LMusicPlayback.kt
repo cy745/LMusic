@@ -4,10 +4,10 @@ import android.content.Context
 import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
 import androidx.lifecycle.MutableLiveData
-import com.lalilu.lmusic.manager.LMusicAudioFocusManager
-import com.lalilu.lmusic.state.LMusicServiceViewModel
 import com.lalilu.lmusic.domain.entity.LPlaylist
 import com.lalilu.lmusic.domain.entity.LSong
+import com.lalilu.lmusic.manager.LMusicAudioFocusManager
+import com.lalilu.lmusic.state.LMusicServiceViewModel
 import com.lalilu.lmusic.utils.toMediaMetaData
 
 class LMusicPlayback(
@@ -28,7 +28,8 @@ class LMusicPlayback(
     }
 
     override fun getUriFromNowItem(nowPlaying: LSong): Uri {
-        return Uri.parse(nowPlaying.mLocalInfo?.mData)
+//        return Uri.parse(nowPlaying.mLocalInfo?.mData)
+        return nowPlaying.mLocalInfo?.mUri!!
     }
 
     override fun getIdFromItem(item: LSong): Long {
