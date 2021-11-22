@@ -67,7 +67,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         mDraweeView = appBarLayout.findViewById(R.id.fm_top_pic)
         mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.fm_collapse_layout)
         mLyricViewX = appBarLayout.findViewById(R.id.fm_lyric_view_x)
-        nestedChildView = (parent.getChildAt(1) as ViewGroup).getChildAt(0) as ViewGroup?
+        nestedChildView = parent.getChildAt(1) as ViewGroup
 
         // 修复 Appbar 收起后无法再次展开的问题
         mAppbarHeight =
