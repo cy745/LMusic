@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fresco="http://schemas.android.com/apk/res-auto">
 
     <data>
 
@@ -14,16 +15,88 @@
 
     </data>
 
-    <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
-        android:id="@+id/nowPlayingRecyclerView"
+    <com.lalilu.lmusic.ui.MyCoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:fillViewport="true"
-        android:overScrollMode="never"
-        android:paddingBottom="128dp"
-        app:adapter="@{playingAdapter}"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:setLPlaylist="@{vm.musicList}" />
+        android:fitsSystemWindows="true"
+        android:overScrollMode="never">
+
+        <com.lalilu.lmusic.ui.appbar.SquareAppBarLayout
+            android:id="@+id/fm_appbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimaryVariant"
+            android:fitsSystemWindows="true"
+            app:bgPalette="@{vm.nowBgPalette}"
+            app:layout_behavior="com.lalilu.lmusic.ui.appbar.AppBarZoomBehavior">
+
+            <net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
+                android:id="@+id/fm_collapse_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:bindTitle="@{vm.nowPlayingMusic.mTitle}"
+                app:collapsedTitleTextAppearance="@style/collapsedTitleText"
+                app:contentScrim="@android:color/transparent"
+                app:expandedTitleTextAppearance="@style/expandedTitleText"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+                app:statusBarScrim="@android:color/transparent">
+
+                <com.lalilu.lmusic.ui.PaletteDraweeView
+                    android:id="@+id/fm_top_pic"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="top"
+                    android:fitsSystemWindows="true"
+                    app:artUri="@{vm.nowPlayingMusic.mArtUri}"
+                    app:bgPaletteLiveData="@{vm.nowBgPalette}"
+                    app:callerContext="@{context}"
+                    app:layout_collapseMode="parallax"
+                    app:layout_collapseParallaxMultiplier="0.7"
+                    fresco:actualImageScaleType="centerCrop" />
+
+                <com.dirror.lyricviewx.LyricViewX
+                    android:id="@+id/fm_lyric_view_x"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha="0"
+                    app:lrcPadding="48dp" />
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/fm_toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:minHeight="?attr/actionBarSize"
+                    app:layout_collapseMode="pin"
+                    app:title="@string/default_slogan" />
+
+                <!--                <com.lalilu.lmusic.ui.LMusicTabLayout-->
+                <!--                    android:id="@+id/fm_tab_layout"-->
+                <!--                    android:layout_width="wrap_content"-->
+                <!--                    android:layout_height="wrap_content"-->
+                <!--                    android:layout_gravity="top"-->
+                <!--                    android:layout_marginTop="5dp"-->
+                <!--                    app:layout_collapseMode="parallax"-->
+                <!--                    app:layout_collapseParallaxMultiplier="0.6"-->
+                <!--                    app:tabIndicatorColor="@android:color/transparent"-->
+                <!--                    app:tabIndicatorFullWidth="false"-->
+                <!--                    app:tabMode="scrollable"-->
+                <!--                    app:tabRippleColor="#10FFFFFF"-->
+                <!--                    app:tabUnboundedRipple="false" />-->
+            </net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout>
+        </com.lalilu.lmusic.ui.appbar.SquareAppBarLayout>
+
+        <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
+            android:id="@+id/nowPlayingRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:paddingBottom="128dp"
+            app:adapter="@{playingAdapter}"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+            app:setLPlaylist="@{vm.musicList}" />
+    </com.lalilu.lmusic.ui.MyCoordinatorLayout>
 
 </layout>
