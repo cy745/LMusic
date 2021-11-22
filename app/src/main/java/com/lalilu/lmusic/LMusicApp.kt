@@ -5,6 +5,7 @@ import com.facebook.imagepipeline.core.ImagePipelineConfig
 import com.hjq.permissions.XXPermissions
 import com.lalilu.lmusic.base.BaseApplication
 import com.lalilu.lmusic.service.LMusicPlayerModule
+import com.lalilu.lmusic.utils.scanner.LMusicScanner
 import com.tencent.mmkv.MMKV
 
 class LMusicApp : BaseApplication() {
