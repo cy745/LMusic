@@ -19,6 +19,7 @@ import com.lalilu.lmusic.state.MainActivityViewModel
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarChangeListenerAdapter
 import com.lalilu.lmusic.utils.HapticUtils
 import com.lalilu.lmusic.utils.PermissionUtils
+import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.scanner.MediaScanner
 import com.tencent.mmkv.MMKV
 import java.util.*
@@ -39,6 +40,7 @@ class LMusicActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        StatusBarUtil.immerseStatusBar(this)
         playerModule = LMusicPlayerModule.getInstance(application)
         playerModule.initMusicBrowser(this)
         PermissionUtils.requestPermission(this)
