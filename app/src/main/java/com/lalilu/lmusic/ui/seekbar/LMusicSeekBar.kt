@@ -6,8 +6,8 @@ import android.graphics.*
 import android.support.v4.media.session.PlaybackStateCompat
 import android.text.TextPaint
 import android.util.AttributeSet
-import com.lalilu.lmusic.utils.DarkModeUtil
 import com.lalilu.lmusic.utils.Mathf.Companion.getPositionFromPlaybackStateCompat
+import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.TextUtils
 import java.util.*
 import kotlin.concurrent.schedule
@@ -133,7 +133,7 @@ class LMusicSeekBar @JvmOverloads constructor(
         nowDurationTextOffset =
             if (offsetTemp < progressWidth) progressWidth else offsetTemp
         textPaintDayNight.color =
-            if (DarkModeUtil.isDarkMode(context as Activity)) Color.WHITE else Color.BLACK
+            if (StatusBarUtil.isDarkMode(context as Activity)) Color.WHITE else Color.BLACK
 
         canvas.clipPath(path)
 
