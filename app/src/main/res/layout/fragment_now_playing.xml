@@ -30,7 +30,7 @@
             app:bgPalette="@{vm.nowBgPalette}"
             app:layout_behavior="com.lalilu.lmusic.ui.appbar.AppBarZoomBehavior">
 
-            <net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
+            <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/fm_collapse_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -39,6 +39,7 @@
                 app:contentScrim="@android:color/transparent"
                 app:expandedTitleTextAppearance="@style/expandedTitleText"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+                app:maxLines="5"
                 app:statusBarScrim="@android:color/transparent">
 
                 <com.lalilu.lmusic.ui.PaletteDraweeView
@@ -82,7 +83,7 @@
                 <!--                    app:tabMode="scrollable"-->
                 <!--                    app:tabRippleColor="#10FFFFFF"-->
                 <!--                    app:tabUnboundedRipple="false" />-->
-            </net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout>
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.lalilu.lmusic.ui.appbar.SquareAppBarLayout>
 
         <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView

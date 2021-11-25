@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.ui.appbar
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.util.AttributeSet
@@ -14,11 +15,11 @@ import androidx.dynamicanimation.animation.SpringForce.DAMPING_RATIO_NO_BOUNCY
 import androidx.dynamicanimation.animation.SpringForce.STIFFNESS_LOW
 import com.dirror.lyricviewx.LyricViewX
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import com.lalilu.lmusic.ui.appbar.AppBarOnStateChangeListener.Companion.STATE_EXPANDED
 import com.lalilu.lmusic.utils.Mathf
-import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout
 
 
 class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = null) :
@@ -178,6 +179,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
     /**
      *  重新定位各个控件的大小和位置
      */
+    @SuppressLint("RestrictedApi")
     private fun resizeChild(abl: AppBarLayout, nextPosition: Int) {
         val appbar = (abl as SquareAppBarLayout)
 
@@ -208,7 +210,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         val interpolation = AccelerateDecelerateInterpolator().getInterpolation(animatePercent)
         val alphaPercentDecrease = (1F - interpolation * 2).coerceAtLeast(0F)
         val alphaPercentIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
-        mCollapsingToolbarLayout?.textAlphaHelper?.updateTextAlpha((alphaPercentDecrease * 255).toInt())
+        mCollapsingToolbarLayout?.collapsingTextHelper?.textAlphaHelper?.updateTextAlpha((alphaPercentDecrease * 255).toInt())
         mLyricViewX?.alpha = alphaPercentIncrease
 
         // 根据 offsetPosition 计算出拖动时与最近边距离的百分比
