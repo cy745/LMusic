@@ -18,8 +18,8 @@ android {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 8
-        versionName "1.3.3_debug"
+        versionCode 9
+        versionName "1.3.4_debug"
         ndk {
             abiFilters "armeabi-v7a"
         }
