@@ -208,7 +208,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         val interpolation = AccelerateDecelerateInterpolator().getInterpolation(animatePercent)
         val alphaPercentDecrease = (1F - interpolation * 2).coerceAtLeast(0F)
         val alphaPercentIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
-        mCollapsingToolbarLayout?.textAlpha((alphaPercentDecrease * 255).toInt())
+        mCollapsingToolbarLayout?.textAlphaHelper?.updateTextAlpha((alphaPercentDecrease * 255).toInt())
         mLyricViewX?.alpha = alphaPercentIncrease
 
         // 根据 offsetPosition 计算出拖动时与最近边距离的百分比
