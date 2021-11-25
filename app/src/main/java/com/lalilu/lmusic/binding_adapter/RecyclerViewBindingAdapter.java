@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.chad.library.adapter.base.BaseNodeAdapter;
 import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.lalilu.lmusic.adapter.LMusicPlayingAdapter;
 import com.lalilu.lmusic.adapter.node.FirstNode;
 import com.lalilu.lmusic.domain.entity.LPlaylist;
@@ -18,7 +19,6 @@ import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar;
 import com.lalilu.lmusic.utils.ColorAnimator;
 import com.lalilu.lmusic.utils.ColorUtils;
 
-import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout;
 
 import java.util.List;
 import java.util.Objects;
