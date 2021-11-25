@@ -12,10 +12,10 @@ import com.chad.library.adapter.base.BaseNodeAdapter;
 import com.google.android.material.appbar.AppBarLayout;
 import com.lalilu.lmusic.adapter.LMusicPlayingAdapter;
 import com.lalilu.lmusic.adapter.node.FirstNode;
+import com.lalilu.lmusic.domain.entity.LPlaylist;
 import com.lalilu.lmusic.ui.PaletteDraweeView;
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar;
 import com.lalilu.lmusic.utils.ColorAnimator;
-import com.lalilu.lmusic.domain.entity.LPlaylist;
 import com.lalilu.lmusic.utils.ColorUtils;
 
 import net.opacapp.multilinecollapsingtoolbar.CollapsingToolbarLayout;
@@ -52,7 +52,7 @@ public class RecyclerViewBindingAdapter {
     @BindingAdapter(value = {"bgPalette"}, requireAll = false)
     public static void setSeekBarBGColor(LMusicSeekBar seekBar, Palette palette) {
         if (palette == null) return;
-        seekBar.setThumbColor(ColorUtils.Companion.getAutomaticColor(palette));
+        seekBar.setThumbColor(ColorUtils.INSTANCE.getAutomaticColor(palette));
     }
 
     @BindingAdapter(value = {"setLPlaylist"}, requireAll = false)
