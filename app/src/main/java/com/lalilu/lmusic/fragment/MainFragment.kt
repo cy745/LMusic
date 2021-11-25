@@ -10,21 +10,18 @@ import com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter
 import com.lalilu.lmusic.base.BaseFragment
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.event.SharedViewModel
-import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.MainViewModel
 
 class MainFragment : BaseFragment() {
     private lateinit var mState: MainViewModel
     private lateinit var mEvent: SharedViewModel
-    private lateinit var playerModule: LMusicPlayerModule
 
     private var mPagerAdapter: LMusicFragmentStateAdapter? = null
-    override var delayLoadDuration: Long = 100
+    override var delayLoadDuration: Long = 0
 
     override fun initViewModel() {
         mState = getFragmentViewModel(MainViewModel::class.java)
         mEvent = getApplicationViewModel(SharedViewModel::class.java)
-        playerModule = LMusicPlayerModule.getInstance(requireActivity().application)
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
