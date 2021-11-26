@@ -13,7 +13,6 @@ import com.lalilu.lmusic.base.BaseActivity
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.domain.entity.LSong
 import com.lalilu.lmusic.event.SharedViewModel
-import com.lalilu.lmusic.fragment.MainFragment
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.MainActivityViewModel
 import com.lalilu.lmusic.utils.DeviceUtil
@@ -130,13 +129,16 @@ class LMusicActivity : BaseActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         val manager = supportFragmentManager
-        val oldOne = manager.findFragmentById(R.id.fragment_main)
+        val refreshList = listOf(
+            R.id.fragment_main
+        )
 
-        oldOne.let {
-            manager.beginTransaction()
-                .remove(it!!)
-                .add(R.id.fragment_main, MainFragment())
-                .commit()
+        val trans = manager.beginTransaction()
+        refreshList.forEach { id ->
+            manager.findFragmentById(id)?.let {
+                trans.remove(it).add(id, it.javaClass.newInstance())
+            }
         }
+        trans.commit()
     }
 }
