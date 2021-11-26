@@ -1,8 +1,6 @@
 package com.lalilu.lmusic.fragment
 
-import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
-import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.BR
 import com.lalilu.R
@@ -27,8 +25,6 @@ class PlayingFragment : BaseFragment() {
     private lateinit var mAdapter: LMusicPlayingAdapter
     private lateinit var playerModule: LMusicPlayerModule
     private var positionTimer: Timer? = null
-
-    override var delayLoadDuration: Long = 100
 
     override fun initViewModel() {
         mState = getFragmentViewModel(PlayingFragmentViewModel::class.java)
@@ -72,15 +68,9 @@ class PlayingFragment : BaseFragment() {
     }
 
     override fun loadInitData() {
-        mAdapter.draggableModule.attachToRecyclerView((mBinding as FragmentNowPlayingBinding).nowPlayingRecyclerView)
-
         mEvent.nowPlaylistRequest.getData().observe(viewLifecycleOwner) {
             mState.musicList.value = it
         }
-
-        val binding = (mBinding as FragmentNowPlayingBinding)
-//        binding.fmTabLayout.bindToViewPager(binding.fmViewpager)
-        binding.fmLyricViewX.setLabel("暂无歌词")
 
         mState.nowBgPalette.observe(viewLifecycleOwner) {
             mEvent.nowBgPalette.postValue(it)
@@ -90,11 +80,13 @@ class PlayingFragment : BaseFragment() {
         }
         mState.nowPlayingMusic.observe(viewLifecycleOwner) {
             val lyric = it.mLocalInfo?.mLyric
+            val binding = (mBinding as FragmentNowPlayingBinding)
             binding.fmLyricViewX.loadLyric(lyric)
         }
         playerModule.playBackState.observe(viewLifecycleOwner) {
             it ?: return@observe
             var currentDuration = Mathf.getPositionFromPlaybackStateCompat(it)
+            val binding = (mBinding as FragmentNowPlayingBinding)
 
             positionTimer?.cancel()
             if (it.state == PlaybackStateCompat.STATE_PLAYING)
@@ -107,9 +99,10 @@ class PlayingFragment : BaseFragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun loadInitView() {
         val binding = (mBinding as FragmentNowPlayingBinding)
         mActivity!!.setSupportActionBar(binding.fmToolbar)
+        mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)
+        binding.fmLyricViewX.setLabel("暂无歌词")
     }
 }

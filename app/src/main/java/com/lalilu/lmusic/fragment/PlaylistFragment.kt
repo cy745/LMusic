@@ -14,13 +14,15 @@ import com.lalilu.lmusic.domain.entity.LSong
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.PlaylistFragmentViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class PlaylistFragment : BaseFragment() {
     private lateinit var mState: PlaylistFragmentViewModel
     private lateinit var mEvent: SharedViewModel
     private lateinit var mAdapter: LMusicPlaylistAdapter
     private lateinit var playerModule: LMusicPlayerModule
-    override var delayLoadDuration: Long = 100
 
     override fun initViewModel() {
         mState = getFragmentViewModel(PlaylistFragmentViewModel::class.java)
@@ -61,8 +63,6 @@ class PlaylistFragment : BaseFragment() {
     }
 
     override fun loadInitData() {
-        mAdapter.setEmptyView(R.layout.item_empty_view)
-
         // 根据获取到的 playlists 构建歌单在 RecyclerView 中的层级结构
         mEvent.allPlaylistRequest.getData().observe(viewLifecycleOwner) {
             mState.playlist.postValue(it.map { lPlaylist ->
@@ -73,5 +73,11 @@ class PlaylistFragment : BaseFragment() {
         }
         // 请求更新获取 playlists
         mEvent.allPlaylistRequest.requestData()
+    }
+
+    override fun loadInitView() {
+        GlobalScope.launch(Dispatchers.Main) {
+            mAdapter.setEmptyView(R.layout.item_empty_view)
+        }
     }
 }
