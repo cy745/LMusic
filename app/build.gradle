@@ -72,7 +72,8 @@ dependencies {
     implementation 'com.github.getActivity:XXPermissions:11.0'
 
     // Apache-2.0
-    implementation 'com.facebook.fresco:fresco:2.5.0'
+    implementation 'com.facebook.infer.annotation:infer-annotation:0.18.0'
+    implementation 'com.facebook.fresco:fresco:2.6.0'
 
     // Apache-2.0
     implementation "com.alibaba:fastjson:$fastjson_version"
@@ -89,5 +90,8 @@ dependencies {
     implementation 'androidx.palette:palette-ktx:1.0.0'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
 
+    // https://mvnrepository.com/artifact/com.google.android.material/material
+    // implementation 'com.google.android.material:material:1.4.0'
+    // Apache-2.0
     implementation 'com.github.cy745:material-components-android:1.4.0-self02'
 }

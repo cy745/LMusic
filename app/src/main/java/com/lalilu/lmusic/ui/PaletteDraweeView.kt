@@ -90,8 +90,10 @@ class PaletteDraweeView @JvmOverloads constructor(
             samplingBitmap = null
         }
 
-        val controllerBuilder = controllerBuilder
-        controllerBuilder.setOldController(controller).callerContext = callerContext
+        callerContext?.let {
+            controllerBuilder.setOldController(controller)
+                .setCallerContext(callerContext)
+        }
 
         val imageRequestBuilder = ImageRequestBuilder.newBuilderWithSource(uri)
             .setLowestPermittedRequestLevel(ImageRequest.RequestLevel.FULL_FETCH)
