@@ -65,6 +65,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         mDraweeView = appBarLayout.findViewById(R.id.fm_top_pic)
         mLyricViewX = appBarLayout.findViewById(R.id.fm_lyric_view_x)
         nestedChildView = parent.getChildAt(1) as ViewGroup
+        mLyricViewX?.layoutParams?.height = DeviceUtil.getHeight(context)
 
         mDraweeHeight = mDraweeView?.height ?: 0
         maxExpandHeight = DeviceUtil.getHeight(context) - AppBarStatusHelper.normalHeight
@@ -148,8 +149,8 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         mCollapsingToolbarLayout?.bottom =
             (mDraweeHeight + maxExpandHeight * animatePercent).toInt()
 
-        mLyricViewX?.top = (maxExpandHeight / 4 * animatePercent).toInt()
-        mLyricViewX?.bottom = (mDraweeHeight + maxExpandHeight / 2 * animatePercent).toInt()
+//        mLyricViewX?.top = (maxExpandHeight / 4 * animatePercent).toInt()
+//        mLyricViewX?.bottom = (mDraweeHeight + maxExpandHeight / 2 * animatePercent).toInt()
 
         // 文字透明过渡插值器
         val interpolation = AccelerateDecelerateInterpolator().getInterpolation(animatePercent)
