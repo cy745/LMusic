@@ -4,10 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
@@ -18,25 +18,27 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
 import com.lalilu.lmusic.ui.PaletteDraweeView
-import com.lalilu.lmusic.ui.appbar.AppBarOnStateChangeListener.Companion.STATE_EXPANDED
+import com.lalilu.lmusic.utils.DeviceUtil
 import com.lalilu.lmusic.utils.Mathf
 
 
 class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = null) :
-    AppBarLayout.Behavior(context, attrs) {
+    AppBarLayout.Behavior(context, attrs), GestureDetector.OnGestureListener {
 
     private var mDraweeView: PaletteDraweeView? = null
     private var mSpringAnimation: SpringAnimation? = null
     private var mCollapsingToolbarLayout: CollapsingToolbarLayout? = null
     private var mLyricViewX: LyricViewX? = null
+    private var nestedChildView: ViewGroup? = null
 
-    private var mAppbarHeight = -1
     private var mDraweeHeight = -1
     private var maxExpandHeight = 200
     private var maxDragHeight = 200
 
     private var fullyExpend = false
-    private var mAppbarState = STATE_EXPANDED
+
+    private var gestureDetector = GestureDetectorCompat(context, this)
+    private lateinit var appBarStatusHelper: AppBarStatusHelper
 
     /**
      *  在布局子控件时进行初始化
@@ -55,75 +57,27 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
      */
     private fun initialize(parent: CoordinatorLayout, appBarLayout: AppBarLayout) {
         appBarLayout.clipChildren = false
-        appBarLayout.addOnOffsetChangedListener(object : AppBarOnStateChangeListener() {
-            override fun onStateChanged(appBarLayout: AppBarLayout?, state: Int) {
-                mAppbarState = state
-            }
+        appBarStatusHelper = AppBarStatusHelper.initial(appBarLayout) { percent ->
+            mDraweeView?.let { it.alpha = percent }
+        }
 
-            override fun onStatePercentage(percent: Float) {
-                mDraweeView?.let { it.alpha = percent }
-            }
-        })
-
-        mDraweeView = appBarLayout.findViewById(R.id.fm_top_pic)
         mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.fm_collapse_layout)
+        mDraweeView = appBarLayout.findViewById(R.id.fm_top_pic)
         mLyricViewX = appBarLayout.findViewById(R.id.fm_lyric_view_x)
         nestedChildView = parent.getChildAt(1) as ViewGroup
 
-        // 修复 Appbar 收起后无法再次展开的问题
-        mAppbarHeight =
-            if (mAppbarHeight == -1) appBarLayout.height - appBarLayout.totalScrollRange else mAppbarHeight
         mDraweeHeight = mDraweeView?.height ?: 0
-
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        maxExpandHeight = when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
-                val height = windowManager.currentWindowMetrics.bounds.height()
-                height - mDraweeHeight
-            }
-            else -> {
-                val outMetrics = DisplayMetrics()
-                windowManager.defaultDisplay.getRealMetrics(outMetrics)
-                outMetrics.heightPixels - mDraweeHeight
-            }
-        }
+        maxExpandHeight = DeviceUtil.getHeight(context) - AppBarStatusHelper.normalHeight
     }
-
-    private var lastX = -1F
-    private var lastY = -1F
-    private var nestedChildView: ViewGroup? = null
 
     /**
      *  记录 AppBar 区域上手指的滑动，并传递给 Appbar 的 child 使其模拟嵌套滑动
      */
     override fun onTouchEvent(
-        parent: CoordinatorLayout,
-        child: AppBarLayout,
-        ev: MotionEvent
+        parent: CoordinatorLayout, child: AppBarLayout, ev: MotionEvent
     ): Boolean {
-        nestedChildView ?: return super.onTouchEvent(parent, child, ev)
-
-        when (ev.action) {
-            MotionEvent.ACTION_DOWN -> {
-                lastY = ev.rawY
-                lastX = ev.rawX
-                nestedChildView!!.startNestedScroll(
-                    ViewCompat.SCROLL_AXIS_VERTICAL
-                )
-            }
-            MotionEvent.ACTION_MOVE -> {
-                val dy = -(ev.rawY - lastY).toInt()
-                nestedChildScrollBy(nestedChildView!!, dy)
-                lastY = ev.rawY
-                lastX = ev.rawX
-            }
-            MotionEvent.ACTION_UP -> {
-                nestedChildView!!.stopNestedScroll()
-                lastX = -1F
-                lastY = -1F
-            }
-        }
-        return true
+        if (ev.action == MotionEvent.ACTION_UP) nestedChildView?.stopNestedScroll()
+        return gestureDetector.onTouchEvent(ev)
     }
 
     /**
@@ -141,19 +95,13 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         coordinatorLayout: CoordinatorLayout, child: AppBarLayout,
         target: View, dx: Int, dy: Int, consumed: IntArray, type: Int
     ) {
-        val isAppbarHidden = child.y + child.totalScrollRange <= 0
-        val isAppbarMaxExpend = mAppbarState == STATE_EXPANDED
-
-        // 计算此事件中appbar的bottom应该到达的下一个位置
+        // 计算此事件中 appbar 的 bottom 应该到达的下一个位置
         var nextPosition = child.bottom - dy
-        val offsetPosition = child.bottom - mDraweeHeight
+        val offsetPosition = child.bottom - appBarStatusHelper.normalHeight
 
-        // 判断专辑封面是否已展开
-        if (!isAppbarHidden && isAppbarMaxExpend && nextPosition > mAppbarHeight) {
-
-            // 判断这次事件是否需要展开 mDraweeView
-            if (child.bottom >= mDraweeHeight && dy < 0) {
-
+        // 获取现在所处位置的状态 Status，决定是否需要使 Appbar 拉伸
+        if (appBarStatusHelper.getNextStatusByNextPosition(nextPosition) == AppBarStatus.STATUS_EXPENDED) {
+            if (dy < 0) {
                 // 根据所在位置的百分比为滑动添加阻尼
                 // 经过阻尼衰减得到正确的 nextPosition
                 val percent = 1 - offsetPosition / maxDragHeight.toFloat()
@@ -167,12 +115,9 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
             val isNeedConsume = nextPosition in mDraweeHeight..mDraweeHeight + maxExpandHeight
             consumed[1] = if (isNeedConsume) Int.MAX_VALUE else 0
 
-            if (child.bottom <= mDraweeHeight) {
-                super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type)
-            }
-        } else {
-            super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type)
+            if (child.bottom > mDraweeHeight) return
         }
+        super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type)
     }
 
 
@@ -264,9 +209,9 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         target: View,
         type: Int
     ) {
-        if (abl.bottom > mDraweeHeight) {
+        if (abl.bottom > appBarStatusHelper.normalHeight) {
             var toPosition = 0
-            toPosition += mDraweeHeight
+            toPosition += appBarStatusHelper.normalHeight
             toPosition += if (fullyExpend) maxExpandHeight else 0
             recoveryToPosition(abl, toPosition)
         }
@@ -300,4 +245,33 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
                 return `object`?.bottom?.toFloat() ?: 0f
             }
         }
+
+    override fun onDown(e: MotionEvent?): Boolean {
+        nestedChildView?.startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
+        return true
+    }
+
+    override fun onShowPress(e: MotionEvent?) {
+    }
+
+    override fun onSingleTapUp(e: MotionEvent?): Boolean = false
+
+    override fun onScroll(
+        e1: MotionEvent?, e2: MotionEvent?,
+        distanceX: Float, distanceY: Float
+    ): Boolean {
+        nestedChildView?.let { nestedChildScrollBy(it, distanceY.toInt()) }
+        return true
+    }
+
+    override fun onLongPress(e: MotionEvent?) {
+    }
+
+    override fun onFling(
+        e1: MotionEvent?, e2: MotionEvent?,
+        velocityX: Float, velocityY: Float
+    ): Boolean {
+        nestedChildView?.stopNestedScroll()
+        return true
+    }
 }
