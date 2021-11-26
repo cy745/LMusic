@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -17,22 +18,32 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/fm_viewpager"
-            android:layout_width="match_parent"
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/fragment_playing"
+            android:name="com.lalilu.lmusic.fragment.PlayingFragment"
+            android:layout_width="360dp"
             android:layout_height="match_parent"
-            android:overScrollMode="never"
-            app:adapter="@{pagerAdapter}"
-            app:currentItem="@{vm.nowPageInt}"
+            android:fitsSystemWindows="true"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:offscreenPageLimit="@{1}" />
+            tools:layout="@layout/fragment_now_playing" />
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/fragment_playlist"
+            android:name="com.lalilu.lmusic.fragment.PlaylistFragment"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/fragment_playing"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:layout="@layout/fragment_play_list" />
 
         <com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
             android:id="@+id/ma_seekBar"
-            android:layout_width="0dp"
+            android:layout_width="250dp"
             android:layout_height="48dp"
             android:layout_marginStart="50dp"
             android:layout_marginEnd="50dp"
