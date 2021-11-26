@@ -43,11 +43,12 @@ class LMusicActivity : BaseActivity() {
         playerModule.initMusicBrowser(this)
         PermissionUtils.requestPermission(this)
 
-        requestedOrientation = if (DeviceUtil.isPad(this)) {
-            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        } else {
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
+//        println("isPad: ${DeviceUtil.isPad(this)}")
+//        requestedOrientation = if (DeviceUtil.isPad(this)) {
+//            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+//        } else {
+//            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+//        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
