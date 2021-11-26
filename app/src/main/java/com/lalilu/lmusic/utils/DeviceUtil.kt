@@ -12,6 +12,10 @@ import kotlin.math.sqrt
  */
 object DeviceUtil {
 
+    /**
+     * 【适应旋转】
+     * 获取设备竖向高度
+     */
     fun getHeight(context: Context): Int {
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
@@ -24,6 +28,10 @@ object DeviceUtil {
         return outMetrics.heightPixels
     }
 
+    /**
+     * 【适应旋转】
+     * 获取设备横向宽度
+     */
     fun getWidth(context: Context): Int {
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
