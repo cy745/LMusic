@@ -2,8 +2,6 @@ package com.lalilu.lmusic.ui.appbar
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View.MeasureSpec.AT_MOST
-import android.view.View.MeasureSpec.EXACTLY
 import com.google.android.material.appbar.AppBarLayout
 
 class SquareAppBarLayout @JvmOverloads constructor(
@@ -14,12 +12,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
     var mBottom: Int = 0
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val heightSpec = when (MeasureSpec.getMode(heightMeasureSpec)) {
-            EXACTLY -> heightMeasureSpec
-            AT_MOST -> widthMeasureSpec
-            else -> widthMeasureSpec
-        }
-        super.onMeasure(widthMeasureSpec, heightSpec)
+        super.onMeasure(widthMeasureSpec, widthMeasureSpec)
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
