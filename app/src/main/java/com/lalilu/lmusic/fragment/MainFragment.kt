@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.fragment
 
 import android.media.MediaMetadata
-import android.os.Bundle
 import android.view.View
 import androidx.databinding.library.baseAdapters.BR
 import androidx.recyclerview.widget.RecyclerView
@@ -23,7 +22,6 @@ class MainFragment : BaseFragment() {
     private lateinit var playerModule: LMusicPlayerModule
 
     private var mPagerAdapter: LMusicFragmentStateAdapter? = null
-    override var delayLoadDuration: Long = 0
 
     override fun initViewModel() {
         mState = getFragmentViewModel(MainViewModel::class.java)
@@ -49,8 +47,7 @@ class MainFragment : BaseFragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun loadInitView() {
         val binding = (mBinding as FragmentMainBinding)
 
         val child = binding.fmViewpager?.getChildAt(0)

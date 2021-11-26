@@ -2,7 +2,6 @@ package com.lalilu.lmusic.base
 
 import android.app.Activity
 import android.os.Bundle
-import android.os.Handler
 import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -11,19 +10,14 @@ abstract class BaseFragment : DataBindingFragment() {
     private var mFragmentProvider: ViewModelProvider? = null
     private var mActivityProvider: ViewModelProvider? = null
     private var mApplicationProvider: ViewModelProvider? = null
-    open var delayLoadDuration: Long = 100
 
-    private var mAnimationLoaded = false
     open fun loadInitData() {}
+    open fun loadInitView() {}
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        Handler(mActivity!!.mainLooper).postDelayed({
-            if (!mAnimationLoaded) {
-                mAnimationLoaded = true
-                loadInitData()
-            }
-        }, delayLoadDuration)
         super.onViewCreated(view, savedInstanceState)
+        loadInitData()
+        loadInitView()
     }
 
     protected fun <T : ViewModel?> getFragmentViewModel(modelClass: Class<T>): T {
