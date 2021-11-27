@@ -1,6 +1,5 @@
 package com.lalilu.lmusic
 
-import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.media.AudioManager
 import android.os.Bundle
@@ -15,7 +14,6 @@ import com.lalilu.lmusic.domain.entity.LSong
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.MainActivityViewModel
-import com.lalilu.lmusic.utils.DeviceUtil
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.scanner.MediaScanner
@@ -93,6 +91,8 @@ class LMusicActivity : BaseActivity() {
 
                         override fun onScanProgress(nowCount: Int, item: LSong) {
                             (application as LMusicApp).playlistMMKV.saveSongToLocalPlaylist(item)
+                            mEvent.nowPlaylistRequest.requireData()
+                            mEvent.allPlaylistRequest.requireData()
                         }
 
                         override fun onScanException(msg: String?) {
