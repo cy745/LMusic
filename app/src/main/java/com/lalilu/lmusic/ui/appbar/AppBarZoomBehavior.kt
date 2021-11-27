@@ -25,6 +25,9 @@ import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.maxExpandHeight
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.normalHeight
 import com.lalilu.lmusic.utils.DeviceUtil
 import com.lalilu.lmusic.utils.Mathf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = null) :
@@ -61,17 +64,24 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         mLyricViewX = appBarLayout.findViewById(R.id.fm_lyric_view_x)
         nestedChildView = parent.getChildAt(1) as ViewGroup
         mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.fm_collapse_layout)
-        mLyricViewX?.let {
-            val temp = it.layoutParams
-            temp.height = DeviceUtil.getHeight(context)
-            it.layoutParams = temp
-        }
 
         normalHeight = mDraweeView?.height ?: -1
         appBarStatusHelper = AppBarStatusHelper.initial(appBarLayout) { percent ->
             mDraweeView?.let { it.alpha = percent }
         }
         maxExpandHeight = DeviceUtil.getHeight(context) - normalHeight
+
+        // mLyricViewX 从小窗打开后高度错误问题，不懂为什么需要协程才可以成功设置高度
+        if (mLyricViewX?.height != DeviceUtil.getHeight(context)) {
+            GlobalScope.launch(Dispatchers.Main) {
+                mLyricViewX?.let {
+                    val temp = it.layoutParams
+                    temp.height = DeviceUtil.getHeight(context)
+                    it.layoutParams = temp
+                }
+            }
+        }
+        resizeChild(appBarLayout, mBottom)
     }
 
     /**
@@ -112,7 +122,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
      */
     @SuppressLint("RestrictedApi")
     private fun resizeChild(abl: AppBarLayout, nextPosition: Int) {
-        val appbar = (abl as SquareAppBarLayout)
+        if (nextPosition <= 0 || normalHeight <= 0) return
 
         // 限定 appbar 的高度在指定范围内
         mBottom = Mathf.clamp(normalHeight, normalHeight + maxExpandHeight, nextPosition)
