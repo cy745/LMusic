@@ -7,7 +7,7 @@
 
 |![APP主页面](https://images.gitee.com/uploads/images/2021/0709/200325_4de1a5b6_7470859.png "951717920c93efe624eba615ad09c7a.png")主页面|![歌单页](https://images.gitee.com/uploads/images/2021/0709/200402_32064a62_7470859.png "e88edff0f98ddc3ca3fc22da9699a81.png")歌单页|
 |--|--|
-
+|![平板横向布局，主界面](https://images.gitee.com/uploads/images/2021/1127/151143_108c998c_7470859.jpeg "Screenshot_20211127_151125_com.lalilu.lmusic.jpg")平板横向布局，主界面|![平板横向布局，展开歌词界面](https://images.gitee.com/uploads/images/2021/1127/151007_8135cbde_7470859.jpeg "Screenshot_20211127_145058_com.lalilu.lmusic.jpg")平板横向布局，展开歌词界面|
 
 #### 参与贡献
 欢迎提Issues和PR，你的Issues就是我最大的动力，你的PR是对我最大的支持，十分感谢！！！
