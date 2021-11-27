@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:fresco="http://schemas.android.com/apk/res-auto">
+    xmlns:fresco="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -29,7 +30,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:pictureUri="@{song.mArtUri}"
-            fresco:placeholderImage="@color/gray_600" />
+            fresco:placeholderImage="@color/gray_600"
+            tools:placeholderImage="@tools:sample/avatars" />
 
         <TextView
             android:id="@+id/song_title"
@@ -44,7 +46,8 @@
             app:layout_constraintBottom_toTopOf="@+id/song_singer"
             app:layout_constraintEnd_toStartOf="@+id/song_type"
             app:layout_constraintStart_toEndOf="@+id/song_album_pic"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@tools:sample/cities" />
 
         <TextView
             android:id="@+id/song_singer"
@@ -59,7 +62,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/song_duration"
             app:layout_constraintStart_toEndOf="@+id/song_album_pic"
-            app:layout_constraintTop_toBottomOf="@+id/song_title" />
+            app:layout_constraintTop_toBottomOf="@+id/song_title"
+            tools:text="@tools:sample/full_names" />
 
         <TextView
             android:id="@+id/song_duration"
@@ -70,7 +74,8 @@
             android:textAlignment="center"
             app:layout_constraintBottom_toBottomOf="@+id/song_singer"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/song_singer" />
+            app:layout_constraintTop_toTopOf="@+id/song_singer"
+            tools:text="@tools:sample/date/hhmm" />
 
         <ImageView
             android:id="@+id/song_type"
@@ -81,7 +86,8 @@
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toEndOf="@+id/song_duration"
             app:layout_constraintStart_toStartOf="@+id/song_duration"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:srcCompat="@drawable/ic_flac" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
