@@ -19,6 +19,7 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.fullyExpend
+import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.mBottom
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.maxDragHeight
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.maxExpandHeight
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.normalHeight
@@ -74,24 +75,6 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
     }
 
     /**
-     *  记录 AppBar 区域上手指的滑动，并传递给 Appbar 的 child 使其模拟嵌套滑动
-     */
-    override fun onTouchEvent(
-        parent: CoordinatorLayout, child: AppBarLayout, ev: MotionEvent
-    ): Boolean {
-        if (ev.action == MotionEvent.ACTION_UP) nestedChildView?.stopNestedScroll()
-        return gestureDetector.onTouchEvent(ev)
-    }
-
-    /**
-     *  模拟子控件嵌套滚动
-     */
-    private fun nestedChildScrollBy(nestedChildView: ViewGroup, dy: Int) {
-        nestedChildView.dispatchNestedPreScroll(0, dy, null, null)
-        nestedChildView.dispatchNestedScroll(0, 0, 0, dy, null)
-    }
-
-    /**
      *  拖动子控件,嵌套滚动发生时的周期函数
      */
     override fun onNestedPreScroll(
@@ -132,27 +115,22 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         val appbar = (abl as SquareAppBarLayout)
 
         // 限定 appbar 的高度在指定范围内
-        val bottom = Mathf.clamp(normalHeight, normalHeight + maxExpandHeight, nextPosition)
-        appbar.bottom = bottom
-        appbar.mBottom = bottom
+        mBottom = Mathf.clamp(normalHeight, normalHeight + maxExpandHeight, nextPosition)
+        abl.bottom = mBottom
 
-        val offsetPosition = abl.bottom - normalHeight
-        val scaleValue = abl.bottom / normalHeight.toFloat()
+        val offsetPosition = mBottom - normalHeight
+        val scaleValue = Mathf.clamp(0F, 5F, mBottom / normalHeight.toFloat())
         val animatePercent = Mathf.clamp(0F, 1F, offsetPosition / maxExpandHeight.toFloat())
-
 
         mDraweeView?.blurBg(animatePercent)
         mDraweeView?.scaleX = scaleValue
         mDraweeView?.scaleY = scaleValue
-        mDraweeView?.translationY = offsetPosition / 2f
+        mDraweeView?.translationY = offsetPosition / 2F
 
         val value = if (animatePercent in 0F..0.5F) animatePercent else 1 - animatePercent
         mCollapsingToolbarLayout?.top = (maxExpandHeight / 2 * value).toInt()
         mCollapsingToolbarLayout?.bottom =
             (normalHeight + maxExpandHeight * animatePercent).toInt()
-
-//        mLyricViewX?.top = (maxExpandHeight / 4 * animatePercent).toInt()
-//        mLyricViewX?.bottom = (normalHeight + maxExpandHeight / 2 * animatePercent).toInt()
 
         // 文字透明过渡插值器
         val interpolation = AccelerateDecelerateInterpolator().getInterpolation(animatePercent)
@@ -167,10 +145,9 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
             in (maxExpandHeight - maxDragHeight)..maxExpandHeight -> {
                 (offsetPosition - maxExpandHeight + maxDragHeight) / maxDragHeight.toFloat() - 1F
             }
-            else -> Float.NaN
+            else -> return
         }
 
-        if (dragPercent.isNaN()) return
         when {
             dragPercent in 0.05F..0.6F && fullyExpend -> fullyExpend = false
             dragPercent in 0.6F..1F && !fullyExpend -> {
@@ -182,9 +159,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
                 onDragToTop(abl)
             }
             dragPercent in -0.6F..-0.05F && !fullyExpend -> fullyExpend = true
-
         }
-        appbar.fullyExpend = fullyExpend
     }
 
     private fun onDragToTop(view: View) {
@@ -222,7 +197,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
     }
 
     /**
-     *  回复到任意位置的方法
+     *  回到任意位置的方法
      */
     private fun recoveryToPosition(abl: AppBarLayout, position: Number) {
         if (mSpringAnimation == null) {
@@ -248,6 +223,24 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
                 return `object`?.bottom?.toFloat() ?: 0f
             }
         }
+
+    /**
+     *  记录 AppBar 区域上手指的滑动，并传递给 Appbar 的 child 使其模拟嵌套滑动
+     */
+    override fun onTouchEvent(
+        parent: CoordinatorLayout, child: AppBarLayout, ev: MotionEvent
+    ): Boolean {
+        if (ev.action == MotionEvent.ACTION_UP) nestedChildView?.stopNestedScroll()
+        return gestureDetector.onTouchEvent(ev)
+    }
+
+    /**
+     *  模拟子控件嵌套滚动
+     */
+    private fun nestedChildScrollBy(nestedChildView: ViewGroup, dy: Int) {
+        nestedChildView.dispatchNestedPreScroll(0, dy, null, null)
+        nestedChildView.dispatchNestedScroll(0, 0, 0, dy, null)
+    }
 
     override fun onDown(e: MotionEvent?): Boolean {
         nestedChildView?.startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
