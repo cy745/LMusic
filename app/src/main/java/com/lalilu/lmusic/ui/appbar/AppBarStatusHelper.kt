@@ -14,12 +14,14 @@ object AppBarStatusHelper : AppBarOnPercentChangeListener() {
     var maxExpandHeight = -1
     var maxDragHeight = 200
     var fullyExpend = false
+    var mBottom = -1
 
     /**
      * 初始化
      */
     fun initial(appbar: AppBarLayout, listenPercent: (percent: Float) -> Unit): AppBarStatusHelper {
-        if (normalHeight == -1 || normalHeight == 0) normalHeight = appbar.height
+        if (normalHeight <= 0) normalHeight = appbar.height
+        if (mBottom <= 0) mBottom = normalHeight
 
         this.appbar = appbar
         this.appbar.removeOnOffsetChangedListener(this)
