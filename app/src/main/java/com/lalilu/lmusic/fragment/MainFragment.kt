@@ -11,7 +11,7 @@ import com.lalilu.lmusic.base.BaseFragment
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
-import com.lalilu.lmusic.service.LMusicService
+import com.lalilu.lmusic.service.MSongService
 import com.lalilu.lmusic.state.MainViewModel
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarChangeListenerAdapter
 import com.lalilu.lmusic.utils.HapticUtils
@@ -77,7 +77,7 @@ class MainFragment : BaseFragment() {
 
             override fun onClick() {
                 playerModule.mediaController.value?.transportControls?.sendCustomAction(
-                    LMusicService.ACTION_PLAY_PAUSE, null
+                    MSongService.ACTION_PLAY_PAUSE, null
                 )
                 HapticUtils.haptic(seekBar.rootView)
             }
