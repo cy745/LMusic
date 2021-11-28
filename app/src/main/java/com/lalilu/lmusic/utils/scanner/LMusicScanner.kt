@@ -3,7 +3,6 @@ package com.lalilu.lmusic.utils.scanner
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
-import android.os.Environment
 import android.provider.MediaStore
 import com.lalilu.lmusic.domain.entity.LSong
 import com.lalilu.lmusic.utils.BitmapUtils
@@ -16,9 +15,6 @@ import java.util.logging.Logger
 
 class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
     var onScanCallback: MediaScanner.OnScanCallback<LSong>? = null
-
-    private var standardDirectory: File =
-        mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
 
     init {
         selection = "${MediaStore.Audio.Media.SIZE} >= ? " +
@@ -87,9 +83,7 @@ class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
                 LSong.Artist(it)
             }
         ).also {
-            it.mArtUri = BitmapUtils.saveThumbnailToSandBox(
-                mContext, standardDirectory, it.mId, uri
-            )
+            it.mArtUri = BitmapUtils.saveThumbnailToSandBox(mContext, it.mId, uri)
             try {
                 // TODO: 2021/9/6 仍有部分歌曲无法获取到内嵌歌词,原因查明： LyricViewX 无法显示 USLT 歌词
                 val audioTag = AudioFileIO.read(File(it.mLocalInfo!!.mData)).tag
