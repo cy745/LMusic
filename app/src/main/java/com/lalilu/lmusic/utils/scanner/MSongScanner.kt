@@ -20,7 +20,7 @@ import java.util.logging.Logger
 
 object MSongScanner : BaseMScanner() {
     private var database: LMusicDataBase = LMusicDataBase.getInstance(null)
-    private val mExecutor = ThreadPoolUtils.newCachedThreadPool()
+    private val mExecutor = ThreadPoolUtils.CachedThreadPool
     override var selection: String? = "${MediaStore.Audio.Media.SIZE} >= ? " +
             "and ${MediaStore.Audio.Media.DURATION} >= ?" +
             "and ${MediaStore.Audio.Artists.ARTIST} != ?"

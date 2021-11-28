@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.adapter
 
 import android.graphics.Canvas
 import androidx.recyclerview.widget.RecyclerView

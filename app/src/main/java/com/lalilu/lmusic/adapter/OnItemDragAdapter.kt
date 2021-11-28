@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.adapter
 
 import androidx.recyclerview.widget.RecyclerView
 import com.chad.library.adapter.base.listener.OnItemDragListener

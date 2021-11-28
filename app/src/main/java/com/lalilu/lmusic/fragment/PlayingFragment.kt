@@ -13,8 +13,8 @@ import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.PlayingFragmentViewModel
 import com.lalilu.lmusic.utils.Mathf
-import com.lalilu.lmusic.utils.OnItemDragAdapter
-import com.lalilu.lmusic.utils.OnItemSwipedAdapter
+import com.lalilu.lmusic.adapter.OnItemDragAdapter
+import com.lalilu.lmusic.adapter.OnItemSwipedAdapter
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.schedule
