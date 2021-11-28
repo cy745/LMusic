@@ -18,7 +18,7 @@ import com.lalilu.lmusic.domain.entity.LPlaylist
 import com.lalilu.lmusic.domain.entity.PlaylistWithSongs
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
-import com.lalilu.lmusic.utils.ColorAnimator.Companion.setBgColorFromPalette
+import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
 
 @BindingAdapter("iconRec")
