@@ -8,6 +8,7 @@ import com.lalilu.R
 import com.lalilu.databinding.ItemPlayingBinding
 import com.lalilu.lmusic.domain.entity.LSong
 
+@Deprecated("MSongPlayingAdapter 替代，后期删除")
 class LMusicPlayingAdapter :
     BaseQuickAdapter<LSong, BaseDataBindingHolder<ItemPlayingBinding>>(
         R.layout.item_playing
