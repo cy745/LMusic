@@ -7,9 +7,9 @@ import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
-import com.lalilu.lmusic.utils.Mathf
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import com.lalilu.lmusic.manager.LMusicVolumeManager
+import com.lalilu.lmusic.utils.Mathf
 
 abstract class BasePlayback<T, K>(
     private val mContext: Context
@@ -17,8 +17,18 @@ abstract class BasePlayback<T, K>(
     private var mediaPlayer: MediaPlayer? = null
     private var mVolumeManager: LMusicVolumeManager? = null
     private var playbackState: Int = PlaybackStateCompat.STATE_NONE
-    protected var mAudioFocusManager: LMusicAudioFocusManager? = null
-    protected var onPlayerCallback: Playback.OnPlayerCallback? = null
+    private var mAudioFocusManager: LMusicAudioFocusManager? = null
+    private var onPlayerCallback: Playback.OnPlayerCallback? = null
+
+    fun setAudioFocusManager(mAudioFocusManager: LMusicAudioFocusManager): BasePlayback<T, K> {
+        this.mAudioFocusManager = mAudioFocusManager
+        return this
+    }
+
+    fun setOnPlayerCallback(callback: Playback.OnPlayerCallback): BasePlayback<T, K> {
+        this.onPlayerCallback = callback
+        return this
+    }
 
     open val nowPlaylist: MutableLiveData<K> = MutableLiveData()
     open val nowPlaying: MutableLiveData<T> = MutableLiveData()
