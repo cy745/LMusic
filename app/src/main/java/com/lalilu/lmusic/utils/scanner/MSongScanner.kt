@@ -84,26 +84,6 @@ object MSongScanner : BaseMScanner() {
     }
 
     fun check() {
-        checkDatabase()
 
-        if (database == null) database = LMusicDataBase.getInstance(null)
-
-        GlobalScope.launch(Dispatchers.IO) {
-            database!!.albumDao().getAllFullAlbum().forEach {
-                println("\n")
-                println("==================================")
-                println("【${it.album.albumTitle}】 ${it.songs.size}")
-                it.songs.forEach { song ->
-                    println("-- ${song.songTitle}")
-                }
-                println("==================================")
-            }
-
-            database!!.artistDao().delete(MArtist("DiverDiva"))
-        }
-    }
-
-    private fun checkDatabase() {
-        database = database ?: LMusicDataBase.getInstance(null)
     }
 }
