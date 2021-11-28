@@ -19,6 +19,5 @@ data class MSongDetail(
     @ColumnInfo(name = "song_data")
     val songData: String = "",
 
-    @ColumnInfo(name = "song_mime_type")
-    val songMimeType: String = ""
+
 )
