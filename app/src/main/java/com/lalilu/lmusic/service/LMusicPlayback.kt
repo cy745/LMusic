@@ -9,6 +9,7 @@ import com.lalilu.lmusic.domain.entity.LSong
 import com.lalilu.lmusic.state.LMusicServiceViewModel
 import com.lalilu.lmusic.utils.toMediaMetaData
 
+@Deprecated("MSongPlayback 替代，后期删除")
 class LMusicPlayback(
     mContext: Context,
     mState: LMusicServiceViewModel

@@ -30,7 +30,7 @@ class LMusicPlayerModule private constructor(application: Application) :
         controllerCallback = MusicControllerCallback()
         subscriptionCallback = MusicSubscriptionCallback()
         mediaBrowser = MediaBrowserCompat(
-            activity, ComponentName(activity, LMusicService::class.java),
+            activity, ComponentName(activity, MSongService::class.java),
             connectionCallback, null
         )
     }

@@ -29,7 +29,7 @@
         </receiver>
 
         <service
-            android:name="com.lalilu.lmusic.service.LMusicService"
+            android:name="com.lalilu.lmusic.service.MSongService"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
