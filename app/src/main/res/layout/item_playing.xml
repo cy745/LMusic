@@ -9,8 +9,25 @@
         <import type="com.lalilu.lmusic.binding_adapter.BindAdapter" />
 
         <variable
-            name="song"
-            type="com.lalilu.lmusic.domain.entity.LSong" />
+            name="coverUri"
+            type="android.net.Uri" />
+
+        <variable
+            name="title"
+            type="String" />
+
+        <variable
+            name="artist"
+            type="String" />
+
+        <variable
+            name="duration"
+            type="Long" />
+
+        <variable
+            name="mimeType"
+            type="String" />
+
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,7 +46,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:pictureUri="@{song.mArtUri}"
+            app:pictureUri="@{coverUri}"
             fresco:placeholderImage="@color/gray_600"
             tools:placeholderImage="@tools:sample/avatars" />
 
@@ -40,7 +57,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:letterSpacing="0.05"
-            android:text="@{song.mTitle}"
+            android:text="@{title}"
             android:textColor="?attr/daynight_0"
             android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@+id/song_singer"
@@ -56,7 +73,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:letterSpacing="0.05"
-            android:text="@{song.getArtistText()}"
+            android:text="@{artist}"
             android:textSize="12sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -70,7 +87,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
-            android:text="@{BindAdapter.durationToString(song.mLocalInfo.mDuration)}"
+            android:text="@{BindAdapter.durationToString(duration)}"
             android:textAlignment="center"
             app:layout_constraintBottom_toBottomOf="@+id/song_singer"
             app:layout_constraintEnd_toEndOf="parent"
@@ -82,7 +99,7 @@
             android:layout_width="wrap_content"
             android:layout_height="20dp"
             android:contentDescription="@string/audio_type"
-            app:iconRec="@{song.mLocalInfo.mMimeType}"
+            app:iconRec="@{mimeType}"
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toEndOf="@+id/song_duration"
             app:layout_constraintStart_toStartOf="@+id/song_duration"
