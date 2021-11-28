@@ -6,7 +6,6 @@ import android.support.v4.media.MediaMetadataCompat
 import androidx.lifecycle.MutableLiveData
 import com.lalilu.lmusic.domain.entity.LPlaylist
 import com.lalilu.lmusic.domain.entity.LSong
-import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import com.lalilu.lmusic.state.LMusicServiceViewModel
 import com.lalilu.lmusic.utils.toMediaMetaData
 
@@ -16,16 +15,6 @@ class LMusicPlayback(
 ) : BasePlayback<LSong, LPlaylist>(mContext) {
     override val nowPlaying: MutableLiveData<LSong> = mState.nowPlayingMusic
     override val nowPlaylist: MutableLiveData<LPlaylist> = mState.nowPlayingList
-
-    fun setAudioFocusManager(mAudioFocusManager: LMusicAudioFocusManager): LMusicPlayback {
-        this.mAudioFocusManager = mAudioFocusManager
-        return this
-    }
-
-    fun setOnPlayerCallback(callback: Playback.OnPlayerCallback): LMusicPlayback {
-        this.onPlayerCallback = callback
-        return this
-    }
 
     override fun getUriFromNowItem(nowPlaying: LSong): Uri {
 //        return Uri.parse(nowPlaying.mLocalInfo?.mData)
