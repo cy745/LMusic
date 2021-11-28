@@ -7,9 +7,7 @@ import android.provider.MediaStore
 import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 import com.lalilu.lmusic.database.LMusicDataBase
 import com.lalilu.lmusic.domain.entity.*
-import com.lalilu.lmusic.utils.BitmapUtils
-import com.lalilu.lmusic.utils.ThreadPoolUtils
-import kotlinx.coroutines.Dispatchers
+import com.lalilu.lmusic.utils.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -21,7 +19,7 @@ import java.util.logging.Logger
 
 
 object MSongScanner : BaseMScanner() {
-    private var database: LMusicDataBase? = null
+    private var database: LMusicDataBase = LMusicDataBase.getInstance(null)
     private val mExecutor = ThreadPoolUtils.newCachedThreadPool()
     override var selection: String? = "${MediaStore.Audio.Media.SIZE} >= ? " +
             "and ${MediaStore.Audio.Media.DURATION} >= ?" +
@@ -34,7 +32,6 @@ object MSongScanner : BaseMScanner() {
     }
 
     private fun scanForEach(context: Context, cursor: Cursor) {
-        checkDatabase()
         Logger.getLogger("org.jaudiotagger").level = Level.OFF
 
         val songId = cursor.getSongId()                 // 音乐 id
@@ -48,11 +45,12 @@ object MSongScanner : BaseMScanner() {
         val artistName = cursor.getArtist()                 // 艺术家
         val artistsName = cursor.getArtists()               // 艺术家
 
-        GlobalScope.launch(mExecutor.asCoroutineDispatcher()) {
+        val taskNumber = ++progressCount
+        taskList.add(GlobalScope.launch(mExecutor.asCoroutineDispatcher()) {
             val songUri = Uri.withAppendedPath(EXTERNAL_CONTENT_URI, songId.toString())
 
             val album = MAlbum(albumId, albumTitle)
-            database!!.albumDao().save(album)
+            database.albumDao().save(album)
 
             val songCoverUri = BitmapUtils.saveThumbnailToSandBox(context, songId, songUri)
 
@@ -62,7 +60,7 @@ object MSongScanner : BaseMScanner() {
                     .run { if (isNotEmpty()) get(0).toString() else "" }
                 val detail = MSongDetail(songId, lyric, songSize, songData)
 
-                database!!.songDetailDao().save(detail)
+                database.songDetailDao().save(detail)
             } catch (_: Exception) {
             }
             val song = MSong(
@@ -78,9 +76,11 @@ object MSongScanner : BaseMScanner() {
             )
 
             val artists: List<MArtist> = artistsName.map { MArtist(it) }
-            database!!.relationDao().saveSongXArtist(song, artists)
-            database!!.relationDao().savePlaylistXSong(MPlaylist(0), listOf(song))
-        }
+            database.relationDao().saveSongXArtist(song, artists)
+            database.relationDao().savePlaylistXSong(MPlaylist(0), listOf(song))
+
+            onScanProgress?.invoke(taskNumber)
+        })
     }
 
     fun check() {
