@@ -12,6 +12,10 @@ interface MArtistDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun save(artist: MArtist)
 
+    @Transaction
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun save(artist: List<MArtist>)
+
     @Query("DELETE FROM m_artist;")
     suspend fun deleteAll()
 
