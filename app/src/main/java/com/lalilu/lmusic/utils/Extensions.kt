@@ -14,23 +14,28 @@ fun Palette?.getAutomaticColor(): Int {
 }
 
 fun Cursor.getSongId(): Long {
-    return this.getLong(this.getColumnIndex(MediaStore.Audio.Media._ID))
+    val index = this.getColumnIndex(MediaStore.Audio.Media._ID)
+    return if (index < 0) return 0 else this.getLong(index)
 }
 
 fun Cursor.getSongTitle(): String {
-    return this.getString(this.getColumnIndex(MediaStore.Audio.Media.TITLE))
+    val index = this.getColumnIndex(MediaStore.Audio.Media.TITLE)
+    return if (index < 0) "" else this.getString(index)
 }
 
 fun Cursor.getAlbumId(): Long {
-    return this.getLong(this.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))
+    val index = this.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
+    return if (index < 0) return 0 else this.getLong(index)
 }
 
 fun Cursor.getAlbumTitle(): String {
-    return this.getString(this.getColumnIndex(MediaStore.Audio.Media.ALBUM))
+    val index = this.getColumnIndex(MediaStore.Audio.Media.ALBUM)
+    return if (index < 0) "" else this.getString(index)
 }
 
 fun Cursor.getArtist(): String {
-    return this.getString(this.getColumnIndex(MediaStore.Audio.Media.ARTIST))
+    val index = this.getColumnIndex(MediaStore.Audio.Media.ARTIST)
+    return if (index < 0) "" else this.getString(index)
 }
 
 fun Cursor.getArtists(): List<String> {
@@ -38,17 +43,21 @@ fun Cursor.getArtists(): List<String> {
 }
 
 fun Cursor.getSongSize(): Long {
-    return this.getLong(this.getColumnIndex(MediaStore.Audio.Media.SIZE))
+    val index = this.getColumnIndex(MediaStore.Audio.Media.SIZE)
+    return if (index < 0) return 0 else this.getLong(index)
 }
 
 fun Cursor.getSongData(): String {
-    return this.getString(this.getColumnIndex(MediaStore.Audio.Media.DATA))
+    val index = this.getColumnIndex(MediaStore.Audio.Media.DATA)
+    return if (index < 0) "" else this.getString(index)
 }
 
 fun Cursor.getSongDuration(): Long {
-    return this.getLong(this.getColumnIndex(MediaStore.Audio.Media.DURATION))
+    val index = this.getColumnIndex(MediaStore.Audio.Media.DURATION)
+    return if (index < 0) return 0 else this.getLong(index)
 }
 
 fun Cursor.getSongMimeType(): String {
-    return this.getString(this.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE))
+    val index = this.getColumnIndex(MediaStore.Audio.Media.DURATION)
+    return if (index < 0) "" else this.getString(index)
 }
