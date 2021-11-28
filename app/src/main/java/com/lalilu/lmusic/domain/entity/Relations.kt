@@ -68,26 +68,22 @@ data class FullSongInfo(
 @Entity(
     tableName = "artist_song_cross_ref",
     primaryKeys = ["song_id", "artist_name"],
-    indices = [Index(value = ["song_id", "artist_name"], unique = true)],
-    foreignKeys = [
-        ForeignKey(
-            entity = MSong::class,
-            parentColumns = ["song_id"],
-            childColumns = ["song_id"],
-            onDelete = CASCADE
-        ),
-        ForeignKey(
-            entity = MArtist::class,
-            parentColumns = ["artist_name"],
-            childColumns = ["artist_name"],
-            onDelete = CASCADE
-        ),
-    ]
+    foreignKeys = [ForeignKey(
+        entity = MSong::class,
+        parentColumns = ["song_id"],
+        childColumns = ["song_id"],
+        onDelete = CASCADE
+    ), ForeignKey(
+        entity = MArtist::class,
+        parentColumns = ["artist_name"],
+        childColumns = ["artist_name"],
+        onDelete = CASCADE
+    )]
 )
 data class ArtistSongCrossRef(
-    @ColumnInfo(name = "song_id")
+    @ColumnInfo(name = "song_id", index = true)
     val songId: Long,
-    @ColumnInfo(name = "artist_name")
+    @ColumnInfo(name = "artist_name", index = true)
     val artistName: String
 )
 
@@ -130,25 +126,21 @@ data class SongWithPlaylists(
 @Entity(
     tableName = "playlist_song_cross_ref",
     primaryKeys = ["song_id", "playlist_id"],
-    indices = [Index(value = ["song_id", "playlist_id"], unique = true)],
-    foreignKeys = [
-        ForeignKey(
-            entity = MSong::class,
-            parentColumns = ["song_id"],
-            childColumns = ["song_id"],
-            onDelete = CASCADE
-        ),
-        ForeignKey(
-            entity = MPlaylist::class,
-            parentColumns = ["playlist_id"],
-            childColumns = ["playlist_id"],
-            onDelete = CASCADE
-        )
-    ]
+    foreignKeys = [ForeignKey(
+        entity = MSong::class,
+        parentColumns = ["song_id"],
+        childColumns = ["song_id"],
+        onDelete = CASCADE
+    ), ForeignKey(
+        entity = MPlaylist::class,
+        parentColumns = ["playlist_id"],
+        childColumns = ["playlist_id"],
+        onDelete = CASCADE
+    )]
 )
 data class PlaylistSongCrossRef(
-    @ColumnInfo(name = "song_id")
+    @ColumnInfo(name = "song_id", index = true)
     val songId: Long,
-    @ColumnInfo(name = "playlist_id")
+    @ColumnInfo(name = "playlist_id", index = true)
     val playlistId: Long
 )
