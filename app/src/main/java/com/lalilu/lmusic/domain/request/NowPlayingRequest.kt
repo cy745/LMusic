@@ -4,6 +4,7 @@ import com.lalilu.lmusic.LMusicPlaylistMMKV
 import com.lalilu.lmusic.domain.BaseRequest
 import com.lalilu.lmusic.domain.entity.LSong
 
+@Deprecated("后期删除")
 class NowPlayingRequest : BaseRequest<LSong>() {
     val lMusicPlaylistMMKV = LMusicPlaylistMMKV.getInstance()
 

@@ -5,6 +5,7 @@ import android.text.TextUtils
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.domain.entity.LSong
 
+@Deprecated("后期删除")
 fun LSong.toMediaMetaData(): MediaMetadataCompat {
     val metadata = MediaMetadataCompat.Builder()
         .putString(MediaMetadataCompat.METADATA_KEY_TITLE, this.mTitle)
