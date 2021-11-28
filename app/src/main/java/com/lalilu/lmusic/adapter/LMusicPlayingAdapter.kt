@@ -15,7 +15,11 @@ class LMusicPlayingAdapter :
 
     override fun convert(holder: BaseDataBindingHolder<ItemPlayingBinding>, item: LSong) {
         val binding = holder.dataBinding ?: return
-        binding.song = item
+        binding.title = item.mTitle
+        binding.duration = item.mLocalInfo?.mDuration ?: 0L
+        binding.artist = item.getArtistText()
+        binding.mimeType = item.mType.toString()
+        binding.coverUri = item.mArtUri
     }
 
 
