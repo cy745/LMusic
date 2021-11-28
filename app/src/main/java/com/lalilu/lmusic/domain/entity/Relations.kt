@@ -106,7 +106,7 @@ data class PlaylistWithSongs(
         entityColumn = "song_id",
         associateBy = Junction(PlaylistSongCrossRef::class)
     )
-    val songs: List<MSong>
+    var songs: List<MSong>
 )
 
 
