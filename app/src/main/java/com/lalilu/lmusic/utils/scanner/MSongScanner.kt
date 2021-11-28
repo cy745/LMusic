@@ -5,10 +5,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 import com.lalilu.lmusic.database.LMusicDataBase
-import com.lalilu.lmusic.domain.entity.MAlbum
-import com.lalilu.lmusic.domain.entity.MArtist
-import com.lalilu.lmusic.domain.entity.MSong
-import com.lalilu.lmusic.domain.entity.MSongDetail
+import com.lalilu.lmusic.domain.entity.*
 import com.lalilu.lmusic.utils.BitmapUtils
 import com.lalilu.lmusic.utils.ThreadPoolUtils
 import kotlinx.coroutines.Dispatchers
@@ -75,7 +72,8 @@ object MSongScanner : BaseMScanner() {
             )
 
             val artists: List<MArtist> = artistsName.map { MArtist(it) }
-            database!!.songDao().saveSongWithArtists(song, artists)
+            database!!.relationDao().saveSongXArtist(song, artists)
+            database!!.relationDao().savePlaylistXSong(MPlaylist(0), listOf(song))
         }
     }
 
