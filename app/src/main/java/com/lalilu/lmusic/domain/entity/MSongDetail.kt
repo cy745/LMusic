@@ -1,0 +1,24 @@
+package com.lalilu.lmusic.domain.entity
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "m_song_detail")
+data class MSongDetail(
+    @PrimaryKey
+    @ColumnInfo(name = "song_id")
+    val songId: Long,
+
+    @ColumnInfo(name = "song_lyric")
+    val songLyric: String = "",
+
+    @ColumnInfo(name = "song_size")
+    val songSize: Long = 0,
+
+    @ColumnInfo(name = "song_data")
+    val songData: String = "",
+
+    @ColumnInfo(name = "song_mime_type")
+    val songMimeType: String = ""
+)
