@@ -3,9 +3,7 @@ package com.lalilu.lmusic.utils.scanner
 import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 /**
  * MScanner接口的基础实现，仍需要传入onScanForEach函数，
@@ -19,6 +17,7 @@ abstract class BaseMScanner : MScanner {
     open var selectionArgs: Array<String>? = null
     open var sortOrder: String? = null
     open var progressCount = 0
+    protected val taskList: ArrayList<Job> = ArrayList()
 
     /**
      * 扫描开始的入口函数，简单判读是否已经有任务正在执行
@@ -26,7 +25,7 @@ abstract class BaseMScanner : MScanner {
      *  在扫描过程中依次触发预设的生命周期函数
      */
     override fun scanStart(context: Context) {
-        if (progressCount != 0) {
+        if (progressCount > 0) {
             onScanFailed?.invoke("扫描正在进行中！")
             return
         }
@@ -39,10 +38,9 @@ abstract class BaseMScanner : MScanner {
                 onScanStart?.invoke(cursor.count)
                 while (cursor.moveToNext()) {
                     onScanForEach?.invoke(context, cursor)
-                    onScanProgress?.invoke(++progressCount)
                 }
-
                 cursor.close()
+                taskList.joinAll()
                 onScanFinish?.invoke(progressCount)
                 progressCount = 0
             }
