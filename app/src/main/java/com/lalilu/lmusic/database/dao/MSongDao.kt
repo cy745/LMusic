@@ -7,7 +7,7 @@ import com.lalilu.lmusic.domain.entity.MSong
 @Dao
 interface MSongDao {
     @Query("SELECT * FROM m_song WHERE song_id = :songId")
-    fun getById(songId: Long): MSong
+    fun getById(songId: Long): MSong?
 
     @Query("SELECT * FROM m_song")
     fun getAll(): List<MSong>
