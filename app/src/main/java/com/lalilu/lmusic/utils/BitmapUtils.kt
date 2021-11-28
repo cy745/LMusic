@@ -39,7 +39,8 @@ object BitmapUtils {
         return Uri.fromFile(file)
     }
 
-    fun loadBitmapFromUri(uri: Uri, toSize: Int): Bitmap? {
+    fun loadBitmapFromUri(uri: Uri?, toSize: Int): Bitmap? {
+        uri ?: return null
         val outOption = BitmapFactory.Options().also {
             it.inJustDecodeBounds = true
         }

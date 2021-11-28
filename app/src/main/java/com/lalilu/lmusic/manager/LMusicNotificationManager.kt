@@ -83,7 +83,7 @@ class LMusicNotificationManager constructor(private val mService: Context) {
         isPlaying: Boolean,
         description: MediaDescriptionCompat
     ): NotificationCompat.Builder {
-        val bitmap = BitmapUtils.loadBitmapFromUri(description.iconUri!!, 400)
+        val bitmap = BitmapUtils.loadBitmapFromUri(description.iconUri, 400)
         val palette = if (bitmap != null) Palette.from(bitmap).generate() else null
         val color = palette.getAutomaticColor()
         val cancelButtonIntent = MediaButtonReceiver.buildMediaButtonPendingIntent(
