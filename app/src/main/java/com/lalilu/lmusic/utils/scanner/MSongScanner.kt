@@ -3,6 +3,7 @@ package com.lalilu.lmusic.utils.scanner
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
+import android.provider.MediaStore
 import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 import com.lalilu.lmusic.database.LMusicDataBase
 import com.lalilu.lmusic.domain.entity.*
@@ -22,6 +23,11 @@ import java.util.logging.Logger
 object MSongScanner : BaseMScanner() {
     private var database: LMusicDataBase? = null
     private val mExecutor = ThreadPoolUtils.newCachedThreadPool()
+    override var selection: String? = "${MediaStore.Audio.Media.SIZE} >= ? " +
+            "and ${MediaStore.Audio.Media.DURATION} >= ?" +
+            "and ${MediaStore.Audio.Artists.ARTIST} != ?"
+    override var selectionArgs: Array<String>? =
+        arrayOf((500 * 1024).toString(), (30 * 1000).toString(), "<unknown>")
 
     init {
         setScanForEach { context, cursor -> scanForEach(context, cursor) }
