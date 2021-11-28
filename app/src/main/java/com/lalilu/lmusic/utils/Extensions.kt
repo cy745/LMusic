@@ -1,8 +1,17 @@
 package com.lalilu.lmusic.utils
 
 import android.database.Cursor
+import android.graphics.Color
 import android.provider.MediaStore
+import androidx.palette.graphics.Palette
 
+fun Palette?.getAutomaticColor(): Int {
+    if (this == null) return Color.DKGRAY
+    var oldColor = this.getDarkVibrantColor(Color.LTGRAY)
+    if (ColorUtils.isLightColor(oldColor))
+        oldColor = this.getDarkMutedColor(Color.LTGRAY)
+    return oldColor
+}
 
 fun Cursor.getSongId(): Long {
     return this.getLong(this.getColumnIndex(MediaStore.Audio.Media._ID))
