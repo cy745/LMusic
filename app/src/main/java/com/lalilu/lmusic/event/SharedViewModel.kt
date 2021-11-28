@@ -3,10 +3,10 @@ package com.lalilu.lmusic.event
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.palette.graphics.Palette
-import com.lalilu.lmusic.utils.Mathf
-import com.lalilu.lmusic.domain.request.*
 import com.lalilu.lmusic.domain.entity.LPlaylist
 import com.lalilu.lmusic.domain.entity.LSong
+import com.lalilu.lmusic.domain.request.*
+import com.lalilu.lmusic.utils.Mathf
 import com.tencent.mmkv.MMKV
 
 /**
@@ -22,6 +22,9 @@ class SharedViewModel : ViewModel() {
 
     val nowPlayingRequest = NowPlayingRequest()
     val nowPlaylistRequest = NowPlaylistRequest()
+
+    val nowMSongRequest = NowMSongRequest()
+    val nowPlaylistWithSongsRequest = NowPlaylistWithSongsRequest()
 
     val allPlaylistRequest = AllPlayListRequest()
     val pageRequest = PageRequest()
