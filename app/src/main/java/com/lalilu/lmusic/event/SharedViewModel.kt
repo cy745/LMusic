@@ -61,7 +61,7 @@ class SharedViewModel : ViewModel() {
                 songId = it ?: mmkv.decodeLong(LAST_MUSIC_ID, 0)
                 mmkv.encode(LAST_MUSIC_ID, songId)
 
-                val song = database.songDao().getById(songId)
+                val song = database.songDao().getById(songId) ?: return@launch
                 nowMSongRequest.postData(song)
 
                 val oldPlaylist = nowPlaylistWithSongsRequest.getData().value
