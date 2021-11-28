@@ -12,7 +12,7 @@ import java.io.File
 import java.util.logging.Level
 import java.util.logging.Logger
 
-
+@Deprecated("MSongScanner 替代，后期删除")
 class LMusicScanner(private val mContext: Context) : BaseMediaScanner<LSong>() {
     var onScanCallback: MediaScanner.OnScanCallback<LSong>? = null
 
