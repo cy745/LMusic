@@ -9,24 +9,30 @@ import java.util.concurrent.TimeUnit
  * 线程池工具类
  *
  */
-class ThreadPoolUtils {
-    companion object {
-        fun newFixedThreadPool(numThread: Int): ThreadPoolExecutor {
-            return ThreadPoolExecutor(
-                numThread, numThread,
-                0L,
-                TimeUnit.MILLISECONDS,
-                LinkedBlockingQueue()
-            )
-        }
+object ThreadPoolUtils {
+    fun newFixedThreadPool(numThread: Int): ThreadPoolExecutor {
+        return ThreadPoolExecutor(
+            numThread, numThread,
+            0L,
+            TimeUnit.MILLISECONDS,
+            LinkedBlockingQueue()
+        )
+    }
 
-        fun newCachedThreadPool(): ThreadPoolExecutor {
-            return ThreadPoolExecutor(
-                0, Int.MAX_VALUE,
-                60L,
-                TimeUnit.SECONDS,
-                SynchronousQueue()
-            )
-        }
+    object CachedThreadPool : ThreadPoolExecutor(
+        0, Int.MAX_VALUE,
+        60L,
+        TimeUnit.SECONDS,
+        SynchronousQueue()
+    )
+
+    @Deprecated("后期删除，需让线程池保持单例模式")
+    fun newCachedThreadPool(): ThreadPoolExecutor {
+        return ThreadPoolExecutor(
+            0, Int.MAX_VALUE,
+            60L,
+            TimeUnit.SECONDS,
+            SynchronousQueue()
+        )
     }
 }
