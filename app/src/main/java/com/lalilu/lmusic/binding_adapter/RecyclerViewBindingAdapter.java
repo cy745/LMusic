@@ -12,13 +12,14 @@ import com.chad.library.adapter.base.BaseNodeAdapter;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.lalilu.lmusic.adapter.LMusicPlayingAdapter;
+import com.lalilu.lmusic.adapter.MSongPlayingAdapter;
 import com.lalilu.lmusic.adapter.node.FirstNode;
 import com.lalilu.lmusic.domain.entity.LPlaylist;
+import com.lalilu.lmusic.domain.entity.PlaylistWithSongs;
 import com.lalilu.lmusic.ui.PaletteDraweeView;
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar;
 import com.lalilu.lmusic.utils.ColorAnimator;
 import com.lalilu.lmusic.utils.ColorUtils;
-
 
 import java.util.List;
 import java.util.Objects;
@@ -64,6 +65,24 @@ public class RecyclerViewBindingAdapter {
                 long id = adapter.getData().get(0).getMId();
                 adapter.setDiffNewData(list.getSongs(), () -> {
                     if (id != Objects.requireNonNull(list.getSongs()).get(0).getMId()) {
+                        recyclerView.scrollToPosition(0);
+                    }
+                });
+            } else {
+                adapter.setDiffNewData(list.getSongs(), () -> recyclerView.scrollToPosition(0));
+            }
+        }
+    }
+
+    @BindingAdapter(value = {"setPlaylist"}, requireAll = false)
+    public static void setPlaylist(RecyclerView recyclerView, PlaylistWithSongs list) {
+        if (recyclerView.getAdapter() != null && list != null) {
+            MSongPlayingAdapter adapter = (MSongPlayingAdapter) recyclerView.getAdapter();
+
+            if (adapter.getData().size() > 0) {
+                long id = adapter.getData().get(0).getSongId();
+                adapter.setDiffNewData(list.getSongs(), () -> {
+                    if (id != Objects.requireNonNull(list.getSongs()).get(0).getSongId()) {
                         recyclerView.scrollToPosition(0);
                     }
                 });
