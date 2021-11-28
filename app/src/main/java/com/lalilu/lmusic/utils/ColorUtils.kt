@@ -3,14 +3,6 @@ package com.lalilu.lmusic.utils
 import android.graphics.Color
 import androidx.palette.graphics.Palette
 
-fun Palette?.getAutomaticColor(): Int {
-    if (this == null) return Color.DKGRAY
-    var oldColor = this.getDarkVibrantColor(Color.LTGRAY)
-    if (ColorUtils.isLightColor(oldColor))
-        oldColor = this.getDarkMutedColor(Color.LTGRAY)
-    return oldColor
-}
-
 object ColorUtils {
     fun isLightColor(color: Int): Boolean {
         val darkness =
