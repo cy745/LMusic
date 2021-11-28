@@ -6,7 +6,7 @@
 
     <data>
 
-        <import type="com.lalilu.lmusic.binding_adapter.BindAdapter" />
+        <import type="com.lalilu.lmusic.utils.TextUtils" />
 
         <variable
             name="coverUri"
@@ -87,7 +87,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
-            android:text="@{BindAdapter.durationToString(duration)}"
+            android:text="@{TextUtils.INSTANCE.durationToString(duration)}"
             android:textAlignment="center"
             app:layout_constraintBottom_toBottomOf="@+id/song_singer"
             app:layout_constraintEnd_toEndOf="parent"
