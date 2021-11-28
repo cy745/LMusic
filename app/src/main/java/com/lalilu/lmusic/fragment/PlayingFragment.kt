@@ -6,15 +6,19 @@ import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentNowPlayingBinding
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
+import com.lalilu.lmusic.adapter.OnItemDragAdapter
+import com.lalilu.lmusic.adapter.OnItemSwipedAdapter
 import com.lalilu.lmusic.base.BaseFragment
 import com.lalilu.lmusic.base.DataBindingConfig
+import com.lalilu.lmusic.database.LMusicDataBase
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.PlayingFragmentViewModel
 import com.lalilu.lmusic.utils.Mathf
-import com.lalilu.lmusic.adapter.OnItemDragAdapter
-import com.lalilu.lmusic.adapter.OnItemSwipedAdapter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.schedule
@@ -24,12 +28,14 @@ class PlayingFragment : BaseFragment() {
     private lateinit var mEvent: SharedViewModel
     private lateinit var mAdapter: MSongPlayingAdapter
     private lateinit var playerModule: LMusicPlayerModule
+    private lateinit var database: LMusicDataBase
     private var positionTimer: Timer? = null
 
     override fun initViewModel() {
         mState = getFragmentViewModel(PlayingFragmentViewModel::class.java)
         mEvent = getApplicationViewModel(SharedViewModel::class.java)
         playerModule = LMusicPlayerModule.getInstance(mActivity!!.application)
+        database = LMusicDataBase.getInstance(requireActivity().applicationContext)
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
@@ -79,10 +85,15 @@ class PlayingFragment : BaseFragment() {
             it?.let { mState.playingMSong.postValue(it) }
         }
         mState.playingMSong.observe(viewLifecycleOwner) {
-            // todo 歌词问题待解决
-            val lyric = "it.mLocalInfo?.mLyric"
-            val binding = (mBinding as FragmentNowPlayingBinding)
-            binding.fmLyricViewX.loadLyric(lyric, "")
+            GlobalScope.launch(Dispatchers.IO) {
+                val detail = database.songDetailDao().getById(it.songId) ?: return@launch
+                val lyric = detail.songLyric ?: return@launch
+
+                launch(Dispatchers.Main) {
+                    val binding = (mBinding as FragmentNowPlayingBinding)
+                    binding.fmLyricViewX.loadLyric(lyric)
+                }
+            }
         }
         playerModule.playBackState.observe(viewLifecycleOwner) {
             it ?: return@observe
