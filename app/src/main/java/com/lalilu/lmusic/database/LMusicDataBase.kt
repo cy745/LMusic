@@ -28,6 +28,7 @@ abstract class LMusicDataBase : RoomDatabase() {
     abstract fun artistDao(): MArtistDao
     abstract fun playlistDao(): MPlaylistDao
     abstract fun songDetailDao(): MSongDetailDao
+    abstract fun relationDao(): MRelationDao
 
     companion object {
         @Volatile
