@@ -14,11 +14,11 @@ interface MPlaylistDao {
     @Query("SELECT * FROM m_playlist;")
     fun getAll(): List<PlaylistWithSongs>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun save(playlist: MPlaylist)
 
     @Transaction
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun save(playlist: List<MPlaylist>)
 
     @Query("DELETE FROM m_playlist;")
