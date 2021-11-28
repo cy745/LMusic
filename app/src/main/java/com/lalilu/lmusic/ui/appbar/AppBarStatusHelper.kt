@@ -21,7 +21,7 @@ object AppBarStatusHelper : AppBarOnPercentChangeListener() {
      */
     fun initial(appbar: AppBarLayout, listenPercent: (percent: Float) -> Unit): AppBarStatusHelper {
         if (normalHeight <= 0) normalHeight = appbar.height
-        if (mBottom <= 0) mBottom = normalHeight
+        if (mBottom <= 0 || !fullyExpend) mBottom = normalHeight
 
         this.appbar = appbar
         this.appbar.removeOnOffsetChangedListener(this)
