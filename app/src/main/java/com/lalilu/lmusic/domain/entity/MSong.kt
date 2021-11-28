@@ -56,4 +56,19 @@ data class MSong(
         }
         return metadata.build()
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MSong
+
+        if (songId != other.songId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return songId.hashCode()
+    }
 }
