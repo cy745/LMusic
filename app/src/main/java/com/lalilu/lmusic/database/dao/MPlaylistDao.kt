@@ -9,6 +9,10 @@ import com.lalilu.lmusic.domain.entity.PlaylistWithSongs
 @Dao
 interface MPlaylistDao {
     @Transaction
+    @Query("SELECT * FROM m_playlist WHERE playlist_id = :id;")
+    fun getById(id: Long): PlaylistWithSongs
+
+    @Transaction
     @Query("SELECT * FROM m_playlist;")
     fun getAll(): List<PlaylistWithSongs>
 
