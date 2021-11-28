@@ -5,10 +5,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentNowPlayingBinding
-import com.lalilu.lmusic.adapter.LMusicPlayingAdapter
+import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.base.BaseFragment
 import com.lalilu.lmusic.base.DataBindingConfig
-import com.lalilu.lmusic.domain.entity.LSong
+import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.PlayingFragmentViewModel
@@ -22,7 +22,7 @@ import kotlin.concurrent.schedule
 class PlayingFragment : BaseFragment() {
     private lateinit var mState: PlayingFragmentViewModel
     private lateinit var mEvent: SharedViewModel
-    private lateinit var mAdapter: LMusicPlayingAdapter
+    private lateinit var mAdapter: MSongPlayingAdapter
     private lateinit var playerModule: LMusicPlayerModule
     private var positionTimer: Timer? = null
 
@@ -33,12 +33,12 @@ class PlayingFragment : BaseFragment() {
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter = LMusicPlayingAdapter()
+        mAdapter = MSongPlayingAdapter()
         mAdapter.draggableModule.isDragEnabled = true
         mAdapter.draggableModule.isSwipeEnabled = true
         mAdapter.draggableModule.setOnItemDragListener(object : OnItemDragAdapter() {
             override fun onItemDragEnd(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-                mEvent.nowPlaylistRequest.postData(mEvent.nowPlaylistRequest.getData().value.also {
+                mEvent.nowPlaylistWithSongsRequest.postData(mEvent.nowPlaylistWithSongsRequest.getData().value.also {
                     it?.songs = ArrayList(mAdapter.data)
                 })
             }
@@ -46,21 +46,21 @@ class PlayingFragment : BaseFragment() {
         mAdapter.draggableModule.setOnItemSwipeListener(object : OnItemSwipedAdapter() {
             var mediaId: Long = 0
             override fun onItemSwipeStart(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-                mediaId = mAdapter.getItem(pos).mId
+                mediaId = mAdapter.getItem(pos).songId
             }
 
             override fun onItemSwiped(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-                mEvent.nowPlaylistRequest.postData(mEvent.nowPlaylistRequest.getData().value.also {
+                mEvent.nowPlaylistWithSongsRequest.postData(mEvent.nowPlaylistWithSongsRequest.getData().value.also {
                     it?.songs = ArrayList(mAdapter.data)
                 })
             }
         })
 
         mAdapter.setOnItemClickListener { adapter, _, position ->
-            val song = adapter.data[position] as LSong
+            val song = adapter.data[position] as MSong
 
             playerModule.mediaController.value?.transportControls
-                ?.playFromMediaId(song.mId.toString(), null)
+                ?.playFromMediaId(song.songId.toString(), null)
         }
 
         return DataBindingConfig(R.layout.fragment_now_playing, BR.vm, mState)
@@ -68,20 +68,21 @@ class PlayingFragment : BaseFragment() {
     }
 
     override fun loadInitData() {
-        mEvent.nowPlaylistRequest.getData().observe(viewLifecycleOwner) {
-            mState.musicList.value = it
+        mEvent.nowPlaylistWithSongsRequest.getData().observe(viewLifecycleOwner) {
+            mState.playlistWithSongs.value = it
         }
 
         mState.nowBgPalette.observe(viewLifecycleOwner) {
             mEvent.nowBgPalette.postValue(it)
         }
-        mEvent.nowPlayingRequest.getData().observe(viewLifecycleOwner) {
-            it?.let { mState.nowPlayingMusic.postValue(it) }
+        mEvent.nowMSongRequest.getData().observe(viewLifecycleOwner) {
+            it?.let { mState.playingMSong.postValue(it) }
         }
-        mState.nowPlayingMusic.observe(viewLifecycleOwner) {
-            val lyric = it.mLocalInfo?.mLyric
+        mState.playingMSong.observe(viewLifecycleOwner) {
+            // todo 歌词问题待解决
+            val lyric = "it.mLocalInfo?.mLyric"
             val binding = (mBinding as FragmentNowPlayingBinding)
-            binding.fmLyricViewX.loadLyric(lyric)
+            binding.fmLyricViewX.loadLyric(lyric, "")
         }
         playerModule.playBackState.observe(viewLifecycleOwner) {
             it ?: return@observe
