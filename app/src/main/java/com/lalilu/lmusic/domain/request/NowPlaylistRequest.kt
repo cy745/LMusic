@@ -4,6 +4,7 @@ import com.lalilu.lmusic.LMusicPlaylistMMKV
 import com.lalilu.lmusic.domain.BaseRequest
 import com.lalilu.lmusic.domain.entity.LPlaylist
 
+@Deprecated("后期删除")
 /**
  * 获取 playlist 的 request 对象，可通过 requestData 请求更新
  */

@@ -6,6 +6,7 @@ import android.text.TextUtils
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
+@Deprecated("后期删除")
 data class LSong(
     var mId: Long,
     var mTitle: String,

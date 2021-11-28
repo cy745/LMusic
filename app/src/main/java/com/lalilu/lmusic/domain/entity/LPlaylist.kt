@@ -4,6 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
+@Deprecated("后期删除")
 data class LPlaylist(
     var id: Long,
     // 歌单标题
