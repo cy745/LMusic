@@ -10,6 +10,7 @@ import com.lalilu.lmusic.utils.ThreadPoolUtils
  * 需从cursor中提取对应所需的Item对象并返回
  *
  */
+@Deprecated("BaseMScanner 替代，后期删除，用了线程池但并没有多线程，我傻了")
 abstract class BaseMediaScanner<T> : MediaScanner<T> {
     private var mExecutor = ThreadPoolUtils.newCachedThreadPool()
 

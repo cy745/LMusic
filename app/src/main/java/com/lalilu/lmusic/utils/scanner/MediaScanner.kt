@@ -7,6 +7,7 @@ import android.database.Cursor
  * 媒体扫描器基类
  *
  */
+@Deprecated("MScanner 替代，后期删除")
 interface MediaScanner<T> {
 
     /**
