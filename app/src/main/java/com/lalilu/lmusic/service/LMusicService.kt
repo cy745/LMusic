@@ -16,6 +16,7 @@ import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.manager.MusicNoisyReceiver
 import com.lalilu.lmusic.state.LMusicServiceViewModel
 
+@Deprecated("MSongService 替代，后期删除")
 class LMusicService : BaseService() {
     companion object {
         const val ACTION_PLAY_PAUSE = "play_and_pause"
