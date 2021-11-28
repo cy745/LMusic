@@ -57,7 +57,7 @@ object MSongScanner : BaseMScanner() {
                 val audioTag = AudioFileIO.read(File(songData)).tag
                 val lyric = audioTag.getFields(FieldKey.LYRICS)
                     .run { if (isNotEmpty()) get(0).toString() else "" }
-                val detail = MSongDetail(songId, lyric, songSize, songData, songMimeType)
+                val detail = MSongDetail(songId, lyric, songSize, songData)
 
                 database!!.songDetailDao().save(detail)
             } catch (_: Exception) {
@@ -66,10 +66,12 @@ object MSongScanner : BaseMScanner() {
                 songUri = songUri,
                 songId = songId,
                 albumId = albumId,
+                albumTitle = albumTitle,
                 songTitle = songTitle,
                 songDuration = songDuration,
                 showingArtist = artistName,
-                songCoverUri = songCoverUri
+                songCoverUri = songCoverUri,
+                songMimeType = songMimeType
             )
 
             val artists: List<MArtist> = artistsName.map { MArtist(it) }
