@@ -44,26 +44,31 @@ class SharedViewModel : ViewModel() {
         const val LAST_PLAYLIST_ID = "last_playlist_id"
     }
 
+    private var playlistId = mmkv.decodeLong(LAST_PLAYLIST_ID, 0)
+    private var songId = mmkv.decodeLong(LAST_MUSIC_ID, 0)
+
     init {
+        // 监听正在播放的歌单的 playlistId
+        nowPlaylistId.observeForever {
+            playlistId = it ?: mmkv.decodeLong(LAST_PLAYLIST_ID, 0)
+            mmkv.encode(LAST_PLAYLIST_ID, playlistId)
+            nowPlaylistWithSongsRequest.requireData(playlistId)
+        }
+
         // 监听正在播放的歌曲的 songId
         nowPlayingId.observeForever {
             GlobalScope.launch(Dispatchers.IO) {
-                val songId = it ?: mmkv.decodeLong(LAST_MUSIC_ID, 0)
+                songId = it ?: mmkv.decodeLong(LAST_MUSIC_ID, 0)
                 mmkv.encode(LAST_MUSIC_ID, songId)
 
                 val song = database.songDao().getById(songId)
                 nowMSongRequest.postData(song)
 
-                val oldPlaylist = nowPlaylistWithSongsRequest.getData().value ?: return@launch
+                val oldPlaylist = nowPlaylistWithSongsRequest.getData().value
+                    ?: database.playlistDao().getById(playlistId) ?: return@launch
                 val newPlayList = listOrderChange(oldPlaylist, song) ?: return@launch
                 nowPlaylistWithSongsRequest.postData(newPlayList)
             }
-        }
-        // 监听正在播放的歌单的 playlistId
-        nowPlaylistId.observeForever {
-            val playlistId = it ?: mmkv.decodeLong(LAST_PLAYLIST_ID, 0)
-            mmkv.encode(LAST_PLAYLIST_ID, playlistId)
-            nowPlaylistWithSongsRequest.requireData(playlistId)
         }
     }
 
