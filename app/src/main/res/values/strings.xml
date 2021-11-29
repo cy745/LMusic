@@ -14,4 +14,8 @@
     <string name="text_button_create_playlist">Create Playlist</string>
     <string name="text_button_scan_song">Scan song</string>
     <string name="text_button_playlist_delete">删除歌单按钮</string>
+    <string name="navigate_to_star_page">Navigate to star page</string>
+    <string name="navigate_to_playlist_page">Navigate to Playlist page</string>
+    <string name="navigate_to_all_songs_page">Navigate to all songs page</string>
+    <string name="navigate_to_album_page">Navigate to album page</string>
 </resources>
