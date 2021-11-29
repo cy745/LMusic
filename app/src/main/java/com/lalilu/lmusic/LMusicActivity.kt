@@ -55,7 +55,9 @@ class LMusicActivity : BaseActivity() {
                 playerModule.mediaController.value?.transportControls?.pause()
             }
             R.id.appbar_create_playlist -> {
-                MSongScanner.check()
+                mEvent.nowPlaylistWithSongsRequest.requireData()
+                mEvent.nowMSongRequest.requireData()
+                mEvent.allPlaylistRequest.requireData()
             }
             R.id.appbar_scan_song -> {
                 MSongScanner.setScanFailed {

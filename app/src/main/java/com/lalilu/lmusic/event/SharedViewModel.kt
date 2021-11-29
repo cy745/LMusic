@@ -22,15 +22,8 @@ class SharedViewModel : ViewModel() {
     private val database = LMusicDataBase.getInstance(null)
 
     val nowBgPalette: MutableLiveData<Palette> = MutableLiveData()
-
     val nowPlaylistId = MutableLiveData<Long>(null)
     val nowPlayingId = MutableLiveData<Long>(null)
-
-    @Deprecated("nowMSongRequest 替代，后期删除")
-    val nowPlayingRequest = NowPlayingRequest()
-
-    @Deprecated("nowPlaylistWithSongsRequest 替代，后期删除")
-    val nowPlaylistRequest = NowPlaylistRequest()
 
     val nowMSongRequest = NowMSongRequest()
     val nowPlaylistWithSongsRequest = NowPlaylistWithSongsRequest()
