@@ -31,7 +31,7 @@ class MainFragment : BaseFragment() {
     override fun getDataBindingConfig(): DataBindingConfig {
         mPagerAdapter = LMusicFragmentStateAdapter(mActivity!!)
             .addFragment(PlayingFragment())
-            .addFragment(PlaylistFragment())
+            .addFragment(NavigatorFragment())
 
         return DataBindingConfig(R.layout.fragment_main, BR.vm, mState)
             .addParam(BR.pagerAdapter, mPagerAdapter)

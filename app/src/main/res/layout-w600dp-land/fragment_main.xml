@@ -30,8 +30,8 @@
             tools:layout="@layout/fragment_now_playing" />
 
         <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/fragment_playlist"
-            android:name="com.lalilu.lmusic.fragment.PlaylistFragment"
+            android:id="@+id/fragment_navigator"
+            android:name="com.lalilu.lmusic.fragment.NavigatorFragment"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
@@ -39,7 +39,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/fragment_playing"
             app:layout_constraintTop_toTopOf="parent"
-            tools:layout="@layout/fragment_play_list" />
+            tools:layout="@layout/fragment_navigator" />
 
         <com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
             android:id="@+id/ma_seekBar"
