@@ -11,6 +11,10 @@
             type="com.lalilu.lmusic.state.PlayingFragmentViewModel" />
 
         <variable
+            name="ev"
+            type="com.lalilu.lmusic.event.SharedViewModel" />
+
+        <variable
             name="playingAdapter"
             type="com.lalilu.lmusic.adapter.MSongPlayingAdapter" />
 
@@ -28,7 +32,7 @@
             android:layout_height="wrap_content"
             android:background="@color/colorPrimaryVariant"
             android:fitsSystemWindows="true"
-            app:bgPalette="@{vm.nowBgPalette}"
+            app:bgPalette="@{ev.nowBgPalette}"
             app:layout_behavior="com.lalilu.lmusic.ui.appbar.AppBarZoomBehavior">
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
@@ -50,7 +54,7 @@
                     android:layout_gravity="top"
                     android:fitsSystemWindows="true"
                     app:artUri="@{vm.playingMSong.songCoverUri}"
-                    app:bgPaletteLiveData="@{vm.nowBgPalette}"
+                    app:bgPaletteLiveData="@{ev.nowBgPalette}"
                     app:callerContext="@{context}"
                     app:layout_collapseMode="parallax"
                     app:layout_collapseParallaxMultiplier="0.7"

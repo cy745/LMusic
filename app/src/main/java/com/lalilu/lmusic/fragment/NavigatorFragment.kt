@@ -18,9 +18,6 @@ class NavigatorFragment : BaseFragment() {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.fragment_navigator, BR.vm, mState)
-    }
-
-    override fun loadInitData() {
-        
+            .addParam(BR.ev, mEvent)
     }
 }

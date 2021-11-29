@@ -4,6 +4,13 @@
 
     <data>
 
+        <variable
+            name="vm"
+            type="com.lalilu.lmusic.state.NavigatorViewModel" />
+
+        <variable
+            name="ev"
+            type="com.lalilu.lmusic.event.SharedViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -16,6 +23,7 @@
             android:layout_height="wrap_content"
             android:background="@color/gray_600"
             android:fitsSystemWindows="true"
+            app:bgPalette="@{ev.nowBgPalette}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
