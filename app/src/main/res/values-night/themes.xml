@@ -29,4 +29,9 @@
     <style name="collapsedTitleText">
         <item name="android:textSize">18sp</item>
     </style>
+
+    <style name="dayNightTitleText">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
 </resources>
