@@ -38,9 +38,6 @@ class MainFragment : BaseFragment() {
     }
 
     override fun loadInitData() {
-        mEvent.pageRequest.getData().observe(viewLifecycleOwner) {
-            it?.let { mState.nowPageInt.postValue(it) }
-        }
         // mEvent 的背景色和 mState 的背景色进行绑定
         mEvent.nowBgPalette.observe(viewLifecycleOwner) {
             mState.nowBgPalette.postValue(it)
