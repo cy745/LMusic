@@ -25,7 +25,7 @@
         android:paddingBottom="128dp"
         app:adapter="@{playlistAdapter}"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:setLPlayLists="@{vm.playlist}"
+        app:setPlayLists="@{vm.playlist}"
         tools:listitem="@layout/item_playlist" />
 </layout>
 

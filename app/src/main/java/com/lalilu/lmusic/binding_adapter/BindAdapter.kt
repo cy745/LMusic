@@ -14,7 +14,7 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.adapter.node.FirstNode
-import com.lalilu.lmusic.domain.entity.LPlaylist
+import com.lalilu.lmusic.domain.entity.MPlaylist
 import com.lalilu.lmusic.domain.entity.PlaylistWithSongs
 import com.lalilu.lmusic.ui.PaletteDraweeView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
@@ -70,8 +70,8 @@ fun setSeekBarBGColor(seekBar: LMusicSeekBar, palette: Palette?) {
 }
 
 // TODO: 2021/11/29  setLPlayLists 待修改
-@BindingAdapter(value = ["setLPlayLists"], requireAll = false)
-fun setLPlayLists(recyclerView: RecyclerView, list: List<FirstNode<LPlaylist>>?) {
+@BindingAdapter(value = ["setPlayLists"], requireAll = false)
+fun setLPlayLists(recyclerView: RecyclerView, list: List<FirstNode<MPlaylist>>?) {
     recyclerView.adapter ?: return
     list ?: return
     (recyclerView.adapter as BaseNodeAdapter).setList(list)

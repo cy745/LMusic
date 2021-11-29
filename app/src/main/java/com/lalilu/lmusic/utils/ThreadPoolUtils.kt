@@ -25,14 +25,4 @@ object ThreadPoolUtils {
         TimeUnit.SECONDS,
         SynchronousQueue()
     )
-
-    @Deprecated("后期删除，需让线程池保持单例模式")
-    fun newCachedThreadPool(): ThreadPoolExecutor {
-        return ThreadPoolExecutor(
-            0, Int.MAX_VALUE,
-            60L,
-            TimeUnit.SECONDS,
-            SynchronousQueue()
-        )
-    }
 }

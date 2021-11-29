@@ -46,7 +46,7 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
         override val layoutId: Int = R.layout.item_playlist
 
         override fun convert(helper: BaseViewHolder, item: BaseNode) {
-            val playlist = (item as FirstNode<*>).data as LPlaylist
+            val playlist = (item as FirstNode<*>).data as MPlaylist
 
 //            val lastTime = System.currentTimeMillis() - playlist.playlistCreateTime
 //            val min = lastTime / 1000 / 60
@@ -58,11 +58,11 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
 //            }
 //            helper.setText(R.id.playlist_last_time, result)
 
-            helper.setText(R.id.playlist_title, playlist.title)
+            helper.setText(R.id.playlist_title, playlist.playlistTitle)
             helper.getView<SamplingDraweeView>(R.id.playlist_pic)
-                .setImageURI(playlist.artUri, context)
+                .setImageURI(playlist.playlistCoverUri, context)
             helper.getView<ImageButton>(R.id.playlist_delete).setOnClickListener {
-                onPlaylistSelectedListener?.onDeleted(playlist.id)
+                onPlaylistSelectedListener?.onDeleted(playlist.playlistId)
             }
         }
 
@@ -85,9 +85,9 @@ class LMusicPlaylistAdapter : BaseNodeAdapter() {
         override val layoutId: Int = R.layout.item_playlist_expand
 
         override fun convert(helper: BaseViewHolder, item: BaseNode) {
-            val song = (item as SecondNode<*>).data as LSong
-            helper.setText(R.id.music_title, song.mTitle)
-            helper.setText(R.id.music_title_bg, song.mTitle)
+            val song = (item as SecondNode<*>).data as MSong
+            helper.setText(R.id.music_title, song.songTitle)
+            helper.setText(R.id.music_title_bg, song.songTitle)
         }
 
         override fun onClick(helper: BaseViewHolder, view: View, data: BaseNode, position: Int) {
