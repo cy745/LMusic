@@ -23,7 +23,6 @@
             android:layout_height="match_parent"
             android:overScrollMode="never"
             app:adapter="@{pagerAdapter}"
-            app:currentItem="@{vm.nowPageInt}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

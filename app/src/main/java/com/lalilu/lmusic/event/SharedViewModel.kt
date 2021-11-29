@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 class SharedViewModel : ViewModel() {
     private val database = LMusicDataBase.getInstance(null)
 
-    val nowBgPalette: MutableLiveData<Palette> = MutableLiveData()
+    val nowBgPalette = MutableLiveData<Palette>()
     val nowPlaylistId = MutableLiveData<Long>(null)
     val nowPlayingId = MutableLiveData<Long>(null)
 
@@ -29,7 +29,6 @@ class SharedViewModel : ViewModel() {
     val nowPlaylistWithSongsRequest = NowPlaylistWithSongsRequest()
 
     val allPlaylistRequest = AllPlayListRequest()
-    val pageRequest = PageRequest()
     val mmkv = MMKV.defaultMMKV()
 
     companion object {
