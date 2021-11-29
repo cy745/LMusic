@@ -82,8 +82,4 @@ object MSongScanner : BaseMScanner() {
             onScanProgress?.invoke(taskNumber)
         })
     }
-
-    fun check() {
-
-    }
 }

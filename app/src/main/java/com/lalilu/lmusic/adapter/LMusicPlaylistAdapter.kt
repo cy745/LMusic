@@ -10,9 +10,9 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.adapter.node.SecondNode
+import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.ui.SamplingDraweeView
-import com.lalilu.lmusic.domain.entity.LPlaylist
-import com.lalilu.lmusic.domain.entity.LSong
 
 class LMusicPlaylistAdapter : BaseNodeAdapter() {
     companion object {
