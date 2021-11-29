@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.palette.graphics.Palette
 
 object ColorAnimator {
-    private var oldColor: Int = Color.DKGRAY
+    private val colorMap: LinkedHashMap<Int, Int> = LinkedHashMap()
     private var transitionDuration = 600L
 
     fun setBgColorFromPalette(
@@ -15,6 +15,8 @@ object ColorAnimator {
         viewGroup: ViewGroup
     ) {
         val plColor = palette.getAutomaticColor()
+        val oldColor = colorMap[viewGroup.id] ?: Color.DKGRAY
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ValueAnimator.ofArgb(oldColor, plColor).apply {
                 duration = transitionDuration
@@ -26,6 +28,6 @@ object ColorAnimator {
         } else {
             viewGroup.setBackgroundColor(plColor)
         }
-        oldColor = plColor
+        colorMap[viewGroup.id] = plColor
     }
 }
