@@ -36,4 +36,22 @@ object StatusBarUtil {
                 )
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun statusTextColorDark(activity: Activity) {
+        activity.window?.decorView?.windowInsetsController
+            ?.setSystemBarsAppearance(
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            )
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun statusTextColorLight(activity: Activity) {
+        activity.window?.decorView?.windowInsetsController
+            ?.setSystemBarsAppearance(
+                0,
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            )
+    }
 }
