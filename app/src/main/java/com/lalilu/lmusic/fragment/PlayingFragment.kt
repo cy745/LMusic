@@ -70,6 +70,7 @@ class PlayingFragment : BaseFragment() {
         }
 
         return DataBindingConfig(R.layout.fragment_now_playing, BR.vm, mState)
+            .addParam(BR.ev, mEvent)
             .addParam(BR.playingAdapter, mAdapter)
     }
 
@@ -78,9 +79,6 @@ class PlayingFragment : BaseFragment() {
             mState.playlistWithSongs.value = it
         }
 
-        mState.nowBgPalette.observe(viewLifecycleOwner) {
-            mEvent.nowBgPalette.postValue(it)
-        }
         mEvent.nowMSongRequest.getData().observe(viewLifecycleOwner) {
             it?.let { mState.playingMSong.postValue(it) }
         }
