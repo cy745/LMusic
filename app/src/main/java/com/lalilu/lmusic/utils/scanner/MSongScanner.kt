@@ -42,8 +42,8 @@ object MSongScanner : BaseMScanner() {
         val songMimeType = cursor.getSongMimeType()     // MIME类型
         val albumId = cursor.getAlbumId()               // 专辑 id
         val albumTitle = cursor.getAlbumTitle()         // 专辑标题
-        val artistName = cursor.getArtist()                 // 艺术家
-        val artistsName = cursor.getArtists()               // 艺术家
+        val artistName = cursor.getArtist()             // 艺术家
+        val artistsName = cursor.getArtists()           // 艺术家
 
         val taskNumber = ++progressCount
         taskList.add(GlobalScope.launch(mExecutor.asCoroutineDispatcher()) {
