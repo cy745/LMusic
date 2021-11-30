@@ -16,7 +16,6 @@ class SamplingDraweeView @JvmOverloads constructor(
     private var samplingValue = 200
 
     override fun setImageURI(uri: Uri?, callerContext: Any?) {
-        super.setImageURI(uri, callerContext)
         if (uri == null) return
 
         callerContext?.let {

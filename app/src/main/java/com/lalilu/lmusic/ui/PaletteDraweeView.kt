@@ -26,6 +26,8 @@ class PaletteDraweeView @JvmOverloads constructor(
     var samplingValue = 400
     var samplingBitmap: Bitmap? = null
     var samplingRect = Rect(0, 0, samplingValue, samplingValue)
+    var lastCoverUri: Uri = Uri.EMPTY
+    var lastCoverUri2: Uri = Uri.EMPTY
 
     fun blurBg(percent: Float) {
         blurRadius = (percent * 50).toInt()
@@ -37,7 +39,10 @@ class PaletteDraweeView @JvmOverloads constructor(
      */
     private var postProcessor: BaseRepeatedPostProcessor = object : BaseRepeatedPostProcessor() {
         override fun process(bitmap: Bitmap) {
-            palette.postValue(Palette.from(bitmap).generate())
+            if (lastCoverUri2 != lastCoverUri)
+                palette.postValue(Palette.from(bitmap).generate())
+            lastCoverUri2 = lastCoverUri
+
 
             // 创建重采样bitmap
             if (samplingBitmap == null) {
@@ -82,7 +87,8 @@ class PaletteDraweeView @JvmOverloads constructor(
     }
 
     override fun setImageURI(uri: Uri?, callerContext: Any?) {
-        super.setImageURI(uri, callerContext)
+        if (lastCoverUri == uri || uri == null) return
+        lastCoverUri = uri
 
         // 回收上一张重采样图片
         if (samplingBitmap != null) {
