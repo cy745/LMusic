@@ -28,7 +28,7 @@ class LMusicActivity : BaseActivity() {
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        return DataBindingConfig(R.layout.activity_now, BR.vm, mState)
+        return DataBindingConfig(R.layout.activity_main, BR.vm, mState)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

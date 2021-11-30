@@ -4,7 +4,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.BR
 import com.lalilu.R
-import com.lalilu.databinding.FragmentNowPlayingBinding
+import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.adapter.OnItemDragAdapter
 import com.lalilu.lmusic.adapter.OnItemSwipedAdapter
@@ -69,7 +69,7 @@ class PlayingFragment : BaseFragment() {
                 ?.playFromMediaId(song.songId.toString(), null)
         }
 
-        return DataBindingConfig(R.layout.fragment_now_playing, BR.vm, mState)
+        return DataBindingConfig(R.layout.fragment_playing, BR.vm, mState)
             .addParam(BR.ev, mEvent)
             .addParam(BR.playingAdapter, mAdapter)
     }
@@ -88,7 +88,7 @@ class PlayingFragment : BaseFragment() {
                 val lyric = detail.songLyric ?: return@launch
 
                 launch(Dispatchers.Main) {
-                    val binding = (mBinding as FragmentNowPlayingBinding)
+                    val binding = (mBinding as FragmentPlayingBinding)
                     binding.fmLyricViewX.loadLyric(lyric)
                 }
             }
@@ -96,7 +96,7 @@ class PlayingFragment : BaseFragment() {
         playerModule.playBackState.observe(viewLifecycleOwner) {
             it ?: return@observe
             var currentDuration = Mathf.getPositionFromPlaybackStateCompat(it)
-            val binding = (mBinding as FragmentNowPlayingBinding)
+            val binding = (mBinding as FragmentPlayingBinding)
 
             positionTimer?.cancel()
             if (it.state == PlaybackStateCompat.STATE_PLAYING)
@@ -110,7 +110,7 @@ class PlayingFragment : BaseFragment() {
     }
 
     override fun loadInitView() {
-        val binding = (mBinding as FragmentNowPlayingBinding)
+        val binding = (mBinding as FragmentPlayingBinding)
         mActivity!!.setSupportActionBar(binding.fmToolbar)
         mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)
         binding.fmLyricViewX.setLabel("暂无歌词")

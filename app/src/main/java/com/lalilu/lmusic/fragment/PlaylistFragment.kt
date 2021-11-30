@@ -58,7 +58,7 @@ class PlaylistFragment : BaseFragment() {
             }
         }
 
-        return DataBindingConfig(R.layout.fragment_play_list, BR.vm, mState)
+        return DataBindingConfig(R.layout.fragment_playlist, BR.vm, mState)
             .addParam(BR.playlistAdapter, mAdapter)
     }
 
