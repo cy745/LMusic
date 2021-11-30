@@ -27,7 +27,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:layout="@layout/fragment_now_playing" />
+            tools:layout="@layout/fragment_playing" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment_navigator"
