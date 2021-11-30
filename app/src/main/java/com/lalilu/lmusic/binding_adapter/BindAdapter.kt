@@ -69,7 +69,6 @@ fun setSeekBarBGColor(seekBar: LMusicSeekBar, palette: Palette?) {
     seekBar.setThumbColor(getAutomaticColor(palette))
 }
 
-// TODO: 2021/11/29  setLPlayLists 待修改
 @BindingAdapter(value = ["setPlayLists"], requireAll = false)
 fun setLPlayLists(recyclerView: RecyclerView, list: List<FirstNode<MPlaylist>>?) {
     recyclerView.adapter ?: return

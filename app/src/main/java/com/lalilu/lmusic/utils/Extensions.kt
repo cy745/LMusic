@@ -58,6 +58,6 @@ fun Cursor.getSongDuration(): Long {
 }
 
 fun Cursor.getSongMimeType(): String {
-    val index = this.getColumnIndex(MediaStore.Audio.Media.DURATION)
+    val index = this.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE)
     return if (index < 0) "" else this.getString(index)
 }
