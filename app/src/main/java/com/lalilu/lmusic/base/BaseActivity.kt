@@ -8,14 +8,14 @@ abstract class BaseActivity : DataBindingActivity() {
     private var mActivityProvider: ViewModelProvider? = null
     private var mApplicationProvider: ViewModelProvider? = null
 
-    protected fun <T : ViewModel?> getActivityViewModel(modelClass: Class<T>): T {
+    protected fun <T : ViewModel> getActivityViewModel(modelClass: Class<T>): T {
         if (mActivityProvider == null) {
             mActivityProvider = ViewModelProvider(this)
         }
         return mActivityProvider!![modelClass]
     }
 
-    protected fun <T : ViewModel?> getApplicationViewModel(modelClass: Class<T>): T {
+    protected fun <T : ViewModel> getApplicationViewModel(modelClass: Class<T>): T {
         if (mApplicationProvider == null) {
             mApplicationProvider =
                 ViewModelProvider(

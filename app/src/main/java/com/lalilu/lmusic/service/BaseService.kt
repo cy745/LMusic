@@ -17,7 +17,7 @@ abstract class BaseService : MediaBrowserServiceCompat() {
         initViewModel()
     }
 
-    protected fun <T : ViewModel?> getApplicationViewModel(modelClass: Class<T>): T {
+    protected fun <T : ViewModel> getApplicationViewModel(modelClass: Class<T>): T {
         if (mApplicationProvider == null) {
             mApplicationProvider =
                 ViewModelProvider(

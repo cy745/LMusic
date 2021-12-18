@@ -20,21 +20,21 @@ abstract class BaseFragment : DataBindingFragment() {
         loadInitView()
     }
 
-    protected fun <T : ViewModel?> getFragmentViewModel(modelClass: Class<T>): T {
+    protected fun <T : ViewModel> getFragmentViewModel(modelClass: Class<T>): T {
         if (mFragmentProvider == null) {
             mFragmentProvider = ViewModelProvider(this)
         }
         return mFragmentProvider!![modelClass]
     }
 
-    protected fun <T : ViewModel?> getActivityViewModel(modelClass: Class<T>): T {
+    protected fun <T : ViewModel> getActivityViewModel(modelClass: Class<T>): T {
         if (mActivityProvider == null) {
             mActivityProvider = ViewModelProvider(this)
         }
         return mActivityProvider!![modelClass]
     }
 
-    protected fun <T : ViewModel?> getApplicationViewModel(modelClass: Class<T>): T {
+    protected fun <T : ViewModel> getApplicationViewModel(modelClass: Class<T>): T {
         if (mApplicationProvider == null) {
             mApplicationProvider =
                 ViewModelProvider(
