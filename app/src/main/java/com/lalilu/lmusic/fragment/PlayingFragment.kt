@@ -16,25 +16,29 @@ import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.PlayingFragmentViewModel
 import com.lalilu.lmusic.utils.Mathf
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
+import javax.inject.Inject
 import kotlin.collections.ArrayList
 import kotlin.concurrent.schedule
 
+@AndroidEntryPoint
 class PlayingFragment : BaseFragment() {
     private lateinit var mState: PlayingFragmentViewModel
     private lateinit var mEvent: SharedViewModel
     private lateinit var mAdapter: MSongPlayingAdapter
-    private lateinit var playerModule: LMusicPlayerModule
+
+    @Inject
+    lateinit var playerModule: LMusicPlayerModule
     private lateinit var database: LMusicDataBase
     private var positionTimer: Timer? = null
 
     override fun initViewModel() {
         mState = getFragmentViewModel(PlayingFragmentViewModel::class.java)
         mEvent = getApplicationViewModel(SharedViewModel::class.java)
-        playerModule = LMusicPlayerModule.getInstance(mActivity!!.application)
         database = LMusicDataBase.getInstance(requireActivity().applicationContext)
     }
 

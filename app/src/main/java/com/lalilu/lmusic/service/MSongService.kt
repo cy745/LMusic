@@ -15,7 +15,10 @@ import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.manager.MusicNoisyReceiver
 import com.lalilu.lmusic.state.LMusicServiceViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MSongService : BaseService() {
     companion object {
         const val ACTION_PLAY_PAUSE = "play_and_pause"
@@ -33,24 +36,27 @@ class MSongService : BaseService() {
         val becomingNoisyFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
     }
 
+    private val tag = this.javaClass.name
     private lateinit var mState: LMusicServiceViewModel
     private lateinit var mEvent: SharedViewModel
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mSessionCallback: LMusicSessionCompactCallback
-    private lateinit var mNotificationManager: LMusicNotificationManager
-    private lateinit var mAudioFocusManager: LMusicAudioFocusManager
-    private lateinit var mNoisyReceiver: MusicNoisyReceiver
 
-    private val tag = this.javaClass.name
+    @Inject
+    lateinit var mNotificationManager: LMusicNotificationManager
+
+    @Inject
+    lateinit var mAudioFocusManager: LMusicAudioFocusManager
+
+    @Inject
+    lateinit var mNoisyReceiver: MusicNoisyReceiver
+
 
     override fun initViewModel() {
         mState = getApplicationViewModel(LMusicServiceViewModel::class.java)
         mEvent = getApplicationViewModel(SharedViewModel::class.java)
 
-        mNotificationManager = LMusicNotificationManager(this)
-        mNoisyReceiver = MusicNoisyReceiver()
-        mAudioFocusManager = LMusicAudioFocusManager(this)
         mSessionCallback = LMusicSessionCompactCallback()
         mNoisyReceiver.onBecomingNoisyListener = mSessionCallback
         mAudioFocusManager.onAudioFocusChangeListener = mSessionCallback

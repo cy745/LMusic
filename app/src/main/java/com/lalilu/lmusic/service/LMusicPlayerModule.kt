@@ -1,54 +1,48 @@
 package com.lalilu.lmusic.service
 
-import android.app.Activity
-import android.app.Application
 import android.content.ComponentName
+import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import org.jetbrains.annotations.Nullable
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.logging.Logger
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class LMusicPlayerModule private constructor(application: Application) :
-    AndroidViewModel(application) {
+@Singleton
+class LMusicPlayerModule @Inject constructor(
+    @ApplicationContext context: Context
+) : ViewModel() {
     private val logger = Logger.getLogger(this.javaClass.name)
 
     val metadata = MutableLiveData<MediaMetadataCompat>(null)
     val playBackState = MutableLiveData<PlaybackStateCompat>(null)
     val mediaController = MutableLiveData<MediaControllerCompat>(null)
 
-    private lateinit var mediaBrowser: MediaBrowserCompat
-    private lateinit var controllerCallback: MusicControllerCallback
-    private lateinit var connectionCallback: MusicConnectionCallback
-    private lateinit var subscriptionCallback: MusicSubscriptionCallback
-
-    fun initMusicBrowser(activity: Activity) {
-        connectionCallback = MusicConnectionCallback(activity)
-        controllerCallback = MusicControllerCallback()
-        subscriptionCallback = MusicSubscriptionCallback()
-        mediaBrowser = MediaBrowserCompat(
-            activity, ComponentName(activity, MSongService::class.java),
-            connectionCallback, null
-        )
-    }
+    private var controllerCallback: MusicControllerCallback = MusicControllerCallback()
+    private var connectionCallback: MusicConnectionCallback = MusicConnectionCallback(context)
+    private var subscriptionCallback: MusicSubscriptionCallback = MusicSubscriptionCallback()
+    private var mediaBrowser: MediaBrowserCompat = MediaBrowserCompat(
+        context, ComponentName(context, MSongService::class.java),
+        connectionCallback, null
+    )
 
     fun connect() = mediaBrowser.connect()
     fun disconnect() = mediaBrowser.disconnect().also {
         mediaController.value?.unregisterCallback(controllerCallback)
     }
 
-    inner class MusicConnectionCallback(private val activity: Activity) :
+    inner class MusicConnectionCallback(private val context: Context) :
         MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
-            var controller: MediaControllerCompat
-            mediaBrowser.sessionToken.also { token ->
-                controller = MediaControllerCompat(activity, token)
-                MediaControllerCompat.setMediaController(activity, controller)
+            val controller = MediaControllerCompat(context, mediaBrowser.sessionToken).apply {
+                registerCallback(controllerCallback)
             }
-            controller.registerCallback(controllerCallback)
+
             mediaBrowser.subscribe("ACCESS_ID", subscriptionCallback)
             mediaController.postValue(controller)
             logger.info("[MusicConnectionCallback]#onConnected")
@@ -77,20 +71,6 @@ class LMusicPlayerModule private constructor(application: Application) :
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             this@LMusicPlayerModule.metadata.postValue(metadata ?: return)
             logger.info("[MusicControllerCallback]#onMetadataChanged")
-        }
-    }
-
-    companion object {
-        @Volatile
-        private var instance: LMusicPlayerModule? = null
-
-        @Throws(NullPointerException::class)
-        fun getInstance(@Nullable application: Application?): LMusicPlayerModule {
-            instance ?: synchronized(LMusicPlayerModule::class.java) {
-                if (application == null) throw NullPointerException("No Application Context Input")
-                instance = LMusicPlayerModule(application)
-            }
-            return instance!!
         }
     }
 }

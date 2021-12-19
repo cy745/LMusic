@@ -1,18 +1,19 @@
 package com.lalilu.lmusic.manager
 
-import android.app.Service
 import android.content.Context
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class LMusicAudioFocusManager constructor(
-    private val service: Service
+class LMusicAudioFocusManager @Inject constructor(
+    @ApplicationContext private val context: Context
 ) : AudioManager.OnAudioFocusChangeListener {
     var onAudioFocusChangeListener: AudioManager.OnAudioFocusChangeListener? = null
 
     fun abandonAudioFocus() {
-        val am = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             am.abandonAudioFocusRequest(
                 AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
@@ -25,7 +26,7 @@ class LMusicAudioFocusManager constructor(
     }
 
     fun requestAudioFocus(): Int {
-        val am = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             am.requestAudioFocus(
                 AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)

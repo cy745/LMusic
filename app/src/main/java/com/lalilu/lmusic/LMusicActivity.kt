@@ -16,11 +16,16 @@ import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.ToastUtil
 import com.lalilu.lmusic.utils.scanner.MSongScanner
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class LMusicActivity : BaseActivity() {
     private lateinit var mState: MainActivityViewModel
     private lateinit var mEvent: SharedViewModel
-    private lateinit var playerModule: LMusicPlayerModule
+
+    @Inject
+    lateinit var playerModule: LMusicPlayerModule
 
     override fun initViewModel() {
         mState = getActivityViewModel(MainActivityViewModel::class.java)
@@ -34,8 +39,6 @@ class LMusicActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         StatusBarUtil.immerseStatusBar(this)
-        playerModule = LMusicPlayerModule.getInstance(application)
-        playerModule.initMusicBrowser(this)
         PermissionUtils.requestPermission(this)
 
 //        println("isPad: ${DeviceUtil.isPad(this)}")

@@ -4,8 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY
+import javax.inject.Inject
 
-class MusicNoisyReceiver : BroadcastReceiver() {
+class MusicNoisyReceiver @Inject constructor() : BroadcastReceiver() {
     var onBecomingNoisyListener: OnBecomingNoisyListener? = null
 
     interface OnBecomingNoisyListener {
