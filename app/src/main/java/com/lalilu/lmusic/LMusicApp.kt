@@ -5,16 +5,16 @@ import com.facebook.imagepipeline.core.ImagePipelineConfig
 import com.hjq.permissions.XXPermissions
 import com.lalilu.lmusic.base.BaseApplication
 import com.lalilu.lmusic.database.LMusicDataBase
-import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.tencent.mmkv.MMKV
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class LMusicApp : BaseApplication() {
 
     override fun onCreate() {
         super.onCreate()
         MMKV.initialize(this)
         XXPermissions.setScopedStorage(true)
-        LMusicPlayerModule.getInstance(this)
         LMusicDataBase.getInstance(this)
 
         val config = ImagePipelineConfig.newBuilder(this)

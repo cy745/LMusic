@@ -13,20 +13,24 @@ import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.state.PlaylistFragmentViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class PlaylistFragment : BaseFragment() {
     private lateinit var mState: PlaylistFragmentViewModel
     private lateinit var mEvent: SharedViewModel
     private lateinit var mAdapter: LMusicPlaylistAdapter
-    private lateinit var playerModule: LMusicPlayerModule
+
+    @Inject
+    lateinit var playerModule: LMusicPlayerModule
 
     override fun initViewModel() {
         mState = getFragmentViewModel(PlaylistFragmentViewModel::class.java)
         mEvent = getApplicationViewModel(SharedViewModel::class.java)
-        playerModule = LMusicPlayerModule.getInstance(mActivity!!.application)
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {

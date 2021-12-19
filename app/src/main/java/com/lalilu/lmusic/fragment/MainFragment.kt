@@ -15,11 +15,16 @@ import com.lalilu.lmusic.service.MSongService
 import com.lalilu.lmusic.state.MainViewModel
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarChangeListenerAdapter
 import com.lalilu.lmusic.utils.HapticUtils
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainFragment : BaseFragment() {
     private lateinit var mState: MainViewModel
     private lateinit var mEvent: SharedViewModel
-    private lateinit var playerModule: LMusicPlayerModule
+
+    @Inject
+    lateinit var playerModule: LMusicPlayerModule
 
     private var mPagerAdapter: LMusicFragmentStateAdapter? = null
 
@@ -51,7 +56,6 @@ class MainFragment : BaseFragment() {
         if (child is RecyclerView) child.overScrollMode = View.OVER_SCROLL_NEVER
 
         val seekBar = (mBinding as FragmentMainBinding).maSeekBar
-        playerModule = LMusicPlayerModule.getInstance(requireActivity().application)
 
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
         playerModule.metadata.observe(viewLifecycleOwner) {

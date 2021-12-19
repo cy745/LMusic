@@ -19,9 +19,13 @@ import androidx.palette.graphics.Palette
 import com.lalilu.R
 import com.lalilu.lmusic.utils.BitmapUtils
 import com.lalilu.lmusic.utils.getAutomaticColor
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
 
-class LMusicNotificationManager constructor(private val mService: Context) {
+class LMusicNotificationManager @Inject constructor(
+    @ApplicationContext private val mService: Context
+) {
     companion object {
         const val NOTIFICATION_ID = 7
         const val playerChannelName = "LMusic Player"
