@@ -23,7 +23,9 @@ import javax.inject.Inject
 class PlaylistFragment : BaseFragment() {
     private lateinit var mState: PlaylistFragmentViewModel
     private lateinit var mEvent: SharedViewModel
-    private lateinit var mAdapter: LMusicPlaylistAdapter
+
+    @Inject
+    lateinit var mAdapter: LMusicPlaylistAdapter
 
     @Inject
     lateinit var playerModule: LMusicPlayerModule
@@ -34,7 +36,6 @@ class PlaylistFragment : BaseFragment() {
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter = LMusicPlaylistAdapter()
         // 添加 item 被选中时的处理逻辑
         // 将选中的 playlist 的 id 传递到 mEvent 中，切换当前正在播放的歌单
         // 将选中的 music 的 musicId 传递给 mediaController，让其根据 musicId 播放指定歌曲

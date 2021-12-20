@@ -13,8 +13,9 @@ import com.lalilu.lmusic.adapter.node.SecondNode
 import com.lalilu.lmusic.domain.entity.MPlaylist
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.ui.SamplingDraweeView
+import javax.inject.Inject
 
-class LMusicPlaylistAdapter : BaseNodeAdapter() {
+class LMusicPlaylistAdapter @Inject constructor() : BaseNodeAdapter() {
     companion object {
         const val NODE_PLAYLIST = 0
         const val NODE_MUSIC = 1
