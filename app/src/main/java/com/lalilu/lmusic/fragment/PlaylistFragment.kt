@@ -22,7 +22,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class PlaylistFragment : BaseFragment() {
     private lateinit var mState: PlaylistFragmentViewModel
-    private lateinit var mEvent: SharedViewModel
+
+    @Inject
+    lateinit var mEvent: SharedViewModel
 
     @Inject
     lateinit var mAdapter: LMusicPlaylistAdapter
@@ -32,7 +34,6 @@ class PlaylistFragment : BaseFragment() {
 
     override fun initViewModel() {
         mState = getFragmentViewModel(PlaylistFragmentViewModel::class.java)
-        mEvent = getApplicationViewModel(SharedViewModel::class.java)
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {

@@ -16,10 +16,12 @@ import org.jaudiotagger.tag.FieldKey
 import java.io.File
 import java.util.logging.Level
 import java.util.logging.Logger
+import javax.inject.Inject
 
 
-object MSongScanner : BaseMScanner() {
-    private var database: LMusicDataBase = LMusicDataBase.getInstance(null)
+class MSongScanner @Inject constructor(
+    val database: LMusicDataBase
+) : BaseMScanner() {
     private val mExecutor = ThreadPoolUtils.CachedThreadPool
     override var selection: String? = "${MediaStore.Audio.Media.SIZE} >= ? " +
             "and ${MediaStore.Audio.Media.DURATION} >= ?" +
