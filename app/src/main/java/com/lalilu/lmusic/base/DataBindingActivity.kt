@@ -9,12 +9,10 @@ import androidx.databinding.ViewDataBinding
 abstract class DataBindingActivity : AppCompatActivity() {
     var mBinding: ViewDataBinding? = null
 
-    abstract fun initViewModel()
     abstract fun getDataBindingConfig(): DataBindingConfig
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initViewModel()
 
         val config = getDataBindingConfig()
         val binding: ViewDataBinding = DataBindingUtil.setContentView(this, config.getLayout())

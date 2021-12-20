@@ -10,6 +10,7 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.content.ContextCompat
+import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmusic.event.DataViewModel
 import com.lalilu.lmusic.event.SharedViewModel
@@ -21,7 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MSongService : BaseService() {
+class MSongService : MediaBrowserServiceCompat() {
     companion object {
         const val ACTION_PLAY_PAUSE = "play_and_pause"
 
@@ -39,13 +40,12 @@ class MSongService : BaseService() {
     }
 
     private val tag = this.javaClass.name
-    private lateinit var mState: LMusicServiceViewModel
+
+    @Inject
+    lateinit var mState: LMusicServiceViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
-
-    private lateinit var mediaSession: MediaSessionCompat
-    private lateinit var mSessionCallback: LMusicSessionCompactCallback
 
     @Inject
     lateinit var mNotificationManager: LMusicNotificationManager
@@ -59,9 +59,11 @@ class MSongService : BaseService() {
     @Inject
     lateinit var dataViewModel: DataViewModel
 
-    override fun initViewModel() {
-        mState = getApplicationViewModel(LMusicServiceViewModel::class.java)
+    private lateinit var mediaSession: MediaSessionCompat
+    private lateinit var mSessionCallback: LMusicSessionCompactCallback
 
+    override fun onCreate() {
+        super.onCreate()
         mSessionCallback = LMusicSessionCompactCallback()
         mNoisyReceiver.onBecomingNoisyListener = mSessionCallback
         mAudioFocusManager.onAudioFocusChangeListener = mSessionCallback
@@ -77,17 +79,7 @@ class MSongService : BaseService() {
             setCallback(mSessionCallback)
             setSessionToken(sessionToken)
         }
-    }
 
-    override fun onLoadChildren(
-        parentId: String,
-        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
-    ) {
-        loadInitData()
-        result.sendResult(ArrayList())
-    }
-
-    override fun loadInitData() {
         mEvent.nowPlaylistWithSongsRequest.getData().observeForever {
             mSessionCallback.playback.nowPlaylist.value = it
         }
@@ -95,6 +87,7 @@ class MSongService : BaseService() {
             mEvent.nowPlayingId.postValue(it.songId)
         }
     }
+
 
     inner class LMusicSessionCompactCallback : MediaSessionCompat.Callback(),
         Playback.OnPlayerCallback, AudioManager.OnAudioFocusChangeListener,
@@ -192,5 +185,20 @@ class MSongService : BaseService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         MediaButtonReceiver.handleIntent(mediaSession, intent)
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    override fun onLoadChildren(
+        parentId: String,
+        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
+    ) {
+        result.sendResult(ArrayList())
+    }
+
+    override fun onGetRoot(
+        clientPackageName: String,
+        clientUid: Int,
+        rootHints: Bundle?
+    ): BrowserRoot? {
+        return BrowserRoot("normal", null)
     }
 }

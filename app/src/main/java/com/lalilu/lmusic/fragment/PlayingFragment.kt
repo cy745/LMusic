@@ -8,8 +8,8 @@ import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.adapter.OnItemDragAdapter
 import com.lalilu.lmusic.adapter.OnItemSwipedAdapter
-import com.lalilu.lmusic.base.BaseFragment
 import com.lalilu.lmusic.base.DataBindingConfig
+import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.database.LMusicDataBase
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.event.SharedViewModel
@@ -26,13 +26,12 @@ import kotlin.collections.ArrayList
 import kotlin.concurrent.schedule
 
 @AndroidEntryPoint
-class PlayingFragment : BaseFragment() {
-    private lateinit var mState: PlayingFragmentViewModel
+class PlayingFragment : DataBindingFragment() {
+    @Inject
+    lateinit var mState: PlayingFragmentViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
-
-    private var positionTimer: Timer? = null
 
     @Inject
     lateinit var mAdapter: MSongPlayingAdapter
@@ -43,9 +42,7 @@ class PlayingFragment : BaseFragment() {
     @Inject
     lateinit var database: LMusicDataBase
 
-    override fun initViewModel() {
-        mState = getFragmentViewModel(PlayingFragmentViewModel::class.java)
-    }
+    private var positionTimer: Timer? = null
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.draggableModule.isDragEnabled = true
@@ -82,7 +79,7 @@ class PlayingFragment : BaseFragment() {
             .addParam(BR.playingAdapter, mAdapter)
     }
 
-    override fun loadInitData() {
+    override fun onViewCreated() {
         mEvent.nowPlaylistWithSongsRequest.getData().observe(viewLifecycleOwner) {
             mState.playlistWithSongs.value = it
         }
@@ -115,9 +112,7 @@ class PlayingFragment : BaseFragment() {
                     }
                 }
         }
-    }
 
-    override fun loadInitView() {
         val binding = (mBinding as FragmentPlayingBinding)
         mActivity!!.setSupportActionBar(binding.fmToolbar)
         mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)

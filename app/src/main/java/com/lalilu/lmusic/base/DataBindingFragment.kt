@@ -15,7 +15,8 @@ abstract class DataBindingFragment : Fragment() {
     protected var mActivity: AppCompatActivity? = null
     protected var mBinding: ViewDataBinding? = null
 
-    abstract fun initViewModel()
+    open fun onCreate() {}
+    open fun onViewCreated() {}
     abstract fun getDataBindingConfig(): DataBindingConfig
 
     override fun onAttach(context: Context) {
@@ -25,7 +26,12 @@ abstract class DataBindingFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initViewModel()
+        onCreate()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        onViewCreated()
     }
 
     override fun onCreateView(

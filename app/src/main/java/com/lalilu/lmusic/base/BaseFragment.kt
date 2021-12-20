@@ -6,6 +6,7 @@ import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
+@Deprecated("替换为使用Hilt注入ViewModel，不需要使用该BaseFragment了")
 abstract class BaseFragment : DataBindingFragment() {
     private var mFragmentProvider: ViewModelProvider? = null
     private var mActivityProvider: ViewModelProvider? = null

@@ -7,7 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.databinding.library.baseAdapters.BR
 import com.lalilu.R
-import com.lalilu.lmusic.base.BaseActivity
+import com.lalilu.lmusic.base.DataBindingActivity
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
@@ -20,8 +20,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class LMusicActivity : BaseActivity() {
-    private lateinit var mState: MainActivityViewModel
+class LMusicActivity : DataBindingActivity() {
+    @Inject
+    lateinit var mState: MainActivityViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -31,10 +32,6 @@ class LMusicActivity : BaseActivity() {
 
     @Inject
     lateinit var songScanner: MSongScanner
-
-    override fun initViewModel() {
-        mState = getActivityViewModel(MainActivityViewModel::class.java)
-    }
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.activity_main, BR.vm, mState)

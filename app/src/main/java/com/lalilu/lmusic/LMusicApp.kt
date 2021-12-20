@@ -1,14 +1,14 @@
 package com.lalilu.lmusic
 
+import android.app.Application
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.imagepipeline.core.ImagePipelineConfig
 import com.hjq.permissions.XXPermissions
-import com.lalilu.lmusic.base.BaseApplication
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class LMusicApp : BaseApplication() {
+class LMusicApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
