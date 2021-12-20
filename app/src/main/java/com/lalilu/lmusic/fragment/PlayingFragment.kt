@@ -29,12 +29,15 @@ import kotlin.concurrent.schedule
 class PlayingFragment : BaseFragment() {
     private lateinit var mState: PlayingFragmentViewModel
     private lateinit var mEvent: SharedViewModel
-    private lateinit var mAdapter: MSongPlayingAdapter
+
+    private lateinit var database: LMusicDataBase
+    private var positionTimer: Timer? = null
+
+    @Inject
+    lateinit var mAdapter: MSongPlayingAdapter
 
     @Inject
     lateinit var playerModule: LMusicPlayerModule
-    private lateinit var database: LMusicDataBase
-    private var positionTimer: Timer? = null
 
     override fun initViewModel() {
         mState = getFragmentViewModel(PlayingFragmentViewModel::class.java)
@@ -43,7 +46,6 @@ class PlayingFragment : BaseFragment() {
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter = MSongPlayingAdapter()
         mAdapter.draggableModule.isDragEnabled = true
         mAdapter.draggableModule.isSwipeEnabled = true
         mAdapter.draggableModule.setOnItemDragListener(object : OnItemDragAdapter() {

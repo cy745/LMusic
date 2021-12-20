@@ -7,8 +7,9 @@ import com.chad.library.adapter.base.viewholder.BaseDataBindingHolder
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlayingBinding
 import com.lalilu.lmusic.domain.entity.MSong
+import javax.inject.Inject
 
-class MSongPlayingAdapter :
+class MSongPlayingAdapter @Inject constructor() :
     BaseQuickAdapter<MSong, BaseDataBindingHolder<ItemPlayingBinding>>(
         R.layout.item_playing
     ), DraggableModule {
