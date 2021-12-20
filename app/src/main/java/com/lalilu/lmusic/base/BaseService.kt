@@ -1,11 +1,11 @@
-package com.lalilu.lmusic.service
+package com.lalilu.lmusic.base
 
 import android.os.Bundle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.media.MediaBrowserServiceCompat
-import com.lalilu.lmusic.base.BaseApplication
 
+@Deprecated("替换为使用Hilt注入ViewModel，不需要自行创建ViewModelProvider之类的了")
 abstract class BaseService : MediaBrowserServiceCompat() {
     private var mApplicationProvider: ViewModelProvider? = null
     open fun initViewModel() {}

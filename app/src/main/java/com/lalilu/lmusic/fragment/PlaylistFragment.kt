@@ -6,8 +6,8 @@ import com.lalilu.R
 import com.lalilu.lmusic.adapter.LMusicPlaylistAdapter
 import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.adapter.node.SecondNode
-import com.lalilu.lmusic.base.BaseFragment
 import com.lalilu.lmusic.base.DataBindingConfig
+import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.domain.entity.MPlaylist
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.event.SharedViewModel
@@ -20,8 +20,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class PlaylistFragment : BaseFragment() {
-    private lateinit var mState: PlaylistFragmentViewModel
+class PlaylistFragment : DataBindingFragment() {
+    @Inject
+    lateinit var mState: PlaylistFragmentViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -31,10 +32,6 @@ class PlaylistFragment : BaseFragment() {
 
     @Inject
     lateinit var playerModule: LMusicPlayerModule
-
-    override fun initViewModel() {
-        mState = getFragmentViewModel(PlaylistFragmentViewModel::class.java)
-    }
 
     override fun getDataBindingConfig(): DataBindingConfig {
         // 添加 item 被选中时的处理逻辑
@@ -68,7 +65,7 @@ class PlaylistFragment : BaseFragment() {
             .addParam(BR.playlistAdapter, mAdapter)
     }
 
-    override fun loadInitData() {
+    override fun onViewCreated() {
         // 根据获取到的 playlists 构建歌单在 RecyclerView 中的层级结构
         mEvent.allPlaylistRequest.getData().observe(viewLifecycleOwner) {
             mState.playlist.postValue(it.map { playlist ->
@@ -79,9 +76,7 @@ class PlaylistFragment : BaseFragment() {
         }
         // 请求更新获取 playlists
         mEvent.allPlaylistRequest.requireData()
-    }
 
-    override fun loadInitView() {
         GlobalScope.launch(Dispatchers.Main) {
             mAdapter.setEmptyView(R.layout.item_empty_view)
         }

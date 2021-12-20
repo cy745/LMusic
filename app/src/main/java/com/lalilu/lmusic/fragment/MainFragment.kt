@@ -7,8 +7,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
 import com.lalilu.databinding.FragmentMainBinding
 import com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter
-import com.lalilu.lmusic.base.BaseFragment
 import com.lalilu.lmusic.base.DataBindingConfig
+import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.service.MSongService
@@ -19,8 +19,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainFragment : BaseFragment() {
-    private lateinit var mState: MainViewModel
+class MainFragment : DataBindingFragment() {
+    @Inject
+    lateinit var mState: MainViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -29,10 +30,6 @@ class MainFragment : BaseFragment() {
     lateinit var playerModule: LMusicPlayerModule
 
     private var mPagerAdapter: LMusicFragmentStateAdapter? = null
-
-    override fun initViewModel() {
-        mState = getFragmentViewModel(MainViewModel::class.java)
-    }
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mPagerAdapter = LMusicFragmentStateAdapter(mActivity!!)
@@ -43,14 +40,12 @@ class MainFragment : BaseFragment() {
             .addParam(BR.pagerAdapter, mPagerAdapter)
     }
 
-    override fun loadInitData() {
+    override fun onViewCreated() {
         // mEvent 的背景色和 mState 的背景色进行绑定
         mEvent.nowBgPalette.observe(viewLifecycleOwner) {
             mState.nowBgPalette.postValue(it)
         }
-    }
 
-    override fun loadInitView() {
         val binding = (mBinding as FragmentMainBinding)
 
         val child = binding.fmViewpager?.getChildAt(0)
