@@ -73,11 +73,11 @@ class MainFragment : BaseFragment() {
         // 为 SeekBar 添加监听器
         seekBar.onSeekBarChangeListener = object : OnSeekBarChangeListenerAdapter() {
             override fun onStopTrackingTouch(position: Long) {
-                playerModule.mediaController.value?.transportControls?.seekTo(position)
+                playerModule.mediaController.transportControls?.seekTo(position)
             }
 
             override fun onClick() {
-                playerModule.mediaController.value?.transportControls?.sendCustomAction(
+                playerModule.mediaController.transportControls?.sendCustomAction(
                     MSongService.ACTION_PLAY_PAUSE, null
                 )
                 HapticUtils.haptic(seekBar.rootView)
