@@ -12,23 +12,24 @@ import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  *  为数据的全局同步而设置的 ViewModel ，即 mEvent，
  *  其生命周期属于 Application，在 Service 和 Activity 中都可以通过上下文获取到实例对象
  *
  */
-class SharedViewModel : ViewModel() {
-    private val database = LMusicDataBase.getInstance(null)
-
+@Singleton
+class SharedViewModel @Inject constructor(
+    val nowPlaylistWithSongsRequest: NowPlaylistWithSongsRequest,
+    val nowMSongRequest: NowMSongRequest,
+    val allPlaylistRequest: AllPlayListRequest,
+    val database: LMusicDataBase
+) : ViewModel() {
     val nowBgPalette = MutableLiveData<Palette>()
     val nowPlaylistId = MutableLiveData<Long>(null)
     val nowPlayingId = MutableLiveData<Long>(null)
-
-    val nowMSongRequest = NowMSongRequest()
-    val nowPlaylistWithSongsRequest = NowPlaylistWithSongsRequest()
-
-    val allPlaylistRequest = AllPlayListRequest()
     val mmkv = MMKV.defaultMMKV()
 
     companion object {

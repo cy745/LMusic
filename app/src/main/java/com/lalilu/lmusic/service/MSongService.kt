@@ -5,11 +5,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
 import android.os.Bundle
+import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.content.ContextCompat
 import androidx.media.session.MediaButtonReceiver
+import com.lalilu.lmusic.event.DataViewModel
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import com.lalilu.lmusic.manager.LMusicNotificationManager
@@ -38,7 +40,9 @@ class MSongService : BaseService() {
 
     private val tag = this.javaClass.name
     private lateinit var mState: LMusicServiceViewModel
-    private lateinit var mEvent: SharedViewModel
+
+    @Inject
+    lateinit var mEvent: SharedViewModel
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mSessionCallback: LMusicSessionCompactCallback
@@ -52,10 +56,11 @@ class MSongService : BaseService() {
     @Inject
     lateinit var mNoisyReceiver: MusicNoisyReceiver
 
+    @Inject
+    lateinit var dataViewModel: DataViewModel
 
     override fun initViewModel() {
         mState = getApplicationViewModel(LMusicServiceViewModel::class.java)
-        mEvent = getApplicationViewModel(SharedViewModel::class.java)
 
         mSessionCallback = LMusicSessionCompactCallback()
         mNoisyReceiver.onBecomingNoisyListener = mSessionCallback
@@ -72,6 +77,14 @@ class MSongService : BaseService() {
             setCallback(mSessionCallback)
             setSessionToken(sessionToken)
         }
+    }
+
+    override fun onLoadChildren(
+        parentId: String,
+        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
+    ) {
+        loadInitData()
+        result.sendResult(ArrayList())
     }
 
     override fun loadInitData() {

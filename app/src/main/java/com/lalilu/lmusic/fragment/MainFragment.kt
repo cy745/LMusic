@@ -21,7 +21,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainFragment : BaseFragment() {
     private lateinit var mState: MainViewModel
-    private lateinit var mEvent: SharedViewModel
+
+    @Inject
+    lateinit var mEvent: SharedViewModel
 
     @Inject
     lateinit var playerModule: LMusicPlayerModule
@@ -30,7 +32,6 @@ class MainFragment : BaseFragment() {
 
     override fun initViewModel() {
         mState = getFragmentViewModel(MainViewModel::class.java)
-        mEvent = getApplicationViewModel(SharedViewModel::class.java)
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {

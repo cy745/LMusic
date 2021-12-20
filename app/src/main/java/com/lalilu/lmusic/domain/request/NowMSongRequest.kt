@@ -1,17 +1,20 @@
 package com.lalilu.lmusic.domain.request
 
 import com.lalilu.lmusic.database.LMusicDataBase
+import com.lalilu.lmusic.database.dao.MSongDao
 import com.lalilu.lmusic.domain.BaseRequest
 import com.lalilu.lmusic.domain.entity.MSong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * 获取 MSong 的 request 对象，可通过 requireData 请求更新
  */
-class NowMSongRequest : BaseRequest<MSong>() {
-    private val dao = LMusicDataBase.getInstance(null).songDao()
+class NowMSongRequest @Inject constructor(
+    val dao: MSongDao
+) : BaseRequest<MSong>() {
 
     override fun requireData(value: Any?) {
         super.requireData(value)

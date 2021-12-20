@@ -22,14 +22,18 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class LMusicActivity : BaseActivity() {
     private lateinit var mState: MainActivityViewModel
-    private lateinit var mEvent: SharedViewModel
+
+    @Inject
+    lateinit var mEvent: SharedViewModel
 
     @Inject
     lateinit var playerModule: LMusicPlayerModule
 
+    @Inject
+    lateinit var songScanner: MSongScanner
+
     override fun initViewModel() {
         mState = getActivityViewModel(MainActivityViewModel::class.java)
-        mEvent = getApplicationViewModel(SharedViewModel::class.java)
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
@@ -63,7 +67,7 @@ class LMusicActivity : BaseActivity() {
                 mEvent.allPlaylistRequest.requireData()
             }
             R.id.appbar_scan_song -> {
-                MSongScanner.setScanFailed {
+                songScanner.setScanFailed {
                     ToastUtil.text("提示信息: $it").show(this)
                 }.setScanFinish {
                     mEvent.nowPlaylistWithSongsRequest.requireData(0L)

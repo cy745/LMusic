@@ -28,9 +28,10 @@ import kotlin.concurrent.schedule
 @AndroidEntryPoint
 class PlayingFragment : BaseFragment() {
     private lateinit var mState: PlayingFragmentViewModel
-    private lateinit var mEvent: SharedViewModel
 
-    private lateinit var database: LMusicDataBase
+    @Inject
+    lateinit var mEvent: SharedViewModel
+
     private var positionTimer: Timer? = null
 
     @Inject
@@ -39,10 +40,11 @@ class PlayingFragment : BaseFragment() {
     @Inject
     lateinit var playerModule: LMusicPlayerModule
 
+    @Inject
+    lateinit var database: LMusicDataBase
+
     override fun initViewModel() {
         mState = getFragmentViewModel(PlayingFragmentViewModel::class.java)
-        mEvent = getApplicationViewModel(SharedViewModel::class.java)
-        database = LMusicDataBase.getInstance(requireActivity().applicationContext)
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {

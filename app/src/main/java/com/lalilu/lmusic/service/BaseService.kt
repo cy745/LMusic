@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.service
 
 import android.os.Bundle
-import android.support.v4.media.MediaBrowserCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.media.MediaBrowserServiceCompat
@@ -38,13 +37,5 @@ abstract class BaseService : MediaBrowserServiceCompat() {
         rootHints: Bundle?
     ): BrowserRoot? {
         return BrowserRoot("normal", null)
-    }
-
-    override fun onLoadChildren(
-        parentId: String,
-        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
-    ) {
-        loadInitData()
-        result.sendResult(ArrayList())
     }
 }
