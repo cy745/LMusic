@@ -51,7 +51,7 @@ class PlaylistFragment : BaseFragment() {
                 val song = child.data as MSong
 
                 mEvent.nowPlaylistId.value = playlist.playlistId
-                playerModule.mediaController.value?.transportControls
+                playerModule.mediaController.transportControls
                     ?.playFromMediaId(song.songId.toString(), null)
             }
 

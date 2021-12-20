@@ -52,10 +52,10 @@ class LMusicActivity : BaseActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.appbar_play -> {
-                playerModule.mediaController.value?.transportControls?.play()
+                playerModule.mediaController.transportControls?.play()
             }
             R.id.appbar_pause -> {
-                playerModule.mediaController.value?.transportControls?.pause()
+                playerModule.mediaController.transportControls?.pause()
             }
             R.id.appbar_create_playlist -> {
                 mEvent.nowPlaylistWithSongsRequest.requireData()
