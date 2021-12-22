@@ -6,8 +6,8 @@
     <data>
 
         <variable
-            name="vm"
-            type="com.lalilu.lmusic.state.MainViewModel" />
+            name="ev"
+            type="com.lalilu.lmusic.event.SharedViewModel" />
 
         <variable
             name="pagerAdapter"
@@ -48,7 +48,7 @@
             android:layout_marginStart="50dp"
             android:layout_marginEnd="50dp"
             android:layout_marginBottom="64dp"
-            app:bgPalette="@{vm.nowBgPalette}"
+            app:bgPalette="@{ev.nowBgPalette}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />

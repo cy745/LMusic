@@ -1,34 +1,30 @@
 package com.lalilu.lmusic.fragment
 
+import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
-import com.lalilu.lmusic.adapter.OnItemDragAdapter
-import com.lalilu.lmusic.adapter.OnItemSwipedAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
+import com.lalilu.lmusic.binding_adapter.setMediaItems
 import com.lalilu.lmusic.database.LMusicDataBase
-import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
-import com.lalilu.lmusic.state.PlayingFragmentViewModel
 import com.lalilu.lmusic.utils.Mathf
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 import kotlin.concurrent.schedule
+import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
-class PlayingFragment : DataBindingFragment() {
-    @Inject
-    lateinit var mState: PlayingFragmentViewModel
+@ExperimentalCoroutinesApi
+class PlayingFragment : DataBindingFragment(), CoroutineScope {
+
+    override val coroutineContext: CoroutineContext = Dispatchers.Main
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -45,52 +41,47 @@ class PlayingFragment : DataBindingFragment() {
     private var positionTimer: Timer? = null
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter.draggableModule.isDragEnabled = true
-        mAdapter.draggableModule.isSwipeEnabled = true
-        mAdapter.draggableModule.setOnItemDragListener(object : OnItemDragAdapter() {
-            override fun onItemDragEnd(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-                mEvent.nowPlaylistWithSongsRequest.postData(mEvent.nowPlaylistWithSongsRequest.getData().value.also {
-                    it?.songs = ArrayList(mAdapter.data)
-                })
-            }
-        })
-        mAdapter.draggableModule.setOnItemSwipeListener(object : OnItemSwipedAdapter() {
-            var mediaId: Long = 0
-            override fun onItemSwipeStart(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-                mediaId = mAdapter.getItem(pos).songId
-            }
-
-            override fun onItemSwiped(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-                mEvent.nowPlaylistWithSongsRequest.postData(mEvent.nowPlaylistWithSongsRequest.getData().value.also {
-                    it?.songs = ArrayList(mAdapter.data)
-                })
-            }
-        })
+//        mAdapter.draggableModule.isDragEnabled = true
+//        mAdapter.draggableModule.isSwipeEnabled = true
+//        mAdapter.draggableModule.setOnItemDragListener(object : OnItemDragAdapter() {
+//            override fun onItemDragEnd(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
+//                mEvent.nowPlaylistWithSongsRequest.postData(mEvent.nowPlaylistWithSongsRequest.getData().value.also {
+//                    it?.songs = ArrayList(mAdapter.data)
+//                })
+//            }
+//        })
+//        mAdapter.draggableModule.setOnItemSwipeListener(object : OnItemSwipedAdapter() {
+//            var mediaId: Long = 0
+//            override fun onItemSwipeStart(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
+//                mediaId = mAdapter.getItem(pos).songId
+//            }
+//
+//            override fun onItemSwiped(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
+//                mEvent.nowPlaylistWithSongsRequest.postData(mEvent.nowPlaylistWithSongsRequest.getData().value.also {
+//                    it?.songs = ArrayList(mAdapter.data)
+//                })
+//            }
+//        })
 
         mAdapter.setOnItemClickListener { adapter, _, position ->
-            val song = adapter.data[position] as MSong
+            val song = adapter.data[position] as MediaBrowserCompat.MediaItem
 
             playerModule.mediaController.transportControls
-                ?.playFromMediaId(song.songId.toString(), null)
+                ?.playFromMediaId(song.mediaId.toString(), null)
         }
 
-        return DataBindingConfig(R.layout.fragment_playing, BR.vm, mState)
+        return DataBindingConfig(R.layout.fragment_playing)
             .addParam(BR.ev, mEvent)
             .addParam(BR.playingAdapter, mAdapter)
+            .addParam(BR.playerModule, playerModule)
     }
 
     override fun onViewCreated() {
-        mEvent.nowPlaylistWithSongsRequest.getData().observe(viewLifecycleOwner) {
-            mState.playlistWithSongs.value = it
-        }
+        playerModule.metadata.observe(viewLifecycleOwner) {
+            launch(Dispatchers.IO) {
+                val mediaId = it?.description?.mediaId ?: return@launch
 
-        mEvent.nowMSongRequest.getData().observe(viewLifecycleOwner) {
-            it?.let { mState.playingMSong.postValue(it) }
-        }
-        mState.playingMSong.observe(viewLifecycleOwner) {
-            GlobalScope.launch(Dispatchers.IO) {
-                val detail = database.songDetailDao().getById(it.songId) ?: return@launch
-                val lyric = detail.songLyric ?: return@launch
+                val lyric = database.songDetailDao().getByIdStr(mediaId)?.songLyric ?: return@launch
 
                 launch(Dispatchers.Main) {
                     val binding = (mBinding as FragmentPlayingBinding)
@@ -98,24 +89,32 @@ class PlayingFragment : DataBindingFragment() {
                 }
             }
         }
+        playerModule.mediaItem.observe(viewLifecycleOwner) {
+            mAdapter.setMediaItems(it)
+        }
+
         playerModule.playBackState.observe(viewLifecycleOwner) {
             it ?: return@observe
             var currentDuration = Mathf.getPositionFromPlaybackStateCompat(it)
             val binding = (mBinding as FragmentPlayingBinding)
 
             positionTimer?.cancel()
-            if (it.state == PlaybackStateCompat.STATE_PLAYING)
+            if (it.state == PlaybackStateCompat.STATE_PLAYING) {
                 positionTimer = Timer().apply {
                     this.schedule(0, 1000) {
                         binding.fmLyricViewX.updateTime(currentDuration)
                         currentDuration += 1000
                     }
                 }
+            } else {
+                binding.fmLyricViewX.updateTime(currentDuration)
+            }
         }
+        //        mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)
+
 
         val binding = (mBinding as FragmentPlayingBinding)
         mActivity!!.setSupportActionBar(binding.fmToolbar)
-        mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)
         binding.fmLyricViewX.setLabel("暂无歌词")
     }
 }

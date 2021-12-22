@@ -6,7 +6,7 @@ import android.support.v4.media.MediaMetadataCompat
 /**
  * 描述播放器可操作行为的基类
  */
-interface Playback {
+interface Playback<ID> {
 
     interface OnPlayerCallback {
         fun onPlaybackStateChanged(newState: Int)
@@ -41,7 +41,7 @@ interface Playback {
     /**
      * 传入MediaId进行播放
      */
-    fun playByMediaId(mediaId: Long?)
+    fun playByMediaId(mediaId: ID?)
 
     /**
      * 播放下一首

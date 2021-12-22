@@ -9,8 +9,8 @@ import java.util.List;
 
 public class FirstNode<T> extends BaseExpandNode {
 
-    private List<BaseNode> childNode;
     public T data;
+    private final List<BaseNode> childNode;
 
     public FirstNode(List<BaseNode> childNode, T data) {
         this.childNode = childNode;

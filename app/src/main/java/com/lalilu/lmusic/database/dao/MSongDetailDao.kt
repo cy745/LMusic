@@ -13,6 +13,9 @@ interface MSongDetailDao {
     @Query("SELECT * FROM m_song_detail WHERE song_id = :songId")
     fun getById(songId: Long): MSongDetail?
 
+    @Query("SELECT * FROM m_song_detail WHERE song_id = :songId")
+    fun getByIdStr(songId: String): MSongDetail?
+
     @Insert
     fun save(songDetail: MSongDetail)
 

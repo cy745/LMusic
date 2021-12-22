@@ -16,14 +16,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Music"
         tools:ignore="AllowBackup">
-        <receiver android:name="com.lalilu.lmusic.manager.MusicNoisyReceiver"
+        <receiver
+            android:name="com.lalilu.lmusic.manager.MusicNoisyReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.media.AUDIO_BECOMING_NOISY" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name="androidx.media.session.MediaButtonReceiver"
+        <receiver
+            android:name="androidx.media.session.MediaButtonReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
@@ -43,8 +45,8 @@
         <activity
             android:name=".lmusic.LMusicActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="singleTop"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

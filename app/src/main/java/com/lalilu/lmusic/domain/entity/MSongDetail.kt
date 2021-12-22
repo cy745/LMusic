@@ -20,4 +20,4 @@ data class MSongDetail(
     val songData: String = "",
 
 
-)
+    )

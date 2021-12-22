@@ -7,16 +7,16 @@
     <data>
 
         <variable
-            name="vm"
-            type="com.lalilu.lmusic.state.PlayingFragmentViewModel" />
-
-        <variable
             name="ev"
             type="com.lalilu.lmusic.event.SharedViewModel" />
 
         <variable
             name="playingAdapter"
             type="com.lalilu.lmusic.adapter.MSongPlayingAdapter" />
+
+        <variable
+            name="playerModule"
+            type="com.lalilu.lmusic.service.LMusicPlayerModule" />
 
     </data>
 
@@ -39,7 +39,7 @@
                 android:id="@+id/fm_collapse_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:bindTitle="@{vm.playingMSong.songTitle}"
+                app:bindTitle="@{playerModule.metadata.description.title.toString()}"
                 app:collapsedTitleTextAppearance="@style/collapsedTitleText"
                 app:contentScrim="@android:color/transparent"
                 app:expandedTitleTextAppearance="@style/expandedTitleText"
@@ -53,7 +53,7 @@
                     android:layout_height="match_parent"
                     android:layout_gravity="top"
                     android:fitsSystemWindows="true"
-                    app:artUri="@{vm.playingMSong.songCoverUri}"
+                    app:artUri="@{playerModule.metadata.description.iconUri}"
                     app:bgPaletteLiveData="@{ev.nowBgPalette}"
                     app:callerContext="@{context}"
                     app:layout_collapseMode="parallax"
@@ -90,7 +90,6 @@
             app:adapter="@{playingAdapter}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-            app:setPlaylist="@{vm.playlistWithSongs}"
             tools:listitem="@layout/item_playing" />
     </com.lalilu.lmusic.ui.MyCoordinatorLayout>
 

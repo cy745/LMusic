@@ -3,32 +3,58 @@ package com.lalilu.lmusic.service
 import android.content.Context
 import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
-import androidx.lifecycle.MutableLiveData
-import com.lalilu.lmusic.domain.entity.MSong
-import com.lalilu.lmusic.domain.entity.PlaylistWithSongs
-import com.lalilu.lmusic.state.LMusicServiceViewModel
+import com.lalilu.lmusic.event.DataModule
+import com.lalilu.lmusic.manager.LMusicAudioFocusManager
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
 
-class MSongPlayback constructor(
-    mContext: Context,
-    mState: LMusicServiceViewModel
-) : BasePlayback<MSong, PlaylistWithSongs>(mContext) {
-    override val nowPlaylist: MutableLiveData<PlaylistWithSongs> = mState.playingPlaylist
-    override val nowPlaying: MutableLiveData<MSong> = mState.playingSong
+@Singleton
+@ExperimentalCoroutinesApi
+class MSongPlayback @Inject constructor(
+    @ApplicationContext mContext: Context,
+    dataModule: DataModule,
+    override var mAudioFocusManager: LMusicAudioFocusManager,
+) : BasePlayback<MediaMetadataCompat, List<MediaMetadataCompat>, String>(mContext) {
+    override val coroutineContext: CoroutineContext = Dispatchers.Default
+    override var nowPlaylist: Flow<List<MediaMetadataCompat>> =
+        dataModule.nowPlaylistMetadataFlow
 
-    override fun getUriFromNowItem(nowPlaying: MSong): Uri = nowPlaying.songUri
-    override fun getIdFromItem(item: MSong): Long = item.songId
-    override fun getMetaDataFromItem(item: MSong): MediaMetadataCompat =
-        item.toMediaMetadataCompat()
+    init {
+        nowPlaying.observeForever {
+            println("observeForever: ${it?.description?.title}")
+        }
+    }
 
-    override fun getItemById(list: PlaylistWithSongs, mediaId: Long): MSong? =
-        list.songs.find { it.songId == mediaId }
+    override fun getUriFromNowItem(nowPlaying: MediaMetadataCompat?): Uri? =
+        nowPlaying?.description?.mediaUri
 
-    override fun getSizeFromList(list: PlaylistWithSongs): Int = list.songs.size
+    override fun getIdFromItem(item: MediaMetadataCompat): String = item.description.mediaId ?: "0"
 
-    override fun getIndexOfFromList(list: PlaylistWithSongs, item: MSong): Int =
-        list.songs.indexOfFirst { item.songId == it.songId }
+    override fun getMetaDataFromItem(item: MediaMetadataCompat): MediaMetadataCompat = item
 
-    override fun getItemFromListByIndex(list: PlaylistWithSongs, index: Int): MSong {
-        return list.songs[index]
+    override fun getItemById(
+        list: List<MediaMetadataCompat>,
+        mediaId: String
+    ): MediaMetadataCompat? =
+        list.find { it.description.mediaId == mediaId }
+
+    override fun getSizeFromList(list: List<MediaMetadataCompat>): Int = list.size
+
+    override fun getIndexOfFromList(
+        list: List<MediaMetadataCompat>,
+        item: MediaMetadataCompat
+    ): Int =
+        list.indexOfFirst { item.description.mediaId == it.description.mediaId }
+
+    override fun getItemFromListByIndex(
+        list: List<MediaMetadataCompat>,
+        index: Int
+    ): MediaMetadataCompat {
+        return list[index]
     }
 }
