@@ -6,7 +6,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.utils.BitmapUtils
 
 @Entity(tableName = "m_song")
 data class MSong(
@@ -48,12 +47,12 @@ data class MSong(
             .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, this.songCoverUri.toString())
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, this.songUri.toString())
             .putString(Config.MEDIA_MIME_TYPE, this.songMimeType)
-        if (this.songCoverUri != Uri.EMPTY) {
-            metadata.putBitmap(
-                MediaMetadataCompat.METADATA_KEY_ART,
-                BitmapUtils.loadBitmapFromUri(this.songCoverUri, 500)
-            )
-        }
+//        if (this.songCoverUri != Uri.EMPTY) {
+//            metadata.putBitmap(
+//                MediaMetadataCompat.METADATA_KEY_ART,
+//                BitmapUtils.loadBitmapFromUri(this.songCoverUri, 500)
+//            )
+//        }
         return metadata.build()
     }
 
