@@ -2,54 +2,53 @@ package com.lalilu.lmusic.service
 
 import android.content.Context
 import android.media.AudioManager
-import android.media.MediaPlayer
 import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
-import com.lalilu.lmusic.manager.LMusicVolumeManager
 import com.lalilu.lmusic.utils.Mathf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
-abstract class BasePlayback<T, K>(
+abstract class BasePlayback<T, K, ID>(
     private val mContext: Context
-) : Playback {
-    private var mediaPlayer: MediaPlayer? = null
-    private var mVolumeManager: LMusicVolumeManager? = null
+) : Playback<ID>, CoroutineScope {
+    private var mediaPlayer: LMusicPlayer? = LMusicPlayer().also {
+        it.setOnPreparedListener {
+            isPrepared = true
+            play()
+        }
+        it.setOnCompletionListener { onCompletion() }
+    }
+    abstract var mAudioFocusManager: LMusicAudioFocusManager
     private var playbackState: Int = PlaybackStateCompat.STATE_NONE
-    private var mAudioFocusManager: LMusicAudioFocusManager? = null
-    private var onPlayerCallback: Playback.OnPlayerCallback? = null
+    var onPlayerCallback: Playback.OnPlayerCallback? = null
 
-    fun setAudioFocusManager(mAudioFocusManager: LMusicAudioFocusManager): BasePlayback<T, K> {
-        this.mAudioFocusManager = mAudioFocusManager
-        return this
-    }
-
-    fun setOnPlayerCallback(callback: Playback.OnPlayerCallback): BasePlayback<T, K> {
-        this.onPlayerCallback = callback
-        return this
-    }
-
-    open val nowPlaylist: MutableLiveData<K> = MutableLiveData()
-    open val nowPlaying: MutableLiveData<T> = MutableLiveData()
+    open var nowPlaying: MutableLiveData<T?> = MutableLiveData(null)
+    abstract var nowPlaylist: Flow<K>
 
     private var isPrepared = false
 
-    abstract fun getUriFromNowItem(nowPlaying: T): Uri
-    abstract fun getIdFromItem(item: T): Long
+    abstract fun getUriFromNowItem(nowPlaying: T?): Uri?
+    abstract fun getIdFromItem(item: T): ID
     abstract fun getMetaDataFromItem(item: T): MediaMetadataCompat
-    abstract fun getItemById(list: K, mediaId: Long): T?
+    abstract fun getItemById(list: K, mediaId: ID): T?
 
     override fun play() {
         mediaPlayer ?: rebuild()
 
         if (isPrepared) {
-            val result = mAudioFocusManager?.requestAudioFocus()
+            val result = mAudioFocusManager.requestAudioFocus()
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
-            mVolumeManager?.fadeStart()
+            mediaPlayer?.volumeManager?.fadeStart()
         } else {
             nowPlaying.value ?: return
-            playByUri(getUriFromNowItem(nowPlaying.value!!))
+            val uri = getUriFromNowItem(nowPlaying.value!!) ?: return
+            playByUri(uri)
             return
         }
         onPlaybackStateChanged(PlaybackStateCompat.STATE_PLAYING)
@@ -58,7 +57,7 @@ abstract class BasePlayback<T, K>(
     override fun pause() {
         mediaPlayer ?: rebuild()
 
-        mVolumeManager?.fadePause()
+        mediaPlayer?.volumeManager?.fadePause()
         onPlaybackStateChanged(PlaybackStateCompat.STATE_PAUSED)
     }
 
@@ -70,14 +69,13 @@ abstract class BasePlayback<T, K>(
 
     override fun rebuild() {
         isPrepared = false
-        mediaPlayer = MediaPlayer().also {
+        mediaPlayer = LMusicPlayer().also {
             it.setOnPreparedListener {
                 isPrepared = true
                 play()
             }
             it.setOnCompletionListener { onCompletion() }
         }
-        mVolumeManager = LMusicVolumeManager(mediaPlayer!!)
     }
 
     override fun playByUri(uri: Uri) {
@@ -89,41 +87,64 @@ abstract class BasePlayback<T, K>(
         mediaPlayer!!.prepareAsync()
     }
 
-    override fun playByMediaId(mediaId: Long?) {
+    override fun playByMediaId(mediaId: ID?) {
         mediaPlayer ?: rebuild()
         mediaId ?: return
-        nowPlaylist.value ?: return
 
-        nowPlaying.value = getItemById(nowPlaylist.value!!, mediaId)
-        playByUri(getUriFromNowItem(nowPlaying.value!!))
+        launch {
+            nowPlaylist.collect {
+                val list = it ?: return@collect
+                val item = getItemById(list, mediaId)
+                val uri = getUriFromNowItem(item) ?: return@collect
+                launch(Dispatchers.Main) {
+                    nowPlaying.value = item
+                    playByUri(uri)
+                }
+            }
+        }
     }
 
     override fun next() {
         mediaPlayer ?: rebuild()
-        nowPlaylist.value ?: return
-        val list = nowPlaylist.value!!
 
-        val next =
-            Mathf.clampInLoop(
-                0, getSizeFromList(list) - 1,
-                getIndexOfFromList(list, nowPlaying.value!!) + 1
-            )
-        nowPlaying.value = getItemFromListByIndex(list, next)
-        playByUri(getUriFromNowItem(getItemFromListByIndex(list, next)))
+        launch {
+            nowPlaylist.collect {
+                val list = it ?: return@collect
+
+                val next = Mathf.clampInLoop(
+                    0, getSizeFromList(list) - 1,
+                    getIndexOfFromList(list, nowPlaying.value!!) + 1
+                )
+                val item = getItemFromListByIndex(list, next) ?: return@collect
+                val uri = getUriFromNowItem(item) ?: return@collect
+                launch(Dispatchers.Main) {
+                    nowPlaying.value = item
+                    playByUri(uri)
+                }
+            }
+        }
     }
 
     override fun previous() {
         mediaPlayer ?: rebuild()
-        nowPlaylist.value ?: return
-        val list = nowPlaylist.value!!
 
-        val previous =
-            Mathf.clampInLoop(
-                0, getSizeFromList(list) - 1,
-                getIndexOfFromList(list, nowPlaying.value!!) - 1
-            )
-        nowPlaying.value = getItemFromListByIndex(list, previous)
-        playByUri(getUriFromNowItem(getItemFromListByIndex(list, previous)))
+        launch {
+            nowPlaylist.collect {
+                val list = it ?: return@collect
+
+                val previous = Mathf.clampInLoop(
+                    0, getSizeFromList(list) - 1,
+                    getIndexOfFromList(list, nowPlaying.value!!) - 1
+                )
+
+                val item = getItemFromListByIndex(list, previous) ?: return@collect
+                val uri = getUriFromNowItem(item) ?: return@collect
+                launch(Dispatchers.Main) {
+                    nowPlaying.value = item
+                    playByUri(uri)
+                }
+            }
+        }
     }
 
     abstract fun getSizeFromList(list: K): Int

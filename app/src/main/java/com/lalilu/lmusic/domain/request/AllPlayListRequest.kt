@@ -8,6 +8,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Deprecated("使用Flow构建单向数据流，不需要Request了")
 class AllPlayListRequest @Inject constructor(
     val dao: MPlaylistDao
 ) : BaseRequest<List<PlaylistWithSongs>>() {

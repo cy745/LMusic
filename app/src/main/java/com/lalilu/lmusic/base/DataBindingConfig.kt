@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 
 class DataBindingConfig(
     private var mLayoutId: Int,
-    private var vmVariableId: Int,
-    private var stateViewModel: ViewModel?,
+    private var vmVariableId: Int? = null,
+    private var stateViewModel: ViewModel? = null,
 ) {
     private var mBindingParams = SparseArray<Any>()
 

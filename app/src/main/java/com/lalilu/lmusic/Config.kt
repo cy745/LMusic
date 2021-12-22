@@ -5,4 +5,5 @@ object Config {
     const val LAST_METADATA = "LAST_METADATA"
     const val LAST_PLAYBACK_STATE = "LAST_PLAYBACK_STATE"
     const val LAST_PLAYLIST_ID = "LAST_PLAYLIST_ID"
+    const val LAST_PLAYING_ID = "LAST_PLAYING_ID"
 }

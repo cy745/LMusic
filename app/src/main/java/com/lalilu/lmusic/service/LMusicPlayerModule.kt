@@ -25,10 +25,11 @@ import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 @Singleton
+@ExperimentalCoroutinesApi
 class LMusicPlayerModule @Inject constructor(
     @ApplicationContext context: Context
 ) : ViewModel(), CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val logger = Logger.getLogger(this.javaClass.name)
     private val mmkv = MMKV.defaultMMKV()
@@ -38,7 +39,13 @@ class LMusicPlayerModule @Inject constructor(
 
     private val _playBackState =
         MutableStateFlow(
-            mmkv.decodeParcelable(LAST_PLAYBACK_STATE, PlaybackStateCompat::class.java)
+            mmkv.decodeParcelable(LAST_PLAYBACK_STATE, PlaybackStateCompat::class.java).let {
+                PlaybackStateCompat.Builder().setState(
+                    PlaybackStateCompat.STATE_STOPPED,
+                    it?.position ?: 0L,
+                    it?.playbackSpeed ?: 1.0f
+                ).build()
+            }
         )
 
     private val _mediaItems: MutableStateFlow<MutableList<MediaBrowserCompat.MediaItem>> =
@@ -46,24 +53,22 @@ class LMusicPlayerModule @Inject constructor(
 
     @ExperimentalCoroutinesApi
     val metadata: LiveData<MediaMetadataCompat?>
-        get() = _metadata.mapLatest {
+        get() = _metadata.map {
             if (it != null) mmkv.encode(LAST_METADATA, it)
-            return@mapLatest it
+            return@map it
         }.asLiveData()
 
     @ExperimentalCoroutinesApi
     val playBackState: LiveData<PlaybackStateCompat?>
-        get() = _playBackState.mapLatest {
+        get() = _playBackState.map {
             if (it != null) mmkv.encode(LAST_PLAYBACK_STATE, it)
-            return@mapLatest it
+            return@map it
         }.asLiveData()
 
     val mediaItem: LiveData<MutableList<MediaBrowserCompat.MediaItem>>
         get() = _mediaItems.combine(_metadata) { mediaItem, metadata ->
             listOrderChange(mediaItem, metadata?.description?.mediaId) ?: mediaItem
-        }.flowOn(Dispatchers.Default)
-            .conflate()
-            .asLiveData()
+        }.asLiveData()
 
     lateinit var mediaController: MediaControllerCompat
     private var controllerCallback: MusicControllerCallback = MusicControllerCallback()

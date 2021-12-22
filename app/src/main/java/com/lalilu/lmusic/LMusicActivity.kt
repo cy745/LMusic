@@ -5,27 +5,21 @@ import android.media.AudioManager
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.databinding.library.baseAdapters.BR
 import com.lalilu.R
 import com.lalilu.lmusic.base.DataBindingActivity
 import com.lalilu.lmusic.base.DataBindingConfig
-import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
-import com.lalilu.lmusic.state.MainActivityViewModel
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.ToastUtil
 import com.lalilu.lmusic.utils.scanner.MSongScanner
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 
 @AndroidEntryPoint
+@ExperimentalCoroutinesApi
 class LMusicActivity : DataBindingActivity() {
-    @Inject
-    lateinit var mState: MainActivityViewModel
-
-    @Inject
-    lateinit var mEvent: SharedViewModel
 
     @Inject
     lateinit var playerModule: LMusicPlayerModule
@@ -34,7 +28,7 @@ class LMusicActivity : DataBindingActivity() {
     lateinit var songScanner: MSongScanner
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        return DataBindingConfig(R.layout.activity_main, BR.vm, mState)
+        return DataBindingConfig(R.layout.activity_main)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,16 +53,14 @@ class LMusicActivity : DataBindingActivity() {
                 playerModule.mediaController.transportControls?.pause()
             }
             R.id.appbar_create_playlist -> {
-                mEvent.nowPlaylistWithSongsRequest.requireData()
-                mEvent.nowMSongRequest.requireData()
-                mEvent.allPlaylistRequest.requireData()
+                // todo 创建播放列表的逻辑
             }
             R.id.appbar_scan_song -> {
                 songScanner.setScanFailed {
-                    ToastUtil.text("提示信息: $it").show(this)
+                    ToastUtil.text("[提示信息]: $it").show(this)
                 }.setScanFinish {
-                    mEvent.nowPlaylistWithSongsRequest.requireData(0L)
-                    ToastUtil.text("扫描共计: $it").show(this)
+                    // todo 扫描完成后更新视图
+                    ToastUtil.text("[扫描完成]: 共计$it 首歌曲").show(this)
                 }.scanStart(this)
             }
         }

@@ -4,7 +4,7 @@ import android.util.Log;
 
 public class SnowFlakeUtils {
 
-    private static SnowFlakeUtils flowIdWorker = new SnowFlakeUtils(1);
+    private static final SnowFlakeUtils flowIdWorker = new SnowFlakeUtils(1);
     private final long id;
     /**
      * 时间起始标记点，作为基准，一般取系统的最近时间
@@ -59,6 +59,13 @@ public class SnowFlakeUtils {
         return System.currentTimeMillis();
     }
 
+    public static void main(String[] args) {
+        for (int i = 0; i < 100; i++) {
+            SnowFlakeUtils snowFlakeUtil = SnowFlakeUtils.getFlowIdInstance();
+            System.out.println(snowFlakeUtil.nextId());
+        }
+    }
+
     public synchronized long nextId() {
         long timestamp = timeGen();
         if (this.lastTimestamp == timestamp) {
@@ -90,12 +97,5 @@ public class SnowFlakeUtils {
             timestamp = timeGen();
         }
         return timestamp;
-    }
-
-    public static void main(String[] args) {
-        for (int i = 0; i < 100; i++) {
-            SnowFlakeUtils snowFlakeUtil = SnowFlakeUtils.getFlowIdInstance();
-            System.out.println(snowFlakeUtil.nextId());
-        }
     }
 }

@@ -21,8 +21,9 @@ import com.lalilu.lmusic.utils.BitmapUtils
 import com.lalilu.lmusic.utils.getAutomaticColor
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
-
+@Singleton
 class LMusicNotificationManager @Inject constructor(
     @ApplicationContext private val mService: Context
 ) {

@@ -6,12 +6,12 @@
     <data>
 
         <variable
-            name="vm"
-            type="com.lalilu.lmusic.state.PlaylistFragmentViewModel" />
-
-        <variable
             name="playlistAdapter"
             type="com.lalilu.lmusic.adapter.LMusicPlaylistAdapter" />
+
+        <variable
+            name="dataModule"
+            type="com.lalilu.lmusic.event.DataModule" />
     </data>
 
     <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
@@ -26,7 +26,7 @@
         android:paddingBottom="128dp"
         app:adapter="@{playlistAdapter}"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:setPlayLists="@{vm.playlist}"
+        app:setPlayLists="@{dataModule.allPlaylist}"
         tools:listitem="@layout/item_playlist" />
 </layout>
 

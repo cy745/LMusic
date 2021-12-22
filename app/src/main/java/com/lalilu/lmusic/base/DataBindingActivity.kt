@@ -17,7 +17,9 @@ abstract class DataBindingActivity : AppCompatActivity() {
         val config = getDataBindingConfig()
         val binding: ViewDataBinding = DataBindingUtil.setContentView(this, config.getLayout())
         binding.lifecycleOwner = this
-        binding.setVariable(config.getVmId(), config.getStateVm())
+        config.getVmId()?.let {
+            binding.setVariable(it, config.getStateVm())
+        }
         config.getBindingParams().forEach { key, value ->
             binding.setVariable(key, value)
         }

@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 /**
  * Request抽象类，提供更新的方法，不能直接修改
  */
+@Deprecated("使用Flow构建单向数据流，不需要Request了")
 abstract class BaseRequest<T> {
     protected val data = MutableLiveData<T>()
     private var lastRequest: Any? = null
