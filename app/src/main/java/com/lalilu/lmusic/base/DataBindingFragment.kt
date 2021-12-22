@@ -42,7 +42,7 @@ abstract class DataBindingFragment : Fragment() {
         val config = getDataBindingConfig()
         val binding: ViewDataBinding =
             DataBindingUtil.inflate(inflater, config.getLayout(), container, false)
-        binding.lifecycleOwner = this
+        binding.lifecycleOwner = viewLifecycleOwner
         binding.setVariable(config.getVmId(), config.getStateVm())
         config.getBindingParams().forEach { key, value ->
             binding.setVariable(key, value)
