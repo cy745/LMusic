@@ -10,20 +10,28 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ServiceLifecycleDispatcher
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
-import com.lalilu.lmusic.event.DataViewModel
+import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.manager.MusicNoisyReceiver
 import com.lalilu.lmusic.state.LMusicServiceViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
-class MSongService : MediaBrowserServiceCompat() {
+@ExperimentalCoroutinesApi
+class MSongService : MediaBrowserServiceCompat(), LifecycleOwner, CoroutineScope {
     companion object {
+        const val MEDIA_ID_EMPTY_ROOT = "media_id_empty_root"
         const val ACTION_PLAY_PAUSE = "play_and_pause"
 
         const val defaultActions = PlaybackStateCompat.ACTION_PLAY or
@@ -38,6 +46,9 @@ class MSongService : MediaBrowserServiceCompat() {
 
         val becomingNoisyFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
     }
+
+    override val coroutineContext: CoroutineContext get() = Dispatchers.Default
+    override fun getLifecycle(): Lifecycle = ServiceLifecycleDispatcher(this).lifecycle
 
     private val tag = this.javaClass.name
 
@@ -57,7 +68,7 @@ class MSongService : MediaBrowserServiceCompat() {
     lateinit var mNoisyReceiver: MusicNoisyReceiver
 
     @Inject
-    lateinit var dataViewModel: DataViewModel
+    lateinit var dataModule: DataModule
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mSessionCallback: LMusicSessionCompactCallback
@@ -191,14 +202,24 @@ class MSongService : MediaBrowserServiceCompat() {
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        result.sendResult(ArrayList())
+//        if (parentId == MEDIA_ID_EMPTY_ROOT) {
+//            result.detach()
+//            result.sendResult(ArrayList())
+//        }
+        result.detach()
+        launch {
+            dataModule.nowPlaylist.collect {
+                result.sendResult(it)
+            }
+        }
     }
 
     override fun onGetRoot(
         clientPackageName: String,
         clientUid: Int,
         rootHints: Bundle?
-    ): BrowserRoot? {
+    ): BrowserRoot {
+        println("onGetRoot: clientPackageName: $clientPackageName, clientUid: $clientUid")
         return BrowserRoot("normal", null)
     }
 }

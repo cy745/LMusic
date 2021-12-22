@@ -31,14 +31,14 @@ class DataModule @Inject constructor(
 
 
     @ExperimentalCoroutinesApi
-    val nowPlaylist: Flow<List<MediaBrowserCompat.MediaItem>?> = nowPlaylistId.flatMapLatest {
+    val nowPlaylist: Flow<MutableList<MediaBrowserCompat.MediaItem>> = nowPlaylistId.flatMapLatest {
         database.playlistDao().getByIdFlow(it).mapLatest { playlist ->
             playlist?.songs?.map { song ->
                 MediaBrowserCompat.MediaItem(
                     song.toMediaMetadataCompat().description,
                     MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
                 )
-            }
+            }?.toMutableList() ?: ArrayList()
         }
     }
 }
