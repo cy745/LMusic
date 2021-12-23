@@ -37,7 +37,7 @@ class DataModule @Inject constructor(
             }
         }.asLiveData()
 
-    private val _nowPlaylistId: MutableStateFlow<Long> =
+    val _nowPlaylistId: MutableStateFlow<Long> =
         MutableStateFlow(mmkv.decodeLong(LAST_PLAYLIST_ID, 0L))
 
     private val _nowPlaylistMetadata: Flow<List<MediaMetadataCompat>> =
