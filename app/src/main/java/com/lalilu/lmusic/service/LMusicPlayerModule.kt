@@ -70,7 +70,7 @@ class LMusicPlayerModule @Inject constructor(
             listOrderChange(mediaItem, metadata?.description?.mediaId) ?: mediaItem
         }.asLiveData()
 
-    lateinit var mediaController: MediaControllerCompat
+    var mediaController: MediaControllerCompat? = null
     private var controllerCallback: MusicControllerCallback = MusicControllerCallback()
     private var connectionCallback: MusicConnectionCallback = MusicConnectionCallback(context)
     private var subscriptionCallback: MusicSubscriptionCallback = MusicSubscriptionCallback()
@@ -100,7 +100,7 @@ class LMusicPlayerModule @Inject constructor(
 
     fun connect() = mediaBrowser.connect()
     fun disconnect() = mediaBrowser.disconnect().also {
-        mediaController.unregisterCallback(controllerCallback)
+        mediaController?.unregisterCallback(controllerCallback)
     }
 
     fun subscribe(parentId: String) = mediaBrowser.subscribe(parentId, subscriptionCallback)
@@ -133,14 +133,14 @@ class LMusicPlayerModule @Inject constructor(
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             launch {
                 _playBackState.emit(state ?: return@launch)
-                logger.info("[MusicControllerCallback]#onPlaybackStateChanged: ${state.state}")
+                logger.info("[MusicControllerCallback]#onPlaybackStateChanged: ${state.state} ${state.position}")
             }
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             launch {
                 _metadata.emit(metadata ?: return@launch)
-                logger.info("[MusicControllerCallback]#onMetadataChanged: ${metadata.description.title}")
+                logger.info("[MusicControllerCallback]#onMetadataChanged: ${metadata.description?.title}")
             }
         }
     }

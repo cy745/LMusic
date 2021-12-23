@@ -47,10 +47,10 @@ class LMusicActivity : DataBindingActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.appbar_play -> {
-                playerModule.mediaController.transportControls?.play()
+                playerModule.mediaController?.transportControls?.play()
             }
             R.id.appbar_pause -> {
-                playerModule.mediaController.transportControls?.pause()
+                playerModule.mediaController?.transportControls?.pause()
             }
             R.id.appbar_create_playlist -> {
                 // todo 创建播放列表的逻辑
