@@ -66,7 +66,7 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         mAdapter.setOnItemClickListener { adapter, _, position ->
             val song = adapter.data[position] as MediaBrowserCompat.MediaItem
 
-            playerModule.mediaController.transportControls
+            playerModule.mediaController?.transportControls
                 ?.playFromMediaId(song.mediaId.toString(), null)
         }
 
