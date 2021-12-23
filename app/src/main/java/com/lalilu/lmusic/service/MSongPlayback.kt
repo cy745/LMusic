@@ -24,12 +24,6 @@ class MSongPlayback @Inject constructor(
     override var nowPlaylist: Flow<List<MediaMetadataCompat>> =
         dataModule.nowPlaylistMetadataFlow
 
-    init {
-        nowPlaying.observeForever {
-            println("observeForever: ${it?.description?.title}")
-        }
-    }
-
     override fun getUriFromNowItem(nowPlaying: MediaMetadataCompat?): Uri? =
         nowPlaying?.description?.mediaUri
 
