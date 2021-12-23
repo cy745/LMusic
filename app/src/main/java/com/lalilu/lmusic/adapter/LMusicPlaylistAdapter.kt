@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.adapter
 
+import android.net.Uri
 import android.view.View
 import android.widget.ImageButton
 import com.chad.library.adapter.base.BaseNodeAdapter
@@ -48,6 +49,14 @@ class LMusicPlaylistAdapter @Inject constructor() : BaseNodeAdapter() {
 
         override fun convert(helper: BaseViewHolder, item: BaseNode) {
             val playlist = (item as FirstNode<*>).data as MPlaylist
+            var playlistUri = playlist.playlistCoverUri
+
+            if (playlistUri == Uri.EMPTY) {
+                (item.childNode as List<*>)[0]?.let {
+                    val song = (it as SecondNode<*>).data as MSong
+                    playlistUri = song.songCoverUri
+                }
+            }
 
 //            val lastTime = System.currentTimeMillis() - playlist.playlistCreateTime
 //            val min = lastTime / 1000 / 60
@@ -61,7 +70,7 @@ class LMusicPlaylistAdapter @Inject constructor() : BaseNodeAdapter() {
 
             helper.setText(R.id.playlist_title, playlist.playlistTitle)
             helper.getView<SamplingDraweeView>(R.id.playlist_pic)
-                .setImageURI(playlist.playlistCoverUri, context)
+                .setImageURI(playlistUri, context)
             helper.getView<ImageButton>(R.id.playlist_delete).setOnClickListener {
                 onPlaylistSelectedListener?.onDeleted(playlist.playlistId)
             }
