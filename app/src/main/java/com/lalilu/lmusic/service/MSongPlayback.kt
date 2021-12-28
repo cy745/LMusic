@@ -20,9 +20,8 @@ class MSongPlayback @Inject constructor(
     dataModule: DataModule,
     override var mAudioFocusManager: LMusicAudioFocusManager,
 ) : BasePlayback<MediaMetadataCompat, List<MediaMetadataCompat>, String>(mContext) {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default
-    override var nowPlaylist: Flow<List<MediaMetadataCompat>> =
-        dataModule.nowPlaylistMetadataFlow
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+    override var nowPlaylist: Flow<List<MediaMetadataCompat>> = dataModule.nowPlaylistMetadataFlow
 
     override fun getUriFromNowItem(nowPlaying: MediaMetadataCompat?): Uri? =
         nowPlaying?.description?.mediaUri
@@ -34,21 +33,17 @@ class MSongPlayback @Inject constructor(
     override fun getItemById(
         list: List<MediaMetadataCompat>,
         mediaId: String
-    ): MediaMetadataCompat? =
-        list.find { it.description.mediaId == mediaId }
+    ): MediaMetadataCompat? = list.find { it.description.mediaId == mediaId }
 
     override fun getSizeFromList(list: List<MediaMetadataCompat>): Int = list.size
 
     override fun getIndexOfFromList(
         list: List<MediaMetadataCompat>,
         item: MediaMetadataCompat
-    ): Int =
-        list.indexOfFirst { item.description.mediaId == it.description.mediaId }
+    ): Int = list.indexOfFirst { item.description.mediaId == it.description.mediaId }
 
     override fun getItemFromListByIndex(
         list: List<MediaMetadataCompat>,
         index: Int
-    ): MediaMetadataCompat {
-        return list[index]
-    }
+    ): MediaMetadataCompat = list[index]
 }

@@ -70,6 +70,7 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
             .setState(newState, position, 1.0f)
             .build()
         mediaSession.setPlaybackState(state)
+        dataModule.updatePlaybackState(state)
 
         val notification = mNotificationManager.getNotification(mediaSession)
         when (state.state) {
@@ -96,6 +97,7 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
 
     override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
         mediaSession.setMetadata(metadata)
+        dataModule.updateMetadata(metadata)
         mediaSession.isActive = true
     }
 

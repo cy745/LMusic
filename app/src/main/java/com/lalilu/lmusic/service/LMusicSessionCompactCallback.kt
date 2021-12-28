@@ -1,12 +1,10 @@
 package com.lalilu.lmusic.service
 
-import android.content.Context
 import android.media.AudioManager
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import com.lalilu.lmusic.Config.ACTION_PLAY_PAUSE
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,7 +13,6 @@ import javax.inject.Singleton
 @Singleton
 class LMusicSessionCompactCallback
 @Inject constructor(
-    @ApplicationContext val mContext: Context,
     val playback: MSongPlayback,
     val mediaSession: MediaSessionCompat,
     mAudioFocusManager: LMusicAudioFocusManager,

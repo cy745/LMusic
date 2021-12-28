@@ -10,6 +10,7 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
+import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarChangeListenerAdapter
@@ -27,6 +28,9 @@ class MainFragment : DataBindingFragment() {
 
     @Inject
     lateinit var playerModule: LMusicPlayerModule
+
+    @Inject
+    lateinit var dataModule: DataModule
 
     private var mPagerAdapter: LMusicFragmentStateAdapter? = null
 
@@ -53,7 +57,7 @@ class MainFragment : DataBindingFragment() {
             seekBar.setSumDuration(sum)
         }
 
-        playerModule.songPosition.observe(viewLifecycleOwner) {
+        dataModule.songPosition.observe(viewLifecycleOwner) {
             seekBar.updatePosition(it)
         }
 
