@@ -1,13 +1,11 @@
 package com.lalilu.lmusic.service
 
 import android.content.Context
-import android.content.IntentFilter
 import android.media.AudioManager
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
+import com.lalilu.lmusic.Config.ACTION_PLAY_PAUSE
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
-import com.lalilu.lmusic.manager.MusicNoisyReceiver
-import com.lalilu.lmusic.service.MSongService.Companion.ACTION_PLAY_PAUSE
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
@@ -19,21 +17,13 @@ class LMusicSessionCompactCallback
 @Inject constructor(
     @ApplicationContext val mContext: Context,
     val playback: MSongPlayback,
-    val mNoisyReceiver: MusicNoisyReceiver,
+    val mediaSession: MediaSessionCompat,
     mAudioFocusManager: LMusicAudioFocusManager,
 ) : MediaSessionCompat.Callback(),
-    MusicNoisyReceiver.OnBecomingNoisyListener,
     AudioManager.OnAudioFocusChangeListener {
-    private val becomingNoisyFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
-    var mediaSession: MediaSessionCompat? = null
 
     init {
-        mNoisyReceiver.onBecomingNoisyListener = this
         mAudioFocusManager.onAudioFocusChangeListener = this
-    }
-
-    override fun onBecomingNoisy() {
-        playback.pause()
     }
 
     override fun onAudioFocusChange(focusChange: Int) {
@@ -55,7 +45,6 @@ class LMusicSessionCompactCallback
 
     override fun onPlay() {
         playback.play()
-        mContext.registerReceiver(mNoisyReceiver, becomingNoisyFilter)
     }
 
     override fun onSkipToNext() {
@@ -71,8 +60,7 @@ class LMusicSessionCompactCallback
     }
 
     override fun onStop() {
-        mediaSession?.isActive = false
-        mContext.unregisterReceiver(mNoisyReceiver)
+        mediaSession.isActive = false
         playback.stop()
     }
 
@@ -81,6 +69,4 @@ class LMusicSessionCompactCallback
             ACTION_PLAY_PAUSE -> playback.playAndPause()
         }
     }
-
-
 }

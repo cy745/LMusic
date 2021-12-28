@@ -17,7 +17,7 @@ class MusicNoisyReceiver @Inject constructor() : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == ACTION_AUDIO_BECOMING_NOISY) {
-            println("ACTION_AUDIO_BECOMING_NOISY")
+            println("[onReceive]: ACTION_AUDIO_BECOMING_NOISY")
             onBecomingNoisyListener?.onBecomingNoisy()
         }
     }

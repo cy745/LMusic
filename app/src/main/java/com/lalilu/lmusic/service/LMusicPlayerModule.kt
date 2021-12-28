@@ -9,6 +9,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_METADATA
 import com.lalilu.lmusic.Config.LAST_PLAYBACK_STATE
 import com.lalilu.lmusic.Config.LAST_POSITION
@@ -128,7 +129,7 @@ class LMusicPlayerModule @Inject constructor(
                 registerCallback(controllerCallback)
             }
 
-            subscribe(MSongService.MEDIA_ID_EMPTY_ROOT)
+            subscribe(Config.MEDIA_ID_EMPTY_ROOT)
             logger.info("[MusicConnectionCallback]#onConnected")
         }
     }
