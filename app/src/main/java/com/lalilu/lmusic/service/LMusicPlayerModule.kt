@@ -11,64 +11,80 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.lalilu.lmusic.Config.LAST_METADATA
 import com.lalilu.lmusic.Config.LAST_PLAYBACK_STATE
+import com.lalilu.lmusic.Config.LAST_POSITION
+import com.lalilu.lmusic.database.LMusicDataBase
+import com.lalilu.lmusic.domain.entity.MSongDetail
 import com.lalilu.lmusic.utils.Mathf
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import java.util.*
 import java.util.logging.Logger
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
 
 @Singleton
 @ExperimentalCoroutinesApi
 class LMusicPlayerModule @Inject constructor(
-    @ApplicationContext context: Context
+    @ApplicationContext context: Context,
+    database: LMusicDataBase
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val logger = Logger.getLogger(this.javaClass.name)
     private val mmkv = MMKV.defaultMMKV()
 
-    private val _metadata =
-        MutableStateFlow(mmkv.decodeParcelable(LAST_METADATA, MediaMetadataCompat::class.java))
+    private val _metadata = MutableStateFlow(
+        mmkv.decodeParcelable(LAST_METADATA, MediaMetadataCompat::class.java)
+    )
 
-    private val _playBackState =
-        MutableStateFlow(
-            mmkv.decodeParcelable(LAST_PLAYBACK_STATE, PlaybackStateCompat::class.java).let {
-                PlaybackStateCompat.Builder().setState(
-                    PlaybackStateCompat.STATE_STOPPED,
-                    it?.position ?: 0L,
-                    it?.playbackSpeed ?: 1.0f
-                ).build()
-            }
-        )
+    private val _playBackState = MutableStateFlow(
+        mmkv.decodeParcelable(LAST_PLAYBACK_STATE, PlaybackStateCompat::class.java).let {
+            PlaybackStateCompat.Builder().setState(
+                PlaybackStateCompat.STATE_STOPPED,
+                it?.position ?: 0L,
+                it?.playbackSpeed ?: 1.0f
+            ).build()
+        }
+    )
 
     private val _mediaItems: MutableStateFlow<MutableList<MediaBrowserCompat.MediaItem>> =
         MutableStateFlow(ArrayList())
 
-    @ExperimentalCoroutinesApi
-    val metadata: LiveData<MediaMetadataCompat?>
-        get() = _metadata.map {
-            if (it != null) mmkv.encode(LAST_METADATA, it)
-            return@map it
-        }.asLiveData()
+    private val _songPosition: Flow<Long> = _playBackState.flatMapLatest {
+        var currentDuration = Mathf.getPositionFromPlaybackStateCompat(it)
+        if (it.state == PlaybackStateCompat.STATE_STOPPED)
+            currentDuration = mmkv.decodeLong(LAST_POSITION)
 
-    @ExperimentalCoroutinesApi
-    val playBackState: LiveData<PlaybackStateCompat?>
-        get() = _playBackState.map {
-            if (it != null) mmkv.encode(LAST_PLAYBACK_STATE, it)
-            return@map it
-        }.asLiveData()
+        flow {
+            if (it.state == PlaybackStateCompat.STATE_PLAYING) {
+                repeat(Int.MAX_VALUE) {
+                    emit(currentDuration)
+                    currentDuration += 1000
+                    delay(1000)
+                }
+            } else emit(currentDuration)
+        }
+    }.map {
+        mmkv.encode(LAST_POSITION, it)
+        return@map it
+    }
 
-    val mediaItem: LiveData<MutableList<MediaBrowserCompat.MediaItem>>
-        get() = _mediaItems.combine(_metadata) { mediaItem, metadata ->
+    val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
+
+    val mediaItems: LiveData<MutableList<MediaBrowserCompat.MediaItem>> =
+        _mediaItems.combine(_metadata) { mediaItem, metadata ->
             listOrderChange(mediaItem, metadata?.description?.mediaId) ?: mediaItem
         }.asLiveData()
+
+    val songDetail: LiveData<MSongDetail?> = _metadata.flatMapLatest {
+        database.songDetailDao().getByIdStrFlow(it?.description?.mediaId ?: "-1")
+    }.asLiveData()
+
+    val songPosition: LiveData<Long> = _songPosition.asLiveData()
 
     var mediaController: MediaControllerCompat? = null
     private var controllerCallback: MusicControllerCallback = MusicControllerCallback()
@@ -133,6 +149,7 @@ class LMusicPlayerModule @Inject constructor(
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             launch {
                 _playBackState.emit(state ?: return@launch)
+                mmkv.encode(LAST_PLAYBACK_STATE, state)
                 logger.info("[MusicControllerCallback]#onPlaybackStateChanged: ${state.state} ${state.position}")
             }
         }
@@ -140,6 +157,7 @@ class LMusicPlayerModule @Inject constructor(
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             launch {
                 _metadata.emit(metadata ?: return@launch)
+                mmkv.encode(LAST_METADATA, metadata)
                 logger.info("[MusicControllerCallback]#onMetadataChanged: ${metadata.description?.title}")
             }
         }

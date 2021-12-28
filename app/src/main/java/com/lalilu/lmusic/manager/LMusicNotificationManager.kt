@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.graphics.Color
 import android.os.Build
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -25,49 +24,66 @@ import javax.inject.Singleton
 
 @Singleton
 class LMusicNotificationManager @Inject constructor(
-    @ApplicationContext private val mService: Context
+    @ApplicationContext private val mContext: Context
 ) {
     companion object {
-        const val NOTIFICATION_ID = 7
+        const val NOTIFICATION_PLAYER_ID = 7
+        const val NOTIFICATION_LYRIC_ID = 8
+
         const val playerChannelName = "LMusic Player"
         const val loggerChannelName = "LMusic Logger"
+        const val lyricChannelName = "LMusic Lyrics"
+
+        const val FLAG_ALWAYS_SHOW_TICKER = 0x1000000
+        const val FLAG_ONLY_UPDATE_TICKER = 0x2000000
     }
+
+    private var channels = listOf(
+        playerChannelName,
+        loggerChannelName,
+        lyricChannelName
+    )
 
     private var mPlayAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_play_line, "play",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
-            mService, PlaybackStateCompat.ACTION_PLAY
+            mContext, PlaybackStateCompat.ACTION_PLAY
         )
     )
     private var mPauseAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_pause_line, "pause",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
-            mService, PlaybackStateCompat.ACTION_PAUSE
+            mContext, PlaybackStateCompat.ACTION_PAUSE
         )
     )
     private var mNextAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_skip_forward_line, "next",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
-            mService, PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+            mContext, PlaybackStateCompat.ACTION_SKIP_TO_NEXT
         )
     )
     private var mPrevAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_skip_back_line, "previous",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
-            mService, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+            mContext, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
         )
     )
-    val notificationManager: NotificationManager =
-        ContextCompat.getSystemService(
-            mService, NotificationManager::class.java
-        ) as NotificationManager
+    val notificationManager: NotificationManager = ContextCompat.getSystemService(
+        mContext, NotificationManager::class.java
+    ) as NotificationManager
 
 
+    /**
+     *  API 26 以上需要注册Channel，否则不显示通知。
+     */
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) createNotificationChannel()
         notificationManager.cancelAll()
     }
 
+    /**
+     * 通过mediaSession创建通知
+     */
     fun getNotification(
         mediaSession: MediaSessionCompat,
     ): Notification {
@@ -92,13 +108,13 @@ class LMusicNotificationManager @Inject constructor(
         val palette = bitmap?.let { Palette.from(bitmap).generate() }
         val color = palette.getAutomaticColor()
         val cancelButtonIntent = MediaButtonReceiver.buildMediaButtonPendingIntent(
-            mService, PlaybackStateCompat.ACTION_STOP
+            mContext, PlaybackStateCompat.ACTION_STOP
         )
         val style = MediaStyle().setMediaSession(token)
             .setShowActionsInCompactView(0, 1, 2)
             .setShowCancelButton(true)
             .setCancelButtonIntent(cancelButtonIntent)
-        val builder = NotificationCompat.Builder(mService, playerChannelName + "_ID")
+        val builder = NotificationCompat.Builder(mContext, playerChannelName + "_ID")
         builder.setStyle(style)
             .setColor(color)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -118,18 +134,30 @@ class LMusicNotificationManager @Inject constructor(
         return builder
     }
 
+    fun updateLyric(lyric: String) {
+        val builder = NotificationCompat.Builder(mContext, "${lyricChannelName}_ID")
+        builder.setContentText("歌词")
+            .setShowWhen(false)
+            .setTicker(lyric)
+            .setOngoing(true)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+        val notification = builder.build()
+        notification.flags = notification.flags.or(FLAG_ALWAYS_SHOW_TICKER)
+        notification.flags = notification.flags.or(FLAG_ONLY_UPDATE_TICKER)
+        notificationManager.notify(NOTIFICATION_LYRIC_ID, notification)
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun createNotificationChannel() {
-        val name = playerChannelName
-        val id = playerChannelName + "_ID"
-        if (notificationManager.getNotificationChannel(id) == null) {
-            val importance = NotificationManager.IMPORTANCE_LOW
-            val mChannel = NotificationChannel(id, name, importance)
-            mChannel.description = "播放器控制器通道，关闭后将无法从在状态栏上控制播放器。"
-            mChannel.enableLights(true)
-            mChannel.lightColor = Color.RED
-            mChannel.setShowBadge(false)
-            notificationManager.createNotificationChannel(mChannel)
+        channels.forEach { name ->
+            val id = "${name}_ID"
+            if (notificationManager.getNotificationChannel(id) == null) {
+                val channel = NotificationChannel(id, name, NotificationManager.IMPORTANCE_LOW)
+                channel.description = "【LMusic通知频道】：$name"
+                channel.importance = NotificationManager.IMPORTANCE_LOW
+                channel.setShowBadge(false)
+                notificationManager.createNotificationChannel(channel)
+            }
         }
     }
 }

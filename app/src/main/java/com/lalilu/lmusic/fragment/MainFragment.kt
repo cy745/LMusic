@@ -9,7 +9,6 @@ import com.lalilu.databinding.FragmentMainBinding
 import com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.service.MSongService
@@ -29,9 +28,6 @@ class MainFragment : DataBindingFragment() {
     @Inject
     lateinit var playerModule: LMusicPlayerModule
 
-    @Inject
-    lateinit var dataModule: DataModule
-
     private var mPagerAdapter: LMusicFragmentStateAdapter? = null
 
     override fun getDataBindingConfig(): DataBindingConfig {
@@ -45,11 +41,10 @@ class MainFragment : DataBindingFragment() {
 
     override fun onViewCreated() {
         val binding = (mBinding as FragmentMainBinding)
+        val seekBar = (mBinding as FragmentMainBinding).maSeekBar
 
         val child = binding.fmViewpager?.getChildAt(0)
         if (child is RecyclerView) child.overScrollMode = View.OVER_SCROLL_NEVER
-
-        val seekBar = (mBinding as FragmentMainBinding).maSeekBar
 
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
         playerModule.metadata.observe(viewLifecycleOwner) {
@@ -58,9 +53,7 @@ class MainFragment : DataBindingFragment() {
             seekBar.setSumDuration(sum)
         }
 
-        // 从 playbackState 中获取歌曲的播放进度传递给 SeekBar
-        playerModule.playBackState.observe(viewLifecycleOwner) {
-            if (it == null) return@observe
+        playerModule.songPosition.observe(viewLifecycleOwner) {
             seekBar.updatePosition(it)
         }
 
