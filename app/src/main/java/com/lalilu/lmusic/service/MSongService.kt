@@ -19,8 +19,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -88,28 +86,24 @@ class MSongService : MediaBrowserServiceCompat(), LifecycleOwner, CoroutineScope
             .build()
         mediaSession.setPlaybackState(state)
 
-        try {
-            val notification = mNotificationManager.getNotification(mediaSession)
-            when (state.state) {
-                PlaybackStateCompat.STATE_PLAYING -> {
-                    val intent = Intent(this, MSongService::class.java)
-                    ContextCompat.startForegroundService(this, intent)
-                    startForeground(LMusicNotificationManager.NOTIFICATION_ID, notification)
-                }
-                PlaybackStateCompat.STATE_PAUSED -> {
-                    stopForeground(false)
-                    mNotificationManager.notificationManager.notify(
-                        LMusicNotificationManager.NOTIFICATION_ID, notification
-                    )
-                }
-                PlaybackStateCompat.STATE_STOPPED -> {
-                    stopForeground(true)
-                    stopSelf()
-                }
-                else -> return
+        val notification = mNotificationManager.getNotification(mediaSession)
+        when (state.state) {
+            PlaybackStateCompat.STATE_PLAYING -> {
+                val intent = Intent(this, MSongService::class.java)
+                ContextCompat.startForegroundService(this, intent)
+                startForeground(LMusicNotificationManager.NOTIFICATION_PLAYER_ID, notification)
             }
-        } catch (e: Exception) {
-            println(e.message)
+            PlaybackStateCompat.STATE_PAUSED -> {
+                stopForeground(false)
+                mNotificationManager.notificationManager.notify(
+                    LMusicNotificationManager.NOTIFICATION_PLAYER_ID, notification
+                )
+            }
+            PlaybackStateCompat.STATE_STOPPED -> {
+                stopForeground(true)
+                stopSelf()
+            }
+            else -> return
         }
     }
 
@@ -127,15 +121,19 @@ class MSongService : MediaBrowserServiceCompat(), LifecycleOwner, CoroutineScope
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        result.detach()
-        launch {
+        var loaded = false
+        if (dataModule.nowPlaylistMediaItemLiveData.hasObservers())
+            dataModule.nowPlaylistMediaItemLiveData.removeObserver {}
+
+        dataModule.nowPlaylistMediaItemLiveData.observeForever {
+            if (loaded) return@observeForever
             mediaSession.setPlaybackState(mediaSession.controller.playbackState)
             mediaSession.setMetadata(mediaSession.controller.metadata)
-
-            dataModule.nowPlaylistMediaItemFlow.collect {
-                result.sendResult(it.toMutableList())
-            }
+            result.sendResult(it?.toMutableList())
+            loaded = true
         }
+
+        if (!loaded) result.detach()
     }
 
     override fun onGetRoot(

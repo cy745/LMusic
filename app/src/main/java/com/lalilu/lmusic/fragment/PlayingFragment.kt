@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.fragment
 
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayingBinding
@@ -9,22 +8,16 @@ import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.binding_adapter.setMediaItems
-import com.lalilu.lmusic.database.LMusicDataBase
 import com.lalilu.lmusic.event.SharedViewModel
+import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.service.LMusicPlayerModule
-import com.lalilu.lmusic.utils.Mathf
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
-import java.util.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
-import kotlin.concurrent.schedule
-import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class PlayingFragment : DataBindingFragment(), CoroutineScope {
-
-    override val coroutineContext: CoroutineContext = Dispatchers.Main
+class PlayingFragment : DataBindingFragment() {
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -36,9 +29,7 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     lateinit var playerModule: LMusicPlayerModule
 
     @Inject
-    lateinit var database: LMusicDataBase
-
-    private var positionTimer: Timer? = null
+    lateinit var notificationManager: LMusicNotificationManager
 
     override fun getDataBindingConfig(): DataBindingConfig {
 //        mAdapter.draggableModule.isDragEnabled = true
@@ -77,44 +68,32 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     }
 
     override fun onViewCreated() {
-        playerModule.metadata.observe(viewLifecycleOwner) {
-            launch(Dispatchers.IO) {
-                val mediaId = it?.description?.mediaId ?: return@launch
+        val fmLyricViewX = (mBinding as FragmentPlayingBinding).fmLyricViewX
+        val fmToolbar = (mBinding as FragmentPlayingBinding).fmToolbar
 
-                val lyric = database.songDetailDao().getByIdStr(mediaId)?.songLyric ?: return@launch
+        playerModule.songDetail.observe(viewLifecycleOwner) {
+            fmLyricViewX.setLabel("暂无歌词")
+            fmLyricViewX.loadLyric(it?.songLyric)
+        }
+        var lastLyric: String? = ""
+        playerModule.songPosition.observe(viewLifecycleOwner) { position ->
+            fmLyricViewX.updateTime(position)
 
-                launch(Dispatchers.Main) {
-                    val binding = (mBinding as FragmentPlayingBinding)
-                    binding.fmLyricViewX.loadLyric(lyric)
+            val nowLyric = fmLyricViewX.getCurrentLineLyricEntry()?.text
+            if (nowLyric != lastLyric) {
+                println(fmLyricViewX.getCurrentLineLyricEntry()?.text)
+                nowLyric?.let {
+                    notificationManager.updateLyric(it)
                 }
+                lastLyric = nowLyric
             }
         }
-        playerModule.mediaItem.observe(viewLifecycleOwner) {
+        playerModule.mediaItems.observe(viewLifecycleOwner) {
             mAdapter.setMediaItems(it)
         }
 
-        playerModule.playBackState.observe(viewLifecycleOwner) {
-            it ?: return@observe
-            var currentDuration = Mathf.getPositionFromPlaybackStateCompat(it)
-            val binding = (mBinding as FragmentPlayingBinding)
-
-            positionTimer?.cancel()
-            if (it.state == PlaybackStateCompat.STATE_PLAYING) {
-                positionTimer = Timer().apply {
-                    this.schedule(0, 1000) {
-                        binding.fmLyricViewX.updateTime(currentDuration)
-                        currentDuration += 1000
-                    }
-                }
-            } else {
-                binding.fmLyricViewX.updateTime(currentDuration)
-            }
-        }
         //        mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)
 
-
-        val binding = (mBinding as FragmentPlayingBinding)
-        mActivity!!.setSupportActionBar(binding.fmToolbar)
-        binding.fmLyricViewX.setLabel("暂无歌词")
+        mActivity?.setSupportActionBar(fmToolbar)
     }
 }

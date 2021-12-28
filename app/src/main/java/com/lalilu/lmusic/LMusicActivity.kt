@@ -59,8 +59,9 @@ class LMusicActivity : DataBindingActivity() {
                 songScanner.setScanFailed {
                     ToastUtil.text("[提示信息]: $it").show(this)
                 }.setScanFinish {
-                    // todo 扫描完成后更新视图
                     ToastUtil.text("[扫描完成]: 共计$it 首歌曲").show(this)
+                    playerModule.disconnect()
+                    playerModule.connect()
                 }.scanStart(this)
             }
         }

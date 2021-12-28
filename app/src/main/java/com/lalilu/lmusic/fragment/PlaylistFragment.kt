@@ -14,18 +14,12 @@ import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class PlaylistFragment : DataBindingFragment(), CoroutineScope {
-
-    override val coroutineContext: CoroutineContext = Dispatchers.Main
+class PlaylistFragment : DataBindingFragment() {
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -55,9 +49,7 @@ class PlaylistFragment : DataBindingFragment(), CoroutineScope {
                 val playlist = parent.data as MPlaylist
                 val song = child.data as MSong
 
-                launch(Dispatchers.IO) {
-                    dataModule._nowPlaylistId.emit(playlist.playlistId)
-                }
+                dataModule.changePlaylistById(playlist.playlistId)
                 playerModule.mediaController?.transportControls
                     ?.playFromMediaId(song.songId.toString(), null)
             }

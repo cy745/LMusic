@@ -2,33 +2,14 @@ package com.lalilu.lmusic.ui.seekbar
 
 import android.content.Context
 import android.graphics.*
-import android.support.v4.media.session.PlaybackStateCompat
 import android.text.TextPaint
 import android.util.AttributeSet
-import com.lalilu.lmusic.utils.Mathf.getPositionFromPlaybackStateCompat
 import com.lalilu.lmusic.utils.TextUtils
-import java.util.*
-import kotlin.concurrent.schedule
 
 class LMusicSeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : BaseSeekBar(context, attrs, defStyleAttr) {
-    private var positionTimer: Timer? = null
-
-    override fun updatePosition(playbackStateCompat: PlaybackStateCompat) {
-        var currentDuration = getPositionFromPlaybackStateCompat(playbackStateCompat)
-        positionTimer?.cancel()
-        if (playbackStateCompat.state == PlaybackStateCompat.STATE_PLAYING)
-            positionTimer = Timer().apply {
-                this.schedule(0, 1000) {
-                    updatePosition(currentDuration)
-                    currentDuration += 1000
-                    if (currentDuration >= sumDuration) this.cancel()
-                }
-            }
-        else updatePosition(currentDuration)
-    }
-
+    
     override fun updatePosition(position: Long) {
         if (!touching) {
             nowDuration = position
@@ -43,7 +24,6 @@ class LMusicSeekBar @JvmOverloads constructor(
     }
 
     override fun onTouchUp() {
-        positionTimer?.cancel()
         if (downDuration != nowDuration) {
             onTouchUpWithChange()
             onSeekBarChangeListener?.onStopTrackingTouch(nowDuration)
