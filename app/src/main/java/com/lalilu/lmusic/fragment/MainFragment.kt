@@ -6,12 +6,12 @@ import androidx.databinding.library.baseAdapters.BR
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
 import com.lalilu.databinding.FragmentMainBinding
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
-import com.lalilu.lmusic.service.MSongService
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarChangeListenerAdapter
 import com.lalilu.lmusic.utils.HapticUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -65,7 +65,7 @@ class MainFragment : DataBindingFragment() {
 
             override fun onClick() {
                 playerModule.mediaController?.transportControls?.sendCustomAction(
-                    MSongService.ACTION_PLAY_PAUSE, null
+                    Config.ACTION_PLAY_PAUSE, null
                 )
                 HapticUtils.haptic(seekBar.rootView)
             }

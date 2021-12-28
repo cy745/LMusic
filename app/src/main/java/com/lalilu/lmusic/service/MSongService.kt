@@ -8,13 +8,12 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ServiceLifecycleDispatcher
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.manager.LMusicNotificationManager
+import com.lalilu.lmusic.manager.MusicNoisyReceiver
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,28 +23,10 @@ import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class MSongService : MediaBrowserServiceCompat(), LifecycleOwner, CoroutineScope,
-    Playback.OnPlayerCallback {
+class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
+    Playback.OnPlayerCallback, MusicNoisyReceiver.OnBecomingNoisyListener {
 
-    companion object {
-        const val MEDIA_ID_EMPTY_ROOT = "media_id_empty_root"
-        const val ACTION_PLAY_PAUSE = "play_and_pause"
-
-        const val defaultActions = PlaybackStateCompat.ACTION_PLAY or
-                PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
-                PlaybackStateCompat.ACTION_PAUSE or
-                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-
-        const val defaultFlags = MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
-                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-    }
-
-    private val tag = this.javaClass.name
-    override val coroutineContext: CoroutineContext get() = Dispatchers.Default
-    override fun getLifecycle(): Lifecycle = ServiceLifecycleDispatcher(this).lifecycle
-    private lateinit var mediaSession: MediaSessionCompat
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     @Inject
     lateinit var dataModule: DataModule
@@ -56,32 +37,36 @@ class MSongService : MediaBrowserServiceCompat(), LifecycleOwner, CoroutineScope
     @Inject
     lateinit var mNotificationManager: LMusicNotificationManager
 
+    @Inject
+    @SessionActivityPendingIntent
+    lateinit var pendingIntent: PendingIntent
+
+    @Inject
+    lateinit var mediaSession: MediaSessionCompat
+
+    @Inject
+    lateinit var noisyReceiver: MusicNoisyReceiver
+
     override fun onCreate() {
         super.onCreate()
 
-        val sessionActivityPendingIntent = packageManager
-            ?.getLaunchIntentForPackage(packageName)
-            ?.let { sessionIntent ->
-                PendingIntent.getActivity(
-                    this, 0,
-                    sessionIntent, PendingIntent.FLAG_UPDATE_CURRENT
-                )
-            }
-
-        mediaSession = MediaSessionCompat(this, tag).apply {
-            setFlags(defaultFlags)
-            setSessionActivity(sessionActivityPendingIntent)
-            setCallback(mSessionCallback)
-            setSessionToken(sessionToken)
+        mediaSession.also {
+            it.setSessionActivity(pendingIntent)
+            it.setCallback(mSessionCallback)
+            this.sessionToken = it.sessionToken
         }
-        mSessionCallback.mediaSession = mediaSession
         mSessionCallback.playback.onPlayerCallback = this
+        noisyReceiver.onBecomingNoisyListener = this
+    }
+
+    override fun onBecomingNoisy() {
+        mediaSession.controller.transportControls.pause()
     }
 
     override fun onPlaybackStateChanged(newState: Int) {
         val position = mSessionCallback.playback.getPosition()
         val state = PlaybackStateCompat.Builder()
-            .setActions(defaultActions)
+            .setActions(Config.MEDIA_DEFAULT_ACTION)
             .setState(newState, position, 1.0f)
             .build()
         mediaSession.setPlaybackState(state)
@@ -89,6 +74,7 @@ class MSongService : MediaBrowserServiceCompat(), LifecycleOwner, CoroutineScope
         val notification = mNotificationManager.getNotification(mediaSession)
         when (state.state) {
             PlaybackStateCompat.STATE_PLAYING -> {
+                this.registerReceiver(noisyReceiver, Config.FILTER_BECOMING_NOISY)
                 val intent = Intent(this, MSongService::class.java)
                 ContextCompat.startForegroundService(this, intent)
                 startForeground(LMusicNotificationManager.NOTIFICATION_PLAYER_ID, notification)
@@ -100,6 +86,7 @@ class MSongService : MediaBrowserServiceCompat(), LifecycleOwner, CoroutineScope
                 )
             }
             PlaybackStateCompat.STATE_STOPPED -> {
+                this.unregisterReceiver(noisyReceiver)
                 stopForeground(true)
                 stopSelf()
             }
