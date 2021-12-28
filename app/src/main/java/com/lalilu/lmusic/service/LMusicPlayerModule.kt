@@ -12,9 +12,6 @@ import androidx.lifecycle.asLiveData
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_METADATA
 import com.lalilu.lmusic.Config.LAST_PLAYBACK_STATE
-import com.lalilu.lmusic.Config.LAST_POSITION
-import com.lalilu.lmusic.database.LMusicDataBase
-import com.lalilu.lmusic.domain.entity.MSongDetail
 import com.lalilu.lmusic.utils.Mathf
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -30,8 +27,7 @@ import kotlin.coroutines.CoroutineContext
 @Singleton
 @ExperimentalCoroutinesApi
 class LMusicPlayerModule @Inject constructor(
-    @ApplicationContext context: Context,
-    database: LMusicDataBase
+    @ApplicationContext context: Context
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -55,37 +51,12 @@ class LMusicPlayerModule @Inject constructor(
     private val _mediaItems: MutableStateFlow<MutableList<MediaBrowserCompat.MediaItem>> =
         MutableStateFlow(ArrayList())
 
-    private val _songPosition: Flow<Long> = _playBackState.flatMapLatest {
-        var currentDuration = Mathf.getPositionFromPlaybackStateCompat(it)
-        if (it.state == PlaybackStateCompat.STATE_STOPPED)
-            currentDuration = mmkv.decodeLong(LAST_POSITION)
-
-        flow {
-            if (it.state == PlaybackStateCompat.STATE_PLAYING) {
-                repeat(Int.MAX_VALUE) {
-                    emit(currentDuration)
-                    currentDuration += 1000
-                    delay(1000)
-                }
-            } else emit(currentDuration)
-        }
-    }.map {
-        mmkv.encode(LAST_POSITION, it)
-        return@map it
-    }
-
     val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
 
     val mediaItems: LiveData<MutableList<MediaBrowserCompat.MediaItem>> =
         _mediaItems.combine(_metadata) { mediaItem, metadata ->
             listOrderChange(mediaItem, metadata?.description?.mediaId) ?: mediaItem
         }.asLiveData()
-
-    val songDetail: LiveData<MSongDetail?> = _metadata.flatMapLatest {
-        database.songDetailDao().getByIdStrFlow(it?.description?.mediaId ?: "-1")
-    }.asLiveData()
-
-    val songPosition: LiveData<Long> = _songPosition.asLiveData()
 
     var mediaController: MediaControllerCompat? = null
     private var controllerCallback: MusicControllerCallback = MusicControllerCallback()

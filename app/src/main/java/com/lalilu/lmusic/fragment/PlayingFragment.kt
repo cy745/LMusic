@@ -8,8 +8,8 @@ import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.binding_adapter.setMediaItems
+import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.SharedViewModel
-import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,7 +29,7 @@ class PlayingFragment : DataBindingFragment() {
     lateinit var playerModule: LMusicPlayerModule
 
     @Inject
-    lateinit var notificationManager: LMusicNotificationManager
+    lateinit var dataModule: DataModule
 
     override fun getDataBindingConfig(): DataBindingConfig {
 //        mAdapter.draggableModule.isDragEnabled = true
@@ -71,22 +71,12 @@ class PlayingFragment : DataBindingFragment() {
         val fmLyricViewX = (mBinding as FragmentPlayingBinding).fmLyricViewX
         val fmToolbar = (mBinding as FragmentPlayingBinding).fmToolbar
 
-        playerModule.songDetail.observe(viewLifecycleOwner) {
+        dataModule.songDetail.observe(viewLifecycleOwner) {
             fmLyricViewX.setLabel("暂无歌词")
             fmLyricViewX.loadLyric(it?.songLyric)
         }
-        var lastLyric: String? = ""
-        playerModule.songPosition.observe(viewLifecycleOwner) { position ->
+        dataModule.songPosition.observe(viewLifecycleOwner) { position ->
             fmLyricViewX.updateTime(position)
-
-            val nowLyric = fmLyricViewX.getCurrentLineLyricEntry()?.text
-            if (nowLyric != lastLyric) {
-                println(fmLyricViewX.getCurrentLineLyricEntry()?.text)
-                nowLyric?.let {
-                    notificationManager.updateLyric(it)
-                }
-                lastLyric = nowLyric
-            }
         }
         playerModule.mediaItems.observe(viewLifecycleOwner) {
             mAdapter.setMediaItems(it)
