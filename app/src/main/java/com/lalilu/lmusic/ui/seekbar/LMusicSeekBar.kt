@@ -4,12 +4,13 @@ import android.content.Context
 import android.graphics.*
 import android.text.TextPaint
 import android.util.AttributeSet
+import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.TextUtils
 
 class LMusicSeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : BaseSeekBar(context, attrs, defStyleAttr) {
-    
+
     override fun updatePosition(position: Long) {
         if (!touching) {
             nowDuration = position
@@ -23,26 +24,9 @@ class LMusicSeekBar @JvmOverloads constructor(
         }
     }
 
-    override fun onTouchUp() {
-        if (downDuration != nowDuration) {
-            onTouchUpWithChange()
-            onSeekBarChangeListener?.onStopTrackingTouch(nowDuration)
-        } else {
-            onSeekBarChangeListener?.onClick()
-        }
-    }
-
     override fun onTouchUpWithChange() {
         nowDuration = (progress * sumDuration).toLong()
-    }
-
-    override fun onTouchMove() {
-        onSeekBarChangeListener?.onPositionChanged(nowDuration, true)
-    }
-
-    override fun onTouchDown() {
-        downDuration = nowDuration
-        onSeekBarChangeListener?.onStartTrackingTouch(nowDuration)
+        onSeekBarListener?.onPositionUpdate(nowDuration)
     }
 
     fun setSumDuration(duration: Long) {
@@ -54,8 +38,6 @@ class LMusicSeekBar @JvmOverloads constructor(
         paint.color = color
         invalidate()
     }
-
-    private var downDuration: Long = -1L
 
     private var sumDuration: Long = 0L
     private var nowDuration: Long = 0L
@@ -110,15 +92,16 @@ class LMusicSeekBar @JvmOverloads constructor(
 
         nowDurationTextOffset =
             if (offsetTemp < progressWidth) progressWidth else offsetTemp
-        textPaintDayNight.color = Color.BLACK
-//            if (StatusBarUtil.isDarkMode(context.applicationContext as Application)) Color.WHITE else Color.BLACK
+        textPaintDayNight.color =
+            if (StatusBarUtil.isDarkMode(context)) Color.WHITE else Color.BLACK
 
+        // 只保留圆角矩形path部分
         canvas.clipPath(path)
 
-        // draw background
+        // 绘制背景
         canvas.drawColor(backgroundColor)
 
-        // draw sumDuration
+        // 绘制总时长文字
         canvas.drawText(
             sumDurationText,
             width - sumDurationTextWidth - textPadding,
@@ -126,12 +109,12 @@ class LMusicSeekBar @JvmOverloads constructor(
             textPaintDayNight
         )
 
-        // draw thumb
+        // 绘制进度条滑动块
         canvas.drawRoundRect(
             0f, 0f, progressWidth, height.toFloat(), radius, radius, paint
         )
 
-        // draw nowDuration
+        // 绘制进度时间文字
         canvas.drawText(
             nowDurationText, nowDurationTextOffset - nowDurationTextWidth - textPadding,
             textCenterHeight,

@@ -2,6 +2,7 @@ package com.lalilu.lmusic.utils
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
@@ -26,6 +27,11 @@ object StatusBarUtil {
 
     fun isDarkMode(application: Application): Boolean {
         val mode = application.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return mode == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    fun isDarkMode(context: Context): Boolean {
+        val mode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         return mode == Configuration.UI_MODE_NIGHT_YES
     }
 
