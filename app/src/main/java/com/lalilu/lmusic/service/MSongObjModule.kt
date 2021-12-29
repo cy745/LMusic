@@ -3,7 +3,6 @@ package com.lalilu.lmusic.service
 import android.app.PendingIntent
 import android.content.Context
 import android.support.v4.media.session.MediaSessionCompat
-import com.lalilu.lmusic.manager.MusicNoisyReceiver
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

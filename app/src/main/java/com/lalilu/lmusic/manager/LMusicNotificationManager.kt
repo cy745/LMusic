@@ -3,7 +3,9 @@ package com.lalilu.lmusic.manager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -16,13 +18,16 @@ import androidx.media.app.NotificationCompat.MediaStyle
 import androidx.media.session.MediaButtonReceiver
 import androidx.palette.graphics.Palette
 import com.lalilu.R
+import com.lalilu.lmusic.service.MSongService
 import com.lalilu.lmusic.utils.BitmapUtils
 import com.lalilu.lmusic.utils.getAutomaticColor
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@ExperimentalCoroutinesApi
 class LMusicNotificationManager @Inject constructor(
     @ApplicationContext private val mContext: Context
 ) {
@@ -44,6 +49,26 @@ class LMusicNotificationManager @Inject constructor(
         lyricChannelName
     )
 
+    private var mSingleRepeatAction: NotificationCompat.Action = NotificationCompat.Action(
+        R.drawable.ic_repeat_one_line, "single_repeat",
+        buildServicePendingIntent(mContext, 1,
+            Intent(mContext, MSongService::class.java).also {
+                it.putExtra(
+                    PlaybackStateCompat.ACTION_SET_REPEAT_MODE.toString(),
+                    PlaybackStateCompat.REPEAT_MODE_ALL
+                )
+            })
+    )
+    private var mOrderPlayAction: NotificationCompat.Action = NotificationCompat.Action(
+        R.drawable.ic_order_play_line, "order_play",
+        buildServicePendingIntent(mContext, 2,
+            Intent(mContext, MSongService::class.java).also {
+                it.putExtra(
+                    PlaybackStateCompat.ACTION_SET_REPEAT_MODE.toString(),
+                    PlaybackStateCompat.REPEAT_MODE_ONE
+                )
+            })
+    )
     private var mPlayAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_play_line, "play",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
@@ -68,10 +93,31 @@ class LMusicNotificationManager @Inject constructor(
             mContext, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
         )
     )
-    val notificationManager: NotificationManager = ContextCompat.getSystemService(
+    private var mStopAction: NotificationCompat.Action = NotificationCompat.Action(
+        R.drawable.ic_close_line, "stop",
+        MediaButtonReceiver.buildMediaButtonPendingIntent(
+            mContext, PlaybackStateCompat.ACTION_STOP
+        )
+    )
+    private val notificationManager: NotificationManager = ContextCompat.getSystemService(
         mContext, NotificationManager::class.java
     ) as NotificationManager
 
+    private fun buildServicePendingIntent(
+        context: Context,
+        requestCode: Int,
+        intent: Intent
+    ): PendingIntent {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            PendingIntent.getForegroundService(
+                context, requestCode, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        else PendingIntent.getService(
+            context, requestCode, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
 
     /**
      *  API 26 以上需要注册Channel，否则不显示通知。
@@ -93,8 +139,9 @@ class LMusicNotificationManager @Inject constructor(
         val state = controller.playbackState
         val description = metadata.description
         val isPlaying = state.state == PlaybackStateCompat.STATE_PLAYING
-        val builder: NotificationCompat.Builder =
-            buildNotification(controller, token!!, isPlaying, description)
+        val repeatMode = mediaSession.controller.repeatMode
+
+        val builder = buildNotification(controller, token, isPlaying, repeatMode, description)
         return builder.build()
     }
 
@@ -102,18 +149,17 @@ class LMusicNotificationManager @Inject constructor(
         controller: MediaControllerCompat,
         token: MediaSessionCompat.Token,
         isPlaying: Boolean,
+        repeatMode: Int,
         description: MediaDescriptionCompat
     ): NotificationCompat.Builder {
         val bitmap = BitmapUtils.loadBitmapFromUri(description.iconUri, 400)
         val palette = bitmap?.let { Palette.from(bitmap).generate() }
         val color = palette.getAutomaticColor()
-        val cancelButtonIntent = MediaButtonReceiver.buildMediaButtonPendingIntent(
-            mContext, PlaybackStateCompat.ACTION_STOP
-        )
-        val style = MediaStyle().setMediaSession(token)
+        val style = MediaStyle()
+            .setMediaSession(token)
             .setShowActionsInCompactView(0, 1, 2)
             .setShowCancelButton(true)
-            .setCancelButtonIntent(cancelButtonIntent)
+            .setCancelButtonIntent(mStopAction.actionIntent)
         val builder = NotificationCompat.Builder(mContext, playerChannelName + "_ID")
         builder.setStyle(style)
             .setColor(color)
@@ -125,12 +171,23 @@ class LMusicNotificationManager @Inject constructor(
             .setShowWhen(false)
             .setAutoCancel(false)
             .setLargeIcon(bitmap)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setDeleteIntent(cancelButtonIntent)
+            .setDeleteIntent(mStopAction.actionIntent)
 
+        builder.addAction(
+            when (repeatMode) {
+                PlaybackStateCompat.REPEAT_MODE_ALL -> mOrderPlayAction
+                PlaybackStateCompat.REPEAT_MODE_ONE -> mSingleRepeatAction
+                else -> mOrderPlayAction
+            }
+        )
         builder.addAction(mPrevAction)
         builder.addAction(if (isPlaying) mPauseAction else mPlayAction)
         builder.addAction(mNextAction)
+        builder.addAction(mStopAction)
         return builder
     }
 
@@ -163,6 +220,7 @@ class LMusicNotificationManager @Inject constructor(
                 val channel = NotificationChannel(id, name, NotificationManager.IMPORTANCE_LOW)
                 channel.description = "【LMusic通知频道】：$name"
                 channel.importance = NotificationManager.IMPORTANCE_LOW
+                channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 channel.setShowBadge(false)
                 notificationManager.createNotificationChannel(channel)
             }

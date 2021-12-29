@@ -13,6 +13,7 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_METADATA
 import com.lalilu.lmusic.Config.LAST_PLAYBACK_STATE
 import com.lalilu.lmusic.Config.LAST_PLAYLIST_ID
+import com.lalilu.lmusic.Config.LAST_REPEAT_MODE
 import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.adapter.node.SecondNode
 import com.lalilu.lmusic.database.LMusicDataBase
@@ -49,6 +50,11 @@ class DataModule @Inject constructor(
         _metadata.emit(metadataCompat)
     }
 
+    fun updateRepeatMode(repeatMode: Int) = launch {
+        _repeatMode.emit(repeatMode)
+        mmkv.encode(LAST_REPEAT_MODE, repeatMode)
+    }
+
     /***************************************/
     /**        PIN： 获取基础数据          **/
     /***************************************/
@@ -68,6 +74,10 @@ class DataModule @Inject constructor(
                 LAST_METADATA, MediaMetadataCompat::class.java
             )
         )
+    private val _repeatMode: MutableStateFlow<Int> =
+        MutableStateFlow(mmkv.decodeInt(LAST_REPEAT_MODE))
+
+    val repeatMode: LiveData<Int> = _repeatMode.asLiveData()
     val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
     val playbackState: LiveData<PlaybackStateCompat?> = _playBackState.asLiveData()
 
@@ -155,8 +165,11 @@ class DataModule @Inject constructor(
             it ?: return@flow
             var currentDuration = Mathf.getPositionFromPlaybackStateCompat(it)
 
-            if (it.state == PlaybackStateCompat.STATE_STOPPED)
-                currentDuration = mmkv.decodeLong(Config.LAST_POSITION)
+            if (it.state == PlaybackStateCompat.STATE_STOPPED) {
+                notificationManager.clearLyric()
+                emit(currentDuration)
+                return@flow
+            }
 
             if (it.state == PlaybackStateCompat.STATE_PLAYING) {
                 repeat(Int.MAX_VALUE) {

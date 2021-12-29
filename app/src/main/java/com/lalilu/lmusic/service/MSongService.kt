@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.manager.LMusicNotificationManager.Companion.NOTIFICATION_PLAYER_ID
@@ -58,6 +59,10 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
         }
         mSessionCallback.playback.onPlayerCallback = this
         noisyReceiver.onBecomingNoisyListener = this
+
+        dataModule.repeatMode.observeForever {
+            mediaSession.setRepeatMode(it)
+        }
     }
 
     override fun onBecomingNoisy() {
@@ -65,6 +70,15 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
     }
 
     override fun onPlaybackStateChanged(newState: Int) {
+        if (newState == PlaybackStateCompat.STATE_STOPPED) {
+            stopForeground(true)
+            stopSelf()
+            mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
+            dataModule.updatePlaybackState(MEDIA_STOPPED_STATE)
+            this.unregisterReceiver(noisyReceiver)
+            return
+        }
+
         val position = mSessionCallback.playback.getPosition()
         val state = PlaybackStateCompat.Builder()
             .setActions(Config.MEDIA_DEFAULT_ACTION)
@@ -85,11 +99,6 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
                 stopForeground(false)
                 mNotificationManager.pushNotification(NOTIFICATION_PLAYER_ID, notification)
             }
-            PlaybackStateCompat.STATE_STOPPED -> {
-                this.unregisterReceiver(noisyReceiver)
-                stopForeground(true)
-                stopSelf()
-            }
             else -> return
         }
     }
@@ -101,6 +110,17 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val customAction =
+            intent?.extras?.getInt(PlaybackStateCompat.ACTION_SET_REPEAT_MODE.toString())
+        when (customAction) {
+            PlaybackStateCompat.REPEAT_MODE_ONE,
+            PlaybackStateCompat.REPEAT_MODE_ALL -> {
+                dataModule.updateRepeatMode(customAction)
+                mediaSession.setRepeatMode(customAction)
+                onPlaybackStateChanged(mediaSession.controller.playbackState.state)
+            }
+        }
+
         MediaButtonReceiver.handleIntent(mediaSession, intent)
         return super.onStartCommand(intent, flags, startId)
     }

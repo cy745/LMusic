@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.fragment
 
+import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
 import com.lalilu.BR
 import com.lalilu.R
@@ -73,6 +74,7 @@ class PlayingFragment : DataBindingFragment() {
 
         dataModule.songDetail.observe(viewLifecycleOwner) {
             fmLyricViewX.setLabel("暂无歌词")
+            fmLyricViewX.setCurrentTextSize(dp2px(requireContext(), 18))
             fmLyricViewX.loadLyric(it?.songLyric)
         }
         dataModule.songPosition.observe(viewLifecycleOwner) { position ->
@@ -85,5 +87,10 @@ class PlayingFragment : DataBindingFragment() {
         //        mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)
 
         mActivity?.setSupportActionBar(fmToolbar)
+    }
+
+    private fun dp2px(context: Context, value: Int): Float {
+        val v = context.resources.displayMetrics.density
+        return v * value + 0.5f
     }
 }

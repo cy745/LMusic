@@ -60,12 +60,20 @@
                     app:layout_collapseParallaxMultiplier="0.7"
                     fresco:actualImageScaleType="centerCrop" />
 
-                <com.dirror.lyricviewx.LyricViewX
-                    android:id="@+id/fm_lyric_view_x"
+                <me.qinc.lib.edgetranslucent.EdgeTransparentView
+                    android:id="@+id/fm_edge_transparent_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:alpha="0"
-                    app:lrcPadding="48dp" />
+                    app:edge_position="top|bottom"
+                    app:edge_width="48dp">
+
+                    <com.dirror.lyricviewx.LyricViewX
+                        android:id="@+id/fm_lyric_view_x"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:alpha="0"
+                        app:lrcPadding="36dp" />
+                </me.qinc.lib.edgetranslucent.EdgeTransparentView>
 
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/fm_toolbar"
