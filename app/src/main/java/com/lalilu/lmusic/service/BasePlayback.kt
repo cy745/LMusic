@@ -26,6 +26,7 @@ abstract class BasePlayback<T, K, ID>(
     private var playbackState: Int = PlaybackStateCompat.STATE_NONE
     var onPlayerCallback: Playback.OnPlayerCallback? = null
 
+    open var repeatMode: Int = 0
     open var nowPlaying: T? = null
     abstract var nowPlaylist: Flow<K>
 
@@ -147,14 +148,15 @@ abstract class BasePlayback<T, K, ID>(
 
     override fun stop() {
         isPrepared = false
-        mediaPlayer!!.stop()
-        mediaPlayer!!.release()
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
         mediaPlayer = null
         onPlaybackStateChanged(PlaybackStateCompat.STATE_STOPPED)
     }
 
     override fun seekTo(position: Number) {
         mediaPlayer ?: rebuild()
+        if (!isPrepared) return
 
         mediaPlayer!!.seekTo(position.toInt())
         onPlaybackStateChanged(playbackState)
@@ -168,7 +170,12 @@ abstract class BasePlayback<T, K, ID>(
 
     override fun onCompletion() {
         isPrepared = false
-        next()
+
+        when (repeatMode) {
+            PlaybackStateCompat.REPEAT_MODE_ALL -> next()
+            PlaybackStateCompat.REPEAT_MODE_ONE -> play()
+            else -> next()
+        }
     }
 
     override fun onMetadataChanged() {

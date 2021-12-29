@@ -25,18 +25,22 @@ import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.maxExpandHeight
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.normalHeight
 import com.lalilu.lmusic.utils.DeviceUtil
 import com.lalilu.lmusic.utils.Mathf
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import me.qinc.lib.edgetranslucent.EdgeTransparentView
+import kotlin.coroutines.CoroutineContext
 
 
 class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = null) :
-    AppBarLayout.Behavior(context, attrs), GestureDetector.OnGestureListener {
+    AppBarLayout.Behavior(context, attrs), GestureDetector.OnGestureListener, CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private var mLyricViewX: LyricViewX? = null
-    private var mDraweeView: PaletteDraweeView? = null
     private var nestedChildView: ViewGroup? = null
+    private var mDraweeView: PaletteDraweeView? = null
     private var mSpringAnimation: SpringAnimation? = null
+    private var mEdgeTransparentView: EdgeTransparentView? = null
     private var mCollapsingToolbarLayout: CollapsingToolbarLayout? = null
 
     private var gestureDetector = GestureDetectorCompat(context, this)
@@ -59,24 +63,37 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
      */
     private fun initialize(parent: CoordinatorLayout, appBarLayout: AppBarLayout) {
         appBarLayout.clipChildren = false
+        val deviceHeight = DeviceUtil.getHeight(context)
 
+        nestedChildView = parent.getChildAt(1) as ViewGroup
         mDraweeView = appBarLayout.findViewById(R.id.fm_top_pic)
         mLyricViewX = appBarLayout.findViewById(R.id.fm_lyric_view_x)
-        nestedChildView = parent.getChildAt(1) as ViewGroup
+        mEdgeTransparentView = appBarLayout.findViewById(R.id.fm_edge_transparent_view)
         mCollapsingToolbarLayout = appBarLayout.findViewById(R.id.fm_collapse_layout)
 
         normalHeight = mDraweeView?.height ?: -1
         appBarStatusHelper = AppBarStatusHelper.initial(appBarLayout) { percent ->
             mDraweeView?.let { it.alpha = percent }
         }
-        maxExpandHeight = DeviceUtil.getHeight(context) - normalHeight
+        maxExpandHeight = deviceHeight - normalHeight
 
         // mLyricViewX 从小窗打开后高度错误问题，不懂为什么需要协程才可以成功设置高度
-        if (mLyricViewX?.height != DeviceUtil.getHeight(context)) {
-            GlobalScope.launch(Dispatchers.Main) {
+        if (mEdgeTransparentView?.height != (deviceHeight - 100)) {
+            launch(Dispatchers.Main) {
+                mEdgeTransparentView?.let {
+                    val temp = it.layoutParams
+                    temp.height = (deviceHeight - 100)
+                    it.layoutParams = temp
+                }
+            }
+        }
+
+        // mLyricViewX 从小窗打开后高度错误问题，不懂为什么需要协程才可以成功设置高度
+        if (mLyricViewX?.height != deviceHeight) {
+            launch(Dispatchers.Main) {
                 mLyricViewX?.let {
                     val temp = it.layoutParams
-                    temp.height = DeviceUtil.getHeight(context)
+                    temp.height = deviceHeight
                     it.layoutParams = temp
                 }
             }

@@ -25,6 +25,7 @@ class MSongPlayback @Inject constructor(
 
     init {
         dataModule.metadata.observeForever { nowPlaying = it }
+        dataModule.repeatMode.observeForever { repeatMode = it }
     }
 
     override fun getUriFromNowItem(nowPlaying: MediaMetadataCompat?): Uri? =
