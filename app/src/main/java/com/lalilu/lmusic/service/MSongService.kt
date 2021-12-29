@@ -13,6 +13,7 @@ import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.manager.LMusicNotificationManager
+import com.lalilu.lmusic.manager.LMusicNotificationManager.Companion.NOTIFICATION_PLAYER_ID
 import com.lalilu.lmusic.manager.MusicNoisyReceiver
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -78,13 +79,11 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
                 this.registerReceiver(noisyReceiver, Config.FILTER_BECOMING_NOISY)
                 val intent = Intent(this, MSongService::class.java)
                 ContextCompat.startForegroundService(this, intent)
-                startForeground(LMusicNotificationManager.NOTIFICATION_PLAYER_ID, notification)
+                startForeground(NOTIFICATION_PLAYER_ID, notification)
             }
             PlaybackStateCompat.STATE_PAUSED -> {
                 stopForeground(false)
-                mNotificationManager.notificationManager.notify(
-                    LMusicNotificationManager.NOTIFICATION_PLAYER_ID, notification
-                )
+                mNotificationManager.pushNotification(NOTIFICATION_PLAYER_ID, notification)
             }
             PlaybackStateCompat.STATE_STOPPED -> {
                 this.unregisterReceiver(noisyReceiver)
