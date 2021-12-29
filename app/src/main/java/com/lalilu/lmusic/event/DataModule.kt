@@ -54,9 +54,13 @@ class DataModule @Inject constructor(
     /***************************************/
     private val _playBackState: MutableStateFlow<PlaybackStateCompat?> =
         MutableStateFlow(
-            mmkv.decodeParcelable(
-                LAST_PLAYBACK_STATE, PlaybackStateCompat::class.java
-            )
+            mmkv.decodeParcelable(LAST_PLAYBACK_STATE, PlaybackStateCompat::class.java).let {
+                PlaybackStateCompat.Builder().setState(
+                    PlaybackStateCompat.STATE_STOPPED,
+                    it?.position ?: 0L,
+                    it?.playbackSpeed ?: 1.0f
+                ).build()
+            }
         )
     private val _metadata: MutableStateFlow<MediaMetadataCompat?> =
         MutableStateFlow(
@@ -64,6 +68,8 @@ class DataModule @Inject constructor(
                 LAST_METADATA, MediaMetadataCompat::class.java
             )
         )
+    val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
+    val playbackState: LiveData<PlaybackStateCompat?> = _playBackState.asLiveData()
 
     /***************************************/
     /**     PIN： 获取正在播放的歌单        **/
@@ -238,7 +244,7 @@ class DataModule @Inject constructor(
      * 二分查找算法 直接摘抄LyricUtil里的
      */
     private fun findShowLine(list: List<LyricEntry>?, time: Long): Int {
-        list ?: return 0
+        if (list == null || list.isEmpty()) return 0
         var left = 0
         var right = list.size
         while (left <= right) {

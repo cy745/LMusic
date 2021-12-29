@@ -8,7 +8,6 @@ import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import com.lalilu.lmusic.utils.Mathf
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -95,10 +94,8 @@ abstract class BasePlayback<T, K, ID>(
                 val list = it ?: return@collect
                 val item = getItemById(list, mediaId)
                 val uri = getUriFromNowItem(item) ?: return@collect
-                launch(Dispatchers.Main) {
-                    nowPlaying = item
-                    playByUri(uri)
-                }
+                nowPlaying = item
+                playByUri(uri)
             }
         }
     }
@@ -117,10 +114,8 @@ abstract class BasePlayback<T, K, ID>(
                 )
                 val item = getItemFromListByIndex(list, next) ?: return@collect
                 val uri = getUriFromNowItem(item) ?: return@collect
-                launch(Dispatchers.Main) {
-                    nowPlaying = item
-                    playByUri(uri)
-                }
+                nowPlaying = item
+                playByUri(uri)
             }
         }
     }
@@ -140,10 +135,8 @@ abstract class BasePlayback<T, K, ID>(
 
                 val item = getItemFromListByIndex(list, previous) ?: return@collect
                 val uri = getUriFromNowItem(item) ?: return@collect
-                launch(Dispatchers.Main) {
-                    nowPlaying = item
-                    playByUri(uri)
-                }
+                nowPlaying = item
+                playByUri(uri)
             }
         }
     }

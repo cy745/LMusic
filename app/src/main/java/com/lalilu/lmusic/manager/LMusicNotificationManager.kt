@@ -151,6 +151,10 @@ class LMusicNotificationManager @Inject constructor(
         notificationManager.cancel(NOTIFICATION_LYRIC_ID)
     }
 
+    fun pushNotification(id: Int, notification: Notification) {
+        notificationManager.notify(id, notification)
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun createNotificationChannel() {
         channels.forEach { name ->

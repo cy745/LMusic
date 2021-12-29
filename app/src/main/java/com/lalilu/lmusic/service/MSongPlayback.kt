@@ -23,6 +23,10 @@ class MSongPlayback @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     override var nowPlaylist: Flow<List<MediaMetadataCompat>> = dataModule.nowPlaylistMetadataFlow
 
+    init {
+        dataModule.metadata.observeForever { nowPlaying = it }
+    }
+
     override fun getUriFromNowItem(nowPlaying: MediaMetadataCompat?): Uri? =
         nowPlaying?.description?.mediaUri
 

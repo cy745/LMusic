@@ -73,6 +73,7 @@ class LMusicSeekBar @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         rect.set(0f, 0f, width.toFloat(), height.toFloat())
+        path.reset()
         path.addRoundRect(rect, radius, radius, Path.Direction.CW)
     }
 

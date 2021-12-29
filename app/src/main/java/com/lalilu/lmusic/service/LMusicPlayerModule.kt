@@ -51,8 +51,8 @@ class LMusicPlayerModule @Inject constructor(
     private val _mediaItems: MutableStateFlow<MutableList<MediaBrowserCompat.MediaItem>> =
         MutableStateFlow(ArrayList())
 
+    val playBackState: LiveData<PlaybackStateCompat> = _playBackState.asLiveData()
     val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
-
     val mediaItems: LiveData<MutableList<MediaBrowserCompat.MediaItem>> =
         _mediaItems.combine(_metadata) { mediaItem, metadata ->
             listOrderChange(mediaItem, metadata?.description?.mediaId) ?: mediaItem
