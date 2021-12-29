@@ -13,7 +13,7 @@ import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
-import com.lalilu.lmusic.ui.seekbar.OnSeekBarChangeListenerAdapter
+import com.lalilu.lmusic.ui.seekbar.OnSeekBarListenerAdapter
 import com.lalilu.lmusic.utils.HapticUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -62,16 +62,26 @@ class MainFragment : DataBindingFragment() {
         }
 
         // 为 SeekBar 添加监听器
-        seekBar.onSeekBarChangeListener = object : OnSeekBarChangeListenerAdapter() {
-            override fun onStopTrackingTouch(position: Long) {
+        seekBar.onSeekBarListener = object : OnSeekBarListenerAdapter() {
+            override fun onPositionUpdate(position: Long) {
                 playerModule.mediaController?.transportControls?.seekTo(position)
             }
 
-            override fun onClick() {
+            override fun onPlayPause() {
                 playerModule.mediaController?.transportControls?.sendCustomAction(
                     Config.ACTION_PLAY_PAUSE, null
                 )
                 HapticUtils.haptic(seekBar.rootView)
+            }
+
+            override fun onPlayNext() {
+                playerModule.mediaController?.transportControls?.skipToNext()
+                HapticUtils.doubleHaptic(seekBar.rootView)
+            }
+
+            override fun onPlayPrevious() {
+                playerModule.mediaController?.transportControls?.skipToPrevious()
+                HapticUtils.doubleHaptic(seekBar.rootView)
             }
 
             override fun onProgressToMax() {

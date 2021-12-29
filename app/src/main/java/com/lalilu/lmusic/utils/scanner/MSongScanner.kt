@@ -8,7 +8,8 @@ import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 import com.lalilu.lmusic.database.LMusicDataBase
 import com.lalilu.lmusic.domain.entity.*
 import com.lalilu.lmusic.utils.*
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import org.jaudiotagger.audio.AudioFileIO
@@ -17,11 +18,13 @@ import java.io.File
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 
 class MSongScanner @Inject constructor(
     val database: LMusicDataBase
-) : BaseMScanner() {
+) : BaseMScanner(), CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val mExecutor = ThreadPoolUtils.CachedThreadPool
     override var selection: String? = "${MediaStore.Audio.Media.SIZE} >= ? " +
             "and ${MediaStore.Audio.Media.DURATION} >= ?" +
@@ -48,7 +51,7 @@ class MSongScanner @Inject constructor(
         val artistsName = cursor.getArtists()           // 艺术家
 
         val taskNumber = ++progressCount
-        taskList.add(GlobalScope.launch(mExecutor.asCoroutineDispatcher()) {
+        taskList.add(launch(mExecutor.asCoroutineDispatcher()) {
             val songUri = Uri.withAppendedPath(EXTERNAL_CONTENT_URI, songId.toString())
 
             val album = MAlbum(albumId, albumTitle)
@@ -63,7 +66,8 @@ class MSongScanner @Inject constructor(
                 val detail = MSongDetail(songId, lyric, songSize, songData)
 
                 database.songDetailDao().save(detail)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                println(e.message)
             }
             val song = MSong(
                 songUri = songUri,

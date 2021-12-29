@@ -158,7 +158,11 @@ class DataModule @Inject constructor(
                     currentDuration += 1000
                     delay(1000)
                 }
-            } else emit(currentDuration)
+            } else {
+                emit(currentDuration)
+                // 暂停时取消状态栏歌词
+                notificationManager.clearLyric()
+            }
         }
     }.map {
         mmkv.encode(Config.LAST_POSITION, it)
@@ -186,6 +190,7 @@ class DataModule @Inject constructor(
      * 3.解析歌词为 List<LyricEntry>
      */
     private val _songLyrics: Flow<List<LyricEntry>?> = _songDetail.mapLatest {
+        // 歌词切换时清除通知
         notificationManager.clearLyric()
         return@mapLatest LyricUtil.parseLrc(arrayOf(it?.songLyric, it?.songLyric))
     }
