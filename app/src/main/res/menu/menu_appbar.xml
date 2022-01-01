@@ -3,23 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/appbar_play"
-        android:icon="@drawable/ic_play_line"
-        android:title="@string/text_button_play"
-        android:visible="false"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/appbar_pause"
-        android:icon="@drawable/ic_pause_line"
-        android:title="@string/text_button_pause"
-        android:visible="false"
-        app:showAsAction="always" />
+        android:id="@+id/appbar_search"
+        android:icon="@drawable/ic_search_2_line"
+        android:iconifiedByDefault="true"
+        android:imeOptions="actionSearch"
+        android:title="@string/text_button_search"
+        android:visible="true"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="collapseActionView|ifRoom" />
     <item
         android:id="@+id/appbar_create_playlist"
         android:enabled="true"
         android:icon="@drawable/ic_play_list_add_line"
         android:title="@string/text_button_create_playlist"
-        android:visible="true"
+        android:visible="false"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/appbar_scan_song"

@@ -2,6 +2,7 @@ package com.lalilu.lmusic.fragment
 
 import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
+import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayingBinding
@@ -69,8 +70,9 @@ class PlayingFragment : DataBindingFragment() {
     }
 
     override fun onViewCreated() {
-        val fmLyricViewX = (mBinding as FragmentPlayingBinding).fmLyricViewX
         val fmToolbar = (mBinding as FragmentPlayingBinding).fmToolbar
+        val fmLyricViewX = (mBinding as FragmentPlayingBinding).fmLyricViewX
+        val fmAppbarLayout = (mBinding as FragmentPlayingBinding).fmAppbarLayout
 
         dataModule.songDetail.observe(viewLifecycleOwner) {
             fmLyricViewX.setLabel("暂无歌词")
@@ -80,9 +82,19 @@ class PlayingFragment : DataBindingFragment() {
         dataModule.songPosition.observe(viewLifecycleOwner) { position ->
             fmLyricViewX.updateTime(position)
         }
-        playerModule.mediaItems.observe(viewLifecycleOwner) {
+        playerModule.mediaItemsLiveData.observe(viewLifecycleOwner) {
             mAdapter.setMediaItems(it)
         }
+        mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
+            it?.get { fmAppbarLayout.setExpanded(false, true) }
+        }
+        var lastOffset = 0
+        fmAppbarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appbarLayout, verticalOffset ->
+            if ((lastOffset - verticalOffset < 0) && verticalOffset >= (-appbarLayout.totalScrollRange * 3 / 4))
+                mEvent.collapseSearchView()
+            lastOffset = verticalOffset
+        })
+
 
         //        mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)
 

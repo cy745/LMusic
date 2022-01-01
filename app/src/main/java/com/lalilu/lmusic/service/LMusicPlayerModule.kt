@@ -7,11 +7,13 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_METADATA
 import com.lalilu.lmusic.Config.LAST_PLAYBACK_STATE
+import com.lalilu.lmusic.event.Event
 import com.lalilu.lmusic.utils.Mathf
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -34,30 +36,6 @@ class LMusicPlayerModule @Inject constructor(
     private val logger = Logger.getLogger(this.javaClass.name)
     private val mmkv = MMKV.defaultMMKV()
 
-    private val _metadata = MutableStateFlow(
-        mmkv.decodeParcelable(LAST_METADATA, MediaMetadataCompat::class.java)
-    )
-
-    private val _playBackState = MutableStateFlow(
-        mmkv.decodeParcelable(LAST_PLAYBACK_STATE, PlaybackStateCompat::class.java).let {
-            PlaybackStateCompat.Builder().setState(
-                PlaybackStateCompat.STATE_STOPPED,
-                it?.position ?: 0L,
-                it?.playbackSpeed ?: 1.0f
-            ).build()
-        }
-    )
-
-    private val _mediaItems: MutableStateFlow<MutableList<MediaBrowserCompat.MediaItem>> =
-        MutableStateFlow(ArrayList())
-
-    val playBackState: LiveData<PlaybackStateCompat> = _playBackState.asLiveData()
-    val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
-    val mediaItems: LiveData<MutableList<MediaBrowserCompat.MediaItem>> =
-        _mediaItems.combine(_metadata) { mediaItem, metadata ->
-            listOrderChange(mediaItem, metadata?.description?.mediaId) ?: mediaItem
-        }.asLiveData()
-
     var mediaController: MediaControllerCompat? = null
     private var controllerCallback: MusicControllerCallback = MusicControllerCallback()
     private var connectionCallback: MusicConnectionCallback = MusicConnectionCallback(context)
@@ -67,23 +45,37 @@ class LMusicPlayerModule @Inject constructor(
         connectionCallback, null
     )
 
-    private fun listOrderChange(
-        oldList: List<MediaBrowserCompat.MediaItem>,
-        mediaId: String?
-    ): MutableList<MediaBrowserCompat.MediaItem>? {
-        mediaId ?: return null
-
-        val nowPosition = oldList.indexOfFirst { item ->
-            item.description.mediaId == mediaId
+    private val _metadata = MutableStateFlow(
+        mmkv.decodeParcelable(LAST_METADATA, MediaMetadataCompat::class.java)
+    )
+    private val _playBackState = MutableStateFlow(
+        mmkv.decodeParcelable(LAST_PLAYBACK_STATE, PlaybackStateCompat::class.java).let {
+            PlaybackStateCompat.Builder().setState(
+                PlaybackStateCompat.STATE_STOPPED,
+                it?.position ?: 0L,
+                it?.playbackSpeed ?: 1.0f
+            ).build()
         }
-        if (nowPosition == -1) return null
+    )
+    private val _mediaItems: MutableStateFlow<MutableList<MediaBrowserCompat.MediaItem>> =
+        MutableStateFlow(ArrayList())
+    private val _keyword: MutableStateFlow<String?> = MutableStateFlow(null)
+    private val mediaItems: Flow<List<MediaBrowserCompat.MediaItem>> =
+        _mediaItems.combine(_metadata) { items, metadata ->
+            listOrderChange(items, metadata?.description?.mediaId) ?: items
+        }.combine(_keyword) { items, keyword ->
+            return@combine if (keyword == null) items else items.filter { item ->
+                checkKeyword(item.description.title, keyword) ||
+                        checkKeyword(item.description.subtitle, keyword)
+            }
+        }
 
-        return ArrayList(oldList.map { song ->
-            val position = Mathf.clampInLoop(
-                0, oldList.size - 1, oldList.indexOf(song), nowPosition
-            )
-            oldList[position]
-        })
+    val playBackState: LiveData<PlaybackStateCompat> = _playBackState.asLiveData()
+    val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
+    val mediaItemsLiveData: LiveData<List<MediaBrowserCompat.MediaItem>> = mediaItems.asLiveData()
+
+    fun searchFor(keyword: String?) = launch {
+        _keyword.emit(keyword)
     }
 
     fun connect() = mediaBrowser.connect()
@@ -133,5 +125,31 @@ class LMusicPlayerModule @Inject constructor(
                 logger.info("[MusicControllerCallback]#onMetadataChanged: ${metadata.description?.title}")
             }
         }
+    }
+
+    private fun listOrderChange(
+        oldList: List<MediaBrowserCompat.MediaItem>,
+        mediaId: String?
+    ): MutableList<MediaBrowserCompat.MediaItem>? {
+        mediaId ?: return null
+
+        val nowPosition = oldList.indexOfFirst { item ->
+            item.description.mediaId == mediaId
+        }
+        if (nowPosition == -1) return null
+
+        return ArrayList(oldList.map { song ->
+            val position = Mathf.clampInLoop(
+                0, oldList.size - 1, oldList.indexOf(song), nowPosition
+            )
+            oldList[position]
+        })
+    }
+
+    private fun checkKeyword(str: CharSequence?, keyword: String): Boolean {
+        str ?: return false
+        return str.toString().uppercase(Locale.getDefault()).contains(
+            keyword.uppercase(Locale.getDefault())
+        )
     }
 }

@@ -6,6 +6,7 @@ import android.os.Build
 import android.util.AttributeSet
 import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
+import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
@@ -36,6 +37,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
     AppBarLayout.Behavior(context, attrs), GestureDetector.OnGestureListener, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
+    private var mToolbar: Toolbar? = null
     private var mLyricViewX: LyricViewX? = null
     private var nestedChildView: ViewGroup? = null
     private var mDraweeView: PaletteDraweeView? = null
@@ -66,6 +68,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         val deviceHeight = DeviceUtil.getHeight(context)
 
         nestedChildView = parent.getChildAt(1) as ViewGroup
+        mToolbar = appBarLayout.findViewById(R.id.fm_toolbar)
         mDraweeView = appBarLayout.findViewById(R.id.fm_top_pic)
         mLyricViewX = appBarLayout.findViewById(R.id.fm_lyric_view_x)
         mEdgeTransparentView = appBarLayout.findViewById(R.id.fm_edge_transparent_view)
@@ -166,6 +169,8 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         val toolbarTextColor = Color.argb((alphaPercentDecrease * 255).toInt(), 255, 255, 255)
         mCollapsingToolbarLayout?.setExpandedTitleColor(toolbarTextColor)
 
+        mToolbar?.visibility = if (alphaPercentDecrease <= 0.05) View.INVISIBLE else View.VISIBLE
+        mToolbar?.alpha = alphaPercentDecrease
         mLyricViewX?.alpha = alphaPercentIncrease
 
         // 根据 offsetPosition 计算出拖动时与最近边距离的百分比

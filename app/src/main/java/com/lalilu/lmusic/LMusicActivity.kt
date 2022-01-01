@@ -1,13 +1,18 @@
 package com.lalilu.lmusic
 
 import android.content.res.Configuration
+import android.graphics.Color
 import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import androidx.appcompat.widget.SearchView
 import com.lalilu.R
 import com.lalilu.lmusic.base.DataBindingActivity
 import com.lalilu.lmusic.base.DataBindingConfig
+import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
@@ -20,6 +25,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
 class LMusicActivity : DataBindingActivity() {
+
+    @Inject
+    lateinit var mEvent: SharedViewModel
 
     @Inject
     lateinit var playerModule: LMusicPlayerModule
@@ -44,17 +52,10 @@ class LMusicActivity : DataBindingActivity() {
 //        }
     }
 
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.appbar_play -> {
-                playerModule.mediaController?.transportControls?.play()
-            }
-            R.id.appbar_pause -> {
-                playerModule.mediaController?.transportControls?.pause()
-            }
-            R.id.appbar_create_playlist -> {
-                // todo 创建播放列表的逻辑
-            }
+            R.id.appbar_search -> mEvent.collapseAppbarLayout()
             R.id.appbar_scan_song -> {
                 songScanner.setScanFailed {
                     ToastUtil.text("[提示信息]: $it").show(this)
@@ -83,8 +84,39 @@ class LMusicActivity : DataBindingActivity() {
         super.onResume()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_appbar, menu)
+        val items = menu.findItem(R.id.appbar_search)
+        val mSearchView = items.actionView as SearchView
+        val mUnderline = mSearchView.findViewById<View>(R.id.search_plate)
+        mUnderline.setBackgroundColor(Color.argb(0, 255, 255, 255))
+
+        mSearchView.setHasTransientState(true)
+        mSearchView.showDividers = SearchView.SHOW_DIVIDER_NONE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mSearchView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
+        }
+
+        mSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                playerModule.searchFor(newText)
+                return false
+            }
+        })
+        mSearchView.setOnCloseListener {
+            playerModule.searchFor(null)
+            return@setOnCloseListener false
+        }
+        mEvent.isSearchViewExpand.observe(this) {
+            it?.get {
+                if (items.isActionViewExpanded)
+                    items.collapseActionView()
+            }
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
