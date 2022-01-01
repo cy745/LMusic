@@ -49,6 +49,10 @@ dependencies {
     // Apache-2.0
     // implementation "jp.wasabeef:recyclerview-animators:4.0.2"
 
+    // https://github.com/belerweb/pinyin4j
+    // https://mvnrepository.com/artifact/com.belerweb/pinyin4j
+    implementation 'com.belerweb:pinyin4j:2.5.1'
+
     // http://www.jthink.net/jaudiotagger/
     // https://github.com/Kaned1as/jaudiotagger
     implementation "com.github.Adonai:jaudiotagger:2.3.14"

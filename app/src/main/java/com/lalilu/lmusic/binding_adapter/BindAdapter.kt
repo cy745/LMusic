@@ -82,7 +82,7 @@ fun MSongPlayingAdapter.setMediaItems(list: List<MediaBrowserCompat.MediaItem>?)
     if (this.data.size > 0) {
         val id = this.data[0].mediaId
         this.setDiffNewData(list.toMutableList()) {
-            if (id != list.toMutableList()[0].mediaId) {
+            if (list.isNotEmpty() && id != list.toMutableList()[0].mediaId) {
                 recyclerView.scrollToPosition(0)
             }
         }
@@ -91,6 +91,4 @@ fun MSongPlayingAdapter.setMediaItems(list: List<MediaBrowserCompat.MediaItem>?)
             recyclerView.scrollToPosition(0)
         }
     }
-
-
 }
