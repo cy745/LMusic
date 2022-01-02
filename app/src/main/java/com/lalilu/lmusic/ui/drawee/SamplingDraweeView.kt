@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui
+package com.lalilu.lmusic.ui.drawee
 
 import android.content.Context
 import android.net.Uri

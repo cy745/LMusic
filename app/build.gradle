@@ -42,12 +42,19 @@ android {
         sourceCompatibility JavaVersion.VERSION_15
         targetCompatibility JavaVersion.VERSION_15
     }
+    packagingOptions {
+        exclude 'META-INF/CONTRIBUTORS.md'
+        exclude 'META-INF/LICENSE.md'
+    }
 }
 
 dependencies {
     // recyclerview的动画 https://github.com/wasabeef/recyclerview-animators
     // Apache-2.0
     // implementation "jp.wasabeef:recyclerview-animators:4.0.2"
+
+    // https://mvnrepository.com/artifact/com.github.nicolas-raoul/jakaroma
+    implementation 'com.github.nicolas-raoul:jakaroma:1.0.0'
 
     // https://github.com/belerweb/pinyin4j
     // https://mvnrepository.com/artifact/com.belerweb/pinyin4j

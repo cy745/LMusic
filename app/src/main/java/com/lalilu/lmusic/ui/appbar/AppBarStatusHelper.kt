@@ -1,11 +1,12 @@
 package com.lalilu.lmusic.ui.appbar
 
+import androidx.dynamicanimation.animation.DynamicAnimation
 import com.google.android.material.appbar.AppBarLayout
 
 /**
  * 监听AppBar的滚动和存储绘制部分的关键数据的全局单例
  */
-object AppBarStatusHelper : AppBarOnPercentChangeListener() {
+object AppBarStatusHelper : OnPercentChangeListener(), DynamicAnimation.OnAnimationEndListener {
     private lateinit var appbar: AppBarLayout
     private lateinit var listenPercent: (percent: Float) -> Unit
     private var lastStatus = AppBarStatus.STATUS_NORMAL
@@ -45,5 +46,14 @@ object AppBarStatusHelper : AppBarOnPercentChangeListener() {
 
     override fun onPercentChanged(percent: Float) {
         listenPercent.invoke(percent)
+    }
+
+    override fun onAnimationEnd(
+        animation: DynamicAnimation<*>?,
+        canceled: Boolean,
+        value: Float,
+        velocity: Float
+    ) {
+
     }
 }

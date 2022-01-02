@@ -2,9 +2,11 @@ package com.lalilu.lmusic.ui.appbar
 
 import android.content.Context
 import android.graphics.Color
-import android.os.Build
 import android.util.AttributeSet
-import android.view.*
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -18,13 +20,14 @@ import com.dirror.lyricviewx.LyricViewX
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
-import com.lalilu.lmusic.ui.PaletteDraweeView
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.fullyExpend
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.mBottom
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.maxDragHeight
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.maxExpandHeight
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.normalHeight
+import com.lalilu.lmusic.ui.drawee.PaletteDraweeView
 import com.lalilu.lmusic.utils.DeviceUtil
+import com.lalilu.lmusic.utils.HapticUtils
 import com.lalilu.lmusic.utils.Mathf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +37,7 @@ import kotlin.coroutines.CoroutineContext
 
 
 class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = null) :
-    AppBarLayout.Behavior(context, attrs), GestureDetector.OnGestureListener, CoroutineScope {
+    AppBarLayout.Behavior(context, attrs), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private var mToolbar: Toolbar? = null
@@ -44,9 +47,45 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
     private var mSpringAnimation: SpringAnimation? = null
     private var mEdgeTransparentView: EdgeTransparentView? = null
     private var mCollapsingToolbarLayout: CollapsingToolbarLayout? = null
+    private var appBarStatusHelper = AppBarStatusHelper
 
-    private var gestureDetector = GestureDetectorCompat(context, this)
-    private lateinit var appBarStatusHelper: AppBarStatusHelper
+    private val gestureDetector =
+        GestureDetectorCompat(context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapUp(e: MotionEvent?): Boolean = false
+
+            override fun onDown(e: MotionEvent?): Boolean {
+                nestedChildView?.startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
+                return true
+            }
+
+            override fun onScroll(
+                e1: MotionEvent?, e2: MotionEvent?,
+                distanceX: Float, distanceY: Float
+            ): Boolean {
+                nestedChildView?.let { nestedChildScrollBy(it, distanceY.toInt()) }
+                return true
+            }
+
+            override fun onFling(
+                e1: MotionEvent?, e2: MotionEvent?,
+                velocityX: Float, velocityY: Float
+            ): Boolean {
+                nestedChildView?.stopNestedScroll()
+                return true
+            }
+        })
+
+    /**
+     *  记录 AppBar 区域上手指的滑动，并传递给 Appbar 的 child 使其模拟嵌套滑动
+     */
+    override fun onTouchEvent(
+        parent: CoordinatorLayout, child: AppBarLayout, ev: MotionEvent
+    ): Boolean {
+        return gestureDetector.onTouchEvent(ev).also {
+            if (ev.action == MotionEvent.ACTION_UP)
+                nestedChildView?.stopNestedScroll()
+        }
+    }
 
     /**
      *  在布局子控件时进行初始化
@@ -81,27 +120,19 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         maxExpandHeight = deviceHeight - normalHeight
 
         // mLyricViewX 从小窗打开后高度错误问题，不懂为什么需要协程才可以成功设置高度
-        if (mEdgeTransparentView?.height != (deviceHeight - 100)) {
-            launch(Dispatchers.Main) {
-                mEdgeTransparentView?.let {
-                    val temp = it.layoutParams
-                    temp.height = (deviceHeight - 100)
-                    it.layoutParams = temp
-                }
-            }
-        }
+        setHeightToView(mLyricViewX, deviceHeight)
+        setHeightToView(mEdgeTransparentView, deviceHeight - 100)
 
-        // mLyricViewX 从小窗打开后高度错误问题，不懂为什么需要协程才可以成功设置高度
-        if (mLyricViewX?.height != deviceHeight) {
+        resizeChild(appBarLayout, mBottom)
+    }
+
+    private fun setHeightToView(view: View?, height: Number) {
+        view?.let {
+            if (it.height == height.toInt()) return
             launch(Dispatchers.Main) {
-                mLyricViewX?.let {
-                    val temp = it.layoutParams
-                    temp.height = deviceHeight
-                    it.layoutParams = temp
-                }
+                it.layoutParams = it.layoutParams.also { params -> params.height = height.toInt() }
             }
         }
-        resizeChild(appBarLayout, mBottom)
     }
 
     /**
@@ -197,19 +228,11 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
     }
 
     private fun onDragToTop(view: View) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
-        } else {
-            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-        }
+        HapticUtils.haptic(view)
     }
 
     private fun onDragToBottom(view: View) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
-        } else {
-            view.performHapticFeedback(31011)
-        }
+        HapticUtils.haptic(view)
     }
 
     /**
@@ -241,8 +264,8 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
                     this.spring.stiffness = STIFFNESS_LOW
                 }
         }
-        mSpringAnimation!!.cancel()
-        mSpringAnimation!!.animateToFinalPosition(position.toFloat())
+        mSpringAnimation?.cancel()
+        mSpringAnimation?.animateToFinalPosition(position.toFloat())
     }
 
     private val appBarLayoutFloatProperty =
@@ -259,49 +282,10 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         }
 
     /**
-     *  记录 AppBar 区域上手指的滑动，并传递给 Appbar 的 child 使其模拟嵌套滑动
-     */
-    override fun onTouchEvent(
-        parent: CoordinatorLayout, child: AppBarLayout, ev: MotionEvent
-    ): Boolean {
-        if (ev.action == MotionEvent.ACTION_UP) nestedChildView?.stopNestedScroll()
-        return gestureDetector.onTouchEvent(ev)
-    }
-
-    /**
      *  模拟子控件嵌套滚动
      */
     private fun nestedChildScrollBy(nestedChildView: ViewGroup, dy: Int) {
         nestedChildView.dispatchNestedPreScroll(0, dy, null, null)
         nestedChildView.dispatchNestedScroll(0, 0, 0, dy, null)
-    }
-
-    override fun onDown(e: MotionEvent?): Boolean {
-        nestedChildView?.startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
-        return true
-    }
-
-    override fun onShowPress(e: MotionEvent?) {
-    }
-
-    override fun onSingleTapUp(e: MotionEvent?): Boolean = false
-
-    override fun onScroll(
-        e1: MotionEvent?, e2: MotionEvent?,
-        distanceX: Float, distanceY: Float
-    ): Boolean {
-        nestedChildView?.let { nestedChildScrollBy(it, distanceY.toInt()) }
-        return true
-    }
-
-    override fun onLongPress(e: MotionEvent?) {
-    }
-
-    override fun onFling(
-        e1: MotionEvent?, e2: MotionEvent?,
-        velocityX: Float, velocityY: Float
-    ): Boolean {
-        nestedChildView?.stopNestedScroll()
-        return true
     }
 }

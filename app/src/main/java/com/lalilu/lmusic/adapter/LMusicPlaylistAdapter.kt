@@ -13,7 +13,7 @@ import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.adapter.node.SecondNode
 import com.lalilu.lmusic.domain.entity.MPlaylist
 import com.lalilu.lmusic.domain.entity.MSong
-import com.lalilu.lmusic.ui.SamplingDraweeView
+import com.lalilu.lmusic.ui.drawee.SamplingDraweeView
 import javax.inject.Inject
 
 class LMusicPlaylistAdapter @Inject constructor() : BaseNodeAdapter() {

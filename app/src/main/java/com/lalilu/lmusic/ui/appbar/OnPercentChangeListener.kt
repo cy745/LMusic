@@ -2,7 +2,7 @@ package com.lalilu.lmusic.ui.appbar
 
 import com.google.android.material.appbar.AppBarLayout
 
-open class AppBarOnPercentChangeListener : AppBarLayout.OnOffsetChangedListener {
+open class OnPercentChangeListener : AppBarLayout.OnOffsetChangedListener {
 
     @Volatile
     var verticalOffset = 0
