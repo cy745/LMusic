@@ -107,8 +107,6 @@ class LMusicPlayerModule @Inject constructor(
 
                     val japanese = kanhira.convert(originStr)
                     val romaji = kanaToRomaji.convert(japanese)
-                    println(romaji)
-
                     resultStr = "$resultStr $romaji"
                 }
                 it.description.extras?.putString("searchStr", resultStr)
