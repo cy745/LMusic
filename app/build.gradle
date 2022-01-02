@@ -53,8 +53,7 @@ dependencies {
     // Apache-2.0
     // implementation "jp.wasabeef:recyclerview-animators:4.0.2"
 
-    // https://mvnrepository.com/artifact/com.github.nicolas-raoul/jakaroma
-    implementation 'com.github.nicolas-raoul:jakaroma:1.0.0'
+    implementation 'com.github.cy745:kanhira:2de73b1f0a'
 
     // https://github.com/belerweb/pinyin4j
     // https://mvnrepository.com/artifact/com.belerweb/pinyin4j

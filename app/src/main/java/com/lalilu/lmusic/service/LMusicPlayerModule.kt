@@ -7,18 +7,19 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.text.TextUtils
-import android.util.LruCache
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import com.atilika.kuromoji.ipadic.Tokenizer
+import com.cm55.kanhira.KakasiDictReader
+import com.cm55.kanhira.Kanhira
+import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_METADATA
 import com.lalilu.lmusic.Config.LAST_PLAYBACK_STATE
+import com.lalilu.lmusic.utils.KanaToRomaji
 import com.lalilu.lmusic.utils.Mathf
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.qualifiers.ApplicationContext
-import fr.free.nrw.jakaroma.KanaToRomaji
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import net.sourceforge.pinyin4j.PinyinHelper
@@ -33,6 +34,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
+
 
 @Singleton
 @ExperimentalCoroutinesApi
@@ -52,12 +54,19 @@ class LMusicPlayerModule @Inject constructor(
         context, ComponentName(context, MSongService::class.java),
         connectionCallback, null
     )
-
+    private val mKanhira = MutableStateFlow<Kanhira?>(null).also {
+        launch {
+            it.emit(
+                Kanhira(
+                    KakasiDictReader.load(
+                        context.resources.openRawResource(R.raw.kakasidict_utf_8),
+                        Charsets.UTF_8.name()
+                    )
+                )
+            )
+        }
+    }
     private val kanaToRomaji = KanaToRomaji()
-    private val tokenizer = Tokenizer()
-    private val cache = LruCache<String, String>(200)
-
-
     private val format = HanyuPinyinOutputFormat().also {
         it.caseType = HanyuPinyinCaseType.UPPERCASE
         it.toneType = HanyuPinyinToneType.WITHOUT_TONE
@@ -81,25 +90,26 @@ class LMusicPlayerModule @Inject constructor(
     private val _keyword: MutableStateFlow<String?> = MutableStateFlow(null)
     private val mediaItems: Flow<List<MediaBrowserCompat.MediaItem>> =
         _mediaItems.combine(_metadata) { items, metadata ->
-            (listOrderChange(items, metadata?.description?.mediaId) ?: items).onEach {
+            listOrderChange(items, metadata?.description?.mediaId) ?: items
+        }.combine(mKanhira) { items, kanhira ->
+            if (kanhira == null) return@combine items
+
+            items.onEach {
                 val originStr = "${it.description.title} ${it.description.subtitle}"
                 var resultStr = originStr
                 val isContainChinese = isContainChinese(originStr)
                 val isContainKatakanaOrHinagana = isContainKatakanaOrHinagana(originStr)
                 if (isContainChinese || isContainKatakanaOrHinagana) {
                     if (isContainChinese) {
-                        val chinese =
-                            PinyinHelper.toHanYuPinyinString(originStr, format, "", true)
+                        val chinese = PinyinHelper.toHanYuPinyinString(originStr, format, "", true)
                         resultStr = "$resultStr $chinese"
                     }
 
-                    val japanese = "$originStr ${
-                        tokenizer.tokenize(originStr).mapNotNull { token ->
-                            token.pronunciation
-                        }.joinToString("")
-                    }"
+                    val japanese = kanhira.convert(originStr)
+                    val romaji = kanaToRomaji.convert(japanese)
+                    println(romaji)
 
-                    resultStr = "$resultStr ${kanaToRomaji.convert(japanese)}"
+                    resultStr = "$resultStr $romaji"
                 }
                 it.description.extras?.putString("searchStr", resultStr)
             }
