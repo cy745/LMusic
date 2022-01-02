@@ -16,7 +16,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.domain.entity.MPlaylist
-import com.lalilu.lmusic.ui.PaletteDraweeView
+import com.lalilu.lmusic.ui.drawee.PaletteDraweeView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor

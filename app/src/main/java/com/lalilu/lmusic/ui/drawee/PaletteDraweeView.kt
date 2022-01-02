@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui
+package com.lalilu.lmusic.ui.drawee
 
 import android.content.Context
 import android.graphics.*
@@ -124,9 +124,9 @@ class PaletteDraweeView @JvmOverloads constructor(
     ): Bitmap {
         val mBackShadowColors = intArrayOf(fromColor, toColor)
         mBackShadowDrawableLR = GradientDrawable(Orientation, mBackShadowColors)
-        mBackShadowDrawableLR!!.gradientType = GradientDrawable.LINEAR_GRADIENT
-        mBackShadowDrawableLR!!.setBounds(left, top, right, bottom)
-        mBackShadowDrawableLR!!.draw(Canvas(bm))
+        mBackShadowDrawableLR?.gradientType = GradientDrawable.LINEAR_GRADIENT
+        mBackShadowDrawableLR?.setBounds(left, top, right, bottom)
+        mBackShadowDrawableLR?.draw(Canvas(bm))
         return bm
     }
 }

@@ -36,7 +36,7 @@
         android:background="@drawable/item_click_background_daynight"
         android:theme="@style/Theme.Music">
 
-        <com.lalilu.lmusic.ui.SamplingDraweeView
+        <com.lalilu.lmusic.ui.drawee.SamplingDraweeView
             android:id="@+id/song_album_pic"
             android:layout_width="64dp"
             android:layout_height="64dp"

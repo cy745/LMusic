@@ -32,8 +32,9 @@
             android:layout_height="wrap_content"
             android:background="@color/colorPrimaryVariant"
             android:fitsSystemWindows="true"
-            app:bgPalette="@{ev.nowBgPalette}"
-            app:layout_behavior="com.lalilu.lmusic.ui.appbar.AppBarZoomBehavior">
+            app:bgPalette="@{ev.nowBgPalette}">
+            <!-- app:layout_behavior="com.lalilu.lmusic.ui.appbar.AppBarZoomBehavior" -->
+            <!-- 替换为代码调用 -->
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/fm_collapse_layout"
@@ -47,7 +48,7 @@
                 app:maxLines="5"
                 app:statusBarScrim="@android:color/transparent">
 
-                <com.lalilu.lmusic.ui.PaletteDraweeView
+                <com.lalilu.lmusic.ui.drawee.PaletteDraweeView
                     android:id="@+id/fm_top_pic"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"

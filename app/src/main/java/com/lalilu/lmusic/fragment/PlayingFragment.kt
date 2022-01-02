@@ -88,6 +88,7 @@ class PlayingFragment : DataBindingFragment() {
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
             it?.get { fmAppbarLayout.setExpanded(false, true) }
         }
+
         var lastOffset = 0
         fmAppbarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appbarLayout, verticalOffset ->
             if ((lastOffset - verticalOffset < 0) && verticalOffset >= (-appbarLayout.totalScrollRange * 3 / 4))

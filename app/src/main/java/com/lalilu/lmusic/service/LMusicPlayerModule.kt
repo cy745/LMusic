@@ -6,21 +6,29 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.text.TextUtils
+import android.util.LruCache
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import com.atilika.kuromoji.ipadic.Tokenizer
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_METADATA
 import com.lalilu.lmusic.Config.LAST_PLAYBACK_STATE
-import com.lalilu.lmusic.event.Event
 import com.lalilu.lmusic.utils.Mathf
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.qualifiers.ApplicationContext
+import fr.free.nrw.jakaroma.KanaToRomaji
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import net.sourceforge.pinyin4j.PinyinHelper
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType
+import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType
 import java.util.*
 import java.util.logging.Logger
+import java.util.regex.Pattern
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.ArrayList
@@ -45,6 +53,17 @@ class LMusicPlayerModule @Inject constructor(
         connectionCallback, null
     )
 
+    private val kanaToRomaji = KanaToRomaji()
+    private val tokenizer = Tokenizer()
+    private val cache = LruCache<String, String>(200)
+
+
+    private val format = HanyuPinyinOutputFormat().also {
+        it.caseType = HanyuPinyinCaseType.UPPERCASE
+        it.toneType = HanyuPinyinToneType.WITHOUT_TONE
+        it.vCharType = HanyuPinyinVCharType.WITH_U_UNICODE
+    }
+
     private val _metadata = MutableStateFlow(
         mmkv.decodeParcelable(LAST_METADATA, MediaMetadataCompat::class.java)
     )
@@ -62,11 +81,36 @@ class LMusicPlayerModule @Inject constructor(
     private val _keyword: MutableStateFlow<String?> = MutableStateFlow(null)
     private val mediaItems: Flow<List<MediaBrowserCompat.MediaItem>> =
         _mediaItems.combine(_metadata) { items, metadata ->
-            listOrderChange(items, metadata?.description?.mediaId) ?: items
+            (listOrderChange(items, metadata?.description?.mediaId) ?: items).onEach {
+                val originStr = "${it.description.title} ${it.description.subtitle}"
+                var resultStr = originStr
+                val isContainChinese = isContainChinese(originStr)
+                val isContainKatakanaOrHinagana = isContainKatakanaOrHinagana(originStr)
+                if (isContainChinese || isContainKatakanaOrHinagana) {
+                    if (isContainChinese) {
+                        val chinese =
+                            PinyinHelper.toHanYuPinyinString(originStr, format, "", true)
+                        resultStr = "$resultStr $chinese"
+                    }
+
+                    val japanese = "$originStr ${
+                        tokenizer.tokenize(originStr).mapNotNull { token ->
+                            token.pronunciation
+                        }.joinToString("")
+                    }"
+
+                    resultStr = "$resultStr ${kanaToRomaji.convert(japanese)}"
+                }
+                it.description.extras?.putString("searchStr", resultStr)
+            }
         }.combine(_keyword) { items, keyword ->
-            return@combine if (keyword == null) items else items.filter { item ->
-                checkKeyword(item.description.title, keyword) ||
-                        checkKeyword(item.description.subtitle, keyword)
+            if (keyword == null || TextUtils.isEmpty(keyword)) return@combine items
+
+            val keywords = keyword.split(" ")
+
+            return@combine items.filter { item ->
+                val originStr = item.description.extras?.getString("searchStr")
+                checkKeywords(originStr, keywords)
             }
         }
 
@@ -146,10 +190,26 @@ class LMusicPlayerModule @Inject constructor(
         })
     }
 
+    private fun checkKeywords(str: CharSequence?, keywords: List<String>): Boolean {
+        keywords.forEach { keyword ->
+            if (!checkKeyword(str, keyword)) return false
+        }
+        return true
+    }
+
     private fun checkKeyword(str: CharSequence?, keyword: String): Boolean {
         str ?: return false
         return str.toString().uppercase(Locale.getDefault()).contains(
             keyword.uppercase(Locale.getDefault())
         )
+    }
+
+    private fun isContainChinese(str: String): Boolean {
+        return Pattern.compile("[\u4e00-\u9fa5]").matcher(str).find()
+    }
+
+    private fun isContainKatakanaOrHinagana(str: String): Boolean {
+        return Pattern.compile("[\u3040-\u309f]").matcher(str).find() ||
+                Pattern.compile("[\u30a0-\u30ff]").matcher(str).find()
     }
 }
