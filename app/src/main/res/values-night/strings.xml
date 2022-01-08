@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="navigate_to_star_page">Navigate to Star Page</string>
-    <string name="navigate_to_playlist_page">Navigate to Playlist page</string>
-    <string name="navigate_to_all_songs_page">Navigate to all songs page</string>
-    <string name="navigate_to_album_page">Navigate to album page</string>
-    <string name="text_button_search">搜索</string>
+
 </resources>

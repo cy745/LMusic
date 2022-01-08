@@ -3,6 +3,7 @@ package com.lalilu.lmusic.database.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.IGNORE
+import androidx.room.OnConflictStrategy.REPLACE
 import androidx.room.Transaction
 import com.lalilu.lmusic.domain.entity.*
 
@@ -11,10 +12,10 @@ interface MRelationDao {
     @Insert(onConflict = IGNORE)
     fun savePlaylist(playlist: MPlaylist)
 
-    @Insert(onConflict = IGNORE)
+    @Insert(onConflict = REPLACE)
     fun saveSong(song: MSong)
 
-    @Insert(onConflict = IGNORE)
+    @Insert(onConflict = REPLACE)
     fun saveSongs(songs: List<MSong>)
 
     @Insert(onConflict = IGNORE)

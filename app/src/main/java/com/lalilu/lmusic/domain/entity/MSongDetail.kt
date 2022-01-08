@@ -17,7 +17,5 @@ data class MSongDetail(
     val songSize: Long = 0,
 
     @ColumnInfo(name = "song_data")
-    val songData: String = "",
-
-
-    )
+    val songData: String = ""
+)

@@ -10,7 +10,7 @@ import kotlin.math.abs
  *
  *  内部开始竖向开始滑动后固定滑动方向，屏蔽父组件的横向滑动
  */
-class AntiErrorSlide {
+class AntiSlideConflict {
     // 存储点击点的位置信息
     private val mPointGapF: PointF = PointF(0f, 0f)
     private var isSolve: Boolean = false

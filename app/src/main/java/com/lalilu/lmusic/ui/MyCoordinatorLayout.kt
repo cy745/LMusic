@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import com.lalilu.lmusic.utils.AntiErrorSlide
+import com.lalilu.lmusic.utils.AntiSlideConflict
 
 /**
  *  可处理滑动冲突的 CoordinatorLayout
@@ -12,7 +12,7 @@ import com.lalilu.lmusic.utils.AntiErrorSlide
 class MyCoordinatorLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : CoordinatorLayout(context, attrs, defStyleAttr) {
-    private val antiErrorSlide = AntiErrorSlide()
+    private val antiErrorSlide = AntiSlideConflict()
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         antiErrorSlide.dispatchTouchEvent(ev, parent)

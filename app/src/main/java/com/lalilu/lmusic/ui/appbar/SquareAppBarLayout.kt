@@ -8,18 +8,19 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.google.android.material.appbar.AppBarLayout
+import com.lalilu.lmusic.utils.AntiErrorTouchEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.CoroutineContext
 
 class SquareAppBarLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : AppBarLayout(context, attrs, defStyleAttr), CoroutineScope {
+) : AppBarLayout(context, attrs, defStyleAttr), CoroutineScope, AntiErrorTouchEvent {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val appBarStatusHelper = AppBarStatusHelper
     private val zoomBehavior = AppBarZoomBehavior(context, null)
-    private val rect = Rect(0, 0, 0, 0)
-    private val size = 100
+    override val rect = Rect(0, 0, 0, 0)
+    override val interceptSize = 100
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, widthMeasureSpec)
@@ -36,18 +37,15 @@ class SquareAppBarLayout @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        rect.bottom = height
-        rect.top = height - size
+        updateInterceptRect(height, height - interceptSize)
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        return if (event.rawY > rect.top &&
-            event.rawY < rect.bottom &&
-            appBarStatusHelper.fullyExpend
-        ) true
+    override fun onTouchEvent(event: MotionEvent): Boolean =
+        if (checkTouchEvent(event)) true
         else super.onTouchEvent(event)
-    }
+
+    override fun whenToIntercept(): Boolean = appBarStatusHelper.fullyExpend
 
     override fun getBehavior(): CoordinatorLayout.Behavior<AppBarLayout> = zoomBehavior
 }
