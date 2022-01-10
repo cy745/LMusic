@@ -14,11 +14,7 @@ import com.cm55.kanhira.KakasiDictReader
 import com.cm55.kanhira.Kanhira
 import com.lalilu.R
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.Config.LAST_METADATA
-import com.lalilu.lmusic.Config.LAST_PLAYBACK_STATE
-import com.lalilu.lmusic.utils.KanaToRomaji
-import com.lalilu.lmusic.utils.Mathf
-import com.tencent.mmkv.MMKV
+import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -44,7 +40,9 @@ class LMusicPlayerModule @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val logger = Logger.getLogger(this.javaClass.name)
-    private val mmkv = MMKV.defaultMMKV()
+    private val sharedPref = context.getSharedPreferences(
+        Config.SHARED_PLAYER, Context.MODE_PRIVATE
+    )
 
     var mediaController: MediaControllerCompat? = null
     private var controllerCallback: MusicControllerCallback = MusicControllerCallback()
@@ -73,24 +71,14 @@ class LMusicPlayerModule @Inject constructor(
         it.vCharType = HanyuPinyinVCharType.WITH_U_UNICODE
     }
 
-    private val _metadata = MutableStateFlow(
-        mmkv.decodeParcelable(LAST_METADATA, MediaMetadataCompat::class.java)
-    )
-    private val _playBackState = MutableStateFlow(
-        mmkv.decodeParcelable(LAST_PLAYBACK_STATE, PlaybackStateCompat::class.java).let {
-            PlaybackStateCompat.Builder().setState(
-                PlaybackStateCompat.STATE_STOPPED,
-                it?.position ?: 0L,
-                it?.playbackSpeed ?: 1.0f
-            ).build()
-        }
-    )
+    private val _metadata = MutableStateFlow(sharedPref.getLastMediaMetadata())
+    private val _playBackState = MutableStateFlow(sharedPref.getLastPlaybackState())
     private val _mediaItems: MutableStateFlow<MutableList<MediaBrowserCompat.MediaItem>> =
         MutableStateFlow(ArrayList())
     private val _keyword: MutableStateFlow<String?> = MutableStateFlow(null)
     private val mediaItems: Flow<List<MediaBrowserCompat.MediaItem>> =
         _mediaItems.combine(_metadata) { items, metadata ->
-            listOrderChange(items, metadata?.description?.mediaId) ?: items
+            listOrderChange(items, metadata.description?.mediaId) ?: items
         }.combine(mKanhira) { items, kanhira ->
             if (kanhira == null) return@combine items
 
@@ -122,7 +110,6 @@ class LMusicPlayerModule @Inject constructor(
             }
         }
 
-    val playBackState: LiveData<PlaybackStateCompat> = _playBackState.asLiveData()
     val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
     val mediaItemsLiveData: LiveData<List<MediaBrowserCompat.MediaItem>> = mediaItems.asLiveData()
 
@@ -174,7 +161,7 @@ class LMusicPlayerModule @Inject constructor(
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             launch {
                 _playBackState.emit(state ?: return@launch)
-                mmkv.encode(LAST_PLAYBACK_STATE, state)
+                state.saveTo(sharedPref)
                 logger.info("[MusicControllerCallback]#onPlaybackStateChanged: ${state.state} ${state.position}")
             }
         }
@@ -182,7 +169,7 @@ class LMusicPlayerModule @Inject constructor(
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             launch {
                 _metadata.emit(metadata ?: return@launch)
-                mmkv.encode(LAST_METADATA, metadata)
+                metadata.saveTo(sharedPref)
                 logger.info("[MusicControllerCallback]#onMetadataChanged: ${metadata.description?.title}")
             }
         }

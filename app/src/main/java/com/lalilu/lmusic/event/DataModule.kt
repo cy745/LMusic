@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.event
 
+import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -10,8 +11,6 @@ import androidx.lifecycle.asLiveData
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.Config.LAST_METADATA
-import com.lalilu.lmusic.Config.LAST_PLAYBACK_STATE
 import com.lalilu.lmusic.Config.LAST_PLAYLIST_ID
 import com.lalilu.lmusic.Config.LAST_REPEAT_MODE
 import com.lalilu.lmusic.adapter.node.FirstNode
@@ -22,7 +21,9 @@ import com.lalilu.lmusic.domain.entity.MSongDetail
 import com.lalilu.lmusic.domain.entity.PlaylistWithSongs
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.utils.Mathf
-import com.tencent.mmkv.MMKV
+import com.lalilu.lmusic.utils.getLastMediaMetadata
+import com.lalilu.lmusic.utils.getLastPlaybackState
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -32,11 +33,15 @@ import kotlin.coroutines.CoroutineContext
 @Singleton
 @ExperimentalCoroutinesApi
 class DataModule @Inject constructor(
+    @ApplicationContext context: Context,
     database: LMusicDataBase,
     notificationManager: LMusicNotificationManager,
 ) : ViewModel(), CoroutineScope {
-    private val mmkv = MMKV.defaultMMKV()
     override val coroutineContext: CoroutineContext = Dispatchers.IO
+
+    private val sharedPref = context.getSharedPreferences(
+        Config.SHARED_PLAYER, Context.MODE_PRIVATE
+    )
 
     fun changePlaylistById(id: Long) = launch {
         _nowPlaylistId.emit(id)
@@ -52,30 +57,21 @@ class DataModule @Inject constructor(
 
     fun updateRepeatMode(repeatMode: Int) = launch {
         _repeatMode.emit(repeatMode)
-        mmkv.encode(LAST_REPEAT_MODE, repeatMode)
+        with(sharedPref.edit()) {
+            this.putInt(LAST_REPEAT_MODE, repeatMode)
+            this.apply()
+        }
     }
 
     /***************************************/
     /**        PIN： 获取基础数据          **/
     /***************************************/
     private val _playBackState: MutableStateFlow<PlaybackStateCompat?> =
-        MutableStateFlow(
-            mmkv.decodeParcelable(LAST_PLAYBACK_STATE, PlaybackStateCompat::class.java).let {
-                PlaybackStateCompat.Builder().setState(
-                    PlaybackStateCompat.STATE_STOPPED,
-                    it?.position ?: 0L,
-                    it?.playbackSpeed ?: 1.0f
-                ).build()
-            }
-        )
+        MutableStateFlow(sharedPref.getLastPlaybackState())
     private val _metadata: MutableStateFlow<MediaMetadataCompat?> =
-        MutableStateFlow(
-            mmkv.decodeParcelable(
-                LAST_METADATA, MediaMetadataCompat::class.java
-            )
-        )
+        MutableStateFlow(sharedPref.getLastMediaMetadata())
     private val _repeatMode: MutableStateFlow<Int> =
-        MutableStateFlow(mmkv.decodeInt(LAST_REPEAT_MODE))
+        MutableStateFlow(sharedPref.getInt(LAST_REPEAT_MODE, 0))
 
     val repeatMode: LiveData<Int> = _repeatMode.asLiveData()
     val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
@@ -88,7 +84,7 @@ class DataModule @Inject constructor(
      * 1.当前正在播放的歌单的ID
      */
     private val _nowPlaylistId: MutableStateFlow<Long> =
-        MutableStateFlow(mmkv.decodeLong(LAST_PLAYLIST_ID, 0L))
+        MutableStateFlow(sharedPref.getLong(LAST_PLAYLIST_ID, 0L))
 
     /**
      * 2.根据当前歌单ID从数据库获取对应歌单的歌曲并转换成 List<MediaMetadataCompat>
@@ -184,7 +180,10 @@ class DataModule @Inject constructor(
             }
         }
     }.map {
-        mmkv.encode(Config.LAST_POSITION, it)
+        with(sharedPref.edit()) {
+            this.putLong(Config.LAST_POSITION, it)
+            this.apply()
+        }
         return@map it
     }
     val songPosition: LiveData<Long> = _songPosition.asLiveData()

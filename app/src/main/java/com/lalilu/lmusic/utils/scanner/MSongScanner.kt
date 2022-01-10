@@ -27,7 +27,7 @@ class MSongScanner @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val mExecutor = ThreadPoolUtils.CachedThreadPool
     override var selection: String? = "${MediaStore.Audio.Media.SIZE} >= ? " +
-            "and ${MediaStore.Audio.Media.DURATION} >= ?" +
+            "and ${MediaStore.Audio.Media.DURATION} >= ? " +
             "and ${MediaStore.Audio.Artists.ARTIST} != ?"
     override var selectionArgs: Array<String>? =
         arrayOf((500 * 1024).toString(), (30 * 1000).toString(), "<unknown>")

@@ -20,6 +20,8 @@
 
         <item name="android:textColorPrimary">@color/abc_primary_text_material_dark</item>
         <item name="android:textColorPrimaryInverse">@color/abc_primary_text_material_light</item>
+
+        <item name="android:textColorSecondary">@color/white</item>
     </style>
 
     <style name="expandedTitleText">

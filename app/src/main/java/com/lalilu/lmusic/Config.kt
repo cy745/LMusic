@@ -14,6 +14,8 @@ object Config {
     const val LAST_POSITION = "LAST_POSITION"
     const val LAST_REPEAT_MODE = "LAST_REPEAT_MODE"
 
+    const val SHARED_PLAYER = "SHARED_PLAYER"
+
 
     const val MEDIA_ID_EMPTY_ROOT = "media_id_empty_root"
     const val ACTION_PLAY_PAUSE = "play_and_pause"
