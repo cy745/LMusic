@@ -130,9 +130,18 @@ class LMusicPlayerModule @Inject constructor(
         _keyword.emit(keyword)
     }
 
-    fun connect() = mediaBrowser.connect()
-    fun disconnect() = mediaBrowser.disconnect().also {
-        mediaController?.unregisterCallback(controllerCallback)
+    fun connect() {
+        if (!mediaBrowser.isConnected) {
+            mediaBrowser.connect()
+        }
+    }
+
+    fun disconnect() {
+        if (mediaBrowser.isConnected) {
+            mediaBrowser.disconnect().also {
+                mediaController?.unregisterCallback(controllerCallback)
+            }
+        }
     }
 
     fun subscribe(parentId: String) = mediaBrowser.subscribe(parentId, subscriptionCallback)
