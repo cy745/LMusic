@@ -49,7 +49,7 @@ class LMusicNotificationManager @Inject constructor(
         lyricChannelName
     )
 
-    private var mSingleRepeatAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mSingleRepeatAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_repeat_one_line, "single_repeat",
         buildServicePendingIntent(mContext, 1,
             Intent(mContext, MSongService::class.java).also {
@@ -59,7 +59,7 @@ class LMusicNotificationManager @Inject constructor(
                 )
             })
     )
-    private var mOrderPlayAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mOrderPlayAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_order_play_line, "order_play",
         buildServicePendingIntent(mContext, 2,
             Intent(mContext, MSongService::class.java).also {
@@ -69,31 +69,31 @@ class LMusicNotificationManager @Inject constructor(
                 )
             })
     )
-    private var mPlayAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mPlayAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_play_line, "play",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_PLAY
         )
     )
-    private var mPauseAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mPauseAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_pause_line, "pause",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_PAUSE
         )
     )
-    private var mNextAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mNextAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_skip_forward_line, "next",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_SKIP_TO_NEXT
         )
     )
-    private var mPrevAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mPrevAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_skip_back_line, "previous",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
         )
     )
-    private var mStopAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mStopAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_close_line, "stop",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_STOP
@@ -123,7 +123,8 @@ class LMusicNotificationManager @Inject constructor(
      *  API 26 以上需要注册Channel，否则不显示通知。
      */
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) createNotificationChannel()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            createNotificationChannel()
         notificationManager.cancelAll()
     }
 
