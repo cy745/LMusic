@@ -30,4 +30,12 @@ object HapticUtils {
             }
         }
     }
+
+    fun weakHaptic(view: View) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_RELEASE)
+        } else {
+            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+        }
+    }
 }

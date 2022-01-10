@@ -20,7 +20,6 @@ import com.dirror.lyricviewx.LyricViewX
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
-import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.fullyExpend
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.mBottom
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.maxDragHeight
 import com.lalilu.lmusic.ui.appbar.AppBarStatusHelper.maxExpandHeight
@@ -37,7 +36,7 @@ import kotlin.coroutines.CoroutineContext
 
 
 class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = null) :
-    AppBarLayout.Behavior(context, attrs), CoroutineScope {
+    AppBarLayout.Behavior(context, attrs), CoroutineScope, AppbarBehavior {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private var mToolbar: Toolbar? = null
@@ -48,6 +47,7 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
     private var mEdgeTransparentView: EdgeTransparentView? = null
     private var mCollapsingToolbarLayout: CollapsingToolbarLayout? = null
     private var appBarStatusHelper = AppBarStatusHelper
+    private var interpolator = AccelerateDecelerateInterpolator()
 
     private val gestureDetector =
         GestureDetectorCompat(context, object : GestureDetector.SimpleOnGestureListener() {
@@ -147,23 +147,30 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         val offsetPosition = child.bottom - appBarStatusHelper.normalHeight
 
         // 获取现在所处位置的状态 Status，决定是否需要使 Appbar 拉伸
-        if (appBarStatusHelper.getNextStatusByNextPosition(nextPosition) == AppBarStatus.STATUS_EXPENDED) {
-            if (dy < 0) {
-                // 根据所在位置的百分比为滑动添加阻尼
-                // 经过阻尼衰减得到正确的 nextPosition
-                val percent = 1 - offsetPosition / maxDragHeight.toFloat()
-                if (percent in 0F..1F) nextPosition = child.bottom - (dy * percent).toInt()
+        when (appBarStatusHelper.getNextStatusByNextPosition(nextPosition)) {
+            STATE_EXPENDED,
+            STATE_FULLY_EXPENDED -> {
+                if (dy < 0) {
+                    // 根据所在位置的百分比为滑动添加阻尼
+                    // 经过阻尼衰减得到正确的 nextPosition
+                    val percent = 1 - offsetPosition / maxDragHeight.toFloat()
+                    if (percent in 0F..1F) nextPosition = child.bottom - (dy * percent).toInt()
+                }
+
+                // 通过 nextPosition 重新定位
+                resizeChild(child, nextPosition)
+                // 判断重新定位后是否需要转换状态
+                checkState(child, child.bottom)
+
+                mSpringAnimation?.cancel()
+
+                val isNeedConsume = nextPosition in normalHeight..(normalHeight + maxExpandHeight)
+                consumed[1] = if (isNeedConsume) Int.MAX_VALUE else 0
+
+                if (child.bottom > normalHeight) return
             }
-
-            // 通过 nextPosition 重新定位
-            resizeChild(child, nextPosition)
-            mSpringAnimation?.cancel()
-
-            val isNeedConsume = nextPosition in normalHeight..normalHeight + maxExpandHeight
-            consumed[1] = if (isNeedConsume) Int.MAX_VALUE else 0
-
-            if (child.bottom > normalHeight) return
         }
+
         super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type)
     }
 
@@ -182,57 +189,73 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         val scaleValue = Mathf.clamp(0F, 5F, mBottom / normalHeight.toFloat())
         val animatePercent = Mathf.clamp(0F, 1F, offsetPosition / maxExpandHeight.toFloat())
 
-        mDraweeView?.blurBg(animatePercent)
-        mDraweeView?.scaleX = scaleValue
-        mDraweeView?.scaleY = scaleValue
-        mDraweeView?.translationY = offsetPosition / 2F
+        mDraweeView?.let {
+            it.blurBg(animatePercent)
+            it.scaleX = scaleValue
+            it.scaleY = scaleValue
+            it.translationY = offsetPosition / 2F
+        }
 
-        val value = if (animatePercent in 0F..0.5F) animatePercent else 1 - animatePercent
-        mCollapsingToolbarLayout?.top = (maxExpandHeight / 2 * value).toInt()
-        mCollapsingToolbarLayout?.bottom =
-            (normalHeight + maxExpandHeight * animatePercent).toInt()
-
-        // 文字透明过渡插值器
-        val interpolation = AccelerateDecelerateInterpolator().getInterpolation(animatePercent)
+        val interpolation = interpolator.getInterpolation(animatePercent)
+        val reverseValue = if (animatePercent in 0F..0.5F) animatePercent else 1F - animatePercent
         val alphaPercentDecrease = (1F - interpolation * 2).coerceAtLeast(0F)
         val alphaPercentIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
 
-        val toolbarTextColor = Color.argb((alphaPercentDecrease * 255).toInt(), 255, 255, 255)
-        mCollapsingToolbarLayout?.setExpandedTitleColor(toolbarTextColor)
-
-        mToolbar?.visibility = if (alphaPercentDecrease <= 0.05) View.INVISIBLE else View.VISIBLE
-        mToolbar?.alpha = alphaPercentDecrease
-        mLyricViewX?.alpha = alphaPercentIncrease
-
-        // 根据 offsetPosition 计算出拖动时与最近边距离的百分比
-        val dragPercent = when (offsetPosition) {
-            in 0..maxDragHeight -> offsetPosition / maxDragHeight.toFloat()
-            in (maxExpandHeight - maxDragHeight)..maxExpandHeight -> {
-                (offsetPosition - maxExpandHeight + maxDragHeight) / maxDragHeight.toFloat() - 1F
-            }
-            else -> return
+        mCollapsingToolbarLayout?.let {
+            val toolbarTextColor = Color.argb((alphaPercentDecrease * 255).toInt(), 255, 255, 255)
+            it.top = (maxExpandHeight / 2 * reverseValue).toInt()
+            it.bottom = (normalHeight + maxExpandHeight * animatePercent).toInt()
+            it.setExpandedTitleColor(toolbarTextColor)
         }
 
-        when {
-            dragPercent in 0.05F..0.6F && fullyExpend -> fullyExpend = false
-            dragPercent in 0.6F..1F && !fullyExpend -> {
-                fullyExpend = true
-                onDragToBottom(abl)
-            }
-            dragPercent in -1F..-0.6F && fullyExpend -> {
-                fullyExpend = false
-                onDragToTop(abl)
-            }
-            dragPercent in -0.6F..-0.05F && !fullyExpend -> fullyExpend = true
+        mToolbar?.let {
+            it.visibility = if (alphaPercentDecrease <= 0.05) View.INVISIBLE else View.VISIBLE
+            it.alpha = alphaPercentDecrease
+        }
+
+        mLyricViewX?.let {
+            it.alpha = alphaPercentIncrease
         }
     }
 
-    private fun onDragToTop(view: View) {
-        HapticUtils.haptic(view)
-    }
+    @Volatile
+    private var isAnimationEnd = true
 
-    private fun onDragToBottom(view: View) {
-        HapticUtils.haptic(view)
+    private fun checkState(child: AppBarLayout, bottom: Int) {
+        val offsetPosition = bottom - normalHeight
+        val tinyMachine = AppBarStatusHelper.tinyMachine
+
+        if (isAnimationEnd) {
+            when (tinyMachine.currentState) {
+                STATE_EXPENDED -> {
+                    if (offsetPosition <= maxDragHeight * 0.6f) return
+                    isAnimationEnd = false
+                    tinyMachine.fireEvent(EVENT_EXPEND)
+                    HapticUtils.haptic(child)
+                }
+                STATE_FULLY_EXPENDED -> {
+                    if (offsetPosition >= maxExpandHeight - maxDragHeight * 0.6f) return
+                    isAnimationEnd = false
+                    tinyMachine.fireEvent(EVENT_COLLAPSE)
+                    HapticUtils.haptic(child)
+                }
+            }
+        } else {
+            when (tinyMachine.currentState) {
+                STATE_FULLY_EXPENDED -> {
+                    if (offsetPosition > maxDragHeight * 0.6f) return
+                    isAnimationEnd = true
+                    tinyMachine.fireEvent(EVENT_COLLAPSE)
+                    HapticUtils.weakHaptic(child)
+                }
+                STATE_EXPENDED -> {
+                    if (offsetPosition < maxExpandHeight - maxDragHeight * 0.6f) return
+                    isAnimationEnd = true
+                    tinyMachine.fireEvent(EVENT_EXPEND)
+                    HapticUtils.weakHaptic(child)
+                }
+            }
+        }
     }
 
     /**
@@ -244,10 +267,11 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
         target: View,
         type: Int
     ) {
-        if (abl.bottom > appBarStatusHelper.normalHeight) {
-            var toPosition = 0
-            toPosition += appBarStatusHelper.normalHeight
-            toPosition += if (fullyExpend) maxExpandHeight else 0
+        val currentState = appBarStatusHelper.tinyMachine.currentState
+        if (abl.bottom > normalHeight) {
+            var toPosition = normalHeight
+            if (currentState == STATE_FULLY_EXPENDED)
+                toPosition += maxExpandHeight
             recoveryToPosition(abl, toPosition)
         }
         super.onStopNestedScroll(coordinatorLayout, abl, target, type)
@@ -258,11 +282,16 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
      */
     private fun recoveryToPosition(abl: AppBarLayout, position: Number) {
         if (mSpringAnimation == null) {
-            mSpringAnimation =
-                SpringAnimation(abl, appBarLayoutFloatProperty, normalHeight.toFloat()).apply {
-                    this.spring.dampingRatio = DAMPING_RATIO_NO_BOUNCY
-                    this.spring.stiffness = STIFFNESS_LOW
+            mSpringAnimation = SpringAnimation(
+                abl, appBarLayoutFloatProperty,
+                normalHeight.toFloat()
+            ).apply {
+                this.spring.dampingRatio = DAMPING_RATIO_NO_BOUNCY
+                this.spring.stiffness = STIFFNESS_LOW
+                this.addEndListener { _, _, _, _ ->
+                    isAnimationEnd = true
                 }
+            }
         }
         mSpringAnimation?.cancel()
         mSpringAnimation?.animateToFinalPosition(position.toFloat())
@@ -287,5 +316,11 @@ class AppBarZoomBehavior(private val context: Context, attrs: AttributeSet? = nu
     private fun nestedChildScrollBy(nestedChildView: ViewGroup, dy: Int) {
         nestedChildView.dispatchNestedPreScroll(0, dy, null, null)
         nestedChildView.dispatchNestedScroll(0, 0, 0, dy, null)
+    }
+
+    override fun expend() {
+    }
+
+    override fun collapse() {
     }
 }

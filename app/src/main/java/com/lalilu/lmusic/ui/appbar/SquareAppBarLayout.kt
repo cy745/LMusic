@@ -28,7 +28,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         // 如果处于展开状态则重新布局一次AppbarLayout的bottom
-        if (appBarStatusHelper.fullyExpend && changed) {
+        if (appBarStatusHelper.tinyMachine.currentState == STATE_FULLY_EXPENDED && changed) {
             this.layout(l, t, r, appBarStatusHelper.mBottom)
         }
 
@@ -45,7 +45,8 @@ class SquareAppBarLayout @JvmOverloads constructor(
         if (checkTouchEvent(event)) true
         else super.onTouchEvent(event)
 
-    override fun whenToIntercept(): Boolean = appBarStatusHelper.fullyExpend
+    override fun whenToIntercept(): Boolean =
+        appBarStatusHelper.tinyMachine.currentState == STATE_FULLY_EXPENDED
 
     override fun getBehavior(): CoordinatorLayout.Behavior<AppBarLayout> = zoomBehavior
 }
