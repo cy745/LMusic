@@ -2,6 +2,7 @@
 buildscript {
     ext.kotlin_version = "1.6.10"
     ext.lifecycle_version = "2.4.0"
+    ext.work_version = "2.7.1"
     ext.room_version = "2.4.0"
     ext.navigation_version = "2.3.5"
     ext.fastjson_version = "1.1.72.android"
