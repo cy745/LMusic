@@ -1,14 +1,15 @@
 package com.lalilu.lmusic.utils.scanner
 
 import android.content.Context
-import android.database.Cursor
 import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * MScanner接口的基础实现，仍需要传入onScanForEach函数，
  */
-abstract class BaseMScanner : MScanner {
+abstract class BaseMScanner : MScanner, CoroutineScope {
     /**
      * contentResolver 所需参数
      */
@@ -17,7 +18,6 @@ abstract class BaseMScanner : MScanner {
     open var selectionArgs: Array<String>? = null
     open var sortOrder: String? = null
     open var progressCount = 0
-    protected val taskList: ArrayList<Job> = ArrayList()
 
     /**
      * 扫描开始的入口函数，简单判读是否已经有任务正在执行
@@ -30,17 +30,16 @@ abstract class BaseMScanner : MScanner {
             return
         }
         try {
-            GlobalScope.launch(Dispatchers.IO) {
+            launch(Dispatchers.IO) {
                 val cursor = context.contentResolver.query(
                     EXTERNAL_CONTENT_URI, projection, selection, selectionArgs, sortOrder
                 ) ?: throw NullPointerException("cursor is null")
 
                 onScanStart?.invoke(cursor.count)
                 while (cursor.moveToNext()) {
-                    onScanForEach?.invoke(context, cursor)
+                    onScanForEach(context, cursor)
                 }
                 cursor.close()
-                taskList.joinAll()
                 onScanFinish?.invoke(progressCount)
                 progressCount = 0
             }
@@ -50,7 +49,6 @@ abstract class BaseMScanner : MScanner {
     }
 
     override var onScanCancel: ((nowCount: Int) -> Unit)? = null
-    override var onScanForEach: ((context: Context, cursor: Cursor) -> Unit)? = null
     override var onScanFailed: ((msg: String?) -> Unit)? = null
     override var onScanStart: ((totalCount: Int) -> Unit)? = null
     override var onScanProgress: ((nowCount: Int) -> Unit)? = null
@@ -58,11 +56,6 @@ abstract class BaseMScanner : MScanner {
 
     override fun setScanCancel(func: (nowCount: Int) -> Unit): MScanner {
         this.onScanCancel = func
-        return this
-    }
-
-    override fun setScanForEach(func: (context: Context, cursor: Cursor) -> Unit): MScanner {
-        this.onScanForEach = func
         return this
     }
 

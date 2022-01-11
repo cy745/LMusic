@@ -2,41 +2,28 @@ package com.lalilu.lmusic.utils.scanner
 
 import android.content.Context
 import android.database.Cursor
-import android.net.Uri
 import android.provider.MediaStore
-import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-import com.lalilu.lmusic.database.LMusicDataBase
-import com.lalilu.lmusic.domain.entity.*
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.lalilu.lmusic.utils.*
-import kotlinx.coroutines.CoroutineScope
+import com.lalilu.lmusic.worker.ScannerWorker
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
-import org.jaudiotagger.audio.AudioFileIO
-import org.jaudiotagger.tag.FieldKey
-import java.io.File
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 
-class MSongScanner @Inject constructor(
-    val database: LMusicDataBase
-) : BaseMScanner(), CoroutineScope {
+class MSongScanner @Inject constructor() : BaseMScanner() {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-    private val mExecutor = ThreadPoolUtils.CachedThreadPool
     override var selection: String? = "${MediaStore.Audio.Media.SIZE} >= ? " +
             "and ${MediaStore.Audio.Media.DURATION} >= ? " +
             "and ${MediaStore.Audio.Artists.ARTIST} != ?"
     override var selectionArgs: Array<String>? =
         arrayOf((500 * 1024).toString(), (30 * 1000).toString(), "<unknown>")
 
-    init {
-        setScanForEach { context, cursor -> scanForEach(context, cursor) }
-    }
-
-    private fun scanForEach(context: Context, cursor: Cursor) {
+    override fun onScanForEach(context: Context, cursor: Cursor) {
         Logger.getLogger("org.jaudiotagger").level = Level.OFF
 
         val songId = cursor.getSongId()                 // 音乐 id
@@ -48,44 +35,27 @@ class MSongScanner @Inject constructor(
         val albumId = cursor.getAlbumId()               // 专辑 id
         val albumTitle = cursor.getAlbumTitle()         // 专辑标题
         val artistName = cursor.getArtist()             // 艺术家
-        val artistsName = cursor.getArtists()           // 艺术家
+        val artistsName = cursor.getArtists().toTypedArray()           // 艺术家
 
-        val taskNumber = ++progressCount
-        taskList.add(launch(mExecutor.asCoroutineDispatcher()) {
-            val songUri = Uri.withAppendedPath(EXTERNAL_CONTENT_URI, songId.toString())
-
-            val album = MAlbum(albumId, albumTitle)
-            database.albumDao().save(album)
-
-            val songCoverUri = BitmapUtils.saveThumbnailToSandBox(context, songId, songUri)
-
-            try {
-                val audioTag = AudioFileIO.read(File(songData)).tag
-                val lyric = audioTag.getFields(FieldKey.LYRICS)
-                    .run { if (isNotEmpty()) get(0).toString() else "" }
-                val detail = MSongDetail(songId, lyric, songSize, songData)
-
-                database.songDetailDao().save(detail)
-            } catch (e: Exception) {
-                println(e.message)
-            }
-            val song = MSong(
-                songUri = songUri,
-                songId = songId,
-                albumId = albumId,
-                albumTitle = albumTitle,
-                songTitle = songTitle,
-                songDuration = songDuration,
-                showingArtist = artistName,
-                songCoverUri = songCoverUri,
-                songMimeType = songMimeType
-            )
-
-            val artists: List<MArtist> = artistsName.map { MArtist(it) }
-            database.relationDao().saveSongXArtist(song, artists)
-            database.relationDao().savePlaylistXSong(MPlaylist(0), listOf(song))
-
-            onScanProgress?.invoke(taskNumber)
-        })
+        WorkManager.getInstance(context).enqueue(
+            OneTimeWorkRequestBuilder<ScannerWorker>()
+                .addTag("Song_Scan")
+                .setInputData(
+                    workDataOf(
+                        "songId" to songId,
+                        "songTitle" to songTitle,
+                        "songDuration" to songDuration,
+                        "songData" to songData,
+                        "songSize" to songSize,
+                        "songMimeType" to songMimeType,
+                        "albumId" to albumId,
+                        "albumTitle" to albumTitle,
+                        "artistName" to artistName,
+                        "artistsName" to artistsName
+                    )
+                ).build()
+        )
+        val taskNum = ++progressCount
+        onScanProgress?.invoke(taskNum)
     }
 }
