@@ -71,3 +71,10 @@ data class MSong(
         return songId.hashCode()
     }
 }
+
+data class MSongUpdateCoverUri(
+    @ColumnInfo(name = "song_id")
+    val songId: Long,
+    @ColumnInfo(name = "song_cover_uri")
+    val songCoverUri: Uri
+)
