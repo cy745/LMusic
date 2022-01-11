@@ -60,7 +60,7 @@ class LMusicActivity : DataBindingActivity() {
                 songScanner.setScanFailed {
                     ToastUtil.text("[提示信息]: $it").show(this)
                 }.setScanFinish {
-                    ToastUtil.text("[扫描完成]: 共计$it 首歌曲").show(this)
+                    ToastUtil.text("[扫描完成]: 共计$it 首歌曲被添加至Worker").show(this)
                     playerModule.disconnect()
                     playerModule.connect()
                 }.scanStart(this)

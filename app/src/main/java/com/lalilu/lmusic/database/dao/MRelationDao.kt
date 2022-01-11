@@ -31,12 +31,19 @@ interface MRelationDao {
     fun saveCrossRef(crossRef: ArtistSongCrossRef)
 
     @Transaction
-    fun savePlaylistXSong(playlist: MPlaylist, songs: List<MSong>) {
+    fun savePlaylistXSongs(playlist: MPlaylist, songs: List<MSong>) {
         savePlaylist(playlist)
         saveSongs(songs)
         songs.forEach {
             saveCrossRef(PlaylistSongCrossRef(it.songId, playlist.playlistId))
         }
+    }
+
+    @Transaction
+    fun savePlaylistXSong(playlist: MPlaylist, song: MSong) {
+        savePlaylist(playlist)
+        saveSong(song)
+        saveCrossRef(PlaylistSongCrossRef(song.songId, playlist.playlistId))
     }
 
     @Transaction

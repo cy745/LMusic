@@ -2,6 +2,7 @@ package com.lalilu.lmusic.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy.REPLACE
 import androidx.room.Query
 import com.lalilu.lmusic.domain.entity.MSongDetail
 import kotlinx.coroutines.flow.Flow
@@ -20,7 +21,7 @@ interface MSongDetailDao {
     @Query("SELECT * FROM m_song_detail WHERE song_id = :songId")
     fun getByIdStrFlow(songId: String): Flow<MSongDetail?>
 
-    @Insert
+    @Insert(onConflict = REPLACE)
     fun save(songDetail: MSongDetail)
 
     @Query("DELETE FROM m_song_detail;")

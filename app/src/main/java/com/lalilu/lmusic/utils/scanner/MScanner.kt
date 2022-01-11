@@ -24,8 +24,7 @@ interface MScanner {
     /**
      * 扫描循环中得到的cursor
      */
-    var onScanForEach: ((context: Context, cursor: Cursor) -> Unit)?
-    fun setScanForEach(func: (context: Context, cursor: Cursor) -> Unit): MScanner
+    fun onScanForEach(context: Context, cursor: Cursor)
 
     /**
      * 扫描任务失败时返回提示信息
