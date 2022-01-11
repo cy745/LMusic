@@ -3,6 +3,7 @@ package com.lalilu.lmusic.database.dao
 import androidx.room.*
 import com.lalilu.lmusic.domain.entity.FullSongInfo
 import com.lalilu.lmusic.domain.entity.MSong
+import com.lalilu.lmusic.domain.entity.MSongUpdateCoverUri
 
 @Dao
 interface MSongDao {
@@ -25,6 +26,9 @@ interface MSongDao {
 
     @Query("DELETE FROM m_song;")
     suspend fun deleteAll()
+
+    @Update(entity = MSong::class)
+    fun updateCoverUri(update: MSongUpdateCoverUri)
 
     @Delete
     fun delete(song: MSong)
