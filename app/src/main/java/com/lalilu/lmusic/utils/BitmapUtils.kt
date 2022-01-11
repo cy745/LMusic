@@ -19,8 +19,8 @@ object BitmapUtils {
         val path: File = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
 
         try {
-            val uri = Uri.fromFile(File("$path/${mediaItemId}"))
-            if (uri != Uri.EMPTY) return uri
+            val file = File("$path/${mediaItemId}")
+            if (file.exists()) return Uri.fromFile(file)
 
             val metadataRetriever = MediaMetadataRetriever()
             metadataRetriever.setDataSource(context, mediaItemUri)
