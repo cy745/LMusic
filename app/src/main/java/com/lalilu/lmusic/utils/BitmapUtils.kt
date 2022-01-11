@@ -19,24 +19,25 @@ object BitmapUtils {
         val path: File = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
 
         try {
+            val uri = Uri.fromFile(File("$path/${mediaItemId}"))
+            if (uri != Uri.EMPTY) return uri
+
             val metadataRetriever = MediaMetadataRetriever()
             metadataRetriever.setDataSource(context, mediaItemUri)
 
-            val embeddedPic = metadataRetriever.embeddedPicture ?: return Uri.EMPTY
+            val embeddedPic = metadataRetriever.embeddedPicture
+                ?: return Uri.EMPTY
             val outputStream = FileOutputStream("$path/${mediaItemId}")
             outputStream.write(embeddedPic)
             outputStream.flush()
             outputStream.close()
+            metadataRetriever.close()
             metadataRetriever.release()
+
+            return Uri.fromFile(File("$path/${mediaItemId}"))
         } catch (e: Exception) {
             return Uri.EMPTY
         }
-        return loadThumbnail(path, mediaItemId)
-    }
-
-    fun loadThumbnail(path: File, mediaItemId: Long): Uri {
-        val file = File("$path/${mediaItemId}")
-        return Uri.fromFile(file)
     }
 
     fun loadBitmapFromUri(uri: Uri?, toSize: Int): Bitmap? {
