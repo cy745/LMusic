@@ -2,6 +2,7 @@ package com.lalilu.lmusic.fragment
 
 import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
+import androidx.work.WorkManager
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.BR
 import com.lalilu.R
@@ -14,12 +15,16 @@ import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.LMusicPlayerModule
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class PlayingFragment : DataBindingFragment() {
+class PlayingFragment : DataBindingFragment(), CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.Main
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -73,6 +78,7 @@ class PlayingFragment : DataBindingFragment() {
         val fmToolbar = (mBinding as FragmentPlayingBinding).fmToolbar
         val fmLyricViewX = (mBinding as FragmentPlayingBinding).fmLyricViewX
         val fmAppbarLayout = (mBinding as FragmentPlayingBinding).fmAppbarLayout
+        val fmTips = (mBinding as FragmentPlayingBinding).fmTips
 
         dataModule.songDetail.observe(viewLifecycleOwner) {
             fmLyricViewX.setLabel("暂无歌词")
@@ -100,6 +106,11 @@ class PlayingFragment : DataBindingFragment() {
         //        mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)
 
         mActivity?.setSupportActionBar(fmToolbar)
+
+        WorkManager.getInstance(requireContext()).getWorkInfosByTagLiveData("Song_Scan")
+            .observe(viewLifecycleOwner) { list ->
+                fmTips.text = list.size.toString()
+            }
     }
 
     private fun dp2px(context: Context, value: Int): Float {

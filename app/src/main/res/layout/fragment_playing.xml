@@ -85,6 +85,18 @@
                     app:menu="@menu/menu_appbar"
                     app:title="@string/default_slogan" />
 
+                <TextView
+                    android:id="@+id/fm_tips"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:layout_gravity="center_horizontal"
+                    android:elegantTextHeight="false"
+                    android:minHeight="?attr/actionBarSize"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    app:layout_collapseMode="parallax"
+                    app:layout_collapseParallaxMultiplier="0.55" />
+
             </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.lalilu.lmusic.ui.appbar.SquareAppBarLayout>
 

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.service
+package com.lalilu.lmusic.service.playback
 
 import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
@@ -27,11 +27,6 @@ interface Playback<ID> {
      * 正常播放暂停切换
      */
     fun playAndPause()
-
-    /**
-     * 当播放器为null时需执行的操作
-     */
-    fun rebuild()
 
     /**
      * 传入Uri进行播放
@@ -68,9 +63,7 @@ interface Playback<ID> {
      */
     fun getPosition(): Long
 
-    fun onCompletion()
-
     fun onPlaybackStateChanged(state: Int)
 
-    fun onMetadataChanged()
+    fun onMetadataChanged(mediaMetadataCompat: MediaMetadataCompat)
 }

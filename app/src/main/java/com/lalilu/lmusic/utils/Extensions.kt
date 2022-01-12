@@ -4,10 +4,13 @@ import android.content.SharedPreferences
 import android.database.Cursor
 import android.graphics.Color
 import android.provider.MediaStore
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.palette.graphics.Palette
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.domain.entity.MSong
 
 fun Palette?.getAutomaticColor(): Int {
     if (this == null) return Color.DKGRAY
@@ -64,6 +67,39 @@ fun Cursor.getSongDuration(): Long {
 fun Cursor.getSongMimeType(): String {
     val index = this.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE)
     return if (index < 0) "" else this.getString(index)
+}
+
+fun MSong.toMediaMetadataCompat(): MediaMetadataCompat {
+    val metadata = MediaMetadataCompat.Builder()
+        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, this.songTitle)
+        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, this.showingArtist)
+        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, this.albumTitle)
+        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, this.songId.toString())
+        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, this.songDuration)
+        .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, this.songCoverUri.toString())
+        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, this.songUri.toString())
+        .putString(Config.MEDIA_MIME_TYPE, this.songMimeType)
+//        if (this.songCoverUri != Uri.EMPTY) {
+//            metadata.putBitmap(
+//                MediaMetadataCompat.METADATA_KEY_ART,
+//                BitmapUtils.loadBitmapFromUri(this.songCoverUri, 500)
+//            )
+//        }
+    return metadata.build()
+}
+
+fun MediaMetadataCompat.toMediaItem(): MediaBrowserCompat.MediaItem {
+    return MediaBrowserCompat.MediaItem(
+        MediaDescriptionCompat.Builder()
+            .setTitle(this.description.title)
+            .setMediaId(this.description.mediaId)
+            .setSubtitle(this.description.subtitle)
+            .setDescription(this.description.description)
+            .setIconUri(this.description.iconUri)
+            .setMediaUri(this.description.mediaUri)
+            .setExtras(this.bundle).build(),
+        MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+    )
 }
 
 fun MediaMetadataCompat.saveTo(pref: SharedPreferences) {

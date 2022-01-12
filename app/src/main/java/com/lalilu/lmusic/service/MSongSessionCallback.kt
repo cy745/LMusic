@@ -1,36 +1,20 @@
 package com.lalilu.lmusic.service
 
-import android.media.AudioManager
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import com.lalilu.lmusic.Config.ACTION_PLAY_PAUSE
-import com.lalilu.lmusic.manager.LMusicAudioFocusManager
+import com.lalilu.lmusic.service.playback.MSongPlaybackFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @ExperimentalCoroutinesApi
 @Singleton
-class LMusicSessionCompactCallback
+class MSongSessionCallback
 @Inject constructor(
-    val playback: MSongPlayback,
+    val playback: MSongPlaybackFlow,
     val mediaSession: MediaSessionCompat,
-    mAudioFocusManager: LMusicAudioFocusManager,
-) : MediaSessionCompat.Callback(),
-    AudioManager.OnAudioFocusChangeListener {
-
-    init {
-        mAudioFocusManager.onAudioFocusChangeListener = this
-    }
-
-    override fun onAudioFocusChange(focusChange: Int) {
-        when (focusChange) {
-            AudioManager.AUDIOFOCUS_LOSS,
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                playback.pause()
-            }
-        }
-    }
+) : MediaSessionCompat.Callback() {
 
     override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
         playback.playByMediaId(mediaId)
