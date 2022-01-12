@@ -16,10 +16,13 @@ import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.manager.LMusicNotificationManager.Companion.NOTIFICATION_PLAYER_ID
 import com.lalilu.lmusic.manager.MusicNoisyReceiver
+import com.lalilu.lmusic.service.playback.Playback
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -27,17 +30,7 @@ import kotlin.coroutines.CoroutineContext
 @ExperimentalCoroutinesApi
 class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
     Playback.OnPlayerCallback, MusicNoisyReceiver.OnBecomingNoisyListener {
-
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-
-    @Inject
-    lateinit var dataModule: DataModule
-
-    @Inject
-    lateinit var mSessionCallback: LMusicSessionCompactCallback
-
-    @Inject
-    lateinit var mNotificationManager: LMusicNotificationManager
 
     @Inject
     @SessionActivityPendingIntent
@@ -48,6 +41,16 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
 
     @Inject
     lateinit var noisyReceiver: MusicNoisyReceiver
+
+    @Inject
+    lateinit var mNotificationManager: LMusicNotificationManager
+
+    @Inject
+    lateinit var dataModule: DataModule
+
+    @Inject
+    lateinit var mSessionCallback: MSongSessionCallback
+
 
     override fun onCreate() {
         super.onCreate()
@@ -130,17 +133,13 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         var loaded = false
-        if (dataModule.nowPlaylistMediaItemLiveData.hasObservers())
-            dataModule.nowPlaylistMediaItemLiveData.removeObserver {}
-
-        dataModule.nowPlaylistMediaItemLiveData.observeForever {
-            if (loaded) return@observeForever
+        launch(Dispatchers.IO) {
             mediaSession.setPlaybackState(mediaSession.controller.playbackState)
             mediaSession.setMetadata(mediaSession.controller.metadata)
-            result.sendResult(it?.toMutableList())
+            val mediaItems = dataModule.nowPlaylistMediaItemFlow.first()
+            result.sendResult(mediaItems.toMutableList())
             loaded = true
         }
-
         if (!loaded) result.detach()
     }
 

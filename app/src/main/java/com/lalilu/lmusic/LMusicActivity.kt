@@ -52,17 +52,12 @@ class LMusicActivity : DataBindingActivity() {
 //        }
     }
 
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.appbar_search -> mEvent.collapseAppbarLayout()
             R.id.appbar_scan_song -> {
-                songScanner.setScanFailed {
-                    ToastUtil.text("[提示信息]: $it").show(this)
-                }.setScanFinish {
+                songScanner.setScanFinish {
                     ToastUtil.text("[扫描完成]: 共计$it 首歌曲被添加至Worker").show(this)
-                    playerModule.disconnect()
-                    playerModule.connect()
                 }.scanStart(this)
             }
         }

@@ -1,8 +1,6 @@
 package com.lalilu.lmusic.event
 
 import android.content.Context
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.LiveData
@@ -17,12 +15,11 @@ import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.adapter.node.SecondNode
 import com.lalilu.lmusic.database.LMusicDataBase
 import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.domain.entity.MSongDetail
 import com.lalilu.lmusic.domain.entity.PlaylistWithSongs
 import com.lalilu.lmusic.manager.LMusicNotificationManager
-import com.lalilu.lmusic.utils.Mathf
-import com.lalilu.lmusic.utils.getLastMediaMetadata
-import com.lalilu.lmusic.utils.getLastPlaybackState
+import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -44,7 +41,7 @@ class DataModule @Inject constructor(
     )
 
     fun changePlaylistById(id: Long) = launch {
-        _nowPlaylistId.emit(id)
+        _playlistId.emit(id)
     }
 
     fun updatePlaybackState(playbackStateCompat: PlaybackStateCompat?) = launch {
@@ -72,63 +69,34 @@ class DataModule @Inject constructor(
         MutableStateFlow(sharedPref.getLastMediaMetadata())
     private val _repeatMode: MutableStateFlow<Int> =
         MutableStateFlow(sharedPref.getInt(LAST_REPEAT_MODE, 0))
+    private val _playlistId: MutableStateFlow<Long> =
+        MutableStateFlow(sharedPref.getLong(LAST_PLAYLIST_ID, 0L))
 
+    val repeatModeFlow: Flow<Int> = _repeatMode
     val repeatMode: LiveData<Int> = _repeatMode.asLiveData()
     val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
-    val playbackState: LiveData<PlaybackStateCompat?> = _playBackState.asLiveData()
+    val mediaId: Flow<String?> = _metadata.mapLatest { it?.description?.mediaId }
 
     /***************************************/
     /**     PIN： 获取正在播放的歌单        **/
     /***************************************/
     /**
-     * 1.当前正在播放的歌单的ID
+     * 2.根据当前歌单ID从数据库获取对应歌单的歌曲并转换成 List<MSong>
      */
-    private val _nowPlaylistId: MutableStateFlow<Long> =
-        MutableStateFlow(sharedPref.getLong(LAST_PLAYLIST_ID, 0L))
-
-    /**
-     * 2.根据当前歌单ID从数据库获取对应歌单的歌曲并转换成 List<MediaMetadataCompat>
-     */
-    private val _nowPlaylistMetadata: Flow<List<MediaMetadataCompat>> =
-        _nowPlaylistId.flatMapLatest {
+    private val _nowPlaylistMetadata: Flow<List<MSong>> =
+        _playlistId.flatMapLatest {
             database.playlistDao().getByIdFlow(it).mapLatest { playlist ->
-                playlist?.songs?.map { song ->
-                    song.toMediaMetadataCompat()
-                } ?: ArrayList()
+                playlist?.songs ?: ArrayList()
             }
         }
 
-    /**
-     * 3.将 List<MediaMetadataCompat> 公开给其他位置使用
-     */
-    val nowPlaylistMetadataFlow: Flow<List<MediaMetadataCompat>> = _nowPlaylistMetadata
+    // 3.将 List<MSong> 公开给其他位置使用
+    val nowPlaylistMetadataFlow: Flow<List<MSong>> = _nowPlaylistMetadata
 
-    /**
-     *  4.将 MediaMetadataCompat 转换成 MediaItem
-     */
-    private val _nowPlaylistMediaItemFlow: Flow<List<MediaBrowserCompat.MediaItem>> =
-        _nowPlaylistMetadata.mapLatest {
-            it.map { metadata ->
-                MediaBrowserCompat.MediaItem(
-                    MediaDescriptionCompat.Builder()
-                        .setTitle(metadata.description.title)
-                        .setMediaId(metadata.description.mediaId)
-                        .setSubtitle(metadata.description.subtitle)
-                        .setDescription(metadata.description.description)
-                        .setIconUri(metadata.description.iconUri)
-                        .setMediaUri(metadata.description.mediaUri)
-                        .setExtras(metadata.bundle).build(),
-                    MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
-                )
-            }
-        }
-
-    /**
-     * 5.将 List<MediaBrowserCompat.MediaItem> 公开给其他位置使用
-     */
-    val nowPlaylistMediaItemLiveData: LiveData<List<MediaBrowserCompat.MediaItem>> =
-        _nowPlaylistMediaItemFlow.asLiveData()
-
+    // 4.将 MSong 转换成 MediaItem
+    val nowPlaylistMediaItemFlow = _nowPlaylistMetadata.mapLatest { list ->
+        list.map { it.toMediaMetadataCompat().toMediaItem() }
+    }
 
     /***************************************/
     /**    PIN： 获取所有歌单并转换         **/
