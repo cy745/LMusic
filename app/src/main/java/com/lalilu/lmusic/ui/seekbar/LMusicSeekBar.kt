@@ -13,6 +13,8 @@ class LMusicSeekBar @JvmOverloads constructor(
 
     override fun updatePosition(position: Long) {
         if (!touching) {
+            if (position > sumDuration) return
+
             nowDuration = position
             progress = nowDuration.toDouble() / sumDuration.toDouble()
             when (progress) {

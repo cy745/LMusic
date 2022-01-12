@@ -163,9 +163,9 @@ class DataModule @Inject constructor(
     /**
      * 1.从数据库获取指定歌曲的歌词
      */
-    private val _songDetail: Flow<MSongDetail?> = _metadata.flatMapLatest {
-        database.songDetailDao().getByIdStrFlow(it?.description?.mediaId ?: "0")
-    }
+    private val _songDetail: Flow<MSongDetail?> = _metadata.mapLatest {
+        database.songDetailDao().getByIdStr(it?.description?.mediaId ?: "0")
+    }.flowOn(Dispatchers.IO)
 
     /**
      * 2.将 MSongDetail 公开给其他位置使用
@@ -204,9 +204,7 @@ class DataModule @Inject constructor(
      * 5.提取 LyricEntry 的歌词为 String
      */
     private val singleLyric = _singleLyric.flatMapLatest {
-        flow {
-            it?.let { emit(it) }
-        }
+        flow { it?.let { emit(it) } }
     }
 
     /**
@@ -214,9 +212,7 @@ class DataModule @Inject constructor(
      */
     init {
         launch {
-            singleLyric.collect {
-                notificationManager.updateLyric(it)
-            }
+            singleLyric.collect { notificationManager.updateLyric(it) }
         }
     }
 

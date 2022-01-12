@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils.scanner
+package com.lalilu.lmusic.scanner
 
 import android.content.Context
 import android.database.Cursor

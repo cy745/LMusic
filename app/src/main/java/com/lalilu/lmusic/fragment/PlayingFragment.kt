@@ -2,6 +2,7 @@ package com.lalilu.lmusic.fragment
 
 import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.BR
@@ -107,9 +108,9 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 
         mActivity?.setSupportActionBar(fmToolbar)
 
-        WorkManager.getInstance(requireContext()).getWorkInfosByTagLiveData("Song_Scan")
+        WorkManager.getInstance(requireContext()).getWorkInfosByTagLiveData("Save_Song")
             .observe(viewLifecycleOwner) { list ->
-                fmTips.text = list.size.toString()
+                fmTips.text = list.filter { it.state == WorkInfo.State.SUCCEEDED }.size.toString()
             }
     }
 

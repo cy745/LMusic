@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy.REPLACE
 import androidx.room.Query
 import com.lalilu.lmusic.domain.entity.MSongDetail
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MSongDetailDao {
@@ -17,9 +16,6 @@ interface MSongDetailDao {
 
     @Query("SELECT * FROM m_song_detail WHERE song_id = :songId")
     fun getByIdStr(songId: String): MSongDetail?
-
-    @Query("SELECT * FROM m_song_detail WHERE song_id = :songId")
-    fun getByIdStrFlow(songId: String): Flow<MSongDetail?>
 
     @Insert(onConflict = REPLACE)
     fun save(songDetail: MSongDetail)
