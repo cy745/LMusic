@@ -17,7 +17,7 @@ import com.lalilu.lmusic.service.LMusicPlayerModule
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.ToastUtil
-import com.lalilu.lmusic.utils.scanner.MSongScanner
+import com.lalilu.lmusic.scanner.MSongScanner
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
@@ -57,7 +57,7 @@ class LMusicActivity : DataBindingActivity() {
             R.id.appbar_search -> mEvent.collapseAppbarLayout()
             R.id.appbar_scan_song -> {
                 songScanner.setScanFinish {
-                    ToastUtil.text("[扫描完成]: 共计$it 首歌曲被添加至Worker").show(this)
+                    ToastUtil.text("[扫描完成]: 共计 $it 首歌曲被添加至Worker").show(this)
                 }.scanStart(this)
             }
         }
