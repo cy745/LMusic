@@ -51,7 +51,7 @@ class MainFragment : DataBindingFragment() {
         if (child is RecyclerView) child.overScrollMode = View.OVER_SCROLL_NEVER
 
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
-        playerModule.metadata.observe(viewLifecycleOwner) {
+        playerModule.metadataLiveData.observe(viewLifecycleOwner) {
             if (it == null) return@observe
             val sum = it.getLong(MediaMetadata.METADATA_KEY_DURATION)
             seekBar.setSumDuration(sum)
