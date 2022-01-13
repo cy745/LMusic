@@ -2,7 +2,6 @@ package com.lalilu.lmusic.binding_adapter
 
 import android.content.Context
 import android.net.Uri
-import android.support.v4.media.MediaBrowserCompat
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.MutableLiveData
@@ -16,6 +15,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.ui.drawee.PaletteDraweeView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
@@ -76,13 +76,13 @@ fun setLPlayLists(recyclerView: RecyclerView, list: List<FirstNode<MPlaylist>>?)
     (recyclerView.adapter as BaseNodeAdapter).setList(list)
 }
 
-fun MSongPlayingAdapter.setMediaItems(list: List<MediaBrowserCompat.MediaItem>?) {
+fun MSongPlayingAdapter.setItems(list: List<MSong>?) {
     list ?: return
 
     if (this.data.size > 0) {
-        val id = this.data[0].mediaId
+        val id = this.data[0].songId
         this.setDiffNewData(list.toMutableList()) {
-            if (list.isNotEmpty() && id != list.toMutableList()[0].mediaId) {
+            if (list.isNotEmpty() && id != list.toMutableList()[0].songId) {
                 recyclerView.scrollToPosition(0)
             }
         }

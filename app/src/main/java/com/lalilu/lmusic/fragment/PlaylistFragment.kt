@@ -12,7 +12,7 @@ import com.lalilu.lmusic.domain.entity.MPlaylist
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.SharedViewModel
-import com.lalilu.lmusic.service.LMusicPlayerModule
+import com.lalilu.lmusic.event.LMusicPlayerModule
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
