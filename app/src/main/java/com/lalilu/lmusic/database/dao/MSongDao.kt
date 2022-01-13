@@ -4,6 +4,7 @@ import androidx.room.*
 import com.lalilu.lmusic.domain.entity.FullSongInfo
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.domain.entity.MSongUpdateCoverUri
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MSongDao {
@@ -12,6 +13,9 @@ interface MSongDao {
 
     @Query("SELECT * FROM m_song")
     fun getAll(): List<MSong>
+
+    @Query("SELECT * FROM m_song")
+    fun getAllFlow(): Flow<List<MSong>>
 
     @Transaction
     @Query("SELECT * FROM m_song")

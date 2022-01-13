@@ -16,7 +16,7 @@
 
         <variable
             name="playerModule"
-            type="com.lalilu.lmusic.service.LMusicPlayerModule" />
+            type="com.lalilu.lmusic.event.LMusicPlayerModule" />
 
     </data>
 

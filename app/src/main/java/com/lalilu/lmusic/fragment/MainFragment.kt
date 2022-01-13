@@ -12,7 +12,7 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.SharedViewModel
-import com.lalilu.lmusic.service.LMusicPlayerModule
+import com.lalilu.lmusic.event.LMusicPlayerModule
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarListenerAdapter
 import com.lalilu.lmusic.utils.HapticUtils
 import dagger.hilt.android.AndroidEntryPoint

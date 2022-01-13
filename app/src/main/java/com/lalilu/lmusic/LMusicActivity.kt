@@ -13,7 +13,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.base.DataBindingActivity
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.event.SharedViewModel
-import com.lalilu.lmusic.service.LMusicPlayerModule
+import com.lalilu.lmusic.event.LMusicPlayerModule
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.ToastUtil

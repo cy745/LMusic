@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.service
+package com.lalilu.lmusic.event
 
 import android.content.ComponentName
 import android.content.Context
@@ -11,7 +11,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.database.LMusicDataBase
+import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.manager.SearchManager
+import com.lalilu.lmusic.service.MSongService
 import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
@@ -28,7 +31,8 @@ import kotlin.coroutines.CoroutineContext
 @ExperimentalCoroutinesApi
 class LMusicPlayerModule @Inject constructor(
     @ApplicationContext context: Context,
-    private val searchManager: SearchManager
+    private val searchManager: SearchManager,
+    private val database: LMusicDataBase
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -85,8 +89,13 @@ class LMusicPlayerModule @Inject constructor(
             }
         }
 
+    private val _mSongs: Flow<List<MSong>> =
+        mediaItems.combine(database.songDao().getAllFlow()) { items, list ->
+            items.map { item -> list.first { it.songId.toString() == item.mediaId } }
+        }
+
+    val mSongsLiveData: LiveData<List<MSong>> = _mSongs.asLiveData()
     val metadataLiveData: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
-    val mediaItemsLiveData: LiveData<List<MediaBrowserCompat.MediaItem>> = mediaItems.asLiveData()
 
     fun searchFor(keyword: String?) = searchManager.searchFor(keyword)
 
@@ -154,9 +163,7 @@ class LMusicPlayerModule @Inject constructor(
     ): MutableList<MediaBrowserCompat.MediaItem>? {
         mediaId ?: return null
 
-        val nowPosition = oldList.indexOfFirst { item ->
-            item.description.mediaId == mediaId
-        }
+        val nowPosition = oldList.indexOfFirst { it.description.mediaId == mediaId }
         if (nowPosition == -1) return null
 
         return ArrayList(oldList.map { song ->

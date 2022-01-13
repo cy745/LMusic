@@ -13,7 +13,7 @@ import javax.inject.Singleton
 class MSongSessionCallback
 @Inject constructor(
     val playback: MSongPlaybackFlow,
-    val mediaSession: MediaSessionCompat,
+    private val mediaSession: MediaSessionCompat,
 ) : MediaSessionCompat.Callback() {
 
     override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
