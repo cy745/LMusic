@@ -76,10 +76,11 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     }
 
     override fun onViewCreated() {
-        val fmToolbar = (mBinding as FragmentPlayingBinding).fmToolbar
-        val fmLyricViewX = (mBinding as FragmentPlayingBinding).fmLyricViewX
-        val fmAppbarLayout = (mBinding as FragmentPlayingBinding).fmAppbarLayout
-        val fmTips = (mBinding as FragmentPlayingBinding).fmTips
+        val binding = mBinding as FragmentPlayingBinding
+        val fmToolbar = binding.fmToolbar
+        val fmLyricViewX = binding.fmLyricViewX
+        val fmAppbarLayout = binding.fmAppbarLayout
+        val fmTips = binding.fmTips
 
         dataModule.songDetail.observe(viewLifecycleOwner) {
             fmLyricViewX.setLabel("暂无歌词")
@@ -110,7 +111,9 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 
         WorkManager.getInstance(requireContext()).getWorkInfosByTagLiveData("Save_Song")
             .observe(viewLifecycleOwner) { list ->
-                fmTips.text = list.filter { it.state == WorkInfo.State.SUCCEEDED }.size.toString()
+                val size = list.filter { it.state == WorkInfo.State.SUCCEEDED }.size
+                val max = list.size
+                fmTips.text = "$size / $max"
             }
     }
 
