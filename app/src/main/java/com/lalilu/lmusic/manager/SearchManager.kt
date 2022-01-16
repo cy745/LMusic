@@ -9,7 +9,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.pinyin4j.PinyinHelper
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat
@@ -70,8 +72,11 @@ class SearchManager @Inject constructor(
         return PinyinHelper.toHanYuPinyinString(text, format, "", true)
     }
 
-    fun toHiraString(text: String, kanhira: Kanhira): String {
-        return kanhira.convert(text)
+    fun toHiraString(text: String): String {
+        return runBlocking {
+            val kanhira = mKanhira.first() ?: return@runBlocking ""
+            return@runBlocking kanhira.convert(text)
+        }
     }
 
     fun toRomajiString(text: String): String? {

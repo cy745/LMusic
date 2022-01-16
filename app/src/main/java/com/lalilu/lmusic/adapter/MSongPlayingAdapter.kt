@@ -29,7 +29,8 @@ class MSongPlayingAdapter @Inject constructor() :
             oldItem: FullSongInfo,
             newItem: FullSongInfo
         ): Boolean = oldItem.song.songId == newItem.song.songId &&
-                oldItem.song.songTitle == newItem.song.songTitle
+                oldItem.song.songTitle == newItem.song.songTitle &&
+                oldItem.detail?.songCoverUri == newItem.detail?.songCoverUri
     }
 
     override fun convert(
