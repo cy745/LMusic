@@ -13,28 +13,28 @@ import java.io.FileOutputStream
 object BitmapUtils {
     fun saveThumbnailToSandBox(
         context: Context,
-        mediaItemId: Long,
         mediaItemUri: Uri
     ): Uri {
         val path: File = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
 
         try {
-            val file = File("$path/${mediaItemId}")
-            if (file.exists()) return Uri.fromFile(file)
-
             val metadataRetriever = MediaMetadataRetriever()
             metadataRetriever.setDataSource(context, mediaItemUri)
 
-            val embeddedPic = metadataRetriever.embeddedPicture
-                ?: return Uri.EMPTY
-            val outputStream = FileOutputStream("$path/${mediaItemId}")
-            outputStream.write(embeddedPic)
+            val bytes = metadataRetriever.embeddedPicture ?: return Uri.EMPTY
+            val md5 = Md5Utils.getMd5(bytes)
+
+            val file = File("$path/$md5")
+            if (file.exists()) return Uri.fromFile(file)
+
+            val outputStream = FileOutputStream(file)
+            outputStream.write(bytes)
             outputStream.flush()
             outputStream.close()
             metadataRetriever.close()
             metadataRetriever.release()
 
-            return Uri.fromFile(File("$path/${mediaItemId}"))
+            return Uri.fromFile(file)
         } catch (e: Exception) {
             return Uri.EMPTY
         }

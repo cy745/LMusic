@@ -102,7 +102,6 @@ class PaletteDraweeView @JvmOverloads constructor(
         }
 
         val imageRequestBuilder = ImageRequestBuilder.newBuilderWithSource(uri)
-            .setLowestPermittedRequestLevel(ImageRequest.RequestLevel.FULL_FETCH)
             .setProgressiveRenderingEnabled(true)
             .setPostprocessor(postProcessor)
 

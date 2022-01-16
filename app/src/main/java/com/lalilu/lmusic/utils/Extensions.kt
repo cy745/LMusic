@@ -11,6 +11,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.palette.graphics.Palette
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.domain.entity.MSong
+import com.lalilu.lmusic.domain.entity.MSongDetail
 
 fun Palette?.getAutomaticColor(): Int {
     if (this == null) return Color.DKGRAY
@@ -69,22 +70,33 @@ fun Cursor.getSongMimeType(): String {
     return if (index < 0) "" else this.getString(index)
 }
 
-fun MSong.toMediaMetadataCompat(): MediaMetadataCompat {
+fun MSong.toSimpleMetadata(): MediaMetadataCompat {
     val metadata = MediaMetadataCompat.Builder()
         .putString(MediaMetadataCompat.METADATA_KEY_TITLE, this.songTitle)
         .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, this.showingArtist)
         .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, this.albumTitle)
         .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, this.songId.toString())
         .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, this.songDuration)
-        .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, this.songCoverUri.toString())
         .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, this.songUri.toString())
         .putString(Config.MEDIA_MIME_TYPE, this.songMimeType)
-//        if (this.songCoverUri != Uri.EMPTY) {
-//            metadata.putBitmap(
-//                MediaMetadataCompat.METADATA_KEY_ART,
-//                BitmapUtils.loadBitmapFromUri(this.songCoverUri, 500)
-//            )
-//        }
+    return metadata.build()
+}
+
+fun MSong.toFullMetadata(detail: MSongDetail?): MediaMetadataCompat {
+    val metadata = MediaMetadataCompat.Builder()
+        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, this.songTitle)
+        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, this.showingArtist)
+        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, this.albumTitle)
+        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, this.songId.toString())
+        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, this.songDuration)
+        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, this.songUri.toString())
+        .putString(Config.MEDIA_MIME_TYPE, this.songMimeType)
+
+    detail?.let {
+        val bitmap = BitmapUtils.loadBitmapFromUri(it.songCoverUri, 500)
+        metadata.putString(MediaMetadataCompat.METADATA_KEY_ART_URI, it.songCoverUri.toString())
+        metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
+    }
     return metadata.build()
 }
 

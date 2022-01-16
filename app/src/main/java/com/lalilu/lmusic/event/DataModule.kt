@@ -9,15 +9,11 @@ import androidx.lifecycle.asLiveData
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.Config.LAST_PLAYLIST_ID
 import com.lalilu.lmusic.Config.LAST_REPEAT_MODE
-import com.lalilu.lmusic.adapter.node.FirstNode
-import com.lalilu.lmusic.adapter.node.SecondNode
 import com.lalilu.lmusic.database.LMusicDataBase
-import com.lalilu.lmusic.domain.entity.MPlaylist
-import com.lalilu.lmusic.domain.entity.MSong
+import com.lalilu.lmusic.database.repository.RepositoryFactory
+import com.lalilu.lmusic.domain.entity.FullSongInfo
 import com.lalilu.lmusic.domain.entity.MSongDetail
-import com.lalilu.lmusic.domain.entity.PlaylistWithSongs
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -33,6 +29,7 @@ class DataModule @Inject constructor(
     @ApplicationContext context: Context,
     database: LMusicDataBase,
     notificationManager: LMusicNotificationManager,
+    private val repositoryFactory: RepositoryFactory
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -40,9 +37,7 @@ class DataModule @Inject constructor(
         Config.SHARED_PLAYER, Context.MODE_PRIVATE
     )
 
-    fun changePlaylistById(id: Long) = launch {
-        _playlistId.emit(id)
-    }
+    fun changePlaylistById(id: Long) = repositoryFactory.changeId(id)
 
     fun updatePlaybackState(playbackStateCompat: PlaybackStateCompat?) = launch {
         _playBackState.emit(playbackStateCompat)
@@ -69,54 +64,27 @@ class DataModule @Inject constructor(
         MutableStateFlow(sharedPref.getLastMediaMetadata())
     private val _repeatMode: MutableStateFlow<Int> =
         MutableStateFlow(sharedPref.getInt(LAST_REPEAT_MODE, 0))
-    private val _playlistId: MutableStateFlow<Long> =
-        MutableStateFlow(sharedPref.getLong(LAST_PLAYLIST_ID, 0L))
 
     val repeatModeFlow: Flow<Int> = _repeatMode
     val repeatMode: LiveData<Int> = _repeatMode.asLiveData()
-    val metadata: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
     val mediaId: Flow<String?> = _metadata.mapLatest { it?.description?.mediaId }
 
     /***************************************/
     /**     PIN： 获取正在播放的歌单        **/
     /***************************************/
     /**
-     * 2.根据当前歌单ID从数据库获取对应歌单的歌曲并转换成 List<MSong>
+     * 根据当前歌单ID从数据库获取对应歌单的歌曲并转换成 List<MSong>
      */
-    private val _nowPlaylistMetadata: Flow<List<MSong>> =
-        _playlistId.flatMapLatest {
-            database.playlistDao().getByIdFlow(it).mapLatest { playlist ->
-                playlist?.songs ?: ArrayList()
-            }
-        }
+    private val _nowList: Flow<List<FullSongInfo>> = repositoryFactory.list
 
     // 3.将 List<MSong> 公开给其他位置使用
-    val nowPlaylistMetadataFlow: Flow<List<MSong>> = _nowPlaylistMetadata
+    val nowListFlow: Flow<List<FullSongInfo>> = _nowList
+    val nowListLiveData: LiveData<List<FullSongInfo>> = _nowList.asLiveData()
 
     // 4.将 MSong 转换成 MediaItem
-    val nowPlaylistMediaItemFlow = _nowPlaylistMetadata.mapLatest { list ->
-        list.map { it.toMediaMetadataCompat().toMediaItem() }
+    val nowPlaylistMediaItemFlow = _nowList.mapLatest { list ->
+        list.map { it.song.toFullMetadata(it.detail).toMediaItem() }
     }
-
-    /***************************************/
-    /**    PIN： 获取所有歌单并转换         **/
-    /***************************************/
-    /**
-     * 1.从数据库获取所有歌单
-     */
-    private val _allPlaylist: Flow<List<PlaylistWithSongs>> = database.playlistDao().getAllFlow()
-
-    /**
-     * 2.将从数据库获取到的 List<PlaylistWithSongs> 转换成 List<FirstNode<MPlaylist>>
-     */
-    val allPlaylist: LiveData<List<FirstNode<MPlaylist>>> =
-        _allPlaylist.mapLatest { playlists ->
-            playlists.map { playlist ->
-                FirstNode(playlist.songs.map { song ->
-                    SecondNode(null, song)
-                }, playlist.playlist)
-            }
-        }.asLiveData()
 
     /***************************************/
     /**      PIN： 持续计算播放进度         **/

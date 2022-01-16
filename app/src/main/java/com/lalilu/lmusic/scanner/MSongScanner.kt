@@ -101,17 +101,14 @@ class MSongScanner @Inject constructor() : BaseMScanner() {
             "Save_Song_$songId",
             ExistingWorkPolicy.REPLACE,
             saveSongRequest
-        ).then(saveAlbumRequest)
-            .then(saveArtistRequest)
-            .then(saveCoverRequest)
-            .enqueue()
-
-        WorkManager.getInstance(context)
-            .beginUniqueWork(
-                "Save_Lyric_$songId",
-                ExistingWorkPolicy.REPLACE,
+        ).then(
+            listOf(
+                saveAlbumRequest,
+                saveArtistRequest,
+                saveCoverRequest,
                 saveLyricRequest
-            ).enqueue()
+            )
+        ).enqueue()
 
         val taskNum = ++progressCount
         onScanProgress?.invoke(taskNum)

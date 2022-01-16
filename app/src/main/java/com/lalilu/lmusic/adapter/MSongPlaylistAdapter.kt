@@ -2,17 +2,14 @@ package com.lalilu.lmusic.adapter
 
 import androidx.recyclerview.widget.DiffUtil
 import com.chad.library.adapter.base.BaseQuickAdapter
-import com.chad.library.adapter.base.module.DraggableModule
 import com.chad.library.adapter.base.viewholder.BaseDataBindingHolder
 import com.lalilu.R
-import com.lalilu.databinding.ItemPlayingBinding
+import com.lalilu.databinding.ItemPlaylistExpandBinding
 import com.lalilu.lmusic.domain.entity.FullSongInfo
 import javax.inject.Inject
 
-class MSongPlayingAdapter @Inject constructor() :
-    BaseQuickAdapter<FullSongInfo, BaseDataBindingHolder<ItemPlayingBinding>>(
-        R.layout.item_playing
-    ), DraggableModule {
+class MSongPlaylistAdapter @Inject constructor() :
+    BaseQuickAdapter<FullSongInfo, BaseDataBindingHolder<ItemPlaylistExpandBinding>>(R.layout.item_playlist_expand) {
 
     init {
         setDiffCallback(DiffSong())
@@ -33,15 +30,12 @@ class MSongPlayingAdapter @Inject constructor() :
     }
 
     override fun convert(
-        holder: BaseDataBindingHolder<ItemPlayingBinding>,
+        holder: BaseDataBindingHolder<ItemPlaylistExpandBinding>,
         item: FullSongInfo
     ) {
         val binding = holder.dataBinding ?: return
 
         binding.title = item.song.songTitle
-        binding.artist = item.song.showingArtist
-        binding.coverUri = item.detail?.songCoverUri
-        binding.duration = item.song.songDuration
-        binding.mimeType = item.song.songMimeType
     }
 }
+
