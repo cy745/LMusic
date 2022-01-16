@@ -11,7 +11,7 @@ import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.binding_adapter.setItems
-import com.lalilu.lmusic.domain.entity.MSong
+import com.lalilu.lmusic.domain.entity.FullSongInfo
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.LMusicPlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
@@ -63,10 +63,10 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 //        })
 
         mAdapter.setOnItemClickListener { adapter, _, position ->
-            val song = adapter.data[position] as MSong
+            val info = adapter.data[position] as FullSongInfo
 
             playerModule.mediaController?.transportControls
-                ?.playFromMediaId(song.songId.toString(), null)
+                ?.playFromMediaId(info.song.songId.toString(), null)
         }
 
         return DataBindingConfig(R.layout.fragment_playing)
@@ -91,6 +91,7 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             fmLyricViewX.updateTime(position)
         }
         playerModule.mSongsLiveData.observe(viewLifecycleOwner) {
+            println("mSongsLiveData: ${it.size}")
             mAdapter.setItems(it)
         }
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {

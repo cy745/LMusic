@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.database.LMusicDataBase
-import com.lalilu.lmusic.domain.entity.MSong
+import com.lalilu.lmusic.domain.entity.FullSongInfo
 import com.lalilu.lmusic.manager.SearchManager
 import com.lalilu.lmusic.service.MSongService
 import com.lalilu.lmusic.utils.*
@@ -32,7 +32,8 @@ import kotlin.coroutines.CoroutineContext
 class LMusicPlayerModule @Inject constructor(
     @ApplicationContext context: Context,
     private val searchManager: SearchManager,
-    private val database: LMusicDataBase
+    private val database: LMusicDataBase,
+    private val dataModule: DataModule
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -89,20 +90,24 @@ class LMusicPlayerModule @Inject constructor(
             }
         }
 
-    private val _mSongs: Flow<List<MSong>> =
-        mediaItems.combine(database.songDao().getAllFlow()) { items, list ->
-            items.map { item -> list.first { it.songId.toString() == item.mediaId } }
-        }
+    //    private val _mSongs: Flow<List<FullSongInfo>> =
+//        mediaItems.combine(database.songDao().getAllFullSongFlow()) { items, list ->
+//            items.map { item -> list.first { it.song.songId.toString() == item.mediaId } }
+//        }
+    private val _mSongs = dataModule.nowListFlow.combine(_metadata) { items, metadata ->
+        listOrderChanges(items, metadata.description.mediaId) { item, id ->
+            item.song.songId.toString() == id
+        } ?: items
+    }
 
-    val mSongsLiveData: LiveData<List<MSong>> = _mSongs.asLiveData()
+    val mSongsLiveData: LiveData<List<FullSongInfo>> = _mSongs.asLiveData()
     val metadataLiveData: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
 
     fun searchFor(keyword: String?) = searchManager.searchFor(keyword)
 
     fun connect() {
-        if (!mediaBrowser.isConnected) {
-            mediaBrowser.connect()
-        }
+        if (mediaBrowser.isConnected) mediaBrowser.disconnect()
+        if (!mediaBrowser.isConnected) mediaBrowser.connect()
     }
 
     fun disconnect() {
@@ -155,6 +160,21 @@ class LMusicPlayerModule @Inject constructor(
                 logger.info("[MusicControllerCallback]#onMetadataChanged: ${metadata.description?.title}")
             }
         }
+    }
+
+    private fun <T, K> listOrderChanges(
+        list: List<T>,
+        Id: K?,
+        checkIsSame: (T, K) -> Boolean
+    ): MutableList<T>? {
+        Id ?: return null
+
+        val nowPosition = list.indexOfFirst { checkIsSame(it, Id) }
+        if (nowPosition == -1) return null
+
+        return ArrayList(list.map { item ->
+            list[Mathf.clampInLoop(0, list.size - 1, list.indexOf(item), nowPosition)]
+        })
     }
 
     private fun listOrderChange(

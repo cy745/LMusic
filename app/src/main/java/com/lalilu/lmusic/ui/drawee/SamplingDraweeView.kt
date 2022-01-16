@@ -18,11 +18,6 @@ class SamplingDraweeView @JvmOverloads constructor(
     override fun setImageURI(uri: Uri?, callerContext: Any?) {
         if (uri == null) return
 
-        callerContext?.let {
-            controllerBuilder.setOldController(controller)
-                .setCallerContext(callerContext)
-        }
-
         val imageRequestBuilder = ImageRequestBuilder.newBuilderWithSource(uri)
             .setResizeOptions(ResizeOptions(samplingValue, samplingValue))
 

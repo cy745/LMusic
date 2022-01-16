@@ -26,9 +26,6 @@ data class MSong(
     @ColumnInfo(name = "song_duration")
     val songDuration: Long,
 
-    @ColumnInfo(name = "song_cover_uri")
-    var songCoverUri: Uri = Uri.EMPTY,
-
     @ColumnInfo(name = "showing_artist")
     val showingArtist: String = "",
 
@@ -50,10 +47,3 @@ data class MSong(
         return songId.hashCode()
     }
 }
-
-data class MSongUpdateCoverUri(
-    @ColumnInfo(name = "song_id")
-    val songId: Long,
-    @ColumnInfo(name = "song_cover_uri")
-    val songCoverUri: Uri
-)

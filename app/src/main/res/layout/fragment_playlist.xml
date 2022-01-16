@@ -7,11 +7,8 @@
 
         <variable
             name="playlistAdapter"
-            type="com.lalilu.lmusic.adapter.LMusicPlaylistAdapter" />
+            type="com.lalilu.lmusic.adapter.MSongPlaylistAdapter" />
 
-        <variable
-            name="dataModule"
-            type="com.lalilu.lmusic.event.DataModule" />
     </data>
 
     <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
@@ -22,11 +19,9 @@
         android:clipToPadding="false"
         android:fillViewport="true"
         android:overScrollMode="never"
-        android:paddingTop="20dp"
         android:paddingBottom="128dp"
         app:adapter="@{playlistAdapter}"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:setPlayLists="@{dataModule.allPlaylist}"
         tools:listitem="@layout/item_playlist" />
 </layout>
 

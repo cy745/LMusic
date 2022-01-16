@@ -1,10 +1,7 @@
 package com.lalilu.lmusic.database.repository
 
 import android.net.Uri
-import com.lalilu.lmusic.database.dao.MAlbumDao
-import com.lalilu.lmusic.database.dao.MRelationDao
-import com.lalilu.lmusic.database.dao.MSongDao
-import com.lalilu.lmusic.database.dao.MSongDetailDao
+import com.lalilu.lmusic.database.dao.*
 import com.lalilu.lmusic.domain.entity.*
 import javax.inject.Inject
 
@@ -27,5 +24,8 @@ class ScannerRepository @Inject constructor(
         relationDao.savePlaylistXSong(playlist, song)
 
     fun updateSongCoverUri(songId: Long, songCoverUri: Uri) =
-        songDao.updateCoverUri(MSongUpdateCoverUri(songId, songCoverUri))
+        songDetailDao.updateCoverUri(MSongDetailUpdateCoverUri(songId, songCoverUri))
+
+    fun updateSongLyric(songId: Long, lyric: String, songSize: Long, songData: String) =
+        songDetailDao.updateLyric(MSongDetailUpdateLyric(songId, lyric, songSize, songData))
 }

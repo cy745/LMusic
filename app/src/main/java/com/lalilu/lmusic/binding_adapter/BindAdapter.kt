@@ -14,8 +14,8 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.adapter.node.FirstNode
+import com.lalilu.lmusic.domain.entity.FullSongInfo
 import com.lalilu.lmusic.domain.entity.MPlaylist
-import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.ui.drawee.PaletteDraweeView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
@@ -76,13 +76,13 @@ fun setLPlayLists(recyclerView: RecyclerView, list: List<FirstNode<MPlaylist>>?)
     (recyclerView.adapter as BaseNodeAdapter).setList(list)
 }
 
-fun MSongPlayingAdapter.setItems(list: List<MSong>?) {
+fun MSongPlayingAdapter.setItems(list: List<FullSongInfo>?) {
     list ?: return
 
     if (this.data.size > 0) {
-        val id = this.data[0].songId
+        val id = this.data[0].song.songId
         this.setDiffNewData(list.toMutableList()) {
-            if (list.isNotEmpty() && id != list.toMutableList()[0].songId) {
+            if (list.isNotEmpty() && id != list.toMutableList()[0].song.songId) {
                 recyclerView.scrollToPosition(0)
             }
         }

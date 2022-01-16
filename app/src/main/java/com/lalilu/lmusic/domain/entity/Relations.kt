@@ -36,7 +36,7 @@ data class ArtistWithSongs(
 
 
 /**
- * 获取某一首个的所有相关信息
+ * 获取某一首歌曲的所有相关信息
  */
 data class FullSongInfo(
     @Embedded val song: MSong,
@@ -46,19 +46,19 @@ data class FullSongInfo(
         entityColumn = "artist_name",
         associateBy = Junction(ArtistSongCrossRef::class)
     )
-    val artists: List<MArtist>,
+    val artists: List<MArtist> = ArrayList(),
 
     @Relation(
         parentColumn = "album_id",
         entityColumn = "album_id",
     )
-    val album: MAlbum,
+    val album: MAlbum? = null,
 
     @Relation(
         parentColumn = "song_id",
         entityColumn = "song_id",
     )
-    val detail: MSongDetail
+    val detail: MSongDetail? = null
 )
 
 

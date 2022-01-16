@@ -132,15 +132,13 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        var loaded = false
         launch(Dispatchers.IO) {
             mediaSession.setPlaybackState(mediaSession.controller.playbackState)
             mediaSession.setMetadata(mediaSession.controller.metadata)
             val mediaItems = dataModule.nowPlaylistMediaItemFlow.first()
             result.sendResult(mediaItems.toMutableList())
-            loaded = true
         }
-        if (!loaded) result.detach()
+        result.detach()
     }
 
     override fun onGetRoot(

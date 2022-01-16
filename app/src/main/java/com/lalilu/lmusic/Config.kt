@@ -14,6 +14,9 @@ object Config {
     const val LAST_POSITION = "LAST_POSITION"
     const val LAST_REPEAT_MODE = "LAST_REPEAT_MODE"
 
+    const val LAST_LIST_ID = "LAST_LIST_ID"
+    const val LAST_LIST_TYPE = "LAST_LIST_TYPE"
+
     const val SHARED_PLAYER = "SHARED_PLAYER"
 
 

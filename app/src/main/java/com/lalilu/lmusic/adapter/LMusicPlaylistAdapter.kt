@@ -54,7 +54,7 @@ class LMusicPlaylistAdapter @Inject constructor() : BaseNodeAdapter() {
             if (playlistUri == Uri.EMPTY) {
                 (item.childNode as List<*>)[0]?.let {
                     val song = (it as SecondNode<*>).data as MSong
-                    playlistUri = song.songCoverUri
+//                    playlistUri = song.songCoverUri
                 }
             }
 

@@ -5,7 +5,6 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.lalilu.lmusic.database.repository.ScannerRepository
-import com.lalilu.lmusic.domain.entity.MSongDetail
 import com.lalilu.lmusic.utils.ThreadPoolUtils
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -37,13 +36,11 @@ class SaveLyricWorker @AssistedInject constructor(
 
             if (songData == null) Result.failure()
 
-            val audioTag = AudioFileIO.read(File(songData!!)).tag
+            val audioTag = AudioFileIO.readMagic(File(songData!!)).tag
             val lyric = audioTag.getFields(FieldKey.LYRICS).run {
                 if (isNotEmpty()) get(0).toString() else ""
             }
-            repository.saveSongDetail(
-                MSongDetail(songId, lyric, songSize, songData)
-            )
+            repository.updateSongLyric(songId, lyric, songSize, songData)
             Result.success()
         } catch (e: Exception) {
             Result.failure()

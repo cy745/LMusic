@@ -9,6 +9,7 @@ import androidx.work.workDataOf
 import com.lalilu.lmusic.database.repository.ScannerRepository
 import com.lalilu.lmusic.domain.entity.MPlaylist
 import com.lalilu.lmusic.domain.entity.MSong
+import com.lalilu.lmusic.domain.entity.MSongDetail
 import com.lalilu.lmusic.utils.ThreadPoolUtils
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -42,12 +43,11 @@ class ScannerWorker @AssistedInject constructor(
                 songTitle = songTitle!!,
                 songDuration = songDuration,
                 showingArtist = artistName!!,
-                songCoverUri = Uri.EMPTY,
                 songMimeType = songMimeType!!
             )
 
             repository.savePlaylistXSong(MPlaylist(0), song)
-
+            repository.saveSongDetail(MSongDetail(songId))
             Result.success(workDataOf("msg" to songTitle))
         } catch (e: Exception) {
             Result.failure(workDataOf("msg" to e.message))
