@@ -36,7 +36,7 @@ class SaveLyricWorker @AssistedInject constructor(
 
             if (songData == null) Result.failure()
 
-            val audioTag = AudioFileIO.readMagic(File(songData!!)).tag
+            val audioTag = AudioFileIO.read(File(songData!!)).tag
             val lyric = audioTag.getFields(FieldKey.LYRICS).run {
                 if (isNotEmpty()) get(0).toString() else ""
             }
