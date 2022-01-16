@@ -11,7 +11,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.database.LMusicDataBase
 import com.lalilu.lmusic.domain.entity.FullSongInfo
 import com.lalilu.lmusic.manager.SearchManager
 import com.lalilu.lmusic.service.MSongService
@@ -31,9 +30,8 @@ import kotlin.coroutines.CoroutineContext
 @ExperimentalCoroutinesApi
 class LMusicPlayerModule @Inject constructor(
     @ApplicationContext context: Context,
-    private val searchManager: SearchManager,
-    private val database: LMusicDataBase,
-    private val dataModule: DataModule
+    dataModule: DataModule,
+    private val searchManager: SearchManager
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -55,14 +53,18 @@ class LMusicPlayerModule @Inject constructor(
     private val _playBackState = MutableStateFlow(sharedPref.getLastPlaybackState())
     private val _mediaItems: MutableStateFlow<MutableList<MediaBrowserCompat.MediaItem>> =
         MutableStateFlow(ArrayList())
-    private val mediaItems: Flow<List<MediaBrowserCompat.MediaItem>> =
-        _mediaItems.combine(_metadata) { items, metadata ->
-            listOrderChange(items, metadata.description?.mediaId) ?: items
-        }.combine(searchManager.mKanhira) { items, kanhira ->
-            if (kanhira == null) return@combine items
 
-            items.onEach {
-                val originStr = "${it.description.title} ${it.description.subtitle}"
+    private val _mSongs: Flow<List<FullSongInfo>> =
+        dataModule.nowListFlow.combine(_metadata) { items, metadata ->
+            listOrderChanges(items, metadata.description.mediaId) { item, id ->
+                item.song.songId.toString() == id
+            } ?: items
+        }.combine(searchManager.keyword) { items, keyword ->
+            if (keyword == null || TextUtils.isEmpty(keyword)) return@combine items
+            val keywords = keyword.split(" ")
+
+            items.filter {
+                val originStr = "${it.song.songTitle} ${it.song.showingArtist}"
                 var resultStr = originStr
                 val isContainChinese = searchManager.isContainChinese(originStr)
                 val isContainKatakanaOrHinagana =
@@ -73,32 +75,13 @@ class LMusicPlayerModule @Inject constructor(
                         resultStr = "$resultStr $chinese"
                     }
 
-                    val japanese = searchManager.toHiraString(originStr, kanhira)
+                    val japanese = searchManager.toHiraString(originStr)
                     val romaji = searchManager.toRomajiString(japanese)
                     resultStr = "$resultStr $romaji"
                 }
-                it.description.extras?.putString("searchStr", resultStr)
-            }
-        }.combine(searchManager.keyword) { items, keyword ->
-            if (keyword == null || TextUtils.isEmpty(keyword)) return@combine items
-
-            val keywords = keyword.split(" ")
-
-            return@combine items.filter { item ->
-                val originStr = item.description.extras?.getString("searchStr")
-                searchManager.checkKeywords(originStr, keywords)
+                searchManager.checkKeywords(resultStr, keywords)
             }
         }
-
-    //    private val _mSongs: Flow<List<FullSongInfo>> =
-//        mediaItems.combine(database.songDao().getAllFullSongFlow()) { items, list ->
-//            items.map { item -> list.first { it.song.songId.toString() == item.mediaId } }
-//        }
-    private val _mSongs = dataModule.nowListFlow.combine(_metadata) { items, metadata ->
-        listOrderChanges(items, metadata.description.mediaId) { item, id ->
-            item.song.songId.toString() == id
-        } ?: items
-    }
 
     val mSongsLiveData: LiveData<List<FullSongInfo>> = _mSongs.asLiveData()
     val metadataLiveData: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
@@ -174,23 +157,6 @@ class LMusicPlayerModule @Inject constructor(
 
         return ArrayList(list.map { item ->
             list[Mathf.clampInLoop(0, list.size - 1, list.indexOf(item), nowPosition)]
-        })
-    }
-
-    private fun listOrderChange(
-        oldList: List<MediaBrowserCompat.MediaItem>,
-        mediaId: String?
-    ): MutableList<MediaBrowserCompat.MediaItem>? {
-        mediaId ?: return null
-
-        val nowPosition = oldList.indexOfFirst { it.description.mediaId == mediaId }
-        if (nowPosition == -1) return null
-
-        return ArrayList(oldList.map { song ->
-            val position = Mathf.clampInLoop(
-                0, oldList.size - 1, oldList.indexOf(song), nowPosition
-            )
-            oldList[position]
         })
     }
 }
