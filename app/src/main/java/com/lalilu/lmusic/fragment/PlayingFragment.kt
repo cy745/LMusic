@@ -91,7 +91,6 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             fmLyricViewX.updateTime(position)
         }
         playerModule.mSongsLiveData.observe(viewLifecycleOwner) {
-            println("mSongsLiveData: ${it.size}")
             mAdapter.setItems(it)
         }
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
