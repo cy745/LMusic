@@ -21,8 +21,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -132,13 +130,9 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        launch(Dispatchers.IO) {
-            mediaSession.setPlaybackState(mediaSession.controller.playbackState)
-            mediaSession.setMetadata(mediaSession.controller.metadata)
-            val mediaItems = dataModule.nowPlaylistMediaItemFlow.first()
-            result.sendResult(mediaItems.toMutableList())
-        }
-        result.detach()
+        mediaSession.setPlaybackState(mediaSession.controller.playbackState)
+        mediaSession.setMetadata(mediaSession.controller.metadata)
+        result.sendResult(ArrayList())
     }
 
     override fun onGetRoot(

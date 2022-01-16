@@ -34,7 +34,6 @@ class LMusicPlayerModule @Inject constructor(
     private val searchManager: SearchManager
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-
     private val logger = Logger.getLogger(this.javaClass.name)
     private val sharedPref = context.getSharedPreferences(
         Config.SHARED_PLAYER, Context.MODE_PRIVATE
@@ -51,8 +50,6 @@ class LMusicPlayerModule @Inject constructor(
 
     private val _metadata = MutableStateFlow(sharedPref.getLastMediaMetadata())
     private val _playBackState = MutableStateFlow(sharedPref.getLastPlaybackState())
-    private val _mediaItems: MutableStateFlow<MutableList<MediaBrowserCompat.MediaItem>> =
-        MutableStateFlow(ArrayList())
 
     private val _mSongs: Flow<List<FullSongInfo>> =
         dataModule.nowListFlow.combine(_metadata) { items, metadata ->
@@ -120,10 +117,7 @@ class LMusicPlayerModule @Inject constructor(
             parentId: String,
             children: MutableList<MediaBrowserCompat.MediaItem>
         ) {
-            launch {
-                _mediaItems.emit(children)
-                logger.info("[MusicSubscriptionCallback]#onChildrenLoaded: $parentId")
-            }
+            logger.info("[MusicSubscriptionCallback]#onChildrenLoaded: $parentId")
         }
     }
 
@@ -131,7 +125,6 @@ class LMusicPlayerModule @Inject constructor(
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             launch {
                 _playBackState.emit(state ?: return@launch)
-                state.saveTo(sharedPref)
                 logger.info("[MusicControllerCallback]#onPlaybackStateChanged: ${state.state} ${state.position}")
             }
         }
@@ -139,7 +132,6 @@ class LMusicPlayerModule @Inject constructor(
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             launch {
                 _metadata.emit(metadata ?: return@launch)
-                metadata.saveTo(sharedPref)
                 logger.info("[MusicControllerCallback]#onMetadataChanged: ${metadata.description?.title}")
             }
         }
