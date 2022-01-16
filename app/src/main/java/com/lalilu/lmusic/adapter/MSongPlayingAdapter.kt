@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.adapter
 
+import android.text.TextUtils
 import androidx.recyclerview.widget.DiffUtil
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.module.DraggableModule
@@ -30,7 +31,8 @@ class MSongPlayingAdapter @Inject constructor() :
             newItem: FullSongInfo
         ): Boolean = oldItem.song.songId == newItem.song.songId &&
                 oldItem.song.songTitle == newItem.song.songTitle &&
-                oldItem.detail?.songCoverUri == newItem.detail?.songCoverUri
+                oldItem.detail?.songCoverUri == newItem.detail?.songCoverUri &&
+                oldItem.detail?.songLyric == newItem.detail?.songLyric
     }
 
     override fun convert(
@@ -44,5 +46,6 @@ class MSongPlayingAdapter @Inject constructor() :
         binding.coverUri = item.detail?.songCoverUri
         binding.duration = item.song.songDuration
         binding.mimeType = item.song.songMimeType
+        binding.hasLyric = !TextUtils.isEmpty(item.detail?.songLyric)
     }
 }
