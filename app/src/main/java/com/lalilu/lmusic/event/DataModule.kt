@@ -41,10 +41,12 @@ class DataModule @Inject constructor(
 
     fun updatePlaybackState(playbackStateCompat: PlaybackStateCompat?) = launch {
         _playBackState.emit(playbackStateCompat)
+        playbackStateCompat?.saveTo(sharedPref)
     }
 
     fun updateMetadata(metadataCompat: MediaMetadataCompat?) = launch {
         _metadata.emit(metadataCompat)
+        metadataCompat?.saveTo(sharedPref)
     }
 
     fun updateRepeatMode(repeatMode: Int) = launch {
