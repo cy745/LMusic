@@ -99,7 +99,7 @@ class MSongScanner @Inject constructor() : BaseMScanner() {
 
         WorkManager.getInstance(context).beginUniqueWork(
             "Save_Song_$songId",
-            ExistingWorkPolicy.REPLACE,
+            ExistingWorkPolicy.KEEP,
             saveSongRequest
         ).then(
             listOf(

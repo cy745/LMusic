@@ -15,8 +15,9 @@ import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 
-const val LIST_TYPE_ALBUM = 0
-const val LIST_TYPE_PLAYLIST = 1
+const val LIST_TYPE_ALL = 0
+const val LIST_TYPE_ALBUM = 1
+const val LIST_TYPE_PLAYLIST = 2
 
 @Singleton
 @ExperimentalCoroutinesApi
@@ -38,6 +39,7 @@ class RepositoryFactory @Inject constructor(
     val list = _listId.flatMapLatest { id ->
         _listType.flatMapLatest { type ->
             when (type) {
+                // todo 需实现 静态获取歌曲列表，动态获取列表内歌曲信息
                 LIST_TYPE_ALBUM -> repository.albumDao.getFullSongInfoListByIdFlow(id)
                 else -> repository.playlistDao.getFullSongInfoListByIdFlow(id)
             }.mapNotNull { it }

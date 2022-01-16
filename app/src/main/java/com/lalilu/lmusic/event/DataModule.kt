@@ -29,15 +29,13 @@ class DataModule @Inject constructor(
     @ApplicationContext context: Context,
     database: LMusicDataBase,
     notificationManager: LMusicNotificationManager,
-    private val repositoryFactory: RepositoryFactory
+    repositoryFactory: RepositoryFactory
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val sharedPref = context.getSharedPreferences(
         Config.SHARED_PLAYER, Context.MODE_PRIVATE
     )
-
-    fun changePlaylistById(id: Long) = repositoryFactory.changeId(id)
 
     fun updatePlaybackState(playbackStateCompat: PlaybackStateCompat?) = launch {
         _playBackState.emit(playbackStateCompat)
@@ -82,11 +80,6 @@ class DataModule @Inject constructor(
     // 3.将 List<MSong> 公开给其他位置使用
     val nowListFlow: Flow<List<FullSongInfo>> = _nowList
     val nowListLiveData: LiveData<List<FullSongInfo>> = _nowList.asLiveData()
-
-    // 4.将 MSong 转换成 MediaItem
-    val nowPlaylistMediaItemFlow = _nowList.mapLatest { list ->
-        list.map { it.song.toFullMetadata(it.detail).toMediaItem() }
-    }
 
     /***************************************/
     /**      PIN： 持续计算播放进度         **/
