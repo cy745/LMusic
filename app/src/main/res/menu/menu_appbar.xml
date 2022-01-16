@@ -11,19 +11,4 @@
         android:visible="true"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="collapseActionView|ifRoom" />
-    <item
-        android:id="@+id/appbar_create_playlist"
-        android:enabled="true"
-        android:icon="@drawable/ic_play_list_add_line"
-        android:title="@string/text_button_create_playlist"
-        android:visible="false"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/appbar_scan_song"
-        android:checkable="false"
-        android:enabled="true"
-        android:icon="@drawable/ic_scan_line"
-        android:title="@string/text_button_scan_song"
-        android:visible="true"
-        app:showAsAction="ifRoom" />
 </menu>

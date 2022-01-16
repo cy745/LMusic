@@ -25,10 +25,6 @@ abstract class BaseMScanner : MScanner, CoroutineScope {
      *  在扫描过程中依次触发预设的生命周期函数
      */
     override fun scanStart(context: Context) {
-        if (progressCount > 0) {
-            onScanFailed?.invoke("扫描正在进行中！")
-            return
-        }
         try {
             launch(Dispatchers.IO) {
                 val cursor = context.contentResolver.query(
