@@ -102,11 +102,11 @@
             android:id="@+id/song_type"
             android:layout_width="wrap_content"
             android:layout_height="20dp"
+            android:layout_marginEnd="20dp"
             android:contentDescription="@string/audio_type"
             app:iconRec="@{mimeType}"
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
-            app:layout_constraintEnd_toEndOf="@+id/song_duration"
-            app:layout_constraintStart_toStartOf="@+id/song_duration"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:srcCompat="@drawable/ic_flac" />
 
