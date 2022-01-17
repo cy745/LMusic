@@ -6,8 +6,8 @@
     <data>
 
         <variable
-            name="playlistAdapter"
-            type="com.lalilu.lmusic.adapter.MSongPlaylistsAdapter" />
+            name="albumsAdapter"
+            type="com.lalilu.lmusic.adapter.MSongAlbumsAdapter" />
 
     </data>
 
@@ -20,9 +20,10 @@
         android:fillViewport="true"
         android:overScrollMode="never"
         android:paddingBottom="128dp"
-        app:adapter="@{playlistAdapter}"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_playlist" />
+        app:adapter="@{albumsAdapter}"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2"
+        tools:listitem="@layout/item_album" />
 </layout>
 
 

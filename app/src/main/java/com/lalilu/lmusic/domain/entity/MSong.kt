@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.*
 
 @Entity(tableName = "m_song")
 data class MSong(
@@ -31,6 +32,12 @@ data class MSong(
 
     @ColumnInfo(name = "song_mime_type")
     val songMimeType: String = "",
+
+    @ColumnInfo(name = "song_create_time")
+    val songCreateTime: Date = Date(),
+
+    @ColumnInfo(name = "song_last_play_time")
+    val songLastPlayTime: Date = Date()
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

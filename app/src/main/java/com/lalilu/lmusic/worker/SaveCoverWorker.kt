@@ -27,12 +27,14 @@ class SaveCoverWorker @AssistedInject constructor(
     override suspend fun doWork(): Result = withContext(mExecutor.asCoroutineDispatcher()) {
         try {
             val songId = inputData.getLong("songId", -1L)
+            val albumId = inputData.getLong("albumId", -1L)
             val songUri = Uri.parse(inputData.getString("songUri"))
 
             val songCoverUri = BitmapUtils.saveThumbnailToSandBox(
                 applicationContext, songUri
             )
             repository.updateSongCoverUri(songId, songCoverUri)
+            repository.updateAlbumCoverUri(albumId, songCoverUri)
             Result.success()
         } catch (e: Exception) {
             Result.failure()

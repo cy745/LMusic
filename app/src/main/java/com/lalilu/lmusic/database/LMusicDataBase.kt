@@ -18,10 +18,10 @@ import com.lalilu.lmusic.domain.entity.*
         ArtistSongCrossRef::class,
         PlaylistSongCrossRef::class
     ],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
-@TypeConverters(UriConverter::class)
+@TypeConverters(value = [UriConverter::class, DateConverter::class])
 abstract class LMusicDataBase : RoomDatabase() {
     abstract fun songDao(): MSongDao
     abstract fun albumDao(): MAlbumDao

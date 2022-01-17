@@ -26,6 +26,9 @@ class ScannerRepository @Inject constructor(
     fun updateSongCoverUri(songId: Long, songCoverUri: Uri) =
         songDetailDao.updateCoverUri(MSongDetailUpdateCoverUri(songId, songCoverUri))
 
+    fun updateAlbumCoverUri(albumId: Long, songCoverUri: Uri) =
+        albumDao.updateCoverUri(MSongAlbumUpdateCoverUri(albumId, songCoverUri))
+
     fun updateSongLyric(songId: Long, lyric: String, songSize: Long, songData: String) =
         songDetailDao.updateLyric(MSongDetailUpdateLyric(songId, lyric, songSize, songData))
 }

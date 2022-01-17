@@ -13,6 +13,8 @@ import com.lalilu.lmusic.Config.LAST_REPEAT_MODE
 import com.lalilu.lmusic.database.LMusicDataBase
 import com.lalilu.lmusic.database.repository.RepositoryFactory
 import com.lalilu.lmusic.domain.entity.FullSongInfo
+import com.lalilu.lmusic.domain.entity.MAlbum
+import com.lalilu.lmusic.domain.entity.MPlaylist
 import com.lalilu.lmusic.domain.entity.MSongDetail
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.utils.*
@@ -80,6 +82,17 @@ class DataModule @Inject constructor(
     // 3.将 List<MSong> 公开给其他位置使用
     val nowListFlow: Flow<List<FullSongInfo>> = _nowList
     val nowListLiveData: LiveData<List<FullSongInfo>> = _nowList.asLiveData()
+
+    private val allPlaylistFlow = database.playlistDao().getAllPlaylistFlow().mapLatest { items ->
+        items.onEach { playlist ->
+            playlist.playlistCoverUri = database.playlistDao()
+                .getLastCreateSongCoverByPlaylistId(playlist.playlistId)
+        }
+    }.flowOn(Dispatchers.IO)
+
+    val allPlaylist: LiveData<List<MPlaylist>> = allPlaylistFlow.asLiveData()
+    val allAlbum: LiveData<List<MAlbum>> = database.albumDao()
+        .getAllAlbumLiveData()
 
     /***************************************/
     /**      PIN： 持续计算播放进度         **/
