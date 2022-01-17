@@ -2,13 +2,12 @@ package com.lalilu.lmusic.database.repository
 
 import android.content.Context
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.domain.entity.FullSongInfo
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,17 +33,22 @@ class RepositoryFactory @Inject constructor(
     private val _listId =
         MutableStateFlow(sharedPref.getLong(Config.LAST_LIST_ID, 0L))
     private val _listType =
-        MutableStateFlow(sharedPref.getInt(Config.LAST_LIST_TYPE, LIST_TYPE_PLAYLIST))
+        MutableStateFlow(sharedPref.getInt(Config.LAST_LIST_TYPE, LIST_TYPE_ALL))
 
-    val list = _listId.flatMapLatest { id ->
-        _listType.flatMapLatest { type ->
-            when (type) {
-                // todo 需实现 静态获取歌曲列表，动态获取列表内歌曲信息
-                LIST_TYPE_ALBUM -> repository.albumDao.getFullSongInfoListByIdFlow(id)
-                else -> repository.playlistDao.getFullSongInfoListByIdFlow(id)
-            }.mapNotNull { it }
+    val list: Flow<List<FullSongInfo>> = _listType.flatMapLatest { type ->
+        _listId.flatMapLatest ID@{ id ->
+            if (type == LIST_TYPE_ALL) return@ID repository.songDao.getAllFullSongFlow()
+
+            val ids = when (type) {
+                LIST_TYPE_ALBUM -> repository.albumDao.getSongsIdByAlbumId(id)
+                LIST_TYPE_PLAYLIST -> repository.albumDao.getSongsIdByAlbumId(id)
+                else -> repository.playlistDao.getSongsIdByPlaylistId(id)
+            }
+            repository.songDao.getAllFullSongFlow().mapLatest { items ->
+                ids.map { id -> items.first { it.song.songId == id } }
+            }
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     fun changeId(id: Long) = launch {
         _listId.emit(id)
