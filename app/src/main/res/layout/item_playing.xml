@@ -108,7 +108,7 @@
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:srcCompat="@drawable/ic_flac" />
+            tools:srcCompat="@drawable/ic_flac_line" />
 
         <ImageView
             android:id="@+id/song_lrc"
@@ -116,12 +116,12 @@
             android:layout_height="20dp"
             android:layout_marginEnd="5dp"
             android:contentDescription="@string/audio_type"
-            android:src="@drawable/ic_lrc"
+            android:src="@drawable/ic_lrc_fill"
             android:visibility="@{TextUtils.INSTANCE.setVisibility(hasLyric)}"
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toStartOf="@+id/song_type"
             app:layout_constraintTop_toTopOf="parent"
-            tools:srcCompat="@drawable/ic_lrc" />
+            tools:srcCompat="@drawable/ic_lrc_fill" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
