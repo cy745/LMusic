@@ -25,11 +25,11 @@ import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
 fun setIcon(imageView: ImageView, string: String) {
     val strings = string.split("/").toTypedArray()
     val result = when (strings[strings.size - 1].uppercase()) {
-        "FLAC" -> R.drawable.ic_flac
-        "WAV", "X-WAV" -> R.drawable.ic_wav
-        "APE" -> R.drawable.ic_ape
-        "MPEG", "MP3" -> R.drawable.ic_mp3
-        else -> R.drawable.ic_mp3
+        "FLAC" -> R.drawable.ic_flac_line
+        "WAV", "X-WAV" -> R.drawable.ic_wav_line
+        "APE" -> R.drawable.ic_ape_line
+        "MPEG", "MP3" -> R.drawable.ic_mp3_line
+        else -> R.drawable.ic_mp3_line
     }
     imageView.setImageResource(result)
 }
