@@ -12,7 +12,7 @@
     </data>
 
     <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
-        android:id="@+id/playListRecyclerView"
+        android:id="@+id/albumsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#05000000"
@@ -21,8 +21,8 @@
         android:overScrollMode="never"
         android:paddingBottom="128dp"
         app:adapter="@{albumsAdapter}"
-        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="2"
+        tools:spanCount="3"
+        tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         tools:listitem="@layout/item_album" />
 </layout>
 

@@ -49,6 +49,10 @@ android {
 }
 
 dependencies {
+    // https://github.com/scwang90/SmartRefreshLayout
+    // Apache-2.0 License
+    implementation 'io.github.scwang90:refresh-layout-kernel:2.0.5'
+
     // recyclerview的动画 https://github.com/wasabeef/recyclerview-animators
     // Apache-2.0
     // implementation "jp.wasabeef:recyclerview-animators:4.0.2"

@@ -37,18 +37,29 @@
                 app:titleTextAppearance="@style/dayNightTitleText" />
         </com.google.android.material.appbar.AppBarLayout>
 
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/navigator"
-            android:name="androidx.navigation.fragment.NavHostFragment"
+        <com.scwang.smart.refresh.layout.SmartRefreshLayout
+            android:id="@+id/refresher"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:defaultNavHost="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/appbar2"
-            app:navGraph="@navigation/nav_graph" />
+            app:srlDragRate="0.5"
+            app:srlEnableLoadMore="false"
+            app:srlEnableOverScrollBounce="true"
+            app:srlEnableOverScrollDrag="true"
+            app:srlEnableRefresh="false"
+            app:srlReboundDuration="400">
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/navigator"
+                android:name="androidx.navigation.fragment.NavHostFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:defaultNavHost="true"
+                app:navGraph="@navigation/nav_graph" />
+        </com.scwang.smart.refresh.layout.SmartRefreshLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

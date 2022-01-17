@@ -4,7 +4,6 @@
     xmlns:fresco="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-
     <data>
 
         <variable
@@ -20,14 +19,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/daynight_1"
-        android:padding="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent">
 
         <com.lalilu.lmusic.ui.drawee.SquareDraweeView
-            android:id="@+id/playlist_pic"
+            android:id="@+id/album_pic"
             android:layout_width="0dp"
             android:layout_height="300dp"
             android:scaleType="centerCrop"
@@ -39,20 +37,21 @@
             tools:placeholderImage="@tools:sample/avatars" />
 
         <TextView
-            android:id="@+id/playlist_title"
+            android:id="@+id/album_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
             android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
             android:ellipsize="end"
-            android:singleLine="true"
+            android:maxLines="2"
             android:text="@{title}"
             android:textColor="?attr/daynight_0"
-            android:textSize="16sp"
-            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/playlist_pic"
+            app:layout_constraintTop_toBottomOf="@+id/album_pic"
             app:layout_constraintVertical_bias="0.0"
             tools:text="@tools:sample/full_names" />
 

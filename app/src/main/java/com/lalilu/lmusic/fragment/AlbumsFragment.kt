@@ -1,11 +1,15 @@
 package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
+import com.lalilu.databinding.FragmentAlbumsBinding
 import com.lalilu.lmusic.adapter.MSongAlbumsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.event.DataModule
+import com.lalilu.lmusic.utils.GridItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
@@ -14,11 +18,17 @@ import javax.inject.Inject
 @ExperimentalCoroutinesApi
 class AlbumsFragment : DataBindingFragment() {
 
+    private var spanCount = 2
+    private var gap = 20
+
     @Inject
     lateinit var mAdapter: MSongAlbumsAdapter
 
     @Inject
     lateinit var dataModule: DataModule
+
+    private lateinit var layoutManager: RecyclerView.LayoutManager
+    private lateinit var itemDecoration: GridItemDecoration
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.fragment_albums)
@@ -26,7 +36,15 @@ class AlbumsFragment : DataBindingFragment() {
     }
 
     override fun onViewCreated() {
-        dataModule.allAlbum.observe(viewLifecycleOwner){
+        val binding = (mBinding as FragmentAlbumsBinding)
+        val recyclerView = binding.albumsRecyclerView
+        layoutManager = GridLayoutManager(requireContext(), spanCount)
+        itemDecoration = GridItemDecoration(gap, spanCount)
+
+        recyclerView.layoutManager = layoutManager
+        recyclerView.addItemDecoration(itemDecoration)
+
+        dataModule.allAlbum.observe(viewLifecycleOwner) {
             mAdapter.setDiffNewData(it?.toMutableList())
         }
     }
