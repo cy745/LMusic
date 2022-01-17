@@ -2,6 +2,7 @@ package com.lalilu.lmusic.domain.entity
 
 import android.net.Uri
 import androidx.room.TypeConverter
+import java.util.*
 
 class UriConverter {
     @TypeConverter
@@ -15,3 +16,14 @@ class UriConverter {
     }
 }
 
+class DateConverter {
+    @TypeConverter
+    fun fromTimestamp(value: Long): Date {
+        return Date(value)
+    }
+
+    @TypeConverter
+    fun dateToTimestamp(date: Date): Long {
+        return date.time
+    }
+}

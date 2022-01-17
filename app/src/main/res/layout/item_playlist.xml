@@ -1,82 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fresco="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="15dp"
-    android:layout_marginEnd="15dp"
-    android:background="?attr/daynight_1"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintHorizontal_bias="0.0"
-    app:layout_constraintStart_toStartOf="parent">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <com.lalilu.lmusic.ui.drawee.SamplingDraweeView
-        android:id="@+id/playlist_pic"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:scaleType="centerCrop"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        fresco:placeholderImage="@color/gray_600"
-        tools:placeholderImage="@tools:sample/avatars" />
+    <data>
 
-    <TextView
-        android:id="@+id/playlist_title"
-        android:layout_width="0dp"
+        <variable
+            name="title"
+            type="String" />
+
+        <variable
+            name="coverUri"
+            type="android.net.Uri" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:ellipsize="end"
-        android:singleLine="true"
-        android:textColor="?attr/daynight_0"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/playlist_last"
-        app:layout_constraintEnd_toStartOf="@+id/playlist_delete"
-        app:layout_constraintStart_toEndOf="@+id/playlist_pic"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        tools:text="@tools:sample/full_names" />
-
-    <TextView
-        android:id="@+id/playlist_last"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/playlist_last_time"
-        app:layout_constraintStart_toEndOf="@+id/playlist_pic"
-        tools:text="@tools:sample/lorem/random" />
-
-    <TextView
-        android:id="@+id/playlist_last_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
-        android:maxLines="1"
+        android:layout_margin="10dp"
+        android:background="?attr/daynight_1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:text="@tools:sample/date/hhmm" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent">
 
-    <ImageButton
-        android:id="@+id/playlist_delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="@string/text_button_playlist_delete"
-        android:padding="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        fresco:srcCompat="@drawable/ic_close_circle_line" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.lalilu.lmusic.ui.drawee.SamplingDraweeView
+            android:id="@+id/playlist_pic"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:pictureUri="@{coverUri}"
+            fresco:placeholderImage="@color/gray_600"
+            tools:placeholderImage="@tools:sample/avatars" />
+
+        <TextView
+            android:id="@+id/playlist_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@{title}"
+            android:textColor="?attr/daynight_0"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/playlist_last"
+            app:layout_constraintEnd_toStartOf="@+id/playlist_delete"
+            app:layout_constraintStart_toEndOf="@+id/playlist_pic"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="@tools:sample/full_names" />
+
+        <TextView
+            android:id="@+id/playlist_last"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/playlist_pic"
+            tools:text="@tools:sample/lorem/random" />
+
+        <!--        <TextView-->
+        <!--            android:id="@+id/playlist_last_time"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_marginEnd="20dp"-->
+        <!--            android:layout_marginBottom="20dp"-->
+        <!--            android:maxLines="1"-->
+        <!--            app:layout_constraintBottom_toBottomOf="parent"-->
+        <!--            app:layout_constraintEnd_toEndOf="parent"-->
+        <!--            tools:text="@tools:sample/date/hhmm" />-->
+
+        <ImageButton
+            android:id="@+id/playlist_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/text_button_playlist_delete"
+            android:padding="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            fresco:srcCompat="@drawable/ic_close_circle_line" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

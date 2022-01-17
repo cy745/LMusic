@@ -8,7 +8,7 @@ import com.lalilu.databinding.ItemPlaylistExpandBinding
 import com.lalilu.lmusic.domain.entity.FullSongInfo
 import javax.inject.Inject
 
-class MSongPlaylistAdapter @Inject constructor() :
+class MSongListAdapter @Inject constructor() :
     BaseQuickAdapter<FullSongInfo, BaseDataBindingHolder<ItemPlaylistExpandBinding>>(R.layout.item_playlist_expand) {
 
     init {

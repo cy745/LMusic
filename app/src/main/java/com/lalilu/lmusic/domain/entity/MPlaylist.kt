@@ -16,7 +16,7 @@ data class MPlaylist(
     val playlistTitle: String = "New Playlist.",
 
     @ColumnInfo(name = "playlist_cover_uri")
-    val playlistCoverUri: Uri = Uri.EMPTY,
+    var playlistCoverUri: Uri = Uri.EMPTY,
 
     @ColumnInfo(name = "playlist_info")
     val playlistInfo: String = "empty.",

@@ -83,6 +83,7 @@ class MSongScanner @Inject constructor() : BaseMScanner() {
             .setInputData(
                 workDataOf(
                     "songId" to songId,
+                    "albumId" to albumId,
                     "songUri" to songUri.toString()
                 )
             ).build()

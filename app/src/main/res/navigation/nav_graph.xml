@@ -1,11 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/playlistFragment">
+    app:startDestination="@id/playlistsFragment">
 
     <fragment
-        android:id="@+id/playlistFragment"
-        android:name="com.lalilu.lmusic.fragment.PlaylistFragment"
-        android:label="PlaylistFragment" />
+        android:id="@+id/playlistsFragment"
+        android:name="com.lalilu.lmusic.fragment.PlaylistsFragment"
+        android:label="PlaylistsFragment"
+        tools:layout="@layout/fragment_playlist">
+        <action
+            android:id="@+id/action_playlistsFragment_to_listFragment"
+            app:destination="@id/listFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/albumsFragment"
+        android:name="com.lalilu.lmusic.fragment.AlbumsFragment"
+        android:label="AlbumsFragment"
+        tools:layout="@layout/fragment_albums">
+        <action
+            android:id="@+id/action_albumsFragment_to_listFragment"
+            app:destination="@id/listFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/listFragment"
+        android:name="com.lalilu.lmusic.fragment.ListFragment"
+        android:label="ListFragment"
+        tools:layout="@layout/fragment_list" />
 </navigation>

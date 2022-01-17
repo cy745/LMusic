@@ -10,10 +10,10 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder
 /**
  * 默认提供重采样大小功能的 DraweeView
  */
-class SamplingDraweeView @JvmOverloads constructor(
+open class SamplingDraweeView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : SimpleDraweeView(context, attrs, defStyleAttr) {
-    private var samplingValue = 200
+    open var samplingValue = 200
 
     override fun setImageURI(uri: Uri?, callerContext: Any?) {
         if (uri == null) return

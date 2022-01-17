@@ -2,6 +2,8 @@ package com.lalilu.lmusic.domain.entity
 
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * 由于专辑的 id 是 MediaStore 自动分发的，
@@ -142,5 +144,7 @@ data class PlaylistSongCrossRef(
     @ColumnInfo(name = "song_id", index = true)
     val songId: Long,
     @ColumnInfo(name = "playlist_id", index = true)
-    val playlistId: Long
+    val playlistId: Long,
+    @ColumnInfo(name = "create_item", index = true)
+    val createItem: Date = Date(),
 )
