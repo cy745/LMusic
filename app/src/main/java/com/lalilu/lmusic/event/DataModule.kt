@@ -31,7 +31,8 @@ class DataModule @Inject constructor(
     @ApplicationContext context: Context,
     database: LMusicDataBase,
     notificationManager: LMusicNotificationManager,
-    repositoryFactory: RepositoryFactory
+    playlistFactory: RepositoryFactory,
+    private val libraryFactory: RepositoryFactory,
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -77,11 +78,10 @@ class DataModule @Inject constructor(
     /**
      * 根据当前歌单ID从数据库获取对应歌单的歌曲并转换成 List<MSong>
      */
-    private val _nowList: Flow<List<FullSongInfo>> = repositoryFactory.list
+    private val _nowList: Flow<List<FullSongInfo>> = playlistFactory.list
 
     // 3.将 List<MSong> 公开给其他位置使用
     val nowListFlow: Flow<List<FullSongInfo>> = _nowList
-    val nowListLiveData: LiveData<List<FullSongInfo>> = _nowList.asLiveData()
 
     private val allPlaylistFlow = database.playlistDao().getAllPlaylistFlow().mapLatest { items ->
         items.onEach { playlist ->
@@ -93,6 +93,10 @@ class DataModule @Inject constructor(
     val allPlaylist: LiveData<List<MPlaylist>> = allPlaylistFlow.asLiveData()
     val allAlbum: LiveData<List<MAlbum>> = database.albumDao()
         .getAllAlbumLiveData()
+
+    val library = libraryFactory.list.asLiveData()
+    fun changeId(id: Long) = libraryFactory.changeId(id)
+    fun changeType(type: Int) = libraryFactory.changeType(type)
 
     /***************************************/
     /**      PIN： 持续计算播放进度         **/

@@ -21,9 +21,9 @@
         android:overScrollMode="never"
         android:paddingBottom="128dp"
         app:adapter="@{albumsAdapter}"
-        tools:spanCount="3"
         tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        tools:listitem="@layout/item_album" />
+        tools:listitem="@layout/item_album"
+        tools:spanCount="2" />
 </layout>
 
 

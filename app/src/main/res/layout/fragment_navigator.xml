@@ -32,12 +32,11 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:menu="@menu/menu_navigator"
                 app:title="歌单"
                 app:titleTextAppearance="@style/dayNightTitleText" />
         </com.google.android.material.appbar.AppBarLayout>
 
-        <com.scwang.smart.refresh.layout.SmartRefreshLayout
+        <com.lalilu.lmusic.ui.MySmartRefreshLayout
             android:id="@+id/refresher"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -59,7 +58,7 @@
                 android:layout_height="match_parent"
                 app:defaultNavHost="true"
                 app:navGraph="@navigation/nav_graph" />
-        </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+        </com.lalilu.lmusic.ui.MySmartRefreshLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
