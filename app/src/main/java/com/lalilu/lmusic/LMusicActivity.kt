@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.SearchView
+import androidx.navigation.findNavController
 import com.lalilu.R
 import com.lalilu.lmusic.base.DataBindingActivity
 import com.lalilu.lmusic.base.DataBindingConfig
@@ -119,5 +120,10 @@ class LMusicActivity : DataBindingActivity() {
             }
         }
         trans.commit()
+    }
+
+    override fun onBackPressed() {
+        val canNavigatorUp = findNavController(R.id.navigator).navigateUp()
+        if (!canNavigatorUp) super.onBackPressed()
     }
 }

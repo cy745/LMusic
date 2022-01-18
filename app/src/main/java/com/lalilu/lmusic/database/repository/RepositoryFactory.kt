@@ -10,15 +10,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
-
 
 const val LIST_TYPE_ALL = 0
 const val LIST_TYPE_ALBUM = 1
 const val LIST_TYPE_PLAYLIST = 2
 
-@Singleton
 @ExperimentalCoroutinesApi
 class RepositoryFactory @Inject constructor(
     @ApplicationContext context: Context,
@@ -41,7 +38,7 @@ class RepositoryFactory @Inject constructor(
 
             val ids = when (type) {
                 LIST_TYPE_ALBUM -> repository.albumDao.getSongsIdByAlbumId(id)
-                LIST_TYPE_PLAYLIST -> repository.albumDao.getSongsIdByAlbumId(id)
+                LIST_TYPE_PLAYLIST -> repository.playlistDao.getSongsIdByPlaylistId(id)
                 else -> repository.playlistDao.getSongsIdByPlaylistId(id)
             }
             repository.songDao.getAllFullSongFlow().mapLatest { items ->
@@ -52,6 +49,10 @@ class RepositoryFactory @Inject constructor(
 
     fun changeId(id: Long) = launch {
         _listId.emit(id)
+    }
+
+    fun changeType(type: Int) = launch {
+        _listType.emit(type)
     }
 }
 

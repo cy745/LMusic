@@ -2,16 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+        <item
+            android:id="@+id/navigator_star"
+            android:checkable="true"
+            android:enabled="true"
+            android:icon="@drawable/ic_star_line"
+            android:title="@string/navigate_to_star_page"
+            android:visible="true"
+            app:showAsAction="always" />
     <item
-        android:id="@+id/navigator_star"
-        android:checkable="true"
-        android:enabled="true"
-        android:icon="@drawable/ic_star_line"
-        android:title="@string/navigate_to_star_page"
-        android:visible="true"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/navigator_playlist"
+        android:id="@+id/playlists"
         android:checkable="true"
         android:enabled="true"
         android:icon="@drawable/ic_play_list_line"
@@ -27,7 +27,7 @@
         android:visible="true"
         app:showAsAction="always" />
     <item
-        android:id="@+id/navigator_album"
+        android:id="@+id/albums"
         android:checkable="true"
         android:enabled="true"
         android:icon="@drawable/ic_album_fill"

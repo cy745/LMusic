@@ -2,16 +2,20 @@ package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
 import androidx.navigation.Navigation
+import androidx.navigation.ui.NavigationUI
 import com.lalilu.R
 import com.lalilu.databinding.FragmentNavigatorBinding
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.event.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
-class NavigatorFragment : DataBindingFragment() {
+class NavigatorFragment() : DataBindingFragment(), CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -24,21 +28,17 @@ class NavigatorFragment : DataBindingFragment() {
     override fun onViewCreated() {
         val binding = mBinding as FragmentNavigatorBinding
         val toolbar2 = binding.toolbar2
+        val navigator = binding.navigator
 
-        toolbar2.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.navigator_star -> {
-                }
-                R.id.navigator_playlist -> Navigation.findNavController(binding.navigator)
-                    .navigate(R.id.playlistsFragment)
-                R.id.navigator_album -> Navigation.findNavController(binding.navigator)
-                    .navigate(R.id.albumsFragment)
-                R.id.navigator_songs -> {
-                }
-                else -> {
-                }
+        launch {
+            delay(100)
+
+            withContext(Dispatchers.Main) {
+                NavigationUI.setupWithNavController(
+                    toolbar2,
+                    Navigation.findNavController(navigator)
+                )
             }
-            true
         }
     }
 }
