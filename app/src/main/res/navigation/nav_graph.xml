@@ -14,6 +14,8 @@
             android:id="@+id/playlist_detail"
             app:destination="@id/list_detail"
             app:enterAnim="@anim/nav_alpha_enter_anim"
+            app:exitAnim="@anim/nav_alpha_exit_anim"
+            app:popEnterAnim="@anim/nav_alpha_enter_anim"
             app:popExitAnim="@anim/nav_alpha_exit_anim"
             app:popUpTo="@id/playlists">
             <argument
@@ -33,6 +35,8 @@
             android:id="@+id/album_detail"
             app:destination="@id/list_detail"
             app:enterAnim="@anim/nav_alpha_enter_anim"
+            app:exitAnim="@anim/nav_alpha_exit_anim"
+            app:popEnterAnim="@anim/nav_alpha_enter_anim"
             app:popExitAnim="@anim/nav_alpha_exit_anim"
             app:popUpTo="@id/albums">
             <argument
@@ -70,12 +74,16 @@
             android:id="@+id/to_albums"
             app:destination="@id/albums"
             app:enterAnim="@anim/nav_alpha_enter_anim"
+            app:exitAnim="@anim/nav_alpha_exit_anim"
+            app:popEnterAnim="@anim/nav_alpha_enter_anim"
             app:popExitAnim="@anim/nav_alpha_exit_anim"
             app:popUpTo="@id/library" />
         <action
             android:id="@+id/to_playlists"
             app:destination="@id/playlists"
             app:enterAnim="@anim/nav_alpha_enter_anim"
+            app:exitAnim="@anim/nav_alpha_exit_anim"
+            app:popEnterAnim="@anim/nav_alpha_enter_anim"
             app:popExitAnim="@anim/nav_alpha_exit_anim"
             app:popUpTo="@id/library" />
     </fragment>

@@ -19,6 +19,7 @@
         android:clipToPadding="false"
         android:fillViewport="true"
         android:overScrollMode="never"
+        android:paddingTop="96dp"
         android:paddingBottom="128dp"
         app:adapter="@{albumsAdapter}"
         tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
