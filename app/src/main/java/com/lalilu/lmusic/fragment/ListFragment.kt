@@ -46,8 +46,12 @@ class ListFragment : DataBindingFragment(), CoroutineScope {
     }
 
     override fun onViewCreated() {
-        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar2)
-        toolbar.title = args.title
+        launch {
+            withContext(Dispatchers.Main) {
+                val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar2)
+                toolbar.title = args.title
+            }
+        }
 
         if (args.albumId >= 0) {
             dataModule.changeType(LIST_TYPE_ALBUM)
