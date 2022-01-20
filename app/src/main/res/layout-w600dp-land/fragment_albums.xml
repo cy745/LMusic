@@ -23,10 +23,10 @@
         android:paddingBottom="128dp"
         app:adapter="@{albumsAdapter}"
         app:gridGap="@{10}"
-        app:gridSpanCount="@{2}"
+        app:gridSpanCount="@{3}"
         tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         tools:listitem="@layout/item_album"
-        tools:spanCount="2" />
+        tools:spanCount="3" />
 </layout>
 
 

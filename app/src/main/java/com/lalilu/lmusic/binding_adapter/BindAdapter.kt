@@ -7,6 +7,8 @@ import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.facebook.drawee.view.SimpleDraweeView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
@@ -17,6 +19,7 @@ import com.lalilu.lmusic.ui.drawee.PaletteDraweeView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
+import com.lalilu.lmusic.utils.GridItemDecoration
 
 @BindingAdapter("iconRec")
 fun setIcon(imageView: ImageView, string: String) {
@@ -64,6 +67,12 @@ fun setAppbarBGColor(appBarLayout: AppBarLayout, palette: Palette?) {
 fun setSeekBarBGColor(seekBar: LMusicSeekBar, palette: Palette?) {
     palette ?: return
     seekBar.setThumbColor(getAutomaticColor(palette))
+}
+
+@BindingAdapter(value = ["gridGap", "gridSpanCount"], requireAll = true)
+fun addGridItemDecoration(recyclerView: RecyclerView, gridGap: Int, gridSpanCount: Int) {
+    recyclerView.layoutManager = GridLayoutManager(recyclerView.context, gridSpanCount)
+    recyclerView.addItemDecoration(GridItemDecoration(gridGap, gridSpanCount))
 }
 
 fun MSongPlayingAdapter.setItems(list: List<FullSongInfo>?) {
