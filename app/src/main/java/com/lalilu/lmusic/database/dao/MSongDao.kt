@@ -7,7 +7,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MSongDao {
-    @Query("SELECT * FROM m_song WHERE song_id = :songId")
+    @Query("SELECT song_id FROM m_song;")
+    fun getAllId(): List<Long>
+
+    @Query("SELECT * FROM m_song WHERE song_id = :songId;")
     fun getById(songId: Long): MSong?
 
     @Transaction
@@ -22,4 +25,7 @@ interface MSongDao {
 
     @Delete
     fun delete(song: MSong)
+
+    @Query("DELETE FROM m_song WHERE song_id = :songId;")
+    fun deleteById(songId: Long)
 }

@@ -4,10 +4,15 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import androidx.room.OnConflictStrategy.IGNORE
+import com.lalilu.lmusic.domain.entity.AlbumWithSongs
 import com.lalilu.lmusic.domain.entity.MAlbum
 
 @Dao
 interface MAlbumDao {
+
+    @Transaction
+    @Query("SELECT * FROM m_album")
+    fun getAllAlbumWithSong(): List<AlbumWithSongs>
 
     @Query("SELECT * FROM m_album;")
     fun getAllAlbumLiveData(): LiveData<List<MAlbum>>
@@ -19,8 +24,8 @@ interface MAlbumDao {
     @Insert(onConflict = IGNORE)
     fun save(album: MAlbum)
 
-    @Query("DELETE FROM m_album;")
-    suspend fun deleteAll()
+    @Query("DELETE FROM m_album WHERE album_id = :albumId;")
+    fun deleteById(albumId: Long)
 
     @Update(entity = MAlbum::class, onConflict = IGNORE)
     fun updateCoverUri(update: MSongAlbumUpdateCoverUri)

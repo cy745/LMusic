@@ -72,11 +72,13 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
 
     override fun onPlaybackStateChanged(newState: Int) {
         if (newState == PlaybackStateCompat.STATE_STOPPED) {
-            stopForeground(true)
-            stopSelf()
-            mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
-            dataModule.updatePlaybackState(MEDIA_STOPPED_STATE)
-            this.unregisterReceiver(noisyReceiver)
+            try {
+                stopForeground(true)
+                stopSelf()
+                mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
+                dataModule.updatePlaybackState(MEDIA_STOPPED_STATE)
+                this.unregisterReceiver(noisyReceiver)
+            } catch (ignored: Exception) { }
             return
         }
 
