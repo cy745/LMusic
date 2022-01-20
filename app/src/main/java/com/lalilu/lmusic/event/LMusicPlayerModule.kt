@@ -86,16 +86,12 @@ class LMusicPlayerModule @Inject constructor(
     fun searchFor(keyword: String?) = searchManager.searchFor(keyword)
 
     fun connect() {
-        if (mediaBrowser.isConnected) mediaBrowser.disconnect()
-        if (!mediaBrowser.isConnected) mediaBrowser.connect()
+        mediaBrowser.connect()
     }
 
     fun disconnect() {
-        if (mediaBrowser.isConnected) {
-            mediaBrowser.disconnect().also {
-                mediaController?.unregisterCallback(controllerCallback)
-            }
-        }
+        mediaController?.unregisterCallback(controllerCallback)
+        mediaBrowser.disconnect()
     }
 
     fun subscribe(parentId: String) = mediaBrowser.subscribe(parentId, subscriptionCallback)

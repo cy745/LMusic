@@ -2,6 +2,7 @@ package com.lalilu.lmusic.scanner
 
 import android.content.Context
 import android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+import com.lalilu.lmusic.utils.getSongId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,7 +18,6 @@ abstract class BaseMScanner : MScanner, CoroutineScope {
     open var projection: Array<String>? = null
     open var selectionArgs: Array<String>? = null
     open var sortOrder: String? = null
-    open var progressCount = 0
 
     /**
      * 扫描开始的入口函数，简单判读是否已经有任务正在执行
@@ -31,13 +31,14 @@ abstract class BaseMScanner : MScanner, CoroutineScope {
                     EXTERNAL_CONTENT_URI, projection, selection, selectionArgs, sortOrder
                 ) ?: throw NullPointerException("cursor is null")
 
+                val songIds = ArrayList<Long>()
                 onScanStart?.invoke(cursor.count)
                 while (cursor.moveToNext()) {
+                    songIds.add(cursor.getSongId())
                     onScanForEach(context, cursor)
                 }
                 cursor.close()
-                onScanFinish?.invoke(progressCount)
-                progressCount = 0
+                onScanFinish(context, songIds)
             }
         } catch (e: Exception) {
             onScanFailed?.invoke(e.message)
@@ -48,7 +49,6 @@ abstract class BaseMScanner : MScanner, CoroutineScope {
     override var onScanFailed: ((msg: String?) -> Unit)? = null
     override var onScanStart: ((totalCount: Int) -> Unit)? = null
     override var onScanProgress: ((nowCount: Int) -> Unit)? = null
-    override var onScanFinish: ((resultCount: Int) -> Unit)? = null
 
     override fun setScanCancel(func: (nowCount: Int) -> Unit): MScanner {
         this.onScanCancel = func
@@ -67,11 +67,6 @@ abstract class BaseMScanner : MScanner, CoroutineScope {
 
     override fun setScanProgress(func: (nowCount: Int) -> Unit): MScanner {
         this.onScanProgress = func
-        return this
-    }
-
-    override fun setScanFinish(func: (resultCount: Int) -> Unit): MScanner {
-        this.onScanFinish = func
         return this
     }
 }

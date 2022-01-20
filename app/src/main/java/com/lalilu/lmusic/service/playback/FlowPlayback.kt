@@ -6,12 +6,16 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat.*
+import android.widget.Toast
+import com.lalilu.R
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.IOException
+import java.util.logging.Logger
 import kotlin.coroutines.CoroutineContext
 
 @ExperimentalCoroutinesApi
@@ -21,10 +25,12 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
     MediaPlayer.OnPreparedListener,
     MediaPlayer.OnCompletionListener,
     AudioManager.OnAudioFocusChangeListener {
+    private val logger = Logger.getLogger(this.javaClass.name)
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private var player: LMusicPlayer? = createPlayer()
         get() = field ?: createPlayer()
 
+    @Volatile
     private var isPrepared = false
     private var playbackState = STATE_NONE
 
@@ -60,7 +66,10 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
             onPlaybackStateChanged(STATE_PLAYING)
         } else {
             launch {
+                isPrepared = false
                 val now = playing.firstOrNull() ?: return@launch
+
+                onMetadataChanged(getMetaDataFromItem(now))
                 playByUri(getUriFromItem(now))
             }
         }
@@ -77,9 +86,23 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
     }
 
     override fun playByUri(uri: Uri) {
-        player?.reset()
-        player?.setDataSource(mContext, uri)
-        player?.prepareAsync()
+        try {
+            player?.reset()
+            player?.setDataSource(mContext, uri)
+            player?.prepareAsync()
+        } catch (e: IOException) {
+            logger.warning(e.message)
+            onPlaybackStateChanged(STATE_STOPPED)
+            launch(Dispatchers.Main) {
+                Toast.makeText(
+                    mContext,
+                    mContext.getText(R.string.song_non_exist_tips),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        } catch (e: Exception) {
+            logger.warning(e.message)
+        }
     }
 
     override fun playByMediaId(mediaId: ID?) {

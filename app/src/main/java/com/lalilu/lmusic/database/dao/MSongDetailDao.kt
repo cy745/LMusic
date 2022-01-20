@@ -25,8 +25,8 @@ interface MSongDetailDao {
     @Update(entity = MSongDetail::class)
     fun updateLyric(update: MSongDetailUpdateLyric)
 
-    @Query("DELETE FROM m_song_detail;")
-    suspend fun deleteAll()
+    @Query("DELETE FROM m_song_detail WHERE song_id = :songId;")
+    fun deleteById(songId: Long)
 }
 
 data class MSongDetailUpdateLyric(

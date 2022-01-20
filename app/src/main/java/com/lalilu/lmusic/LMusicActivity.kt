@@ -60,9 +60,9 @@ class LMusicActivity : DataBindingActivity() {
         super.onStart()
     }
 
-    override fun onStop() {
+    override fun onPause() {
         playerModule.disconnect()
-        super.onStop()
+        super.onPause()
     }
 
     override fun onResume() {

@@ -34,8 +34,6 @@ class LMusicApp : Application(), Configuration.Provider {
 
         songScanner.setScanStart {
             println("[开始扫描]: 共计 $it 首歌曲")
-        }.setScanFinish {
-            println("[扫描完成]: 共计 $it 首歌曲被添加至Worker")
         }.scanStart(this)
     }
 }

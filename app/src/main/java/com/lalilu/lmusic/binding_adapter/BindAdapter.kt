@@ -2,20 +2,17 @@ package com.lalilu.lmusic.binding_adapter
 
 import android.content.Context
 import android.net.Uri
+import android.text.TextUtils
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
-import androidx.recyclerview.widget.RecyclerView
-import com.chad.library.adapter.base.BaseNodeAdapter
 import com.facebook.drawee.view.SimpleDraweeView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
-import com.lalilu.lmusic.adapter.node.FirstNode
 import com.lalilu.lmusic.domain.entity.FullSongInfo
-import com.lalilu.lmusic.domain.entity.MPlaylist
 import com.lalilu.lmusic.ui.drawee.PaletteDraweeView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
@@ -47,7 +44,7 @@ fun setMSongCoverUri(paletteDraweeView: PaletteDraweeView, uri: Uri?, callerCont
 
 @BindingAdapter(value = ["bindTitle"], requireAll = false)
 fun setMSongTitle(collapsingToolbarLayout: CollapsingToolbarLayout, title: String?) {
-    collapsingToolbarLayout.title = title ?: "LMusic..."
+    collapsingToolbarLayout.title = if (TextUtils.isEmpty(title)) "LMusic..." else title
 }
 
 @BindingAdapter(value = ["bgPaletteLiveData"], requireAll = false)
@@ -69,13 +66,6 @@ fun setSeekBarBGColor(seekBar: LMusicSeekBar, palette: Palette?) {
     seekBar.setThumbColor(getAutomaticColor(palette))
 }
 
-@BindingAdapter(value = ["setPlayLists"], requireAll = false)
-fun setLPlayLists(recyclerView: RecyclerView, list: List<FirstNode<MPlaylist>>?) {
-    recyclerView.adapter ?: return
-    list ?: return
-    (recyclerView.adapter as BaseNodeAdapter).setList(list)
-}
-
 fun MSongPlayingAdapter.setItems(list: List<FullSongInfo>?) {
     list ?: return
 
@@ -87,8 +77,6 @@ fun MSongPlayingAdapter.setItems(list: List<FullSongInfo>?) {
             }
         }
     } else {
-        this.setDiffNewData(list.toMutableList()) {
-            recyclerView.scrollToPosition(0)
-        }
+        this.setDiffNewData(list.toMutableList())
     }
 }

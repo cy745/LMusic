@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.IGNORE
 import androidx.room.OnConflictStrategy.REPLACE
+import androidx.room.Query
 import androidx.room.Transaction
 import com.lalilu.lmusic.domain.entity.*
 
@@ -54,4 +55,7 @@ interface MRelationDao {
             saveCrossRef(ArtistSongCrossRef(song.songId, it.artistName))
         }
     }
+
+    @Query("DELETE FROM playlist_song_cross_ref WHERE song_id = :songId;")
+    fun deleteBySongId(songId: Long)
 }

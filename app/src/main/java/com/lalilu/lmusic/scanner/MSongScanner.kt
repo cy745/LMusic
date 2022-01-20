@@ -110,8 +110,21 @@ class MSongScanner @Inject constructor() : BaseMScanner() {
                 saveLyricRequest
             )
         ).enqueue()
+    }
 
-        val taskNum = ++progressCount
-        onScanProgress?.invoke(taskNum)
+    override fun onScanFinish(context: Context, ids: List<Long>) {
+        val deleteNonExistSongWorkerRequest = OneTimeWorkRequestBuilder<DeleteNonExistDataWorker>()
+            .addTag("Delete_Song")
+            .setInputData(
+                workDataOf(
+                    "ids" to ids.toLongArray()
+                )
+            ).build()
+
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "Delete_Song",
+            ExistingWorkPolicy.REPLACE,
+            deleteNonExistSongWorkerRequest
+        )
     }
 }

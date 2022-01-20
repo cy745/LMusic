@@ -47,6 +47,5 @@ interface MScanner {
     /**
      * 扫描完成后获取总共扫描得到的条目数量
      */
-    var onScanFinish: ((resultCount: Int) -> Unit)?
-    fun setScanFinish(func: (resultCount: Int) -> Unit): MScanner
+    fun onScanFinish(context: Context, ids: List<Long>)
 }
