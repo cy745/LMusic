@@ -158,7 +158,7 @@ class DataModule @Inject constructor(
     private val _songLyrics: Flow<List<LyricEntry>?> = _songDetail.mapLatest {
         // 歌词切换时清除通知
         notificationManager.clearLyric()
-        return@mapLatest LyricUtil.parseLrc(arrayOf(it?.songLyric, it?.songLyric))
+        return@mapLatest LyricUtil.parseLrc(arrayOf(it?.songLyric))
     }
 
     /**
