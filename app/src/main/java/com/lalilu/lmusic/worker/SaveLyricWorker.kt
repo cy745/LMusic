@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.worker
 
 import android.content.Context
+import android.text.TextUtils
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -37,8 +38,15 @@ class SaveLyricWorker @AssistedInject constructor(
             if (songData == null) Result.failure()
 
             val audioTag = AudioFileIO.read(File(songData!!)).tag
-            val lyric = audioTag.getFields(FieldKey.LYRICS).run {
-                if (isNotEmpty()) get(0).toString() else ""
+            var lyric = audioTag.getFields(FieldKey.LYRICS)
+                .run { if (isNotEmpty()) get(0).toString() else "" }
+
+            // 提取内嵌歌词不存在后，则尝试读取同名的lrc文件
+            if (TextUtils.isEmpty(lyric)) {
+                val path = songData.substring(0, songData.lastIndexOf('.')) + ".lrc"
+                val lrcFile = File(path)
+
+                if (lrcFile.exists()) lyric = lrcFile.readText()
             }
             repository.updateSongLyric(songId, lyric, songSize, songData)
             Result.success()
