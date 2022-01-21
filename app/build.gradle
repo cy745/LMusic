@@ -73,8 +73,9 @@ dependencies {
     implementation "com.github.Adonai:jaudiotagger:2.3.14"
 
     // https://github.com/Moriafly/LyricViewX
+    // https://github.com/cy745/LyricViewX
     // GPL-3.0 License
-    implementation("com.github.Moriafly:LyricViewX:1.2.1")
+    implementation "com.github.cy745:LyricViewX:8ed19c8d53"
 
     // https://github.com/CymChad/BaseRecyclerViewAdapterHelper
     // MIT License
