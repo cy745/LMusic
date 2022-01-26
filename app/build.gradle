@@ -51,6 +51,10 @@ android {
 }
 
 dependencies {
+    // https://github.com/Commit451/NativeStackBlur
+    // Apache-2.0 License
+    implementation 'com.github.Commit451:NativeStackBlur:1.0.4'
+
     // https://github.com/coil-kt/coil
     // Apache-2.0 License
     implementation "io.coil-kt:coil:1.4.0"
@@ -90,18 +94,11 @@ dependencies {
     // Apache-2.0
     implementation "com.github.getActivity:XXPermissions:11.0"
 
-    // Apache-2.0
-    implementation "com.facebook.infer.annotation:infer-annotation:0.18.0"
-    implementation "com.facebook.fresco:fresco:2.6.0"
-
-    // Apache-2.0
-    implementation "com.alibaba:fastjson:$fastjson_version"
-
     // https://mvnrepository.com/artifact/com.google.android.material/material
     // Apache-2.0
     implementation "com.google.android.material:material:1.6.0-alpha01"
 
-    implementation 'androidx.hilt:hilt-work:1.0.0'
+    implementation "androidx.hilt:hilt-work:1.0.0"
     implementation "androidx.work:work-multiprocess:$work_version"
     implementation "androidx.work:work-runtime-ktx:$work_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
@@ -111,7 +108,7 @@ dependencies {
     implementation "androidx.room:room-ktx:$room_version"
 
     implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
-    implementation("androidx.navigation:navigation-ui-ktx:$navigation_version")
+    implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
 
     implementation "androidx.media:media:1.4.3"
     implementation "androidx.core:core-ktx:1.7.0"
@@ -120,10 +117,10 @@ dependencies {
     implementation "androidx.palette:palette-ktx:1.0.0"
     implementation "androidx.viewpager2:viewpager2:1.0.0"
 
-    implementation 'com.github.cy745:EdgeTranslucent:8c25866a14'
+    implementation "com.github.cy745:EdgeTranslucent:8c25866a14"
     implementation "com.google.dagger:hilt-android:$hilt_version"
 
-    kapt 'androidx.hilt:hilt-compiler:1.0.0'
-    kapt("androidx.room:room-compiler:$room_version")
+    kapt "androidx.hilt:hilt-compiler:1.0.0"
+    kapt "androidx.room:room-compiler:$room_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 }
