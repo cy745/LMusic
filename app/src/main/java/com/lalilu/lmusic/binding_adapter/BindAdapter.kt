@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.binding_adapter
 
-import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
 import android.widget.ImageView
@@ -16,7 +15,7 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
 import com.lalilu.lmusic.domain.entity.FullSongInfo
-import com.lalilu.lmusic.ui.drawee.PaletteDraweeView
+import com.lalilu.lmusic.ui.drawee.PaletteImageView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
@@ -42,10 +41,9 @@ fun setPictureUri(imageView: AppCompatImageView, uri: Uri?) {
     }
 }
 
-@BindingAdapter(value = ["artUri", "callerContext"], requireAll = false)
-fun setMSongCoverUri(paletteDraweeView: PaletteDraweeView, uri: Uri?, callerContext: Context?) {
-    uri ?: return
-    paletteDraweeView.setImageURI(uri, callerContext)
+@BindingAdapter(value = ["artUri"])
+fun setMSongCoverUri(imageView: PaletteImageView, uri: Uri?) {
+    imageView.setImageURI(uri)
 }
 
 @BindingAdapter(value = ["bindTitle"], requireAll = false)
@@ -53,11 +51,11 @@ fun setMSongTitle(collapsingToolbarLayout: CollapsingToolbarLayout, title: Strin
     collapsingToolbarLayout.title = if (TextUtils.isEmpty(title)) "LMusic..." else title
 }
 
-@BindingAdapter(value = ["bgPaletteLiveData"], requireAll = false)
+@BindingAdapter(value = ["bgPaletteLiveData"])
 fun setBGPaletteLiveData(
-    paletteDraweeView: PaletteDraweeView, liveData: MutableLiveData<Palette>
+    imageView: PaletteImageView, liveData: MutableLiveData<Palette>
 ) {
-    paletteDraweeView.palette = liveData
+    imageView.palette = liveData
 }
 
 @BindingAdapter(value = ["bgPalette"], requireAll = false)
