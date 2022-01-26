@@ -34,7 +34,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:pictureUri="@{coverUri}"
-            fresco:placeholderImage="@color/gray_600"
             tools:placeholderImage="@tools:sample/avatars" />
 
         <TextView

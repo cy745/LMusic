@@ -3,8 +3,6 @@ package com.lalilu.lmusic
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.facebook.drawee.backends.pipeline.Fresco
-import com.facebook.imagepipeline.core.ImagePipelineConfig
 import com.hjq.permissions.XXPermissions
 import com.lalilu.lmusic.scanner.MSongScanner
 import com.lalilu.lmusic.utils.ToastUtil
@@ -30,11 +28,6 @@ class LMusicApp : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         XXPermissions.setScopedStorage(true)
-
-        val config = ImagePipelineConfig.newBuilder(this)
-            .setDownsampleEnabled(true)
-            .build()
-        Fresco.initialize(this, config)
 
         songScanner.setScanStart {
             println("[开始扫描]: 共计 $it 首歌曲")
