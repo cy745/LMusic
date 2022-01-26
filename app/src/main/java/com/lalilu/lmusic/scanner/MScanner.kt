@@ -24,6 +24,7 @@ interface MScanner {
     /**
      * 扫描循环中得到的cursor
      */
+    @Throws(Exception::class)
     fun onScanForEach(context: Context, cursor: Cursor)
 
     /**
@@ -47,5 +48,6 @@ interface MScanner {
     /**
      * 扫描完成后获取总共扫描得到的条目数量
      */
+    @Throws(Exception::class)
     fun onScanFinish(context: Context, ids: List<Long>)
 }

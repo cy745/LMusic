@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.lalilu.lmusic.database.repository.ScannerRepository
+import com.lalilu.lmusic.utils.TempUtils
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -14,17 +15,18 @@ import kotlinx.coroutines.withContext
  * 负责清除不存在的歌曲和空白专辑
  */
 @HiltWorker
-class DeleteNonExistDataWorker @AssistedInject constructor(
+class ClearDataWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
-    private val repository: ScannerRepository
+    private val repository: ScannerRepository,
+    private val tempUtils: TempUtils
 ) : CoroutineWorker(context, workerParams) {
-
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            val ids = inputData.getLongArray("ids")?.toList()
-                ?: throw NullPointerException("获取扫描结果失败")
+            var ids = tempUtils.value["ids"] as List<*>?
+                ?: throw NullPointerException("数据获取失败")
+            ids = ids.mapNotNull { it as Long }
 
             repository.songDao.getAllId().forEach {
                 if (!ids.contains(it)) {
@@ -39,6 +41,7 @@ class DeleteNonExistDataWorker @AssistedInject constructor(
                     repository.albumDao.deleteById(albumWithSong.album.albumId)
                 }
             }
+            tempUtils.value.clear()
             Result.success()
         } catch (e: Exception) {
             println(e.message)
