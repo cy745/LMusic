@@ -51,6 +51,10 @@ android {
 }
 
 dependencies {
+    // https://github.com/coil-kt/coil
+    // Apache-2.0 License
+    implementation "io.coil-kt:coil:1.4.0"
+
     // https://github.com/scwang90/SmartRefreshLayout
     // Apache-2.0 License
     implementation 'io.github.scwang90:refresh-layout-kernel:2.0.5'
