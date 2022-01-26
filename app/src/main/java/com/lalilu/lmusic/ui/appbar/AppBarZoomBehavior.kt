@@ -20,7 +20,7 @@ import com.dirror.lyricviewx.LyricViewX
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
-import com.lalilu.lmusic.ui.drawee.PaletteDraweeView
+import com.lalilu.lmusic.ui.drawee.PaletteImageView
 import com.lalilu.lmusic.utils.DeviceUtil
 import com.lalilu.lmusic.utils.HapticUtils
 import com.lalilu.lmusic.utils.Mathf
@@ -40,7 +40,7 @@ class AppBarZoomBehavior(
     private var mToolbar: Toolbar? = null
     private var mLyricViewX: LyricViewX? = null
     private var nestedChildView: ViewGroup? = null
-    private var mDraweeView: PaletteDraweeView? = null
+    private var mDraweeView: PaletteImageView? = null
     private var mSpringAnimation: SpringAnimation? = null
     private var mEdgeTransparentView: EdgeTransparentView? = null
     private var mCollapsingToolbarLayout: CollapsingToolbarLayout? = null

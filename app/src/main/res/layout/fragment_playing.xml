@@ -48,7 +48,7 @@
                 app:maxLines="5"
                 app:statusBarScrim="@android:color/transparent">
 
-                <com.lalilu.lmusic.ui.drawee.PaletteDraweeView
+                <com.lalilu.lmusic.ui.drawee.PaletteImageView
                     android:id="@+id/fm_top_pic"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -56,7 +56,6 @@
                     android:fitsSystemWindows="true"
                     app:artUri="@{playerModule.metadataLiveData.description.iconUri}"
                     app:bgPaletteLiveData="@{ev.nowBgPalette}"
-                    app:callerContext="@{context}"
                     app:layout_collapseMode="parallax"
                     app:layout_collapseParallaxMultiplier="0.7"
                     fresco:actualImageScaleType="centerCrop" />
