@@ -29,7 +29,7 @@ class MSongObjModule {
         .let { sessionIntent ->
             PendingIntent.getActivity(
                 context, 0,
-                sessionIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                sessionIntent, PendingIntent.FLAG_IMMUTABLE
             )
         }
 
