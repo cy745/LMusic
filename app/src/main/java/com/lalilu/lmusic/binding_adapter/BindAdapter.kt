@@ -4,12 +4,13 @@ import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
 import android.widget.ImageView
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.facebook.drawee.view.SimpleDraweeView
+import coil.load
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
@@ -34,9 +35,11 @@ fun setIcon(imageView: ImageView, string: String) {
     imageView.setImageResource(result)
 }
 
-@BindingAdapter(value = ["pictureUri", "callerContext"], requireAll = false)
-fun setPictureUri(simpleDraweeView: SimpleDraweeView, uri: Uri?, callerContext: Context?) {
-    simpleDraweeView.setImageURI(uri, callerContext)
+@BindingAdapter(value = ["pictureUri"])
+fun setPictureUri(imageView: AppCompatImageView, uri: Uri?) {
+    imageView.load(uri) {
+        crossfade(true)
+    }
 }
 
 @BindingAdapter(value = ["artUri", "callerContext"], requireAll = false)

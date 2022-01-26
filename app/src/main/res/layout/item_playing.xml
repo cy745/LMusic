@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:fresco="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -40,18 +39,16 @@
         android:background="@drawable/item_click_background_daynight"
         android:theme="@style/Theme.Music">
 
-        <com.lalilu.lmusic.ui.drawee.SamplingDraweeView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/song_album_pic"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_marginStart="20dp"
             android:scaleType="centerCrop"
-            app:callerContext="@{context}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:pictureUri="@{coverUri}"
-            fresco:placeholderImage="@color/gray_600"
             tools:placeholderImage="@tools:sample/avatars" />
 
         <TextView

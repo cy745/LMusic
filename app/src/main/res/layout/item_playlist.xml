@@ -25,7 +25,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent">
 
-        <com.lalilu.lmusic.ui.drawee.SamplingDraweeView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/playlist_pic"
             android:layout_width="100dp"
             android:layout_height="100dp"
