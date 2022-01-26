@@ -7,6 +7,7 @@ import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.imagepipeline.core.ImagePipelineConfig
 import com.hjq.permissions.XXPermissions
 import com.lalilu.lmusic.scanner.MSongScanner
+import com.lalilu.lmusic.utils.ToastUtil
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -17,6 +18,9 @@ class LMusicApp : Application(), Configuration.Provider {
 
     @Inject
     lateinit var songScanner: MSongScanner
+
+    @Inject
+    lateinit var toastUtil: ToastUtil
 
     override fun getWorkManagerConfiguration(): Configuration =
         Configuration.Builder()
@@ -34,6 +38,8 @@ class LMusicApp : Application(), Configuration.Provider {
 
         songScanner.setScanStart {
             println("[开始扫描]: 共计 $it 首歌曲")
+        }.setScanFailed {
+            toastUtil.show(it)
         }.scanStart(this)
     }
 }

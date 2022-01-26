@@ -25,8 +25,8 @@ abstract class BaseMScanner : MScanner, CoroutineScope {
      *  在扫描过程中依次触发预设的生命周期函数
      */
     override fun scanStart(context: Context) {
-        try {
-            launch(Dispatchers.IO) {
+        launch(Dispatchers.IO) {
+            try {
                 val cursor = context.contentResolver.query(
                     EXTERNAL_CONTENT_URI, projection, selection, selectionArgs, sortOrder
                 ) ?: throw NullPointerException("cursor is null")
@@ -39,9 +39,9 @@ abstract class BaseMScanner : MScanner, CoroutineScope {
                 }
                 cursor.close()
                 onScanFinish(context, songIds)
+            } catch (e: Exception) {
+                onScanFailed?.invoke("[${e.javaClass.name}]: ${e.message}\n")
             }
-        } catch (e: Exception) {
-            onScanFailed?.invoke(e.message)
         }
     }
 

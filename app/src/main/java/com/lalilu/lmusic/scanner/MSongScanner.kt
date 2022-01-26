@@ -11,15 +11,15 @@ import androidx.work.workDataOf
 import com.lalilu.lmusic.utils.*
 import com.lalilu.lmusic.worker.*
 import kotlinx.coroutines.Dispatchers
-import java.util.logging.Level
-import java.util.logging.Logger
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 
 @Singleton
-class MSongScanner @Inject constructor() : BaseMScanner() {
+class MSongScanner @Inject constructor(
+    private val tempUtils: TempUtils
+) : BaseMScanner() {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     override var selection: String? = "${MediaStore.Audio.Media.SIZE} >= ? " +
             "and ${MediaStore.Audio.Media.DURATION} >= ? " +
@@ -28,8 +28,6 @@ class MSongScanner @Inject constructor() : BaseMScanner() {
         arrayOf((500 * 1024).toString(), (30 * 1000).toString(), "<unknown>")
 
     override fun onScanForEach(context: Context, cursor: Cursor) {
-        Logger.getLogger("org.jaudiotagger").level = Level.OFF
-
         val songId = cursor.getSongId()                         // 音乐 id
         val songTitle = cursor.getSongTitle()                   // 歌曲标题
         val songDuration = cursor.getSongDuration()             // 音乐时长
@@ -113,13 +111,11 @@ class MSongScanner @Inject constructor() : BaseMScanner() {
     }
 
     override fun onScanFinish(context: Context, ids: List<Long>) {
-        val deleteNonExistSongWorkerRequest = OneTimeWorkRequestBuilder<DeleteNonExistDataWorker>()
+        tempUtils.value["ids"] = ids
+
+        val deleteNonExistSongWorkerRequest = OneTimeWorkRequestBuilder<ClearDataWorker>()
             .addTag("Delete_Song")
-            .setInputData(
-                workDataOf(
-                    "ids" to ids.toLongArray()
-                )
-            ).build()
+            .build()
 
         WorkManager.getInstance(context).enqueueUniqueWork(
             "Delete_Song",

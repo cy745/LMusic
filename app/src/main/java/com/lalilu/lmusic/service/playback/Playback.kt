@@ -2,6 +2,7 @@ package com.lalilu.lmusic.service.playback
 
 import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
+import java.io.IOException
 
 /**
  * 描述播放器可操作行为的基类
@@ -30,7 +31,11 @@ interface Playback<ID> {
 
     /**
      * 传入Uri进行播放
+     *
+     * @param uri 传入音频文件在本机或网络的地址
+     * [IOException] 传入的uri可能无法找到对应的文件
      */
+    @Throws(Exception::class, IOException::class)
     fun playByUri(uri: Uri)
 
     /**

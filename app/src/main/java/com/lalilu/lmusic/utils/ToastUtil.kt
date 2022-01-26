@@ -2,34 +2,54 @@ package com.lalilu.lmusic.utils
 
 import android.content.Context
 import android.widget.Toast
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
 
-object ToastUtil {
-    private var lastText: String? = null
-    private var nextText: String? = null
-    private var refuseTime: Long = 0
-    private var restartTimeout: Long = 2000
+@Singleton
+class ToastUtil @Inject constructor(
+    @ApplicationContext val mContext: Context
+) : CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+    private var lastToast: Pair<String, Toast>? = null
 
-    fun text(text: String): ToastUtil {
-        nextText = text
-        return this
+    fun show(text: String?) = launch(Dispatchers.IO) {
+        if (text == null) {
+            cancelToast(lastToast)
+            return@launch
+        }
+
+        lastToast = if (lastToast == null) {
+            createToast(text)
+        } else {
+            if (text != lastToast?.first) {
+                cancelToast(lastToast)
+                createToast(text)
+            } else {
+                null
+            }
+        }
+
+        showToast(lastToast)
     }
 
-    /**
-     * 内容不变拒绝展示 Toast，记录拒绝时间，
-     * 等待 restartTimeout 后才可正常展示 Toast，
-     * 在 restartTimeout 内，再次触发拒绝将重置时间
-     */
-    fun show(context: Context) {
-        if (lastText == nextText || System.currentTimeMillis() - refuseTime < restartTimeout) {
-            refuseTime = System.currentTimeMillis()
-            return
+    private suspend fun createToast(text: String): Pair<String, Toast> =
+        withContext(Dispatchers.Main) {
+            return@withContext Pair(text, Toast.makeText(mContext, text, Toast.LENGTH_SHORT))
         }
-        lastText = nextText
-        GlobalScope.launch(Dispatchers.Main) {
-            Toast.makeText(context, nextText, Toast.LENGTH_SHORT).show()
+
+    private suspend fun cancelToast(pair: Pair<String, Toast>?) =
+        withContext(Dispatchers.Main) {
+            pair?.second?.cancel()
         }
-    }
+
+    private suspend fun showToast(pair: Pair<String, Toast>?) =
+        withContext(Dispatchers.Main) {
+            pair?.second?.show()
+        }
 }

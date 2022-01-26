@@ -44,8 +44,9 @@ android {
         targetCompatibility JavaVersion.VERSION_15
     }
     packagingOptions {
-        exclude 'META-INF/CONTRIBUTORS.md'
-        exclude 'META-INF/LICENSE.md'
+        resources {
+            excludes += ['META-INF/CONTRIBUTORS.md', 'META-INF/LICENSE.md']
+        }
     }
 }
 
