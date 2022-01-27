@@ -7,6 +7,7 @@ import android.net.Uri
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.FloatRange
+import androidx.annotation.IntRange
 import androidx.core.animation.addListener
 import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
@@ -30,8 +31,34 @@ class PaletteImageView @JvmOverloads constructor(
 ) : View(context, attrs), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     var palette: MutableLiveData<Palette> = MutableLiveData(null)
-    private var blurRadius = 0
-    private var samplingValue: Int = 400
+    var maxOffset = 0
+
+    @IntRange(from = 0, to = 2000)
+    var samplingValue: Int = 400
+        set(value) {
+            field = value
+            launch(Dispatchers.IO) {
+                samplingBitmap = createSamplingBitmap(sourceBitmap, value)
+                updatePalette(samplingBitmap)
+                updateBg(blurRadius)
+            }
+        }
+
+    @IntRange(from = 0, to = 50)
+    var blurRadius = 0
+        set(value) {
+            field = value
+            launch(Dispatchers.IO) {
+                updateBg(blurRadius)
+            }
+        }
+
+    @FloatRange(from = 0.0, to = 1.0)
+    var dragPercent: Float = 0f
+        set(value) {
+            field = value
+            invalidate()
+        }
 
     private var bitmapPainter: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var sourceBitmap: Bitmap? = null
@@ -41,23 +68,6 @@ class PaletteImageView @JvmOverloads constructor(
     private var sourceRect = Rect()
     private var samplingRect = Rect()
     private var destRect = RectF()
-
-    private var minHeight = 0
-    var maxOffset = 0
-
-    private var normalWidth = 0
-    private var normalHeight = 0
-    private var normalTop = 0
-    private var normalBottom = 0
-
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-        this.minHeight = bottom
-        this.normalTop = top
-        this.normalBottom = bottom
-        this.normalWidth = width
-        this.normalHeight = height
-    }
 
     private fun centerCrop(source: Rect, dest: RectF, offsetPercent: Float): RectF {
         val w = source.width().toFloat()
@@ -114,22 +124,9 @@ class PaletteImageView @JvmOverloads constructor(
         }
     }
 
-    @FloatRange(from = 0.0, to = 1.0)
-    private var dragPercent: Float = 0f
-
-    fun setDragPercent(animatePercent: Float) {
-        dragPercent = animatePercent
-        invalidate()
-    }
-
     private suspend fun fadeIn() = withContext(Dispatchers.Main) {
         if (animator.isStarted || animator.isRunning) animator.end()
         animator.start()
-    }
-
-    fun blurBg(percent: Float) = launch(Dispatchers.IO) {
-        blurRadius = (percent * 50).roundToInt()
-        updateBg(blurRadius)
     }
 
     private suspend inline fun updateBg(radius: Int) =
