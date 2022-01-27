@@ -23,7 +23,6 @@ import com.lalilu.R
 import com.lalilu.lmusic.ui.drawee.PaletteImageView
 import com.lalilu.lmusic.utils.DeviceUtil
 import com.lalilu.lmusic.utils.HapticUtils
-import com.lalilu.lmusic.utils.Mathf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -113,13 +112,14 @@ class AppBarZoomBehavior(
                 mDraweeView?.let { it.alpha = percent }
             }
             hp.deviceHeight = DeviceUtil.getHeight(appBarLayout.context)
-            hp.normalHeight = mDraweeView?.height ?: -1
+            hp.normalHeight = appBarLayout.width
             hp.maxExpandHeight = hp.deviceHeight - hp.normalHeight
         }
 
         // mLyricViewX 从小窗打开后高度错误问题，不懂为什么需要协程才可以成功设置高度
         setHeightToView(mLyricViewX, helper.deviceHeight - 100)
         setHeightToView(mEdgeTransparentView, helper.deviceHeight - 100)
+        setHeightToView(mDraweeView, helper.deviceHeight)
 
         if (helper.currentState == STATE_FULLY_EXPENDED) {
             resizeChild(appBarLayout, helper.deviceHeight)
@@ -182,23 +182,23 @@ class AppBarZoomBehavior(
         if (nextPosition <= 0 || helper.normalHeight <= 0) return
 
         // 限定 appbar 的高度在指定范围内
-        abl.bottom = Mathf.clamp(helper.normalHeight, helper.deviceHeight, nextPosition)
+        abl.bottom = nextPosition.coerceIn(helper.normalHeight, helper.deviceHeight)
 
         val offsetPosition = abl.bottom - helper.normalHeight
-        val scaleValue = Mathf.clamp(0F, 5F, abl.bottom / helper.normalHeight.toFloat())
-        val animatePercent = Mathf.clamp(0F, 1F, offsetPosition / helper.maxExpandHeight.toFloat())
-
-        mDraweeView?.let {
-            it.blurBg(animatePercent)
-            it.scaleX = scaleValue
-            it.scaleY = scaleValue
-            it.translationY = offsetPosition / 2F
-        }
+        val animatePercent = (offsetPosition / helper.maxExpandHeight.toFloat()).coerceIn(0F, 1F)
+        val dragPercent = (offsetPosition / helper.maxDragHeight.toFloat()).coerceIn(0F, 1F)
 
         val interpolation = interpolator.getInterpolation(animatePercent)
         val reverseValue = if (animatePercent in 0F..0.5F) animatePercent else 1F - animatePercent
         val alphaPercentDecrease = (1F - interpolation * 2).coerceAtLeast(0F)
         val alphaPercentIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
+
+        mDraweeView?.let {
+            it.blurBg(animatePercent)
+            it.changeScale(dragPercent)
+            it.top = -(helper.normalHeight / 2 * reverseValue).toInt()
+//            it.translationY = offsetPosition / 2F
+        }
 
         mCollapsingToolbarLayout?.let {
             val toolbarTextColor = Color.argb((alphaPercentDecrease * 255).toInt(), 255, 255, 255)
