@@ -28,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.qinc.lib.edgetranslucent.EdgeTransparentView
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.roundToInt
 
 class AppBarZoomBehavior(
     private val helper: AppBarStatusHelper,
@@ -194,8 +195,8 @@ class AppBarZoomBehavior(
         val alphaPercentIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
 
         mDraweeView?.let {
-            it.blurBg(animatePercent)
-            it.setDragPercent(dragPercent)
+            it.blurRadius = (animatePercent * 50).roundToInt()
+            it.dragPercent = dragPercent
             it.top = -(helper.normalHeight / 2 * reverseValue).toInt()
 //            it.translationY = offsetPosition / 2F
         }
