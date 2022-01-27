@@ -195,7 +195,7 @@ class AppBarZoomBehavior(
 
         mDraweeView?.let {
             it.blurBg(animatePercent)
-            it.changeScale(dragPercent)
+            it.setDragPercent(dragPercent)
             it.top = -(helper.normalHeight / 2 * reverseValue).toInt()
 //            it.translationY = offsetPosition / 2F
         }

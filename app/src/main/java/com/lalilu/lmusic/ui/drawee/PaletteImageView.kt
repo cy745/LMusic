@@ -5,7 +5,8 @@ import android.content.Context
 import android.graphics.*
 import android.net.Uri
 import android.util.AttributeSet
-import androidx.appcompat.widget.AppCompatImageView
+import android.view.View
+import androidx.annotation.FloatRange
 import androidx.core.animation.addListener
 import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
@@ -18,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
@@ -25,7 +27,7 @@ import kotlin.math.roundToInt
  */
 class PaletteImageView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
-) : AppCompatImageView(context, attrs), CoroutineScope {
+) : View(context, attrs), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     var palette: MutableLiveData<Palette> = MutableLiveData(null)
     private var blurRadius = 0
@@ -40,10 +42,54 @@ class PaletteImageView @JvmOverloads constructor(
     private var samplingRect = Rect()
     private var destRect = RectF()
 
+    private var minHeight = 0
+    var maxOffset = 0
+
+    private var normalWidth = 0
+    private var normalHeight = 0
+    private var normalTop = 0
+    private var normalBottom = 0
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        this.minHeight = bottom
+        this.normalTop = top
+        this.normalBottom = bottom
+        this.normalWidth = width
+        this.normalHeight = height
+    }
+
+    private fun centerCrop(source: Rect, dest: RectF, offsetPercent: Float): RectF {
+        val w = source.width().toFloat()
+        val h = source.height().toFloat()
+        val x = dest.width()
+        val y = dest.height()
+
+        val sourceWHRatio = w / h
+        val offset: Float
+
+        if (sourceWHRatio > x / y) {
+            offset = abs(x - sourceWHRatio * y) / 2
+            dest.set(
+                -offset * (1 - offsetPercent), 0f,
+                x + offset * (1 + offsetPercent), y
+            )
+        } else {
+            offset = abs(y - x / sourceWHRatio) / 2
+            dest.set(
+                0f, -offset * (1 - offsetPercent),
+                x, y + offset * (1 + offsetPercent)
+            )
+        }
+        return dest
+    }
+
     override fun onDraw(canvas: Canvas) {
-        destRect.set(0f, 0f, width.toFloat(), height.toFloat())
+        destRect.set(0f, 0f, width.toFloat(), width.toFloat())
         sourceBitmap?.let {
             sourceRect.set(0, 0, it.width, it.height)
+            centerCrop(sourceRect, destRect, dragPercent)
+            maxOffset = (destRect.height() - destRect.width()).toInt()
             canvas.drawBitmap(it, sourceRect, destRect, bitmapPainter)
         }
         blurBitmap?.let {
@@ -68,7 +114,15 @@ class PaletteImageView @JvmOverloads constructor(
         }
     }
 
-    private suspend fun FadeIn() = withContext(Dispatchers.Main) {
+    @FloatRange(from = 0.0, to = 1.0)
+    private var dragPercent: Float = 0f
+
+    fun setDragPercent(animatePercent: Float) {
+        dragPercent = animatePercent
+        invalidate()
+    }
+
+    private suspend fun fadeIn() = withContext(Dispatchers.Main) {
         if (animator.isStarted || animator.isRunning) animator.end()
         animator.start()
     }
@@ -115,7 +169,7 @@ class PaletteImageView @JvmOverloads constructor(
             )
         }
 
-    override fun setImageURI(uri: Uri?) {
+    fun setImageURI(uri: Uri?) {
         if (uri == null) {
             this.sourceBitmap = null
             this.samplingBitmap = null
@@ -130,10 +184,10 @@ class PaletteImageView @JvmOverloads constructor(
                 .allowHardware(false)
                 .target {
                     launch(Dispatchers.IO) {
+                        fadeIn()
                         sourceBitmap = it.toBitmap()
                         samplingBitmap = createSamplingBitmap(sourceBitmap, samplingValue)
                         updatePalette(samplingBitmap)
-                        FadeIn()
                         updateBg(blurRadius)
                     }
                 }.build()
