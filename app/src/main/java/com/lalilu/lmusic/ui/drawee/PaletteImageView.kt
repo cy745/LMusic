@@ -1,10 +1,12 @@
 package com.lalilu.lmusic.ui.drawee
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.net.Uri
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.animation.addListener
 import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
 import coil.imageLoader
@@ -29,6 +31,7 @@ class PaletteImageView @JvmOverloads constructor(
     private var blurRadius = 0
     private var samplingValue: Int = 400
 
+    private var bitmapPainter: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var sourceBitmap: Bitmap? = null
     private var samplingBitmap: Bitmap? = null
     private var blurBitmap: Bitmap? = null
@@ -41,12 +44,33 @@ class PaletteImageView @JvmOverloads constructor(
         destRect.set(0f, 0f, width.toFloat(), height.toFloat())
         sourceBitmap?.let {
             sourceRect.set(0, 0, it.width, it.height)
-            canvas.drawBitmap(it, sourceRect, destRect, null)
+            canvas.drawBitmap(it, sourceRect, destRect, bitmapPainter)
         }
         blurBitmap?.let {
             samplingRect.set(0, 0, it.width, it.height)
-            canvas.drawBitmap(it, samplingRect, destRect, null)
+            canvas.drawBitmap(it, samplingRect, destRect, bitmapPainter)
         }
+    }
+
+    private val animator = ValueAnimator.ofFloat(0f, 1f).apply {
+        duration = 500
+        addListener(onStart = {
+            bitmapPainter.alpha = 0
+            invalidate()
+        }, onEnd = {
+            bitmapPainter.alpha = 255
+            invalidate()
+        })
+        addUpdateListener {
+            val value = it.animatedValue as Float
+            bitmapPainter.alpha = (value * 255).roundToInt()
+            invalidate()
+        }
+    }
+
+    private suspend fun FadeIn() = withContext(Dispatchers.Main) {
+        if (animator.isStarted || animator.isRunning) animator.end()
+        animator.start()
     }
 
     fun blurBg(percent: Float) = launch(Dispatchers.IO) {
@@ -108,8 +132,9 @@ class PaletteImageView @JvmOverloads constructor(
                     launch(Dispatchers.IO) {
                         sourceBitmap = it.toBitmap()
                         samplingBitmap = createSamplingBitmap(sourceBitmap, samplingValue)
-                        updateBg(blurRadius)
                         updatePalette(samplingBitmap)
+                        FadeIn()
+                        updateBg(blurRadius)
                     }
                 }.build()
         )
