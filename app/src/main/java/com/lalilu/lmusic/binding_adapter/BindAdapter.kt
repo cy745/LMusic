@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import coil.load
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
@@ -34,10 +35,11 @@ fun setIcon(imageView: ImageView, string: String) {
     imageView.setImageResource(result)
 }
 
-@BindingAdapter(value = ["pictureUri"])
-fun setPictureUri(imageView: AppCompatImageView, uri: Uri?) {
+@BindingAdapter(value = ["pictureUri", "samplingValue"], requireAll = false)
+fun setPictureUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
     imageView.load(uri) {
         crossfade(true)
+        if (samplingValue > 0) size(samplingValue)
     }
 }
 

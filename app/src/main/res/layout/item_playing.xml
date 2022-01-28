@@ -49,6 +49,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:pictureUri="@{coverUri}"
+            app:samplingValue="@{200}"
             tools:placeholderImage="@tools:sample/avatars" />
 
         <TextView
