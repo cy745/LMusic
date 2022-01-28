@@ -62,10 +62,9 @@ class PaletteImageView @JvmOverloads constructor(
 
     @FloatRange(from = 0.0, to = 1.0)
     var dragPercent: Float = 0f
-        set(value) {
-            field = value
-            invalidate()
-        }
+
+    @FloatRange(from = 0.0, to = 1.0)
+    var scalePercent: Float = 0f
 
     private var bitmapPainter: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var sourceBitmap: Bitmap? = null
@@ -76,7 +75,29 @@ class PaletteImageView @JvmOverloads constructor(
     private var samplingRect = Rect()
     private var destRect = RectF()
 
-    private fun centerCrop(source: Rect, dest: RectF, offsetPercent: Float): RectF {
+    /**
+     * 计算图片可拖动展开的最大位移距离
+     */
+    private fun calcMaxOffset(source: Bitmap?): Int {
+        source ?: return 0
+
+        return if (source.width / source.height > 0) 0
+        else (width * source.height / source.width - width)
+            .coerceAtLeast(0)
+    }
+
+    /**
+     * 按照CenterCrop的规则，获取调整后的dest位置
+     *
+     * @param source Bitmap的大小
+     * @param dest 目标位置
+     */
+    private fun centerCrop(
+        source: Rect,
+        dest: RectF,
+        offsetPercent: Float,
+        scalePercent: Float
+    ): RectF {
         val w = source.width().toFloat()
         val h = source.height().toFloat()
         val x = dest.width()
@@ -88,13 +109,13 @@ class PaletteImageView @JvmOverloads constructor(
         if (sourceWHRatio > x / y) {
             offset = abs(x - sourceWHRatio * y) / 2
             dest.set(
-                -offset * (1 - offsetPercent), 0f,
+                dest.left - offset * (1 - offsetPercent), dest.top,
                 x + offset * (1 + offsetPercent), y
             )
         } else {
             offset = abs(y - x / sourceWHRatio) / 2
             dest.set(
-                0f, -offset * (1 - offsetPercent),
+                dest.left, dest.top - offset * (1 - offsetPercent),
                 x, y + offset * (1 + offsetPercent)
             )
         }
@@ -105,8 +126,7 @@ class PaletteImageView @JvmOverloads constructor(
         destRect.set(0f, 0f, width.toFloat(), width.toFloat())
         sourceBitmap?.let {
             sourceRect.set(0, 0, it.width, it.height)
-            centerCrop(sourceRect, destRect, dragPercent)
-            maxOffset = (destRect.height() - destRect.width()).toInt()
+            centerCrop(sourceRect, destRect, dragPercent, scalePercent)
             canvas.drawBitmap(it, sourceRect, destRect, bitmapPainter)
         }
         blurBitmap?.let {
@@ -190,6 +210,7 @@ class PaletteImageView @JvmOverloads constructor(
                     launch(Dispatchers.IO) {
                         fadeIn()
                         sourceBitmap = it.toBitmap()
+                        maxOffset = calcMaxOffset(sourceBitmap)
                         samplingBitmap = createSamplingBitmap(sourceBitmap, samplingValue)
                         updatePalette(samplingBitmap)
                         updateBg(blurRadius)
