@@ -154,7 +154,12 @@ class AppBarZoomBehavior(
                 if (dy < 0) {
                     // 根据所在位置的百分比为滑动添加阻尼
                     // 经过阻尼衰减得到正确的 nextPosition
-                    val percent = 1 - offsetPosition / helper.maxDragHeight.toFloat()
+                    val percent =
+                        if (mDraweeView != null && mDraweeView!!.maxOffset > helper.maxDragHeight) {
+                            1 - offsetPosition / mDraweeView!!.maxOffset.toFloat()
+                        } else {
+                            1 - offsetPosition / helper.maxDragHeight.toFloat()
+                        }
                     if (percent in 0F..1F) nextPosition = child.bottom - (dy * percent).toInt()
                 }
 
@@ -194,17 +199,21 @@ class AppBarZoomBehavior(
         val alphaPercentDecrease = (1F - interpolation * 2).coerceAtLeast(0F)
         val alphaPercentIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
 
+        val top = (helper.normalHeight / 2 * reverseValue).toInt()
         mDraweeView?.let {
-            it.blurRadius = (animatePercent * 50).roundToInt()
             it.dragPercent = dragPercent
-            it.top = -(helper.normalHeight / 2 * reverseValue).toInt()
+            it.scalePercent =
+                ((offsetPosition.toFloat() - it.maxOffset) / (helper.maxExpandHeight.toFloat() - it.maxOffset))
+                    .coerceIn(0f, 1f)
+            it.blurRadius = (it.scalePercent * 50).roundToInt()
+            it.top = -top
 //            it.translationY = offsetPosition / 2F
         }
 
         mCollapsingToolbarLayout?.let {
+            it.top = top
+            it.bottom = abl.bottom
             val toolbarTextColor = Color.argb((alphaPercentDecrease * 255).toInt(), 255, 255, 255)
-            it.top = (helper.normalHeight / 2 * reverseValue).toInt()
-            it.bottom = (helper.normalHeight + helper.maxExpandHeight * animatePercent).toInt()
             it.setExpandedTitleColor(toolbarTextColor)
         }
 
