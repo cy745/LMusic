@@ -20,11 +20,11 @@ android {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
         targetSdkVersion 32
-        versionCode 17
-        versionName "1.3.12"
-        ndk {
-            abiFilters "armeabi-v7a"
-        }
+        versionCode 18
+        versionName "1.3.13"
+//        ndk {
+//            abiFilters "armeabi-v7a"
+//        }
     }
 
     kotlinOptions {

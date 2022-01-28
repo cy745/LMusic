@@ -26,12 +26,13 @@
         <com.lalilu.lmusic.ui.drawee.SquareImageView
             android:id="@+id/album_pic"
             android:layout_width="0dp"
-            android:layout_height="300dp"
+            android:layout_height="0dp"
             android:scaleType="centerCrop"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:pictureUri="@{coverUri}"
+            app:samplingValue="@{400}"
             tools:placeholderImage="@tools:sample/avatars" />
 
         <TextView
