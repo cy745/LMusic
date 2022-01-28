@@ -13,12 +13,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
 import coil.imageLoader
 import coil.request.ImageRequest
-import com.commit451.nativestackblur.NativeStackBlur
+import com.lalilu.lmusic.utils.StackBlurUtils
 import com.lalilu.lmusic.utils.toBitmap
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -26,9 +28,14 @@ import kotlin.math.roundToInt
 /**
  * 附带有Palette的ImageView
  */
+@AndroidEntryPoint
 class PaletteImageView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : View(context, attrs), CoroutineScope {
+
+    @Inject
+    lateinit var stackBlur: StackBlurUtils
+
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     var palette: MutableLiveData<Palette> = MutableLiveData(null)
     var maxOffset = 0
@@ -145,8 +152,8 @@ class PaletteImageView @JvmOverloads constructor(
 
     private suspend inline fun createBlurBitmap(source: Bitmap?, radius: Int): Bitmap? =
         withContext(Dispatchers.IO) {
-            if (source == null || radius == 0) return@withContext null
-            return@withContext NativeStackBlur.process(source, radius)
+            if (radius == 0) return@withContext null
+            return@withContext stackBlur.processWithCache(source, radius)
         }
 
     private suspend inline fun createSamplingBitmap(source: Bitmap?, samplingValue: Int): Bitmap? =
