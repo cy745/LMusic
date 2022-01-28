@@ -28,7 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.qinc.lib.edgetranslucent.EdgeTransparentView
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.roundToInt
+import kotlin.math.max
 
 class AppBarZoomBehavior(
     private val helper: AppBarStatusHelper,
@@ -154,12 +154,8 @@ class AppBarZoomBehavior(
                 if (dy < 0) {
                     // 根据所在位置的百分比为滑动添加阻尼
                     // 经过阻尼衰减得到正确的 nextPosition
-                    val percent =
-                        if (mDraweeView != null && mDraweeView!!.maxOffset > helper.maxDragHeight) {
-                            1 - offsetPosition / mDraweeView!!.maxOffset.toFloat()
-                        } else {
-                            1 - offsetPosition / helper.maxDragHeight.toFloat()
-                        }
+                    val maxDragOffset = max(helper.maxDragHeight, mDraweeView?.maxOffset ?: 0)
+                    val percent = 1 - offsetPosition / maxDragOffset.toFloat()
                     if (percent in 0F..1F) nextPosition = child.bottom - (dy * percent).toInt()
                 }
 
@@ -192,26 +188,26 @@ class AppBarZoomBehavior(
 
         val offsetPosition = abl.bottom - helper.normalHeight
         val animatePercent = (offsetPosition / helper.maxExpandHeight.toFloat()).coerceIn(0F, 1F)
-        val dragPercent = (offsetPosition / helper.maxDragHeight.toFloat()).coerceIn(0F, 1F)
 
         val interpolation = interpolator.getInterpolation(animatePercent)
-        val reverseValue = if (animatePercent in 0F..0.5F) animatePercent else 1F - animatePercent
         val alphaPercentDecrease = (1F - interpolation * 2).coerceAtLeast(0F)
         val alphaPercentIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
+        val reverseValue = if (animatePercent in 0F..0.5F) animatePercent else 1F - animatePercent
 
-        val top = (helper.normalHeight / 2 * reverseValue).toInt()
+        val topOffset = (helper.normalHeight / 2 * reverseValue).toInt()
         mDraweeView?.let {
-            it.dragPercent = dragPercent
-            it.scalePercent =
-                ((offsetPosition.toFloat() - it.maxOffset) / (helper.maxExpandHeight.toFloat() - it.maxOffset))
+            val scalePercent =
+                ((offsetPosition - it.maxOffset).toFloat() / (helper.maxExpandHeight - it.maxOffset))
                     .coerceIn(0f, 1f)
-            it.blurRadius = (it.scalePercent * 50).roundToInt()
-            it.top = -top
-//            it.translationY = offsetPosition / 2F
+            val maxDragOffset = max(helper.maxDragHeight, it.maxOffset).toFloat()
+            it.dragPercent = (offsetPosition / maxDragOffset).coerceIn(0F, 1F)
+            it.scalePercent = scalePercent
+            it.blurPercent = scalePercent
+            it.top = -topOffset
         }
 
         mCollapsingToolbarLayout?.let {
-            it.top = top
+            it.top = topOffset
             it.bottom = abl.bottom
             val toolbarTextColor = Color.argb((alphaPercentDecrease * 255).toInt(), 255, 255, 255)
             it.setExpandedTitleColor(toolbarTextColor)
