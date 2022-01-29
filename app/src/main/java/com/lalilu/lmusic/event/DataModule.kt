@@ -11,13 +11,16 @@ import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_REPEAT_MODE
 import com.lalilu.lmusic.database.LMusicDataBase
+import com.lalilu.lmusic.database.MediaSource
 import com.lalilu.lmusic.database.repository.RepositoryFactory
-import com.lalilu.lmusic.domain.entity.FullSongInfo
 import com.lalilu.lmusic.domain.entity.MAlbum
-import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.domain.entity.MSongDetail
 import com.lalilu.lmusic.manager.LMusicNotificationManager
-import com.lalilu.lmusic.utils.*
+import com.lalilu.lmusic.utils.Mathf
+import com.lalilu.lmusic.utils.getLastMediaMetadata
+import com.lalilu.lmusic.utils.getLastPlaybackState
+import com.lalilu.lmusic.utils.saveTo
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -31,10 +34,14 @@ class DataModule @Inject constructor(
     @ApplicationContext context: Context,
     database: LMusicDataBase,
     notificationManager: LMusicNotificationManager,
-    playlistFactory: RepositoryFactory,
+    mediaSource: MediaSource,
     private val libraryFactory: RepositoryFactory,
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
+
+    init {
+        mediaSource.getAllSongs()
+    }
 
     private val sharedPref = context.getSharedPreferences(
         Config.SHARED_PLAYER, Context.MODE_PRIVATE
@@ -78,19 +85,19 @@ class DataModule @Inject constructor(
     /**
      * 根据当前歌单ID从数据库获取对应歌单的歌曲并转换成 List<MSong>
      */
-    private val _nowList: Flow<List<FullSongInfo>> = playlistFactory.list
+    private val _nowList: Flow<List<MSong>> = mediaSource.songs
 
     // 3.将 List<MSong> 公开给其他位置使用
-    val nowListFlow: Flow<List<FullSongInfo>> = _nowList
+    val nowListFlow: Flow<List<MSong>> = _nowList
 
-    private val allPlaylistFlow = database.playlistDao().getAllPlaylistFlow().mapLatest { items ->
-        items.onEach { playlist ->
-            playlist.playlistCoverUri = database.playlistDao()
-                .getLastCreateSongCoverByPlaylistId(playlist.playlistId)
-        }
-    }.flowOn(Dispatchers.IO)
+//    private val allPlaylistFlow = database.playlistDao().getAllPlaylistFlow().mapLatest { items ->
+//        items.onEach { playlist ->
+//            playlist.playlistCoverUri = database.playlistDao()
+//                .getLastCreateSongCoverByPlaylistId(playlist.playlistId)
+//        }
+//    }.flowOn(Dispatchers.IO)
+//    val allPlaylist: LiveData<List<MPlaylist>> = allPlaylistFlow.asLiveData()
 
-    val allPlaylist: LiveData<List<MPlaylist>> = allPlaylistFlow.asLiveData()
     val allAlbum: LiveData<List<MAlbum>> = database.albumDao()
         .getAllAlbumLiveData()
 

@@ -3,11 +3,11 @@ package com.lalilu.lmusic.service.playback
 import android.content.Context
 import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
-import com.lalilu.lmusic.domain.entity.FullSongInfo
+import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import com.lalilu.lmusic.utils.Mathf
-import com.lalilu.lmusic.utils.toFullMetadata
+import com.lalilu.lmusic.utils.toSimpleMetadata
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -21,17 +21,17 @@ class MSongPlaybackFlow @Inject constructor(
     @ApplicationContext context: Context,
     dataModule: DataModule,
     override var mAudioFocusManager: LMusicAudioFocusManager
-) : FlowPlayback<FullSongInfo, List<FullSongInfo>, String>(context) {
+) : FlowPlayback<MSong, List<MSong>, String>(context) {
     override val mediaIdFlow: Flow<String?> = dataModule.mediaId
-    override val listFlow: Flow<List<FullSongInfo>> = dataModule.nowListFlow
+    override val listFlow: Flow<List<MSong>> = dataModule.nowListFlow
     override val repeatModeFlow: Flow<Int> = dataModule.repeatModeFlow
     override var onPlayerCallback: Playback.OnPlayerCallback? = null
 
-    override val playing: Flow<FullSongInfo?> =
+    override val playing: Flow<MSong?> =
         mediaIdFlow.combine(listFlow) { id, list -> getItemFromListByID(list, id) }
-    override val previous: Flow<FullSongInfo?> =
+    override val previous: Flow<MSong?> =
         mediaIdFlow.combine(listFlow) { id, list -> getPreviousItemFromListByNowID(list, id) }
-    override val next: Flow<FullSongInfo?> =
+    override val next: Flow<MSong?> =
         mediaIdFlow.combine(listFlow) { id, list -> getNextItemFromListByNowID(list, id) }
 
     init {
@@ -39,34 +39,34 @@ class MSongPlaybackFlow @Inject constructor(
     }
 
     override fun getPreviousItemFromListByNowID(
-        list: List<FullSongInfo>,
+        list: List<MSong>,
         id: String?
-    ): FullSongInfo? {
-        val index = list.indexOfFirst { it.song.songId.toString() == id }
+    ): MSong? {
+        val index = list.indexOfFirst { it.songId.toString() == id }
         if (index < 0) return null
 
         val previous = Mathf.clampInLoop(0, list.size - 1, index - 1)
         return list[previous]
     }
 
-    override fun getNextItemFromListByNowID(list: List<FullSongInfo>, id: String?): FullSongInfo? {
-        val index = list.indexOfFirst { it.song.songId.toString() == id }
+    override fun getNextItemFromListByNowID(list: List<MSong>, id: String?): MSong? {
+        val index = list.indexOfFirst { it.songId.toString() == id }
         if (index < 0) return null
 
         val next = Mathf.clampInLoop(0, list.size - 1, index + 1)
         return list[next]
     }
 
-    override fun getItemFromListByID(list: List<FullSongInfo>, id: String?): FullSongInfo? {
-        val index = list.indexOfFirst { it.song.songId.toString() == id }
+    override fun getItemFromListByID(list: List<MSong>, id: String?): MSong? {
+        val index = list.indexOfFirst { it.songId.toString() == id }
         return if (index < 0) null else list[index]
     }
 
-    override fun getUriFromItem(item: FullSongInfo): Uri {
-        return item.song.songUri
+    override fun getUriFromItem(item: MSong): Uri {
+        return item.songUri
     }
 
-    override fun getMetaDataFromItem(item: FullSongInfo): MediaMetadataCompat {
-        return item.song.toFullMetadata(item.detail)
+    override fun getMetaDataFromItem(item: MSong): MediaMetadataCompat {
+        return item.toSimpleMetadata()
     }
 }

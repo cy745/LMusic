@@ -50,6 +50,10 @@ android {
     }
 }
 
+android.sourceSets.all {
+    java.srcDirs += "src/third-party/jaudiotagger-android/src"
+}
+
 dependencies {
     // https://github.com/Commit451/NativeStackBlur
     // Apache-2.0 License
@@ -79,7 +83,7 @@ dependencies {
     // http://www.jthink.net/jaudiotagger/
     // https://github.com/Kaned1as/jaudiotagger
     // LGPL-3.0 License
-    implementation "com.github.Adonai:jaudiotagger:2.3.14"
+    // implementation "com.github.Adonai:jaudiotagger:2.3.14"
 
     // https://github.com/Moriafly/LyricViewX
     // https://github.com/cy745/LyricViewX
