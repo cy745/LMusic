@@ -3,14 +3,16 @@ package com.lalilu.lmusic.utils
 import android.graphics.PointF
 import android.view.MotionEvent
 import android.view.ViewParent
-import kotlin.math.abs
 
 /**
  *  为子父组件之间提供处理滑动冲突的能力
  *
  *  内部开始竖向开始滑动后固定滑动方向，屏蔽父组件的横向滑动
  */
-class AntiSlideConflict {
+class AntiSlideConflict(
+    val whenToSolve: (disX: Float, disY: Float) -> Boolean,
+    val isInterceptNow: (disX: Float, disY: Float) -> Boolean
+) {
     // 存储点击点的位置信息
     private val mPointGapF: PointF = PointF(0f, 0f)
     private var isSolve: Boolean = false
@@ -27,11 +29,10 @@ class AntiSlideConflict {
             }
             MotionEvent.ACTION_MOVE -> {
                 if (!isSolve) {
-                    val disX = abs(ev.x - mPointGapF.x)
-                    val disY = abs(ev.y - mPointGapF.y)
-                    if (disX != disY) {
-                        // 判断滑动的方向，如果是竖向滑动则触发拦截
-                        isIntercept = disX < disY
+                    val disX = ev.x - mPointGapF.x
+                    val disY = ev.y - mPointGapF.y
+                    if (whenToSolve(disX, disY)) {
+                        isIntercept = isInterceptNow(disX, disY)
                         isSolve = true
                     }
                 }
