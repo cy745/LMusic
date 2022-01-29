@@ -70,7 +70,6 @@ dependencies {
     // https://mvnrepository.com/artifact/de.halfbit/tinymachine
     implementation 'de.halfbit:tinymachine:1.1.0'
 
-
     implementation 'com.github.cy745:kanhira:2de73b1f0a'
 
     // https://github.com/belerweb/pinyin4j
@@ -79,6 +78,7 @@ dependencies {
 
     // http://www.jthink.net/jaudiotagger/
     // https://github.com/Kaned1as/jaudiotagger
+    // LGPL-3.0 License
     implementation "com.github.Adonai:jaudiotagger:2.3.14"
 
     // https://github.com/Moriafly/LyricViewX

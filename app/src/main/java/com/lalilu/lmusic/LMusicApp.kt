@@ -30,6 +30,7 @@ class LMusicApp : Application(), Configuration.Provider {
         XXPermissions.setScopedStorage(true)
 
         songScanner.setScanStart {
+            toastUtil.show("[开始扫描]: 共计 $it 首歌曲")
             println("[开始扫描]: 共计 $it 首歌曲")
         }.setScanFailed {
             toastUtil.show(it)
