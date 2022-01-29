@@ -1,17 +1,18 @@
 package com.lalilu.lmusic.fragment
 
 import android.content.Context
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
+import com.lalilu.lmusic.adapter.OnItemDragAdapter
+import com.lalilu.lmusic.adapter.OnItemSwipedAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.binding_adapter.setItems
-import com.lalilu.lmusic.domain.entity.FullSongInfo
+import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.LMusicPlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
@@ -40,33 +41,28 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     lateinit var dataModule: DataModule
 
     override fun getDataBindingConfig(): DataBindingConfig {
-//        mAdapter.draggableModule.isDragEnabled = true
-//        mAdapter.draggableModule.isSwipeEnabled = true
-//        mAdapter.draggableModule.setOnItemDragListener(object : OnItemDragAdapter() {
-//            override fun onItemDragEnd(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-//                mEvent.nowPlaylistWithSongsRequest.postData(mEvent.nowPlaylistWithSongsRequest.getData().value.also {
-//                    it?.songs = ArrayList(mAdapter.data)
-//                })
-//            }
-//        })
-//        mAdapter.draggableModule.setOnItemSwipeListener(object : OnItemSwipedAdapter() {
-//            var mediaId: Long = 0
-//            override fun onItemSwipeStart(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-//                mediaId = mAdapter.getItem(pos).songId
-//            }
-//
-//            override fun onItemSwiped(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-//                mEvent.nowPlaylistWithSongsRequest.postData(mEvent.nowPlaylistWithSongsRequest.getData().value.also {
-//                    it?.songs = ArrayList(mAdapter.data)
-//                })
-//            }
-//        })
+        mAdapter.draggableModule.isDragEnabled = true
+        mAdapter.draggableModule.isSwipeEnabled = true
+        mAdapter.draggableModule.setOnItemDragListener(object : OnItemDragAdapter() {
+            override fun onItemDragEnd(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
+                println("onItemDragEnd: pos $pos")
+            }
+        })
+        mAdapter.draggableModule.setOnItemSwipeListener(object : OnItemSwipedAdapter() {
+            override fun onItemSwipeStart(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
+                println("onItemSwipeStart: pos $pos")
+            }
+
+            override fun onItemSwiped(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
+                println("onItemSwiped: pos $pos")
+            }
+        })
 
         mAdapter.setOnItemClickListener { adapter, _, position ->
-            val info = adapter.data[position] as FullSongInfo
+            val info = adapter.data[position] as MSong
 
             playerModule.mediaController?.transportControls
-                ?.playFromMediaId(info.song.songId.toString(), null)
+                ?.playFromMediaId(info.songId.toString(), null)
         }
 
         return DataBindingConfig(R.layout.fragment_playing)
@@ -80,7 +76,9 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         val fmToolbar = binding.fmToolbar
         val fmLyricViewX = binding.fmLyricViewX
         val fmAppbarLayout = binding.fmAppbarLayout
-        val fmTips = binding.fmTips
+
+        mActivity?.setSupportActionBar(fmToolbar)
+        mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)
 
         dataModule.songDetail.observe(viewLifecycleOwner) {
             fmLyricViewX.setLabel("暂无歌词")
@@ -103,18 +101,6 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
                 mEvent.collapseSearchView()
             lastOffset = verticalOffset
         })
-
-
-        //        mAdapter.draggableModule.attachToRecyclerView(binding.nowPlayingRecyclerView)
-
-        mActivity?.setSupportActionBar(fmToolbar)
-
-        WorkManager.getInstance(requireContext()).getWorkInfosByTagLiveData("Save_Song")
-            .observe(viewLifecycleOwner) { list ->
-                val size = list.filter { it.state == WorkInfo.State.SUCCEEDED }.size
-                val max = list.size
-                fmTips.text = "$size / $max"
-            }
     }
 
     private fun dp2px(context: Context, value: Int): Float {

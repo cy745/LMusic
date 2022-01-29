@@ -9,13 +9,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import coil.load
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
+import com.lalilu.lmusic.EmbeddedFetcher
 import com.lalilu.lmusic.adapter.MSongPlayingAdapter
-import com.lalilu.lmusic.domain.entity.FullSongInfo
+import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.ui.drawee.PaletteImageView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
@@ -38,7 +38,9 @@ fun setIcon(imageView: ImageView, string: String) {
 @BindingAdapter(value = ["pictureUri", "samplingValue"], requireAll = false)
 fun setPictureUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
     imageView.load(uri) {
-        crossfade(true)
+        placeholder(R.drawable.ic_loader_line)
+        error(R.drawable.ic_error_warning_line)
+        fetcher(EmbeddedFetcher())
         if (samplingValue > 0) size(samplingValue)
     }
 }
@@ -78,13 +80,13 @@ fun addGridItemDecoration(recyclerView: RecyclerView, gridGap: Int, gridSpanCoun
     recyclerView.addItemDecoration(GridItemDecoration(gridGap, gridSpanCount))
 }
 
-fun MSongPlayingAdapter.setItems(list: List<FullSongInfo>?) {
+fun MSongPlayingAdapter.setItems(list: List<MSong>?) {
     list ?: return
 
     if (this.data.size > 0) {
-        val id = this.data[0].song.songId
+        val id = this.data[0].songId
         this.setDiffNewData(list.toMutableList()) {
-            if (list.isNotEmpty() && id != list.toMutableList()[0].song.songId) {
+            if (list.isNotEmpty() && id != list.toMutableList()[0].songId) {
                 recyclerView.scrollToPosition(0)
             }
         }

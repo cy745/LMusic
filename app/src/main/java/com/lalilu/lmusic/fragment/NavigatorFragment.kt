@@ -14,7 +14,7 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
-class NavigatorFragment() : DataBindingFragment(), CoroutineScope {
+class NavigatorFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     @Inject
