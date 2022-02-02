@@ -19,18 +19,23 @@ import androidx.media.session.MediaButtonReceiver
 import androidx.palette.graphics.Palette
 import com.lalilu.R
 import com.lalilu.lmusic.service.MSongService
-import com.lalilu.lmusic.utils.BitmapUtils
 import com.lalilu.lmusic.utils.getAutomaticColor
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
 
 @Singleton
 @ExperimentalCoroutinesApi
 class LMusicNotificationManager @Inject constructor(
-    @ApplicationContext private val mContext: Context
-) {
+    @ApplicationContext private val mContext: Context,
+) : CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+
     companion object {
         const val NOTIFICATION_PLAYER_ID = 7
         const val NOTIFICATION_LYRIC_ID = 8
@@ -131,9 +136,9 @@ class LMusicNotificationManager @Inject constructor(
     /**
      * 通过mediaSession创建通知
      */
-    fun getNotification(
+    suspend fun getNotification(
         mediaSession: MediaSessionCompat,
-    ): Notification {
+    ): Notification = withContext(Dispatchers.IO) {
         val controller = mediaSession.controller
         val token = mediaSession.sessionToken
         val metadata = controller.metadata
@@ -142,20 +147,23 @@ class LMusicNotificationManager @Inject constructor(
         val isPlaying = state.state == PlaybackStateCompat.STATE_PLAYING
         val repeatMode = mediaSession.controller.repeatMode
 
-        val builder = buildNotification(controller, token, isPlaying, repeatMode, description)
-        return builder.build()
+        return@withContext buildNotification(
+            controller,
+            token,
+            isPlaying,
+            repeatMode,
+            description
+        ).build()
     }
 
-    private fun buildNotification(
+    private suspend fun buildNotification(
         controller: MediaControllerCompat,
         token: MediaSessionCompat.Token,
         isPlaying: Boolean,
         repeatMode: Int,
         description: MediaDescriptionCompat
-    ): NotificationCompat.Builder {
-        val bitmap = BitmapUtils.loadBitmapFromUri(description.iconUri, 400)
-        val palette = bitmap?.let { Palette.from(bitmap).generate() }
-        val color = palette.getAutomaticColor()
+    ): NotificationCompat.Builder = withContext(Dispatchers.IO) {
+        val palette = description.iconBitmap?.let { Palette.from(it).generate() }
         val style = MediaStyle()
             .setMediaSession(token)
             .setShowActionsInCompactView(0, 1, 2)
@@ -163,7 +171,7 @@ class LMusicNotificationManager @Inject constructor(
             .setCancelButtonIntent(mStopAction.actionIntent)
         val builder = NotificationCompat.Builder(mContext, playerChannelName + "_ID")
         builder.setStyle(style)
-            .setColor(color)
+            .setColor(palette.getAutomaticColor())
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(controller.sessionActivity)
             .setContentTitle(description.title)
@@ -171,7 +179,7 @@ class LMusicNotificationManager @Inject constructor(
             .setSubText(description.description)
             .setShowWhen(false)
             .setAutoCancel(false)
-            .setLargeIcon(bitmap)
+            .setLargeIcon(description.iconBitmap)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
@@ -189,7 +197,7 @@ class LMusicNotificationManager @Inject constructor(
         builder.addAction(if (isPlaying) mPauseAction else mPlayAction)
         builder.addAction(mNextAction)
         builder.addAction(mStopAction)
-        return builder
+        return@withContext builder
     }
 
     fun updateLyric(lyric: String) {

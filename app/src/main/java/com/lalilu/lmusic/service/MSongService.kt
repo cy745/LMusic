@@ -12,6 +12,7 @@ import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
+import com.lalilu.lmusic.database.MediaSource
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.manager.LMusicNotificationManager.Companion.NOTIFICATION_PLAYER_ID
@@ -21,6 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -44,11 +46,13 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
     lateinit var mNotificationManager: LMusicNotificationManager
 
     @Inject
+    lateinit var mSessionCallback: MSongSessionCallback
+
+    @Inject
     lateinit var dataModule: DataModule
 
     @Inject
-    lateinit var mSessionCallback: MSongSessionCallback
-
+    lateinit var mediaSource: MediaSource
 
     override fun onCreate() {
         super.onCreate()
@@ -78,7 +82,8 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
                 mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
                 dataModule.updatePlaybackState(MEDIA_STOPPED_STATE)
                 this.unregisterReceiver(noisyReceiver)
-            } catch (ignored: Exception) { }
+            } catch (ignored: Exception) {
+            }
             return
         }
 
@@ -90,19 +95,21 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
         mediaSession.setPlaybackState(state)
         dataModule.updatePlaybackState(state)
 
-        val notification = mNotificationManager.getNotification(mediaSession)
-        when (state.state) {
-            PlaybackStateCompat.STATE_PLAYING -> {
-                this.registerReceiver(noisyReceiver, Config.FILTER_BECOMING_NOISY)
-                val intent = Intent(this, MSongService::class.java)
-                ContextCompat.startForegroundService(this, intent)
-                startForeground(NOTIFICATION_PLAYER_ID, notification)
+        launch {
+            val notification = mNotificationManager.getNotification(mediaSession)
+            when (state.state) {
+                PlaybackStateCompat.STATE_PLAYING -> {
+                    this@MSongService.registerReceiver(noisyReceiver, Config.FILTER_BECOMING_NOISY)
+                    val intent = Intent(this@MSongService, MSongService::class.java)
+                    ContextCompat.startForegroundService(this@MSongService, intent)
+                    startForeground(NOTIFICATION_PLAYER_ID, notification)
+                }
+                PlaybackStateCompat.STATE_PAUSED -> {
+                    stopForeground(false)
+                    mNotificationManager.pushNotification(NOTIFICATION_PLAYER_ID, notification)
+                }
+                else -> return@launch
             }
-            PlaybackStateCompat.STATE_PAUSED -> {
-                stopForeground(false)
-                mNotificationManager.pushNotification(NOTIFICATION_PLAYER_ID, notification)
-            }
-            else -> return
         }
     }
 

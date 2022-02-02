@@ -6,14 +6,12 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat.*
-import android.widget.Toast
 import com.lalilu.R
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import com.lalilu.lmusic.utils.ToastUtil
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import java.io.IOException
 import java.util.logging.Logger
 import kotlin.coroutines.CoroutineContext
@@ -42,6 +40,8 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
 
     abstract val onPlayerCallback: Playback.OnPlayerCallback?
     abstract val mAudioFocusManager: LMusicAudioFocusManager
+    abstract val mToastUtil: ToastUtil
+
     abstract val mediaIdFlow: Flow<ID?>
     abstract val listFlow: Flow<LIST>
     abstract val repeatModeFlow: Flow<Int>
@@ -63,7 +63,9 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
             player?.volumeManager?.fadeStart()
 
-            onPlaybackStateChanged(STATE_PLAYING)
+            launch {
+                onPlaybackStateChanged(STATE_PLAYING)
+            }
         } else {
             launch {
                 isPrepared = false
@@ -77,7 +79,10 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
 
     override fun pause() {
         player?.volumeManager?.fadePause()
-        onPlaybackStateChanged(STATE_PAUSED)
+
+        launch {
+            onPlaybackStateChanged(STATE_PAUSED)
+        }
     }
 
     override fun playAndPause() {
@@ -92,13 +97,9 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
             player?.prepareAsync()
         } catch (e: IOException) {
             logger.warning(e.message)
-            onPlaybackStateChanged(STATE_STOPPED)
-            launch(Dispatchers.Main) {
-                Toast.makeText(
-                    mContext,
-                    mContext.getText(R.string.song_non_exist_tips),
-                    Toast.LENGTH_LONG
-                ).show()
+            launch {
+                onPlaybackStateChanged(STATE_STOPPED)
+                mToastUtil.show(R.string.song_non_exist_tips)
             }
         } catch (e: Exception) {
             logger.warning(e.message)
@@ -108,6 +109,7 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
     override fun playByMediaId(mediaId: ID?) {
         mediaId ?: return
 
+        player?.reset()
         launch {
             val list = listFlow.firstOrNull() ?: return@launch
             val now = getItemFromListByID(list, mediaId) ?: return@launch
@@ -118,6 +120,7 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
     }
 
     override fun next() {
+        player?.reset()
         launch {
             val next = next.firstOrNull() ?: return@launch
 
@@ -127,6 +130,7 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
     }
 
     override fun previous() {
+        player?.reset()
         launch {
             val previous = previous.firstOrNull() ?: return@launch
 
@@ -140,14 +144,19 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
         player?.stop()
         player?.release()
         player = null
-        onPlaybackStateChanged(STATE_STOPPED)
+
+        launch {
+            onPlaybackStateChanged(STATE_STOPPED)
+        }
     }
 
     override fun seekTo(position: Number) {
         if (!isPrepared) return
 
         player?.seekTo(position.toInt())
-        onPlaybackStateChanged(playbackState)
+        launch {
+            onPlaybackStateChanged(playbackState)
+        }
     }
 
     override fun getPosition(): Long {
@@ -171,14 +180,16 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
         }
     }
 
-    override fun onPlaybackStateChanged(state: Int) {
-        onPlayerCallback?.onPlaybackStateChanged(state)
-        playbackState = state
-    }
+    override suspend fun onPlaybackStateChanged(state: Int) =
+        withContext(Dispatchers.IO) {
+            onPlayerCallback?.onPlaybackStateChanged(state)
+            playbackState = state
+        }
 
-    override fun onMetadataChanged(mediaMetadataCompat: MediaMetadataCompat) {
-        onPlayerCallback?.onMetadataChanged(mediaMetadataCompat)
-    }
+    override suspend fun onMetadataChanged(mediaMetadataCompat: MediaMetadataCompat): Unit =
+        withContext(Dispatchers.IO) {
+            onPlayerCallback?.onMetadataChanged(mediaMetadataCompat)
+        }
 
     override fun onAudioFocusChange(focusChange: Int) {
         when (focusChange) {

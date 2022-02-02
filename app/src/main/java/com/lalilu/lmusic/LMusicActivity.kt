@@ -1,20 +1,17 @@
 package com.lalilu.lmusic
 
 import android.content.res.Configuration
-import android.graphics.Color
 import android.media.AudioManager
-import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import androidx.appcompat.widget.SearchView
 import androidx.navigation.findNavController
 import com.lalilu.R
 import com.lalilu.lmusic.base.DataBindingActivity
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.event.LMusicPlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
+import com.lalilu.lmusic.ui.MySearchBar
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
 import dagger.hilt.android.AndroidEntryPoint
@@ -73,35 +70,11 @@ class LMusicActivity : DataBindingActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_appbar, menu)
         val items = menu.findItem(R.id.appbar_search)
-        val mSearchView = items.actionView as SearchView
-        val mUnderline = mSearchView.findViewById<View>(R.id.search_plate)
-        mUnderline.setBackgroundColor(Color.argb(0, 255, 255, 255))
-
-        mSearchView.setHasTransientState(true)
-        mSearchView.showDividers = SearchView.SHOW_DIVIDER_NONE
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mSearchView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
-        }
-
-        mSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                playerModule.searchFor(newText)
-                return false
-            }
-        })
-        mSearchView.setOnCloseListener {
-            playerModule.searchFor(null)
-            return@setOnCloseListener false
+        val searchBar = MySearchBar(items) {
+            playerModule.searchFor(it)
         }
         mEvent.isSearchViewExpand.observe(this) {
-            it?.get {
-                if (items.isActionViewExpanded)
-                    items.collapseActionView()
-            }
+            it?.get { searchBar.collapse() }
         }
         return super.onCreateOptionsMenu(menu)
     }
