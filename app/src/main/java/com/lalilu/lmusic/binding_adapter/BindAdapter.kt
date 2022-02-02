@@ -122,7 +122,7 @@ fun PlayingAdapter.setItems(
     recyclerView: RecyclerView
 ) {
     val newList = list?.toMutableList() ?: ArrayList()
-    var oldList = this.songs.toMutableList()
+    var oldList = this.data.toMutableList()
 
     // 预先将头部部分差异进行转移
     val size = oldList.indexOfFirst { it.songId == newList[0].songId }
@@ -139,7 +139,7 @@ fun PlayingAdapter.setItems(
     }
     val diffCallback = MSong.DiffMSong(oldList, newList)
     val diffResult = DiffUtil.calculateDiff(diffCallback, false)
-    this.songs = newList
+    this.data = newList
     diffResult.dispatchUpdatesTo(this)
     recyclerView.scrollToPosition(0)
 }

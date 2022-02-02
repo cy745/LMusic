@@ -87,6 +87,11 @@ fun Cursor.getAlbumTitle(): String {
     return if (index < 0) "" else this.getString(index)
 }
 
+fun Cursor.getArtistId(): Long {
+    val index = this.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID)
+    return if (index < 0) 0 else this.getLong(index)
+}
+
 fun Cursor.getArtist(): String {
     val index = this.getColumnIndex(MediaStore.Audio.Media.ARTIST)
     return if (index < 0) "" else this.getString(index)

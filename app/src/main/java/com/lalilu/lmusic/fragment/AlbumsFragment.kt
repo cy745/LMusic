@@ -3,11 +3,10 @@ package com.lalilu.lmusic.fragment
 import androidx.databinding.library.baseAdapters.BR
 import androidx.navigation.fragment.findNavController
 import com.lalilu.R
-import com.lalilu.lmusic.adapter.MSongAlbumsAdapter
+import com.lalilu.lmusic.adapter.AlbumsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.domain.entity.MAlbum
-import com.lalilu.lmusic.event.DataModule
+import com.lalilu.lmusic.database.MediaSource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
@@ -17,15 +16,13 @@ import javax.inject.Inject
 class AlbumsFragment : DataBindingFragment() {
 
     @Inject
-    lateinit var mAdapter: MSongAlbumsAdapter
+    lateinit var mAdapter: AlbumsAdapter
 
     @Inject
-    lateinit var dataModule: DataModule
+    lateinit var mediaSource: MediaSource
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter.setOnItemClickListener { adapter, _, position ->
-            val album = adapter.data[position] as MAlbum
-
+        mAdapter.onItemClickListener = { album ->
             findNavController().navigate(
                 AlbumsFragmentDirections.albumDetail(
                     albumId = album.albumId,
@@ -38,7 +35,7 @@ class AlbumsFragment : DataBindingFragment() {
     }
 
     override fun onViewCreated() {
-        dataModule.allAlbum.observe(viewLifecycleOwner) {
+        mediaSource.albums.observe(viewLifecycleOwner) {
             mAdapter.setDiffNewData(it?.toMutableList())
         }
     }

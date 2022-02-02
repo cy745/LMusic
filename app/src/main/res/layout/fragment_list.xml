@@ -7,7 +7,7 @@
 
         <variable
             name="listAdapter"
-            type="com.lalilu.lmusic.adapter.MSongListAdapter" />
+            type="com.lalilu.lmusic.adapter.ListAdapter" />
 
     </data>
 
