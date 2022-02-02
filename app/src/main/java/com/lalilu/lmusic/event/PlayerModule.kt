@@ -14,9 +14,9 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.manager.SearchManager
 import com.lalilu.lmusic.service.MSongService
-import com.lalilu.lmusic.utils.Mathf
 import com.lalilu.lmusic.utils.getLastMediaMetadata
 import com.lalilu.lmusic.utils.getLastPlaybackState
+import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +24,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import java.util.logging.Logger
 import javax.inject.Inject
@@ -34,7 +33,7 @@ import kotlin.coroutines.CoroutineContext
 
 @Singleton
 @ExperimentalCoroutinesApi
-class LMusicPlayerModule @Inject constructor(
+class PlayerModule @Inject constructor(
     @ApplicationContext context: Context,
     dataModule: DataModule,
     private val searchManager: SearchManager
@@ -59,9 +58,9 @@ class LMusicPlayerModule @Inject constructor(
 
     private val _mSongs: Flow<List<MSong>> =
         dataModule.nowListFlow.combine(_metadata) { items, metadata ->
-            listOrderChanges(items, metadata.description.mediaId) { item, id ->
+            items.moveHeadToTailWithSearch(metadata.description.mediaId) { item, id ->
                 item.songId.toString() == id
-            } ?: items
+            }
         }.combine(searchManager.keyword) { items, keyword ->
             if (keyword == null || TextUtils.isEmpty(keyword)) return@combine items
             val keywords = keyword.split(" ")
@@ -137,20 +136,5 @@ class LMusicPlayerModule @Inject constructor(
                 logger.info("[MusicControllerCallback]#onMetadataChanged: ${metadata.description?.title}")
             }
         }
-    }
-
-    private fun <T, K> listOrderChanges(
-        list: List<T>,
-        Id: K?,
-        checkIsSame: (T, K) -> Boolean
-    ): MutableList<T>? {
-        Id ?: return null
-
-        val nowPosition = list.indexOfFirst { checkIsSame(it, Id) }
-        if (nowPosition == -1) return null
-
-        return ArrayList(list.map { item ->
-            list[Mathf.clampInLoop(0, list.size - 1, list.indexOf(item), nowPosition)]
-        })
     }
 }

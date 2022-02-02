@@ -24,6 +24,7 @@ import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
 import com.lalilu.lmusic.utils.GridItemDecoration
+import com.lalilu.lmusic.utils.moveHeadToTail
 
 
 @BindingAdapter("iconRec")
@@ -130,9 +131,7 @@ fun PlayingAdapter.setItems(
         recyclerView.computeVerticalScrollOffset() >
         recyclerView.computeVerticalScrollRange() / 2
     ) {
-        val temp = oldList.take(size).toMutableList()
-        temp.addAll(0, oldList.drop(size))
-        oldList = temp
+        oldList = oldList.moveHeadToTail(size)
 
         this.notifyItemRangeRemoved(0, size)
         this.notifyItemRangeInserted(oldList.size, size)
