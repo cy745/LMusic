@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.domain.entity
 
 import android.net.Uri
+import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -17,6 +18,9 @@ data class MSong(
 
     @ColumnInfo(name = "album_title")
     val albumTitle: String,
+
+    @ColumnInfo(name = "song_data")
+    val songData: String,
 
     @ColumnInfo(name = "song_uri")
     val songUri: Uri,
@@ -52,5 +56,26 @@ data class MSong(
 
     override fun hashCode(): Int {
         return songId.hashCode()
+    }
+
+    class DiffMSong(
+        private val oldList: List<MSong>,
+        private val newList: List<MSong>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].songId == newList[newItemPosition].songId
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldList[oldItemPosition]
+            val newItem = newList[newItemPosition]
+
+            return oldItem.songId == newItem.songId &&
+                    oldItem.songTitle == newItem.songTitle &&
+                    oldItem.songDuration == newItem.songDuration
+        }
     }
 }

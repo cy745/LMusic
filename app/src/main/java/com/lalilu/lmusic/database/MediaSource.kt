@@ -1,8 +1,11 @@
 package com.lalilu.lmusic.database
 
 import android.content.Context
+import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.utils.*
@@ -19,33 +22,51 @@ import kotlin.coroutines.CoroutineContext
 @Singleton
 class MediaSource @Inject constructor(
     @ApplicationContext val mContext: Context,
-) : CoroutineScope {
+) : CoroutineScope, ContentObserver(Handler(Looper.getMainLooper())) {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
+
+    val targetUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+
+    init {
+        mContext.contentResolver
+            .registerContentObserver(targetUri, true, this)
+    }
+
+    val minDurationLimit = 30 * 1000
+    val minSizeLimit = 500 * 1024
+    val unknownArtist = "<unknown>"
 
     val songs: MutableStateFlow<List<MSong>> = MutableStateFlow(ArrayList())
     var selection: String? = "${MediaStore.Audio.Media.SIZE} >= ? " +
             "and ${MediaStore.Audio.Media.DURATION} >= ? " +
             "and ${MediaStore.Audio.Artists.ARTIST} != ?"
+    var selectionArgs: Array<String>? = arrayOf("$minSizeLimit", "$minDurationLimit", unknownArtist)
     var projection: Array<String>? = null
-    var selectionArgs: Array<String>? =
-        arrayOf((500 * 1024).toString(), (30 * 1000).toString(), "<unknown>")
     var sortOrder: String? = null
+
+    override fun onChange(selfChange: Boolean, uri: Uri?) {
+        println("selfChange: $selfChange, uri: $uri")
+        super.onChange(selfChange, uri)
+    }
+
+    override fun onChange(selfChange: Boolean) {
+        getAllSongs()
+    }
 
     private suspend fun searchForMedia(
         selection: String?,
         projection: Array<String>?,
         selectionArgs: Array<String>?,
         sortOrder: String?
-    ): Cursor? =
-        withContext(Dispatchers.IO) {
-            return@withContext mContext.contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                selection,
-                selectionArgs,
-                sortOrder
-            )
-        }
+    ): Cursor? = withContext(Dispatchers.IO) {
+        return@withContext mContext.contentResolver.query(
+            targetUri,
+            projection,
+            selection,
+            selectionArgs,
+            sortOrder
+        )
+    }
 
     fun getAllSongs() = launch {
         val cursor = searchForMedia(selection, projection, selectionArgs, sortOrder)
@@ -69,13 +90,14 @@ class MediaSource @Inject constructor(
             )
 
             val song = MSong(
-                songUri = songUri,
                 songId = songId,
+                songUri = songUri,
                 albumId = albumId,
-                albumTitle = albumTitle,
+                songData = songData,
                 songTitle = songTitle,
-                songDuration = songDuration,
+                albumTitle = albumTitle,
                 showingArtist = artistName,
+                songDuration = songDuration,
                 songMimeType = songMimeType
             )
             temp.add(song)

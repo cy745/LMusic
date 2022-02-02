@@ -79,7 +79,6 @@ class AppBarStatusHelper @Inject constructor() : AppBarLayout.OnOffsetChangedLis
 
     @StateHandler(state = STATE_EXPENDED)
     fun onExpendedState(event: String, tm: TinyMachine) {
-        println("onExpendedState: $event")
         when (event) {
             EVENT_EXPEND -> tm.transitionTo(STATE_FULLY_EXPENDED)
         }
@@ -87,25 +86,24 @@ class AppBarStatusHelper @Inject constructor() : AppBarLayout.OnOffsetChangedLis
 
     @StateHandler(state = STATE_FULLY_EXPENDED)
     fun onFullyExpendedState(event: String, tm: TinyMachine) {
-        println("onFullyExpendedState: $event")
         when (event) {
             EVENT_COLLAPSE -> tm.transitionTo(STATE_EXPENDED)
         }
     }
 
-    @StateHandler(state = STATE_COLLAPSED, type = StateHandler.Type.OnEntry)
-    fun onCollapsedEnter() {
-        println("STATE_COLLAPSED")
-    }
-
-    @StateHandler(state = STATE_EXPENDED, type = StateHandler.Type.OnEntry)
-    fun onExpendedEnter() {
-        println("STATE_EXPENDED")
-    }
-
-    @StateHandler(state = STATE_FULLY_EXPENDED, type = StateHandler.Type.OnEntry)
-    fun onFullyExpendedEnter() {
-        println("STATE_FULLY_EXPENDED")
-    }
+//    @StateHandler(state = STATE_COLLAPSED, type = StateHandler.Type.OnEntry)
+//    fun onCollapsedEnter() {
+//        println("STATE_COLLAPSED")
+//    }
+//
+//    @StateHandler(state = STATE_EXPENDED, type = StateHandler.Type.OnEntry)
+//    fun onExpendedEnter() {
+//        println("STATE_EXPENDED")
+//    }
+//
+//    @StateHandler(state = STATE_FULLY_EXPENDED, type = StateHandler.Type.OnEntry)
+//    fun onFullyExpendedEnter() {
+//        println("STATE_FULLY_EXPENDED")
+//    }
 }
 

@@ -3,6 +3,8 @@ package com.lalilu.lmusic.ui.drawee
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.util.AttributeSet
 import android.view.View
@@ -16,6 +18,7 @@ import androidx.palette.graphics.Palette
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.lalilu.lmusic.utils.StackBlurUtils
+import com.lalilu.lmusic.utils.addShadow
 import com.lalilu.lmusic.utils.toBitmap
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -28,10 +31,10 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * 附带有Palette的ImageView
+ * 结合StackBlur的自定义ImageView
  */
 @AndroidEntryPoint
-class PaletteImageView @JvmOverloads constructor(
+class BlurImageView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : View(context, attrs), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -39,7 +42,7 @@ class PaletteImageView @JvmOverloads constructor(
     @Inject
     lateinit var stackBlur: StackBlurUtils
 
-    var palette: MutableLiveData<Palette> = MutableLiveData(null)
+    var palette: MutableLiveData<Palette?> = MutableLiveData(null)
     var maxOffset = 0
     private var maxBlurRadius = 50
 
@@ -156,6 +159,9 @@ class PaletteImageView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * 用于执行fadeIn效果的Animator
+     */
     private val animator = ValueAnimator.ofFloat(0f, 1f).apply {
         duration = 500
         addListener(onStart = {
@@ -205,7 +211,7 @@ class PaletteImageView @JvmOverloads constructor(
         }
 
     /**
-     * 创建Blur的Bitmap
+     * 创建经过Blur处理的Bitmap
      *
      * @param source 源图
      * @param radius Blur所需的模糊半径参数
@@ -245,30 +251,47 @@ class PaletteImageView @JvmOverloads constructor(
      * 加载指定uri的图片
      *
      * @param uri 图片地址（可为本地亦或是网络图片）
-     *
      */
-    fun setImageURI(uri: Uri?) {
-        if (uri == null) {
-            this.sourceBitmap = null
-            this.samplingBitmap = null
-            this.blurBitmap = null
-            invalidate()
-            return
-        }
+    fun setImageURI(uri: Uri?) = launch(Dispatchers.IO) {
+        if (uri == null) clearImage()
 
         context.imageLoader.enqueue(
             ImageRequest.Builder(context)
                 .data(uri)
                 .allowHardware(false)
-                .target {
-                    launch(Dispatchers.IO) {
-                        fadeIn()
-                        sourceBitmap = it.toBitmap()
-                        samplingBitmap = createSamplingBitmap(sourceBitmap, samplingValue)
-                        updatePalette(samplingBitmap)
-                        updateBg(blurRadius)
-                    }
-                }.build()
+                .target { loadImageFromDrawable(it) }
+                .build()
         )
+    }
+
+    /**
+     * 外部创建Coil的ImageRequest，传入onSucceed的Drawable
+     */
+    fun loadImageFromDrawable(drawable: Drawable) = launch(Dispatchers.IO) {
+        fadeIn()
+        sourceBitmap = drawable.toBitmap()
+        sourceBitmap?.addShadow(
+            Color.argb(55, 0, 0, 0),
+            Color.TRANSPARENT, 0.25f, GradientDrawable.Orientation.TOP_BOTTOM
+        )
+        sourceBitmap?.addShadow(
+            Color.argb(55, 0, 0, 0),
+            Color.TRANSPARENT, 0.25f, GradientDrawable.Orientation.BOTTOM_TOP
+        )
+        samplingBitmap = createSamplingBitmap(sourceBitmap, samplingValue)
+        updatePalette(samplingBitmap)
+        updateBg(blurRadius)
+    }
+
+    /**
+     * 清除旧数据
+     */
+    fun clearImage() = launch(Dispatchers.IO) {
+        this@BlurImageView.sourceBitmap = null
+        this@BlurImageView.samplingBitmap = null
+        this@BlurImageView.blurBitmap = null
+        palette.postValue(null)
+        stackBlur.evictAll()
+        withContext(Dispatchers.Main) { invalidate() }
     }
 }

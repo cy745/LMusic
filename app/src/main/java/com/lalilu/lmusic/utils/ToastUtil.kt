@@ -18,6 +18,13 @@ class ToastUtil @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private var lastToast: Pair<String, Toast>? = null
 
+    fun show(resId: Int) = launch(Dispatchers.IO) {
+        try {
+            show(mContext.getString(resId))
+        } catch (e: Exception) {
+        }
+    }
+
     fun show(text: String?) = launch(Dispatchers.IO) {
         if (text == null) {
             cancelToast(lastToast)

@@ -1,17 +1,28 @@
 package com.lalilu.lmusic.utils
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.database.Cursor
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.GradientDrawable.Orientation.*
 import android.provider.MediaStore
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.palette.graphics.Palette
+import coil.executeBlocking
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.domain.entity.MSong
-import com.lalilu.lmusic.domain.entity.MSongDetail
+import com.lalilu.lmusic.toEmbeddedCoverSource
+import kotlin.math.roundToInt
 
 fun Palette?.getAutomaticColor(): Int {
     if (this == null) return Color.DKGRAY
@@ -19,6 +30,41 @@ fun Palette?.getAutomaticColor(): Int {
     if (ColorUtils.isLightColor(oldColor))
         oldColor = this.getDarkMutedColor(Color.LTGRAY)
     return oldColor
+}
+
+fun Drawable.toBitmap(): Bitmap {
+    val w = this.intrinsicWidth
+    val h = this.intrinsicHeight
+
+    val config = Bitmap.Config.ARGB_8888
+    val bitmap = Bitmap.createBitmap(w, h, config)
+    val canvas = Canvas(bitmap)
+    this.setBounds(0, 0, w, h)
+    this.draw(canvas)
+    return bitmap
+}
+
+fun Bitmap.addShadow(
+    fromColor: Int, toColor: Int, percent: Float,
+    orientation: GradientDrawable.Orientation
+): Bitmap {
+    val mBackShadowColors = intArrayOf(fromColor, toColor)
+    val mBackShadowDrawableLR = GradientDrawable(orientation, mBackShadowColors)
+    val bound = Rect(0, 0, width, height)
+    val percentHeight = (height * percent).roundToInt()
+    val percentWidth = (width * percent).roundToInt()
+
+    when (orientation) {
+        TOP_BOTTOM -> bound.set(0, 0, width, percentHeight)
+        RIGHT_LEFT -> bound.set(0, 0, percentWidth, height)
+        BOTTOM_TOP -> bound.set(0, height - percentHeight, width, height)
+        LEFT_RIGHT -> bound.set(width - percentWidth, 0, width, height)
+        else -> {}
+    }
+    mBackShadowDrawableLR.bounds = bound
+    mBackShadowDrawableLR.gradientType = GradientDrawable.LINEAR_GRADIENT
+    mBackShadowDrawableLR.draw(Canvas(this))
+    return this
 }
 
 fun Cursor.getSongId(): Long {
@@ -82,7 +128,7 @@ fun MSong.toSimpleMetadata(): MediaMetadataCompat {
     return metadata.build()
 }
 
-fun MSong.toFullMetadata(detail: MSongDetail?): MediaMetadataCompat {
+fun MSong.toSimpleMetadata(context: Context): MediaMetadataCompat {
     val metadata = MediaMetadataCompat.Builder()
         .putString(MediaMetadataCompat.METADATA_KEY_TITLE, this.songTitle)
         .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, this.showingArtist)
@@ -91,12 +137,15 @@ fun MSong.toFullMetadata(detail: MSongDetail?): MediaMetadataCompat {
         .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, this.songDuration)
         .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, this.songUri.toString())
         .putString(Config.MEDIA_MIME_TYPE, this.songMimeType)
+        .putString(Config.MEDIA_MEDIA_DATA, this.songData)
 
-    detail?.let {
-        val bitmap = BitmapUtils.loadBitmapFromUri(it.songCoverUri, 500)
-        metadata.putString(MediaMetadataCompat.METADATA_KEY_ART_URI, it.songCoverUri.toString())
-        metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
-    }
+    val bitmap = context.imageLoader.executeBlocking(
+        ImageRequest.Builder(context)
+            .allowHardware(false)
+            .data(this.songUri.toEmbeddedCoverSource())
+            .build()
+    ).drawable?.toBitmap()
+    metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
     return metadata.build()
 }
 
@@ -125,8 +174,8 @@ fun MediaMetadataCompat.saveTo(pref: SharedPreferences) {
             this@saveTo.description.title.toString()
         )
         this.putString(
-            MediaMetadataCompat.METADATA_KEY_ART_URI,
-            this@saveTo.description.iconUri.toString()
+            MediaMetadataCompat.METADATA_KEY_MEDIA_URI,
+            this@saveTo.description.mediaUri.toString()
         )
         this.apply()
     }
@@ -159,8 +208,9 @@ fun SharedPreferences.getLastMediaMetadata(): MediaMetadataCompat {
             this.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, "")
         )
         .putString(
-            MediaMetadataCompat.METADATA_KEY_ART_URI,
-            this.getString(MediaMetadataCompat.METADATA_KEY_ART_URI, "")
+            MediaMetadataCompat.METADATA_KEY_MEDIA_URI,
+            this.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, "")
         )
         .build()
 }
+
