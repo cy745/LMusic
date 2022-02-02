@@ -21,10 +21,9 @@
 #-renamesourcefileattribute SourceFile
 
 # jaudiotagger release打包后可能会出现MP3格式无法读取歌词的问题
--keep class org.jaudiotagger.tag.** {
-    *;
-}
+-keep class org.jaudiotagger.tag.** { *; }
 
+-dontwarn org.jaudiotagger.**
 -dontwarn java.awt.Graphics2D
 -dontwarn java.awt.Image
 -dontwarn java.awt.geom.AffineTransform

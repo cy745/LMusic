@@ -10,7 +10,7 @@ import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.database.repository.LIST_TYPE_ALBUM
 import com.lalilu.lmusic.database.repository.LIST_TYPE_PLAYLIST
 import com.lalilu.lmusic.event.DataModule
-import com.lalilu.lmusic.event.LMusicPlayerModule
+import com.lalilu.lmusic.event.PlayerModule
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -27,7 +27,7 @@ class ListFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mAdapter: ListAdapter
 
     @Inject
-    lateinit var playerModule: LMusicPlayerModule
+    lateinit var playerModule: PlayerModule
 
     @Inject
     lateinit var dataModule: DataModule

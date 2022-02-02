@@ -9,7 +9,7 @@ import androidx.navigation.findNavController
 import com.lalilu.R
 import com.lalilu.lmusic.base.DataBindingActivity
 import com.lalilu.lmusic.base.DataBindingConfig
-import com.lalilu.lmusic.event.LMusicPlayerModule
+import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.ui.MySearchBar
 import com.lalilu.lmusic.utils.PermissionUtils
@@ -26,7 +26,7 @@ class LMusicActivity : DataBindingActivity() {
     lateinit var mEvent: SharedViewModel
 
     @Inject
-    lateinit var playerModule: LMusicPlayerModule
+    lateinit var playerModule: PlayerModule
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.activity_main)

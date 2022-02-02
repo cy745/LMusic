@@ -20,7 +20,7 @@ object StatusBarUtil {
         WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 
-    fun isDarkMode(activity: Activity): Boolean {
+    private fun isDarkMode(activity: Activity): Boolean {
         val mode = activity.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         return mode == Configuration.UI_MODE_NIGHT_YES
     }

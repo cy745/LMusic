@@ -9,7 +9,7 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.binding_adapter.setItems
 import com.lalilu.lmusic.event.DataModule
-import com.lalilu.lmusic.event.LMusicPlayerModule
+import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +30,7 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mAdapter: PlayingAdapter
 
     @Inject
-    lateinit var playerModule: LMusicPlayerModule
+    lateinit var playerModule: PlayerModule
 
     @Inject
     lateinit var dataModule: DataModule
