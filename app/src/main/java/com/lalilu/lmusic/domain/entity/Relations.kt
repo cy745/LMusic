@@ -3,7 +3,6 @@ package com.lalilu.lmusic.domain.entity
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * 由于专辑的 id 是 MediaStore 自动分发的，

@@ -249,6 +249,10 @@ public class KanaToRomaji {
         dictionary = Collections.unmodifiableMap(aMap);
     }
 
+    public static Map<String, String> getDictionary() {
+        return dictionary;
+    }
+
     public String convert(String s) {
         StringBuilder t = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
@@ -273,10 +277,6 @@ public class KanaToRomaji {
             }
         }
         return t.toString();
-    }
-
-    public static Map<String, String> getDictionary() {
-        return dictionary;
     }
 
 }

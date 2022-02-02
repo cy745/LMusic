@@ -11,18 +11,24 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.domain.entity.FullSongInfo
+import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.manager.SearchManager
 import com.lalilu.lmusic.service.MSongService
-import com.lalilu.lmusic.utils.*
+import com.lalilu.lmusic.utils.Mathf
+import com.lalilu.lmusic.utils.getLastMediaMetadata
+import com.lalilu.lmusic.utils.getLastPlaybackState
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import java.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import java.util.logging.Logger
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
 
 
@@ -51,17 +57,17 @@ class LMusicPlayerModule @Inject constructor(
     private val _metadata = MutableStateFlow(sharedPref.getLastMediaMetadata())
     private val _playBackState = MutableStateFlow(sharedPref.getLastPlaybackState())
 
-    private val _mSongs: Flow<List<FullSongInfo>> =
+    private val _mSongs: Flow<List<MSong>> =
         dataModule.nowListFlow.combine(_metadata) { items, metadata ->
             listOrderChanges(items, metadata.description.mediaId) { item, id ->
-                item.song.songId.toString() == id
+                item.songId.toString() == id
             } ?: items
         }.combine(searchManager.keyword) { items, keyword ->
             if (keyword == null || TextUtils.isEmpty(keyword)) return@combine items
             val keywords = keyword.split(" ")
 
             items.filter {
-                val originStr = "${it.song.songTitle} ${it.song.showingArtist}"
+                val originStr = "${it.songTitle} ${it.showingArtist}"
                 var resultStr = originStr
                 val isContainChinese = searchManager.isContainChinese(originStr)
                 val isContainKatakanaOrHinagana =
@@ -80,7 +86,7 @@ class LMusicPlayerModule @Inject constructor(
             }
         }
 
-    val mSongsLiveData: LiveData<List<FullSongInfo>> = _mSongs.asLiveData()
+    val mSongsLiveData: LiveData<List<MSong>> = _mSongs.asLiveData()
     val metadataLiveData: LiveData<MediaMetadataCompat?> = _metadata.asLiveData()
 
     fun searchFor(keyword: String?) = searchManager.searchFor(keyword)

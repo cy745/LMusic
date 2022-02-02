@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:fresco="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -9,24 +8,8 @@
         <import type="com.lalilu.lmusic.utils.TextUtils" />
 
         <variable
-            name="coverUri"
-            type="android.net.Uri" />
-
-        <variable
-            name="title"
-            type="String" />
-
-        <variable
-            name="artist"
-            type="String" />
-
-        <variable
-            name="duration"
-            type="Long" />
-
-        <variable
-            name="mimeType"
-            type="String" />
+            name="song"
+            type="com.lalilu.lmusic.domain.entity.MSong" />
 
         <variable
             name="hasLyric"
@@ -40,19 +23,19 @@
         android:background="@drawable/item_click_background_daynight"
         android:theme="@style/Theme.Music">
 
-        <com.lalilu.lmusic.ui.drawee.SamplingDraweeView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/song_album_pic"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_marginStart="20dp"
-            android:scaleType="centerCrop"
-            app:callerContext="@{context}"
+            android:background="@drawable/item_playing_background"
+            android:scaleType="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:pictureUri="@{coverUri}"
-            fresco:placeholderImage="@color/gray_600"
-            tools:placeholderImage="@tools:sample/avatars" />
+            app:pictureUri="@{song.songUri}"
+            app:samplingValue="@{200}"
+            tools:src="@tools:sample/avatars" />
 
         <TextView
             android:id="@+id/song_title"
@@ -61,7 +44,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="5dp"
             android:letterSpacing="0.05"
-            android:text="@{title}"
+            android:text="@{song.songTitle}"
             android:textColor="?attr/daynight_0"
             android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@+id/song_singer"
@@ -77,8 +60,8 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:letterSpacing="0.05"
-            android:text="@{artist}"
-            android:textSize="12sp"
+            android:text="@{song.showingArtist}"
+            android:textSize="10sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/song_duration"
@@ -91,7 +74,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
-            android:text="@{TextUtils.INSTANCE.durationToString(duration)}"
+            android:text="@{TextUtils.INSTANCE.durationToString(song.songDuration)}"
             android:textAlignment="center"
             app:layout_constraintBottom_toBottomOf="@+id/song_singer"
             app:layout_constraintEnd_toEndOf="parent"
@@ -104,7 +87,7 @@
             android:layout_height="20dp"
             android:layout_marginEnd="20dp"
             android:contentDescription="@string/audio_type"
-            app:iconRec="@{mimeType}"
+            app:iconRec="@{song.songMimeType}"
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -116,12 +99,10 @@
             android:layout_height="20dp"
             android:layout_marginEnd="5dp"
             android:contentDescription="@string/audio_type"
-            android:src="@drawable/ic_lrc_fill"
-            android:visibility="@{TextUtils.INSTANCE.setVisibility(hasLyric)}"
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toStartOf="@+id/song_type"
             app:layout_constraintTop_toTopOf="parent"
+            app:setLyricSourceUri="@{song.songData}"
             tools:srcCompat="@drawable/ic_lrc_fill" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

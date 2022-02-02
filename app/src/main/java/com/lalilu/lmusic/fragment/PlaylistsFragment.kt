@@ -39,8 +39,8 @@ class PlaylistsFragment : DataBindingFragment() {
     }
 
     override fun onViewCreated() {
-        dataModule.allPlaylist.observe(viewLifecycleOwner) {
-            mAdapter.setDiffNewData(it?.toMutableList())
-        }
+//        dataModule.allPlaylist.observe(viewLifecycleOwner) {
+//            mAdapter.setDiffNewData(it?.toMutableList())
+//        }
     }
 }
