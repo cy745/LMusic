@@ -12,8 +12,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: set up JDK 8
+    - name: Checkout
+      uses: actions/checkout@v2.4.0
+      with:
+        repository: cy745/lmusic
+        ssh-strict: true
+        persist-credentials: true
+        clean: true
+        fetch-depth: 1
+        lfs: false
+        submodules: true
+      
+    - name: set up JDK 15
       uses: actions/setup-java@v2
       with:
         java-version: '15'
