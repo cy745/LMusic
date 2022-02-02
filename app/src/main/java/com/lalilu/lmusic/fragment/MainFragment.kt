@@ -11,7 +11,7 @@ import com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.event.DataModule
-import com.lalilu.lmusic.event.LMusicPlayerModule
+import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarListenerAdapter
 import com.lalilu.lmusic.utils.HapticUtils
@@ -27,7 +27,7 @@ class MainFragment : DataBindingFragment() {
     lateinit var mEvent: SharedViewModel
 
     @Inject
-    lateinit var playerModule: LMusicPlayerModule
+    lateinit var playerModule: PlayerModule
 
     @Inject
     lateinit var dataModule: DataModule
