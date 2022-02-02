@@ -10,10 +10,8 @@ import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_REPEAT_MODE
-import com.lalilu.lmusic.database.LMusicDataBase
 import com.lalilu.lmusic.database.MediaSource
 import com.lalilu.lmusic.database.repository.RepositoryFactory
-import com.lalilu.lmusic.domain.entity.MAlbum
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.utils.*
@@ -28,7 +26,6 @@ import kotlin.coroutines.CoroutineContext
 @ExperimentalCoroutinesApi
 class DataModule @Inject constructor(
     @ApplicationContext context: Context,
-    database: LMusicDataBase,
     notificationManager: LMusicNotificationManager,
     mediaSource: MediaSource,
     private val libraryFactory: RepositoryFactory,
@@ -37,6 +34,7 @@ class DataModule @Inject constructor(
 
     init {
         mediaSource.getAllSongs()
+        mediaSource.getAllAlbums()
     }
 
     private val sharedPref = context.getSharedPreferences(
@@ -81,7 +79,7 @@ class DataModule @Inject constructor(
     /**
      * 根据当前歌单ID从数据库获取对应歌单的歌曲并转换成 List<MSong>
      */
-    private val _nowList: Flow<List<MSong>> = mediaSource.songs
+    private val _nowList: Flow<List<MSong>> = mediaSource._songs
 
     // 3.将 List<MSong> 公开给其他位置使用
     val nowListFlow: Flow<List<MSong>> = _nowList
@@ -94,8 +92,8 @@ class DataModule @Inject constructor(
 //    }.flowOn(Dispatchers.IO)
 //    val allPlaylist: LiveData<List<MPlaylist>> = allPlaylistFlow.asLiveData()
 
-    val allAlbum: LiveData<List<MAlbum>> = database.albumDao()
-        .getAllAlbumLiveData()
+//    val allAlbum: LiveData<List<MAlbum>> = database.albumDao()
+//        .getAllAlbumLiveData()
 
     val library = libraryFactory.list.asLiveData()
     fun changeId(id: Long) = libraryFactory.changeId(id)

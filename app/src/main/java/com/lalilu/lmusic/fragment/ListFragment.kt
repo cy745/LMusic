@@ -4,12 +4,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.databinding.library.baseAdapters.BR
 import androidx.navigation.fragment.navArgs
 import com.lalilu.R
-import com.lalilu.lmusic.adapter.MSongListAdapter
+import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.database.repository.LIST_TYPE_ALBUM
 import com.lalilu.lmusic.database.repository.LIST_TYPE_PLAYLIST
-import com.lalilu.lmusic.domain.entity.FullSongInfo
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.LMusicPlayerModule
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,7 +24,7 @@ class ListFragment : DataBindingFragment(), CoroutineScope {
     private val args: ListFragmentArgs by navArgs()
 
     @Inject
-    lateinit var mAdapter: MSongListAdapter
+    lateinit var mAdapter: ListAdapter
 
     @Inject
     lateinit var playerModule: LMusicPlayerModule
@@ -35,11 +34,9 @@ class ListFragment : DataBindingFragment(), CoroutineScope {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         // 添加 item 被选中时的处理逻辑
-        mAdapter.setOnItemClickListener { adapter, _, position ->
-            val data = adapter.data[position] as FullSongInfo? ?: return@setOnItemClickListener
-
+        mAdapter.onItemClickListener = {
             playerModule.mediaController?.transportControls
-                ?.playFromMediaId(data.song.songId.toString(), null)
+                ?.playFromMediaId(it.songId.toString(), null)
         }
         return DataBindingConfig(R.layout.fragment_list)
             .addParam(BR.listAdapter, mAdapter)
@@ -61,8 +58,8 @@ class ListFragment : DataBindingFragment(), CoroutineScope {
             dataModule.changeId(args.playlistId)
         }
 
-        dataModule.library.observe(viewLifecycleOwner) {
-            mAdapter.setNewInstance(it?.toMutableList())
-        }
+//        dataModule.library.observe(viewLifecycleOwner) {
+//            mAdapter.setDiffNewData(it?.toMutableList())
+//        }
     }
 }

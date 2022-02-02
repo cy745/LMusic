@@ -90,7 +90,7 @@ dependencies {
 
     // https://github.com/CymChad/BaseRecyclerViewAdapterHelper
     // MIT License
-    implementation "com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.6"
+    // implementation "com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.6"
 
     // 权限请求框架：https://github.com/getActivity/XXPermissions
     // Apache-2.0
