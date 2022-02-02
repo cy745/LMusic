@@ -7,7 +7,8 @@ import android.view.ViewParent
 /**
  *  为子父组件之间提供处理滑动冲突的能力
  *
- *  内部开始竖向开始滑动后固定滑动方向，屏蔽父组件的横向滑动
+ *  @param whenToSolve 决定何时应该进行拦截判断
+ *  @param isInterceptNow 决定此刻是否需要拦截
  */
 class AntiSlideConflict(
     val whenToSolve: (disX: Float, disY: Float) -> Boolean,

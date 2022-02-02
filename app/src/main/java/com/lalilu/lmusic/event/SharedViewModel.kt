@@ -20,7 +20,7 @@ import kotlin.coroutines.CoroutineContext
 class SharedViewModel @Inject constructor() : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
-    val nowBgPalette = MutableLiveData<Palette>()
+    val nowBgPalette: MutableLiveData<Palette?> = MutableLiveData(null)
     val isAppbarLayoutExpand: MutableLiveData<Event<Boolean?>> = MutableLiveData(null)
     val isSearchViewExpand: MutableLiveData<Event<Boolean?>> = MutableLiveData(null)
 

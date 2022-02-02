@@ -7,6 +7,7 @@ import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.manager.LMusicAudioFocusManager
 import com.lalilu.lmusic.utils.Mathf
+import com.lalilu.lmusic.utils.ToastUtil
 import com.lalilu.lmusic.utils.toSimpleMetadata
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,9 +19,10 @@ import javax.inject.Singleton
 @Singleton
 @ExperimentalCoroutinesApi
 class MSongPlaybackFlow @Inject constructor(
-    @ApplicationContext context: Context,
+    @ApplicationContext val context: Context,
     dataModule: DataModule,
-    override var mAudioFocusManager: LMusicAudioFocusManager
+    override var mAudioFocusManager: LMusicAudioFocusManager,
+    override val mToastUtil: ToastUtil
 ) : FlowPlayback<MSong, List<MSong>, String>(context) {
     override val mediaIdFlow: Flow<String?> = dataModule.mediaId
     override val listFlow: Flow<List<MSong>> = dataModule.nowListFlow
@@ -67,6 +69,6 @@ class MSongPlaybackFlow @Inject constructor(
     }
 
     override fun getMetaDataFromItem(item: MSong): MediaMetadataCompat {
-        return item.toSimpleMetadata()
+        return item.toSimpleMetadata(context)
     }
 }

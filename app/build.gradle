@@ -51,6 +51,9 @@ android {
 }
 
 android.sourceSets.all {
+    // http://www.jthink.net/jaudiotagger/
+    // https://github.com/Kaned1as/jaudiotagger
+    // LGPL-3.0 License
     java.srcDirs += "src/third-party/jaudiotagger-android/src"
 }
 
@@ -80,11 +83,6 @@ dependencies {
     // https://mvnrepository.com/artifact/com.belerweb/pinyin4j
     implementation 'com.belerweb:pinyin4j:2.5.1'
 
-    // http://www.jthink.net/jaudiotagger/
-    // https://github.com/Kaned1as/jaudiotagger
-    // LGPL-3.0 License
-    // implementation "com.github.Adonai:jaudiotagger:2.3.14"
-
     // https://github.com/Moriafly/LyricViewX
     // https://github.com/cy745/LyricViewX
     // GPL-3.0 License
@@ -102,9 +100,6 @@ dependencies {
     // Apache-2.0
     implementation "com.google.android.material:material:1.6.0-alpha01"
 
-    implementation "androidx.hilt:hilt-work:1.0.0"
-    implementation "androidx.work:work-multiprocess:$work_version"
-    implementation "androidx.work:work-runtime-ktx:$work_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"

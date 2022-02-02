@@ -9,20 +9,24 @@ import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.fetch.SourceResult
 import coil.size.Size
+import com.lalilu.lmusic.utils.EmbeddedDataUtils
 import okio.buffer
 import okio.source
-import org.jaudiotagger.audio.mp3.MP3File
 import java.io.ByteArrayInputStream
 
-class EmbeddedFetcher : Fetcher<Uri> {
+fun Uri.toEmbeddedCoverSource(): EmbeddedCoverSourceUri = EmbeddedCoverSourceUri(this)
+
+class EmbeddedCoverSourceUri(val sourceUri: Uri = Uri.EMPTY)
+
+class EmbeddedCoverFetcher : Fetcher<EmbeddedCoverSourceUri> {
     override suspend fun fetch(
         pool: BitmapPool,
-        data: Uri,
+        data: EmbeddedCoverSourceUri,
         size: Size,
         options: Options
     ): FetchResult {
         val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(options.context, data)
+        retriever.setDataSource(options.context, data.sourceUri)
 
         try {
             retriever.embeddedPicture ?: throw NullPointerException()
@@ -36,9 +40,9 @@ class EmbeddedFetcher : Fetcher<Uri> {
         } catch (e: NullPointerException) {
         }
 
-        val mp3File = MP3File(data.path)
-        mp3File.tag.firstArtwork ?: throw NullPointerException()
-        val bufferedSource = ByteArrayInputStream(mp3File.tag.firstArtwork.binaryData)
+        val tag = EmbeddedDataUtils.getTag(data.sourceUri.path)
+        tag?.firstArtwork ?: throw NullPointerException()
+        val bufferedSource = ByteArrayInputStream(tag.firstArtwork.binaryData)
             .source().buffer()
         return SourceResult(
             source = bufferedSource,
@@ -47,7 +51,7 @@ class EmbeddedFetcher : Fetcher<Uri> {
         )
     }
 
-    override fun key(data: Uri): String {
-        return "embedded_$data"
+    override fun key(data: EmbeddedCoverSourceUri): String {
+        return "embedded_cover_${data.sourceUri}"
     }
 }

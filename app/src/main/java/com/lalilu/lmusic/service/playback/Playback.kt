@@ -68,7 +68,7 @@ interface Playback<ID> {
      */
     fun getPosition(): Long
 
-    fun onPlaybackStateChanged(state: Int)
+    suspend fun onPlaybackStateChanged(state: Int)
 
-    fun onMetadataChanged(mediaMetadataCompat: MediaMetadataCompat)
+    suspend fun onMetadataChanged(mediaMetadataCompat: MediaMetadataCompat)
 }

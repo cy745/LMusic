@@ -15,12 +15,8 @@ import com.lalilu.lmusic.database.MediaSource
 import com.lalilu.lmusic.database.repository.RepositoryFactory
 import com.lalilu.lmusic.domain.entity.MAlbum
 import com.lalilu.lmusic.domain.entity.MSong
-import com.lalilu.lmusic.domain.entity.MSongDetail
 import com.lalilu.lmusic.manager.LMusicNotificationManager
-import com.lalilu.lmusic.utils.Mathf
-import com.lalilu.lmusic.utils.getLastMediaMetadata
-import com.lalilu.lmusic.utils.getLastPlaybackState
-import com.lalilu.lmusic.utils.saveTo
+import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -150,22 +146,20 @@ class DataModule @Inject constructor(
     /**
      * 1.从数据库获取指定歌曲的歌词
      */
-    private val _songDetail: Flow<MSongDetail?> = _metadata.mapLatest {
-        database.songDetailDao().getByIdStr(it?.description?.mediaId ?: "0")
+    private val _songLyric: Flow<String?> = _metadata.mapLatest {
+        val songData = it?.bundle?.getString(Config.MEDIA_MEDIA_DATA)
+        EmbeddedDataUtils.loadLyric(songData)
     }.flowOn(Dispatchers.IO)
 
-    /**
-     * 2.将 MSongDetail 公开给其他位置使用
-     */
-    val songDetail: LiveData<MSongDetail?> = _songDetail.asLiveData()
+    val songLyric: LiveData<String?> = _songLyric.asLiveData()
 
     /**
      * 3.解析歌词为 List<LyricEntry>
      */
-    private val _songLyrics: Flow<List<LyricEntry>?> = _songDetail.mapLatest {
+    private val _songLyrics: Flow<List<LyricEntry>?> = _songLyric.mapLatest {
         // 歌词切换时清除通知
         notificationManager.clearLyric()
-        return@mapLatest LyricUtil.parseLrc(arrayOf(it?.songLyric, null))
+        return@mapLatest LyricUtil.parseLrc(arrayOf(it, null))
     }
 
     /**
