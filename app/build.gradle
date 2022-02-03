@@ -52,7 +52,7 @@ android {
 
 android.sourceSets.all {
     // http://www.jthink.net/jaudiotagger/
-    // https://github.com/Kaned1as/jaudiotagger
+    // https://github.com/hexise/jaudiotagger-android
     // LGPL-3.0 License
     java.srcDirs += "src/third-party/jaudiotagger-android/src"
 }
@@ -88,10 +88,6 @@ dependencies {
     // GPL-3.0 License
     implementation "com.github.cy745:LyricViewX:8ed19c8d53"
 
-    // https://github.com/CymChad/BaseRecyclerViewAdapterHelper
-    // MIT License
-    // implementation "com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.6"
-
     // 权限请求框架：https://github.com/getActivity/XXPermissions
     // Apache-2.0
     implementation "com.github.getActivity:XXPermissions:11.0"
@@ -105,7 +101,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
-
     implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
     implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
 

@@ -154,8 +154,7 @@ class AppBarZoomBehavior(
                 if (dy < 0) {
                     // 根据所在位置的百分比为滑动添加阻尼
                     // 经过阻尼衰减得到正确的 nextPosition
-                    val maxDragOffset = max(helper.maxDragHeight, mDraweeView?.maxOffset ?: 0)
-                    val percent = 1 - offsetPosition / maxDragOffset.toFloat()
+                    val percent = 1 - offsetPosition / getMutableDragOffset()
                     if (percent in 0F..1F) nextPosition = child.bottom - (dy * percent).toInt()
                 }
 
@@ -166,8 +165,8 @@ class AppBarZoomBehavior(
 
                 mSpringAnimation?.cancel()
 
-                val isNeedConsume = nextPosition in helper.normalHeight..helper.deviceHeight
-                consumed[1] = if (isNeedConsume) Int.MAX_VALUE else 0
+                // Appbar发生改变时，消费所有移动距离
+                consumed[1] = Int.MAX_VALUE
 
                 if (child.bottom > helper.normalHeight) return
             }
@@ -176,11 +175,24 @@ class AppBarZoomBehavior(
         super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type)
     }
 
+    fun getMutableDragOffset(): Float {
+        return max(helper.maxDragHeight, mDraweeView?.maxOffset ?: 0).toFloat()
+    }
+
+    fun getMutableDragPercent(offset: Int): Float {
+        return (offset / getMutableDragOffset()).coerceIn(0F, 1F)
+    }
+
+    fun getMutableScalePercent(offset: Int): Float {
+        val dragOffset = (mDraweeView?.maxOffset ?: 0).toFloat()
+        return ((offset - dragOffset) / (helper.maxExpandHeight - dragOffset))
+            .coerceIn(0F, 1F)
+    }
 
     /**
      *  重新定位各个控件的大小和位置
      */
-    private fun resizeChild(abl: AppBarLayout, nextPosition: Int) {
+    fun resizeChild(abl: AppBarLayout, nextPosition: Int) {
         if (nextPosition <= 0 || helper.normalHeight <= 0) return
 
         // 限定 appbar 的高度在指定范围内
@@ -196,11 +208,8 @@ class AppBarZoomBehavior(
 
         val topOffset = (helper.normalHeight / 2 * reverseValue).toInt()
         mDraweeView?.let {
-            val scalePercent =
-                ((offsetPosition - it.maxOffset).toFloat() / (helper.maxExpandHeight - it.maxOffset))
-                    .coerceIn(0f, 1f)
-            val maxDragOffset = max(helper.maxDragHeight, it.maxOffset).toFloat()
-            it.dragPercent = (offsetPosition / maxDragOffset).coerceIn(0F, 1F)
+            val scalePercent = getMutableScalePercent(offsetPosition)
+            it.dragPercent = getMutableDragPercent(offsetPosition)
             it.scalePercent = scalePercent
             it.blurPercent = scalePercent
             it.top = -topOffset
@@ -226,44 +235,36 @@ class AppBarZoomBehavior(
     @Volatile
     private var isAnimationEnd = true
 
+    private val transitionMap = HashMap<Int, (Number, Number, Number, Boolean) -> String?>().apply {
+        put(STATE_EXPENDED) { offset, topLimit, bottomLimit, forward ->
+            val result = if (forward) offset.toFloat() > topLimit.toFloat()
+            else offset.toFloat() >= bottomLimit.toFloat()
+            if (result) EVENT_EXPEND else null
+        }
+        put(STATE_FULLY_EXPENDED) { offset, topLimit, bottomLimit, forward ->
+            val result = if (forward) offset.toFloat() < bottomLimit.toFloat()
+            else offset.toFloat() <= topLimit.toFloat()
+            if (result) EVENT_COLLAPSE else null
+        }
+    }
+
     private fun checkState(child: AppBarLayout, bottom: Int) {
         val offsetPosition = bottom - helper.normalHeight
         val tinyMachine = helper.tinyMachine
 
-        val topSize = helper.maxDragHeight * 0.6f
-        val bottomSide = helper.maxExpandHeight - topSize
+        val topSide = getMutableDragOffset() * 0.6f
+        val bottomSide = helper.maxExpandHeight - topSide
 
-        if (isAnimationEnd) {
-            when (helper.currentState) {
-                STATE_EXPENDED -> {
-                    if (offsetPosition <= topSize) return
-                    isAnimationEnd = false
-                    tinyMachine.fireEvent(EVENT_EXPEND)
-                    HapticUtils.haptic(child)
-                }
-                STATE_FULLY_EXPENDED -> {
-                    if (offsetPosition >= bottomSide) return
-                    isAnimationEnd = false
-                    tinyMachine.fireEvent(EVENT_COLLAPSE)
-                    HapticUtils.haptic(child)
-                }
+        transitionMap[helper.currentState]
+            ?.invoke(offsetPosition, topSide, bottomSide, isAnimationEnd)?.let {
+                isAnimationEnd = !isAnimationEnd
+                tinyMachine.fireEvent(it)
+                HapticUtils.haptic(
+                    child,
+                    if (isAnimationEnd) HapticUtils.Strength.HAPTIC_WEAK
+                    else HapticUtils.Strength.HAPTIC_STRONG
+                )
             }
-        } else {
-            when (helper.currentState) {
-                STATE_FULLY_EXPENDED -> {
-                    if (offsetPosition > topSize) return
-                    isAnimationEnd = true
-                    tinyMachine.fireEvent(EVENT_COLLAPSE)
-                    HapticUtils.weakHaptic(child)
-                }
-                STATE_EXPENDED -> {
-                    if (offsetPosition < bottomSide) return
-                    isAnimationEnd = true
-                    tinyMachine.fireEvent(EVENT_EXPEND)
-                    HapticUtils.weakHaptic(child)
-                }
-            }
-        }
     }
 
     /**
