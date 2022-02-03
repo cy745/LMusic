@@ -71,10 +71,12 @@ class MediaSource @Inject constructor(
                 MediaStore.Audio.Media.ALBUM,
                 MediaStore.Audio.Media.ARTIST_ID,
                 MediaStore.Audio.Media.ARTIST
-            )
+            ),
+            selection = "${MediaStore.Audio.Artists.ARTIST} != ?",
+            selectionArgs = arrayOf(unknownArtist)
         ) ?: return@launch
 
-        _albums.emit(ArrayList<MAlbum>().apply {
+        _albums.emit(LinkedHashSet<MAlbum>().apply {
             while (cursor.moveToNext()) {
                 val albumId = cursor.getAlbumId()                       // 专辑 id
                 val albumTitle = cursor.getAlbumTitle()                 // 专辑标题
@@ -88,7 +90,7 @@ class MediaSource @Inject constructor(
                     )
                 )
             }
-        })
+        }.toList())
     }
 
     fun getAllSongs() = launch {

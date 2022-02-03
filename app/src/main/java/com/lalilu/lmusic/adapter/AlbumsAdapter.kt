@@ -26,7 +26,7 @@ class AlbumsAdapter @Inject constructor() :
         val binding = holder.binding
         val item = data[position]
 
-        binding.title = item.albumTitle
+        binding.album = item
         binding.root.setOnClickListener {
             onItemClickListener?.invoke(item)
         }

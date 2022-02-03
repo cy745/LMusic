@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.imageLoader
+import coil.load
 import coil.request.ImageRequest
 import com.dirror.lyricviewx.LyricViewX
 import com.google.android.material.appbar.AppBarLayout
@@ -42,7 +43,7 @@ fun setIcon(imageView: ImageView, string: String) {
 }
 
 @BindingAdapter("setLyricSourceUri")
-fun setHasLyricIcon(imageView: ImageView, songData: String?) {
+fun setLyricSourceUri(imageView: ImageView, songData: String?) {
     songData ?: return
 
     val imageRequest = ImageRequest.Builder(imageView.context)
@@ -53,8 +54,18 @@ fun setHasLyricIcon(imageView: ImageView, songData: String?) {
     imageView.context.imageLoader.enqueue(imageRequest)
 }
 
-@BindingAdapter(value = ["pictureUri", "samplingValue"], requireAll = false)
-fun setPictureUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
+@BindingAdapter(value = ["setNormalUri", "samplingValue"], requireAll = false)
+fun setNormalUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
+    uri ?: return
+
+    imageView.load(uri) {
+        if (samplingValue > 0) size(samplingValue)
+        crossfade(300)
+    }
+}
+
+@BindingAdapter(value = ["setCoverSourceUri", "samplingValue"], requireAll = false)
+fun setCoverSourceUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
     uri ?: return
 
     val imageRequest = ImageRequest.Builder(imageView.context)
@@ -75,8 +86,8 @@ fun setPictureUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int =
     imageView.context.imageLoader.enqueue(imageRequest.build())
 }
 
-@BindingAdapter("artUri")
-fun setMSongCoverUri(imageView: BlurImageView, uri: Uri?) {
+@BindingAdapter("setCoverSourceUri")
+fun setCoverSourceUri(imageView: BlurImageView, uri: Uri?) {
     uri ?: return
 
     imageView.context.imageLoader.enqueue(
