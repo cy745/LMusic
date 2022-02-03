@@ -26,6 +26,7 @@ class AppBarStatusHelper @Inject constructor() : AppBarLayout.OnOffsetChangedLis
     val currentState get() = tinyMachine.currentState
 
     private var verticalOffset = 0
+    var lastHeight = -1
     var normalHeight = -1
     var deviceHeight = -1
     var maxExpandHeight = -1

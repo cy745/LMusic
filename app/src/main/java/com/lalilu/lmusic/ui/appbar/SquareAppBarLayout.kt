@@ -9,7 +9,6 @@ import android.view.MotionEvent
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.lmusic.utils.AntiErrorTouchEvent
-import com.lalilu.lmusic.utils.DeviceUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +34,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         super.onLayout(changed, l, t, r, b)
         if (changed && helper.currentState == STATE_FULLY_EXPENDED) {
-            this.layout(l, t, r, DeviceUtil.getHeight(context))
+            this.layout(l, t, r, helper.lastHeight)
         }
     }
 
