@@ -197,6 +197,7 @@ class AppBarZoomBehavior(
 
         // 限定 appbar 的高度在指定范围内
         abl.bottom = nextPosition.coerceIn(helper.normalHeight, helper.deviceHeight)
+        helper.lastHeight = abl.bottom
 
         val offsetPosition = abl.bottom - helper.normalHeight
         val animatePercent = (offsetPosition / helper.maxExpandHeight.toFloat()).coerceIn(0F, 1F)
