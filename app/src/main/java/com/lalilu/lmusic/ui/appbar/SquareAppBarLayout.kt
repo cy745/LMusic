@@ -20,13 +20,13 @@ import kotlin.coroutines.CoroutineContext
 class SquareAppBarLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : AppBarLayout(context, attrs, defStyleAttr), CoroutineScope, AntiErrorTouchEvent {
-    @Inject
-    lateinit var helper: AppBarStatusHelper
-    private val zoomBehavior = AppBarZoomBehavior(helper, context, null)
-
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     override val rect = Rect(0, 0, 0, 0)
     override val interceptSize = 100
+
+    @Inject
+    lateinit var helper: AppBarStatusHelper
+    private val zoomBehavior = AppBarZoomBehavior(helper, context, null)
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, widthMeasureSpec)
@@ -45,9 +45,10 @@ class SquareAppBarLayout @JvmOverloads constructor(
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onTouchEvent(event: MotionEvent): Boolean =
-        if (checkTouchEvent(event)) true
-        else super.onTouchEvent(event)
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return if (checkTouchEvent(event)) true else super.onTouchEvent(event)
+    }
+
 
     override fun whenToIntercept(): Boolean = helper.currentState == STATE_FULLY_EXPENDED
 

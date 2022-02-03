@@ -31,18 +31,22 @@ class AppBarStatusHelper @Inject constructor() : AppBarLayout.OnOffsetChangedLis
     var maxExpandHeight = -1
     var maxDragHeight = 200
 
+    private var stateTransitionMap = HashMap<Int, (Int) -> Int?>().apply {
+        put(STATE_COLLAPSED) {
+            if (it >= appbar.height || it == 0) STATE_EXPENDED else null
+        }
+        put(STATE_EXPENDED) {
+            if (appbar.y + appbar.totalScrollRange < 0 || verticalOffset < 0) STATE_COLLAPSED
+            else null
+        }
+    }
+
     /**
      * 根据下一个位置获取状态
      */
     fun getNextStatusByNextPosition(nextPosition: Int): Int {
-        tinyMachine.transitionTo(
-            when {
-                currentState == STATE_COLLAPSED &&
-                        nextPosition >= appbar.height -> STATE_EXPENDED
-                appbar.y + appbar.totalScrollRange < 0 || verticalOffset < 0 -> STATE_COLLAPSED
-                else -> currentState
-            }
-        )
+        stateTransitionMap[currentState]?.invoke(nextPosition)
+            ?.let { tinyMachine.transitionTo(it) }
         return currentState
     }
 
@@ -53,12 +57,8 @@ class AppBarStatusHelper @Inject constructor() : AppBarLayout.OnOffsetChangedLis
         listenPercent?.invoke(1 + verticalOffset.toFloat() / appBarLayout.totalScrollRange)
         this.verticalOffset = verticalOffset
 
-        tinyMachine.transitionTo(
-            when {
-                currentState == STATE_COLLAPSED && appbar.y.toInt() == 0 && verticalOffset == 0 -> STATE_EXPENDED
-                else -> currentState
-            }
-        )
+        stateTransitionMap[currentState]?.invoke(verticalOffset)
+            ?.let { tinyMachine.transitionTo(it) }
     }
 
     /**
@@ -68,8 +68,7 @@ class AppBarStatusHelper @Inject constructor() : AppBarLayout.OnOffsetChangedLis
         appbar: AppBarLayout,
         listenPercent: (percent: Float) -> Unit
     ) {
-        if (normalHeight <= 0)
-            normalHeight = appbar.height
+        if (normalHeight <= 0) normalHeight = appbar.height
 
         this.appbar = appbar
         this.appbar.removeOnOffsetChangedListener(this)

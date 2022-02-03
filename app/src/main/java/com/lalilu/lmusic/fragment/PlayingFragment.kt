@@ -7,10 +7,10 @@ import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.binding_adapter.setItems
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
+import com.lalilu.lmusic.fragment.viewmodel.PlayingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +22,9 @@ import kotlin.coroutines.CoroutineContext
 @ExperimentalCoroutinesApi
 class PlayingFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Main
+
+    @Inject
+    lateinit var mState: PlayingViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -43,26 +46,27 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 
         return DataBindingConfig(R.layout.fragment_playing)
             .addParam(BR.ev, mEvent)
+            .addParam(BR.vm, mState)
             .addParam(BR.playingAdapter, mAdapter)
-            .addParam(BR.playerModule, playerModule)
     }
 
     override fun onViewCreated() {
         val binding = mBinding as FragmentPlayingBinding
-        val fmToolbar = binding.fmToolbar
-        val fmLyricViewX = binding.fmLyricViewX
         val fmAppbarLayout = binding.fmAppbarLayout
-        val recyclerView = binding.nowPlayingRecyclerView
+        mActivity?.setSupportActionBar(binding.fmToolbar)
 
-        mActivity?.setSupportActionBar(fmToolbar)
-        dataModule.songLyric.observe(viewLifecycleOwner) {
-            fmLyricViewX.loadLyric(it)
+        playerModule.metadataLiveData.observe(viewLifecycleOwner) {
+            mState._title.postValue(it?.description?.title.toString())
+            mState._mediaUri.postValue(it?.description?.mediaUri)
         }
-        dataModule.songPosition.observe(viewLifecycleOwner) { position ->
-            fmLyricViewX.updateTime(position)
+        dataModule.songLyric.observe(viewLifecycleOwner) {
+            mState._lyric.postValue(it)
+        }
+        dataModule.songPosition.observe(viewLifecycleOwner) {
+            mState._position.postValue(it)
         }
         playerModule.mSongsLiveData.observe(viewLifecycleOwner) {
-            mAdapter.setItems(it, recyclerView)
+            mState._songs.postValue(it)
         }
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
             it?.get { fmAppbarLayout.setExpanded(false, true) }

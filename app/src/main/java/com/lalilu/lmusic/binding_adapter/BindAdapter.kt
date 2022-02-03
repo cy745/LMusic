@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.imageLoader
 import coil.request.ImageRequest
+import com.dirror.lyricviewx.LyricViewX
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
@@ -74,7 +75,7 @@ fun setPictureUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int =
     imageView.context.imageLoader.enqueue(imageRequest.build())
 }
 
-@BindingAdapter(value = ["artUri"])
+@BindingAdapter("artUri")
 fun setMSongCoverUri(imageView: BlurImageView, uri: Uri?) {
     uri ?: return
 
@@ -90,24 +91,24 @@ fun setMSongCoverUri(imageView: BlurImageView, uri: Uri?) {
     )
 }
 
-@BindingAdapter(value = ["bindTitle"], requireAll = false)
+@BindingAdapter("bindTitle")
 fun setMSongTitle(collapsingToolbarLayout: CollapsingToolbarLayout, title: String?) {
     collapsingToolbarLayout.title = if (TextUtils.isEmpty(title)) "LMusic..." else title
 }
 
-@BindingAdapter(value = ["bgPaletteLiveData"])
+@BindingAdapter("bgPaletteLiveData")
 fun setBGPaletteLiveData(
     imageView: BlurImageView, liveData: MutableLiveData<Palette?>
 ) {
     imageView.palette = liveData
 }
 
-@BindingAdapter(value = ["bgPalette"], requireAll = false)
+@BindingAdapter("bgPalette")
 fun setAppbarBGColor(appBarLayout: AppBarLayout, palette: Palette?) {
     setBgColorFromPalette(palette, appBarLayout)
 }
 
-@BindingAdapter(value = ["bgPalette"], requireAll = false)
+@BindingAdapter("bgPalette")
 fun setSeekBarBGColor(seekBar: LMusicSeekBar, palette: Palette?) {
     seekBar.setThumbColor(getAutomaticColor(palette))
 }
@@ -118,12 +119,22 @@ fun addGridItemDecoration(recyclerView: RecyclerView, gridGap: Int, gridSpanCoun
     recyclerView.addItemDecoration(GridItemDecoration(gridGap, gridSpanCount))
 }
 
-fun PlayingAdapter.setItems(
-    list: List<MSong>?,
-    recyclerView: RecyclerView
-) {
-    val newList = list?.toMutableList() ?: ArrayList()
-    var oldList = this.data.toMutableList()
+@BindingAdapter("loadLyric")
+fun loadLyric(lyricViewX: LyricViewX, lyric: String?) {
+    lyricViewX.loadLyric(lyric)
+}
+
+@BindingAdapter("updateTime")
+fun updateTime(lyricViewX: LyricViewX, time: Long) {
+    lyricViewX.updateTime(time)
+}
+
+@BindingAdapter("setSongs")
+fun setSongs(recyclerView: RecyclerView, songs: List<MSong>?) {
+    val adapter = recyclerView.adapter as PlayingAdapter
+
+    val newList = songs?.toMutableList() ?: ArrayList()
+    var oldList = adapter.data.toMutableList()
 
     // 预先将头部部分差异进行转移
     val size = oldList.indexOfFirst { it.songId == newList[0].songId }
@@ -133,12 +144,12 @@ fun PlayingAdapter.setItems(
     ) {
         oldList = oldList.moveHeadToTail(size)
 
-        this.notifyItemRangeRemoved(0, size)
-        this.notifyItemRangeInserted(oldList.size, size)
+        adapter.notifyItemRangeRemoved(0, size)
+        adapter.notifyItemRangeInserted(oldList.size, size)
     }
     val diffCallback = MSong.DiffMSong(oldList, newList)
     val diffResult = DiffUtil.calculateDiff(diffCallback, false)
-    this.data = newList
-    diffResult.dispatchUpdatesTo(this)
+    adapter.data = newList
+    diffResult.dispatchUpdatesTo(adapter)
     recyclerView.scrollToPosition(0)
 }
