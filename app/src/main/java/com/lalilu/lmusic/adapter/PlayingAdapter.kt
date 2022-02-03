@@ -12,7 +12,6 @@ class PlayingAdapter @Inject constructor() :
         val item = data[position]
 
         binding.song = item
-        binding.hasLyric = true
         binding.root.setOnClickListener {
             onItemClickListener?.invoke(item)
         }

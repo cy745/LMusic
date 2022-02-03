@@ -10,11 +10,6 @@
         <variable
             name="song"
             type="com.lalilu.lmusic.domain.entity.MSong" />
-
-        <variable
-            name="hasLyric"
-            type="Boolean" />
-
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -33,8 +28,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:pictureUri="@{song.songUri}"
             app:samplingValue="@{200}"
+            app:setCoverSourceUri="@{song.songUri}"
             tools:src="@tools:sample/avatars" />
 
         <TextView

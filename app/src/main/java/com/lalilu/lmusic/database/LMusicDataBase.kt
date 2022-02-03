@@ -18,7 +18,7 @@ import com.lalilu.lmusic.domain.entity.*
         ArtistSongCrossRef::class,
         PlaylistSongCrossRef::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(value = [UriConverter::class, DateConverter::class])

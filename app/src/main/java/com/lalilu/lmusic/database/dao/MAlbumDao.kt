@@ -1,9 +1,11 @@
 package com.lalilu.lmusic.database.dao
 
-import android.net.Uri
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.OnConflictStrategy.IGNORE
+import androidx.room.Query
+import androidx.room.Transaction
 import com.lalilu.lmusic.domain.entity.AlbumWithSongs
 import com.lalilu.lmusic.domain.entity.MAlbum
 
@@ -26,14 +28,4 @@ interface MAlbumDao {
 
     @Query("DELETE FROM m_album WHERE album_id = :albumId;")
     fun deleteById(albumId: Long)
-
-    @Update(entity = MAlbum::class, onConflict = IGNORE)
-    fun updateCoverUri(update: MSongAlbumUpdateCoverUri)
 }
-
-data class MSongAlbumUpdateCoverUri(
-    @ColumnInfo(name = "album_id")
-    val albumId: Long,
-    @ColumnInfo(name = "album_cover_uri")
-    val albumCoverUri: Uri = Uri.EMPTY,
-)

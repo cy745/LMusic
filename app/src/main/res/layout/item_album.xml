@@ -6,12 +6,8 @@
     <data>
 
         <variable
-            name="title"
-            type="String" />
-
-        <variable
-            name="coverUri"
-            type="android.net.Uri" />
+            name="album"
+            type="com.lalilu.lmusic.domain.entity.MAlbum" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -31,8 +27,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:pictureUri="@{coverUri}"
             app:samplingValue="@{400}"
+            app:setNormalUri="@{album.albumCoverUri}"
             tools:placeholderImage="@tools:sample/avatars" />
 
         <TextView
@@ -45,7 +41,7 @@
             android:layout_marginBottom="5dp"
             android:ellipsize="end"
             android:maxLines="2"
-            android:text="@{title}"
+            android:text="@{album.albumTitle}"
             android:textColor="?attr/daynight_0"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
