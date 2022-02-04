@@ -22,13 +22,7 @@ class AlbumsAdapter @Inject constructor() :
             }
         }
 
-    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-        val binding = holder.binding
-        val item = data[position]
-
+    override fun onBind(binding: ItemAlbumBinding, item: MAlbum) {
         binding.album = item
-        binding.root.setOnClickListener {
-            onItemClickListener?.invoke(item)
-        }
     }
 }
