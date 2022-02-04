@@ -13,12 +13,15 @@ import com.lalilu.lmusic.utils.EmbeddedDataUtils
 import okio.buffer
 import okio.source
 import java.io.ByteArrayInputStream
+import javax.inject.Inject
+import javax.inject.Singleton
 
 fun Uri.toEmbeddedCoverSource(): EmbeddedCoverSourceUri = EmbeddedCoverSourceUri(this)
 
 class EmbeddedCoverSourceUri(val sourceUri: Uri = Uri.EMPTY)
 
-class EmbeddedCoverFetcher : Fetcher<EmbeddedCoverSourceUri> {
+@Singleton
+class EmbeddedCoverFetcher @Inject constructor() : Fetcher<EmbeddedCoverSourceUri> {
     override suspend fun fetch(
         pool: BitmapPool,
         data: EmbeddedCoverSourceUri,
