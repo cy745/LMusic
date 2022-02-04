@@ -20,12 +20,12 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.domain.entity.MSong
-import com.lalilu.lmusic.toEmbeddedCoverSource
 import com.lalilu.lmusic.toEmbeddedLyricSource
 import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
+import com.lalilu.lmusic.utils.EmbeddedDataUtils
 import com.lalilu.lmusic.utils.GridItemDecoration
 import com.lalilu.lmusic.utils.moveHeadToTail
 
@@ -72,38 +72,28 @@ fun setNormalUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = 
 fun setCoverSourceUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
     uri ?: return
 
-    val imageRequest = ImageRequest.Builder(imageView.context)
-        .data(uri.toEmbeddedCoverSource())
-        .allowHardware(false)
-        .placeholder(R.drawable.ic_loader_line)
-        .error(R.drawable.ic_error_warning_line)
-        .target(onStart = {
+    EmbeddedDataUtils.loadCover(imageView.context, uri,
+        onStart = {
             imageView.scaleType = ImageView.ScaleType.CENTER
+            imageView.setImageDrawable(it)
         }, onError = {
             imageView.scaleType = ImageView.ScaleType.CENTER
+            imageView.setImageDrawable(it)
         }, onSuccess = {
             imageView.setImageDrawable(it)
             imageView.scaleType = ImageView.ScaleType.CENTER_CROP
         })
-
-    if (samplingValue > 0) imageRequest.size(samplingValue)
-    imageView.context.imageLoader.enqueue(imageRequest.build())
 }
 
 @BindingAdapter("setCoverSourceUri")
 fun setCoverSourceUri(imageView: BlurImageView, uri: Uri?) {
     uri ?: return
 
-    imageView.context.imageLoader.enqueue(
-        ImageRequest.Builder(imageView.context)
-            .data(uri.toEmbeddedCoverSource())
-            .allowHardware(false)
-            .target(onSuccess = {
-                imageView.loadImageFromDrawable(it)
-            }, onError = {
-                imageView.clearImage()
-            }).build()
-    )
+    EmbeddedDataUtils.loadCover(imageView.context, uri, onError = {
+        imageView.clearImage()
+    }, onSuccess = {
+        imageView.loadImageFromDrawable(it)
+    })
 }
 
 @BindingAdapter("bindTitle")
