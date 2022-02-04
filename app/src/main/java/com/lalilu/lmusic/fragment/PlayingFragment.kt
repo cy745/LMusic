@@ -1,11 +1,16 @@
 package com.lalilu.lmusic.fragment
 
+import android.graphics.drawable.Drawable
+import android.view.LayoutInflater
+import androidx.databinding.DataBindingUtil
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.bottomsheets.setPeekHeight
+import com.afollestad.materialdialogs.customview.customView
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.BR
 import com.lalilu.R
+import com.lalilu.databinding.DialogSongDetailBinding
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
@@ -15,6 +20,7 @@ import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.fragment.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.utils.DeviceUtil
+import com.lalilu.lmusic.utils.EmbeddedDataUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,16 +53,37 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             playerModule.mediaController?.transportControls
                 ?.playFromMediaId(it.songId.toString(), null)
         }
+        val binding = DataBindingUtil.inflate<DialogSongDetailBinding>(
+            LayoutInflater.from(requireContext()),
+            R.layout.dialog_song_detail,
+            null,
+            false
+        )
         val dialog = MaterialDialog(requireContext(), BottomSheet()).apply {
             setPeekHeight(DeviceUtil.getHeight(requireContext()) / 3)
             window?.setDimAmount(0.01f)
             cornerRadius(16f)
+            customView(view = binding.root)
         }
-        mAdapter.onItemLongClickListener = {
-            dialog.show {
-                title(text = it.songTitle)
-                message(text = it.showingArtist)
+
+        mAdapter.onItemLongClickListener = { song ->
+            binding.song = song
+            val runnable: (Drawable?) -> Unit = { drawable ->
+                dialog.show {
+
+                    negativeButton(text = "关闭") {
+                        it.dismiss()
+                    }
+                }
             }
+            EmbeddedDataUtils.loadCover(
+                context = requireContext(),
+                mediaUri = song.songUri,
+                samplingValue = 400,
+                mutable = true,
+                onSuccess = runnable,
+                onError = runnable
+            )
         }
 
         return DataBindingConfig(R.layout.fragment_playing)
