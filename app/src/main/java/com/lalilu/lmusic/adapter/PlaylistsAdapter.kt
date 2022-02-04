@@ -23,10 +23,7 @@ class PlaylistsAdapter @Inject constructor() :
             }
         }
 
-    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-        val binding = holder.binding
-        val item = data[position]
-
+    override fun onBind(binding: ItemPlaylistBinding, item: MPlaylist) {
         binding.title = item.playlistTitle
         binding.coverUri = item.playlistCoverUri
     }

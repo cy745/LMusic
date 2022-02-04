@@ -7,13 +7,7 @@ import javax.inject.Inject
 
 class PlayingAdapter @Inject constructor() :
     BaseAdapter<MSong, ItemPlayingBinding>(R.layout.item_playing) {
-    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-        val binding = holder.binding
-        val item = data[position]
-
+    override fun onBind(binding: ItemPlayingBinding, item: MSong) {
         binding.song = item
-        binding.root.setOnClickListener {
-            onItemClickListener?.invoke(item)
-        }
     }
 }

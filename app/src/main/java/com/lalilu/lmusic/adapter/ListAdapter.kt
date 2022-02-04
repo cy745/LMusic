@@ -21,10 +21,7 @@ class ListAdapter @Inject constructor() :
             }
         }
 
-    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-        val binding = holder.binding
-        val item = data[position]
-
+    override fun onBind(binding: ItemPlaylistExpandBinding, item: MSong) {
         binding.title = item.songTitle
     }
 }

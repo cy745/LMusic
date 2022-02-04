@@ -13,8 +13,11 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
 ) : RecyclerView.Adapter<BaseAdapter<I, B>.BaseViewHolder>() {
 
     var data: MutableList<I> = ArrayList()
-    var onItemClickListener: ((item: I) -> Unit)? = null
+    open var onItemClickListener: (item: I) -> Unit = {}
+    open var onItemLongClickListener: (item: I) -> Unit = {}
     open val itemCallback: DiffUtil.ItemCallback<I>? = null
+
+    abstract fun onBind(binding: B, item: I)
 
     inner class BaseViewHolder constructor(val binding: B) :
         RecyclerView.ViewHolder(binding.root)
@@ -26,6 +29,19 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
                 layoutId, parent, false
             )
         )
+    }
+
+    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+        val binding = holder.binding
+        val item = data[position]
+        binding.root.setOnClickListener {
+            onItemClickListener(item)
+        }
+        binding.root.setOnLongClickListener {
+            onItemLongClickListener(item)
+            return@setOnLongClickListener true
+        }
+        onBind(binding, item)
     }
 
     override fun getItemCount(): Int = data.size
