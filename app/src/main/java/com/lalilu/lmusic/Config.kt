@@ -5,6 +5,8 @@ import android.media.AudioManager
 import android.support.v4.media.session.PlaybackStateCompat
 
 object Config {
+    const val BASE_URL = "https://apis.lalilu.cn/"
+
     const val MEDIA_MIME_TYPE = "MEDIA_MIME_TYPE"
     const val MEDIA_MEDIA_DATA = "MEDIA_MEDIA_DATA"
 

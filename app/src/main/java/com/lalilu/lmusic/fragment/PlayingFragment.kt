@@ -1,5 +1,8 @@
 package com.lalilu.lmusic.fragment
 
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.bottomsheets.BottomSheet
+import com.afollestad.materialdialogs.bottomsheets.setPeekHeight
 import com.google.android.material.appbar.AppBarLayout
 import com.lalilu.BR
 import com.lalilu.R
@@ -11,6 +14,7 @@ import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.fragment.viewmodel.PlayingViewModel
+import com.lalilu.lmusic.utils.DeviceUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +46,17 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         mAdapter.onItemClickListener = {
             playerModule.mediaController?.transportControls
                 ?.playFromMediaId(it.songId.toString(), null)
+        }
+        val dialog = MaterialDialog(requireContext(), BottomSheet()).apply {
+            setPeekHeight(DeviceUtil.getHeight(requireContext()) / 3)
+            window?.setDimAmount(0.01f)
+            cornerRadius(16f)
+        }
+        mAdapter.onItemLongClickListener = {
+            dialog.show {
+                title(text = it.songTitle)
+                message(text = it.showingArtist)
+            }
         }
 
         return DataBindingConfig(R.layout.fragment_playing)
