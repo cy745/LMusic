@@ -15,8 +15,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:background="@drawable/item_click_background_daynight"
-        android:theme="@style/Theme.Music">
+        android:background="@drawable/item_click_background_daynight">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/song_album_pic"
@@ -62,6 +61,7 @@
             app:layout_constraintEnd_toStartOf="@+id/song_duration"
             app:layout_constraintStart_toEndOf="@+id/song_album_pic"
             app:layout_constraintTop_toBottomOf="@+id/song_title"
+            tools:ignore="SmallSp"
             tools:text="@tools:sample/full_names" />
 
         <TextView
@@ -94,10 +94,11 @@
             android:layout_height="20dp"
             android:layout_marginEnd="5dp"
             android:contentDescription="@string/audio_type"
+            android:visibility="invisible"
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toStartOf="@+id/song_type"
             app:layout_constraintTop_toTopOf="parent"
             app:setLyricSourceUri="@{song.songData}"
-            tools:srcCompat="@drawable/ic_lrc_fill" />
+            app:srcCompat="@drawable/ic_lrc_fill" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

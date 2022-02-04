@@ -4,10 +4,6 @@
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/colorPrimary</item>
 
-        <item name="color_main">@color/colorPrimary</item>
-        <item name="color_main_variant">@color/colorPrimaryVariant</item>
-        <item name="color_second">@color/colorOnPrimary</item>
-
         <item name="daynight_1">@color/day_1</item>
         <item name="daynight_0.9">@color/day_0.9</item>
         <item name="daynight_0.5">@color/day_0.5</item>
@@ -17,23 +13,19 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-
-        <item name="android:textColorPrimary">@color/abc_primary_text_material_dark</item>
-        <item name="android:textColorPrimaryInverse">@color/abc_primary_text_material_light</item>
-
-        <item name="android:textColorSecondary">@color/white</item>
     </style>
 
     <style name="expandedTitleText">
+        <item name="android:textColor">@color/white</item>
         <item name="android:textSize">26sp</item>
     </style>
 
     <style name="collapsedTitleText">
+        <item name="android:textColor">@color/white</item>
         <item name="android:textSize">18sp</item>
     </style>
 
-    <style name="dayNightTitleText">
-        <item name="android:textSize">18sp</item>
-        <item name="android:textColor">@color/white</item>
+    <style name="dayNightPrimaryText">
+        <item name="android:textColor">@color/black</item>
     </style>
 </resources>
