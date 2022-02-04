@@ -139,8 +139,6 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        mediaSession.setPlaybackState(mediaSession.controller.playbackState)
-        mediaSession.setMetadata(mediaSession.controller.metadata)
         result.sendResult(ArrayList())
     }
 

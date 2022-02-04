@@ -52,11 +52,6 @@ class LMusicActivity : DataBindingActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onStart() {
-        playerModule.connect()
-        super.onStart()
-    }
-
     override fun onPause() {
         playerModule.disconnect()
         super.onPause()
@@ -64,6 +59,7 @@ class LMusicActivity : DataBindingActivity() {
 
     override fun onResume() {
         volumeControlStream = AudioManager.STREAM_MUSIC
+        playerModule.connect()
         super.onResume()
     }
 
@@ -97,6 +93,6 @@ class LMusicActivity : DataBindingActivity() {
 
     override fun onBackPressed() {
         val canNavigatorUp = findNavController(R.id.navigator).navigateUp()
-        if (!canNavigatorUp) super.onBackPressed()
+        if (!canNavigatorUp) moveTaskToBack(false)
     }
 }

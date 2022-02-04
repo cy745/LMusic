@@ -2,6 +2,7 @@ package com.lalilu.lmusic.binding_adapter
 
 import android.net.Uri
 import android.text.TextUtils
+import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.databinding.BindingAdapter
@@ -48,8 +49,11 @@ fun setLyricSourceUri(imageView: ImageView, songData: String?) {
 
     val imageRequest = ImageRequest.Builder(imageView.context)
         .data(songData.toEmbeddedLyricSource())
-        .target(imageView)
-        .build()
+        .target(onSuccess = {
+            imageView.visibility = View.VISIBLE
+        }, onError = {
+            imageView.visibility = View.INVISIBLE
+        }).build()
 
     imageView.context.imageLoader.enqueue(imageRequest)
 }

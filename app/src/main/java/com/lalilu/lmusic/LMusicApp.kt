@@ -13,10 +13,13 @@ class LMusicApp : Application(), ImageLoaderFactory {
     @Inject
     lateinit var lyricFetchers: EmbeddedLyricFetchers
 
+    @Inject
+    lateinit var coverFetcher: EmbeddedCoverFetcher
+
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)
             .componentRegistry {
-                add(EmbeddedCoverFetcher())
+                add(coverFetcher)
                 add(lyricFetchers)
             }.build()
 
