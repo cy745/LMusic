@@ -34,7 +34,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:title="歌单"
-                app:titleTextAppearance="@style/dayNightTitleText" />
+                app:titleTextAppearance="@style/collapsedTitleText" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <com.lalilu.lmusic.ui.MySmartRefreshLayout
