@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <SwitchPreferenceCompat
+        app:key="LAST_REPEAT_MODE"
+        app:summary="切换。。。。"
+        app:title="开关" />
+</PreferenceScreen>
