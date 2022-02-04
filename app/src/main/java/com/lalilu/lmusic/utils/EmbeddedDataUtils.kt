@@ -14,17 +14,19 @@ import java.util.logging.Logger
 object EmbeddedDataUtils {
     private val tagCache = LruCache<String, Tag?>(100)
 
+    @Throws(Exception::class)
     fun getTag(songData: String?): Tag? {
         songData ?: return null
         Logger.getLogger("org.jaudiotagger").level = Level.OFF
 
-        val tag = tagCache.get(songData) ?: AudioFileIO.read(File(songData)).tag.also {
+        val tag = tagCache.get(songData)
+        if (tag != null) return tag
+
+        val file = File(songData)
+        if (!file.exists()) return null
+        return AudioFileIO.read(file).tag.also {
             tagCache.put(songData, it)
         }
-
-        if (tag.isEmpty) return null
-
-        return tag
     }
 
     fun loadLyric(songData: String?): String? {
@@ -40,6 +42,6 @@ object EmbeddedDataUtils {
 
     suspend fun loadLyric(songData: String?, callback: (lyric: String?) -> Unit) =
         withContext(Dispatchers.IO) {
-            callback(EmbeddedDataUtils.loadLyric(songData))
+            callback(loadLyric(songData))
         }
 }

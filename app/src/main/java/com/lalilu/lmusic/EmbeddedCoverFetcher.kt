@@ -41,6 +41,9 @@ class EmbeddedCoverFetcher @Inject constructor() : Fetcher<EmbeddedCoverSourceUr
                 dataSource = DataSource.DISK
             )
         } catch (e: NullPointerException) {
+        } finally {
+            retriever.close()
+            retriever.release()
         }
 
         val tag = EmbeddedDataUtils.getTag(data.sourceUri.path)
