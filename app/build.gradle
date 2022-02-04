@@ -58,6 +58,14 @@ android.sourceSets.all {
 }
 
 dependencies {
+    // https://github.com/afollestad/material-dialogs
+    // Apache-2.0 License
+    implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
+
+    // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
+    // Apache-2.0 License
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+
     // https://github.com/Commit451/NativeStackBlur
     // Apache-2.0 License
     implementation 'com.github.Commit451:NativeStackBlur:1.0.4'
