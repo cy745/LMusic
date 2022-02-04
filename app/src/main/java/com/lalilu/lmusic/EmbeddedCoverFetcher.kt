@@ -1,6 +1,5 @@
 package com.lalilu.lmusic
 
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import coil.bitmap.BitmapPool
 import coil.decode.DataSource
@@ -10,9 +9,6 @@ import coil.fetch.Fetcher
 import coil.fetch.SourceResult
 import coil.size.Size
 import com.lalilu.lmusic.utils.EmbeddedDataUtils
-import okio.buffer
-import okio.source
-import java.io.ByteArrayInputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,28 +24,9 @@ class EmbeddedCoverFetcher @Inject constructor() : Fetcher<EmbeddedCoverSourceUr
         size: Size,
         options: Options
     ): FetchResult {
-        val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(options.context, data.sourceUri)
-
-        try {
-            retriever.embeddedPicture ?: throw NullPointerException()
-            val bufferedSource = ByteArrayInputStream(retriever.embeddedPicture)
-                .source().buffer()
-            return SourceResult(
-                source = bufferedSource,
-                mimeType = null,
-                dataSource = DataSource.DISK
-            )
-        } catch (e: NullPointerException) {
-        } finally {
-            retriever.close()
-            retriever.release()
-        }
-
-        val tag = EmbeddedDataUtils.getTag(data.sourceUri.path)
-        tag?.firstArtwork ?: throw NullPointerException()
-        val bufferedSource = ByteArrayInputStream(tag.firstArtwork.binaryData)
-            .source().buffer()
+        val bufferedSource = EmbeddedDataUtils.loadCoverBufferSource(
+            options.context, data.sourceUri, data.sourceUri.path
+        ) ?: throw NullPointerException()
         return SourceResult(
             source = bufferedSource,
             mimeType = null,
