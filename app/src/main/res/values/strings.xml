@@ -20,6 +20,7 @@
     <string name="navigate_to_all_songs_page">跳转至本地歌曲页</string>
     <string name="navigate_to_album_page">跳转至专辑页</string>
     <string name="text_button_search">搜索</string>
+    <string name="text_button_settings">设置</string>
 
     <string name="song_non_exist_tips">该本地歌曲已丢失，重启LMusic后将清除该歌曲😥</string>
 </resources>
