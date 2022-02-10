@@ -6,8 +6,9 @@ import android.graphics.Canvas
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.MotionEvent
-import com.google.android.material.appbar.AppBarLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.lalilu.lmusic.utils.AntiErrorTouchEvent
+import com.lalilu.material.appbar.AppBarLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,5 +47,5 @@ class SquareAppBarLayout @JvmOverloads constructor(
 
     override fun whenToIntercept(): Boolean = helper.currentState == STATE_FULLY_EXPENDED
 
-//    override fun getBehavior(): CoordinatorLayout.Behavior<AppBarLayout> = zoomBehavior
+    override fun getBehavior(): CoordinatorLayout.Behavior<AppBarLayout> = zoomBehavior
 }

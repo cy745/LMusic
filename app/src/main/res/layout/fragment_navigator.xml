@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.google.android.material.appbar.AppBarLayout
+        <com.lalilu.material.appbar.AppBarLayout
             android:id="@+id/appbar2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:title="歌单"
                 app:titleTextAppearance="@style/collapsedTitleText" />
-        </com.google.android.material.appbar.AppBarLayout>
+        </com.lalilu.material.appbar.AppBarLayout>
 
         <com.lalilu.lmusic.ui.MySmartRefreshLayout
             android:id="@+id/refresher"

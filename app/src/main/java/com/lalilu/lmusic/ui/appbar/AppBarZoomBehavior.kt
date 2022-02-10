@@ -17,12 +17,12 @@ import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce.DAMPING_RATIO_NO_BOUNCY
 import androidx.dynamicanimation.animation.SpringForce.STIFFNESS_LOW
 import com.dirror.lyricviewx.LyricViewX
-import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
 import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.DeviceUtil
 import com.lalilu.lmusic.utils.HapticUtils
+import com.lalilu.material.appbar.AppBarLayout
+import com.lalilu.material.appbar.CollapsingToolbarLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
