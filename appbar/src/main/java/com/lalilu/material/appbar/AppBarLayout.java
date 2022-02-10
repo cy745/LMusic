@@ -113,7 +113,7 @@ import java.util.List;
  *
  *     &lt;/androidx.core.widget.NestedScrollView&gt;
  *
- *     &lt;com.google.android.material.appbar.AppBarLayout
+ *     &lt;com.lalilu.material.appbar.AppBarLayout
  *             android:layout_height=&quot;wrap_content&quot;
  *             android:layout_width=&quot;match_parent&quot;&gt;
  *
@@ -125,7 +125,7 @@ import java.util.List;
  *                 ...
  *                 app:layout_scrollFlags=&quot;scroll|enterAlways&quot;/&gt;
  *
- *     &lt;/com.google.android.material.appbar.AppBarLayout&gt;
+ *     &lt;/com.lalilu.material.appbar.AppBarLayout&gt;
  *
  * &lt;/androidx.coordinatorlayout.widget.CoordinatorLayout&gt;
  * </pre>
@@ -603,7 +603,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
      *
      * @param expanded true if the layout should be fully expanded, false if it should be fully
      *                 collapsed
-     * @attr ref com.google.android.material.R.styleable#AppBarLayout_expanded
+     * @attr ref com.lalilu.appbar.R.styleable#AppBarLayout_expanded
      */
     public void setExpanded(boolean expanded) {
         setExpanded(expanded, ViewCompat.isLaidOut(this));
@@ -618,7 +618,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
      * @param expanded true if the layout should be fully expanded, false if it should be fully
      *                 collapsed
      * @param animate  Whether to animate to the new state
-     * @attr ref com.google.android.material.R.styleable#AppBarLayout_expanded
+     * @attr ref com.lalilu.appbar.R.styleable#AppBarLayout_expanded
      */
     public void setExpanded(boolean expanded, boolean animate) {
         setExpanded(expanded, animate, true);
@@ -1038,7 +1038,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
     }
 
     /**
-     * @attr ref com.google.android.material.R.styleable#AppBarLayout_elevation
+     * @attr ref com.lalilu.appbar.R.styleable#AppBarLayout_elevation
      * @deprecated target elevation is now deprecated. AppBarLayout's elevation is now controlled via
      * a {@link android.animation.StateListAnimator}. If a target elevation is set, either by this
      * method or the {@code app:elevation} attribute, a new state list animator is created which
@@ -1263,7 +1263,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
          *              #SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED}, {@link #SCROLL_FLAG_SNAP}, and {@link
          *              #SCROLL_FLAG_SNAP_MARGINS}. Otherwise, use {@link #SCROLL_FLAG_NO_SCROLL} to disable
          *              scrolling.
-         * @attr ref com.google.android.material.R.styleable#AppBarLayout_Layout_layout_scrollFlags
+         * @attr ref com.lalilu.appbar.R.styleable#AppBarLayout_Layout_layout_scrollFlags
          * @see #getScrollFlags()
          */
         public void setScrollFlags(@ScrollFlags int flags) {
@@ -1273,7 +1273,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
         /**
          * Returns the scrolling flags.
          *
-         * @attr ref com.google.android.material.R.styleable#AppBarLayout_Layout_layout_scrollFlags
+         * @attr ref com.lalilu.appbar.R.styleable#AppBarLayout_Layout_layout_scrollFlags
          * @see #setScrollFlags(int)
          */
         @ScrollFlags
@@ -1314,7 +1314,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
          *
          * @param interpolator the interpolator to use, or null to use normal 1-to-1 scrolling.
          * @attr ref
-         * com.google.android.material.R.styleable#AppBarLayout_Layout_layout_scrollInterpolator
+         * com.lalilu.appbar.R.styleable#AppBarLayout_Layout_layout_scrollInterpolator
          * @see #getScrollInterpolator()
          */
         public void setScrollInterpolator(Interpolator interpolator) {
@@ -1326,7 +1326,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
          * {@link LayoutParams}. Null indicates 'normal' 1-to-1 scrolling.
          *
          * @attr ref
-         * com.google.android.material.R.styleable#AppBarLayout_Layout_layout_scrollInterpolator
+         * com.lalilu.appbar.R.styleable#AppBarLayout_Layout_layout_scrollInterpolator
          * @see #setScrollInterpolator(Interpolator)
          */
         public Interpolator getScrollInterpolator() {

@@ -15,20 +15,5 @@
   ~ limitations under the License.
 -->
 <resources>
-  <style name="Widget.Material3.ActionBar.Solid" parent="Base.Widget.Material3.ActionBar.Solid">
-    <item name="background">@drawable/m3_appbar_background</item>
-    <item name="backgroundStacked">@drawable/m3_appbar_background</item>
-    <item name="backgroundSplit">@drawable/m3_appbar_background</item>
-  </style>
 
-  <style name="Widget.Material3.Light.ActionBar.Solid" parent="Base.Widget.Material3.Light.ActionBar.Solid">
-    <item name="background">@drawable/m3_appbar_background</item>
-    <item name="backgroundStacked">@drawable/m3_appbar_background</item>
-    <item name="backgroundSplit">@drawable/m3_appbar_background</item>
-  </style>
-
-  <style name="Widget.Material3.ActionMode" parent="Base.Widget.Material3.ActionMode">
-    <item name="background">@drawable/m3_appbar_background</item>
-    <item name="backgroundSplit">@drawable/m3_appbar_background</item>
-  </style>
 </resources>
