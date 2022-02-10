@@ -44,8 +44,6 @@ android {
 
 android.sourceSets.all {
     java.srcDirs += "src/main/java"
-    java.includes = srcDirs.collect { 'src/main/java/' + it + '/**/*.java' }
-    java.excludes = ['**/build/**']
     srcDirs.forEach {
         res.srcDirs += 'src/main/java/' + it + '/res'
         res.srcDirs += 'src/main/java/' + it + '/res-public'

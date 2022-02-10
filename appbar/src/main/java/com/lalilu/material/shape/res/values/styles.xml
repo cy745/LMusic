@@ -32,8 +32,4 @@
   <style name="ShapeAppearance.MaterialComponents.LargeComponent">
     <item name="cornerSize">@dimen/mtrl_shape_corner_size_large_component</item>
   </style>
-
-  <style name="ShapeAppearance.Material3.SmallComponent" parent="ShapeAppearance.M3.Sys.Shape.Small"/>
-  <style name="ShapeAppearance.Material3.MediumComponent" parent="ShapeAppearance.M3.Sys.Shape.Medium"/>
-  <style name="ShapeAppearance.Material3.LargeComponent" parent="ShapeAppearance.M3.Sys.Shape.Large"/>
 </resources>
