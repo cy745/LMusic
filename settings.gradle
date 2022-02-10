@@ -1,2 +1,3 @@
 rootProject.name = "lmusic"
 include ':app'
+include ':appbar'

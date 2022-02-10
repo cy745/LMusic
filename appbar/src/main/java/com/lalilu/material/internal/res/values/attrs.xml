@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2017 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+-->
+<resources>
+
+  <declare-styleable name="ThemeEnforcement">
+    <!-- Internal flag used to denote that a style uses new attributes defined by
+         Theme.MaterialComponents, and that the component should check via ThemeEnforcement that the
+         client's app theme inherits from Theme.MaterialComponents.
+
+         Not all usages of new attributes are problematic in the context of a legacy app theme. You
+         should only use this flag if a particular usage is known to cause a visual glitch or crash.
+         For example, tinting a vector drawable with a non-existent theme attribute is known to
+         crash on pre-21 devices. -->
+    <attr name="enforceMaterialTheme" format="boolean"/>
+    <!-- Internal flag used to denote that a style requires that the textAppearance attribute is
+         specified and evaluates to a valid text appearance. -->
+    <attr name="enforceTextAppearance" format="boolean"/>
+    <!-- Attribute used to check that a component has a TextAppearance specified on it. -->
+    <attr name="android:textAppearance"/>
+  </declare-styleable>
+
+  <declare-styleable name="ForegroundLinearLayout">
+    <attr name="android:foreground"/>
+    <attr name="android:foregroundGravity"/>
+    <!-- Do not expose publicly, used by ForegroundLinearLayout but never set by any style.  -->
+    <attr name="foregroundInsidePadding" format="boolean"/>
+  </declare-styleable>
+
+  <declare-styleable name="ScrimInsetsFrameLayout">
+    <attr name="insetForeground" format="color|reference"/>
+  </declare-styleable>
+
+    <!-- Do not expose publicly, FlowLayout (private class) that is the parent for ChipGroup (public), which has its own public spacing attributes.  -->
+  <declare-styleable name="FlowLayout">
+    <!-- Horizontal spacing between two items being laid out. -->
+    <attr name="itemSpacing" format="dimension"/>
+    <!-- Vertical Spacing between two lines of items being laid out. -->
+    <attr name="lineSpacing" format="dimension"/>
+  </declare-styleable>
+
+  <declare-styleable name="Insets">
+    <!-- Just adding the parameters that we need for now. We can add others if we need them, but
+         ideally we'll be able to use https://github.com/chrisbanes/insetter once it's ready. -->
+    <attr name="paddingBottomSystemWindowInsets" format="boolean"/>
+    <attr name="paddingLeftSystemWindowInsets" format="boolean"/>
+    <attr name="paddingRightSystemWindowInsets" format="boolean"/>
+    <attr name="paddingTopSystemWindowInsets" format="boolean"/>
+    <attr name="marginLeftSystemWindowInsets" format="boolean"/>
+    <attr name="marginRightSystemWindowInsets" format="boolean"/>
+    <attr name="marginTopSystemWindowInsets" format="boolean"/>
+  </declare-styleable>
+
+</resources>

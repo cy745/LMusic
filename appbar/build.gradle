@@ -1,0 +1,63 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+def srcDirs = [
+        'com/lalilu/material/animation',
+        'com/lalilu/material/appbar',
+        'com/lalilu/material/color',
+        'com/lalilu/material/elevation',
+        'com/lalilu/material/internal',
+        'com/lalilu/material/resources',
+        'com/lalilu/material/shadow',
+        'com/lalilu/material/shape',
+        'com/lalilu/material/theme',
+        'com/lalilu/material/typography',
+]
+
+android {
+    compileSdk 32
+
+    defaultConfig {
+        minSdk 23
+        targetSdk 32
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+android.sourceSets.all {
+    java.srcDirs += "src/main/java"
+    java.includes = srcDirs.collect { 'src/main/java/' + it + '/**/*.java' }
+    java.excludes = ['**/build/**']
+    srcDirs.forEach {
+        res.srcDirs += 'src/main/java/' + it + '/res'
+        res.srcDirs += 'src/main/java/' + it + '/res-public'
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'com.google.android.material:material:1.4.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+}
