@@ -58,6 +58,10 @@ android.sourceSets.all {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/com.google.android.material/material
+    // Apache-2.0
+    implementation(project(':appbar'))
+
     // https://github.com/afollestad/material-dialogs
     // Apache-2.0 License
     implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
@@ -99,10 +103,6 @@ dependencies {
     // 权限请求框架：https://github.com/getActivity/XXPermissions
     // Apache-2.0
     implementation "com.github.getActivity:XXPermissions:11.0"
-
-    // https://mvnrepository.com/artifact/com.google.android.material/material
-    // Apache-2.0
-    implementation "com.google.android.material:material:1.6.0-alpha01"
 
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"

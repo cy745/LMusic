@@ -1,6 +1,6 @@
 package com.lalilu.lmusic.ui.appbar
 
-import com.google.android.material.appbar.AppBarLayout
+import com.lalilu.material.appbar.AppBarLayout
 import de.halfbit.tinymachine.StateHandler
 import de.halfbit.tinymachine.TinyMachine
 import javax.inject.Inject
