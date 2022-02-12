@@ -2270,14 +2270,14 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
         private void offsetChildAsNeeded(@NonNull View child, @NonNull View dependency) {
             final CoordinatorLayout.Behavior behavior =
                     ((CoordinatorLayout.LayoutParams) dependency.getLayoutParams()).getBehavior();
-            if (behavior instanceof BaseBehavior) {
+            if (behavior instanceof MyAppbarBehavior) {
                 // Offset the child, pinning it to the bottom the header-dependency, maintaining
                 // any vertical gap and overlap
-                final BaseBehavior ablBehavior = (BaseBehavior) behavior;
+                final MyAppbarBehavior ablBehavior = (MyAppbarBehavior) behavior;
                 ViewCompat.offsetTopAndBottom(
                         child,
                         (dependency.getBottom() - child.getTop())
-                                + ablBehavior.offsetDelta
+                                + ablBehavior.getOffsetDelta()
                                 + getVerticalLayoutGap()
                                 - getOverlapPixelsForOffset(dependency));
             }
@@ -2308,8 +2308,8 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
         private static int getAppBarLayoutOffset(@NonNull AppBarLayout abl) {
             final CoordinatorLayout.Behavior behavior =
                     ((CoordinatorLayout.LayoutParams) abl.getLayoutParams()).getBehavior();
-            if (behavior instanceof BaseBehavior) {
-                return ((BaseBehavior) behavior).getTopBottomOffsetForScrollingSibling();
+            if (behavior instanceof MyAppbarBehavior) {
+                return ((MyAppbarBehavior) behavior).getTopBottomOffsetForScrollingSibling();
             }
             return 0;
         }
