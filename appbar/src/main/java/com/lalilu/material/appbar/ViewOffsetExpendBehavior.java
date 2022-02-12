@@ -26,7 +26,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 /**
  * Behavior will automatically sets up a {@link ViewOffsetHelper} on a {@link View}.
  */
-class ViewOffsetExpendBehavior<V extends View> extends CoordinatorLayout.Behavior<V> {
+public class ViewOffsetExpendBehavior<V extends View> extends CoordinatorLayout.Behavior<V> {
 
     private ViewOffsetExpendHelper viewOffsetHelper;
 
