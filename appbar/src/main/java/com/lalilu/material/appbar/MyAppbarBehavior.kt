@@ -1,6 +1,8 @@
 package com.lalilu.material.appbar
 
 import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import android.view.View.MeasureSpec
@@ -12,8 +14,7 @@ import androidx.core.view.NestedScrollingChild
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewCompat.NestedScrollType
 import androidx.core.view.children
-import androidx.dynamicanimation.animation.SpringAnimation
-import androidx.dynamicanimation.animation.SpringForce
+import androidx.customview.view.AbsSavedState
 import com.lalilu.material.appbar.AppBarLayout.LayoutParams.*
 import java.lang.ref.WeakReference
 import kotlin.math.abs
@@ -24,28 +25,24 @@ class MyAppbarBehavior(
 ) : ExpendHeaderBehavior<AppBarLayout>(context, attrs) {
     val offsetDelta: Int = 0
 
-    private var savedState: AppBarLayout.BaseBehavior.SavedState? = null
+    private var listeners: ArrayList<AppBarLayout.OnOffsetChangedListener> = ArrayList()
+    private var savedState: SavedState? = null
     private val onDragCallback: AppBarLayout.BaseBehavior.BaseDragCallback<AppBarLayout>? = null
 
     @NestedScrollType
     private var lastStartedType = 0
     private var lastNestedScrollingChildRef: WeakReference<View>? = null
 
-
-    override fun getMaxDragOffset(view: AppBarLayout): Int {
-        return -view.downNestedScrollRange
+    fun addOnOffsetExpendChangedListener(
+        listener: AppBarLayout.OnOffsetChangedListener
+    ) {
+        listeners.add(listener)
     }
 
-    override fun getScrollRangeForDragFling(view: AppBarLayout): Int {
-        return view.totalScrollRange
-    }
-
-    override fun getTopBottomOffsetForScrollingSibling(): Int {
-        return topAndBottomOffset
-    }
-
-    private fun getDownOffset(parent: CoordinatorLayout, child: AppBarLayout): Int {
-        return parent.height / 3
+    private fun onOffsetChanged(appBarLayout: AppBarLayout, offset: Int) {
+        listeners.forEach {
+            it.onOffsetChanged(appBarLayout, offset)
+        }
     }
 
     override fun onStartNestedScroll(
@@ -92,8 +89,8 @@ class MyAppbarBehavior(
         if (dy > 0) {
             consumed[1] = scroll(
                 parent, child, dy,
-                -child.upNestedPreScrollRange,
-                getDownOffset(parent, child)
+                getCollapsedOffset(parent, child),
+                getFullyExpendOffset(parent, child)
             )
         }
     }
@@ -118,8 +115,8 @@ class MyAppbarBehavior(
             // the top of it's content
             consumed[1] = scroll(
                 parent, child, dyUnconsumed,
-                -child.downNestedScrollRange,
-                getDownOffset(parent, child)
+                getCollapsedOffset(parent, child),
+                getFullyExpendOffset(parent, child)
             )
         }
     }
@@ -227,9 +224,10 @@ class MyAppbarBehavior(
 
         // We may have changed size, so let's constrain the top and bottom offset correctly,
         // just in case we're out of the bounds
-        topAndBottomOffset =
-            MathUtils.clamp(topAndBottomOffset, -child.totalScrollRange, 0)
-
+        topAndBottomOffset = topAndBottomOffset.coerceIn(
+            getCollapsedOffset(parent, child),
+            getFullyExpendOffset(parent, child)
+        )
 
         // Update the AppBarLayout's drawable state for any elevation changes. This is needed so that
         // the elevation is set in the first layout, so that we don't get a visual jump pre-N (due to
@@ -239,7 +237,8 @@ class MyAppbarBehavior(
         )
 
         // Make sure we dispatch the offset update
-        child.onOffsetChanged(topAndBottomOffset)
+        child.onOffsetChanged(topAndBottomOffset.coerceAtMost(0))
+        this.onOffsetChanged(child, topAndBottomOffset)
         return handled
     }
 
@@ -248,7 +247,7 @@ class MyAppbarBehavior(
         // The "baseline" of scrolling is the top of the first child. We "add" insets and paddings
         // to the scrolling amount to align offsets and views with the same y-coordinate. (The origin
         // is at the top of the AppBarLayout, so all the coordinates are with negative values.)
-        val offset = getTopBottomOffsetForScrollingSibling() - topInset
+        val offset = topAndBottomOffset - topInset
         val offsetChildIndex: Int = getChildIndexOnOffset(abl, offset)
 
         if (offsetChildIndex >= 0) {
@@ -304,12 +303,12 @@ class MyAppbarBehavior(
         minOffset: Int,
         maxOffset: Int
     ): Int {
-        val curOffset = getTopBottomOffsetForScrollingSibling()
+        val curOffset = topAndBottomOffset
         var consumed = 0
-        if (minOffset != 0 && curOffset >= minOffset && curOffset <= maxOffset) {
+        if (minOffset != 0 && curOffset in minOffset..maxOffset) {
             // If we have some scrolling range, and we're currently within the min and max
             // offsets, calculate a new offset
-            val offset = MathUtils.clamp(newOffset, minOffset, maxOffset)
+            val offset = newOffset.coerceIn(minOffset, maxOffset)
             if (curOffset != offset) {
                 val offsetChanged = setTopAndBottomOffset(offset)
 
@@ -342,7 +341,8 @@ class MyAppbarBehavior(
                 }
 
                 // Dispatch the updates to any listeners
-                header.onOffsetChanged(topAndBottomOffset)
+                header.onOffsetChanged(topAndBottomOffset.coerceAtMost(0))
+                this.onOffsetChanged(header, topAndBottomOffset)
 
                 // Update the AppBarLayout's drawable state (for any elevation changes)
                 updateAppBarLayoutDrawableState(
@@ -415,26 +415,85 @@ class MyAppbarBehavior(
         return false
     }
 
+    override fun onSaveInstanceState(parent: CoordinatorLayout, abl: AppBarLayout): Parcelable? {
+        val superState = super.onSaveInstanceState(parent, abl)
+        val scrollState = saveScrollState(superState, abl)
+        return scrollState ?: superState
+    }
+
+    override fun onRestoreInstanceState(
+        parent: CoordinatorLayout,
+        child: AppBarLayout,
+        state: Parcelable
+    ) {
+        if (state is SavedState) {
+            restoreScrollState(state as SavedState?, true)
+            super.onRestoreInstanceState(parent, child, savedState!!.superState!!)
+        } else {
+            super.onRestoreInstanceState(parent, child, state)
+            savedState = null
+        }
+    }
+
+    fun restoreScrollState(state: SavedState?, force: Boolean) {
+        if (savedState == null || force) {
+            savedState = state
+        }
+    }
+
+    fun saveScrollState(
+        superState: Parcelable?,
+        abl: AppBarLayout
+    ): SavedState? {
+        val offset = topAndBottomOffset
+
+        // Try and find the first visible child...
+        for (i in 0 until abl.childCount) {
+            val child: View = abl.getChildAt(i)
+            val visBottom = child.bottom + offset
+            if (child.top + offset <= 0 && visBottom >= 0) {
+                val ss = SavedState(superState ?: AbsSavedState.EMPTY_STATE)
+                ss.fullyExpanded = offset == 0
+                ss.fullyScrolled = !ss.fullyExpanded && -offset >= abl.totalScrollRange
+                ss.firstVisibleChildIndex = i
+                ss.firstVisibleChildAtMinimumHeight =
+                    visBottom == ViewCompat.getMinimumHeight(child) + abl.topInset
+                ss.firstVisibleChildPercentageShown = visBottom / child.height.toFloat()
+                return ss
+            }
+        }
+        return null
+    }
+
+    class SavedState : AbsSavedState {
+        var fullyScrolled = false
+        var fullyExpanded = false
+        var firstVisibleChildIndex = 0
+        var firstVisibleChildPercentageShown = 0f
+        var firstVisibleChildAtMinimumHeight = false
+
+        constructor(superState: Parcelable) : super(superState)
+        constructor(source: Parcel, loader: ClassLoader?) : super(source, loader) {
+            fullyScrolled = source.readByte().toInt() != 0
+            fullyExpanded = source.readByte().toInt() != 0
+            firstVisibleChildIndex = source.readInt()
+            firstVisibleChildPercentageShown = source.readFloat()
+            firstVisibleChildAtMinimumHeight = source.readByte().toInt() != 0
+        }
+
+        override fun writeToParcel(dest: Parcel, flags: Int) {
+            super.writeToParcel(dest, flags)
+            dest.writeByte((if (fullyScrolled) 1 else 0).toByte())
+            dest.writeByte((if (fullyExpanded) 1 else 0).toByte())
+            dest.writeInt(firstVisibleChildIndex)
+            dest.writeFloat(firstVisibleChildPercentageShown)
+            dest.writeByte((if (firstVisibleChildAtMinimumHeight) 1 else 0).toByte())
+        }
+    }
+
     override fun onFlingFinished(parent: CoordinatorLayout, layout: AppBarLayout) {
         // At the end of a manual fling, check to see if we need to snap to the edge-child
         snapToChildIfNeeded(parent, layout)
-    }
-
-    private fun animateOffsetTo(
-        parent: CoordinatorLayout,
-        child: AppBarLayout,
-        offset: Int
-    ) {
-        mSpringAnimation = mSpringAnimation
-            ?: SpringAnimation(
-                this, HeaderOffsetFloatProperty(parent, child),
-                getTopBottomOffsetForScrollingSibling().toFloat()
-            ).also {
-                it.spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-                it.spring.stiffness = SpringForce.STIFFNESS_LOW
-            }
-        mSpringAnimation?.cancel()
-        mSpringAnimation?.animateToFinalPosition(offset.toFloat())
     }
 
 
