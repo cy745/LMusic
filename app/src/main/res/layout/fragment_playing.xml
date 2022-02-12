@@ -98,7 +98,7 @@
             android:paddingBottom="128dp"
             app:adapter="@{playingAdapter}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_behavior="com.lalilu.material.appbar.AppBarLayout$ScrollingViewBehavior"
+            app:layout_behavior="com.lalilu.material.appbar.MyScrollingViewBehavior"
             app:setSongs="@{vm.songs}"
             tools:listitem="@layout/item_playing"
             tools:visibility="invisible" />
