@@ -6,7 +6,6 @@ import android.util.DisplayMetrics
 import android.view.*
 import android.widget.OverScroller
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.ViewCompat
 import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
@@ -19,15 +18,22 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
 
     private val INVALID_POINTER = -1
 
-    var scroller: OverScroller? = null
-    var mSpringAnimation: SpringAnimation? = null
-    private var flingRunnable: Runnable? = null
+    private var mSpringAnimation: SpringAnimation? = null
+    private var scroller: OverScroller? = null
 
     private var isBeingDragged = false
     private var activePointerId = INVALID_POINTER
     private var lastMotionY = 0
     private var touchSlop = -1
     private var velocityTracker: VelocityTracker? = null
+
+    open fun canDragView(view: V): Boolean {
+        return false
+    }
+
+    open fun onFlingFinished(parent: CoordinatorLayout, layout: V) {
+        // no-op
+    }
 
     open fun getCollapsedOffset(parent: View, child: V): Int {
         return -child.upNestedPreScrollRange
@@ -42,21 +48,14 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         return outMetrics.heightPixels - parent.width
     }
 
-    open fun canDragView(view: V): Boolean {
-        return false
-    }
-
-    open fun onFlingFinished(parent: CoordinatorLayout, layout: V) {
-        // no-op
-    }
-
     open fun setHeaderTopBottomOffset(
         parent: CoordinatorLayout,
-        header: V, newOffset: Int
+        child: V, newOffset: Int
     ): Int {
         return setHeaderTopBottomOffset(
-            parent, header, newOffset,
-            Int.MIN_VALUE, Int.MAX_VALUE
+            parent, child, newOffset,
+            getCollapsedOffset(parent, child),
+            getFullyExpendOffset(parent, child)
         )
     }
 
@@ -181,6 +180,38 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         return isBeingDragged || consumeUp
     }
 
+    /**
+     * 贴合至特定的边
+     */
+    fun snapToChildIfNeeded(parent: CoordinatorLayout, child: V) {
+        val topInset: Int = child.topInset + child.paddingTop
+        val offset = topAndBottomOffset - topInset
+
+        val newOffset: Int = calculateSnapOffset(
+            offset, 0,
+            getCollapsedOffset(parent, child),
+            getFullyExpendOffset(parent, child)
+        )
+        animateOffsetTo(parent, child, newOffset)
+    }
+
+    fun calculateSnapOffset(value: Int, vararg snapTo: Int): Int {
+        var min = Int.MAX_VALUE
+        var result = value
+        snapTo.forEach { i ->
+            val temp = abs(value - i)
+            if (temp < min) {
+                min = temp
+                result = i
+            }
+        }
+        return result
+    }
+
+    fun cancelAnimation() {
+        mSpringAnimation?.cancel()
+    }
+
     fun animateOffsetTo(
         parent: CoordinatorLayout,
         child: V,
@@ -205,62 +236,40 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         minOffset: Int = getCollapsedOffset(parent, header),
         maxOffset: Int = getFullyExpendOffset(parent, header)
     ): Int {
+        var nextPosition = topAndBottomOffset - dy
+        if (dy < 0) {
+            val percent = 1f - topAndBottomOffset / 200f
+            if (percent in 0F..1F) nextPosition = topAndBottomOffset - (dy * percent).toInt()
+        }
+
         return setHeaderTopBottomOffset(
             parent, header,
-            topAndBottomOffset - dy,
+            nextPosition,
             minOffset, maxOffset
         )
     }
 
     fun fling(
         parent: CoordinatorLayout,
-        header: V,
+        child: V,
         velocityY: Float,
-        minOffset: Int = getCollapsedOffset(parent, header),
-        maxOffset: Int = getFullyExpendOffset(parent, header),
+        minOffset: Int = getCollapsedOffset(parent, child),
+        maxOffset: Int = getFullyExpendOffset(parent, child),
     ): Boolean {
-        stopFling(header)
-        scroller = scroller ?: OverScroller(header.context)
+        scroller = scroller ?: OverScroller(child.context)
         scroller!!.fling(
             0, topAndBottomOffset,            // startX / Y
             0, velocityY.roundToInt(),     // velocityX / Y
             0, 0,                       // minX / maxX
             minOffset, maxOffset                   // minY / maxY
         )
-        animateOffsetTo(parent, header, scroller!!.finalY)
+        val finalY = calculateSnapOffset(
+            scroller!!.finalY, 0,
+            getCollapsedOffset(parent, child),
+            getFullyExpendOffset(parent, child)
+        )
+        animateOffsetTo(parent, child, finalY)
         return true
-//        return if (scroller!!.computeScrollOffset()) {
-//            flingRunnable = FlingRunnable(coordinatorLayout, layout)
-//            ViewCompat.postOnAnimation(layout, flingRunnable!!)
-//            true
-//        } else {
-//            onFlingFinished(coordinatorLayout, layout)
-//            false
-//        }
-    }
-
-    fun stopFling(header: V) {
-        if (flingRunnable != null) {
-            header.removeCallbacks(flingRunnable)
-            flingRunnable = null
-        }
-    }
-
-    inner class FlingRunnable constructor(
-        private val parent: CoordinatorLayout,
-        private val layout: V?
-    ) : Runnable {
-        override fun run() {
-            if (layout != null && scroller != null) {
-                if (scroller!!.computeScrollOffset()) {
-                    setHeaderTopBottomOffset(parent, layout, scroller!!.currY)
-                    // Post ourselves so that we run on the next animation
-                    ViewCompat.postOnAnimation(layout, this)
-                } else {
-                    onFlingFinished(parent, layout)
-                }
-            }
-        }
     }
 
     inner class HeaderOffsetFloatProperty(
