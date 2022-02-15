@@ -1,6 +1,6 @@
 package com.lalilu.lmusic.ui.appbar
 
-import com.lalilu.material.appbar.AppBarLayout
+import com.google.android.material.appbar.AppBarLayout
 import de.halfbit.tinymachine.StateHandler
 import de.halfbit.tinymachine.TinyMachine
 import javax.inject.Inject
@@ -19,6 +19,7 @@ const val EVENT_FULLY_COLLAPSE = "EVENT_FULLY_COLLAPSE"
 const val EVENT_FULLY_EXPEND = "EVENT_FULLY_EXPEND"
 
 @Singleton
+@Deprecated("弃用")
 class AppBarStatusHelper @Inject constructor() : AppBarLayout.OnOffsetChangedListener {
     private lateinit var appbar: AppBarLayout
     private var listenPercent: ((percent: Float) -> Unit)? = null

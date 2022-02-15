@@ -29,8 +29,8 @@ import android.view.ViewOutlineProvider;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.google.android.material.internal.ThemeEnforcement;
 import com.lalilu.appbar.R;
-import com.lalilu.material.internal.ThemeEnforcement;
 
 @RequiresApi(21)
 class ViewUtilsLollipop {
