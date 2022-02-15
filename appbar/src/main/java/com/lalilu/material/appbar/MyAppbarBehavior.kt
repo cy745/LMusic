@@ -1,19 +1,12 @@
 package com.lalilu.material.appbar
 
 import android.content.Context
-import android.os.Parcel
-import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import android.view.View.MeasureSpec
-import android.widget.ListView
-import android.widget.ScrollView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.NestedScrollingChild
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewCompat.NestedScrollType
-import androidx.core.view.children
-import androidx.customview.view.AbsSavedState
 import com.lalilu.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
 import com.lalilu.material.appbar.AppBarLayout.LayoutParams.WRAP_CONTENT
 import java.lang.ref.WeakReference
@@ -25,7 +18,6 @@ class MyAppbarBehavior(
     val offsetDelta: Int = 0
 
     private var listeners: ArrayList<AppBarLayout.OnOffsetChangedListener> = ArrayList()
-    private var savedState: SavedState? = null
     private val onDragCallback: BaseDragCallback<AppBarLayout>? = null
 
     @NestedScrollType
@@ -157,7 +149,8 @@ class MyAppbarBehavior(
 
         // Let the parent handle it as normal
         return super.onMeasureChild(
-            parent, child, parentWidthMeasureSpec, widthUsed, parentHeightMeasureSpec, heightUsed
+            parent, child, parentWidthMeasureSpec,
+            widthUsed, parentHeightMeasureSpec, heightUsed
         )
     }
 
@@ -167,6 +160,7 @@ class MyAppbarBehavior(
         layoutDirection: Int
     ): Boolean {
         val handled = super.onLayoutChild(parent, child, layoutDirection)
+        invalidOffset()
 
         // The priority for actions here is (first which is true wins):
         // 1. forced pending actions
@@ -174,9 +168,7 @@ class MyAppbarBehavior(
         // 3. non-forced pending actions
         val pendingAction: Int = child.pendingAction
         if (pendingAction and AppBarLayout.PENDING_ACTION_FORCE == 0) {
-            savedState?.let {
-                setHeaderTopBottomOffset(it.offset)
-            }
+            // TODO: 恢复之前的状态
         } else if (pendingAction != AppBarLayout.PENDING_ACTION_NONE) {
             val animate = pendingAction and AppBarLayout.PENDING_ACTION_ANIMATE_ENABLED != 0
             if (pendingAction and AppBarLayout.PENDING_ACTION_COLLAPSED != 0) {
@@ -197,7 +189,6 @@ class MyAppbarBehavior(
 
         // Finally reset any pending states
         child.resetPendingAction()
-        savedState = null
 
         // We may have changed size, so let's constrain the top and bottom offset correctly,
         // just in case we're out of the bounds
@@ -331,44 +322,6 @@ class MyAppbarBehavior(
         return false
     }
 
-    fun dispatchInstanceState(child: AppBarLayout) {
-        // Saves the current scrolling state when we need to recalculate scroll ranges
-        val savedState: SavedState? =
-            if (child.totalScrollRange == INVALID_SCROLL_RANGE) null
-            else saveScrollState(AbsSavedState.EMPTY_STATE, child)
-
-        restoreScrollState(savedState, false)
-    }
-
-    private fun restoreScrollState(state: SavedState?, force: Boolean) {
-        if (savedState == null || force) savedState = state
-    }
-
-    private fun saveScrollState(
-        superState: Parcelable?,
-        abl: AppBarLayout
-    ): SavedState? {
-        val offset = topAndBottomOffset
-
-        val ss = SavedState(superState ?: AbsSavedState.EMPTY_STATE)
-        ss.offset = offset
-        return ss
-    }
-
-    class SavedState : AbsSavedState {
-        var offset = 0
-
-        constructor(superState: Parcelable) : super(superState)
-        constructor(source: Parcel, loader: ClassLoader?) : super(source, loader) {
-            offset = source.readInt()
-        }
-
-        override fun writeToParcel(dest: Parcel, flags: Int) {
-            super.writeToParcel(dest, flags)
-            dest.writeInt(offset)
-        }
-    }
-
     private fun getAppBarChildOnOffset(
         layout: AppBarLayout, offset: Int
     ): View? {
@@ -378,21 +331,6 @@ class MyAppbarBehavior(
             if (absOffset in child.top..child.bottom) return child
         }
         return null
-    }
-
-    private fun findFirstScrollingChild(parent: CoordinatorLayout): View? {
-        parent.children.forEach {
-            when (it) {
-                is NestedScrollingChild,
-                is ListView,
-                is ScrollView -> return it
-            }
-        }
-        return null
-    }
-
-    private fun checkFlag(flags: Int, check: Int): Boolean {
-        return flags and check == check
     }
 
     private fun canScrollChildren(

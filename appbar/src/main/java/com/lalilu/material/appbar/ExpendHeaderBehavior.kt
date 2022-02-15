@@ -17,7 +17,6 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 const val INVALID_POINTER = -1
-const val INVALID_SCROLL_RANGE = -1
 
 abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     private val mContext: Context?, attrs: AttributeSet?
@@ -33,6 +32,7 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     private var activePointerId = INVALID_POINTER
     private var lastMotionY = 0
     private var touchSlop = -1
+    private var lastFullyExpendedOffset = Int.MAX_VALUE
 
     protected var parentWeakReference: WeakReference<CoordinatorLayout>? = null
     protected var childWeakReference: WeakReference<V>? = null
@@ -56,6 +56,10 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         return false
     }
 
+    open fun invalidOffset() {
+        lastFullyExpendedOffset = Int.MAX_VALUE
+    }
+
     open fun getCollapsedOffset(
         parent: View? = parentWeakReference?.get(),
         child: V? = childWeakReference?.get()
@@ -63,16 +67,22 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         return -(child?.totalScrollRange ?: 0)
     }
 
-    // todo 需要换一种方式获取
     open fun getFullyExpendOffset(
         parent: View? = parentWeakReference?.get(),
         child: V? = childWeakReference?.get()
     ): Int {
+        if (lastFullyExpendedOffset != Int.MAX_VALUE) {
+            return lastFullyExpendedOffset
+        }
+
         mContext?.let { context ->
             val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             val outMetrics = DisplayMetrics()
             windowManager.defaultDisplay.getRealMetrics(outMetrics)
-            parent?.let { return outMetrics.heightPixels - parent.width }
+            parent?.let {
+                lastFullyExpendedOffset = outMetrics.heightPixels - parent.width
+                return lastFullyExpendedOffset
+            }
         }
         return 0
     }
@@ -220,7 +230,7 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         animateOffsetTo(newOffset)
     }
 
-    fun calculateSnapOffset(value: Int, vararg snapTo: Int): Int {
+    private fun calculateSnapOffset(value: Int, vararg snapTo: Int): Int {
         var min = Int.MAX_VALUE
         var result = value
         snapTo.forEach { i ->
