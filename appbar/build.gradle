@@ -3,19 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-def srcDirs = [
-        'com/lalilu/material/animation',
-        'com/lalilu/material/appbar',
-        'com/lalilu/material/color',
-        'com/lalilu/material/elevation',
-        'com/lalilu/material/internal',
-        'com/lalilu/material/resources',
-        'com/lalilu/material/shadow',
-        'com/lalilu/material/shape',
-        'com/lalilu/material/theme',
-        'com/lalilu/material/typography',
-]
-
 android {
     compileSdk 32
 
@@ -39,6 +26,10 @@ android {
     }
 }
 
+def srcDirs = [
+        'com/lalilu/material/appbar'
+]
+
 android.sourceSets.all {
     java.srcDirs += "src/main/java"
     srcDirs.forEach {
@@ -50,5 +41,5 @@ android.sourceSets.all {
 dependencies {
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'com.google.android.material:material:1.6.0-alpha02'
 }
