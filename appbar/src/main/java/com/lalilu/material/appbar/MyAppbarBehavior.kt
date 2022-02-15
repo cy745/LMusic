@@ -9,13 +9,13 @@ import android.view.View.MeasureSpec
 import android.widget.ListView
 import android.widget.ScrollView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.math.MathUtils
 import androidx.core.view.NestedScrollingChild
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewCompat.NestedScrollType
 import androidx.core.view.children
 import androidx.customview.view.AbsSavedState
-import com.lalilu.material.appbar.AppBarLayout.LayoutParams.*
+import com.lalilu.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
+import com.lalilu.material.appbar.AppBarLayout.LayoutParams.WRAP_CONTENT
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -65,7 +65,7 @@ class MyAppbarBehavior(
                     )))
 
         // 如果决定接受则停止当前动画
-        if (started) mSpringAnimation?.cancel()
+        if (started) cancelAnimation()
 
         // A new nested scroll has started so clear out the previous ref
         // 清除子View的引用
@@ -87,11 +87,7 @@ class MyAppbarBehavior(
     ) {
         // 只处理向上滚动的情况
         if (dy > 0) {
-            consumed[1] = scroll(
-                parent, child, dy,
-                getCollapsedOffset(parent, child),
-                getFullyExpendOffset(parent, child)
-            )
+            consumed[1] = scroll(parent, child, dy)
         }
     }
 
@@ -113,11 +109,7 @@ class MyAppbarBehavior(
         if (dyUnconsumed < 0) {
             // If the scrolling view is scrolling down but not consuming, it's probably be at
             // the top of it's content
-            consumed[1] = scroll(
-                parent, child, dyUnconsumed,
-                getCollapsedOffset(parent, child),
-                getFullyExpendOffset(parent, child)
-            )
+            consumed[1] = scroll(parent, child, dyUnconsumed)
         }
     }
 
@@ -224,10 +216,7 @@ class MyAppbarBehavior(
 
         // We may have changed size, so let's constrain the top and bottom offset correctly,
         // just in case we're out of the bounds
-        topAndBottomOffset = topAndBottomOffset.coerceIn(
-            getCollapsedOffset(parent, child),
-            getFullyExpendOffset(parent, child)
-        )
+        setHeaderTopBottomOffset(parent, child, topAndBottomOffset)
 
         // Update the AppBarLayout's drawable state for any elevation changes. This is needed so that
         // the elevation is set in the first layout, so that we don't get a visual jump pre-N (due to
@@ -240,60 +229,6 @@ class MyAppbarBehavior(
         child.onOffsetChanged(topAndBottomOffset.coerceAtMost(0))
         this.onOffsetChanged(child, topAndBottomOffset)
         return handled
-    }
-
-    private fun snapToChildIfNeeded(coordinatorLayout: CoordinatorLayout, abl: AppBarLayout) {
-        val topInset: Int = abl.topInset + abl.paddingTop
-        // The "baseline" of scrolling is the top of the first child. We "add" insets and paddings
-        // to the scrolling amount to align offsets and views with the same y-coordinate. (The origin
-        // is at the top of the AppBarLayout, so all the coordinates are with negative values.)
-        val offset = topAndBottomOffset - topInset
-        val offsetChildIndex: Int = getChildIndexOnOffset(abl, offset)
-
-        if (offsetChildIndex >= 0) {
-            val offsetChild: View = abl.getChildAt(offsetChildIndex)
-            val lp = offsetChild.layoutParams as AppBarLayout.LayoutParams
-            val flags = lp.getScrollFlags()
-            if (checkFlag(flags, SCROLL_FLAG_SNAP)) {
-                // We're set the snap, so animate the offset to the nearest edge
-                var snapTop = -offsetChild.top
-                var snapBottom = -offsetChild.bottom
-
-                // If the child is set to fit system windows, its top will include the inset area, we need
-                // to minus the inset from snapTop to make the calculation consistent.
-                if (offsetChildIndex == 0 && ViewCompat.getFitsSystemWindows(abl)
-                    && ViewCompat.getFitsSystemWindows(offsetChild)
-                ) {
-                    snapTop -= abl.topInset
-                }
-                if (checkFlag(flags, SCROLL_FLAG_EXIT_UNTIL_COLLAPSED)) {
-                    // If the view is set only exit until it is collapsed, we'll abide by that
-                    snapBottom += ViewCompat.getMinimumHeight(offsetChild)
-                } else if (checkFlag(flags, FLAG_QUICK_RETURN or SCROLL_FLAG_ENTER_ALWAYS)) {
-                    // If it's set to always enter collapsed, it actually has two states. We
-                    // select the state and then snap within the state
-                    val seam = snapBottom + ViewCompat.getMinimumHeight(offsetChild)
-                    if (offset < seam) {
-                        snapTop = seam
-                    } else {
-                        snapBottom = seam
-                    }
-                }
-                if (checkFlag(flags, SCROLL_FLAG_SNAP_MARGINS)) {
-                    // Update snap destinations to include margins
-                    snapTop += lp.topMargin
-                    snapBottom -= lp.bottomMargin
-                }
-
-                // Excludes insets and paddings from the offset. (Offsets use the top of child views as
-                // the origin.)
-                val newOffset: Int = calculateSnapOffset(offset, snapBottom, snapTop) + topInset
-                animateOffsetTo(
-                    coordinatorLayout, abl,
-                    MathUtils.clamp(newOffset, -abl.totalScrollRange, 0)
-                )
-            }
-        }
     }
 
     override fun setHeaderTopBottomOffset(
@@ -318,12 +253,9 @@ class MyAppbarBehavior(
                 if (offsetChanged) {
                     // If the offset has changed, pass the change to any child scroll effect.
                     for (i in 0 until header.childCount) {
-                        val params =
-                            header.getChildAt(i).layoutParams as AppBarLayout.LayoutParams
+                        val params = header.getChildAt(i).layoutParams as AppBarLayout.LayoutParams
                         val scrollEffect = params.scrollEffect
-                        if (scrollEffect != null
-                            && params.getScrollFlags() and SCROLL_FLAG_SCROLL != 0
-                        ) {
+                        if (scrollEffect != null && params.getScrollFlags() and SCROLL_FLAG_SCROLL != 0) {
                             scrollEffect.onOffsetChanged(
                                 header,
                                 header.getChildAt(i),
@@ -346,9 +278,7 @@ class MyAppbarBehavior(
 
                 // Update the AppBarLayout's drawable state (for any elevation changes)
                 updateAppBarLayoutDrawableState(
-                    parent,
-                    header,
-                    offset,
+                    parent, header, offset,
                     if (offset < curOffset) -1 else 1,
                     false /* forceJump */
                 )
@@ -517,31 +447,6 @@ class MyAppbarBehavior(
             }
         }
         return null
-    }
-
-    private fun getChildIndexOnOffset(abl: AppBarLayout, offset: Int): Int {
-        for (i in 0 until abl.childCount) {
-            val child: View = abl.getChildAt(i)
-            val lp = child.layoutParams as AppBarLayout.LayoutParams
-
-            var top = child.top
-            var bottom = child.bottom
-            if (checkFlag(
-                    lp.getScrollFlags(),
-                    SCROLL_FLAG_SNAP_MARGINS
-                )
-            ) {
-                // Update top and bottom to include margins
-                top -= lp.topMargin
-                bottom += lp.bottomMargin
-            }
-            if (-offset in top..bottom) return i
-        }
-        return -1
-    }
-
-    private fun calculateSnapOffset(value: Int, bottom: Int, top: Int): Int {
-        return if (value < (bottom + top) / 2) bottom else top
     }
 
     private fun checkFlag(flags: Int, check: Int): Boolean {
