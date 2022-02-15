@@ -13,7 +13,7 @@ import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 class MyAppbarBehavior(
-    context: Context?, attrs: AttributeSet?
+    context: Context? = null, attrs: AttributeSet? = null
 ) : ExpendHeaderBehavior<AppBarLayout>(context, attrs) {
     val offsetDelta: Int = 0
 
@@ -315,7 +315,7 @@ class MyAppbarBehavior(
             val dependency = dependencies[i]
             val lp = dependency.layoutParams as CoordinatorLayout.LayoutParams
             val behavior = lp.behavior
-            if (behavior is AppBarLayout.ScrollingViewBehavior) {
+            if (behavior is MyScrollingViewBehavior) {
                 return behavior.overlayTop != 0
             }
         }

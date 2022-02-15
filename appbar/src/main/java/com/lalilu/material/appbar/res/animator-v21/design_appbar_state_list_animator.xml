@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2016 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2016 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -16,31 +15,31 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-  <item
-      android:state_enabled="true"
-      app:state_lifted="false"
-      app:state_liftable="true">
-    <objectAnimator
-        android:duration="@integer/app_bar_elevation_anim_duration"
-        android:propertyName="elevation"
-        android:valueTo="0dp"
-        android:valueType="floatType"/>
-  </item>
+    <item
+        android:state_enabled="true"
+        app:state_liftable="true"
+        app:state_lifted="false">
+        <objectAnimator
+            android:duration="@integer/app_bar_elevation_anim_duration"
+            android:propertyName="elevation"
+            android:valueTo="0dp"
+            android:valueType="floatType" />
+    </item>
 
-  <item android:state_enabled="true">
-    <objectAnimator
-        android:duration="@integer/app_bar_elevation_anim_duration"
-        android:propertyName="elevation"
-        android:valueTo="@dimen/design_appbar_elevation"
-        android:valueType="floatType"/>
-  </item>
+    <item android:state_enabled="true">
+        <objectAnimator
+            android:duration="@integer/app_bar_elevation_anim_duration"
+            android:propertyName="elevation"
+            android:valueTo="@dimen/design_appbar_elevation"
+            android:valueType="floatType" />
+    </item>
 
-  <item>
-    <objectAnimator
-        android:duration="0"
-        android:propertyName="elevation"
-        android:valueTo="0"
-        android:valueType="floatType"/>
-  </item>
+    <item>
+        <objectAnimator
+            android:duration="0"
+            android:propertyName="elevation"
+            android:valueTo="0"
+            android:valueType="floatType" />
+    </item>
 
 </selector>
