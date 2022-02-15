@@ -18,7 +18,6 @@ import com.lalilu.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
 import com.lalilu.material.appbar.AppBarLayout.LayoutParams.WRAP_CONTENT
 import java.lang.ref.WeakReference
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 class MyAppbarBehavior(
     context: Context?, attrs: AttributeSet?
@@ -27,7 +26,7 @@ class MyAppbarBehavior(
 
     private var listeners: ArrayList<AppBarLayout.OnOffsetChangedListener> = ArrayList()
     private var savedState: SavedState? = null
-    private val onDragCallback: AppBarLayout.BaseBehavior.BaseDragCallback<AppBarLayout>? = null
+    private val onDragCallback: BaseDragCallback<AppBarLayout>? = null
 
     @NestedScrollType
     private var lastStartedType = 0
@@ -87,7 +86,7 @@ class MyAppbarBehavior(
     ) {
         // 只处理向上滚动的情况
         if (dy > 0) {
-            consumed[1] = scroll(parent, child, dy)
+            consumed[1] = scroll(dy)
         }
     }
 
@@ -109,7 +108,7 @@ class MyAppbarBehavior(
         if (dyUnconsumed < 0) {
             // If the scrolling view is scrolling down but not consuming, it's probably be at
             // the top of it's content
-            consumed[1] = scroll(parent, child, dyUnconsumed)
+            consumed[1] = scroll(dyUnconsumed)
         }
     }
 
@@ -137,6 +136,9 @@ class MyAppbarBehavior(
         parentHeightMeasureSpec: Int,
         heightUsed: Int
     ): Boolean {
+        parentWeakReference = WeakReference(parent)
+        childWeakReference = WeakReference(child)
+
         val lp = child.layoutParams as CoordinatorLayout.LayoutParams
         if (lp.height == WRAP_CONTENT) {
             // If the view is set to wrap on it's height, CoordinatorLayout by default will
@@ -171,41 +173,24 @@ class MyAppbarBehavior(
         // 2. offsets for restorations
         // 3. non-forced pending actions
         val pendingAction: Int = child.pendingAction
-        if (savedState != null && pendingAction and AppBarLayout.PENDING_ACTION_FORCE == 0) {
-            savedState!!.let {
-                when {
-                    it.fullyExpanded -> {
-                        setHeaderTopBottomOffset(parent, child, -child.totalScrollRange)
-                    }
-                    it.fullyScrolled -> {
-                        setHeaderTopBottomOffset(parent, child, 0)
-                    }
-                    else -> {
-                        val target: View = child.getChildAt(it.firstVisibleChildIndex)
-                        var offset = -target.bottom
-                        offset += if (it.firstVisibleChildAtMinimumHeight) {
-                            ViewCompat.getMinimumHeight(target) + child.topInset
-                        } else {
-                            (target.height * it.firstVisibleChildPercentageShown).roundToInt()
-                        }
-                        setHeaderTopBottomOffset(parent, child, offset)
-                    }
-                }
+        if (pendingAction and AppBarLayout.PENDING_ACTION_FORCE == 0) {
+            savedState?.let {
+                setHeaderTopBottomOffset(it.offset)
             }
         } else if (pendingAction != AppBarLayout.PENDING_ACTION_NONE) {
             val animate = pendingAction and AppBarLayout.PENDING_ACTION_ANIMATE_ENABLED != 0
             if (pendingAction and AppBarLayout.PENDING_ACTION_COLLAPSED != 0) {
-                val offset: Int = -child.upNestedPreScrollRange
+                val offset: Int = getCollapsedOffset(parent, child)
                 if (animate) {
-                    animateOffsetTo(parent, child, offset)
+                    animateOffsetTo(offset)
                 } else {
-                    setHeaderTopBottomOffset(parent, child, offset)
+                    setHeaderTopBottomOffset(offset)
                 }
             } else if (pendingAction and AppBarLayout.PENDING_ACTION_EXPANDED != 0) {
                 if (animate) {
-                    animateOffsetTo(parent, child, 0)
+                    animateOffsetTo(0)
                 } else {
-                    setHeaderTopBottomOffset(parent, child, 0)
+                    setHeaderTopBottomOffset(0)
                 }
             }
         }
@@ -216,7 +201,7 @@ class MyAppbarBehavior(
 
         // We may have changed size, so let's constrain the top and bottom offset correctly,
         // just in case we're out of the bounds
-        setHeaderTopBottomOffset(parent, child, topAndBottomOffset)
+        setHeaderTopBottomOffset(topAndBottomOffset)
 
         // Update the AppBarLayout's drawable state for any elevation changes. This is needed so that
         // the elevation is set in the first layout, so that we don't get a visual jump pre-N (due to
@@ -232,8 +217,6 @@ class MyAppbarBehavior(
     }
 
     override fun setHeaderTopBottomOffset(
-        parent: CoordinatorLayout,
-        header: AppBarLayout,
         newOffset: Int,
         minOffset: Int,
         maxOffset: Int
@@ -250,35 +233,38 @@ class MyAppbarBehavior(
                 // Update how much dy we have consumed
                 consumed = curOffset - offset
 
+                val parent = parentWeakReference?.get() ?: return consumed
+                val child = childWeakReference?.get() ?: return consumed
+
                 if (offsetChanged) {
                     // If the offset has changed, pass the change to any child scroll effect.
-                    for (i in 0 until header.childCount) {
-                        val params = header.getChildAt(i).layoutParams as AppBarLayout.LayoutParams
+                    for (i in 0 until child.childCount) {
+                        val params = child.getChildAt(i).layoutParams as AppBarLayout.LayoutParams
                         val scrollEffect = params.scrollEffect
                         if (scrollEffect != null && params.getScrollFlags() and SCROLL_FLAG_SCROLL != 0) {
                             scrollEffect.onOffsetChanged(
-                                header,
-                                header.getChildAt(i),
+                                child,
+                                child.getChildAt(i),
                                 topAndBottomOffset.toFloat()
                             )
                         }
                     }
                 }
-                if (!offsetChanged && header.hasChildWithInterpolator()) {
+                if (!offsetChanged && child.hasChildWithInterpolator()) {
                     // If the offset hasn't changed and we're using an interpolated scroll
                     // then we need to keep any dependent views updated. CoL will do this for
                     // us when we move, but we need to do it manually when we don't (as an
                     // interpolated scroll may finish early).
-                    parent.dispatchDependentViewsChanged(header)
+                    parent.dispatchDependentViewsChanged(child)
                 }
 
                 // Dispatch the updates to any listeners
-                header.onOffsetChanged(topAndBottomOffset.coerceAtMost(0))
-                this.onOffsetChanged(header, topAndBottomOffset)
+                child.onOffsetChanged(topAndBottomOffset.coerceAtMost(0))
+                this.onOffsetChanged(child, topAndBottomOffset)
 
                 // Update the AppBarLayout's drawable state (for any elevation changes)
                 updateAppBarLayoutDrawableState(
-                    parent, header, offset,
+                    parent, child, offset,
                     if (offset < curOffset) -1 else 1,
                     false /* forceJump */
                 )
@@ -307,26 +293,26 @@ class MyAppbarBehavior(
 
     private fun updateAppBarLayoutDrawableState(
         parent: CoordinatorLayout,
-        layout: AppBarLayout,
+        header: AppBarLayout,
         offset: Int,
         direction: Int,
         forceJump: Boolean
     ) {
-        val child = getAppBarChildOnOffset(layout, offset)
+        val child = getAppBarChildOnOffset(header, offset)
         var lifted = false
         if (child != null) {
             val childLp = child.layoutParams as AppBarLayout.LayoutParams
             val flags = childLp.getScrollFlags()
             if (flags and SCROLL_FLAG_SCROLL != 0) {
                 val minHeight = ViewCompat.getMinimumHeight(child)
-                lifted = -offset >= child.bottom - minHeight - layout.topInset
+                lifted = -offset >= child.bottom - minHeight - header.topInset
             }
         }
-        val changed: Boolean = layout.setLiftedState(lifted)
-        if (forceJump || changed && shouldJumpElevationState(parent, layout)) {
+        val changed: Boolean = header.setLiftedState(lifted)
+        if (forceJump || changed && shouldJumpElevationState(parent, header)) {
             // If the collapsed state changed, we may need to
             // jump to the current state if we have an overlapping view
-            layout.jumpDrawablesToCurrentState()
+            header.jumpDrawablesToCurrentState()
         }
     }
 
@@ -345,87 +331,43 @@ class MyAppbarBehavior(
         return false
     }
 
-    override fun onSaveInstanceState(parent: CoordinatorLayout, abl: AppBarLayout): Parcelable? {
-        val superState = super.onSaveInstanceState(parent, abl)
-        val scrollState = saveScrollState(superState, abl)
-        return scrollState ?: superState
+    fun dispatchInstanceState(child: AppBarLayout) {
+        // Saves the current scrolling state when we need to recalculate scroll ranges
+        val savedState: SavedState? =
+            if (child.totalScrollRange == INVALID_SCROLL_RANGE) null
+            else saveScrollState(AbsSavedState.EMPTY_STATE, child)
+
+        restoreScrollState(savedState, false)
     }
 
-    override fun onRestoreInstanceState(
-        parent: CoordinatorLayout,
-        child: AppBarLayout,
-        state: Parcelable
-    ) {
-        if (state is SavedState) {
-            restoreScrollState(state as SavedState?, true)
-            super.onRestoreInstanceState(parent, child, savedState!!.superState!!)
-        } else {
-            super.onRestoreInstanceState(parent, child, state)
-            savedState = null
-        }
+    private fun restoreScrollState(state: SavedState?, force: Boolean) {
+        if (savedState == null || force) savedState = state
     }
 
-    fun restoreScrollState(state: SavedState?, force: Boolean) {
-        if (savedState == null || force) {
-            savedState = state
-        }
-    }
-
-    fun saveScrollState(
+    private fun saveScrollState(
         superState: Parcelable?,
         abl: AppBarLayout
     ): SavedState? {
         val offset = topAndBottomOffset
 
-        // Try and find the first visible child...
-        for (i in 0 until abl.childCount) {
-            val child: View = abl.getChildAt(i)
-            val visBottom = child.bottom + offset
-            if (child.top + offset <= 0 && visBottom >= 0) {
-                val ss = SavedState(superState ?: AbsSavedState.EMPTY_STATE)
-                ss.fullyExpanded = offset == 0
-                ss.fullyScrolled = !ss.fullyExpanded && -offset >= abl.totalScrollRange
-                ss.firstVisibleChildIndex = i
-                ss.firstVisibleChildAtMinimumHeight =
-                    visBottom == ViewCompat.getMinimumHeight(child) + abl.topInset
-                ss.firstVisibleChildPercentageShown = visBottom / child.height.toFloat()
-                return ss
-            }
-        }
-        return null
+        val ss = SavedState(superState ?: AbsSavedState.EMPTY_STATE)
+        ss.offset = offset
+        return ss
     }
 
     class SavedState : AbsSavedState {
-        var fullyScrolled = false
-        var fullyExpanded = false
-        var firstVisibleChildIndex = 0
-        var firstVisibleChildPercentageShown = 0f
-        var firstVisibleChildAtMinimumHeight = false
+        var offset = 0
 
         constructor(superState: Parcelable) : super(superState)
         constructor(source: Parcel, loader: ClassLoader?) : super(source, loader) {
-            fullyScrolled = source.readByte().toInt() != 0
-            fullyExpanded = source.readByte().toInt() != 0
-            firstVisibleChildIndex = source.readInt()
-            firstVisibleChildPercentageShown = source.readFloat()
-            firstVisibleChildAtMinimumHeight = source.readByte().toInt() != 0
+            offset = source.readInt()
         }
 
         override fun writeToParcel(dest: Parcel, flags: Int) {
             super.writeToParcel(dest, flags)
-            dest.writeByte((if (fullyScrolled) 1 else 0).toByte())
-            dest.writeByte((if (fullyExpanded) 1 else 0).toByte())
-            dest.writeInt(firstVisibleChildIndex)
-            dest.writeFloat(firstVisibleChildPercentageShown)
-            dest.writeByte((if (firstVisibleChildAtMinimumHeight) 1 else 0).toByte())
+            dest.writeInt(offset)
         }
     }
-
-    override fun onFlingFinished(parent: CoordinatorLayout, layout: AppBarLayout) {
-        // At the end of a manual fling, check to see if we need to snap to the edge-child
-        snapToChildIfNeeded(parent, layout)
-    }
-
 
     private fun getAppBarChildOnOffset(
         layout: AppBarLayout, offset: Int
@@ -457,5 +399,9 @@ class MyAppbarBehavior(
         parent: CoordinatorLayout, child: AppBarLayout, directTargetChild: View
     ): Boolean {
         return child.hasScrollableChildren() && parent.height - directTargetChild.height <= child.height
+    }
+
+    abstract class BaseDragCallback<T : AppBarLayout?> {
+        abstract fun canDrag(appBarLayout: T): Boolean
     }
 }

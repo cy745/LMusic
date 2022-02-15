@@ -6,65 +6,81 @@ import android.util.DisplayMetrics
 import android.view.*
 import android.widget.OverScroller
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.util.ObjectsCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
+import java.lang.ref.WeakReference
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-abstract class ExpendHeaderBehavior<V : AppBarLayout>(
-    context: Context?, attrs: AttributeSet?
-) : ViewOffsetExpendBehavior<V>(context, attrs) {
+const val INVALID_POINTER = -1
+const val INVALID_SCROLL_RANGE = -1
 
-    private val INVALID_POINTER = -1
+abstract class ExpendHeaderBehavior<V : AppBarLayout>(
+    private val mContext: Context?, attrs: AttributeSet?
+) : ViewOffsetExpendBehavior<V>(mContext, attrs), AntiMisTouchEvent {
+    private val interceptSize: Int = 100
 
     private var mSpringAnimation: SpringAnimation? = null
     private var scroller: OverScroller? = null
+    private var velocityTracker: VelocityTracker? = null
+    private var lastInsets: WindowInsetsCompat? = null
 
     private var isBeingDragged = false
     private var activePointerId = INVALID_POINTER
     private var lastMotionY = 0
     private var touchSlop = -1
-    private var velocityTracker: VelocityTracker? = null
+
+    protected var parentWeakReference: WeakReference<CoordinatorLayout>? = null
+    protected var childWeakReference: WeakReference<V>? = null
+
+    override fun isInPlaceToIntercept(rawY: Float): Boolean {
+        childWeakReference?.get()?.let {
+            return rawY >= (it.height - interceptSize) && rawY <= it.height
+        }
+        return false
+    }
+
+    override fun isTimeToIntercept(): Boolean {
+        return topAndBottomOffset >= getFullyExpendOffset() - interceptSize
+    }
+
+    private fun getTopInset(): Int {
+        return lastInsets?.getInsets(WindowInsetsCompat.Type.systemBars())?.top ?: 0
+    }
 
     open fun canDragView(view: V): Boolean {
         return false
     }
 
-    open fun onFlingFinished(parent: CoordinatorLayout, layout: V) {
-        // no-op
-    }
-
-    open fun getCollapsedOffset(parent: View, child: V): Int {
-        return -child.upNestedPreScrollRange
+    open fun getCollapsedOffset(
+        parent: View? = parentWeakReference?.get(),
+        child: V? = childWeakReference?.get()
+    ): Int {
+        return -(child?.totalScrollRange ?: 0)
     }
 
     // todo 需要换一种方式获取
-    open fun getFullyExpendOffset(parent: View, child: V): Int {
-        val windowManager: WindowManager =
-            parent.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val outMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getRealMetrics(outMetrics)
-        return outMetrics.heightPixels - parent.width
-    }
-
-    open fun setHeaderTopBottomOffset(
-        parent: CoordinatorLayout,
-        child: V, newOffset: Int
+    open fun getFullyExpendOffset(
+        parent: View? = parentWeakReference?.get(),
+        child: V? = childWeakReference?.get()
     ): Int {
-        return setHeaderTopBottomOffset(
-            parent, child, newOffset,
-            getCollapsedOffset(parent, child),
-            getFullyExpendOffset(parent, child)
-        )
+        mContext?.let { context ->
+            val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val outMetrics = DisplayMetrics()
+            windowManager.defaultDisplay.getRealMetrics(outMetrics)
+            parent?.let { return outMetrics.heightPixels - parent.width }
+        }
+        return 0
     }
 
     open fun setHeaderTopBottomOffset(
-        parent: CoordinatorLayout,
-        header: V,
         newOffset: Int,
-        minOffset: Int,
-        maxOffset: Int
+        minOffset: Int = getCollapsedOffset(),
+        maxOffset: Int = getFullyExpendOffset()
     ): Int {
         var consumed = 0
         val curOffset = topAndBottomOffset
@@ -73,7 +89,7 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
             // offsets, calculate a new offset
             val offset = newOffset.coerceIn(minOffset, maxOffset)
             if (curOffset != offset) {
-                topAndBottomOffset = offset
+                setTopAndBottomOffset(offset)
                 // Update how much dy we have consumed
                 consumed = curOffset - offset
             }
@@ -121,9 +137,7 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
 
                 // There is an animation in progress. Stop it and catch the view.
                 mSpringAnimation?.let {
-                    if (it.isRunning) {
-                        it.cancel()
-                    }
+                    if (it.isRunning) it.cancel()
                 }
             }
         }
@@ -134,18 +148,18 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     override fun onTouchEvent(
         parent: CoordinatorLayout, child: V, ev: MotionEvent
     ): Boolean {
+        if (checkTouchEvent(ev)) return true
+
         var consumeUp = false
         when (ev.actionMasked) {
             MotionEvent.ACTION_MOVE -> {
                 val activePointerIndex = ev.findPointerIndex(activePointerId)
-                if (activePointerIndex == -1) {
-                    return false
-                }
+                if (activePointerIndex == -1) return false
                 val y = ev.getY(activePointerIndex).toInt()
                 val dy = lastMotionY - y
                 lastMotionY = y
                 // We're being dragged so scroll the ABL
-                scroll(parent, child, dy)
+                scroll(dy)
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 val newIndex = if (ev.actionIndex == 0) 1 else 0
@@ -158,14 +172,12 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
                     it.addMovement(ev)
                     it.computeCurrentVelocity(1000)
                     val velocityY = it.getYVelocity(activePointerId)
-                    fling(parent, child, velocityY)
-                }
-                isBeingDragged = false
-                activePointerId = INVALID_POINTER
-                velocityTracker?.let {
+                    fling(velocityY)
                     it.recycle()
                     velocityTracker = null
                 }
+                isBeingDragged = false
+                activePointerId = INVALID_POINTER
             }
             MotionEvent.ACTION_CANCEL -> {
                 isBeingDragged = false
@@ -180,11 +192,24 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         return isBeingDragged || consumeUp
     }
 
+    override fun onApplyWindowInsets(
+        coordinatorLayout: CoordinatorLayout,
+        child: V,
+        insets: WindowInsetsCompat
+    ): WindowInsetsCompat {
+        if (ViewCompat.getFitsSystemWindows(child) &&
+            !ObjectsCompat.equals(lastInsets, insets)
+        ) {
+            lastInsets = insets
+        }
+        return insets
+    }
+
     /**
      * 贴合至特定的边
      */
     fun snapToChildIfNeeded(parent: CoordinatorLayout, child: V) {
-        val topInset: Int = child.topInset + child.paddingTop
+        val topInset: Int = getTopInset() + child.paddingTop
         val offset = topAndBottomOffset - topInset
 
         val newOffset: Int = calculateSnapOffset(
@@ -192,7 +217,7 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
             getCollapsedOffset(parent, child),
             getFullyExpendOffset(parent, child)
         )
-        animateOffsetTo(parent, child, newOffset)
+        animateOffsetTo(newOffset)
     }
 
     fun calculateSnapOffset(value: Int, vararg snapTo: Int): Int {
@@ -213,13 +238,11 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     }
 
     fun animateOffsetTo(
-        parent: CoordinatorLayout,
-        child: V,
         offset: Int
     ) {
         mSpringAnimation = mSpringAnimation
             ?: SpringAnimation(
-                this, HeaderOffsetFloatProperty(parent, child),
+                this, HeaderOffsetFloatProperty(),
                 topAndBottomOffset.toFloat()
             ).apply {
                 spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
@@ -230,11 +253,9 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     }
 
     fun scroll(
-        parent: CoordinatorLayout,
-        header: V,
         dy: Int,
-        minOffset: Int = getCollapsedOffset(parent, header),
-        maxOffset: Int = getFullyExpendOffset(parent, header)
+        minOffset: Int = getCollapsedOffset(),
+        maxOffset: Int = getFullyExpendOffset()
     ): Int {
         var nextPosition = topAndBottomOffset - dy
         if (dy < 0) {
@@ -243,20 +264,18 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         }
 
         return setHeaderTopBottomOffset(
-            parent, header,
             nextPosition,
-            minOffset, maxOffset
+            minOffset,
+            maxOffset
         )
     }
 
     fun fling(
-        parent: CoordinatorLayout,
-        child: V,
         velocityY: Float,
-        minOffset: Int = getCollapsedOffset(parent, child),
-        maxOffset: Int = getFullyExpendOffset(parent, child),
+        minOffset: Int = getCollapsedOffset(),
+        maxOffset: Int = getFullyExpendOffset(),
     ): Boolean {
-        scroller = scroller ?: OverScroller(child.context)
+        scroller = scroller ?: OverScroller(mContext)
         scroller!!.fling(
             0, topAndBottomOffset,            // startX / Y
             0, velocityY.roundToInt(),     // velocityX / Y
@@ -265,23 +284,20 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         )
         val finalY = calculateSnapOffset(
             scroller!!.finalY, 0,
-            getCollapsedOffset(parent, child),
-            getFullyExpendOffset(parent, child)
+            minOffset, maxOffset
         )
-        animateOffsetTo(parent, child, finalY)
+        animateOffsetTo(finalY)
         return true
     }
 
-    inner class HeaderOffsetFloatProperty(
-        private val parent: CoordinatorLayout,
-        private val child: V
-    ) : FloatPropertyCompat<ExpendHeaderBehavior<V>>("header_offset") {
+    inner class HeaderOffsetFloatProperty :
+        FloatPropertyCompat<ExpendHeaderBehavior<V>>("header_offset") {
         override fun getValue(obj: ExpendHeaderBehavior<V>): Float {
             return obj.topAndBottomOffset.toFloat()
         }
 
         override fun setValue(obj: ExpendHeaderBehavior<V>, value: Float) {
-            obj.setHeaderTopBottomOffset(parent, child, value.roundToInt())
+            obj.setHeaderTopBottomOffset(value.roundToInt())
         }
     }
 }

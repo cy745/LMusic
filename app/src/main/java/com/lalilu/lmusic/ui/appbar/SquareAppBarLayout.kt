@@ -45,12 +45,14 @@ class SquareAppBarLayout @JvmOverloads constructor(
         setHeightToView(mDraweeView, deviceHeight)
         setHeightToView(mLyricViewX, deviceHeight - 100)
         setHeightToView(mEdgeTransparentView, deviceHeight - 100)
+        behavior.dispatchInstanceState(this)
     }
 
     override fun getBehavior(): CoordinatorLayout.Behavior<AppBarLayout> = behavior
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, widthMeasureSpec)
+        behavior.dispatchInstanceState(this)
     }
 
     private fun setHeightToView(view: View?, height: Number) {
