@@ -38,11 +38,9 @@ import androidx.core.view.ViewCompat;
 abstract class HeaderBehavior<V extends View> extends ViewOffsetBehavior<V> {
 
     private static final int INVALID_POINTER = -1;
-
+    OverScroller scroller;
     @Nullable
     private Runnable flingRunnable;
-    OverScroller scroller;
-
     private boolean isBeingDragged;
     private int activePointerId = INVALID_POINTER;
     private int lastMotionY;

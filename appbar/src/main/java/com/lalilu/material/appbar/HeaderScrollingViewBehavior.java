@@ -53,6 +53,10 @@ public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<Vie
         super(context, attrs);
     }
 
+    private static int resolveGravity(int gravity) {
+        return gravity == Gravity.NO_GRAVITY ? GravityCompat.START | Gravity.TOP : gravity;
+    }
+
     @Override
     public boolean onMeasureChild(
             @NonNull CoordinatorLayout parent,
@@ -171,10 +175,6 @@ public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<Vie
                 : MathUtils.clamp((int) (getOverlapRatioForOffset(header) * overlayTop), 0, overlayTop);
     }
 
-    private static int resolveGravity(int gravity) {
-        return gravity == Gravity.NO_GRAVITY ? GravityCompat.START | Gravity.TOP : gravity;
-    }
-
     @Nullable
     abstract View findFirstDependency(List<View> views);
 
@@ -190,6 +190,14 @@ public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<Vie
     }
 
     /**
+     * Returns the distance that this view should overlap any {@link
+     * AppBarLayout}.
+     */
+    public final int getOverlayTop() {
+        return overlayTop;
+    }
+
+    /**
      * Set the distance that this view should overlap any {@link
      * AppBarLayout}.
      *
@@ -197,13 +205,5 @@ public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<Vie
      */
     public final void setOverlayTop(int overlayTop) {
         this.overlayTop = overlayTop;
-    }
-
-    /**
-     * Returns the distance that this view should overlap any {@link
-     * AppBarLayout}.
-     */
-    public final int getOverlayTop() {
-        return overlayTop;
     }
 }

@@ -96,23 +96,23 @@ class ViewOffsetBehavior<V extends View> extends CoordinatorLayout.Behavior<V> {
         return viewOffsetHelper != null ? viewOffsetHelper.getLeftAndRightOffset() : 0;
     }
 
+    public boolean isVerticalOffsetEnabled() {
+        return viewOffsetHelper != null && viewOffsetHelper.isVerticalOffsetEnabled();
+    }
+
     public void setVerticalOffsetEnabled(boolean verticalOffsetEnabled) {
         if (viewOffsetHelper != null) {
             viewOffsetHelper.setVerticalOffsetEnabled(verticalOffsetEnabled);
         }
     }
 
-    public boolean isVerticalOffsetEnabled() {
-        return viewOffsetHelper != null && viewOffsetHelper.isVerticalOffsetEnabled();
+    public boolean isHorizontalOffsetEnabled() {
+        return viewOffsetHelper != null && viewOffsetHelper.isHorizontalOffsetEnabled();
     }
 
     public void setHorizontalOffsetEnabled(boolean horizontalOffsetEnabled) {
         if (viewOffsetHelper != null) {
             viewOffsetHelper.setHorizontalOffsetEnabled(horizontalOffsetEnabled);
         }
-    }
-
-    public boolean isHorizontalOffsetEnabled() {
-        return viewOffsetHelper != null && viewOffsetHelper.isHorizontalOffsetEnabled();
     }
 }
