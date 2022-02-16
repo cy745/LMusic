@@ -20,6 +20,7 @@ package com.lalilu.material.appbar;
 import android.animation.AnimatorInflater;
 import android.animation.ObjectAnimator;
 import android.animation.StateListAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
@@ -29,10 +30,11 @@ import android.view.ViewOutlineProvider;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.google.android.material.R;
 import com.google.android.material.internal.ThemeEnforcement;
-import com.lalilu.appbar.R;
 
 @RequiresApi(21)
+@SuppressLint("RestrictedApi")
 class ViewUtilsLollipop {
 
     private static final int[] STATE_LIST_ANIM_ATTRS = new int[]{android.R.attr.stateListAnimator};
