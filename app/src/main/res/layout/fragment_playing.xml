@@ -61,7 +61,6 @@
                     android:id="@+id/fm_edge_transparent_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:fitsSystemWindows="true"
                     app:edge_position="top|bottom"
                     app:edge_width="48dp">
 
@@ -70,7 +69,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:alpha="0"
-                        android:fitsSystemWindows="true"
                         app:loadLyric="@{vm.lyric}"
                         app:lrcLabel="暂无歌词"
                         app:lrcPadding="36dp"
@@ -82,7 +80,6 @@
                     android:id="@+id/fm_toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:fitsSystemWindows="false"
                     android:minHeight="?attr/actionBarSize"
                     app:layout_collapseMode="pin"
                     app:menu="@menu/menu_appbar"
