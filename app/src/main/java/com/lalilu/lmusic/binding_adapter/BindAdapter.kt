@@ -15,8 +15,6 @@ import coil.imageLoader
 import coil.load
 import coil.request.ImageRequest
 import com.dirror.lyricviewx.LyricViewX
-import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.domain.entity.MSong
@@ -28,6 +26,8 @@ import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
 import com.lalilu.lmusic.utils.EmbeddedDataUtils
 import com.lalilu.lmusic.utils.GridItemDecoration
 import com.lalilu.lmusic.utils.moveHeadToTail
+import com.lalilu.material.appbar.AppBarLayout
+import com.lalilu.material.appbar.CollapsingToolbarLayout
 
 
 @BindingAdapter("iconRec")
