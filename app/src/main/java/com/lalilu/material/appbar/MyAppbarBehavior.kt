@@ -113,7 +113,7 @@ class MyAppbarBehavior(
         // (ViewCompat.TYPE_TOUCH) ends
         if (lastStartedType == ViewCompat.TYPE_TOUCH || type == ViewCompat.TYPE_NON_TOUCH) {
             // If we haven't been flung, or a fling is ending
-            snapToChildIfNeeded(parent, child)
+            snapToChildIfNeeded()
         }
 
         // Keep a reference to the previous nested scrolling child
@@ -160,7 +160,6 @@ class MyAppbarBehavior(
         layoutDirection: Int
     ): Boolean {
         val handled = super.onLayoutChild(parent, child, layoutDirection)
-        invalidOffset()
 
         // The priority for actions here is (first which is true wins):
         // 1. forced pending actions

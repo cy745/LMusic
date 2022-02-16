@@ -11,10 +11,12 @@ import com.dirror.lyricviewx.LyricViewX
 import com.lalilu.R
 import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.DeviceUtil
+import com.lalilu.lmusic.utils.HapticUtils
 import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
 import com.lalilu.material.appbar.AppBarLayout
 import com.lalilu.material.appbar.AppBarLayout.OnOffsetChangedListener
 import com.lalilu.material.appbar.CollapsingToolbarLayout
+import com.lalilu.material.appbar.ExpendHeaderBehavior
 import com.lalilu.material.appbar.MyAppbarBehavior
 import me.qinc.lib.edgetranslucent.EdgeTransparentView
 import kotlin.math.max
@@ -127,5 +129,11 @@ class SquareAppBarLayout @JvmOverloads constructor(
                 it.alpha = alphaPercentIncrease
             }
         }
+        behavior.addOnStateChangeListener(object :
+            ExpendHeaderBehavior.OnScrollToThresholdListener {
+            override fun onScrollToThreshold() {
+                HapticUtils.haptic(this@SquareAppBarLayout)
+            }
+        })
     }
 }
