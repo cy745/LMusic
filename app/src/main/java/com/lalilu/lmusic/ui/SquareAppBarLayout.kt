@@ -132,7 +132,10 @@ class SquareAppBarLayout @JvmOverloads constructor(
         behavior.addOnStateChangeListener(object :
             ExpendHeaderBehavior.OnScrollToThresholdListener {
             override fun onScrollToThreshold() {
-                HapticUtils.haptic(this@SquareAppBarLayout)
+                HapticUtils.haptic(
+                    this@SquareAppBarLayout,
+                    HapticUtils.Strength.HAPTIC_STRONG
+                )
             }
         })
     }
