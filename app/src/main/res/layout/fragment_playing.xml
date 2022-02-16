@@ -25,7 +25,7 @@
         android:fitsSystemWindows="true"
         android:overScrollMode="never">
 
-        <com.lalilu.lmusic.ui.appbar.SquareAppBarLayout
+        <com.lalilu.lmusic.ui.SquareAppBarLayout
             android:id="@+id/fm_appbar_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -85,7 +85,7 @@
                     app:menu="@menu/menu_appbar"
                     app:title="@string/default_slogan" />
             </com.lalilu.material.appbar.CollapsingToolbarLayout>
-        </com.lalilu.lmusic.ui.appbar.SquareAppBarLayout>
+        </com.lalilu.lmusic.ui.SquareAppBarLayout>
 
         <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
             android:id="@+id/nowPlayingRecyclerView"

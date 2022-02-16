@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui.appbar
+package com.lalilu.lmusic.ui
 
 import android.content.Context
 import android.graphics.Color

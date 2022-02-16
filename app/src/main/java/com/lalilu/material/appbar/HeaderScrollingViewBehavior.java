@@ -16,6 +16,7 @@
 
 package com.lalilu.material.appbar;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Rect;
 import android.util.AttributeSet;
@@ -36,8 +37,8 @@ import java.util.List;
 
 /**
  * The {@link Behavior} for a scrolling view that is positioned vertically below another view. See
- * {@link HeaderBehavior}.
  */
+@SuppressLint("RestrictedApi")
 public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<View> {
 
     final Rect tempRect1 = new Rect();
