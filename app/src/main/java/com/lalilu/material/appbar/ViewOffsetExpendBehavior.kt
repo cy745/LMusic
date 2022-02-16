@@ -16,7 +16,7 @@ open class ViewOffsetExpendBehavior<V : View>(
             setTopAndBottomOffset(value)
         }
 
-    fun setTopAndBottomOffset(offset: Int): Boolean {
+    open fun setTopAndBottomOffset(offset: Int): Boolean {
         viewOffsetHelper?.let {
             return it.setTopAndBottomOffset(offset)
         }

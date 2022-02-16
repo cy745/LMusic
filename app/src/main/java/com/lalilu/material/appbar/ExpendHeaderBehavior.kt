@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.*
 import android.widget.OverScroller
+import androidx.annotation.FloatRange
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.util.ObjectsCompat
 import androidx.core.view.ViewCompat
@@ -18,21 +19,53 @@ import kotlin.math.roundToInt
 
 const val INVALID_POINTER = -1
 
+const val STATE_NORMAL = -2
+const val STATE_MIDDLE = -1
+const val STATE_COLLAPSED = 0
+const val STATE_EXPENDED = 1
+const val STATE_FULLY_EXPENDED = 2
+
 abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     private val mContext: Context?, attrs: AttributeSet?
 ) : ViewOffsetExpendBehavior<V>(mContext, attrs), AntiMisTouchEvent {
+    interface OnStateChangeListener {
+        fun onStateChange(lastState: Int, nowState: Int)
+    }
+
+    interface OnScrollToThresholdListener : OnStateChangeListener {
+        fun onScrollToThreshold()
+        override fun onStateChange(lastState: Int, nowState: Int) {
+            if (lastState != STATE_MIDDLE && nowState == STATE_MIDDLE) {
+                onScrollToThreshold()
+            }
+        }
+    }
+
     private val interceptSize: Int = 100
 
     private var mSpringAnimation: SpringAnimation? = null
     private var scroller: OverScroller? = null
     private var velocityTracker: VelocityTracker? = null
     private var lastInsets: WindowInsetsCompat? = null
+    private var stateChangeListeners: MutableList<OnStateChangeListener> = ArrayList()
 
     private var isBeingDragged = false
     private var activePointerId = INVALID_POINTER
     private var lastMotionY = 0
     private var touchSlop = -1
-    private var lastFullyExpendedOffset = Int.MAX_VALUE
+
+    private var tempState: Int = STATE_EXPENDED
+    private var lastState: Int = STATE_EXPENDED
+    private val nowState: Int
+        get() = if (topAndBottomOffset < getMaxDragOffset() * getMaxDragThreshold() && topAndBottomOffset >= 0)
+            STATE_EXPENDED
+        else if (topAndBottomOffset > getFullyExpendOffset() - getMaxDragOffset() * getMaxDragThreshold())
+            STATE_FULLY_EXPENDED
+        else if (topAndBottomOffset == getCollapsedOffset())
+            STATE_COLLAPSED
+        else if (topAndBottomOffset < 0)
+            STATE_NORMAL
+        else STATE_MIDDLE
 
     protected var parentWeakReference: WeakReference<CoordinatorLayout>? = null
     protected var childWeakReference: WeakReference<V>? = null
@@ -56,8 +89,13 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         return false
     }
 
-    open fun invalidOffset() {
-        lastFullyExpendedOffset = Int.MAX_VALUE
+    open fun getMaxDragOffset(): Float {
+        return 200f
+    }
+
+    @FloatRange(from = 0.0, to = 1.0)
+    open fun getMaxDragThreshold(): Float {
+        return 0.6f
     }
 
     open fun getCollapsedOffset(
@@ -71,20 +109,29 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         parent: View? = parentWeakReference?.get(),
         child: V? = childWeakReference?.get()
     ): Int {
-        if (lastFullyExpendedOffset != Int.MAX_VALUE) {
-            return lastFullyExpendedOffset
-        }
-
         mContext?.let { context ->
             val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             val outMetrics = DisplayMetrics()
             windowManager.defaultDisplay.getRealMetrics(outMetrics)
-            parent?.let {
-                lastFullyExpendedOffset = outMetrics.heightPixels - parent.width
-                return lastFullyExpendedOffset
-            }
+            parent?.let { return outMetrics.heightPixels - parent.width }
         }
         return 0
+    }
+
+    fun addOnStateChangeListener(listener: OnStateChangeListener) {
+        if (!stateChangeListeners.contains(listener)) {
+            stateChangeListeners.add(listener)
+        }
+    }
+
+    override fun setTopAndBottomOffset(offset: Int): Boolean {
+        val result = super.setTopAndBottomOffset(offset)
+        if (tempState != nowState) {
+            lastState = tempState
+            stateChangeListeners.forEach { it.onStateChange(lastState, nowState) }
+            tempState = nowState
+        }
+        return result
     }
 
     open fun setHeaderTopBottomOffset(
@@ -177,6 +224,8 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
                 lastMotionY = (ev.getY(newIndex) + 0.5f).toInt()
             }
             MotionEvent.ACTION_UP -> {
+                isBeingDragged = false
+                activePointerId = INVALID_POINTER
                 velocityTracker?.let {
                     consumeUp = true
                     it.addMovement(ev)
@@ -186,8 +235,6 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
                     it.recycle()
                     velocityTracker = null
                 }
-                isBeingDragged = false
-                activePointerId = INVALID_POINTER
             }
             MotionEvent.ACTION_CANCEL -> {
                 isBeingDragged = false
@@ -202,8 +249,12 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         return isBeingDragged || consumeUp
     }
 
+    /**
+     * 在此获取 [lastInsets]
+     * 用于获取状态栏高度等等用途
+     */
     override fun onApplyWindowInsets(
-        coordinatorLayout: CoordinatorLayout,
+        parent: CoordinatorLayout,
         child: V,
         insets: WindowInsetsCompat
     ): WindowInsetsCompat {
@@ -216,18 +267,26 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     }
 
     /**
-     * 贴合至特定的边
+     * 根据当前状态 [nowState] 和前一个状态 [lastState] 判断应该贴合的目标边offset
+     * 并调用 [animateOffsetTo] 贴合至指定的边
+     *
      */
-    fun snapToChildIfNeeded(parent: CoordinatorLayout, child: V) {
-        val topInset: Int = getTopInset() + child.paddingTop
-        val offset = topAndBottomOffset - topInset
-
-        val newOffset: Int = calculateSnapOffset(
-            offset, 0,
-            getCollapsedOffset(parent, child),
-            getFullyExpendOffset(parent, child)
-        )
-        animateOffsetTo(newOffset)
+    fun snapToChildIfNeeded() {
+        val offsetTo = when (nowState) {
+            STATE_EXPENDED -> 0
+            STATE_COLLAPSED -> getCollapsedOffset()
+            STATE_FULLY_EXPENDED -> getFullyExpendOffset()
+            STATE_NORMAL -> calculateSnapOffset(
+                topAndBottomOffset, 0, getCollapsedOffset()
+            )
+            STATE_MIDDLE -> when (lastState) {
+                STATE_FULLY_EXPENDED -> 0
+                STATE_EXPENDED -> getFullyExpendOffset()
+                else -> null
+            }
+            else -> null
+        }
+        offsetTo?.let { animateOffsetTo(it) }
     }
 
     private fun calculateSnapOffset(value: Int, vararg snapTo: Int): Int {
@@ -262,19 +321,23 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         mSpringAnimation?.animateToFinalPosition(offset.toFloat())
     }
 
+    open fun checkDampOffset(oldOffset: Int, newOffset: Int): Int {
+        var nextPosition = newOffset
+        if (newOffset > oldOffset) {
+            val percent = 1f - oldOffset.toFloat() / getMaxDragOffset()
+            if (percent in 0F..1F) nextPosition =
+                (oldOffset + (newOffset - oldOffset) * percent).toInt()
+        }
+        return nextPosition
+    }
+
     fun scroll(
         dy: Int,
         minOffset: Int = getCollapsedOffset(),
         maxOffset: Int = getFullyExpendOffset()
     ): Int {
-        var nextPosition = topAndBottomOffset - dy
-        if (dy < 0) {
-            val percent = 1f - topAndBottomOffset / 200f
-            if (percent in 0F..1F) nextPosition = topAndBottomOffset - (dy * percent).toInt()
-        }
-
         return setHeaderTopBottomOffset(
-            nextPosition,
+            checkDampOffset(topAndBottomOffset, topAndBottomOffset - dy),
             minOffset,
             maxOffset
         )
@@ -292,11 +355,19 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
             0, 0,                       // minX / maxX
             minOffset, maxOffset                   // minY / maxY
         )
-        val finalY = calculateSnapOffset(
-            scroller!!.finalY, 0,
-            minOffset, maxOffset
-        )
-        animateOffsetTo(finalY)
+        when (nowState) {
+            STATE_COLLAPSED,
+            STATE_NORMAL,
+            STATE_EXPENDED -> {
+                animateOffsetTo(
+                    calculateSnapOffset(scroller!!.finalY, 0, minOffset)
+                )
+            }
+            STATE_MIDDLE,
+            STATE_FULLY_EXPENDED -> {
+                snapToChildIfNeeded()
+            }
+        }
         return true
     }
 
