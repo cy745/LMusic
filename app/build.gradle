@@ -48,6 +48,9 @@ android {
             excludes += ['META-INF/CONTRIBUTORS.md', 'META-INF/LICENSE.md']
         }
     }
+    lintOptions {
+        checkDependencies true
+    }
 }
 
 android.sourceSets.all {
@@ -58,10 +61,6 @@ android.sourceSets.all {
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/com.google.android.material/material
-    // Apache-2.0
-    implementation(project(':appbar'))
-
     // https://github.com/afollestad/material-dialogs
     // Apache-2.0 License
     implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
@@ -122,6 +121,7 @@ dependencies {
 
     implementation "com.github.cy745:EdgeTranslucent:8c25866a14"
     implementation "com.google.dagger:hilt-android:$hilt_version"
+    implementation 'com.google.android.material:material:1.5.0'
 
     kapt "androidx.hilt:hilt-compiler:1.0.0"
     kapt "androidx.room:room-compiler:$room_version"

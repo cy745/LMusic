@@ -16,7 +16,6 @@
 
 package com.lalilu.material.appbar;
 
-
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP;
 import static androidx.core.math.MathUtils.clamp;
 import static com.google.android.material.theme.overlay.MaterialThemeOverlay.wrap;
@@ -24,6 +23,7 @@ import static java.lang.Math.abs;
 
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
@@ -57,11 +57,11 @@ import androidx.core.util.ObjectsCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.R;
 import com.google.android.material.animation.AnimationUtils;
 import com.google.android.material.internal.ThemeEnforcement;
 import com.google.android.material.shape.MaterialShapeDrawable;
 import com.google.android.material.shape.MaterialShapeUtils;
-import com.lalilu.appbar.R;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -73,6 +73,7 @@ import java.util.List;
  * AppBarLayout is a vertical {@link LinearLayout} which implements many of the features of material
  * designs app bar concept, namely scrolling gestures.
  */
+@SuppressLint("RestrictedApi")
 public class AppBarLayout extends LinearLayout implements CoordinatorLayout.AttachedBehavior {
 
     static final int PENDING_ACTION_NONE = 0x0;
@@ -80,21 +81,69 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
     static final int PENDING_ACTION_COLLAPSED = 1 << 1;
     static final int PENDING_ACTION_ANIMATE_ENABLED = 1 << 2;
     static final int PENDING_ACTION_FORCE = 1 << 3;
+
+    @NonNull
+    @Override
+    public CoordinatorLayout.Behavior getBehavior() {
+        return new MyAppbarBehavior(getContext(), null);
+    }
+
+    /**
+     * Interface definition for a callback to be invoked when an {@link AppBarLayout}'s vertical
+     * offset changes.
+     */
+    // TODO(b/76413401): remove this base interface after the widget migration
+    public interface BaseOnOffsetChangedListener<T extends AppBarLayout> {
+
+        /**
+         * Called when the {@link AppBarLayout}'s layout offset has been changed. This allows child
+         * views to implement custom behavior based on the offset (for instance pinning a view at a
+         * certain y value).
+         *
+         * @param appBarLayout   the {@link AppBarLayout} which offset has changed
+         * @param verticalOffset the vertical offset for the parent {@link AppBarLayout}, in px
+         */
+        void onOffsetChanged(T appBarLayout, int verticalOffset);
+    }
+
+    /**
+     * Interface definition for a callback to be invoked when an {@link AppBarLayout}'s vertical
+     * offset changes.
+     */
+    // TODO(b/76413401): update this interface after the widget migration
+    public interface OnOffsetChangedListener extends BaseOnOffsetChangedListener<AppBarLayout> {
+        void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset);
+    }
+
+    /**
+     * Definition for a callback to be invoked when the lift on scroll elevation and background color
+     * change.
+     */
+    public interface LiftOnScrollListener {
+        void onUpdate(@Dimension float elevation, @ColorInt int backgroundColor);
+    }
+
     private static final int DEF_STYLE_RES = R.style.Widget_Design_AppBarLayout;
     private static final int INVALID_SCROLL_RANGE = -1;
-    private final List<LiftOnScrollListener> liftOnScrollListeners = new ArrayList<>();
+
     private int currentOffset;
     private int totalScrollRange = INVALID_SCROLL_RANGE;
     private int downPreScrollRange = INVALID_SCROLL_RANGE;
     private int downScrollRange = INVALID_SCROLL_RANGE;
+
     private boolean haveChildWithInterpolator;
+
     private int pendingAction = PENDING_ACTION_NONE;
+
     @Nullable
     private WindowInsetsCompat lastInsets;
+
     private List<BaseOnOffsetChangedListener> listeners;
+
     private boolean liftableOverride;
     private boolean liftable;
     private boolean lifted;
+
     private boolean liftOnScroll;
     @IdRes
     private int liftOnScrollTargetViewId;
@@ -102,7 +151,10 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
     private WeakReference<View> liftOnScrollTargetView;
     @Nullable
     private ValueAnimator elevationOverlayAnimator;
+    private final List<LiftOnScrollListener> liftOnScrollListeners = new ArrayList<>();
+
     private int[] tmpStatesArray;
+
     @Nullable
     private Drawable statusBarForeground;
 
@@ -158,7 +210,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
                     this, a.getDimensionPixelSize(R.styleable.AppBarLayout_elevation, 0));
         }
 
-        if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // In O+, we have these values set in the style. Since there is no defStyleAttr for
             // AppBarLayout at the AppCompat level, check for these attributes here.
             if (a.hasValue(R.styleable.AppBarLayout_android_keyboardNavigationCluster)) {
@@ -251,6 +303,35 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
     }
 
     /**
+     * Set the drawable to use for the status bar foreground drawable. Providing null will disable the
+     * scrim functionality.
+     *
+     * <p>This scrim is only shown when we have been given a top system inset.
+     *
+     * @param drawable the drawable to display
+     * @attr ref R.styleable#AppBarLayout_statusBarForeground
+     * @see #getStatusBarForeground()
+     */
+    public void setStatusBarForeground(@Nullable Drawable drawable) {
+        if (statusBarForeground != drawable) {
+            if (statusBarForeground != null) {
+                statusBarForeground.setCallback(null);
+            }
+            statusBarForeground = drawable != null ? drawable.mutate() : null;
+            if (statusBarForeground != null) {
+                if (statusBarForeground.isStateful()) {
+                    statusBarForeground.setState(getDrawableState());
+                }
+                DrawableCompat.setLayoutDirection(statusBarForeground, ViewCompat.getLayoutDirection(this));
+                statusBarForeground.setVisible(getVisibility() == VISIBLE, false);
+                statusBarForeground.setCallback(this);
+            }
+            updateWillNotDraw();
+            ViewCompat.postInvalidateOnAnimation(this);
+        }
+    }
+
+    /**
      * Set the color to use for the status bar foreground.
      *
      * <p>This scrim is only shown when we have been given a top system inset.
@@ -285,35 +366,6 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
     @Nullable
     public Drawable getStatusBarForeground() {
         return statusBarForeground;
-    }
-
-    /**
-     * Set the drawable to use for the status bar foreground drawable. Providing null will disable the
-     * scrim functionality.
-     *
-     * <p>This scrim is only shown when we have been given a top system inset.
-     *
-     * @param drawable the drawable to display
-     * @attr ref R.styleable#AppBarLayout_statusBarForeground
-     * @see #getStatusBarForeground()
-     */
-    public void setStatusBarForeground(@Nullable Drawable drawable) {
-        if (statusBarForeground != drawable) {
-            if (statusBarForeground != null) {
-                statusBarForeground.setCallback(null);
-            }
-            statusBarForeground = drawable != null ? drawable.mutate() : null;
-            if (statusBarForeground != null) {
-                if (statusBarForeground.isStateful()) {
-                    statusBarForeground.setState(getDrawableState());
-                }
-                DrawableCompat.setLayoutDirection(statusBarForeground, ViewCompat.getLayoutDirection(this));
-                statusBarForeground.setVisible(getVisibility() == VISIBLE, false);
-                statusBarForeground.setCallback(this);
-            }
-            updateWillNotDraw();
-            ViewCompat.postInvalidateOnAnimation(this);
-        }
     }
 
     @Override
@@ -440,6 +492,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
     }
 
     private void invalidateScrollRanges() {
+        // Invalidate the scroll ranges
         totalScrollRange = INVALID_SCROLL_RANGE;
         downPreScrollRange = INVALID_SCROLL_RANGE;
         downScrollRange = INVALID_SCROLL_RANGE;
@@ -461,12 +514,6 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
         MaterialShapeUtils.setParentAbsoluteElevation(this);
     }
 
-    @Override
-    @Nullable
-    public CoordinatorLayout.Behavior<AppBarLayout> getBehavior() {
-        return new MyAppbarBehavior();
-    }
-
     @RequiresApi(VERSION_CODES.LOLLIPOP)
     @Override
     public void setElevation(float elevation) {
@@ -484,7 +531,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
      *
      * @param expanded true if the layout should be fully expanded, false if it should be fully
      *                 collapsed
-     * @attr ref com.lalilu.appbar.R.styleable#AppBarLayout_expanded
+     * @attr ref com.google.android.material.R.styleable#AppBarLayout_expanded
      */
     public void setExpanded(boolean expanded) {
         setExpanded(expanded, ViewCompat.isLaidOut(this));
@@ -499,7 +546,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
      * @param expanded true if the layout should be fully expanded, false if it should be fully
      *                 collapsed
      * @param animate  Whether to animate to the new state
-     * @attr ref com.lalilu.appbar.R.styleable#AppBarLayout_expanded
+     * @attr ref com.google.android.material.R.styleable#AppBarLayout_expanded
      */
     public void setExpanded(boolean expanded, boolean animate) {
         setExpanded(expanded, animate, true);
@@ -846,13 +893,6 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
     }
 
     /**
-     * Returns whether the {@link AppBarLayout} lifts on scroll or not.
-     */
-    public boolean isLiftOnScroll() {
-        return liftOnScroll;
-    }
-
-    /**
      * Sets whether the {@link AppBarLayout} lifts on scroll or not.
      *
      * <p>If set to true, the {@link AppBarLayout} will animate to the lifted, or elevated, state when
@@ -865,12 +905,10 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
     }
 
     /**
-     * Returns the id of the view that the {@link AppBarLayout} should use to determine whether it
-     * should be lifted.
+     * Returns whether the {@link AppBarLayout} lifts on scroll or not.
      */
-    @IdRes
-    public int getLiftOnScrollTargetViewId() {
-        return liftOnScrollTargetViewId;
+    public boolean isLiftOnScroll() {
+        return liftOnScroll;
     }
 
     /**
@@ -881,6 +919,15 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
         this.liftOnScrollTargetViewId = liftOnScrollTargetViewId;
         // Invalidate cached target view so it will be looked up on next scroll.
         clearLiftOnScrollTargetView();
+    }
+
+    /**
+     * Returns the id of the view that the {@link AppBarLayout} should use to determine whether it
+     * should be lifted.
+     */
+    @IdRes
+    public int getLiftOnScrollTargetViewId() {
+        return liftOnScrollTargetViewId;
     }
 
     boolean shouldLift(@Nullable View defaultScrollingView) {
@@ -919,16 +966,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
     }
 
     /**
-     * @deprecated target elevation is now deprecated. AppBarLayout's elevation is now controlled via
-     * a {@link android.animation.StateListAnimator}. This method now always returns 0.
-     */
-    @Deprecated
-    public float getTargetElevation() {
-        return 0;
-    }
-
-    /**
-     * @attr ref com.lalilu.appbar.R.styleable#AppBarLayout_elevation
+     * @attr ref com.google.android.material.R.styleable#AppBarLayout_elevation
      * @deprecated target elevation is now deprecated. AppBarLayout's elevation is now controlled via
      * a {@link android.animation.StateListAnimator}. If a target elevation is set, either by this
      * method or the {@code app:elevation} attribute, a new state list animator is created which
@@ -939,6 +977,15 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
         if (Build.VERSION.SDK_INT >= 21) {
             ViewUtilsLollipop.setDefaultAppBarLayoutStateListAnimator(this, elevation);
         }
+    }
+
+    /**
+     * @deprecated target elevation is now deprecated. AppBarLayout's elevation is now controlled via
+     * a {@link android.animation.StateListAnimator}. This method now always returns 0.
+     */
+    @Deprecated
+    public float getTargetElevation() {
+        return 0;
     }
 
     int getPendingAction() {
@@ -985,56 +1032,42 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
     }
 
     /**
-     * Interface definition for a callback to be invoked when an {@link AppBarLayout}'s vertical
-     * offset changes.
-     */
-    // TODO(b/76413401): remove this base interface after the widget migration
-    public interface BaseOnOffsetChangedListener<T extends AppBarLayout> {
-
-        /**
-         * Called when the {@link AppBarLayout}'s layout offset has been changed. This allows child
-         * views to implement custom behavior based on the offset (for instance pinning a view at a
-         * certain y value).
-         *
-         * @param appBarLayout   the {@link AppBarLayout} which offset has changed
-         * @param verticalOffset the vertical offset for the parent {@link AppBarLayout}, in px
-         */
-        void onOffsetChanged(T appBarLayout, int verticalOffset);
-    }
-
-    /**
-     * Interface definition for a callback to be invoked when an {@link AppBarLayout}'s vertical
-     * offset changes.
-     */
-    // TODO(b/76413401): update this interface after the widget migration
-    public interface OnOffsetChangedListener extends BaseOnOffsetChangedListener<AppBarLayout> {
-        void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset);
-    }
-
-    /**
-     * Definition for a callback to be invoked when the lift on scroll elevation and background color
-     * change.
-     */
-    public interface LiftOnScrollListener {
-        void onUpdate(@Dimension float elevation, @ColorInt int backgroundColor);
-    }
-
-    /**
      * A {@link ViewGroup.LayoutParams} implementation for {@link AppBarLayout}.
      */
     public static class LayoutParams extends LinearLayout.LayoutParams {
+
+        /**
+         * @hide
+         */
+        @RestrictTo(LIBRARY_GROUP)
+        @IntDef(
+                flag = true,
+                value = {
+                        SCROLL_FLAG_NO_SCROLL,
+                        SCROLL_FLAG_SCROLL,
+                        SCROLL_FLAG_EXIT_UNTIL_COLLAPSED,
+                        SCROLL_FLAG_ENTER_ALWAYS,
+                        SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED,
+                        SCROLL_FLAG_SNAP,
+                        SCROLL_FLAG_SNAP_MARGINS,
+                })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface ScrollFlags {
+        }
 
         /**
          * Disable scrolling on the view. This flag should not be combined with any of the other scroll
          * flags.
          */
         public static final int SCROLL_FLAG_NO_SCROLL = 0x0;
+
         /**
          * The view will be scroll in direct relation to scroll events. This flag needs to be set for
          * any of the other flags to take effect. If any sibling views before this one do not have this
          * flag, then this value has no effect.
          */
         public static final int SCROLL_FLAG_SCROLL = 0x1;
+
         /**
          * When exiting (scrolling off screen) the view will be scrolled until it is 'collapsed'. The
          * collapsed height is defined by the view's minimum height.
@@ -1043,12 +1076,14 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
          * @see View#setMinimumHeight(int)
          */
         public static final int SCROLL_FLAG_EXIT_UNTIL_COLLAPSED = 1 << 1;
+
         /**
          * When entering (scrolling on screen) the view will scroll on any downwards scroll event,
          * regardless of whether the scrolling view is also scrolling. This is commonly referred to as
          * the 'quick return' pattern.
          */
         public static final int SCROLL_FLAG_ENTER_ALWAYS = 1 << 2;
+
         /**
          * An additional flag for 'enterAlways' which modifies the returning view to only initially
          * scroll back to it's collapsed height. Once the scrolling view has reached the end of it's
@@ -1059,6 +1094,7 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
          * @see View#setMinimumHeight(int)
          */
         public static final int SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED = 1 << 3;
+
         /**
          * Upon a scroll ending, if the view is only partially visible then it will be snapped and
          * scrolled to its closest edge. For example, if the view only has its bottom 25% displayed, it
@@ -1066,32 +1102,40 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
          * be scrolled fully into view.
          */
         public static final int SCROLL_FLAG_SNAP = 1 << 4;
+
         /**
          * An additional flag to be used with 'snap'. If set, the view will be snapped to its top and
          * bottom margins, as opposed to the edges of the view itself.
          */
         public static final int SCROLL_FLAG_SNAP_MARGINS = 1 << 5;
+
         /**
          * Internal flags which allows quick checking features
          */
         static final int FLAG_QUICK_RETURN = SCROLL_FLAG_SCROLL | SCROLL_FLAG_ENTER_ALWAYS;
+
         static final int FLAG_SNAP = SCROLL_FLAG_SCROLL | SCROLL_FLAG_SNAP;
         static final int COLLAPSIBLE_FLAGS =
                 SCROLL_FLAG_EXIT_UNTIL_COLLAPSED | SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED;
+
+        int scrollFlags = SCROLL_FLAG_SCROLL;
+
         /**
          * No effect should be placed on this view. It will scroll 1:1 with the AppBarLayout/scrolling
          * content.
          */
         private static final int SCROLL_EFFECT_NONE = 0;
+
         /**
          * An effect that will "compress" this view as it hits the scroll ceiling (typically the top of
          * the screen). This is a parallax effect that masks this view and decreases its scroll ratio
          * in relation to the AppBarLayout's offset.
          */
         private static final int SCROLL_EFFECT_COMPRESS = 1;
-        int scrollFlags = SCROLL_FLAG_SCROLL;
-        Interpolator scrollInterpolator;
+
         private ChildScrollEffect scrollEffect;
+
+        Interpolator scrollInterpolator;
 
         public LayoutParams(Context c, AttributeSet attrs) {
             super(c, attrs);
@@ -1140,17 +1184,6 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
         }
 
         /**
-         * Returns the scrolling flags.
-         *
-         * @attr ref com.lalilu.appbar.R.styleable#AppBarLayout_Layout_layout_scrollFlags
-         * @see #setScrollFlags(int)
-         */
-        @ScrollFlags
-        public int getScrollFlags() {
-            return scrollFlags;
-        }
-
-        /**
          * Set the scrolling flags.
          *
          * @param flags bitwise int of {@link #SCROLL_FLAG_SCROLL}, {@link
@@ -1158,11 +1191,22 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
          *              #SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED}, {@link #SCROLL_FLAG_SNAP}, and {@link
          *              #SCROLL_FLAG_SNAP_MARGINS}. Otherwise, use {@link #SCROLL_FLAG_NO_SCROLL} to disable
          *              scrolling.
-         * @attr ref com.lalilu.appbar.R.styleable#AppBarLayout_Layout_layout_scrollFlags
+         * @attr ref com.google.android.material.R.styleable#AppBarLayout_Layout_layout_scrollFlags
          * @see #getScrollFlags()
          */
         public void setScrollFlags(@ScrollFlags int flags) {
             scrollFlags = flags;
+        }
+
+        /**
+         * Returns the scrolling flags.
+         *
+         * @attr ref com.google.android.material.R.styleable#AppBarLayout_Layout_layout_scrollFlags
+         * @see #setScrollFlags(int)
+         */
+        @ScrollFlags
+        public int getScrollFlags() {
+            return scrollFlags;
         }
 
         @Nullable
@@ -1194,27 +1238,27 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
         }
 
         /**
-         * Returns the {@link Interpolator} being used for scrolling the view associated with this
-         * {@link LayoutParams}. Null indicates 'normal' 1-to-1 scrolling.
-         *
-         * @attr ref
-         * com.lalilu.appbar.R.styleable#AppBarLayout_Layout_layout_scrollInterpolator
-         * @see #setScrollInterpolator(Interpolator)
-         */
-        public Interpolator getScrollInterpolator() {
-            return scrollInterpolator;
-        }
-
-        /**
          * Set the interpolator to when scrolling the view associated with this {@link LayoutParams}.
          *
          * @param interpolator the interpolator to use, or null to use normal 1-to-1 scrolling.
          * @attr ref
-         * com.lalilu.appbar.R.styleable#AppBarLayout_Layout_layout_scrollInterpolator
+         * com.google.android.material.R.styleable#AppBarLayout_Layout_layout_scrollInterpolator
          * @see #getScrollInterpolator()
          */
         public void setScrollInterpolator(Interpolator interpolator) {
             scrollInterpolator = interpolator;
+        }
+
+        /**
+         * Returns the {@link Interpolator} being used for scrolling the view associated with this
+         * {@link LayoutParams}. Null indicates 'normal' 1-to-1 scrolling.
+         *
+         * @attr ref
+         * com.google.android.material.R.styleable#AppBarLayout_Layout_layout_scrollInterpolator
+         * @see #setScrollInterpolator(Interpolator)
+         */
+        public Interpolator getScrollInterpolator() {
+            return scrollInterpolator;
         }
 
         /**
@@ -1223,25 +1267,6 @@ public class AppBarLayout extends LinearLayout implements CoordinatorLayout.Atta
         boolean isCollapsible() {
             return (scrollFlags & SCROLL_FLAG_SCROLL) == SCROLL_FLAG_SCROLL
                     && (scrollFlags & COLLAPSIBLE_FLAGS) != 0;
-        }
-
-        /**
-         * @hide
-         */
-        @RestrictTo(LIBRARY_GROUP)
-        @IntDef(
-                flag = true,
-                value = {
-                        SCROLL_FLAG_NO_SCROLL,
-                        SCROLL_FLAG_SCROLL,
-                        SCROLL_FLAG_EXIT_UNTIL_COLLAPSED,
-                        SCROLL_FLAG_ENTER_ALWAYS,
-                        SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED,
-                        SCROLL_FLAG_SNAP,
-                        SCROLL_FLAG_SNAP_MARGINS,
-                })
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface ScrollFlags {
         }
     }
 
