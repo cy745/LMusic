@@ -5,33 +5,67 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import androidx.annotation.FloatRange
 import androidx.core.view.GestureDetectorCompat
+
+const val PROGRESS_STATE_NONE = -1
+const val PROGRESS_STATE_MIN = 0
+const val PROGRESS_STATE_MIDDLE = 1
+const val PROGRESS_STATE_MAX = 2
 
 abstract class BaseSeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr), AbstractSeekBar {
+    private var seekBarListeners: MutableList<OnSeekBarListenerAdapter> = ArrayList()
     var onSeekBarListener: OnSeekBarListenerAdapter? = null
     var touching: Boolean = false
-    var progress: Double = 0.0
-    var maxProgress: Float = 1f
-    var minProgress: Float = 0f
+
+    protected val maxProgress: Float = 100f
+    protected val minProgress: Float = 0f
+
+    @FloatRange(from = 0.0, to = 100.0)
+    var downProgress: Float = 0f
+
+    @FloatRange(from = 0.0, to = 100.0)
+    var dataProgress: Float = 0f
+
+    @FloatRange(from = 0.0, to = 100.0)
+    var drawProgress: Float = 0f
+        set(value) {
+            field = value
+            if (tempProgressState != nowProgressState) {
+                lastProgressState = tempProgressState
+                tempProgressState = nowProgressState
+                if (lastProgressState == PROGRESS_STATE_NONE) {
+                    when (nowProgressState) {
+                        PROGRESS_STATE_MIN -> onProgressMin()
+                        PROGRESS_STATE_MIDDLE -> onProgressMiddle()
+                        PROGRESS_STATE_MAX -> onProgressMax()
+                    }
+                }
+            }
+        }
+
+    private var tempProgressState: Int = PROGRESS_STATE_NONE
+    private var lastProgressState: Int = PROGRESS_STATE_NONE
+    private val nowProgressState: Int
+        get() = when (drawProgress) {
+            minProgress -> PROGRESS_STATE_MIN
+            maxProgress -> PROGRESS_STATE_MAX
+            in 10f..90f -> PROGRESS_STATE_MIDDLE
+            else -> PROGRESS_STATE_NONE
+        }
 
     private var scaleAnimatorTo = 1.1f
     private var scaleAnimatorDuration = 200L
-
-    private var downProgress = 0.0
-    private var sensitivity: Float = 0.0015f
+    private var sensitivity: Float = 0.15f
 
     private val gestureDetector =
         GestureDetectorCompat(context, object : GestureDetector.SimpleOnGestureListener() {
             override fun onDown(e: MotionEvent?): Boolean {
                 touching = true
-                downProgress = progress
-                this@BaseSeekBar.animate()
-                    .scaleX(scaleAnimatorTo)
-                    .scaleY(scaleAnimatorTo)
-                    .setDuration(scaleAnimatorDuration)
-                    .start()
+                downProgress = drawProgress
+                animateScaleTo(scaleAnimatorTo)
                 return super.onDown(e)
             }
 
@@ -70,12 +104,8 @@ abstract class BaseSeekBar @JvmOverloads constructor(
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_CANCEL -> {
                 touching = false
-                if (downProgress != progress) onTouchUpWithChange()
-                this.animate()
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .setDuration(scaleAnimatorDuration)
-                    .start()
+                if (downProgress != drawProgress) onTouchUpWithChange()
+                animateScaleTo(1f)
             }
         }
         invalidate()
@@ -83,46 +113,30 @@ abstract class BaseSeekBar @JvmOverloads constructor(
     }
 
     override fun updateProgress(distance: Float) {
-        progress = clamp(
-            progress + distance * sensitivity,
-            maxProgress, minProgress
-        ).toDouble()
-
-        when (progress) {
-            maxProgress.toDouble() -> onProgressMax()
-            minProgress.toDouble() -> onProgressMin()
-            in 0.1..0.9 -> onProgressMiddle()
-        }
+        drawProgress = (drawProgress + distance * sensitivity)
+            .coerceIn(minProgress, maxProgress)
     }
 
-    private var progressIsMax = false
-    private var progressIsMin = true
-
     override fun onProgressMax() {
-        if (!progressIsMax) {
-            onSeekBarListener?.onProgressToMax()
-            progressIsMax = true
-        }
+        onSeekBarListener?.onProgressToMax()
+        seekBarListeners.forEach { it.onProgressToMax() }
     }
 
     override fun onProgressMin() {
-        if (!progressIsMin) {
-            onSeekBarListener?.onProgressToMin()
-            progressIsMin = true
-        }
+        onSeekBarListener?.onProgressToMin()
+        seekBarListeners.forEach { it.onProgressToMin() }
     }
 
     override fun onProgressMiddle() {
-        if (progressIsMin || progressIsMax) {
-            onSeekBarListener?.onProgressToMiddle()
-        }
-        progressIsMax = false
-        progressIsMin = false
+        onSeekBarListener?.onProgressToMiddle()
+        seekBarListeners.forEach { it.onProgressToMiddle() }
     }
 
-    private fun clamp(num: Number, max: Number, min: Number): Number {
-        if (num.toDouble() < min.toDouble()) return min.toDouble()
-        if (num.toDouble() > max.toDouble()) return max.toDouble()
-        return num.toDouble()
+    fun animateScaleTo(scaleValue: Float) {
+        this.animate()
+            .scaleY(scaleValue)
+            .scaleX(scaleValue)
+            .setDuration(scaleAnimatorDuration)
+            .start()
     }
 }

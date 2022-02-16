@@ -4,30 +4,42 @@ import android.content.Context
 import android.graphics.*
 import android.text.TextPaint
 import android.util.AttributeSet
+import androidx.dynamicanimation.animation.FloatPropertyCompat
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.TextUtils
 
 class LMusicSeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : BaseSeekBar(context, attrs, defStyleAttr) {
+    private var mSpringAnimation: SpringAnimation? = null
+
+    private fun animateProgressTo(progress: Float) {
+        mSpringAnimation = mSpringAnimation ?: SpringAnimation(
+            this, ProgressFloatProperty(), progress
+        ).apply {
+            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            spring.stiffness = SpringForce.STIFFNESS_LOW
+        }
+        mSpringAnimation?.cancel()
+        mSpringAnimation?.animateToFinalPosition(progress)
+    }
 
     override fun updatePosition(position: Long) {
         if (!touching) {
             if (position > sumDuration) return
 
             nowDuration = position
-            progress = nowDuration.toDouble() / sumDuration.toDouble()
-            when (progress) {
-                maxProgress.toDouble() -> onProgressMax()
-                minProgress.toDouble() -> onProgressMin()
-                in 0.1..0.9 -> onProgressMiddle()
-            }
-            invalidate()
+            dataProgress = (nowDuration.toFloat() / sumDuration * 100f)
+                .coerceIn(minProgress, maxProgress)
+
+            animateProgressTo(dataProgress)
         }
     }
 
     override fun onTouchUpWithChange() {
-        nowDuration = (progress * sumDuration).toLong()
+        nowDuration = (drawProgress / 100f * sumDuration).toLong()
         onSeekBarListener?.onPositionUpdate(nowDuration)
     }
 
@@ -82,8 +94,8 @@ class LMusicSeekBar @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        progressWidth = (progress * width).toFloat()
-        nowDuration = (progress * sumDuration).toLong()
+        progressWidth = drawProgress / 100f * width
+        nowDuration = (drawProgress / 100f * sumDuration).toLong()
 
         sumDurationText = TextUtils.durationToString(sumDuration)
         nowDurationText = TextUtils.durationToString(nowDuration)
@@ -123,5 +135,16 @@ class LMusicSeekBar @JvmOverloads constructor(
             textCenterHeight,
             textPaintWhite
         )
+    }
+
+    class ProgressFloatProperty : FloatPropertyCompat<LMusicSeekBar>("progress") {
+        override fun getValue(obj: LMusicSeekBar): Float {
+            return obj.drawProgress
+        }
+
+        override fun setValue(obj: LMusicSeekBar, value: Float) {
+            obj.drawProgress = value
+            obj.invalidate()
+        }
     }
 }
