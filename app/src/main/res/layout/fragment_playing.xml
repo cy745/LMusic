@@ -25,20 +25,19 @@
         android:fitsSystemWindows="true"
         android:overScrollMode="never">
 
-        <com.lalilu.lmusic.ui.appbar.SquareAppBarLayout
+        <com.lalilu.lmusic.ui.SquareAppBarLayout
             android:id="@+id/fm_appbar_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/colorPrimaryVariant"
             android:fitsSystemWindows="true"
             app:bgPalette="@{ev.nowBgPalette}">
-            <!-- app:layout_behavior="com.lalilu.lmusic.ui.appbar.AppBarZoomBehavior" -->
-            <!-- 替换为代码调用 -->
 
-            <com.google.android.material.appbar.CollapsingToolbarLayout
+            <com.lalilu.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/fm_collapse_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:fitsSystemWindows="true"
                 app:bindTitle="@{vm.title}"
                 app:collapsedTitleTextAppearance="@style/collapsedTitleText"
                 app:contentScrim="@android:color/transparent"
@@ -85,8 +84,8 @@
                     app:layout_collapseMode="pin"
                     app:menu="@menu/menu_appbar"
                     app:title="@string/default_slogan" />
-            </com.google.android.material.appbar.CollapsingToolbarLayout>
-        </com.lalilu.lmusic.ui.appbar.SquareAppBarLayout>
+            </com.lalilu.material.appbar.CollapsingToolbarLayout>
+        </com.lalilu.lmusic.ui.SquareAppBarLayout>
 
         <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
             android:id="@+id/nowPlayingRecyclerView"
@@ -98,7 +97,7 @@
             android:paddingBottom="128dp"
             app:adapter="@{playingAdapter}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+            app:layout_behavior="com.lalilu.material.appbar.MyScrollingViewBehavior"
             app:setSongs="@{vm.songs}"
             tools:listitem="@layout/item_playing"
             tools:visibility="invisible" />

@@ -5,7 +5,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.bottomsheets.setPeekHeight
 import com.afollestad.materialdialogs.customview.customView
-import com.google.android.material.appbar.AppBarLayout
+import com.lalilu.material.appbar.AppBarLayout
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.DialogSongDetailBinding

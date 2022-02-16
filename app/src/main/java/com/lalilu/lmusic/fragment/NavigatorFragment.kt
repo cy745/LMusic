@@ -9,7 +9,8 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.event.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -25,20 +26,15 @@ class NavigatorFragment : DataBindingFragment(), CoroutineScope {
             .addParam(BR.ev, mEvent)
     }
 
-    override fun onViewCreated() {
+    override fun onStart() {
+        super.onStart()
         val binding = mBinding as FragmentNavigatorBinding
         val toolbar2 = binding.toolbar2
         val navigator = binding.navigator
 
-        launch {
-            delay(100)
-
-            withContext(Dispatchers.Main) {
-                NavigationUI.setupWithNavController(
-                    toolbar2,
-                    Navigation.findNavController(navigator)
-                )
-            }
-        }
+        NavigationUI.setupWithNavController(
+            toolbar2,
+            Navigation.findNavController(navigator)
+        )
     }
 }
