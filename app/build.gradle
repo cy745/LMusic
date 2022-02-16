@@ -85,9 +85,6 @@ dependencies {
     // Apache-2.0
     // implementation "jp.wasabeef:recyclerview-animators:4.0.2"
 
-    // https://mvnrepository.com/artifact/de.halfbit/tinymachine
-    implementation 'de.halfbit:tinymachine:1.1.0'
-
     implementation 'com.github.cy745:kanhira:2de73b1f0a'
 
     // https://github.com/belerweb/pinyin4j
