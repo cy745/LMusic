@@ -1,5 +1,6 @@
 package com.lalilu.material.appbar
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Rect
 import android.util.AttributeSet
@@ -8,6 +9,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 
+@SuppressLint("RestrictedApi")
 class MyScrollingViewBehavior(
     context: Context?, attrs: AttributeSet?
 ) : HeaderScrollingViewBehavior(context, attrs) {
