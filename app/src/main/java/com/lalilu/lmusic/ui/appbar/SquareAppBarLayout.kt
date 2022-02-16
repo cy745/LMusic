@@ -11,6 +11,7 @@ import com.dirror.lyricviewx.LyricViewX
 import com.lalilu.R
 import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.DeviceUtil
+import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
 import com.lalilu.material.appbar.AppBarLayout
 import com.lalilu.material.appbar.AppBarLayout.OnOffsetChangedListener
 import com.lalilu.material.appbar.CollapsingToolbarLayout
@@ -29,6 +30,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
     private var mCollapsingToolbarLayout: CollapsingToolbarLayout? = null
     private var behavior = MyAppbarBehavior(context, null)
     private var interpolator = AccelerateDecelerateInterpolator()
+    private var parabolaInterpolator = ParabolaInterpolator()
 
     private var maxDragHeight = 200
 
@@ -85,9 +87,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
             val minCollapsedOffset = behavior.getCollapsedOffset(parent as View, appbar)
             val collapsedPercent = (collapsedOffset / minCollapsedOffset.toFloat()).coerceIn(0F, 1F)
 
-            mDraweeView?.let {
-                it.alpha = 1f - collapsedPercent
-            }
+            mDraweeView?.let { it.alpha = 1f - collapsedPercent }
         })
         behavior.addOnOffsetExpendChangedListener { appbar, offset ->
             val expendedOffset = offset.coerceAtLeast(0).toFloat()
@@ -97,8 +97,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
             val interpolation = interpolator.getInterpolation(expendedPercent)
             val alphaPercentDecrease = (1F - interpolation * 2).coerceAtLeast(0F)
             val alphaPercentIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
-            val reverseValue =
-                if (expendedPercent in 0F..0.5F) expendedPercent else 1F - expendedPercent
+            val reverseValue = parabolaInterpolator.getInterpolation(expendedPercent)
 
             val scalePercent = getMutableScalePercent(expendedOffset, maxExpendedOffset)
             val dragPercent = getMutableDragPercent(expendedOffset)
@@ -129,28 +128,4 @@ class SquareAppBarLayout @JvmOverloads constructor(
             }
         }
     }
-//    override val rect = Rect(0, 0, 0, 0)
-//    override val interceptSize = 100
-
-//    lateinit var helper: AppBarStatusHelper
-//    private val zoomBehavior = AppBarZoomBehavior(helper, context, null)
-
-//    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-//        super.onLayout(changed, l, t, r, b)
-//        if (changed && helper.currentState == STATE_FULLY_EXPENDED) {
-//            this.layout(l, t, r, helper.lastHeight)
-//        }
-//    }
-
-//    override fun onDraw(canvas: Canvas?) {
-//        super.onDraw(canvas)
-//        updateInterceptRect(height, height - interceptSize)
-//    }
-//
-//    @SuppressLint("ClickableViewAccessibility")
-//    override fun onTouchEvent(event: MotionEvent): Boolean {
-//        return if (checkTouchEvent(event)) true else super.onTouchEvent(event)
-//    }
-
-//    override fun whenToIntercept(): Boolean = helper.currentState == STATE_FULLY_EXPENDED
 }
