@@ -7,6 +7,9 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.FloatRange
 import androidx.core.view.GestureDetectorCompat
+import androidx.dynamicanimation.animation.FloatPropertyCompat
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 
 const val PROGRESS_STATE_NONE = -1
 const val PROGRESS_STATE_MIN = 0
@@ -16,10 +19,25 @@ const val PROGRESS_STATE_MAX = 2
 abstract class BaseSeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr), AbstractSeekBar {
-    private var seekBarListeners: MutableList<OnSeekBarListenerAdapter> = ArrayList()
+    private var mSpringAnimation: SpringAnimation? = null
     var onSeekBarListener: OnSeekBarListenerAdapter? = null
-    var touching: Boolean = false
+    protected var dragUpProgressListeners:
+            MutableList<OnSeekBarDragUpProgressListener> = ArrayList()
 
+    fun addDragUpProgressListener(listener: OnSeekBarDragUpProgressListener) {
+        if (!dragUpProgressListeners.contains(listener)) {
+            dragUpProgressListeners.add(listener)
+        }
+    }
+
+    var touching: Boolean = false
+    var canceled: Boolean = false
+
+    private var scaleAnimatorTo = 1.1f
+    private var scaleAnimatorDuration = 200L
+    private var sensitivity: Float = 0.15f
+    protected val cancelThreshold: Float = 100f
+    protected val dragUpThreshold: Float = 200f
     protected val maxProgress: Float = 100f
     protected val minProgress: Float = 0f
 
@@ -36,7 +54,7 @@ abstract class BaseSeekBar @JvmOverloads constructor(
             if (tempProgressState != nowProgressState) {
                 lastProgressState = tempProgressState
                 tempProgressState = nowProgressState
-                if (lastProgressState == PROGRESS_STATE_NONE) {
+                if (lastProgressState == PROGRESS_STATE_NONE && touching) {
                     when (nowProgressState) {
                         PROGRESS_STATE_MIN -> onProgressMin()
                         PROGRESS_STATE_MIDDLE -> onProgressMiddle()
@@ -56,14 +74,11 @@ abstract class BaseSeekBar @JvmOverloads constructor(
             else -> PROGRESS_STATE_NONE
         }
 
-    private var scaleAnimatorTo = 1.1f
-    private var scaleAnimatorDuration = 200L
-    private var sensitivity: Float = 0.15f
-
     private val gestureDetector =
         GestureDetectorCompat(context, object : GestureDetector.SimpleOnGestureListener() {
             override fun onDown(e: MotionEvent?): Boolean {
                 touching = true
+                canceled = false
                 downProgress = drawProgress
                 animateScaleTo(scaleAnimatorTo)
                 return super.onDown(e)
@@ -87,13 +102,21 @@ abstract class BaseSeekBar @JvmOverloads constructor(
             }
 
             override fun onScroll(
-                e1: MotionEvent?,
-                e2: MotionEvent?,
+                downEvent: MotionEvent,
+                moveEvent: MotionEvent,
                 distanceX: Float,
                 distanceY: Float
             ): Boolean {
+                val temp = downEvent.rawY - moveEvent.rawY
+                dragUpProgressListeners.forEach {
+                    it.onDragUpProgressUpdate((temp / dragUpThreshold).coerceIn(0f, 1f))
+                }
+                if (canceled != temp > cancelThreshold) {
+                    canceled = temp > cancelThreshold
+                    if (canceled) animateProgressTo(dataProgress)
+                }
                 updateProgress(-distanceX)
-                return super.onScroll(e1, e2, distanceX, distanceY)
+                return super.onScroll(downEvent, moveEvent, distanceX, distanceY)
             }
         })
 
@@ -104,7 +127,9 @@ abstract class BaseSeekBar @JvmOverloads constructor(
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_CANCEL -> {
                 touching = false
-                if (downProgress != drawProgress) onTouchUpWithChange()
+                if (downProgress != drawProgress && !canceled) {
+                    onTouchUpWithChange()
+                }
                 animateScaleTo(1f)
             }
         }
@@ -113,23 +138,33 @@ abstract class BaseSeekBar @JvmOverloads constructor(
     }
 
     override fun updateProgress(distance: Float) {
-        drawProgress = (drawProgress + distance * sensitivity)
-            .coerceIn(minProgress, maxProgress)
+        if (touching && !canceled) {
+            drawProgress = (drawProgress + distance * sensitivity)
+                .coerceIn(minProgress, maxProgress)
+        }
     }
 
     override fun onProgressMax() {
         onSeekBarListener?.onProgressToMax()
-        seekBarListeners.forEach { it.onProgressToMax() }
     }
 
     override fun onProgressMin() {
         onSeekBarListener?.onProgressToMin()
-        seekBarListeners.forEach { it.onProgressToMin() }
     }
 
     override fun onProgressMiddle() {
         onSeekBarListener?.onProgressToMiddle()
-        seekBarListeners.forEach { it.onProgressToMiddle() }
+    }
+
+    fun animateProgressTo(progress: Float) {
+        mSpringAnimation = mSpringAnimation ?: SpringAnimation(
+            this, ProgressFloatProperty(), progress
+        ).apply {
+            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            spring.stiffness = SpringForce.STIFFNESS_LOW
+        }
+        mSpringAnimation?.cancel()
+        mSpringAnimation?.animateToFinalPosition(progress)
     }
 
     fun animateScaleTo(scaleValue: Float) {
@@ -138,5 +173,16 @@ abstract class BaseSeekBar @JvmOverloads constructor(
             .scaleX(scaleValue)
             .setDuration(scaleAnimatorDuration)
             .start()
+    }
+
+    class ProgressFloatProperty : FloatPropertyCompat<BaseSeekBar>("progress") {
+        override fun getValue(obj: BaseSeekBar): Float {
+            return obj.drawProgress
+        }
+
+        override fun setValue(obj: BaseSeekBar, value: Float) {
+            obj.drawProgress = value
+            obj.invalidate()
+        }
     }
 }

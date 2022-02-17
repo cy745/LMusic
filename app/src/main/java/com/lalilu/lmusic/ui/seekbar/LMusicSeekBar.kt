@@ -4,36 +4,20 @@ import android.content.Context
 import android.graphics.*
 import android.text.TextPaint
 import android.util.AttributeSet
-import androidx.dynamicanimation.animation.FloatPropertyCompat
-import androidx.dynamicanimation.animation.SpringAnimation
-import androidx.dynamicanimation.animation.SpringForce
 import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.TextUtils
 
 class LMusicSeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : BaseSeekBar(context, attrs, defStyleAttr) {
-    private var mSpringAnimation: SpringAnimation? = null
-
-    private fun animateProgressTo(progress: Float) {
-        mSpringAnimation = mSpringAnimation ?: SpringAnimation(
-            this, ProgressFloatProperty(), progress
-        ).apply {
-            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-            spring.stiffness = SpringForce.STIFFNESS_LOW
-        }
-        mSpringAnimation?.cancel()
-        mSpringAnimation?.animateToFinalPosition(progress)
-    }
 
     override fun updatePosition(position: Long) {
-        if (!touching) {
-            if (position > sumDuration) return
+        if (position > sumDuration) return
 
-            nowDuration = position
-            dataProgress = (nowDuration.toFloat() / sumDuration * 100f)
-                .coerceIn(minProgress, maxProgress)
+        dataProgress = (position.toFloat() / sumDuration * 100f)
+            .coerceIn(minProgress, maxProgress)
 
+        if (!touching || canceled) {
             animateProgressTo(dataProgress)
         }
     }
@@ -135,16 +119,5 @@ class LMusicSeekBar @JvmOverloads constructor(
             textCenterHeight,
             textPaintWhite
         )
-    }
-
-    class ProgressFloatProperty : FloatPropertyCompat<LMusicSeekBar>("progress") {
-        override fun getValue(obj: LMusicSeekBar): Float {
-            return obj.drawProgress
-        }
-
-        override fun setValue(obj: LMusicSeekBar, value: Float) {
-            obj.drawProgress = value
-            obj.invalidate()
-        }
     }
 }
