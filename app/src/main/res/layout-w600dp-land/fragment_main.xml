@@ -8,10 +8,6 @@
         <variable
             name="ev"
             type="com.lalilu.lmusic.event.SharedViewModel" />
-
-        <variable
-            name="pagerAdapter"
-            type="com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

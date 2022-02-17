@@ -24,7 +24,6 @@ import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 @Singleton
-@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 class DataModule @Inject constructor(
     @ApplicationContext context: Context,
