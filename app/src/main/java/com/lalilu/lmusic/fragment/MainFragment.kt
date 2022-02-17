@@ -13,6 +13,7 @@ import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
+import com.lalilu.lmusic.ui.seekbar.OnSeekBarDragUpProgressListener
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarListenerAdapter
 import com.lalilu.lmusic.utils.HapticUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,6 +61,12 @@ class MainFragment : DataBindingFragment() {
         dataModule.songPosition.observe(viewLifecycleOwner) {
             seekBar.updatePosition(it)
         }
+
+        seekBar.addDragUpProgressListener(object : OnSeekBarDragUpProgressListener {
+            override fun onDragUpProgressUpdate(dragUpProgress: Float) {
+                println("dragUpProgress: $dragUpProgress")
+            }
+        })
 
         // 为 SeekBar 添加监听器
         seekBar.onSeekBarListener = object : OnSeekBarListenerAdapter() {

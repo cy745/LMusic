@@ -12,22 +12,18 @@ class LMusicSeekBar @JvmOverloads constructor(
 ) : BaseSeekBar(context, attrs, defStyleAttr) {
 
     override fun updatePosition(position: Long) {
-        if (!touching) {
-            if (position > sumDuration) return
+        if (position > sumDuration) return
 
-            nowDuration = position
-            progress = nowDuration.toDouble() / sumDuration.toDouble()
-            when (progress) {
-                maxProgress.toDouble() -> onProgressMax()
-                minProgress.toDouble() -> onProgressMin()
-                in 0.1..0.9 -> onProgressMiddle()
-            }
-            invalidate()
+        dataProgress = (position.toFloat() / sumDuration * 100f)
+            .coerceIn(minProgress, maxProgress)
+
+        if (!touching || canceled) {
+            animateProgressTo(dataProgress)
         }
     }
 
     override fun onTouchUpWithChange() {
-        nowDuration = (progress * sumDuration).toLong()
+        nowDuration = (drawProgress / 100f * sumDuration).toLong()
         onSeekBarListener?.onPositionUpdate(nowDuration)
     }
 
@@ -82,8 +78,8 @@ class LMusicSeekBar @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        progressWidth = (progress * width).toFloat()
-        nowDuration = (progress * sumDuration).toLong()
+        progressWidth = drawProgress / 100f * width
+        nowDuration = (drawProgress / 100f * sumDuration).toLong()
 
         sumDurationText = TextUtils.durationToString(sumDuration)
         nowDurationText = TextUtils.durationToString(nowDuration)
