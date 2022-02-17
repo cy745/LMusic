@@ -37,7 +37,7 @@ abstract class BaseSeekBar @JvmOverloads constructor(
     private var scaleAnimatorDuration = 200L
     private var sensitivity: Float = 0.15f
     protected val cancelThreshold: Float = 100f
-    protected val dragUpThreshold: Float = 200f
+    protected val dragUpThreshold: Float = 300f
     protected val maxProgress: Float = 100f
     protected val minProgress: Float = 0f
 
@@ -113,7 +113,10 @@ abstract class BaseSeekBar @JvmOverloads constructor(
                 }
                 if (canceled != temp > cancelThreshold) {
                     canceled = temp > cancelThreshold
-                    if (canceled) animateProgressTo(dataProgress)
+                    if (canceled) {
+                        onProgressCanceled()
+                        animateProgressTo(dataProgress)
+                    }
                 }
                 updateProgress(-distanceX)
                 return super.onScroll(downEvent, moveEvent, distanceX, distanceY)
@@ -154,6 +157,10 @@ abstract class BaseSeekBar @JvmOverloads constructor(
 
     override fun onProgressMiddle() {
         onSeekBarListener?.onProgressToMiddle()
+    }
+
+    override fun onProgressCanceled() {
+        onSeekBarListener?.onProgressCanceled()
     }
 
     fun animateProgressTo(progress: Float) {

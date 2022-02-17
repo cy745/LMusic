@@ -14,6 +14,7 @@ interface AbstractSeekBar {
     fun onProgressMax()
     fun onProgressMin()
     fun onProgressMiddle()
+    fun onProgressCanceled() {}
 }
 
 abstract class OnSeekBarListenerAdapter {
@@ -24,6 +25,7 @@ abstract class OnSeekBarListenerAdapter {
     open fun onProgressToMax() {}
     open fun onProgressToMin() {}
     open fun onProgressToMiddle() {}
+    open fun onProgressCanceled() {}
 
     // 处理点击和点击释放的事件
     open fun onPlayPause() {}
@@ -36,4 +38,19 @@ interface OnSeekBarDragUpProgressListener {
         @FloatRange(from = 0.0, to = 1.0)
         dragUpProgress: Float
     )
+}
+
+abstract class OnSeekBarDragUpToThresholdListener(
+    private val threshold: Float = 1f
+) : OnSeekBarDragUpProgressListener {
+    abstract fun onDragUpToThreshold()
+    private var lastDragUpProgress = 0f
+    override fun onDragUpProgressUpdate(dragUpProgress: Float) {
+        if (lastDragUpProgress != dragUpProgress) {
+            lastDragUpProgress = dragUpProgress
+            if (dragUpProgress == threshold) {
+                onDragUpToThreshold()
+            }
+        }
+    }
 }
