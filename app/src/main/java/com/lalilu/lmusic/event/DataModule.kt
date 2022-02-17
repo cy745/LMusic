@@ -17,12 +17,14 @@ import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 @Singleton
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 class DataModule @Inject constructor(
     @ApplicationContext context: Context,
@@ -84,17 +86,6 @@ class DataModule @Inject constructor(
     // 3.将 List<MSong> 公开给其他位置使用
     val nowListFlow: Flow<List<MSong>> = _nowList
 
-//    private val allPlaylistFlow = database.playlistDao().getAllPlaylistFlow().mapLatest { items ->
-//        items.onEach { playlist ->
-//            playlist.playlistCoverUri = database.playlistDao()
-//                .getLastCreateSongCoverByPlaylistId(playlist.playlistId)
-//        }
-//    }.flowOn(Dispatchers.IO)
-//    val allPlaylist: LiveData<List<MPlaylist>> = allPlaylistFlow.asLiveData()
-
-//    val allAlbum: LiveData<List<MAlbum>> = database.albumDao()
-//        .getAllAlbumLiveData()
-
     val library = libraryFactory.list.asLiveData()
     fun changeId(id: Long) = libraryFactory.changeId(id)
     fun changeType(type: Int) = libraryFactory.changeType(type)
@@ -117,10 +108,10 @@ class DataModule @Inject constructor(
             }
 
             if (it.state == PlaybackStateCompat.STATE_PLAYING) {
-                repeat(Int.MAX_VALUE) {
-                    emit(currentDuration)
+                val ticker = ticker(1000, 0)
+                for (event in ticker) {
                     currentDuration += 1000
-                    delay(1000)
+                    emit(currentDuration)
                 }
             } else {
                 emit(currentDuration)
