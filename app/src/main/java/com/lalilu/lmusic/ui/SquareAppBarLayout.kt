@@ -30,9 +30,9 @@ class SquareAppBarLayout @JvmOverloads constructor(
     private var mDraweeView: BlurImageView? = null
     private var mEdgeTransparentView: EdgeTransparentView? = null
     private var mCollapsingToolbarLayout: CollapsingToolbarLayout? = null
-    private var behavior = MyAppbarBehavior(context, null)
     private var interpolator = AccelerateDecelerateInterpolator()
     private var parabolaInterpolator = ParabolaInterpolator()
+    private var behavior = MyAppbarBehavior(context, null)
 
     private var maxDragHeight = 200
 
@@ -138,5 +138,13 @@ class SquareAppBarLayout @JvmOverloads constructor(
                 )
             }
         })
+//        behavior.addOnStateChangeListener(object :
+//            ExpendHeaderBehavior.OnScrollToStateListener(
+//                ExpendHeaderBehavior.State.STATE_FULLY_EXPENDED
+//            ) {
+//            override fun onScrollToStateListener() {
+//                println("onScrollToStateListener: STATE_FULLY_EXPENDED")
+//            }
+//        })
     }
 }
