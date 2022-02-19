@@ -281,6 +281,7 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
             )
             STATE_MIDDLE -> when (lastState) {
                 STATE_FULLY_EXPENDED -> 0
+                STATE_NORMAL,
                 STATE_EXPENDED -> getFullyExpendOffset()
                 else -> null
             }
