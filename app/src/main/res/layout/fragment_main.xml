@@ -14,40 +14,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.coordinatorlayout.widget.CoordinatorLayout
-            android:id="@+id/ma_coordinator_layout"
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/fragment_playing"
+            android:name="com.lalilu.lmusic.fragment.PlayingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
+            android:fitsSystemWindows="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/fragment_playing"
-                android:name="com.lalilu.lmusic.fragment.PlayingFragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fitsSystemWindows="true"
-                tools:layout="@layout/fragment_playing" />
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/ma_bottom_sheet"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="bottom"
-                app:behavior_hideable="true"
-                app:layout_behavior="@string/bottom_sheet_behavior">
-
-                <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/fragment_library"
-                    android:name="com.lalilu.lmusic.fragment.AlbumsFragment"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    tools:layout="@layout/fragment_library" />
-            </androidx.cardview.widget.CardView>
-        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+            app:layout_constraintTop_toTopOf="parent"
+            tools:layout="@layout/fragment_playing" />
 
         <com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
             android:id="@+id/ma_seekBar"

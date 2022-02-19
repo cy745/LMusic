@@ -1,9 +1,7 @@
 package com.lalilu.lmusic.fragment
 
 import android.media.MediaMetadata
-import android.view.View
 import androidx.databinding.library.baseAdapters.BR
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.lalilu.R
 import com.lalilu.databinding.FragmentMainBinding
 import com.lalilu.lmusic.Config
@@ -39,10 +37,8 @@ class MainFragment : DataBindingFragment() {
     override fun onViewCreated() {
         val binding = (mBinding as FragmentMainBinding)
         val seekBar = binding.maSeekBar
-        val bottomSheet = binding.maBottomSheet
-        val behavior = BottomSheetBehavior.from(bottomSheet as View)
-        behavior.state = BottomSheetBehavior.STATE_HIDDEN
 
+        val dialog = BottomSheetsFragment()
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
         playerModule.metadataLiveData.observe(viewLifecycleOwner) {
             if (it == null) return@observe
@@ -56,8 +52,8 @@ class MainFragment : DataBindingFragment() {
 
         seekBar.addDragUpProgressListener(object : OnSeekBarDragUpToThresholdListener() {
             override fun onDragUpToThreshold() {
+                dialog.show(requireActivity().supportFragmentManager, null)
                 HapticUtils.haptic(seekBar.rootView, HapticUtils.Strength.HAPTIC_STRONG)
-                behavior.state = BottomSheetBehavior.STATE_HALF_EXPANDED
             }
         })
 
