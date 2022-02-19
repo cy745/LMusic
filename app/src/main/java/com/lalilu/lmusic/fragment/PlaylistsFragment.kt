@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
-import androidx.navigation.fragment.findNavController
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.PlaylistsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
@@ -22,15 +21,6 @@ class PlaylistsFragment : DataBindingFragment() {
     lateinit var dataModule: DataModule
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter.onItemClickListener = {
-            findNavController().navigate(
-                PlaylistsFragmentDirections.playlistDetail(
-                    playlistId = it.playlistId,
-                    title = it.playlistTitle
-                )
-            )
-        }
-
         return DataBindingConfig(R.layout.fragment_playlist)
             .addParam(BR.playlistAdapter, mAdapter)
     }

@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.fragment
 
-import androidx.navigation.fragment.findNavController
 import com.lalilu.R
 import com.lalilu.databinding.FragmentLibraryBinding
 import com.lalilu.lmusic.base.DataBindingConfig
@@ -16,13 +15,5 @@ class LibraryFragment : DataBindingFragment() {
         val binding = mBinding as FragmentLibraryBinding
         val toAlbums = binding.toAlbums
         val toPlaylists = binding.toPlaylists
-
-        toAlbums.setOnClickListener {
-            findNavController().navigate(R.id.to_albums)
-        }
-
-        toPlaylists.setOnClickListener {
-            findNavController().navigate(R.id.to_playlists)
-        }
     }
 }
