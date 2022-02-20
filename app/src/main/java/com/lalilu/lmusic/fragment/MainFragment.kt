@@ -7,6 +7,7 @@ import com.lalilu.databinding.FragmentMainBinding
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
+import com.lalilu.lmusic.base.showDialog
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.event.SharedViewModel
@@ -37,8 +38,8 @@ class MainFragment : DataBindingFragment() {
     override fun onViewCreated() {
         val binding = (mBinding as FragmentMainBinding)
         val seekBar = binding.maSeekBar
+        val dialog = AlbumsFragment()
 
-        val dialog = BottomSheetsFragment()
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
         playerModule.metadataLiveData.observe(viewLifecycleOwner) {
             if (it == null) return@observe
@@ -52,7 +53,7 @@ class MainFragment : DataBindingFragment() {
 
         seekBar.addDragUpProgressListener(object : OnSeekBarDragUpToThresholdListener() {
             override fun onDragUpToThreshold() {
-                dialog.show(requireActivity().supportFragmentManager, null)
+                showDialog(dialog)
                 HapticUtils.haptic(seekBar.rootView, HapticUtils.Strength.HAPTIC_STRONG)
             }
         })
