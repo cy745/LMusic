@@ -2,10 +2,10 @@ package com.lalilu.lmusic.fragment
 
 import com.lalilu.R
 import com.lalilu.databinding.FragmentLibraryBinding
+import com.lalilu.lmusic.base.BaseBottomSheetsFragment
 import com.lalilu.lmusic.base.DataBindingConfig
-import com.lalilu.lmusic.base.DataBindingFragment
 
-class LibraryFragment : DataBindingFragment() {
+class LibraryFragment : BaseBottomSheetsFragment() {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.fragment_library)
