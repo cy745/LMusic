@@ -4,22 +4,54 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
+import androidx.databinding.ViewDataBinding
 import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.lalilu.R
 import kotlin.math.roundToInt
 
-fun Fragment.showDialog(dialog: DialogFragment?) {
+fun <I : Any, B : ViewDataBinding> Fragment.showDialog(
+    dialog: BaseBottomSheetFragment<I, B>?, data: I? = null
+) {
+    dialog?.bind(data)
     dialog?.show(requireActivity().supportFragmentManager, dialog.tag)
 }
 
-abstract class BaseBottomSheetsFragment : DataBindingBottomSheetDialogFragment() {
+abstract class BaseBottomSheetFragment<I : Any, B : ViewDataBinding> :
+    DataBindingBottomSheetDialogFragment() {
     private var mTranslateYAnimation: SpringAnimation? = null
+    private var lateBindData: I? = null
+
+    open fun onBind(data: I?, binding: ViewDataBinding) {}
+
+    fun bind(data: I?) {
+        mBinding?.let {
+            onBind(data, it)
+            return
+        }
+        lateBindData = data
+    }
+
+    open fun getHeight(): Int {
+        return context?.resources?.displayMetrics?.heightPixels ?: 0
+    }
+
+    open fun getPeekHeight(): Int {
+        return getHeight() / 2
+    }
+
+    open fun getPaddingTop(): Int {
+        val scale = context?.resources?.displayMetrics?.density ?: return 0
+        return (scale * 20f).roundToInt()
+    }
+
+    override fun onViewCreated() {
+        bind(lateBindData)
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         if (context == null) return super.onCreateDialog(savedInstanceState)
@@ -40,19 +72,6 @@ abstract class BaseBottomSheetsFragment : DataBindingBottomSheetDialogFragment()
                 behavior.state = BottomSheetBehavior.STATE_COLLAPSED
             })
         }
-    }
-
-    open fun getHeight(): Int {
-        return context?.resources?.displayMetrics?.heightPixels ?: 0
-    }
-
-    open fun getPeekHeight(): Int {
-        return getHeight() / 2
-    }
-
-    open fun getPaddingTop(): Int {
-        val scale = context?.resources?.displayMetrics?.density ?: return 0
-        return (scale * 20f).roundToInt()
     }
 
     private fun animateTranslateYTo(

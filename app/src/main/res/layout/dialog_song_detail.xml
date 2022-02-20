@@ -6,8 +6,8 @@
     <data>
 
         <variable
-            name="song"
-            type="com.lalilu.lmusic.domain.entity.MSong" />
+            name="vm"
+            type="com.lalilu.lmusic.fragment.viewmodel.SongDetailViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="20dp"
-            android:text="@{song.songTitle}"
+            android:text="@{vm.song.songTitle}"
             android:textAppearance="@style/dayNightPrimaryText"
             android:textSize="24sp"
             app:layout_constraintEnd_toStartOf="@+id/detail_card"
@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_marginEnd="20dp"
-            android:text="@{song.showingArtist}"
+            android:text="@{vm.song.showingArtist}"
             android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/detail_card"
@@ -61,7 +61,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                app:setCoverSourceUri="@{song.songUri}"
+                app:setCoverSourceUri="@{vm.song.songUri}"
                 tools:src="@tools:sample/avatars" />
         </androidx.cardview.widget.CardView>
 
