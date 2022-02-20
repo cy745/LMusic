@@ -30,7 +30,7 @@ class ListFragment : DataBindingFragment(), CoroutineScope {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         // 添加 item 被选中时的处理逻辑
-        mAdapter.onItemClickListener = {
+        mAdapter.onItemClick = {
             playerModule.mediaController?.transportControls
                 ?.playFromMediaId(it.songId.toString(), null)
         }
