@@ -22,6 +22,9 @@ android {
         targetSdkVersion 32
         versionCode 18
         versionName "1.3.13"
+        vectorDrawables {
+            useSupportLibrary true
+        }
 //        ndk {
 //            abiFilters "armeabi-v7a"
 //        }
