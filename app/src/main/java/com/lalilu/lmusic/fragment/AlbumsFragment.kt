@@ -2,10 +2,9 @@ package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
 import com.lalilu.R
-import com.lalilu.databinding.FragmentAlbumsBinding
 import com.lalilu.lmusic.adapter.AlbumsAdapter
-import com.lalilu.lmusic.base.BaseBottomSheetFragment
 import com.lalilu.lmusic.base.DataBindingConfig
+import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.database.MediaSource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -13,7 +12,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class AlbumsFragment : BaseBottomSheetFragment<Any, FragmentAlbumsBinding>() {
+class AlbumsFragment : DataBindingFragment() {
 
     @Inject
     lateinit var mAdapter: AlbumsAdapter

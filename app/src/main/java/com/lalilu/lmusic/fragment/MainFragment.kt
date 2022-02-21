@@ -38,7 +38,7 @@ class MainFragment : DataBindingFragment() {
     override fun onViewCreated() {
         val binding = (mBinding as FragmentMainBinding)
         val seekBar = binding.maSeekBar
-        val dialog = AlbumsFragment()
+        val dialog = NavigatorFragment()
 
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
         playerModule.metadataLiveData.observe(viewLifecycleOwner) {

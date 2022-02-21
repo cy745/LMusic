@@ -1,11 +1,12 @@
 package com.lalilu.lmusic.fragment
 
+import androidx.navigation.fragment.findNavController
 import com.lalilu.R
 import com.lalilu.databinding.FragmentLibraryBinding
-import com.lalilu.lmusic.base.BaseBottomSheetFragment
 import com.lalilu.lmusic.base.DataBindingConfig
+import com.lalilu.lmusic.base.DataBindingFragment
 
-class LibraryFragment : BaseBottomSheetFragment<Any, FragmentLibraryBinding>() {
+class LibraryFragment : DataBindingFragment() {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.fragment_library)
@@ -13,7 +14,8 @@ class LibraryFragment : BaseBottomSheetFragment<Any, FragmentLibraryBinding>() {
 
     override fun onViewCreated() {
         val binding = mBinding as FragmentLibraryBinding
-        val toAlbums = binding.toAlbums
-        val toPlaylists = binding.toPlaylists
+        binding.toAlbums.setOnClickListener {
+            findNavController().navigate(R.id.libraryToAlbums)
+        }
     }
 }

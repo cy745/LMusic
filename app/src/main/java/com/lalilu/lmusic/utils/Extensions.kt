@@ -18,6 +18,7 @@ import coil.executeBlocking
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.Config.MEDIA_MEDIA_DATA
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.toEmbeddedCoverSource
 import kotlin.math.roundToInt
@@ -214,18 +215,19 @@ fun SharedPreferences.getLastPlaybackState(): PlaybackStateCompat {
 
 fun SharedPreferences.getLastMediaMetadata(): MediaMetadataCompat {
     return MediaMetadataCompat.Builder()
-        .putString(
-            MediaMetadataCompat.METADATA_KEY_TITLE,
-            this.getString(MediaMetadataCompat.METADATA_KEY_TITLE, "")
-        )
-        .putString(
-            MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
-            this.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, "")
-        )
-        .putString(
-            MediaMetadataCompat.METADATA_KEY_MEDIA_URI,
-            this.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, "")
-        )
+        .moveStringData(this, MediaMetadataCompat.METADATA_KEY_TITLE)
+        .moveStringData(this, MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
+        .moveStringData(this, MediaMetadataCompat.METADATA_KEY_MEDIA_URI)
+        .moveStringData(this, MEDIA_MEDIA_DATA)
         .build()
+}
+
+fun MediaMetadataCompat.Builder.moveStringData(
+    from: SharedPreferences,
+    key: String,
+    defaultValue: String? = ""
+): MediaMetadataCompat.Builder {
+    putString(key, from.getString(key, defaultValue))
+    return this
 }
 
