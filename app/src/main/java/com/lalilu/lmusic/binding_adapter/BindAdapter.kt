@@ -61,10 +61,12 @@ fun setLyricSourceUri(imageView: ImageView, songData: String?) {
 @BindingAdapter(value = ["setNormalUri", "samplingValue"], requireAll = false)
 fun setNormalUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
     uri ?: return
+    val samplingTo = if (samplingValue <= 0)
+        imageView.width else samplingValue
 
     imageView.load(uri) {
-        if (samplingValue > 0) size(samplingValue)
-        crossfade(300)
+        if (samplingValue > 0) size(samplingTo)
+        crossfade(150)
     }
 }
 
