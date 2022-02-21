@@ -17,5 +17,8 @@ class LibraryFragment : DataBindingFragment() {
         binding.toAlbums.setOnClickListener {
             findNavController().navigate(R.id.libraryToAlbums)
         }
+        binding.toPlaylists.setOnClickListener {
+            findNavController().navigate(R.id.libraryToPlaylists)
+        }
     }
 }

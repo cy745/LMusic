@@ -8,16 +8,64 @@
         android:id="@+id/libraryFragment"
         android:name="com.lalilu.lmusic.fragment.LibraryFragment"
         android:label="LibraryFragment"
-        tools:layout="@layout/fragment_library" >
+        tools:layout="@layout/fragment_library">
         <action
             android:id="@+id/libraryToAlbums"
-            app:destination="@id/albumsFragment" />
+            app:destination="@id/albumsFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/libraryFragment" />
+        <action
+            android:id="@+id/libraryToPlaylists"
+            app:destination="@id/playlistsFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/libraryFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/albumsFragment"
         android:name="com.lalilu.lmusic.fragment.AlbumsFragment"
         android:label="AlbumsFragment"
-        tools:layout="@layout/fragment_albums" />
+        tools:layout="@layout/fragment_list_albums">
+        <action
+            android:id="@+id/toAlbumDetail"
+            app:destination="@id/albumDetailFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/albumsFragment">
+            <argument
+                android:name="albumId"
+                android:defaultValue="-1L" />
+            <argument
+                android:name="albumTitle"
+                android:defaultValue="专辑详情" />
+        </action>
+    </fragment>
+    <fragment
+        android:id="@+id/playlistsFragment"
+        android:name="com.lalilu.lmusic.fragment.PlaylistsFragment"
+        android:label="PlaylistsFragment"
+        tools:layout="@layout/fragment_list_playlists" />
+    <fragment
+        android:id="@+id/albumDetailFragment"
+        android:name="com.lalilu.lmusic.fragment.AlbumDetailFragment"
+        android:label="AlbumDetailFragment"
+        tools:layout="@layout/fragment_detail_album">
+        <argument
+            android:name="albumId"
+            android:defaultValue="-1L"
+            app:argType="long" />
+        <argument
+            android:name="albumTitle"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
 
 </navigation>

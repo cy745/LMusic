@@ -145,4 +145,64 @@ class MediaSource @Inject constructor(
             }
         })
     }
+
+    suspend fun getSongsByAlbumId(albumId: Long?): MutableList<MSong>? =
+        withContext(Dispatchers.IO) {
+            albumId ?: return@withContext null
+            val cursor = searchForMedia(
+                projection = arrayOf(
+                    MediaStore.Audio.Media._ID,
+                    MediaStore.Audio.Media.TITLE,
+                    MediaStore.Audio.Media.ALBUM_ID,
+                    MediaStore.Audio.Media.ALBUM,
+                    MediaStore.Audio.Media.ARTIST,
+                    MediaStore.Audio.Media.SIZE,
+                    MediaStore.Audio.Media.DATA,
+                    MediaStore.Audio.Media.DURATION,
+                    MediaStore.Audio.Media.MIME_TYPE
+                ),
+                selection = "${MediaStore.Audio.Media.ALBUM_ID} == ? " +
+                        "and ${MediaStore.Audio.Media.SIZE} >= ? " +
+                        "and ${MediaStore.Audio.Media.DURATION} >= ? " +
+                        "and ${MediaStore.Audio.Artists.ARTIST} != ?",
+                selectionArgs = arrayOf(
+                    "$albumId",
+                    "$minSizeLimit",
+                    "$minDurationLimit",
+                    unknownArtist,
+                )
+            ) ?: return@withContext null
+            return@withContext ArrayList<MSong>().apply {
+                while (cursor.moveToNext()) {
+                    val songId = cursor.getSongId()                         // 音乐 id
+                    val songTitle = cursor.getSongTitle()                   // 歌曲标题
+                    val songDuration = cursor.getSongDuration()             // 音乐时长
+                    val songData = cursor.getSongData()                     // 路径
+                    val songSize = cursor.getSongSize()                     // 大小
+                    val songMimeType = cursor.getSongMimeType()             // MIME类型
+//                    val albumId = cursor.getAlbumId()                       // 专辑 id
+                    val albumTitle = cursor.getAlbumTitle()                 // 专辑标题
+                    val artistName = cursor.getArtist()                     // 艺术家
+                    val artistsName = cursor.getArtists().toTypedArray()    // 艺术家
+                    val songUri = Uri.withAppendedPath(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        songId.toString()
+                    )
+
+                    add(
+                        MSong(
+                            songId = songId,
+                            songUri = songUri,
+                            albumId = albumId,
+                            songData = songData,
+                            songTitle = songTitle,
+                            albumTitle = albumTitle,
+                            showingArtist = artistName,
+                            songDuration = songDuration,
+                            songMimeType = songMimeType
+                        )
+                    )
+                }
+            }
+        }
 }

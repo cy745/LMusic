@@ -7,7 +7,7 @@ import com.lalilu.lmusic.domain.entity.MPlaylist
 import javax.inject.Inject
 
 class PlaylistsAdapter @Inject constructor() :
-    BaseAdapter<MPlaylist, ItemPlaylistBinding>(R.layout.item_playing) {
+    BaseAdapter<MPlaylist, ItemPlaylistBinding>(R.layout.item_playlist) {
 
     override val itemCallback: DiffUtil.ItemCallback<MPlaylist>
         get() = object : DiffUtil.ItemCallback<MPlaylist>() {
@@ -25,6 +25,5 @@ class PlaylistsAdapter @Inject constructor() :
 
     override fun onBind(binding: ItemPlaylistBinding, item: MPlaylist) {
         binding.title = item.playlistTitle
-        binding.coverUri = item.playlistCoverUri
     }
 }

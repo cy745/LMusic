@@ -63,7 +63,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:background="@color/daynight_0.4"
                 app:setCoverSourceUri="@{vm.song.songUri}"
                 tools:src="@tools:sample/avatars" />
         </androidx.cardview.widget.CardView>

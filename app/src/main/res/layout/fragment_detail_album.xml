@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="adapter"
+            type="com.lalilu.lmusic.adapter.ListAdapter" />
+
+        <variable
+            name="vm"
+            type="com.lalilu.lmusic.fragment.viewmodel.AlbumDetailViewModel" />
+    </data>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:padding="20dp"
+            android:paddingTop="40dp">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/album_detail_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="20dp"
+                android:text="@{vm.album.albumTitle}"
+                android:textAppearance="@style/dayNightPrimaryText"
+                android:textColor="@color/daynight_0"
+                android:textSize="24sp"
+                app:layout_constraintEnd_toStartOf="@+id/album_detail_card"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="@tools:sample/cities" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/album_detail_artist"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:text="@{vm.album.albumTitle}"
+                android:textColor="#616161"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/album_detail_card"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/album_detail_title"
+                app:layout_constraintVertical_bias="0.0"
+                tools:text="Artists" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/album_detail_card"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:elevation="2dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/album_detail_cover"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    app:setNormalUri="@{vm.album.albumCoverUri}"
+                    tools:ignore="ImageContrastCheck"
+                    tools:src="@tools:sample/avatars" />
+            </androidx.cardview.widget.CardView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <me.qinc.lib.edgetranslucent.EdgeTransparentView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:edge_position="top|bottom"
+            app:edge_width="48dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/album_detail_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:adapter="@{adapter}"
+                android:clipToPadding="false"
+                android:fillViewport="true"
+                android:overScrollMode="never"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        </me.qinc.lib.edgetranslucent.EdgeTransparentView>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</layout>

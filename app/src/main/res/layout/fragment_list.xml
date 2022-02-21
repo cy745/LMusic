@@ -23,7 +23,7 @@
         android:paddingBottom="128dp"
         app:adapter="@{listAdapter}"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_playlist_expand" />
+        tools:listitem="@layout/item_playlist" />
 </layout>
 
 

@@ -9,7 +9,7 @@ import javax.inject.Singleton
 
 
 /**
- * 为DialogFragment保存数据的ViewModel
+ * 为SongDetailFragment保存数据的ViewModel
  *
  * 必须设置[Singleton]注解，
  * 确保Fragment每次重置时都必须拿到相同的ViewModel，
