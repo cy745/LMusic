@@ -27,7 +27,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:samplingValue="@{200}"
             app:setCoverSourceUri="@{song.songUri}"
             tools:src="@tools:sample/avatars" />
 
