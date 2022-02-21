@@ -11,14 +11,16 @@ import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_REPEAT_MODE
 import com.lalilu.lmusic.database.MediaSource
-import com.lalilu.lmusic.database.repository.RepositoryFactory
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -29,7 +31,6 @@ class DataModule @Inject constructor(
     @ApplicationContext context: Context,
     notificationManager: LMusicNotificationManager,
     mediaSource: MediaSource,
-    private val libraryFactory: RepositoryFactory,
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -84,10 +85,6 @@ class DataModule @Inject constructor(
 
     // 3.将 List<MSong> 公开给其他位置使用
     val nowListFlow: Flow<List<MSong>> = _nowList
-
-    val library = libraryFactory.list.asLiveData()
-    fun changeId(id: Long) = libraryFactory.changeId(id)
-    fun changeType(type: Int) = libraryFactory.changeType(type)
 
     /***************************************/
     /**      PIN： 持续计算播放进度         **/
