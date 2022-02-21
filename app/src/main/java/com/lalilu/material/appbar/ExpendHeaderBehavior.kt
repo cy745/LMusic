@@ -19,31 +19,52 @@ import kotlin.math.roundToInt
 
 const val INVALID_POINTER = -1
 
-const val STATE_NORMAL = -2
-const val STATE_MIDDLE = -1
-const val STATE_COLLAPSED = 0
-const val STATE_EXPENDED = 1
-const val STATE_FULLY_EXPENDED = 2
-
 abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     private val mContext: Context?, attrs: AttributeSet?
 ) : ViewOffsetExpendBehavior<V>(mContext, attrs), AntiMisTouchEvent {
+
+    /**
+     * [ExpendHeaderBehavior]
+     *  可能的几种状态
+     */
+    enum class State {
+        STATE_NORMAL,
+        STATE_MIDDLE,
+        STATE_COLLAPSED,
+        STATE_EXPENDED,
+        STATE_FULLY_EXPENDED
+    }
+
+    /**
+     * 监听状态变化的基础接口
+     */
     interface OnStateChangeListener {
-        fun onStateChange(lastState: Int, nowState: Int)
+        fun onStateChange(lastState: State, nowState: State)
     }
 
     interface OnScrollToThresholdListener : OnStateChangeListener {
         fun onScrollToThreshold()
-        override fun onStateChange(lastState: Int, nowState: Int) {
-            if (lastState != STATE_MIDDLE && nowState == STATE_MIDDLE) {
+        override fun onStateChange(lastState: State, nowState: State) {
+            if (lastState != State.STATE_MIDDLE && nowState == State.STATE_MIDDLE) {
                 onScrollToThreshold()
             }
         }
     }
 
-    private val interceptSize: Int = 100
+    abstract class OnScrollToStateListener(
+        private val targetState: State
+    ) : OnStateChangeListener {
+        abstract fun onScrollToStateListener()
+        override fun onStateChange(lastState: State, nowState: State) {
+            if (nowState == targetState && nowState != lastState) {
+                onScrollToStateListener()
+            }
+        }
+    }
 
-    private var mSpringAnimation: SpringAnimation? = null
+    open val interceptSize: Int = 100
+
+    private var mScrollAnimation: SpringAnimation? = null
     private var scroller: OverScroller? = null
     private var velocityTracker: VelocityTracker? = null
     private var lastInsets: WindowInsetsCompat? = null
@@ -54,18 +75,18 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     private var lastMotionY = 0
     private var touchSlop = -1
 
-    private var tempState: Int = STATE_EXPENDED
-    private var lastState: Int = STATE_EXPENDED
-    private val nowState: Int
+    private var tempState: State = State.STATE_EXPENDED
+    private var lastState: State = State.STATE_EXPENDED
+    private val nowState: State
         get() = if (topAndBottomOffset < getMaxDragOffset() * getMaxDragThreshold() && topAndBottomOffset >= 0)
-            STATE_EXPENDED
+            State.STATE_EXPENDED
         else if (topAndBottomOffset > getFullyExpendOffset() - getMaxDragOffset() * getMaxDragThreshold())
-            STATE_FULLY_EXPENDED
+            State.STATE_FULLY_EXPENDED
         else if (topAndBottomOffset == getCollapsedOffset())
-            STATE_COLLAPSED
+            State.STATE_COLLAPSED
         else if (topAndBottomOffset < 0)
-            STATE_NORMAL
-        else STATE_MIDDLE
+            State.STATE_NORMAL
+        else State.STATE_MIDDLE
 
     protected var parentWeakReference: WeakReference<CoordinatorLayout>? = null
     protected var childWeakReference: WeakReference<V>? = null
@@ -193,7 +214,7 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
                 velocityTracker = velocityTracker ?: VelocityTracker.obtain()
 
                 // There is an animation in progress. Stop it and catch the view.
-                mSpringAnimation?.let {
+                mScrollAnimation?.let {
                     if (it.isRunning) it.cancel()
                 }
             }
@@ -273,15 +294,16 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
      */
     fun snapToChildIfNeeded() {
         val offsetTo = when (nowState) {
-            STATE_EXPENDED -> 0
-            STATE_COLLAPSED -> getCollapsedOffset()
-            STATE_FULLY_EXPENDED -> getFullyExpendOffset()
-            STATE_NORMAL -> calculateSnapOffset(
+            State.STATE_EXPENDED -> 0
+            State.STATE_COLLAPSED -> getCollapsedOffset()
+            State.STATE_FULLY_EXPENDED -> getFullyExpendOffset()
+            State.STATE_NORMAL -> calculateSnapOffset(
                 topAndBottomOffset, 0, getCollapsedOffset()
             )
-            STATE_MIDDLE -> when (lastState) {
-                STATE_FULLY_EXPENDED -> 0
-                STATE_EXPENDED -> getFullyExpendOffset()
+            State.STATE_MIDDLE -> when (lastState) {
+                State.STATE_FULLY_EXPENDED -> 0
+                State.STATE_NORMAL,
+                State.STATE_EXPENDED -> getFullyExpendOffset()
                 else -> null
             }
             else -> null
@@ -289,6 +311,12 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         offsetTo?.let { animateOffsetTo(it) }
     }
 
+    /**
+     * 用于计算与当前位置最近的边
+     * @param value 当前位置
+     * @param snapTo 目标边
+     * @return 返回最近的边的位置
+     */
     private fun calculateSnapOffset(value: Int, vararg snapTo: Int): Int {
         var min = Int.MAX_VALUE
         var result = value
@@ -303,13 +331,13 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     }
 
     fun cancelAnimation() {
-        mSpringAnimation?.cancel()
+        mScrollAnimation?.cancel()
     }
 
     fun animateOffsetTo(
         offset: Int
     ) {
-        mSpringAnimation = mSpringAnimation
+        mScrollAnimation = mScrollAnimation
             ?: SpringAnimation(
                 this, HeaderOffsetFloatProperty(),
                 topAndBottomOffset.toFloat()
@@ -317,10 +345,16 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
                 spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
                 spring.stiffness = SpringForce.STIFFNESS_LOW
             }
-        mSpringAnimation?.cancel()
-        mSpringAnimation?.animateToFinalPosition(offset.toFloat())
+        mScrollAnimation?.cancel()
+        mScrollAnimation?.animateToFinalPosition(offset.toFloat())
     }
 
+    /**
+     * 用于计算阻尼衰减后的位置
+     * @param oldOffset 前一个位置
+     * @param newOffset 当前位置
+     * @return 阻尼衰减后的目标位置
+     */
     open fun checkDampOffset(oldOffset: Int, newOffset: Int): Int {
         var nextPosition = newOffset
         if (newOffset > oldOffset) {
@@ -331,6 +365,10 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         return nextPosition
     }
 
+    /**
+     * 滚动指定的距离
+     * @param dy 滚动的距离
+     */
     fun scroll(
         dy: Int,
         minOffset: Int = getCollapsedOffset(),
@@ -343,6 +381,10 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         )
     }
 
+    /**
+     * 松手后根据速度进行滑动
+     * @param velocityY
+     */
     fun fling(
         velocityY: Float,
         minOffset: Int = getCollapsedOffset(),
@@ -356,15 +398,15 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
             minOffset, maxOffset                   // minY / maxY
         )
         when (nowState) {
-            STATE_COLLAPSED,
-            STATE_NORMAL,
-            STATE_EXPENDED -> {
+            State.STATE_COLLAPSED,
+            State.STATE_NORMAL,
+            State.STATE_EXPENDED -> {
                 animateOffsetTo(
                     calculateSnapOffset(scroller!!.finalY, 0, minOffset)
                 )
             }
-            STATE_MIDDLE,
-            STATE_FULLY_EXPENDED -> {
+            State.STATE_MIDDLE,
+            State.STATE_FULLY_EXPENDED -> {
                 snapToChildIfNeeded()
             }
         }

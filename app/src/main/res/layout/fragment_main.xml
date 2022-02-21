@@ -1,33 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
         <variable
             name="ev"
             type="com.lalilu.lmusic.event.SharedViewModel" />
-
-        <variable
-            name="pagerAdapter"
-            type="com.lalilu.lmusic.adapter.LMusicFragmentStateAdapter" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/fm_viewpager"
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/fragment_playing"
+            android:name="com.lalilu.lmusic.fragment.PlayingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:overScrollMode="never"
-            app:adapter="@{pagerAdapter}"
+            android:fitsSystemWindows="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:offscreenPageLimit="@{1}" />
+            tools:layout="@layout/fragment_playing" />
 
         <com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
             android:id="@+id/ma_seekBar"
@@ -40,6 +37,5 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

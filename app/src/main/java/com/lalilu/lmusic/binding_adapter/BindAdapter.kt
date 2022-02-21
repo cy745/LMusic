@@ -71,8 +71,12 @@ fun setNormalUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = 
 @BindingAdapter(value = ["setCoverSourceUri", "samplingValue"], requireAll = false)
 fun setCoverSourceUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
     uri ?: return
+    val samplingTo = if (samplingValue <= 0)
+        imageView.width else samplingValue
 
-    EmbeddedDataUtils.loadCover(imageView.context, uri,
+    EmbeddedDataUtils.loadCover(
+        imageView.context, mediaUri = uri,
+        samplingValue = samplingTo,
         onStart = {
             imageView.scaleType = ImageView.ScaleType.CENTER
             imageView.setImageDrawable(it)

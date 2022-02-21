@@ -17,7 +17,7 @@ class MyAppbarBehavior(
 ) : ExpendHeaderBehavior<AppBarLayout>(context, attrs) {
     val offsetDelta: Int = 0
 
-    private var listeners: ArrayList<AppBarLayout.OnOffsetChangedListener> = ArrayList()
+    private var mOffsetChangedListeners: ArrayList<AppBarLayout.OnOffsetChangedListener> = ArrayList()
     private val onDragCallback: BaseDragCallback<AppBarLayout>? = null
 
     @NestedScrollType
@@ -27,11 +27,11 @@ class MyAppbarBehavior(
     fun addOnOffsetExpendChangedListener(
         listener: AppBarLayout.OnOffsetChangedListener
     ) {
-        listeners.add(listener)
+        mOffsetChangedListeners.add(listener)
     }
 
     private fun onOffsetChanged(appBarLayout: AppBarLayout, offset: Int) {
-        listeners.forEach {
+        mOffsetChangedListeners.forEach {
             it.onOffsetChanged(appBarLayout, offset)
         }
     }
