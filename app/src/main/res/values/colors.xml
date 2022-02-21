@@ -12,19 +12,7 @@
     <color name="daynight_0.6">#FF757575</color>
     <color name="daynight_0">#FF000000</color>
 
-    <!-- day -->
-    <color name="day_1">#FFFFFFFF</color>
-    <color name="day_0.9">#FFFFFFFF</color>
-    <color name="day_0.5">#FFFFFFFF</color>
-    <color name="day_0.1">#FFFFFFFF</color>
-    <color name="day_0">#FF000000</color>
-
-    <!-- night -->
-    <color name="night_1">#FF292929</color>
-    <color name="night_0.9">#FFFFFFFF</color>
-    <color name="night_0.5">#FFFFFFFF</color>
-    <color name="night_0.1">#FFFFFFFF</color>
-    <color name="night_0">#FFFFFFFF</color>
+    <color name="bottom_sheet_bg">#FFFFFFFF</color>
 
     <color name="gray_scale_1">#FFF8F9FA</color>
     <color name="gray_scale_2">#FFE9ECEF</color>

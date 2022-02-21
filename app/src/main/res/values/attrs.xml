@@ -7,4 +7,6 @@
     <attr name="daynight_0.4" format="color" />
     <attr name="daynight_0.1" format="color" />
     <attr name="daynight_0" format="color" />
+
+    <attr name="bottom_sheet_bg" format="color" />
 </resources>
