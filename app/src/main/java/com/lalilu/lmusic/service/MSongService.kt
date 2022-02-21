@@ -140,6 +140,8 @@ class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         result.sendResult(ArrayList())
+        dataModule.updateMetadata(mediaSession.controller.metadata)
+        dataModule.updatePlaybackState(mediaSession.controller.playbackState)
     }
 
     override fun onGetRoot(
