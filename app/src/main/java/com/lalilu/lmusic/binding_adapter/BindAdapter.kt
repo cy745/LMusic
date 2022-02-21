@@ -144,19 +144,20 @@ fun updateTime(lyricViewX: LyricViewX, time: Long) {
 fun setSongs(recyclerView: RecyclerView, songs: List<MSong>?) {
     val adapter = recyclerView.adapter as PlayingAdapter
 
-    val newList = songs?.toMutableList() ?: ArrayList()
     var oldList = adapter.data.toMutableList()
+    val newList = songs?.toMutableList() ?: ArrayList()
+    if (newList.isNotEmpty()) {
+        // 预先将头部部分差异进行转移
+        val size = oldList.indexOfFirst { it.songId == newList[0].songId }
+        if (size > 0 && size >= oldList.size / 2 &&
+            recyclerView.computeVerticalScrollOffset() >
+            recyclerView.computeVerticalScrollRange() / 2
+        ) {
+            oldList = oldList.moveHeadToTail(size)
 
-    // 预先将头部部分差异进行转移
-    val size = oldList.indexOfFirst { it.songId == newList[0].songId }
-    if (size > 0 && size >= oldList.size / 2 &&
-        recyclerView.computeVerticalScrollOffset() >
-        recyclerView.computeVerticalScrollRange() / 2
-    ) {
-        oldList = oldList.moveHeadToTail(size)
-
-        adapter.notifyItemRangeRemoved(0, size)
-        adapter.notifyItemRangeInserted(oldList.size, size)
+            adapter.notifyItemRangeRemoved(0, size)
+            adapter.notifyItemRangeInserted(oldList.size, size)
+        }
     }
     val diffCallback = MSong.DiffMSong(oldList, newList)
     val diffResult = DiffUtil.calculateDiff(diffCallback, false)
