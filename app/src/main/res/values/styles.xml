@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="MY_BottomSheet" parent="Theme.Design.BottomSheetDialog">
+        <item name="android:backgroundDimAmount">0.5</item>
         <item name="android:windowAnimationStyle">@style/MY_WindowAnimation</item>
         <item name="bottomSheetStyle">@style/MY_BottomSheetStyle</item>
     </style>
