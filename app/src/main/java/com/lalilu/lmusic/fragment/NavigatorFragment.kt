@@ -17,8 +17,8 @@ class NavigatorFragment : BaseBottomSheetFragment<Any, DialogNavigatorBinding>()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).also {
-            it.setOnKeyListener { _, i, _ ->
-                if (i == KeyEvent.KEYCODE_BACK) {
+            it.setOnKeyListener { _, i, keyEvent ->
+                if (i == KeyEvent.KEYCODE_BACK && keyEvent.action == KeyEvent.ACTION_UP) {
                     return@setOnKeyListener requireNavController().navigateUp()
                 }
                 return@setOnKeyListener false
