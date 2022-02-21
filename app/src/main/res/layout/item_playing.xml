@@ -31,7 +31,7 @@
             app:setCoverSourceUri="@{song.songUri}"
             tools:src="@tools:sample/avatars" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/song_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
             android:layout_marginEnd="5dp"
             android:letterSpacing="0.05"
             android:text="@{song.songTitle}"
-            android:textColor="?attr/daynight_0"
+            android:textColor="@color/daynight_0"
             android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@+id/song_singer"
             app:layout_constraintEnd_toStartOf="@+id/song_lrc"
@@ -47,7 +47,7 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@tools:sample/cities" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/song_singer"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -55,6 +55,7 @@
             android:layout_marginEnd="20dp"
             android:letterSpacing="0.05"
             android:text="@{song.showingArtist}"
+            android:textColor="@color/daynight_0.6"
             android:textSize="10sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -64,13 +65,14 @@
             tools:ignore="SmallSp"
             tools:text="@tools:sample/full_names" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/song_duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
             android:text="@{TextUtils.INSTANCE.durationToString(song.songDuration)}"
             android:textAlignment="center"
+            android:textColor="@color/daynight_0"
             app:layout_constraintBottom_toBottomOf="@+id/song_singer"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/song_singer"
