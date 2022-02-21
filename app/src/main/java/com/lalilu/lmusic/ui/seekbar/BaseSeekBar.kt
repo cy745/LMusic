@@ -19,7 +19,18 @@ const val PROGRESS_STATE_MAX = 2
 abstract class BaseSeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr), AbstractSeekBar {
-    private var mSpringAnimation: SpringAnimation? = null
+    private val mProgressAnimation: SpringAnimation by lazy {
+        SpringAnimation(this, ProgressFloatProperty(), drawProgress).apply {
+            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            spring.stiffness = SpringForce.STIFFNESS_LOW
+        }
+    }
+    private val mAlphaAnimation: SpringAnimation by lazy {
+        SpringAnimation(this, AlphaFloatProperty(), alpha).apply {
+            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            spring.stiffness = SpringForce.STIFFNESS_LOW
+        }
+    }
     var onSeekBarListener: OnSeekBarListenerAdapter? = null
     protected var dragUpProgressListeners:
             MutableList<OnSeekBarDragUpProgressListener> = ArrayList()
@@ -37,7 +48,7 @@ abstract class BaseSeekBar @JvmOverloads constructor(
     private var scaleAnimatorDuration = 200L
     private var sensitivity: Float = 0.15f
     protected val cancelThreshold: Float = 100f
-    protected val dragUpThreshold: Float = 200f
+    protected val dragUpThreshold: Float = 300f
     protected val maxProgress: Float = 100f
     protected val minProgress: Float = 0f
 
@@ -113,7 +124,10 @@ abstract class BaseSeekBar @JvmOverloads constructor(
                 }
                 if (canceled != temp > cancelThreshold) {
                     canceled = temp > cancelThreshold
-                    if (canceled) animateProgressTo(dataProgress)
+                    if (canceled) {
+                        onProgressCanceled()
+                        animateProgressTo(dataProgress)
+                    }
                 }
                 updateProgress(-distanceX)
                 return super.onScroll(downEvent, moveEvent, distanceX, distanceY)
@@ -156,15 +170,18 @@ abstract class BaseSeekBar @JvmOverloads constructor(
         onSeekBarListener?.onProgressToMiddle()
     }
 
+    override fun onProgressCanceled() {
+        onSeekBarListener?.onProgressCanceled()
+    }
+
     fun animateProgressTo(progress: Float) {
-        mSpringAnimation = mSpringAnimation ?: SpringAnimation(
-            this, ProgressFloatProperty(), progress
-        ).apply {
-            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-            spring.stiffness = SpringForce.STIFFNESS_LOW
-        }
-        mSpringAnimation?.cancel()
-        mSpringAnimation?.animateToFinalPosition(progress)
+        mProgressAnimation.cancel()
+        mProgressAnimation.animateToFinalPosition(progress)
+    }
+
+    fun animateAlphaTo(alphaValue: Float) {
+        mAlphaAnimation.cancel()
+        mAlphaAnimation.animateToFinalPosition(alphaValue)
     }
 
     fun animateScaleTo(scaleValue: Float) {
@@ -173,6 +190,16 @@ abstract class BaseSeekBar @JvmOverloads constructor(
             .scaleX(scaleValue)
             .setDuration(scaleAnimatorDuration)
             .start()
+    }
+
+    class AlphaFloatProperty : FloatPropertyCompat<BaseSeekBar>("alpha") {
+        override fun getValue(obj: BaseSeekBar): Float {
+            return obj.alpha
+        }
+
+        override fun setValue(obj: BaseSeekBar, value: Float) {
+            obj.alpha = value
+        }
     }
 
     class ProgressFloatProperty : FloatPropertyCompat<BaseSeekBar>("progress") {

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="MY_BottomSheet" parent="Theme.Design.BottomSheetDialog">
+        <item name="android:backgroundDimAmount">0.5</item>
+        <item name="android:windowAnimationStyle">@style/MY_WindowAnimation</item>
+        <item name="bottomSheetStyle">@style/MY_BottomSheetStyle</item>
+    </style>
+
+    <style name="MY_WindowAnimation" parent="Animation.AppCompat.Dialog">
+        <item name="android:windowEnterAnimation">@anim/dialog_show_in_anim</item>
+        <item name="android:windowExitAnimation">@anim/dialog_show_out_anim</item>
+    </style>
+
+    <style name="MY_BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/layout_radius_bg</item>
+    </style>
+</resources>
