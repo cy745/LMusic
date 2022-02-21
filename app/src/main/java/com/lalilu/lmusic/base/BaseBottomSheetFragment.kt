@@ -63,32 +63,33 @@ abstract class BaseBottomSheetFragment<I : Any, B : ViewDataBinding> :
         getRootViewOfDialog<FrameLayout>(dialog)?.let { bottomSheet ->
             bottomSheet.layoutParams.height = getHeight()
             bottomSheet.setPadding(0, getPaddingTop(), 0, 0)
-            val behavior = BottomSheetBehavior.from(bottomSheet)
-            animateTranslateYTo(-getPeekHeight(), onStart = {
-                behavior.peekHeight = 0
+            animateTranslateYTo(getPeekHeight(), onStart = {
+                it.peekHeight = 0
             }, onEnd = {
-                bottomSheet.translationY = 0f
-                behavior.peekHeight = getPeekHeight()
-                behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                it.peekHeight = getPeekHeight()
+                if (it.state == BottomSheetBehavior.STATE_HIDDEN) {
+                    it.state = BottomSheetBehavior.STATE_COLLAPSED
+                }
             })
         }
     }
 
     private fun animateTranslateYTo(
         translateYValue: Number,
-        onStart: () -> Unit = {},
-        onEnd: () -> Unit = {}
+        onStart: (BottomSheetBehavior<View>) -> Unit = {},
+        onEnd: (BottomSheetBehavior<View>) -> Unit = {}
     ) {
         mTranslateYAnimation = getRootViewOfDialog<View>(dialog)?.let { view ->
-            SpringAnimation(view, TranslateYFloatProperty(), 0f).apply {
+            val behavior = BottomSheetBehavior.from(view)
+            onStart(behavior)
+            SpringAnimation(behavior, TranslateYFloatProperty(), 0f).apply {
                 spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
                 spring.stiffness = 500f
                 addEndListener { _, canceled, _, _ ->
-                    if (!canceled) onEnd()
+                    if (!canceled) onEnd(behavior)
                 }
             }
         }
-        onStart()
         mTranslateYAnimation?.cancel()
         mTranslateYAnimation?.animateToFinalPosition(translateYValue.toFloat())
     }
@@ -101,13 +102,13 @@ abstract class BaseBottomSheetFragment<I : Any, B : ViewDataBinding> :
     }
 
     class TranslateYFloatProperty :
-        FloatPropertyCompat<View>("translateY") {
-        override fun getValue(obj: View): Float {
-            return obj.translationY
+        FloatPropertyCompat<BottomSheetBehavior<View>>("translateY") {
+        override fun getValue(obj: BottomSheetBehavior<View>): Float {
+            return obj.peekHeight.toFloat()
         }
 
-        override fun setValue(obj: View, value: Float) {
-            obj.translationY = value
+        override fun setValue(obj: BottomSheetBehavior<View>, value: Float) {
+            obj.setPeekHeight(value.toInt(), false)
         }
     }
 }
