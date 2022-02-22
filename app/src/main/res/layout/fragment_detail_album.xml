@@ -58,6 +58,15 @@
                 app:layout_constraintVertical_bias="0.0"
                 tools:text="Artists" />
 
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginEnd="25dp"
+                app:layout_constraintBottom_toBottomOf="@+id/album_detail_card"
+                app:layout_constraintEnd_toEndOf="@+id/album_detail_card"
+                app:layout_constraintTop_toTopOf="@+id/album_detail_card"
+                app:srcCompat="@drawable/ic_album_fill" />
+
             <androidx.cardview.widget.CardView
                 android:id="@+id/album_detail_card"
                 android:layout_width="100dp"
@@ -77,6 +86,7 @@
                     app:setNormalUri="@{vm.album.albumCoverUri}"
                     tools:ignore="ImageContrastCheck"
                     tools:src="@tools:sample/avatars" />
+
             </androidx.cardview.widget.CardView>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -96,7 +106,8 @@
                 android:overScrollMode="never"
                 android:paddingTop="20dp"
                 android:paddingBottom="20dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_list_item" />
         </me.qinc.lib.edgetranslucent.EdgeTransparentView>
     </androidx.appcompat.widget.LinearLayoutCompat>
 </layout>

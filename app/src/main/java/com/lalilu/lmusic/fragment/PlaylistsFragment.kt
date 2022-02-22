@@ -1,6 +1,8 @@
 package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
 import com.lalilu.databinding.FragmentListPlaylistsBinding
 import com.lalilu.lmusic.adapter.PlaylistsAdapter
@@ -8,11 +10,9 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.database.LMusicDataBase
 import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.fragment.viewmodel.PlaylistsViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -25,6 +25,9 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mAdapter: PlaylistsAdapter
 
     @Inject
+    lateinit var mState: PlaylistsViewModel
+
+    @Inject
     lateinit var dataBase: LMusicDataBase
 
     override fun getDataBindingConfig(): DataBindingConfig {
@@ -33,6 +36,17 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
                 dataBase.playlistDao().delete(it)
             }
         }
+        mAdapter.onItemClick = {
+            mState._position.postValue(requireScrollOffset())
+            findNavController().navigate(
+                PlaylistsFragmentDirections.toPlaylistDetail(
+                    playlistId = it.playlistId ?: 0,
+                    playlistTitle = it.playlistTitle
+                )
+            )
+        }
+        mAdapter.stateRestorationPolicy =
+            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         return DataBindingConfig(R.layout.fragment_list_playlists)
             .addParam(BR.playlistAdapter, mAdapter)
     }
@@ -47,6 +61,14 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
             recyclerView.scrollToPosition(0)
         }
 
+        mState.position.observe(viewLifecycleOwner) {
+            it ?: return@observe
+            launch {
+                delay(50)
+                recyclerView.scrollToPosition(it)
+            }
+        }
+
         addButton.setOnClickListener {
             launch(Dispatchers.IO) {
                 dataBase.playlistDao().save(
@@ -56,5 +78,14 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
                 )
             }
         }
+    }
+
+    private fun requireScrollOffset(): Int {
+        if (mBinding == null || mBinding !is FragmentListPlaylistsBinding) {
+            return 0
+        }
+        return (mBinding as FragmentListPlaylistsBinding)
+            .playlistsRecyclerView
+            .computeVerticalScrollOffset()
     }
 }
