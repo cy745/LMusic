@@ -52,7 +52,20 @@
         android:id="@+id/playlistsFragment"
         android:name="com.lalilu.lmusic.fragment.PlaylistsFragment"
         android:label="PlaylistsFragment"
-        tools:layout="@layout/fragment_list_playlists" />
+        tools:layout="@layout/fragment_list_playlists" >
+        <action
+            android:id="@+id/toPlaylistDetail"
+            app:destination="@id/playlistDetailFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/playlistsFragment">
+            <argument
+                android:name="playlistId"
+                android:defaultValue="-1L" />
+        </action>
+    </fragment>
     <fragment
         android:id="@+id/albumDetailFragment"
         android:name="com.lalilu.lmusic.fragment.AlbumDetailFragment"
@@ -64,6 +77,20 @@
             app:argType="long" />
         <argument
             android:name="albumTitle"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/playlistDetailFragment"
+        android:name="com.lalilu.lmusic.fragment.PlaylistDetailFragment"
+        android:label="PlaylistDetailFragment"
+        tools:layout="@layout/fragment_detail_playlist" >
+        <argument
+            android:name="playlistId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+        <argument
+            android:name="playlistTitle"
             app:argType="string"
             app:nullable="true" />
     </fragment>
