@@ -48,7 +48,7 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="20dp"
                 android:text="@{vm.album.albumTitle}"
-                android:textColor="#616161"
+                android:textColor="@color/daynight_0.4"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/album_detail_card"

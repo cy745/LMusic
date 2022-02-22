@@ -8,6 +8,7 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.database.MediaSource
 import com.lalilu.lmusic.domain.entity.MAlbum
+import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.fragment.viewmodel.AlbumDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -29,7 +30,14 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
     @Inject
     lateinit var mediaSource: MediaSource
 
+    @Inject
+    lateinit var playerModule: PlayerModule
+
     override fun getDataBindingConfig(): DataBindingConfig {
+        mAdapter.onItemClick = {
+            playerModule.mediaController?.transportControls
+                ?.playFromMediaId("${it.songId}", null)
+        }
         return DataBindingConfig(R.layout.fragment_detail_album)
             .addParam(BR.adapter, mAdapter)
             .addParam(BR.vm, mState)

@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.lalilu.R
-import kotlin.math.roundToInt
 
 fun <I : Any, B : ViewDataBinding> Fragment.showDialog(
     dialog: BaseBottomSheetFragment<I, B>?, data: I? = null
@@ -45,8 +44,7 @@ abstract class BaseBottomSheetFragment<I : Any, B : ViewDataBinding> :
     }
 
     open fun getPaddingTop(): Int {
-        val scale = context?.resources?.displayMetrics?.density ?: return 0
-        return (scale * 20f).roundToInt()
+        return 0
     }
 
     override fun onViewCreated() {
