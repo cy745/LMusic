@@ -6,7 +6,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.database.MediaSource
+import com.lalilu.lmusic.datasource.MediaSource
 import com.lalilu.lmusic.domain.entity.MAlbum
 import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.fragment.viewmodel.AlbumDetailViewModel

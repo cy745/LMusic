@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.database
+package com.lalilu.lmusic.datasource
 
 import android.content.Context
 import android.database.ContentObserver

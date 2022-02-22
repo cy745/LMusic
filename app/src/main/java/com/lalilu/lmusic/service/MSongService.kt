@@ -12,7 +12,7 @@ import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
-import com.lalilu.lmusic.database.MediaSource
+import com.lalilu.lmusic.datasource.MediaSource
 import com.lalilu.lmusic.event.DataModule
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.manager.LMusicNotificationManager.Companion.NOTIFICATION_PLAYER_ID

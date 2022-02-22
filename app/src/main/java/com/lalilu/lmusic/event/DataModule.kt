@@ -10,7 +10,7 @@ import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_REPEAT_MODE
-import com.lalilu.lmusic.database.MediaSource
+import com.lalilu.lmusic.datasource.MediaSource
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.utils.*

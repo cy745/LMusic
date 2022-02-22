@@ -8,7 +8,7 @@ import com.lalilu.databinding.FragmentListAlbumsBinding
 import com.lalilu.lmusic.adapter.AlbumsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.database.MediaSource
+import com.lalilu.lmusic.datasource.MediaSource
 import com.lalilu.lmusic.fragment.viewmodel.AlbumsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
