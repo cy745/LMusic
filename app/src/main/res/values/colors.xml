@@ -12,7 +12,8 @@
     <color name="daynight_0.6">#FF757575</color>
     <color name="daynight_0">#FF000000</color>
 
-    <color name="bottom_sheet_bg">#FFFFFFFF</color>
+    <color name="bottom_sheet_bg">#F4F4F4</color>
+    <color name="bottom_sheet_card_bg">#FFFFFF</color>
 
     <color name="gray_scale_1">#FFF8F9FA</color>
     <color name="gray_scale_2">#FFE9ECEF</color>

@@ -2,12 +2,12 @@ package com.lalilu.lmusic.adapter
 
 import androidx.recyclerview.widget.DiffUtil
 import com.lalilu.R
-import com.lalilu.databinding.ItemPlayingBinding
+import com.lalilu.databinding.ItemListItemBinding
 import com.lalilu.lmusic.domain.entity.MSong
 import javax.inject.Inject
 
 class ListAdapter @Inject constructor() :
-    BaseAdapter<MSong, ItemPlayingBinding>(R.layout.item_playing) {
+    BaseAdapter<MSong, ItemListItemBinding>(R.layout.item_list_item) {
 
     override val itemCallback: DiffUtil.ItemCallback<MSong>
         get() = object : DiffUtil.ItemCallback<MSong>() {
@@ -21,7 +21,7 @@ class ListAdapter @Inject constructor() :
             }
         }
 
-    override fun onBind(binding: ItemPlayingBinding, item: MSong) {
+    override fun onBind(binding: ItemListItemBinding, item: MSong) {
         binding.song = item
     }
 }

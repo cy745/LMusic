@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="com.lalilu.lmusic.utils.TextUtils" />
+
+        <variable
+            name="song"
+            type="com.lalilu.lmusic.domain.entity.MSong" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@drawable/item_click_background_daynight">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/song_album_pic"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/item_playing_background"
+            android:scaleType="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:setCoverSourceUri="@{song.songUri}"
+            tools:src="@tools:sample/avatars" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/song_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="5dp"
+            android:letterSpacing="0.05"
+            android:text="@{song.songTitle}"
+            android:textColor="@color/daynight_0"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@+id/song_singer"
+            app:layout_constraintEnd_toStartOf="@+id/song_lrc"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@tools:sample/cities" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/song_singer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:letterSpacing="0.05"
+            android:text="@{song.showingArtist}"
+            android:textColor="@color/daynight_0.6"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/song_duration"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/song_title"
+            tools:ignore="SmallSp"
+            tools:text="@tools:sample/full_names" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/song_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:text="@{TextUtils.INSTANCE.durationToString(song.songDuration)}"
+            android:textAlignment="center"
+            android:textColor="@color/daynight_0"
+            app:layout_constraintBottom_toBottomOf="@+id/song_singer"
+            app:layout_constraintEnd_toStartOf="@+id/song_album_pic"
+            app:layout_constraintTop_toTopOf="@+id/song_singer"
+            tools:text="@tools:sample/date/hhmm" />
+
+        <ImageView
+            android:id="@+id/song_type"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_marginEnd="20dp"
+            android:contentDescription="@string/audio_type"
+            app:iconRec="@{song.songMimeType}"
+            app:layout_constraintBottom_toTopOf="@+id/song_duration"
+            app:layout_constraintEnd_toStartOf="@+id/song_album_pic"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:srcCompat="@drawable/ic_flac_line" />
+
+        <ImageView
+            android:id="@+id/song_lrc"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="@string/audio_type"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@+id/song_duration"
+            app:layout_constraintEnd_toStartOf="@+id/song_type"
+            app:layout_constraintTop_toTopOf="parent"
+            app:setLyricSourceUri="@{song.songData}"
+            app:srcCompat="@drawable/ic_lrc_fill" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
