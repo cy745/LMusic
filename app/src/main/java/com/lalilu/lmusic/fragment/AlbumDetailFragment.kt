@@ -6,8 +6,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.datasource.MediaSource
-import com.lalilu.lmusic.domain.entity.MAlbum
+import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.fragment.viewmodel.AlbumDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,7 +27,7 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mAdapter: ListAdapter
 
     @Inject
-    lateinit var mediaSource: MediaSource
+    lateinit var mediaSource: BaseMediaSource
 
     @Inject
     lateinit var playerModule: PlayerModule
@@ -45,15 +44,15 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
 
     override fun onViewCreated() {
         mState.album.observe(viewLifecycleOwner) {
-            launch {
-                val list = mediaSource.getSongsByAlbumId(it?.albumId)
-                withContext(Dispatchers.Main) {
-                    mAdapter.setDiffNewData(list)
-                }
+            it ?: return@observe
+            val list = mediaSource.getSongsByAlbumId(it.albumId)
+            launch(Dispatchers.Main) {
+                mAdapter.setDiffNewData(list.toMutableList())
             }
         }
+        
         mState._album.postValue(
-            MAlbum(args.albumId, args.albumTitle ?: "空")
+            mediaSource.getAlbumById(args.albumId)
         )
     }
 }

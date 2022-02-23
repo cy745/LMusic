@@ -6,7 +6,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.datasource.MediaSource
+import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.database.LMusicDataBase
 import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.fragment.viewmodel.PlaylistDetailViewModel
@@ -31,7 +31,7 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mAdapter: ListAdapter
 
     @Inject
-    lateinit var mediaSource: MediaSource
+    lateinit var mediaSource: BaseMediaSource
 
     @Inject
     lateinit var dataBase: LMusicDataBase
