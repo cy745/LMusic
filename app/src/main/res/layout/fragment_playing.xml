@@ -19,7 +19,7 @@
 
     </data>
 
-    <com.lalilu.lmusic.ui.MyCoordinatorLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
@@ -87,7 +87,7 @@
             </com.lalilu.material.appbar.CollapsingToolbarLayout>
         </com.lalilu.lmusic.ui.SquareAppBarLayout>
 
-        <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/nowPlayingRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -101,5 +101,5 @@
             app:setSongs="@{vm.songs}"
             tools:listitem="@layout/item_playing"
             tools:visibility="invisible" />
-    </com.lalilu.lmusic.ui.MyCoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

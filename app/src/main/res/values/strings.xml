@@ -23,4 +23,6 @@
     <string name="text_button_settings">设置</string>
 
     <string name="song_non_exist_tips">该本地歌曲已丢失，重启LMusic后将清除该歌曲😥</string>
+    <string name="dialog_bottom_sheet_navigator_back">返回</string>
+    <string name="dialog_bottom_sheet_navigator_close">关闭</string>
 </resources>
