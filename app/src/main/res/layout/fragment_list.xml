@@ -11,7 +11,7 @@
 
     </data>
 
-    <com.lalilu.lmusic.ui.AntiMisOperationRecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/playListRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

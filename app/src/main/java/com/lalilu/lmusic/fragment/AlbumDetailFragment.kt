@@ -60,8 +60,10 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
             }
         }
 
-        mState._album.postValue(
-            mediaSource.getAlbumById(args.albumId)
-        )
+        launch(Dispatchers.IO) {
+            mState._album.postValue(
+                mediaSource.getAlbumById(args.albumId)
+            )
+        }
     }
 }
