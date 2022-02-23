@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.ListAdapter
@@ -10,7 +11,10 @@ import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.fragment.viewmodel.AlbumDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -37,6 +41,11 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
             playerModule.mediaController?.transportControls
                 ?.playFromMediaId("${it.songId}", null)
         }
+        mAdapter.onItemLongClick = {
+            findNavController().navigate(
+                AlbumDetailFragmentDirections.albumToSongDetail(it.songId)
+            )
+        }
         return DataBindingConfig(R.layout.fragment_detail_album)
             .addParam(BR.adapter, mAdapter)
             .addParam(BR.vm, mState)
@@ -50,7 +59,7 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
                 mAdapter.setDiffNewData(list.toMutableList())
             }
         }
-        
+
         mState._album.postValue(
             mediaSource.getAlbumById(args.albumId)
         )

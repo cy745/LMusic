@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.ListAdapter
@@ -44,9 +45,14 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
             playerModule.mediaController?.transportControls
                 ?.playFromMediaId("${it.songId}", null)
         }
+        mAdapter.onItemLongClick = {
+            findNavController().navigate(
+                PlaylistDetailFragmentDirections.playlistToSongDetail(it.songId)
+            )
+        }
         return DataBindingConfig(R.layout.fragment_detail_playlist)
-            .addParam(BR.vm, mState)
             .addParam(BR.adapter, mAdapter)
+            .addParam(BR.vm, mState)
     }
 
     override fun onViewCreated() {

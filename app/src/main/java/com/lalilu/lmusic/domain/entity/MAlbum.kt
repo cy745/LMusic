@@ -14,4 +14,19 @@ data class MAlbum(
             Uri.parse("content://media/external/audio/albumart/"),
             this.albumId
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MAlbum
+
+        if (albumId != other.albumId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return albumId.hashCode()
+    }
 }

@@ -96,7 +96,16 @@
             app:nullable="true" />
         <action
             android:id="@+id/albumToSongDetail"
-            app:destination="@id/songDetailFragment" />
+            app:destination="@id/songDetailFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/albumDetailFragment">
+            <argument
+                android:name="songId"
+                android:defaultValue="-1L" />
+        </action>
     </fragment>
     <fragment
         android:id="@+id/playlistDetailFragment"
@@ -113,7 +122,16 @@
             app:nullable="true" />
         <action
             android:id="@+id/playlistToSongDetail"
-            app:destination="@id/songDetailFragment" />
+            app:destination="@id/songDetailFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/playlistDetailFragment">
+            <argument
+                android:name="songId"
+                android:defaultValue="-1L" />
+        </action>
     </fragment>
     <fragment
         android:id="@+id/allSongFragment"
@@ -122,7 +140,16 @@
         tools:layout="@layout/fragment_detail_all_song">
         <action
             android:id="@+id/allSongToSongDetail"
-            app:destination="@id/songDetailFragment" />
+            app:destination="@id/songDetailFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/allSongFragment">
+            <argument
+                android:name="songId"
+                android:defaultValue="-1L" />
+        </action>
     </fragment>
     <fragment
         android:id="@+id/songDetailFragment"
