@@ -187,15 +187,17 @@ class BaseMediaSource @Inject constructor(
         ) ?: return emptyList()
         return ArrayList<MSong>().apply {
             while (cursor.moveToNext()) {
-                MSong(
-                    songId = cursor.getSongId(),                    // 音乐 id
-                    albumId = cursor.getAlbumId(),                  // 专辑 id
-                    songData = cursor.getSongData(),                // 路径
-                    songTitle = cursor.getSongTitle(),              // 歌曲标题
-                    albumTitle = cursor.getAlbumTitle(),            // 专辑标题
-                    showingArtist = cursor.getArtist(),             // 艺术家
-                    songDuration = cursor.getSongDuration(),        // 音乐时长
-                    songMimeType = cursor.getSongMimeType(),        // MIME类型
+                add(
+                    MSong(
+                        songId = cursor.getSongId(),                    // 音乐 id
+                        albumId = cursor.getAlbumId(),                  // 专辑 id
+                        songData = cursor.getSongData(),                // 路径
+                        songTitle = cursor.getSongTitle(),              // 歌曲标题
+                        albumTitle = cursor.getAlbumTitle(),            // 专辑标题
+                        showingArtist = cursor.getArtist(),             // 艺术家
+                        songDuration = cursor.getSongDuration(),        // 音乐时长
+                        songMimeType = cursor.getSongMimeType(),        // MIME类型
+                    )
                 )
             }
         }

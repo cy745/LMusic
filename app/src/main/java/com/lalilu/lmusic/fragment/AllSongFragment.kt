@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
+import androidx.navigation.fragment.findNavController
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
@@ -33,6 +34,11 @@ class AllSongFragment : DataBindingFragment(), CoroutineScope {
         mAdapter.onItemClick = {
             playerModule.mediaController?.transportControls
                 ?.playFromMediaId(it.songId.toString(), null)
+        }
+        mAdapter.onItemLongClick = {
+            findNavController().navigate(
+                AllSongFragmentDirections.allSongToSongDetail(it.songId)
+            )
         }
         return DataBindingConfig(R.layout.fragment_detail_all_song)
             .addParam(BR.adapter, mAdapter)
