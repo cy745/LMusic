@@ -5,7 +5,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.event.DataModule
+import com.lalilu.lmusic.datasource.MediaSource
 import com.lalilu.lmusic.event.PlayerModule
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -16,7 +16,7 @@ import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class ListFragment : DataBindingFragment(), CoroutineScope {
+class AllSongFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     @Inject
@@ -26,7 +26,7 @@ class ListFragment : DataBindingFragment(), CoroutineScope {
     lateinit var playerModule: PlayerModule
 
     @Inject
-    lateinit var dataModule: DataModule
+    lateinit var mediaSource: MediaSource
 
     override fun getDataBindingConfig(): DataBindingConfig {
         // 添加 item 被选中时的处理逻辑
@@ -34,13 +34,13 @@ class ListFragment : DataBindingFragment(), CoroutineScope {
             playerModule.mediaController?.transportControls
                 ?.playFromMediaId(it.songId.toString(), null)
         }
-        return DataBindingConfig(R.layout.fragment_list)
-            .addParam(BR.listAdapter, mAdapter)
+        return DataBindingConfig(R.layout.fragment_detail_all_song)
+            .addParam(BR.adapter, mAdapter)
     }
 
     override fun onViewCreated() {
-//        dataModule.library.observe(viewLifecycleOwner) {
-//            mAdapter.setDiffNewData(it?.toMutableList())
-//        }
+        mediaSource.songs.observe(viewLifecycleOwner) {
+            mAdapter.setDiffNewData(it.toMutableList())
+        }
     }
 }
