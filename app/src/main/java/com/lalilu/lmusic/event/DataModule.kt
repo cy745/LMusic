@@ -10,7 +10,7 @@ import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.LAST_REPEAT_MODE
-import com.lalilu.lmusic.datasource.MediaSource
+import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.domain.entity.MSong
 import com.lalilu.lmusic.manager.LMusicNotificationManager
 import com.lalilu.lmusic.utils.*
@@ -30,13 +30,12 @@ import kotlin.coroutines.CoroutineContext
 class DataModule @Inject constructor(
     @ApplicationContext context: Context,
     notificationManager: LMusicNotificationManager,
-    mediaSource: MediaSource,
+    mediaSource: BaseMediaSource,
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     init {
-        mediaSource.getAllSongs()
-        mediaSource.getAllAlbums()
+        mediaSource.onChange(true)
     }
 
     private val sharedPref = context.getSharedPreferences(

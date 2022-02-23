@@ -5,7 +5,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.datasource.MediaSource
+import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.event.PlayerModule
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +26,7 @@ class AllSongFragment : DataBindingFragment(), CoroutineScope {
     lateinit var playerModule: PlayerModule
 
     @Inject
-    lateinit var mediaSource: MediaSource
+    lateinit var mediaSource: BaseMediaSource
 
     override fun getDataBindingConfig(): DataBindingConfig {
         // 添加 item 被选中时的处理逻辑

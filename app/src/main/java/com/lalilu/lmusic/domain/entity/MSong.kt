@@ -1,46 +1,27 @@
 package com.lalilu.lmusic.domain.entity
 
 import android.net.Uri
+import android.provider.MediaStore
 import androidx.recyclerview.widget.DiffUtil
 import java.util.*
 
 data class MSong(
     val songId: Long,
-
     val albumId: Long,
-
     val albumTitle: String,
-
     val songData: String,
-
-    val songUri: Uri,
-
     val songTitle: String,
-
     val songDuration: Long,
-
     val showingArtist: String = "",
-
     val songMimeType: String = "",
-
     val songCreateTime: Date = Date(),
-
     val songLastPlayTime: Date = Date()
 ) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MSong
-
-        if (songId != other.songId) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return songId.hashCode()
-    }
+    val songUri: Uri
+        get() = Uri.withAppendedPath(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            songId.toString()
+        )
 
     class DiffMSong(
         private val oldList: List<MSong>,

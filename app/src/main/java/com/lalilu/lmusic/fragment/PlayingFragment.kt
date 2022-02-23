@@ -44,8 +44,17 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             playerModule.mediaController?.transportControls
                 ?.playFromMediaId(it.songId.toString(), null)
         }
-        val dialog = SongDetailFragment()
-        mAdapter.onItemLongClick = { song -> showDialog(dialog, song) }
+        val dialog = NavigatorFragment()
+        mAdapter.onItemLongClick = { song ->
+            showDialog(dialog) {
+                (this as NavigatorFragment)
+                    .getNavController(singleUse = true)
+                    .navigate(
+                        LibraryFragmentDirections
+                            .libraryToSongDetail(song.songId)
+                    )
+            }
+        }
         return DataBindingConfig(R.layout.fragment_playing)
             .addParam(BR.ev, mEvent)
             .addParam(BR.vm, mState)

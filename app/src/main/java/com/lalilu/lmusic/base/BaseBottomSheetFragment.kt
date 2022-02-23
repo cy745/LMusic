@@ -2,6 +2,7 @@ package com.lalilu.lmusic.base
 
 import android.app.Dialog
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import android.widget.FrameLayout
 import androidx.databinding.ViewDataBinding
@@ -14,9 +15,11 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.lalilu.R
 
 fun <I : Any, B : ViewDataBinding> Fragment.showDialog(
-    dialog: BaseBottomSheetFragment<I, B>?, data: I? = null
+    dialog: BaseBottomSheetFragment<I, B>?, bindData: I? = null,
+    callback: BaseBottomSheetFragment<I, B>.() -> Unit = {}
 ) {
-    dialog?.bind(data)
+    dialog?.onInitialized = callback
+    dialog?.bind(bindData)
     dialog?.show(requireActivity().supportFragmentManager, dialog.tag)
 }
 
@@ -24,6 +27,7 @@ abstract class BaseBottomSheetFragment<I : Any, B : ViewDataBinding> :
     DataBindingBottomSheetDialogFragment() {
     private var mTranslateYAnimation: SpringAnimation? = null
     private var lateBindData: I? = null
+    var onInitialized: BaseBottomSheetFragment<I, B>.() -> Unit = {}
 
     open fun onBind(data: I?, binding: ViewDataBinding) {}
 
@@ -33,6 +37,10 @@ abstract class BaseBottomSheetFragment<I : Any, B : ViewDataBinding> :
             return
         }
         lateBindData = data
+    }
+
+    open fun onBackPressed(): Boolean {
+        return false
     }
 
     open fun getHeight(): Int {
@@ -51,9 +59,21 @@ abstract class BaseBottomSheetFragment<I : Any, B : ViewDataBinding> :
         bind(lateBindData)
     }
 
+    override fun onResume() {
+        super.onResume()
+        onInitialized.invoke(this)
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        if (context == null) return super.onCreateDialog(savedInstanceState)
-        return BottomSheetDialog(requireContext(), R.style.MY_BottomSheet)
+        context ?: return super.onCreateDialog(savedInstanceState)
+        return BottomSheetDialog(requireContext(), R.style.MY_BottomSheet).also {
+            it.setOnKeyListener { _, i, keyEvent ->
+                if (i == KeyEvent.KEYCODE_BACK && keyEvent.action == KeyEvent.ACTION_UP) {
+                    return@setOnKeyListener onBackPressed()
+                }
+                return@setOnKeyListener false
+            }
+        }
     }
 
     override fun onStart() {
