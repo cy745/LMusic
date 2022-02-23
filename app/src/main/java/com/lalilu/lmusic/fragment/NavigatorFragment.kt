@@ -7,9 +7,22 @@ import com.lalilu.R
 import com.lalilu.databinding.DialogNavigatorBinding
 import com.lalilu.lmusic.base.BaseBottomSheetFragment
 import com.lalilu.lmusic.base.DataBindingConfig
+import com.lalilu.lmusic.fragment.viewmodel.NavigatorViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import javax.inject.Inject
 
+@AndroidEntryPoint
+@ExperimentalCoroutinesApi
 class NavigatorFragment : BaseBottomSheetFragment<Any, DialogNavigatorBinding>() {
-    private var singleUseFlag: Boolean = false
+    @Inject
+    lateinit var mState: NavigatorViewModel
+
+    private var singleUseFlag: Boolean
+        get() = mState.singleUseFlag
+        set(value) {
+            mState.singleUseFlag = value
+        }
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.dialog_navigator)
@@ -18,6 +31,7 @@ class NavigatorFragment : BaseBottomSheetFragment<Any, DialogNavigatorBinding>()
     override fun onBackPressed(): Boolean {
         if (singleUseFlag) {
             this.dismiss()
+            singleUseFlag = false
             return false
         }
         return getNavController().navigateUp()
