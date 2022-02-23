@@ -7,7 +7,7 @@
     <fragment
         android:id="@+id/libraryFragment"
         android:name="com.lalilu.lmusic.fragment.LibraryFragment"
-        android:label="LibraryFragment"
+        android:label="@string/destination_label_library"
         tools:layout="@layout/fragment_library">
         <action
             android:id="@+id/libraryToAlbums"
@@ -45,7 +45,7 @@
     <fragment
         android:id="@+id/albumsFragment"
         android:name="com.lalilu.lmusic.fragment.AlbumsFragment"
-        android:label="AlbumsFragment"
+        android:label="@string/destination_label_albums"
         tools:layout="@layout/fragment_list_albums">
         <action
             android:id="@+id/toAlbumDetail"
@@ -66,7 +66,7 @@
     <fragment
         android:id="@+id/playlistsFragment"
         android:name="com.lalilu.lmusic.fragment.PlaylistsFragment"
-        android:label="PlaylistsFragment"
+        android:label="@string/destination_label_playlists"
         tools:layout="@layout/fragment_list_playlists">
         <action
             android:id="@+id/toPlaylistDetail"
@@ -84,7 +84,7 @@
     <fragment
         android:id="@+id/albumDetailFragment"
         android:name="com.lalilu.lmusic.fragment.AlbumDetailFragment"
-        android:label="AlbumDetailFragment"
+        android:label="@string/destination_label_album_detail"
         tools:layout="@layout/fragment_detail_album">
         <argument
             android:name="albumId"
@@ -110,7 +110,7 @@
     <fragment
         android:id="@+id/playlistDetailFragment"
         android:name="com.lalilu.lmusic.fragment.PlaylistDetailFragment"
-        android:label="PlaylistDetailFragment"
+        android:label="@string/destination_label_playlist_detail"
         tools:layout="@layout/fragment_detail_playlist">
         <argument
             android:name="playlistId"
@@ -136,7 +136,7 @@
     <fragment
         android:id="@+id/allSongFragment"
         android:name="com.lalilu.lmusic.fragment.AllSongFragment"
-        android:label="AllSongFragment"
+        android:label="@string/destination_label_all_song"
         tools:layout="@layout/fragment_detail_all_song">
         <action
             android:id="@+id/allSongToSongDetail"
@@ -154,12 +154,11 @@
     <fragment
         android:id="@+id/songDetailFragment"
         android:name="com.lalilu.lmusic.fragment.SongDetailFragment"
-        android:label="SongDetailFragment"
+        android:label="@string/destination_label_song_detail"
         tools:layout="@layout/fragment_song_detail">
         <argument
             android:name="songId"
             android:defaultValue="-1L"
             app:argType="long" />
     </fragment>
-
 </navigation>

@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.fragment
 
+import androidx.databinding.ViewDataBinding
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.lalilu.R
@@ -22,9 +23,33 @@ class NavigatorFragment : BaseBottomSheetFragment<Any, DialogNavigatorBinding>()
         return getNavController().navigateUp()
     }
 
+    override fun onBind(data: Any?, binding: ViewDataBinding) {
+        val bd = binding as DialogNavigatorBinding
+        bd.dialogBackButton.setOnClickListener {
+            if (!onBackPressed()) {
+                this.dismiss()
+            }
+        }
+        bd.dialogCloseButton.setOnClickListener {
+            this.dismiss()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val bd = mBinding as DialogNavigatorBinding
+        getNavController().addOnDestinationChangedListener { controller, destination, arguments ->
+            var lastDestination = controller.previousBackStackEntry?.destination?.label
+            if (lastDestination == null || singleUseFlag) {
+                lastDestination = requireContext().resources
+                    .getString(R.string.dialog_bottom_sheet_navigator_back)
+            }
+            bd.dialogBackButton.text = lastDestination
+        }
+    }
 
     fun getNavController(singleUse: Boolean = false): NavController {
-        singleUseFlag = singleUse
+        if (!singleUseFlag) singleUseFlag = singleUse
         return (mBinding as DialogNavigatorBinding)
             .dialogNavigator
             .findNavController()

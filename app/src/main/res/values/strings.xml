@@ -25,4 +25,11 @@
     <string name="song_non_exist_tips">该本地歌曲已丢失，重启LMusic后将清除该歌曲😥</string>
     <string name="dialog_bottom_sheet_navigator_back">返回</string>
     <string name="dialog_bottom_sheet_navigator_close">关闭</string>
+    <string name="destination_label_library">曲库</string>
+    <string name="destination_label_albums">专辑</string>
+    <string name="destination_label_playlists">歌单</string>
+    <string name="destination_label_album_detail">专辑详情</string>
+    <string name="destination_label_playlist_detail">歌单详情</string>
+    <string name="destination_label_all_song">全部歌曲</string>
+    <string name="destination_label_song_detail">歌曲详情</string>
 </resources>
