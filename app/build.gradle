@@ -81,7 +81,12 @@ dependencies {
     // Apache-2.0 License
     // 内存泄露监控组件
     // debugImplementation because LeakCanary should only run in debug builds.
-//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
+    // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
+
+    // https://github.com/Blankj/AndroidUtilCode/
+    // Apache-2.0 License
+    // 安卓工具类库
+    implementation 'com.blankj:utilcodex:1.31.0'
 
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
     // Apache-2.0 License

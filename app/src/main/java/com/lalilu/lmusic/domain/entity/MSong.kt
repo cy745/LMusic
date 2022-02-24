@@ -14,8 +14,7 @@ data class MSong(
     val songDuration: Long,
     val showingArtist: String = "",
     val songMimeType: String = "",
-    val songCreateTime: Date = Date(),
-    val songLastPlayTime: Date = Date()
+    val songCreateTime: Date = Date()
 ) {
     val songUri: Uri
         get() = Uri.withAppendedPath(

@@ -8,7 +8,7 @@ import com.lalilu.databinding.FragmentListPlaylistsBinding
 import com.lalilu.lmusic.adapter.PlaylistsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.datasource.database.LMusicDataBase
+import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.domain.entity.MPlaylist
 import com.lalilu.lmusic.fragment.viewmodel.PlaylistsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -72,9 +72,7 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
         addButton.setOnClickListener {
             launch(Dispatchers.IO) {
                 dataBase.playlistDao().save(
-                    MPlaylist(
-                        playlistTitle = System.currentTimeMillis().toString()
-                    )
+                    MPlaylist(playlistTitle = "空歌单")
                 )
             }
         }
