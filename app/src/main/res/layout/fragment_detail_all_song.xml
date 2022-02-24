@@ -57,7 +57,7 @@
         <me.qinc.lib.edgetranslucent.EdgeTransparentView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:edge_position="top|bottom"
+            app:edge_position="top"
             app:edge_width="24dp">
 
             <androidx.recyclerview.widget.RecyclerView

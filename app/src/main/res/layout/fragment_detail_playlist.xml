@@ -55,34 +55,13 @@
                 app:layout_constraintTop_toBottomOf="@+id/playlist_detail_title"
                 app:layout_constraintVertical_bias="0.0"
                 tools:text="Artists" />
-
-            <!--            <androidx.cardview.widget.CardView-->
-            <!--                android:id="@+id/playlist_detail_card"-->
-            <!--                android:layout_width="100dp"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:layout_margin="5dp"-->
-            <!--                android:elevation="2dp"-->
-            <!--                app:layout_constraintBottom_toBottomOf="parent"-->
-            <!--                app:layout_constraintEnd_toEndOf="parent"-->
-            <!--                app:layout_constraintTop_toTopOf="parent"-->
-            <!--                app:layout_constraintVertical_bias="0.0">-->
-
-            <!--                <androidx.appcompat.widget.AppCompatImageView-->
-            <!--                    android:id="@+id/playlist_detail_cover"-->
-            <!--                    android:layout_width="match_parent"-->
-            <!--                    android:layout_height="wrap_content"-->
-            <!--                    android:adjustViewBounds="true"-->
-            <!--                    app:setNormalUri="@{vm.album.albumCoverUri}"-->
-            <!--                    tools:ignore="ImageContrastCheck"-->
-            <!--                    tools:src="@tools:sample/avatars" />-->
-            <!--            </androidx.cardview.widget.CardView>-->
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <me.qinc.lib.edgetranslucent.EdgeTransparentView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:edge_position="top|bottom"
-            app:edge_width="48dp">
+            app:edge_position="top"
+            app:edge_width="24dp">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/playlist_detail_list"
