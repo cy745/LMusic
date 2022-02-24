@@ -1,14 +1,18 @@
 package com.lalilu.lmusic.fragment
 
+import android.annotation.SuppressLint
+import android.widget.TextView
 import androidx.databinding.library.baseAdapters.BR
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
+import com.lalilu.databinding.FragmentDetailPlaylistBinding
 import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.BaseMediaSource
-import com.lalilu.lmusic.datasource.database.LMusicDataBase
+import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.fragment.viewmodel.PlaylistDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,6 +22,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
+
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
@@ -55,6 +60,7 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
             .addParam(BR.vm, mState)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated() {
         mState.playlist.observe(viewLifecycleOwner) {
             launch {
@@ -65,6 +71,32 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
             mState._playlist.postValue(
                 dataBase.playlistDao().getById(args.playlistId)
             )
+        }
+        val binding = mBinding as FragmentDetailPlaylistBinding
+        val callback = TextView.OnEditorActionListener { view, _, _ ->
+            mState.playlist.value?.copy(
+                playlistTitle = binding.playlistDetailTitle.text.toString(),
+                playlistInfo = binding.playlistDetailInfo.text.toString()
+            )?.let {
+                launch(Dispatchers.IO) {
+                    dataBase.playlistDao().save(it)
+                }
+            }
+            view.clearFocus()
+            KeyboardUtils.hideSoftInput(view)
+            return@OnEditorActionListener true
+        }
+        binding.playlistDetailTitle.setOnEditorActionListener(callback)
+        binding.playlistDetailInfo.setOnEditorActionListener(callback)
+        KeyboardUtils.registerSoftInputChangedListener(requireActivity()) {
+            if (it <= 0) {
+                when {
+                    binding.playlistDetailTitle.isFocused ->
+                        binding.playlistDetailTitle.onEditorAction(0)
+                    binding.playlistDetailInfo.isFocused ->
+                        binding.playlistDetailInfo.onEditorAction(0)
+                }
+            }
         }
     }
 }

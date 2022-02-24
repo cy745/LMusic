@@ -1,7 +1,8 @@
-package com.lalilu.lmusic.datasource.database
+package com.lalilu.lmusic.datasource
 
 import android.content.Context
 import android.net.Uri
+import androidx.annotation.IntDef
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.lalilu.lmusic.domain.entity.MPlaylist
@@ -12,6 +13,31 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.util.*
 import javax.inject.Singleton
+
+const val TYPE_SONG = 0
+const val TYPE_PLAYLIST = 1
+const val TYPE_ALBUM = 2
+
+@IntDef(TYPE_SONG, TYPE_PLAYLIST, TYPE_ALBUM)
+@Retention(AnnotationRetention.SOURCE)
+annotation class EntityType
+
+@Entity(
+    tableName = "last_play_info",
+    primaryKeys = [
+        "last_play_info_id",
+        "last_play_info_type"
+    ]
+)
+data class LastPlayInfo(
+    @ColumnInfo(name = "last_play_info_id")
+    val id: Long,
+    @EntityType
+    @ColumnInfo(name = "last_play_info_type")
+    val type: Int,
+    @ColumnInfo(name = "last_play_info_time")
+    val time: Date = Date(),
+)
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -30,7 +56,8 @@ object LMusicDataBaseModule {
 
 @Database(
     entities = [
-        MPlaylist::class
+        MPlaylist::class,
+        LastPlayInfo::class
     ],
     version = 5,
     exportSchema = false
@@ -41,6 +68,7 @@ object LMusicDataBaseModule {
 )
 abstract class LMusicDataBase : RoomDatabase() {
     abstract fun playlistDao(): MPlaylistDao
+    abstract fun lastPlayInfoDao(): LastPlayInfoDao
 }
 
 @Dao
@@ -63,6 +91,19 @@ interface MPlaylistDao {
 
     @Query("SELECT * FROM m_playlist WHERE playlist_id = :id;")
     fun getById(id: Long): MPlaylist?
+}
+
+@Dao
+interface LastPlayInfoDao {
+    @Transaction
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun save(lastPlayInfo: LastPlayInfo)
+
+    @Delete(entity = LastPlayInfo::class)
+    fun delete(lastPlayInfo: LastPlayInfo)
+
+    @Query("SELECT * FROM last_play_info WHERE last_play_info_id = :id;")
+    fun getById(id: Long): LastPlayInfo?
 }
 
 class UriConverter {
