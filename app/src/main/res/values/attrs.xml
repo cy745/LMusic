@@ -12,6 +12,7 @@
     <attr name="bottom_sheet_divider" format="color" />
     <attr name="bottom_sheet_card_bg" format="color" />
     <attr name="bottom_sheet_button_close_bg" format="color" />
+    <attr name="song_detail_add_song_to_playlist_button_bg" format="color" />
 
     <attr name="activity_window_bg" format="color" />
 </resources>

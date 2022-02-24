@@ -6,30 +6,23 @@
     <string name="audio_type">音频格式</string>
     <string name="default_slogan">LMusic…</string>
 
-    <string name="text_tab_now_playing">正在播放</string>
-    <string name="text_tab_playlists">歌单</string>
-    <string name="text_tab_albums">专辑</string>
-
     <string name="text_button_play">播放</string>
     <string name="text_button_pause">暂停</string>
-    <string name="text_button_create_playlist">创建播放列表</string>
-    <string name="text_button_scan_song">扫描歌曲</string>
-    <string name="text_button_playlist_delete">删除歌单按钮</string>
-    <string name="navigate_to_star_page">跳转至收藏页</string>
-    <string name="navigate_to_playlist_page">跳转至歌单页</string>
-    <string name="navigate_to_all_songs_page">跳转至本地歌曲页</string>
-    <string name="navigate_to_album_page">跳转至专辑页</string>
     <string name="text_button_search">搜索</string>
     <string name="text_button_settings">设置</string>
 
     <string name="song_non_exist_tips">该本地歌曲已丢失，重启LMusic后将清除该歌曲😥</string>
+
     <string name="dialog_bottom_sheet_navigator_back">返回</string>
     <string name="dialog_bottom_sheet_navigator_close">关闭</string>
+
     <string name="destination_label_library">曲库</string>
     <string name="destination_label_albums">专辑</string>
     <string name="destination_label_playlists">歌单</string>
+    <string name="destination_label_all_song">歌曲</string>
     <string name="destination_label_album_detail">专辑详情</string>
     <string name="destination_label_playlist_detail">歌单详情</string>
-    <string name="destination_label_all_song">全部歌曲</string>
     <string name="destination_label_song_detail">歌曲详情</string>
+
+    <string name="button_add_song_to_playlist">添加至歌单</string>
 </resources>
