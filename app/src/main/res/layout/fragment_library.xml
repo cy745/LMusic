@@ -67,7 +67,7 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/item_click_background_daynight"
+                    android:background="@drawable/item_bg"
                     android:paddingStart="20dp"
                     android:paddingTop="20dp"
                     android:paddingEnd="10dp"
@@ -122,7 +122,7 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/item_click_background_daynight"
+                    android:background="@drawable/item_bg"
                     android:paddingStart="20dp"
                     android:paddingTop="20dp"
                     android:paddingEnd="10dp"
@@ -178,7 +178,7 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/item_click_background_daynight"
+                    android:background="@drawable/item_bg"
                     android:paddingStart="20dp"
                     android:paddingTop="20dp"
                     android:paddingEnd="10dp"

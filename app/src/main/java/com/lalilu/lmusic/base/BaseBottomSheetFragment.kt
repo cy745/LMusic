@@ -27,7 +27,7 @@ abstract class BaseBottomSheetFragment<I : Any, B : ViewDataBinding> :
     DataBindingBottomSheetDialogFragment() {
     private var mTranslateYAnimation: SpringAnimation? = null
     private var lateBindData: I? = null
-    var onInitialized: BaseBottomSheetFragment<I, B>.() -> Unit = {}
+    var onInitialized: (BaseBottomSheetFragment<I, B>.() -> Unit)? = null
 
     open fun onBind(data: I?, binding: ViewDataBinding) {}
 
@@ -61,7 +61,8 @@ abstract class BaseBottomSheetFragment<I : Any, B : ViewDataBinding> :
 
     override fun onResume() {
         super.onResume()
-        onInitialized.invoke(this)
+        onInitialized?.invoke(this)
+        onInitialized = null
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
