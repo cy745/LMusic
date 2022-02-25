@@ -8,10 +8,11 @@ import androidx.dynamicanimation.animation.FloatPropertyCompat
 
 class LMusicVolumeManager(private val mPlayer: MediaPlayer) {
     private var nowVolume = 0f
-    private var valueAnimator: ValueAnimator? = null
+    private var valueAnimator: ValueAnimator? = reCreateAnimation()
+        get() = field ?: reCreateAnimation()
 
-    private fun reCreateAnimation() {
-        valueAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+    private fun reCreateAnimation(): ValueAnimator {
+        return ValueAnimator.ofFloat(0f, 1f).apply {
             var isReversed = false
             var startValue = 0f
 
@@ -30,22 +31,20 @@ class LMusicVolumeManager(private val mPlayer: MediaPlayer) {
             this.addUpdateListener {
                 var value = it.animatedValue as Float
 
-                value =
-                    if (isReversed) startValue * value else startValue + (1 - startValue) * value
+                value = if (isReversed) startValue * value
+                else startValue + (1 - startValue) * value
                 volumePropertyCompat.setValue(mPlayer, value)
             }
         }
     }
 
     fun fadeStart() {
-        if (valueAnimator == null) reCreateAnimation()
         valueAnimator?.cancel()
         if (!mPlayer.isPlaying) mPlayer.start()
         valueAnimator?.start()
     }
 
     fun fadePause() {
-        if (valueAnimator == null) reCreateAnimation()
         valueAnimator?.cancel()
         valueAnimator?.reverse()
     }
