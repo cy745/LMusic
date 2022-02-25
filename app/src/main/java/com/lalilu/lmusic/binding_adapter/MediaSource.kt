@@ -13,6 +13,7 @@ interface MediaSource {
     fun getAlbumById(id: Long): MAlbum?
     fun getArtistById(id: Long): MArtist?
 
+    fun getSongsBySongIds(ids: List<Long>): List<MSong>
     fun getSongsByAlbumId(id: Long): List<MSong>
     fun getSongsByArtistId(id: Long): List<MSong>
 }
