@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.annotation.IntDef
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import androidx.room.ForeignKey.CASCADE
 import com.lalilu.lmusic.domain.entity.MPlaylist
 import dagger.Module
 import dagger.Provides
@@ -39,6 +40,30 @@ data class LastPlayInfo(
     val time: Date = Date(),
 )
 
+@Entity(
+    tableName = "song_in_playlist",
+    foreignKeys = [
+        ForeignKey(
+            entity = MPlaylist::class,
+            parentColumns = ["playlist_id"],
+            childColumns = ["song_in_playlist_playlist_id"],
+            onDelete = CASCADE
+        )
+    ],
+    primaryKeys = [
+        "song_in_playlist_playlist_id",
+        "song_in_playlist_song_id"
+    ]
+)
+data class SongInPlaylist(
+    @ColumnInfo(name = "song_in_playlist_playlist_id")
+    val playlistId: Long,
+    @ColumnInfo(name = "song_in_playlist_song_id")
+    val songId: Long,
+    @ColumnInfo(name = "song_in_playlist_create_time")
+    val time: Date = Date()
+)
+
 @Module
 @InstallIn(SingletonComponent::class)
 object LMusicDataBaseModule {
@@ -57,7 +82,8 @@ object LMusicDataBaseModule {
 @Database(
     entities = [
         MPlaylist::class,
-        LastPlayInfo::class
+        LastPlayInfo::class,
+        SongInPlaylist::class
     ],
     version = 5,
     exportSchema = false
@@ -69,16 +95,20 @@ object LMusicDataBaseModule {
 abstract class LMusicDataBase : RoomDatabase() {
     abstract fun playlistDao(): MPlaylistDao
     abstract fun lastPlayInfoDao(): LastPlayInfoDao
+    abstract fun songInPlaylistDao(): SongInPlaylistDao
 }
 
 @Dao
 interface MPlaylistDao {
     @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun save(playlist: MPlaylist)
+    fun save(vararg playlist: MPlaylist)
+
+    @Update(entity = MPlaylist::class)
+    fun update(vararg playlist: MPlaylist)
 
     @Delete(entity = MPlaylist::class)
-    fun delete(playlist: MPlaylist)
+    fun delete(vararg playlist: MPlaylist)
 
     @Query("SELECT * FROM m_playlist;")
     fun getAll(): List<MPlaylist>
@@ -95,15 +125,26 @@ interface MPlaylistDao {
 
 @Dao
 interface LastPlayInfoDao {
-    @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun save(lastPlayInfo: LastPlayInfo)
+    fun save(vararg lastPlayInfo: LastPlayInfo)
 
     @Delete(entity = LastPlayInfo::class)
-    fun delete(lastPlayInfo: LastPlayInfo)
+    fun delete(vararg lastPlayInfo: LastPlayInfo)
 
     @Query("SELECT * FROM last_play_info WHERE last_play_info_id = :id;")
     fun getById(id: Long): LastPlayInfo?
+}
+
+@Dao
+interface SongInPlaylistDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun save(vararg songInPlaylist: SongInPlaylist)
+
+    @Delete(entity = SongInPlaylist::class)
+    fun delete(vararg songInPlaylist: SongInPlaylist)
+
+    @Query("SELECT * FROM song_in_playlist WHERE song_in_playlist_playlist_id = :playlistId;")
+    fun getAllByPlaylistId(playlistId: Long): List<SongInPlaylist>
 }
 
 class UriConverter {

@@ -259,4 +259,8 @@ class BaseMediaSource @Inject constructor(
     override fun getArtistById(id: Long): MArtist {
         return getAllArtists().first { it.artistId == id }
     }
+
+    override fun getSongsBySongIds(ids: List<Long>): List<MSong> {
+        return getAllSongs().filter { ids.contains(it.songId) }
+    }
 }

@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.fragment
 
-import android.annotation.SuppressLint
 import android.widget.TextView
 import androidx.databinding.library.baseAdapters.BR
 import androidx.navigation.fragment.findNavController
@@ -16,10 +15,7 @@ import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.fragment.viewmodel.PlaylistDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -60,11 +56,19 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
             .addParam(BR.vm, mState)
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated() {
-        mState.playlist.observe(viewLifecycleOwner) {
-            launch {
+        mState.playlist.observe(viewLifecycleOwner) { playlist ->
+            playlist?.playlistId ?: return@observe
 
+            launch(Dispatchers.IO) {
+                val list = dataBase.songInPlaylistDao()
+                    .getAllByPlaylistId(playlist.playlistId)
+                    .map { it.songId }
+                val songs = mediaSource.getSongsBySongIds(list)
+                    .toMutableList()
+                withContext(Dispatchers.Main) {
+                    mAdapter.setDiffNewData(songs)
+                }
             }
         }
         launch(Dispatchers.IO) {
@@ -79,7 +83,7 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
                 playlistInfo = binding.playlistDetailInfo.text.toString()
             )?.let {
                 launch(Dispatchers.IO) {
-                    dataBase.playlistDao().save(it)
+                    dataBase.playlistDao().update(it)
                 }
             }
             view.clearFocus()
@@ -89,13 +93,12 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
         binding.playlistDetailTitle.setOnEditorActionListener(callback)
         binding.playlistDetailInfo.setOnEditorActionListener(callback)
         KeyboardUtils.registerSoftInputChangedListener(requireActivity()) {
-            if (it <= 0) {
-                when {
-                    binding.playlistDetailTitle.isFocused ->
-                        binding.playlistDetailTitle.onEditorAction(0)
-                    binding.playlistDetailInfo.isFocused ->
-                        binding.playlistDetailInfo.onEditorAction(0)
-                }
+            if (it > 0) return@registerSoftInputChangedListener
+            when {
+                binding.playlistDetailTitle.isFocused ->
+                    binding.playlistDetailTitle.onEditorAction(0)
+                binding.playlistDetailInfo.isFocused ->
+                    binding.playlistDetailInfo.onEditorAction(0)
             }
         }
     }
