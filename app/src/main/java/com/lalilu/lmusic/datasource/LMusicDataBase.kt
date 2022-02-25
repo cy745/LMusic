@@ -137,7 +137,7 @@ interface LastPlayInfoDao {
 
 @Dao
 interface SongInPlaylistDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun save(vararg songInPlaylist: SongInPlaylist)
 
     @Delete(entity = SongInPlaylist::class)
