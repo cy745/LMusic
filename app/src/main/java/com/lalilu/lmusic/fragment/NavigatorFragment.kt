@@ -52,7 +52,7 @@ class NavigatorFragment : BaseBottomSheetFragment<Any, DialogNavigatorBinding>()
     override fun onResume() {
         super.onResume()
         val bd = mBinding as DialogNavigatorBinding
-        getNavController().addOnDestinationChangedListener { controller, destination, arguments ->
+        getNavController().addOnDestinationChangedListener { controller, _, _ ->
             var lastDestination = controller.previousBackStackEntry?.destination?.label
             if (lastDestination == null || singleUseFlag) {
                 lastDestination = requireContext().resources

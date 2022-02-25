@@ -9,7 +9,7 @@ import androidx.databinding.ViewDataBinding
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.PopupAddToPlaylistBinding
-import com.lalilu.lmusic.adapter.PlaylistsAdapter
+import com.lalilu.lmusic.adapter.AddSongToPlaylistsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingPopupWindow
 import com.lalilu.lmusic.domain.entity.MPlaylist
@@ -18,22 +18,20 @@ class MyPopupWindow constructor(
     context: Context,
     private val callback: (List<MPlaylist>) -> Unit
 ) : DataBindingPopupWindow(context) {
-    lateinit var mAdapter: PlaylistsAdapter
-    private val checkData: LinkedHashSet<MPlaylist> = LinkedHashSet()
+    lateinit var mAdapter: AddSongToPlaylistsAdapter
 
     fun setData(data: MutableList<MPlaylist>) {
         mAdapter.data = data
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter = PlaylistsAdapter()
+        mAdapter = AddSongToPlaylistsAdapter()
         return DataBindingConfig(R.layout.popup_add_to_playlist)
             .addParam(BR.adapter, mAdapter)
     }
 
-    override fun dismiss() {
-        super.dismiss()
-        callback(checkData.toList())
+    override fun onDismiss(cancel: Boolean) {
+        if (!cancel) callback(mAdapter.selectedSet.toMutableList())
     }
 
     override fun getTargetView(bd: ViewDataBinding): View {
@@ -48,11 +46,21 @@ class MyPopupWindow constructor(
         setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val binding = bd as PopupAddToPlaylistBinding
+        binding.popupAddToPlaylistCancel.setOnClickListener {
+            dismiss(true)
+        }
+        binding.popupAddToPlaylistConfirm.setOnClickListener {
+            dismiss(false)
+        }
         mAdapter.onItemClick = {
-            if (checkData.contains(it)) checkData.remove(it)
-            else checkData.add(it)
-            binding.popupAddToPlaylistTips.text = if (checkData.size == 0) "添加至歌单"
-            else "已选中: ${checkData.size}"
+            val index = mAdapter.data.indexOf(it)
+            val checkedSet = mAdapter.selectedSet
+            if (checkedSet.contains(it)) checkedSet.remove(it)
+            else checkedSet.add(it)
+            mAdapter.notifyItemChanged(index)
+
+            binding.popupAddToPlaylistTips.text = if (checkedSet.size == 0) "添加至歌单"
+            else "已选中: ${checkedSet.size}"
         }
     }
 }

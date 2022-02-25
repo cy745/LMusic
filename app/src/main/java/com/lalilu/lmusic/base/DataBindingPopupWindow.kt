@@ -20,6 +20,12 @@ abstract class DataBindingPopupWindow(
     abstract fun getDataBindingConfig(): DataBindingConfig
     abstract fun getTargetView(bd: ViewDataBinding): View
     open fun onViewCreated(bd: ViewDataBinding) {}
+    open fun onDismiss(cancel: Boolean) {}
+
+    fun dismiss(cancel: Boolean) {
+        onDismiss(cancel)
+        dismiss()
+    }
 
     private fun onCreateView() {
         val config = getDataBindingConfig()
@@ -43,7 +49,7 @@ abstract class DataBindingPopupWindow(
             val heightLimit = targetView.height
             val isInside = motionEvent.x in xLimit..(xLimit + widthLimit)
                     && motionEvent.y in yLimit..(yLimit + heightLimit)
-            if (!isInside) dismiss()
+            if (!isInside) dismiss(true)
             return@setOnTouchListener isInside
         }
     }
