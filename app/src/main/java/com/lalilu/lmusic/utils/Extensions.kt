@@ -10,6 +10,7 @@ import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.GradientDrawable.Orientation.*
+import android.net.Uri
 import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
@@ -130,6 +131,18 @@ fun Cursor.getSongDuration(): Long {
 fun Cursor.getSongMimeType(): String {
     val index = this.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE)
     return if (index < 0) "" else this.getString(index)
+}
+
+fun Cursor.getSongGenre(): String {
+    val index = this.getColumnIndex(MediaStore.EXTRA_MEDIA_GENRE)
+    return if (index < 0) "" else this.getString(index)
+}
+
+fun Cursor.getMediaUri(): String {
+    return Uri.withAppendedPath(
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        getSongId().toString()
+    ).toString()
 }
 
 fun MSong.toSimpleMetadata(context: Context): MediaMetadataCompat {
