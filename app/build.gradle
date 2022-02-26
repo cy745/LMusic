@@ -20,8 +20,8 @@ android {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
         targetSdkVersion 32
-        versionCode 19
-        versionName "1.4.1"
+        versionCode 20
+        versionName "1.4.2"
         vectorDrawables {
             useSupportLibrary true
         }
@@ -82,6 +82,12 @@ dependencies {
     // 内存泄露监控组件
     // debugImplementation because LeakCanary should only run in debug builds.
     // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
+
+
+    // https://gitee.com/simplepeng/SpiderMan
+    // Apache-2.0 License
+    // 闪退崩溃日志捕获库
+    implementation "com.github.simplepeng.SpiderMan:spiderman:1.1.9"
 
     // https://github.com/Blankj/AndroidUtilCode/
     // Apache-2.0 License
