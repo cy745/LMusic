@@ -34,3 +34,15 @@
 -dontwarn javax.imageio.ImageWriter
 -dontwarn javax.imageio.stream.ImageInputStream
 -dontwarn javax.imageio.stream.ImageOutputStream
+
+-keep class com.simple.spiderman.** { *; }
+-keepnames class com.simple.spiderman.** { *; }
+-keep public class * extends android.app.Activity
+-keep class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
+# support
+-keep public class * extends android.support.annotation.** { *; }
+# androidx
+-keep public class * extends androidx.annotation.** { *; }
+-keep public class * extends androidx.core.content.FileProvider

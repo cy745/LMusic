@@ -7,9 +7,9 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
+import android.support.v4.media.MediaMetadataCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
-import com.lalilu.lmusic.binding_adapter.MediaSource
 import com.lalilu.lmusic.domain.entity.MAlbum
 import com.lalilu.lmusic.domain.entity.MArtist
 import com.lalilu.lmusic.domain.entity.MSong
@@ -26,13 +26,66 @@ import kotlin.coroutines.CoroutineContext
 @Singleton
 class BaseMediaSource @Inject constructor(
     @ApplicationContext val mContext: Context,
-) : CoroutineScope, ContentObserver(Handler(Looper.getMainLooper())), MediaSource {
+) : CoroutineScope, AbstractMediaSource() {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val targetUri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
+    private var data: MutableList<MediaMetadataCompat> = ArrayList()
+    override fun iterator(): Iterator<MediaMetadataCompat> = data.iterator()
+
+    inner class MediaSourceObserver : ContentObserver(Handler(Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean) {
+            launch(Dispatchers.IO) {
+                _songs.emit(getAllSongs())
+                _albums.emit(getAllAlbums())
+                _artists.emit(getAllArtists())
+            }
+        }
+    }
+
+    override suspend fun load() {
+        try {
+            readyState = STATE_INITIALIZING
+            data = getMediaItems()
+            readyState = STATE_INITIALIZED
+        } catch (e: Exception) {
+            readyState = STATE_ERROR
+        }
+    }
+
+    fun getMediaItems(): MutableList<MediaMetadataCompat> {
+        val cursor = searchForMedia(
+            projection = arrayOf(
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.ALBUM_ID,
+                MediaStore.Audio.Media.ALBUM,
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.SIZE,
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.DURATION,
+                MediaStore.Audio.Media.MIME_TYPE
+            ),
+            selection = "${MediaStore.Audio.Media.SIZE} >= ? " +
+                    "and ${MediaStore.Audio.Media.DURATION} >= ? " +
+                    "and ${MediaStore.Audio.Artists.ARTIST} != ?",
+            selectionArgs = arrayOf("$minSizeLimit", "$minDurationLimit", unknownArtist)
+        ) ?: return ArrayList()
+
+        return ArrayList<MediaMetadataCompat>().apply {
+            while (cursor.moveToNext()) {
+                add(
+                    MediaMetadataCompat.Builder()
+                        .from(cursor)
+                        .build()
+                )
+            }
+        }
+    }
+
     init {
         mContext.contentResolver
-            .registerContentObserver(targetUri, true, this)
+            .registerContentObserver(targetUri, true, MediaSourceObserver())
     }
 
     val minDurationLimit = 30 * 1000
@@ -46,14 +99,6 @@ class BaseMediaSource @Inject constructor(
     val songs: LiveData<List<MSong>> = _songs.asLiveData()
     val albums: LiveData<List<MAlbum>> = _albums.asLiveData()
     val artists: LiveData<List<MArtist>> = _artists.asLiveData()
-
-    override fun onChange(selfChange: Boolean) {
-        launch(Dispatchers.IO) {
-            _songs.emit(getAllSongs())
-            _albums.emit(getAllAlbums())
-            _artists.emit(getAllArtists())
-        }
-    }
 
     private fun searchForMedia(
         selection: String? = null,

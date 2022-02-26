@@ -61,7 +61,7 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
         if (isPrepared) {
             val result = mAudioFocusManager.requestAudioFocus()
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
-            player?.volumeManager?.fadeStart()
+            player?.fadeStart()
 
             launch {
                 onPlaybackStateChanged(STATE_PLAYING)
@@ -78,7 +78,7 @@ abstract class FlowPlayback<ITEM, LIST, ID>(
     }
 
     override fun pause() {
-        player?.volumeManager?.fadePause()
+        player?.fadePause()
 
         launch {
             onPlaybackStateChanged(STATE_PAUSED)
