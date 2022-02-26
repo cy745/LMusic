@@ -4,6 +4,8 @@ import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.hjq.permissions.XXPermissions
+import com.lalilu.R
+import com.simple.spiderman.SpiderMan
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -25,6 +27,7 @@ class LMusicApp : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
+        SpiderMan.setTheme(R.style.SpiderManTheme_Dark);
         XXPermissions.setScopedStorage(true)
     }
 }
