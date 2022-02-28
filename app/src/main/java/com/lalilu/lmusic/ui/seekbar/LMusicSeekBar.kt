@@ -12,7 +12,7 @@ class LMusicSeekBar @JvmOverloads constructor(
 ) : BaseSeekBar(context, attrs, defStyleAttr) {
 
     override fun updatePosition(position: Long) {
-        if (position > sumDuration) return
+        if (position > sumDuration || sumDuration == 0L) return
 
         dataProgress = (position.toFloat() / sumDuration * 100f)
             .coerceIn(minProgress, maxProgress)
