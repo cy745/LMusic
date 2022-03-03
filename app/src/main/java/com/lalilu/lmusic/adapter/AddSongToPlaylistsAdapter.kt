@@ -2,7 +2,7 @@ package com.lalilu.lmusic.adapter
 
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlaylistBinding
-import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.datasource.entity.MPlaylist
 
 class AddSongToPlaylistsAdapter :
     BaseAdapter<MPlaylist, ItemPlaylistBinding>(R.layout.item_playlist) {

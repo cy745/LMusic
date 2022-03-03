@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.fragment
 
+import android.annotation.SuppressLint
 import androidx.databinding.library.baseAdapters.BR
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
@@ -8,6 +9,7 @@ import com.lalilu.databinding.FragmentListAlbumsBinding
 import com.lalilu.lmusic.adapter.AlbumsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
+import com.lalilu.lmusic.datasource.ALBUM_ID
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.fragment.viewmodel.AlbumsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,15 +29,16 @@ class AlbumsFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mAdapter: AlbumsAdapter
 
     @Inject
-    lateinit var baseMediaSource: BaseMediaSource
+    lateinit var mediaSource: BaseMediaSource
 
+    @SuppressLint("UnsafeOptInUsageError")
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.onItemClick = {
             mState._position.postValue(requireScrollOffset())
             findNavController().navigate(
                 AlbumsFragmentDirections.toAlbumDetail(
-                    albumId = it.albumId,
-                    albumTitle = it.albumTitle
+                    albumId = it.mediaId.toLong(),
+                    albumTitle = it.mediaMetadata.albumTitle.toString()
                 )
             )
         }
@@ -48,9 +51,9 @@ class AlbumsFragment : DataBindingFragment(), CoroutineScope {
     override fun onViewCreated() {
         val binding = mBinding as FragmentListAlbumsBinding
         val recyclerView = binding.albumsRecyclerView
-        baseMediaSource.albums.observe(viewLifecycleOwner) {
-            mAdapter.setDiffNewData(it?.toMutableList())
-        }
+        mAdapter.setDiffNewData(
+            mediaSource.getChildren(ALBUM_ID)?.toMutableList()
+        )
         mState.position.observe(viewLifecycleOwner) {
             it ?: return@observe
             launch {

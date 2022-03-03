@@ -1,4 +1,4 @@
-package com.lalilu.lmusic
+package com.lalilu.lmusic.utils.fetcher
 
 import android.net.Uri
 import coil.bitmap.BitmapPool

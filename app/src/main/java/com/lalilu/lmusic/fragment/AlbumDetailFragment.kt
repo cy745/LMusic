@@ -1,25 +1,27 @@
 package com.lalilu.lmusic.fragment
 
+import android.annotation.SuppressLint
 import androidx.databinding.library.baseAdapters.BR
+import androidx.media3.common.Player
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.lalilu.R
 import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
+import com.lalilu.lmusic.datasource.ALBUM_PREFIX
 import com.lalilu.lmusic.datasource.BaseMediaSource
-import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.fragment.viewmodel.AlbumDetailViewModel
+import com.lalilu.lmusic.service.MSongBrowser
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
+@ObsoleteCoroutinesApi
+@SuppressLint("UnsafeOptInUsageError")
 class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
     private val args: AlbumDetailFragmentArgs by navArgs()
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -34,16 +36,22 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mediaSource: BaseMediaSource
 
     @Inject
-    lateinit var playerModule: PlayerModule
+    lateinit var mSongBrowser: MSongBrowser
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter.onItemClick = {
-            playerModule.mediaController?.transportControls
-                ?.playFromMediaId("${it.songId}", null)
+        mAdapter.onItemClick = { item ->
+            mSongBrowser.browser?.apply {
+                clearMediaItems()
+                setMediaItems(mAdapter.data)
+                seekToDefaultPosition(mAdapter.data.indexOfFirst { it.mediaId == item.mediaId })
+                repeatMode = Player.REPEAT_MODE_ALL
+                prepare()
+                play()
+            }
         }
         mAdapter.onItemLongClick = {
             findNavController().navigate(
-                AlbumDetailFragmentDirections.albumToSongDetail(it.songId)
+                AlbumDetailFragmentDirections.albumToSongDetail(it.mediaId.toLong())
             )
         }
         return DataBindingConfig(R.layout.fragment_detail_album)
@@ -52,18 +60,15 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
     }
 
     override fun onViewCreated() {
-        mState.album.observe(viewLifecycleOwner) {
-            it ?: return@observe
-            val list = mediaSource.getSongsByAlbumId(it.albumId)
+        mState.album.observe(viewLifecycleOwner) { item ->
+            item ?: return@observe
+            val list = mediaSource.getChildren(ALBUM_PREFIX + item.mediaId)
             launch(Dispatchers.Main) {
-                mAdapter.setDiffNewData(list.toMutableList())
+                mAdapter.setDiffNewData(list?.toMutableList())
             }
         }
-
-        launch(Dispatchers.IO) {
-            mState._album.postValue(
-                mediaSource.getAlbumById(args.albumId)
-            )
-        }
+        mState._album.postValue(
+            mediaSource.getItemById(ALBUM_PREFIX + args.albumId)
+        )
     }
 }

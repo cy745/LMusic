@@ -9,7 +9,7 @@ import com.lalilu.lmusic.adapter.PlaylistsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.fragment.viewmodel.PlaylistsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*

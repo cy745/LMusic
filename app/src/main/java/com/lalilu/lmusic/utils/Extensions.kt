@@ -1,6 +1,6 @@
 package com.lalilu.lmusic.utils
 
-import android.content.Context
+import android.content.ContentUris
 import android.content.SharedPreferences
 import android.database.Cursor
 import android.graphics.Bitmap
@@ -13,15 +13,7 @@ import android.graphics.drawable.GradientDrawable.Orientation.*
 import android.net.Uri
 import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import androidx.palette.graphics.Palette
-import coil.executeBlocking
-import coil.imageLoader
-import coil.request.ImageRequest
-import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.Config.MEDIA_MEDIA_DATA
-import com.lalilu.lmusic.domain.entity.MSong
-import com.lalilu.lmusic.toEmbeddedCoverSource
 import kotlin.math.roundToInt
 
 fun Palette?.getAutomaticColor(): Int {
@@ -138,101 +130,18 @@ fun Cursor.getSongGenre(): String {
     return if (index < 0) "" else this.getString(index)
 }
 
-fun Cursor.getMediaUri(): String {
+fun Cursor.getAlbumArt(): Uri {
+    return ContentUris.withAppendedId(
+        Uri.parse("content://media/external/audio/albumart/"),
+        getAlbumId()
+    )
+}
+
+fun Cursor.getMediaUri(): Uri {
     return Uri.withAppendedPath(
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
         getSongId().toString()
-    ).toString()
-}
-
-fun MSong.toSimpleMetadata(context: Context): MediaMetadataCompat {
-    val metadata = MediaMetadataCompat.Builder()
-        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, this.songTitle)
-        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, this.showingArtist)
-        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, this.albumTitle)
-        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, this.songId.toString())
-        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, this.songDuration)
-        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, this.songUri.toString())
-        .putString(Config.MEDIA_MIME_TYPE, this.songMimeType)
-        .putString(Config.MEDIA_MEDIA_DATA, this.songData)
-
-    val bitmap = context.imageLoader.executeBlocking(
-        ImageRequest.Builder(context)
-            .allowHardware(false)
-            .data(this.songUri.toEmbeddedCoverSource())
-            .build()
-    ).drawable?.toBitmap()
-    metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
-    return metadata.build()
-}
-
-//fun MSong.toSimpleMetadata(): MediaMetadataCompat {
-//    val metadata = MediaMetadataCompat.Builder()
-//        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, this.songTitle)
-//        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, this.showingArtist)
-//        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, this.albumTitle)
-//        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, this.songId.toString())
-//        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, this.songDuration)
-//        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, this.songUri.toString())
-//        .putString(Config.MEDIA_MIME_TYPE, this.songMimeType)
-//    return metadata.build()
-//}
-
-//fun MediaMetadataCompat.toMediaItem(): MediaBrowserCompat.MediaItem {
-//    return MediaBrowserCompat.MediaItem(
-//        MediaDescriptionCompat.Builder()
-//            .setTitle(this.description.title)
-//            .setMediaId(this.description.mediaId)
-//            .setSubtitle(this.description.subtitle)
-//            .setDescription(this.description.description)
-//            .setIconUri(this.description.iconUri)
-//            .setMediaUri(this.description.mediaUri)
-//            .setExtras(this.bundle).build(),
-//        MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
-//    )
-//}
-
-fun MediaMetadataCompat.saveTo(pref: SharedPreferences) {
-    with(pref.edit()) {
-        this.putString(
-            MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
-            this@saveTo.description.mediaId
-        )
-        this.putString(
-            MediaMetadataCompat.METADATA_KEY_TITLE,
-            this@saveTo.description.title.toString()
-        )
-        this.putString(
-            MediaMetadataCompat.METADATA_KEY_MEDIA_URI,
-            this@saveTo.description.mediaUri.toString()
-        )
-        this.apply()
-    }
-}
-
-fun PlaybackStateCompat.saveTo(pref: SharedPreferences) {
-    with(pref.edit()) {
-        this.putLong(Config.LAST_POSITION, this@saveTo.position)
-        this.apply()
-    }
-}
-
-fun SharedPreferences.getLastPlaybackState(): PlaybackStateCompat {
-    return PlaybackStateCompat.Builder()
-        .setState(
-            PlaybackStateCompat.STATE_STOPPED,
-            this.getLong(Config.LAST_POSITION, 0L),
-            1.0f
-        ).build()
-}
-
-fun SharedPreferences.getLastMediaMetadata(): MediaMetadataCompat {
-    return MediaMetadataCompat.Builder()
-        .moveStringData(this, MediaMetadataCompat.METADATA_KEY_TITLE)
-        .moveStringData(this, MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
-        .moveStringData(this, MediaMetadataCompat.METADATA_KEY_MEDIA_URI)
-        .moveStringData(this, MEDIA_MEDIA_DATA)
-        .build()
+    )
 }
 
 fun MediaMetadataCompat.Builder.moveStringData(

@@ -1,5 +1,7 @@
 package com.lalilu.lmusic.fragment
 
+import android.annotation.SuppressLint
+import android.text.TextUtils
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayingBinding
@@ -7,25 +9,23 @@ import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
-import com.lalilu.lmusic.event.DataModule
-import com.lalilu.lmusic.event.PlayerModule
+import com.lalilu.lmusic.binding_adapter.setCoverSourceUri
+import com.lalilu.lmusic.datasource.extensions.getSongData
 import com.lalilu.lmusic.event.SharedViewModel
-import com.lalilu.lmusic.fragment.viewmodel.PlayingViewModel
+import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.utils.EmbeddedDataUtils
 import com.lalilu.material.appbar.AppBarLayout
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
+@ObsoleteCoroutinesApi
 @AndroidEntryPoint
+@SuppressLint("UnsafeOptInUsageError")
 @ExperimentalCoroutinesApi
 class PlayingFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Main
-
-    @Inject
-    lateinit var mState: PlayingViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -34,31 +34,40 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mAdapter: PlayingAdapter
 
     @Inject
-    lateinit var playerModule: PlayerModule
+    lateinit var mSongBrowser: MSongBrowser
 
-    @Inject
-    lateinit var dataModule: DataModule
+    private lateinit var dialog: NavigatorFragment
+
+    private val defaultSlogan: String by lazy {
+        requireActivity().resources.getString(R.string.default_slogan)
+    }
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.onItemClick = {
-            playerModule.mediaController?.transportControls
-                ?.playFromMediaId(it.songId.toString(), null)
+            println("play: onItemClick: ${System.currentTimeMillis()}")
+            val index = mAdapter.tempList.indexOfFirst { item -> item == it.mediaId }
+
+            mSongBrowser.browser?.apply {
+                println("play: seekToPosition: ${System.currentTimeMillis()}")
+                seekToDefaultPosition(index)
+                prepare()
+                play()
+            }
         }
-        val dialog = NavigatorFragment()
+        dialog = NavigatorFragment()
         mAdapter.onItemLongClick = { song ->
             showDialog(dialog) {
                 (this as NavigatorFragment)
                     .getNavController(singleUse = true)
                     .navigate(
                         LibraryFragmentDirections
-                            .libraryToSongDetail(song.songId)
+                            .libraryToSongDetail(song.mediaId.toLong())
                     )
             }
         }
         return DataBindingConfig(R.layout.fragment_playing)
             .addParam(BR.ev, mEvent)
-            .addParam(BR.vm, mState)
-            .addParam(BR.playingAdapter, mAdapter)
+            .addParam(BR.adapter, mAdapter)
     }
 
     override fun onViewCreated() {
@@ -66,18 +75,27 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         val fmAppbarLayout = binding.fmAppbarLayout
         mActivity?.setSupportActionBar(binding.fmToolbar)
 
-        playerModule.metadataLiveData.observe(viewLifecycleOwner) {
-            mState._title.postValue(it?.description?.title.toString())
-            mState._mediaUri.postValue(it?.description?.mediaUri)
+        mSongBrowser.mediaMetadataLiveData.observe(viewLifecycleOwner) {
+            val text = if (TextUtils.isEmpty(it.title)) defaultSlogan else it.title
+            if (binding.fmCollapseLayout.title != text) {
+                binding.fmCollapseLayout.title = text
+            }
+            binding.fmTopPic.setCoverSourceUri(it.mediaUri)
+            launch(Dispatchers.IO) {
+                val lyric = EmbeddedDataUtils.loadLyric(it.getSongData())
+                withContext(Dispatchers.Main) {
+                    binding.fmLyricViewX.loadLyric(lyric, null)
+                }
+            }
         }
-        dataModule.songLyric.observe(viewLifecycleOwner) {
-            mState._lyric.postValue(it)
+        mSongBrowser.currentPositionLiveData.observe(viewLifecycleOwner) {
+            binding.fmLyricViewX.updateTime(it)
         }
-        dataModule.songPosition.observe(viewLifecycleOwner) {
-            mState._position.postValue(it)
+        mSongBrowser.playlistLiveData.observe(viewLifecycleOwner) {
+            mAdapter.setDiffNewData(it.toMutableList())
         }
-        playerModule.mSongsLiveData.observe(viewLifecycleOwner) {
-            mState._songs.postValue(it)
+        mSongBrowser.originPlaylistIdLiveData.observe(viewLifecycleOwner) {
+            mAdapter.tempList = it
         }
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
             it?.get { fmAppbarLayout.setExpanded(false, true) }

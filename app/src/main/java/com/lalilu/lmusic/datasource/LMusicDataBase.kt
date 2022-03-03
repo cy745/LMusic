@@ -6,7 +6,7 @@ import androidx.annotation.IntDef
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
-import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.datasource.entity.MPlaylist
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -32,7 +32,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:layout_marginEnd="20dp"
-                android:text="@{vm.album.albumTitle}"
+                android:text="@{vm.album.mediaMetadata.albumTitle}"
                 android:textAppearance="@style/dayNightPrimaryText"
                 android:textColor="@color/daynight_0"
                 android:textSize="24sp"
@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="20dp"
-                android:text="@{vm.album.artistName}"
+                android:text="@{vm.album.mediaMetadata.albumArtist}"
                 android:textColor="@color/daynight_0.4"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -83,7 +83,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
-                    app:setNormalUri="@{vm.album.albumCoverUri}"
+                    app:setNormalUri="@{vm.album.mediaMetadata.artworkUri}"
                     tools:ignore="ImageContrastCheck"
                     tools:src="@tools:sample/avatars" />
 

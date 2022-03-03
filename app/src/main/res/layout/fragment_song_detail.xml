@@ -3,13 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
-
-        <variable
-            name="vm"
-            type="com.lalilu.lmusic.fragment.viewmodel.SongDetailViewModel" />
-    </data>
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -24,7 +17,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="20dp"
-            android:text="@{vm.song.songTitle}"
             android:textAppearance="@style/dayNightPrimaryText"
             android:textColor="@color/daynight_0"
             android:textSize="24sp"
@@ -39,7 +31,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_marginEnd="20dp"
-            android:text="@{vm.song.showingArtist}"
             android:textColor="@color/daynight_0.4"
             android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -64,7 +55,6 @@
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
                 android:background="@color/daynight_0.4"
-                app:setCoverSourceUri="@{vm.song.songUri}"
                 tools:src="@tools:sample/avatars" />
         </androidx.cardview.widget.CardView>
 

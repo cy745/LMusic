@@ -1,4 +1,4 @@
-package com.lalilu.lmusic
+package com.lalilu.lmusic.utils.fetcher
 
 import android.annotation.SuppressLint
 import android.content.Context
