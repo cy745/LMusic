@@ -2,16 +2,25 @@ package com.lalilu.lmusic.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.IntDef
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
+const val VIEW_NORMAL = 0
+const val VIEW_HEADER = 1
+const val VIEW_FOOTER = 2
+
+@IntDef(VIEW_NORMAL, VIEW_HEADER, VIEW_FOOTER)
+@Retention(AnnotationRetention.SOURCE)
+annotation class AdapterViewType
 
 abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
     private val layoutId: Int
 ) : RecyclerView.Adapter<BaseAdapter<I, B>.BaseViewHolder>() {
 
+    var offset: Int = 0
     var data: MutableList<I> = ArrayList()
     open var onItemClick: (item: I) -> Unit = {}
     open var onItemLongClick: (item: I) -> Unit = {}
@@ -33,7 +42,8 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         val binding = holder.binding
-        val item = data[position]
+        val offsetPosition = (position + offset) % data.size
+        val item = data[offsetPosition]
         binding.root.setOnClickListener {
             onItemClick(item)
         }
@@ -46,7 +56,7 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
 
     override fun getItemCount(): Int = data.size
 
-    fun setDiffNewData(list: MutableList<I>?) {
+    open fun setDiffNewData(list: MutableList<I>?) {
         val temp = list ?: ArrayList()
         itemCallback ?: return run { data = temp }
 

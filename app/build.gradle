@@ -25,9 +25,9 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
-//        ndk {
-//            abiFilters "armeabi-v7a"
-//        }
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
     }
 
     kotlinOptions {
@@ -83,6 +83,16 @@ dependencies {
     // debugImplementation because LeakCanary should only run in debug builds.
     // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
 
+    // https://github.com/androidx/media
+    // Apache-2.0 License
+    // 媒体组件库
+//    implementation "androidx.media3:media3-common:$media3_version"
+//    implementation "androidx.media3:media3-session:$media3_version"
+//    implementation "androidx.media3:media3-exoplayer:$media3_version"
+    implementation project(':media-lib-exoplayer')
+    implementation project(':media-lib-session')
+    implementation project(':media-lib-common')
+    implementation project(':media-lib-decoder-flac')
 
     // https://gitee.com/simplepeng/SpiderMan
     // Apache-2.0 License
@@ -133,7 +143,7 @@ dependencies {
     // https://github.com/getActivity/XXPermissions
     // Apache-2.0
     // 权限请求框架
-    implementation "com.github.getActivity:XXPermissions:11.0"
+    implementation "com.github.getActivity:XXPermissions:13.5"
 
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"

@@ -1,0 +1,185 @@
+package com.lalilu.lmusic.service
+
+import android.annotation.SuppressLint
+import android.content.ComponentName
+import android.content.Context
+import android.os.Handler
+import android.text.TextUtils
+import androidx.lifecycle.*
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.session.MediaBrowser
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.SessionToken
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
+import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.ITEM_PREFIX
+import com.lalilu.lmusic.manager.SearchManager
+import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
+
+@ObsoleteCoroutinesApi
+@SuppressLint("UnsafeOptInUsageError")
+@ExperimentalCoroutinesApi
+@Singleton
+class MSongBrowser @Inject constructor(
+    @ApplicationContext
+    private val mContext: Context,
+    private val mediaSource: BaseMediaSource,
+    private val searchManager: SearchManager
+) : DefaultLifecycleObserver, CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+    private lateinit var browserFuture: ListenableFuture<MediaBrowser>
+    val browser: MediaBrowser?
+        get() = if (browserFuture.isDone) browserFuture.get() else null
+
+    val searchFor = searchManager::searchFor
+
+    private val _mediaMetadataLiveData: MutableLiveData<MediaMetadata> = MutableLiveData()
+    private val _currentPositionLiveData: MutableLiveData<Long> = MutableLiveData()
+    private val _currentMediaItemFlow: MutableStateFlow<MediaItem?> = MutableStateFlow(null)
+    private val _playlistFlow: MutableStateFlow<List<MediaItem>> = MutableStateFlow(emptyList())
+
+    val originPlaylistIdLiveData: LiveData<List<String>> = _playlistFlow
+        .mapLatest { list ->
+            list.map { it.mediaId }
+        }.flowOn(Dispatchers.IO)
+        .asLiveData()
+
+    val playlistLiveData: LiveData<List<MediaItem>> =
+        _playlistFlow.combine(_currentMediaItemFlow) { items, item ->
+            item ?: return@combine items
+            items.moveHeadToTailWithSearch(item.mediaId) { listItem, id ->
+                listItem.mediaId == id
+            }
+        }.flowOn(Dispatchers.IO).combine(searchManager.keyword) { items, keyword ->
+            if (keyword == null || TextUtils.isEmpty(keyword)) return@combine items
+            val keywords = keyword.split(" ")
+
+            items.filter {
+                val originStr = "${it.mediaMetadata.title} ${it.mediaMetadata.artist}"
+                var resultStr = originStr
+                val isContainChinese = searchManager.isContainChinese(originStr)
+                val isContainKatakanaOrHinagana =
+                    searchManager.isContainKatakanaOrHinagana(originStr)
+                if (isContainChinese || isContainKatakanaOrHinagana) {
+                    if (isContainChinese) {
+                        val chinese = searchManager.toHanYuPinyinString(originStr)
+                        resultStr = "$resultStr $chinese"
+                    }
+
+                    val japanese = searchManager.toHiraString(originStr)
+                    val romaji = searchManager.toRomajiString(japanese)
+                    resultStr = "$resultStr $romaji"
+                }
+                searchManager.checkKeywords(resultStr, keywords)
+            }
+        }.flowOn(Dispatchers.IO).asLiveData()
+
+    val mediaMetadataLiveData: LiveData<MediaMetadata> = _mediaMetadataLiveData
+    val currentPositionLiveData: LiveData<Long> = _currentPositionLiveData
+
+    override fun onStart(owner: LifecycleOwner) {
+        browserFuture = MediaBrowser.Builder(
+            mContext, SessionToken(mContext, ComponentName(mContext, MSongService::class.java))
+        ).setListener(MyBrowserListener())
+            .buildAsync()
+        browserFuture.addListener({ onConnected() }, MoreExecutors.directExecutor())
+    }
+
+    override fun onStop(owner: LifecycleOwner) {
+        MediaBrowser.releaseFuture(browserFuture)
+    }
+
+    private inner class MyBrowserListener : MediaBrowser.Listener {
+        override fun onChildrenChanged(
+            browser: MediaBrowser,
+            parentId: String,
+            itemCount: Int,
+            params: MediaLibraryService.LibraryParams?
+        ) {
+
+        }
+    }
+
+    private fun onConnected() {
+        println("[MSongBrowser]#onConnected")
+        val browser = browserFuture.get() ?: return
+
+        updateCurrentMediaItem(browser.currentMediaItem)
+        updateMediaMetadataUI(browser.mediaMetadata)
+        updateShuffleSwitchUI(browser.shuffleModeEnabled)
+        updateRepeatSwitchUI(browser.repeatMode)
+        updatePosition()
+
+        browser.addListener(object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                println("play: onMediaItemTransition: ${System.currentTimeMillis()}")
+                updateCurrentMediaItem(mediaItem)
+                updateMediaMetadataUI(mediaItem?.mediaMetadata ?: MediaMetadata.EMPTY)
+                updatePosition(true)
+                println("play: onMediaItemTransitionEND: ${System.currentTimeMillis()}")
+            }
+
+            override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+                updateShuffleSwitchUI(shuffleModeEnabled)
+            }
+
+            override fun onRepeatModeChanged(repeatMode: Int) {
+                updateRepeatSwitchUI(repeatMode)
+            }
+
+            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                val temps = MutableList(browser.mediaItemCount) {
+                    return@MutableList mediaSource.getItemById(
+                        ITEM_PREFIX + browser.getMediaItemAt(it).mediaId
+                    )
+                }
+                launch(Dispatchers.IO) {
+                    _playlistFlow.emit(temps.mapNotNull { it })
+                }
+            }
+        })
+    }
+
+    private fun updateCurrentMediaItem(mediaItem: MediaItem?) {
+        launch(Dispatchers.IO) {
+            _currentMediaItemFlow.emit(mediaItem)
+        }
+    }
+
+    private fun updateMediaMetadataUI(mediaMetadata: MediaMetadata) {
+        _mediaMetadataLiveData.postValue(mediaMetadata)
+    }
+
+    private fun updateShuffleSwitchUI(shuffleModeEnabled: Boolean) {
+    }
+
+    private fun updateRepeatSwitchUI(repeatMode: Int) {
+    }
+
+    private var lastPlayState = false
+    private fun updatePosition(force: Boolean = false) {
+        browser?.let {
+            if (lastPlayState != it.isPlaying && !force) {
+                lastPlayState = it.isPlaying
+            } else {
+                _currentPositionLiveData.postValue(it.currentPosition)
+            }
+        }
+        if (!force) {
+            Handler().postDelayed(this::updatePosition, 100)
+        }
+    }
+}

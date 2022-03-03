@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.domain.entity
+package com.lalilu.lmusic.datasource.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

@@ -9,7 +9,7 @@ import android.util.LruCache
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.lalilu.R
-import com.lalilu.lmusic.toEmbeddedCoverSource
+import com.lalilu.lmusic.utils.fetcher.toEmbeddedCoverSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.BufferedSource

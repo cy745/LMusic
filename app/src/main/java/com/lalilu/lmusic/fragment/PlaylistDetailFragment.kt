@@ -1,7 +1,9 @@
 package com.lalilu.lmusic.fragment
 
+import android.annotation.SuppressLint
 import android.widget.TextView
 import androidx.databinding.library.baseAdapters.BR
+import androidx.media3.common.Player
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.blankj.utilcode.util.KeyboardUtils
@@ -11,9 +13,10 @@ import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.event.PlayerModule
 import com.lalilu.lmusic.fragment.viewmodel.PlaylistDetailViewModel
+import com.lalilu.lmusic.service.MSongBrowser
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -21,7 +24,9 @@ import kotlin.coroutines.CoroutineContext
 
 
 @AndroidEntryPoint
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
+@SuppressLint("UnsafeOptInUsageError")
 class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
     private val args: PlaylistDetailFragmentArgs by navArgs()
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -39,16 +44,22 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
     lateinit var dataBase: LMusicDataBase
 
     @Inject
-    lateinit var playerModule: PlayerModule
+    lateinit var mSongBrowser: MSongBrowser
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter.onItemClick = {
-            playerModule.mediaController?.transportControls
-                ?.playFromMediaId("${it.songId}", null)
+        mAdapter.onItemClick = { item ->
+            mSongBrowser.browser?.apply {
+                clearMediaItems()
+                setMediaItems(mAdapter.data)
+                seekToDefaultPosition(mAdapter.data.indexOfFirst { it.mediaId == item.mediaId })
+                repeatMode = Player.REPEAT_MODE_ALL
+                prepare()
+                play()
+            }
         }
         mAdapter.onItemLongClick = {
             findNavController().navigate(
-                PlaylistDetailFragmentDirections.playlistToSongDetail(it.songId)
+                PlaylistDetailFragmentDirections.playlistToSongDetail(it.mediaId.toLong())
             )
         }
         return DataBindingConfig(R.layout.fragment_detail_playlist)
@@ -61,11 +72,11 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
             playlist?.playlistId ?: return@observe
 
             launch(Dispatchers.IO) {
-                val list = dataBase.songInPlaylistDao()
+                val songs = dataBase.songInPlaylistDao()
                     .getAllByPlaylistId(playlist.playlistId)
-                    .map { it.songId }
-                val songs = mediaSource.getSongsBySongIds(list)
-                    .toMutableList()
+                    .mapNotNull {
+                        mediaSource.getItemById(ITEM_PREFIX + it.songId)
+                    }.toMutableList()
                 withContext(Dispatchers.Main) {
                     mAdapter.setDiffNewData(songs)
                 }

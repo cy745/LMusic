@@ -3,7 +3,7 @@ package com.lalilu.lmusic.adapter
 import androidx.recyclerview.widget.DiffUtil
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlaylistBinding
-import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.datasource.entity.MPlaylist
 import javax.inject.Inject
 
 class PlaylistsAdapter @Inject constructor() :

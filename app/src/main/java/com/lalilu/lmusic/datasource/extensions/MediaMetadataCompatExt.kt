@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package com.lalilu.lmusic.datasource
+package com.lalilu.lmusic.datasource.extensions
 
-import android.database.Cursor
 import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat.MediaItem
-import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import androidx.core.net.toUri
-import com.lalilu.lmusic.utils.*
 
 /**
  * Useful extensions for [MediaMetadataCompat].
@@ -251,21 +248,6 @@ inline var MediaMetadataCompat.Builder.flag: Int
     set(value) {
         putLong(METADATA_KEY_UAMP_FLAGS, value.toLong())
     }
-
-fun MediaMetadataCompat.Builder.from(cursor: Cursor): MediaMetadataCompat.Builder {
-    id = cursor.getSongId().toString()
-    title = cursor.getSongTitle()
-    artist = cursor.getArtist()
-    album = cursor.getAlbumTitle()
-    duration = cursor.getSongDuration()
-    genre = cursor.getSongGenre()
-    mediaUri = cursor.getMediaUri()
-//    albumArtUri = jsonMusic.image
-//    trackNumber = cursor.getTrackNumber()
-//    trackCount = jsonMusic.totalTrackCount
-    flag = MediaItem.FLAG_PLAYABLE
-    return this
-}
 
 /**
  * Custom property that holds whether an item is [MediaItem.FLAG_BROWSABLE] or

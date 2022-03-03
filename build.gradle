@@ -6,6 +6,7 @@ buildscript {
     ext.room_version = "2.4.1"
     ext.navigation_version = "2.4.1"
     ext.hilt_version = "2.40.5"
+    ext.media3_version = "1.0.0-alpha01"
 
     repositories {
         maven { url 'https://jitpack.io' }

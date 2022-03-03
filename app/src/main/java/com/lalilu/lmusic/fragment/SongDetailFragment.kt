@@ -1,16 +1,18 @@
 package com.lalilu.lmusic.fragment
 
+import android.annotation.SuppressLint
 import android.view.View
 import androidx.navigation.fragment.navArgs
-import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentSongDetailBinding
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
+import com.lalilu.lmusic.binding_adapter.setCoverSourceUri
 import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.datasource.SongInPlaylist
-import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.fragment.viewmodel.SongDetailViewModel
 import com.lalilu.lmusic.ui.MyPopupWindow
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,13 +38,19 @@ class SongDetailFragment : DataBindingFragment(), CoroutineScope {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.fragment_song_detail)
-            .addParam(BR.vm, mState)
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
     override fun onViewCreated() {
         val binding = mBinding as FragmentSongDetailBinding
+        mState._song.observe(viewLifecycleOwner) {
+            it ?: return@observe
+            binding.songDetailTitle.text = it.mediaMetadata.title.toString()
+            binding.songDetailArtist.text = it.mediaMetadata.artist.toString()
+            binding.detailCover.setCoverSourceUri(it.mediaMetadata.mediaUri)
+        }
         mState._song.postValue(
-            mediaSource.getSongById(args.songId)
+            mediaSource.getItemById(ITEM_PREFIX + args.songId)
         )
         binding.songDetailAddSongToPlaylistButton.setOnClickListener {
             showSongToPlaylistPopupWindow(binding.root)

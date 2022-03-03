@@ -12,7 +12,7 @@ import com.lalilu.databinding.PopupAddToPlaylistBinding
 import com.lalilu.lmusic.adapter.AddSongToPlaylistsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingPopupWindow
-import com.lalilu.lmusic.domain.entity.MPlaylist
+import com.lalilu.lmusic.datasource.entity.MPlaylist
 
 class MyPopupWindow constructor(
     context: Context,

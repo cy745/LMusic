@@ -3,7 +3,7 @@ package com.lalilu.lmusic.fragment.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.lalilu.lmusic.domain.entity.MAlbum
+import androidx.media3.common.MediaItem
 import javax.inject.Inject
 
 /**
@@ -11,6 +11,6 @@ import javax.inject.Inject
  *
  */
 class AlbumDetailViewModel @Inject constructor() : ViewModel() {
-    val _album: MutableLiveData<MAlbum?> = MutableLiveData()
-    val album: LiveData<MAlbum?> = _album
+    val _album: MutableLiveData<MediaItem?> = MutableLiveData()
+    val album: LiveData<MediaItem?> = _album
 }

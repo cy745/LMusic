@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.lalilu.lmusic.datasource
+package com.lalilu.lmusic.datasource.extensions
 
 import android.net.Uri
 import java.net.URLEncoder

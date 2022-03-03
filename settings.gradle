@@ -1,2 +1,5 @@
 rootProject.name = "lmusic"
 include ':app'
+
+gradle.ext.androidxMediaModulePrefix = 'media-'
+apply from: file("D:/ProjectFile/Android/media/core_settings.gradle")
