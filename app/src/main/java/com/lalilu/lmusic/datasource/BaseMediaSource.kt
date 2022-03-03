@@ -122,7 +122,8 @@ class BaseMediaSource @Inject constructor(
                 selection = "${MediaStore.Audio.Media.SIZE} >= ? " +
                         "and ${MediaStore.Audio.Media.DURATION} >= ? " +
                         "and ${MediaStore.Audio.Artists.ARTIST} != ?",
-                selectionArgs = arrayOf("$minSizeLimit", "$minDurationLimit", unknownArtist)
+                selectionArgs = arrayOf("$minSizeLimit", "$minDurationLimit", unknownArtist),
+                sortOrder = "${MediaStore.Audio.Media._ID} DESC"
             ) ?: return@withContext ArrayList()
 
             return@withContext ArrayList<MediaItem>().apply {
