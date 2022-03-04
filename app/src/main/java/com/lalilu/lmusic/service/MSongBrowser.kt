@@ -20,7 +20,9 @@ import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
+import com.lalilu.lmusic.datasource.extensions.getSongData
 import com.lalilu.lmusic.manager.SearchManager
+import com.lalilu.lmusic.utils.EmbeddedDataUtils
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
@@ -56,6 +58,11 @@ class MSongBrowser @Inject constructor(
     private val _currentPositionLiveData: MutableLiveData<Long> = MutableLiveData()
     private val _currentMediaItemFlow: MutableStateFlow<MediaItem?> = MutableStateFlow(null)
     private val _playlistFlow: MutableStateFlow<List<MediaItem>> = MutableStateFlow(emptyList())
+
+    val currentLyricLiveData: LiveData<String?> = _currentMediaItemFlow.mapLatest {
+        return@mapLatest EmbeddedDataUtils.loadLyric(it?.mediaMetadata?.getSongData())
+    }.flowOn(Dispatchers.IO)
+        .asLiveData()
 
     val originPlaylistIdLiveData: LiveData<List<String>> = _playlistFlow
         .mapLatest { it.map { item -> item.mediaId } }
