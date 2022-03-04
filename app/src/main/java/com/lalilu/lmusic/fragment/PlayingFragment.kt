@@ -47,15 +47,14 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     private val defaultSlogan: String by lazy {
         requireActivity().resources.getString(R.string.default_slogan)
     }
-    private var tempList: List<String> = emptyList()
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.onItemClick = {
-            val index = tempList.indexOfFirst { item -> item == it.mediaId }
-            mSongBrowser.browser?.apply {
-                seekToDefaultPosition(index)
-                prepare()
-                play()
+            if (mSongBrowser.playById(it.mediaId)) {
+                mSongBrowser.browser?.apply {
+                    prepare()
+                    play()
+                }
             }
         }
         mAdapter.onItemLongClick = { song ->
@@ -89,9 +88,6 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
                     fmToolbar.collapseActionView()
             }
         })
-        mSongBrowser.originPlaylistIdLiveData.observe(viewLifecycleOwner) {
-            tempList = it
-        }
         mSongBrowser.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             val title = it?.mediaMetadata?.title
             val text = if (TextUtils.isEmpty(title)) defaultSlogan else title

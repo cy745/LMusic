@@ -14,6 +14,7 @@ import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.datasource.SongInPlaylist
 import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.fragment.viewmodel.SongDetailViewModel
+import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MyPopupWindow
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -22,6 +23,7 @@ import kotlin.coroutines.CoroutineContext
 
 
 @AndroidEntryPoint
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 class SongDetailFragment : DataBindingFragment(), CoroutineScope {
     private val args: SongDetailFragmentArgs by navArgs()
@@ -32,6 +34,9 @@ class SongDetailFragment : DataBindingFragment(), CoroutineScope {
 
     @Inject
     lateinit var mediaSource: BaseMediaSource
+
+    @Inject
+    lateinit var mSongBrowser: MSongBrowser
 
     @Inject
     lateinit var dataBase: LMusicDataBase
@@ -54,6 +59,12 @@ class SongDetailFragment : DataBindingFragment(), CoroutineScope {
         )
         binding.songDetailAddSongToPlaylistButton.setOnClickListener {
             showSongToPlaylistPopupWindow(binding.root)
+        }
+        binding.songDetailSetSongToNextButton.setOnClickListener {
+            mSongBrowser.addToNext(args.songId.toString())
+        }
+        binding.songDetailSearchForLyricButton.setOnClickListener {
+
         }
     }
 
