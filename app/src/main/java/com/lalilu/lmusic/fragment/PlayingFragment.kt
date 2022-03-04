@@ -75,14 +75,15 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         val fmAppbarLayout = binding.fmAppbarLayout
         mActivity?.setSupportActionBar(binding.fmToolbar)
 
-        mSongBrowser.mediaMetadataLiveData.observe(viewLifecycleOwner) {
-            val text = if (TextUtils.isEmpty(it.title)) defaultSlogan else it.title
+        mSongBrowser.currentMediaItemLiveData.observe(viewLifecycleOwner) {
+            val title = it?.mediaMetadata?.title
+            val text = if (TextUtils.isEmpty(title)) defaultSlogan else title
             if (binding.fmCollapseLayout.title != text) {
                 binding.fmCollapseLayout.title = text
             }
-            binding.fmTopPic.setCoverSourceUri(it.mediaUri)
+            binding.fmTopPic.setCoverSourceUri(it?.mediaMetadata?.mediaUri)
             launch(Dispatchers.IO) {
-                val lyric = EmbeddedDataUtils.loadLyric(it.getSongData())
+                val lyric = EmbeddedDataUtils.loadLyric(it?.mediaMetadata?.getSongData())
                 withContext(Dispatchers.Main) {
                     binding.fmLyricViewX.loadLyric(lyric, null)
                 }

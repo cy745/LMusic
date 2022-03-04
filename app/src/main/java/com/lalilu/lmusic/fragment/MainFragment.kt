@@ -40,8 +40,8 @@ class MainFragment : DataBindingFragment() {
         val dialog = NavigatorFragment()
 
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
-        mSongBrowser.mediaMetadataLiveData.observe(viewLifecycleOwner) {
-            seekBar.setSumDuration(it.getDuration().coerceAtLeast(0))
+        mSongBrowser.currentMediaItemLiveData.observe(viewLifecycleOwner) {
+            seekBar.setSumDuration(it?.mediaMetadata?.getDuration()?.coerceAtLeast(0) ?: 0)
         }
 
         mSongBrowser.currentPositionLiveData.observe(viewLifecycleOwner) {
