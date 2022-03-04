@@ -34,7 +34,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="各种各样的选项"
+                android:text="@string/destination_subtitle_library"
                 android:textColor="@color/daynight_0.4"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"

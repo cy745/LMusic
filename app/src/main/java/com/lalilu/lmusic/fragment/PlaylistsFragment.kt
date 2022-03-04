@@ -9,14 +9,17 @@ import com.lalilu.lmusic.adapter.PlaylistsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.LMusicDataBase
+import com.lalilu.lmusic.datasource.SongInPlaylist
 import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.fragment.viewmodel.PlaylistsViewModel
+import com.lalilu.lmusic.service.MSongBrowser
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Main
@@ -30,6 +33,9 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
     @Inject
     lateinit var dataBase: LMusicDataBase
 
+    @Inject
+    lateinit var mediaBrowser: MSongBrowser
+
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.onItemLongClick = {
             launch(Dispatchers.IO) {
@@ -40,7 +46,7 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
             mState._position.postValue(requireScrollOffset())
             findNavController().navigate(
                 PlaylistsFragmentDirections.toPlaylistDetail(
-                    playlistId = it.playlistId ?: 0,
+                    playlistId = it.playlistId,
                     playlistTitle = it.playlistTitle
                 )
             )
@@ -54,7 +60,6 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
     override fun onViewCreated() {
         val binding = mBinding as FragmentListPlaylistsBinding
         val recyclerView = binding.playlistsRecyclerView
-        val addButton = binding.playlistAddBotton
 
         dataBase.playlistDao().getAllLiveDataSortByTime().observe(viewLifecycleOwner) {
             mAdapter.setDiffNewData(it.toMutableList())
@@ -69,7 +74,22 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
             }
         }
 
-        addButton.setOnClickListener {
+        binding.playlistCopyCurrentButton.setOnClickListener {
+            launch(Dispatchers.IO) {
+                val playlistTitle = "复制歌单: (${mediaBrowser.originPlaylistIds.size})"
+                val playlist = MPlaylist(playlistTitle = playlistTitle)
+                dataBase.playlistDao().save(playlist)
+                dataBase.songInPlaylistDao().save(
+                    mediaBrowser.originPlaylistIds.map {
+                        SongInPlaylist(
+                            playlistId = playlist.playlistId,
+                            mediaId = it
+                        )
+                    }
+                )
+            }
+        }
+        binding.playlistCreateButton.setOnClickListener {
             launch(Dispatchers.IO) {
                 dataBase.playlistDao().save(
                     MPlaylist(playlistTitle = "空歌单")

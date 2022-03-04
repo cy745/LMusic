@@ -37,7 +37,7 @@ class AlbumsFragment : DataBindingFragment(), CoroutineScope {
             mState._position.postValue(requireScrollOffset())
             findNavController().navigate(
                 AlbumsFragmentDirections.toAlbumDetail(
-                    albumId = it.mediaId.toLong(),
+                    albumId = it.mediaId,
                     albumTitle = it.mediaMetadata.albumTitle.toString()
                 )
             )

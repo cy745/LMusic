@@ -7,9 +7,9 @@ import java.util.*
 
 @Entity(tableName = "m_playlist")
 data class MPlaylist(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     @ColumnInfo(name = "playlist_id")
-    val playlistId: Long? = null,
+    val playlistId: Long = System.currentTimeMillis(),
 
     @ColumnInfo(name = "playlist_title")
     val playlistTitle: String = "New Playlist.",

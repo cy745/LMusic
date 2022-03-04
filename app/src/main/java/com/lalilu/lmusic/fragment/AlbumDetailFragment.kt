@@ -51,7 +51,7 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
         }
         mAdapter.onItemLongClick = {
             findNavController().navigate(
-                AlbumDetailFragmentDirections.albumToSongDetail(it.mediaId.toLong())
+                AlbumDetailFragmentDirections.albumToSongDetail(it.mediaId)
             )
         }
         return DataBindingConfig(R.layout.fragment_detail_album)

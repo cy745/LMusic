@@ -35,11 +35,7 @@
             app:popUpTo="@id/libraryFragment" />
         <action
             android:id="@+id/libraryToSongDetail"
-            app:destination="@id/songDetailFragment">
-            <argument
-                android:name="songId"
-                android:defaultValue="-1L" />
-        </action>
+            app:destination="@id/songDetailFragment" />
     </fragment>
 
     <fragment
@@ -54,14 +50,7 @@
             app:exitAnim="@anim/dialog_nav_exit_anim"
             app:popEnterAnim="@anim/dialog_nav_enter_anim"
             app:popExitAnim="@anim/dialog_nav_exit_anim"
-            app:popUpTo="@id/albumsFragment">
-            <argument
-                android:name="albumId"
-                android:defaultValue="-1L" />
-            <argument
-                android:name="albumTitle"
-                android:defaultValue="专辑详情" />
-        </action>
+            app:popUpTo="@id/albumsFragment" />
     </fragment>
     <fragment
         android:id="@+id/playlistsFragment"
@@ -88,8 +77,7 @@
         tools:layout="@layout/fragment_detail_album">
         <argument
             android:name="albumId"
-            android:defaultValue="-1L"
-            app:argType="long" />
+            app:argType="string" />
         <argument
             android:name="albumTitle"
             app:argType="string"
@@ -101,11 +89,7 @@
             app:exitAnim="@anim/dialog_nav_exit_anim"
             app:popEnterAnim="@anim/dialog_nav_enter_anim"
             app:popExitAnim="@anim/dialog_nav_exit_anim"
-            app:popUpTo="@id/albumDetailFragment">
-            <argument
-                android:name="songId"
-                android:defaultValue="-1L" />
-        </action>
+            app:popUpTo="@id/albumDetailFragment" />
     </fragment>
     <fragment
         android:id="@+id/playlistDetailFragment"
@@ -127,11 +111,7 @@
             app:exitAnim="@anim/dialog_nav_exit_anim"
             app:popEnterAnim="@anim/dialog_nav_enter_anim"
             app:popExitAnim="@anim/dialog_nav_exit_anim"
-            app:popUpTo="@id/playlistDetailFragment">
-            <argument
-                android:name="songId"
-                android:defaultValue="-1L" />
-        </action>
+            app:popUpTo="@id/playlistDetailFragment" />
     </fragment>
     <fragment
         android:id="@+id/allSongFragment"
@@ -145,11 +125,7 @@
             app:exitAnim="@anim/dialog_nav_exit_anim"
             app:popEnterAnim="@anim/dialog_nav_enter_anim"
             app:popExitAnim="@anim/dialog_nav_exit_anim"
-            app:popUpTo="@id/allSongFragment">
-            <argument
-                android:name="songId"
-                android:defaultValue="-1L" />
-        </action>
+            app:popUpTo="@id/allSongFragment" />
     </fragment>
     <fragment
         android:id="@+id/songDetailFragment"
@@ -157,8 +133,7 @@
         android:label="@string/destination_label_song_detail"
         tools:layout="@layout/fragment_song_detail">
         <argument
-            android:name="songId"
-            android:defaultValue="-1L"
-            app:argType="long" />
+            android:name="mediaId"
+            app:argType="string" />
     </fragment>
 </navigation>
