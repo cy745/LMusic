@@ -93,9 +93,15 @@ object EmbeddedDataUtils {
         songData ?: return null
 
         val audioTag = getTag(songData) ?: return null
-        val lyric = audioTag.getFields(FieldKey.LYRICS)
+        var lyric = audioTag.getFields(FieldKey.LYRICS)
             .run { if (isNotEmpty()) get(0).toString() else null }
 
+        if (TextUtils.isEmpty(lyric)) {
+            val path = songData.substring(0, songData.lastIndexOf('.')) + ".lrc"
+            val lrcFile = File(path)
+
+            if (lrcFile.exists()) lyric = lrcFile.readText()
+        }
         if (TextUtils.isEmpty(lyric)) return null
         return lyric
     }
