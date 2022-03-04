@@ -19,16 +19,21 @@ import com.lalilu.R
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.utils.getAutomaticColor
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
 
 @Singleton
 @UnstableApi
 @ExperimentalCoroutinesApi
 class LMusicNotificationProvider @Inject constructor(
     @ApplicationContext private val mContext: Context,
-) : MediaNotification.Provider, LyricManager.LyricPusher {
+) : MediaNotification.Provider, LyricManager.LyricPusher, CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val notificationManager: NotificationManager = ContextCompat.getSystemService(
         mContext, NotificationManager::class.java
@@ -167,13 +172,18 @@ class LMusicNotificationProvider @Inject constructor(
             .setOngoing(false)
 
         metadata.artworkData?.let {
-            val bitmap = BitmapFactory
-                .decodeByteArray(it, 0, it.size) ?: return@let
-            val palette = Palette.from(bitmap).generate()
-            notificationBgColor = palette.getAutomaticColor()
+            launch(Dispatchers.IO) {
+                val bitmap = BitmapFactory.decodeByteArray(it, 0, it.size)
+                    ?: return@launch
+                val palette = Palette.from(bitmap).generate()
+                notificationBgColor = palette.getAutomaticColor()
 
-            builder.setLargeIcon(bitmap)
-            builder.color = notificationBgColor
+                builder.setLargeIcon(bitmap)
+                builder.color = notificationBgColor
+                onNotificationChangedCallback.onNotificationChanged(
+                    MediaNotification(NOTIFICATION_ID_PLAYER, builder.build())
+                )
+            }
         }
 
         return MediaNotification(NOTIFICATION_ID_PLAYER, builder.build())
