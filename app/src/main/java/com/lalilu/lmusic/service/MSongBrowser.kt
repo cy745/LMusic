@@ -229,7 +229,9 @@ class MSongBrowser @Inject constructor(
         if (originPlaylistIds.contains(mediaId)) {
             val nowIndex = originPlaylistIds.indexOf(mediaId)
             if (nowIndex < 0 || currentIndex == nowIndex) return false
-            browser?.moveMediaItem(nowIndex, currentIndex + 1)
+
+            val targetIndex = if (nowIndex < currentIndex) currentIndex else currentIndex + 1
+            browser?.moveMediaItem(nowIndex, targetIndex)
         } else {
             val item = mediaSource.getItemById(ITEM_PREFIX + mediaId) ?: return false
             browser?.addMediaItem(currentIndex + 1, item)
