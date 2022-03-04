@@ -2,19 +2,21 @@ package com.lalilu.lmusic.service
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.media3.common.*
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import com.blankj.utilcode.util.GsonUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.manager.LyricManager
@@ -33,6 +35,10 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     private lateinit var player: ExoPlayer
     private lateinit var mediaLibrarySession: MediaLibrarySession
     private lateinit var mediaController: MediaController
+
+    private val playerSp: SharedPreferences by lazy {
+        getSharedPreferences(Config.LAST_PLAYED_SP, Context.MODE_PRIVATE)
+    }
 
     @Inject
     lateinit var mediaSource: BaseMediaSource
@@ -78,10 +84,28 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         controllerFuture.addListener({
             mediaController = controllerFuture.get()
             mediaController.addListener(lyricManager.playerListener)
+            mediaController.addListener(LastPlayedListener())
             lyricManager.positionGet = mediaController::getCurrentPosition
         }, MoreExecutors.directExecutor())
 
         setMediaNotificationProvider(notificationProvider)
+    }
+
+    private inner class LastPlayedListener : Player.Listener {
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            playerSp.edit()
+                .putString(Config.LAST_PLAYED_ID, mediaItem?.mediaId)
+                .apply()
+        }
+
+        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+            val list = List(mediaController.mediaItemCount) {
+                mediaController.getMediaItemAt(it).mediaId
+            }
+            playerSp.edit()
+                .putString(Config.LAST_PLAYED_LIST, GsonUtils.toJson(list))
+                .apply()
+        }
     }
 
     private inner class CustomMediaItemFiller : MediaSession.MediaItemFiller {
