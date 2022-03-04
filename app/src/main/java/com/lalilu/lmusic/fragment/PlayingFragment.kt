@@ -10,16 +10,17 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
 import com.lalilu.lmusic.binding_adapter.setCoverSourceUri
-import com.lalilu.lmusic.datasource.extensions.getSongData
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.MSongBrowser
-import com.lalilu.lmusic.utils.EmbeddedDataUtils
 import com.lalilu.material.appbar.ExpendHeaderBehavior
 import com.lalilu.material.appbar.MyAppbarBehavior
 import com.lalilu.material.appbar.STATE_COLLAPSED
 import com.lalilu.material.appbar.STATE_NORMAL
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -94,16 +95,11 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         mSongBrowser.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             val title = it?.mediaMetadata?.title
             val text = if (TextUtils.isEmpty(title)) defaultSlogan else title
-            if (fmCollapseLayout.title != text) {
-                fmCollapseLayout.title = text
-            }
+            if (fmCollapseLayout.title != text) fmCollapseLayout.title = text
             fmTopPic.setCoverSourceUri(it?.mediaMetadata?.mediaUri)
-            launch(Dispatchers.IO) {
-                val lyric = EmbeddedDataUtils.loadLyric(it?.mediaMetadata?.getSongData())
-                withContext(Dispatchers.Main) {
-                    fmLyricViewX.loadLyric(lyric, null)
-                }
-            }
+        }
+        mSongBrowser.currentLyricLiveData.observe(viewLifecycleOwner) {
+            fmLyricViewX.loadLyric(it, null)
         }
         mSongBrowser.currentPositionLiveData.observe(viewLifecycleOwner) {
             fmLyricViewX.updateTime(it)
