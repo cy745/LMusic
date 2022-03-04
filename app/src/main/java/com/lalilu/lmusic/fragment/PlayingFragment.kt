@@ -57,13 +57,13 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
                 }
             }
         }
-        mAdapter.onItemLongClick = { song ->
+        mAdapter.onItemLongClick = {
             showDialog(dialog) {
                 (this as NavigatorFragment)
                     .getNavController(singleUse = true)
                     .navigate(
                         LibraryFragmentDirections
-                            .libraryToSongDetail(song.mediaId.toLong())
+                            .libraryToSongDetail(it.mediaId)
                     )
             }
         }

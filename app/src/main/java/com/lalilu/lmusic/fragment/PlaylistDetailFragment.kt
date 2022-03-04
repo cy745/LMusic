@@ -59,7 +59,7 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
         }
         mAdapter.onItemLongClick = {
             findNavController().navigate(
-                PlaylistDetailFragmentDirections.playlistToSongDetail(it.mediaId.toLong())
+                PlaylistDetailFragmentDirections.playlistToSongDetail(it.mediaId)
             )
         }
         return DataBindingConfig(R.layout.fragment_detail_playlist)
@@ -75,7 +75,7 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
                 val songs = dataBase.songInPlaylistDao()
                     .getAllByPlaylistId(playlist.playlistId)
                     .mapNotNull {
-                        mediaSource.getItemById(ITEM_PREFIX + it.songId)
+                        mediaSource.getItemById(ITEM_PREFIX + it.mediaId)
                     }.toMutableList()
                 withContext(Dispatchers.Main) {
                     mAdapter.setDiffNewData(songs)

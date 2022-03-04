@@ -55,13 +55,13 @@ class SongDetailFragment : DataBindingFragment(), CoroutineScope {
             binding.detailCover.setCoverSourceUri(it.mediaMetadata.mediaUri)
         }
         mState._song.postValue(
-            mediaSource.getItemById(ITEM_PREFIX + args.songId)
+            mediaSource.getItemById(ITEM_PREFIX + args.mediaId)
         )
         binding.songDetailAddSongToPlaylistButton.setOnClickListener {
             showSongToPlaylistPopupWindow(binding.root)
         }
         binding.songDetailSetSongToNextButton.setOnClickListener {
-            mSongBrowser.addToNext(args.songId.toString())
+            mSongBrowser.addToNext(args.mediaId)
         }
         binding.songDetailSearchForLyricButton.setOnClickListener {
 
@@ -94,11 +94,10 @@ class SongDetailFragment : DataBindingFragment(), CoroutineScope {
     private fun saveSongToPlaylist(targetList: List<MPlaylist>) =
         launch(Dispatchers.IO) {
             targetList.forEach { playlist ->
-                playlist.playlistId ?: return@forEach
                 dataBase.songInPlaylistDao().save(
                     SongInPlaylist(
                         playlistId = playlist.playlistId,
-                        songId = args.songId
+                        mediaId = args.mediaId
                     )
                 )
             }

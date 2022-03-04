@@ -49,7 +49,7 @@ class AllSongFragment : DataBindingFragment(), CoroutineScope {
         }
         mAdapter.onItemLongClick = {
             findNavController().navigate(
-                AllSongFragmentDirections.allSongToSongDetail(it.mediaId.toLong())
+                AllSongFragmentDirections.allSongToSongDetail(it.mediaId)
             )
         }
         return DataBindingConfig(R.layout.fragment_detail_all_song)

@@ -59,7 +59,7 @@ data class SongInPlaylist(
     @ColumnInfo(name = "song_in_playlist_playlist_id")
     val playlistId: Long,
     @ColumnInfo(name = "song_in_playlist_song_id")
-    val songId: Long,
+    val mediaId: String,
     @ColumnInfo(name = "song_in_playlist_create_time")
     val time: Date = Date()
 )
@@ -85,7 +85,7 @@ object LMusicDataBaseModule {
         LastPlayInfo::class,
         SongInPlaylist::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(
@@ -113,9 +113,6 @@ interface MPlaylistDao {
     @Query("SELECT * FROM m_playlist;")
     fun getAll(): List<MPlaylist>
 
-    @Query("SELECT * FROM m_playlist;")
-    fun getAllLiveData(): LiveData<List<MPlaylist>>
-
     @Query("SELECT * FROM m_playlist ORDER BY playlist_create_time DESC;")
     fun getAllLiveDataSortByTime(): LiveData<List<MPlaylist>>
 
@@ -139,6 +136,9 @@ interface LastPlayInfoDao {
 interface SongInPlaylistDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun save(vararg songInPlaylist: SongInPlaylist)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun save(songInPlaylists: List<SongInPlaylist>)
 
     @Delete(entity = SongInPlaylist::class)
     fun delete(vararg songInPlaylist: SongInPlaylist)
