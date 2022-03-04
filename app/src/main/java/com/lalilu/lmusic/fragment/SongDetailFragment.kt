@@ -5,6 +5,8 @@ import android.view.View
 import androidx.navigation.fragment.navArgs
 import com.lalilu.R
 import com.lalilu.databinding.FragmentSongDetailBinding
+import com.lalilu.lmusic.apis.NetworkLyric
+import com.lalilu.lmusic.apis.SongSearchResponse
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.binding_adapter.setCoverSourceUri
@@ -16,8 +18,11 @@ import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.fragment.viewmodel.SongDetailViewModel
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MyPopupWindow
+import com.lalilu.lmusic.utils.ToastUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
+import retrofit2.Call
+import retrofit2.Response
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -40,6 +45,12 @@ class SongDetailFragment : DataBindingFragment(), CoroutineScope {
 
     @Inject
     lateinit var dataBase: LMusicDataBase
+
+    @Inject
+    lateinit var networkLyric: NetworkLyric
+
+    @Inject
+    lateinit var toastUtil: ToastUtil
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.fragment_song_detail)
@@ -64,7 +75,28 @@ class SongDetailFragment : DataBindingFragment(), CoroutineScope {
             mSongBrowser.addToNext(args.mediaId)
         }
         binding.songDetailSearchForLyricButton.setOnClickListener {
+            mState.song.value?.mediaMetadata?.let {
+                val keyword = "${it.title} ${it.artist} ${it.albumTitle}"
+                println(keyword)
+                networkLyric.searchForSong(keyword)
+                    .enqueue(object : retrofit2.Callback<SongSearchResponse> {
+                        override fun onResponse(
+                            call: Call<SongSearchResponse>,
+                            response: Response<SongSearchResponse>
+                        ) {
+                            val list = response.body()?.result?.songs?.map { song ->
+                                "【${song.name} ${song.album.name} ${song.artists[0].name}】  "
+                            }
+                            toastUtil.show(list.toString())
+                            println(list.toString())
+                        }
 
+                        override fun onFailure(call: Call<SongSearchResponse>, t: Throwable) {
+                            toastUtil.show(t.message)
+                            t.printStackTrace()
+                        }
+                    })
+            }
         }
     }
 
