@@ -109,9 +109,11 @@ dependencies {
     // 安卓工具类库
     implementation 'com.blankj:utilcodex:1.31.0'
 
+    // https://github.com/square/retrofit
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
     // Apache-2.0 License
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
     // https://github.com/Commit451/NativeStackBlur
     // Apache-2.0 License
