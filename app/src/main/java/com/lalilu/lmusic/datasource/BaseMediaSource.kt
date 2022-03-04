@@ -17,6 +17,7 @@ import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,8 +26,7 @@ import kotlin.coroutines.CoroutineContext
 @Singleton
 @SuppressLint("UnsafeOptInUsageError")
 class BaseMediaSource @Inject constructor(
-    @ApplicationContext private val mContext: Context,
-    private val dataBase: LMusicDataBase
+    @ApplicationContext private val mContext: Context
 ) : CoroutineScope, AbstractMediaSource() {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val targetUri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
@@ -94,6 +94,10 @@ class BaseMediaSource @Inject constructor(
                     .setFolderType(FOLDER_TYPE_PLAYLISTS)
                     .build()
             ).build()
+    }
+
+    fun loadSync() = launch {
+        load()
     }
 
     override suspend fun load() {

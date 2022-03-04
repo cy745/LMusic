@@ -7,31 +7,11 @@ import android.view.View
 import androidx.appcompat.widget.LinearLayoutCompat.SHOW_DIVIDER_NONE
 import androidx.appcompat.widget.SearchView
 import com.lalilu.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
 
 class MySearchBar constructor(
-    private val menuItem: MenuItem,
+    menuItem: MenuItem,
     private val update: (text: String?) -> Unit
-) : SearchView.OnQueryTextListener, SearchView.OnCloseListener, CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Main
-
-    val isExpended: Boolean
-        get() {
-            return menuItem.isActionViewExpanded
-        }
-
-    fun expend() = launch {
-        if (isExpended) return@launch
-        menuItem.expandActionView()
-    }
-
-    fun collapse() = launch {
-        if (!isExpended) return@launch
-        menuItem.collapseActionView()
-    }
+) : SearchView.OnQueryTextListener, SearchView.OnCloseListener {
 
     init {
         val searchView = menuItem.actionView as SearchView
@@ -62,6 +42,4 @@ class MySearchBar constructor(
         update(null)
         return false
     }
-
-
 }

@@ -14,7 +14,10 @@ import com.lalilu.lmusic.datasource.extensions.getSongData
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.utils.EmbeddedDataUtils
-import com.lalilu.material.appbar.AppBarLayout
+import com.lalilu.material.appbar.ExpendHeaderBehavior
+import com.lalilu.material.appbar.MyAppbarBehavior
+import com.lalilu.material.appbar.STATE_COLLAPSED
+import com.lalilu.material.appbar.STATE_NORMAL
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -36,25 +39,24 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     @Inject
     lateinit var mSongBrowser: MSongBrowser
 
-    private lateinit var dialog: NavigatorFragment
+    private val dialog: NavigatorFragment by lazy {
+        NavigatorFragment()
+    }
 
     private val defaultSlogan: String by lazy {
         requireActivity().resources.getString(R.string.default_slogan)
     }
+    private var tempList: List<String> = emptyList()
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.onItemClick = {
-            println("play: onItemClick: ${System.currentTimeMillis()}")
-            val index = mAdapter.tempList.indexOfFirst { item -> item == it.mediaId }
-
+            val index = tempList.indexOfFirst { item -> item == it.mediaId }
             mSongBrowser.browser?.apply {
-                println("play: seekToPosition: ${System.currentTimeMillis()}")
                 seekToDefaultPosition(index)
                 prepare()
                 play()
             }
         }
-        dialog = NavigatorFragment()
         mAdapter.onItemLongClick = { song ->
             showDialog(dialog) {
                 (this as NavigatorFragment)
@@ -72,41 +74,45 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 
     override fun onViewCreated() {
         val binding = mBinding as FragmentPlayingBinding
+        val fmCollapseLayout = binding.fmCollapseLayout
         val fmAppbarLayout = binding.fmAppbarLayout
-        mActivity?.setSupportActionBar(binding.fmToolbar)
-
+        val fmLyricViewX = binding.fmLyricViewX
+        val fmToolbar = binding.fmToolbar
+        val fmTopPic = binding.fmTopPic
+        mActivity?.setSupportActionBar(fmToolbar)
+        val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
+        behavior.addOnStateChangeListener(object :
+            ExpendHeaderBehavior.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {
+            override fun onScrollToStateListener() {
+                if (fmToolbar.hasExpandedActionView())
+                    fmToolbar.collapseActionView()
+            }
+        })
+        mSongBrowser.originPlaylistIdLiveData.observe(viewLifecycleOwner) {
+            tempList = it
+        }
         mSongBrowser.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             val title = it?.mediaMetadata?.title
             val text = if (TextUtils.isEmpty(title)) defaultSlogan else title
-            if (binding.fmCollapseLayout.title != text) {
-                binding.fmCollapseLayout.title = text
+            if (fmCollapseLayout.title != text) {
+                fmCollapseLayout.title = text
             }
-            binding.fmTopPic.setCoverSourceUri(it?.mediaMetadata?.mediaUri)
+            fmTopPic.setCoverSourceUri(it?.mediaMetadata?.mediaUri)
             launch(Dispatchers.IO) {
                 val lyric = EmbeddedDataUtils.loadLyric(it?.mediaMetadata?.getSongData())
                 withContext(Dispatchers.Main) {
-                    binding.fmLyricViewX.loadLyric(lyric, null)
+                    fmLyricViewX.loadLyric(lyric, null)
                 }
             }
         }
         mSongBrowser.currentPositionLiveData.observe(viewLifecycleOwner) {
-            binding.fmLyricViewX.updateTime(it)
+            fmLyricViewX.updateTime(it)
         }
         mSongBrowser.playlistLiveData.observe(viewLifecycleOwner) {
             mAdapter.setDiffNewData(it.toMutableList())
         }
-        mSongBrowser.originPlaylistIdLiveData.observe(viewLifecycleOwner) {
-            mAdapter.tempList = it
-        }
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
             it?.get { fmAppbarLayout.setExpanded(false, true) }
         }
-
-        var lastOffset = 0
-        fmAppbarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appbarLayout, verticalOffset ->
-            if ((lastOffset - verticalOffset < 0) && verticalOffset >= (-appbarLayout.totalScrollRange * 3 / 4))
-                mEvent.collapseSearchView()
-            lastOffset = verticalOffset
-        })
     }
 }

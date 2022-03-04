@@ -58,9 +58,8 @@ class MSongBrowser @Inject constructor(
     private val _playlistFlow: MutableStateFlow<List<MediaItem>> = MutableStateFlow(emptyList())
 
     val originPlaylistIdLiveData: LiveData<List<String>> = _playlistFlow
-        .mapLatest { list ->
-            list.map { it.mediaId }
-        }.flowOn(Dispatchers.IO)
+        .mapLatest { it.map { item -> item.mediaId } }
+        .flowOn(Dispatchers.IO)
         .asLiveData()
 
     val playlistLiveData: LiveData<List<MediaItem>> =

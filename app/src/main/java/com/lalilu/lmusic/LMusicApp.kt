@@ -11,7 +11,6 @@ import com.simple.spiderman.SpiderMan
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -38,6 +37,5 @@ class LMusicApp : Application(), ImageLoaderFactory, CoroutineScope {
     override fun onCreate() {
         super.onCreate()
         SpiderMan.setTheme(R.style.SpiderManTheme_Dark)
-        launch { mediaSource.load() }
     }
 }

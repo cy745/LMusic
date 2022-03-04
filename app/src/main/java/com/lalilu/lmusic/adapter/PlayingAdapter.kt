@@ -12,7 +12,6 @@ import javax.inject.Inject
 
 class PlayingAdapter @Inject constructor() :
     BaseAdapter<MediaItem, ItemPlayingBinding>(R.layout.item_playing) {
-    var tempList: List<String> = emptyList()
 
     override val itemCallback: DiffUtil.ItemCallback<MediaItem>
         get() = object : DiffUtil.ItemCallback<MediaItem>() {
@@ -39,9 +38,8 @@ class PlayingAdapter @Inject constructor() :
 
     private var mRecyclerView: RecyclerView? = null
 
-    @SuppressLint("UnsafeOptInUsageError")
     override fun setDiffNewData(list: MutableList<MediaItem>?) {
-        mRecyclerView ?: run {
+        if (mRecyclerView == null) {
             super.setDiffNewData(list)
             return
         }
