@@ -56,7 +56,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     override fun onCreate() {
         super.onCreate()
         player = ExoPlayer.Builder(this)
-            .setUseLazyPreparation(true)
+            .setUseLazyPreparation(false)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .build()

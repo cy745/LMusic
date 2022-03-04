@@ -188,11 +188,10 @@ class MSongBrowser @Inject constructor(
         return emptyList()
     }
 
-    private fun updateCurrentMediaItem(mediaItem: MediaItem?) {
+    private fun updateCurrentMediaItem(mediaItem: MediaItem?) =
         launch(Dispatchers.IO) {
             _currentMediaItemFlow.emit(mediaItem)
         }
-    }
 
     private fun updateShuffleSwitchUI(shuffleModeEnabled: Boolean) {
     }
