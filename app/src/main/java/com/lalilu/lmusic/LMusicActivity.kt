@@ -13,6 +13,7 @@ import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchBar
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
+import com.lalilu.lmusic.utils.ToastUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
@@ -32,6 +33,9 @@ class LMusicActivity : DataBindingActivity() {
     @Inject
     lateinit var mSongBrowser: MSongBrowser
 
+    @Inject
+    lateinit var toastUtil: ToastUtil
+
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.activity_main)
     }
@@ -39,7 +43,11 @@ class LMusicActivity : DataBindingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         StatusBarUtil.immerseStatusBar(this)
-        PermissionUtils.requestPermission(this)
+        PermissionUtils.requestPermission(this, onSuccess = {
+            mediaSource.loadSync()
+        }, onFailed = {
+            toastUtil.show("无外部存储读取权限，无法读取歌曲")
+        })
         volumeControlStream = AudioManager.STREAM_MUSIC
         lifecycle.addObserver(mSongBrowser)
     }
@@ -53,12 +61,8 @@ class LMusicActivity : DataBindingActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_appbar, menu)
-        val items = menu.findItem(R.id.appbar_search)
-        val searchBar = MySearchBar(items) {
+        MySearchBar(menu.findItem(R.id.appbar_search)) {
             mSongBrowser.searchFor(it)
-        }
-        mEvent.isSearchViewExpand.observe(this) {
-            it?.get { searchBar.collapse() }
         }
         return super.onCreateOptionsMenu(menu)
     }

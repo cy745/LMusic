@@ -22,15 +22,9 @@ class SharedViewModel @Inject constructor() : ViewModel(), CoroutineScope {
 
     val nowBgPalette: MutableLiveData<Palette?> = MutableLiveData(null)
     val isAppbarLayoutExpand: MutableLiveData<Event<Boolean?>> = MutableLiveData(null)
-    val isSearchViewExpand: MutableLiveData<Event<Boolean?>> = MutableLiveData(null)
 
     fun collapseAppbarLayout() = launch {
         delay(100)
         isAppbarLayoutExpand.postValue(Event(true))
     }
-
-    fun collapseSearchView() {
-        isSearchViewExpand.postValue(Event(true))
-    }
-
 }
