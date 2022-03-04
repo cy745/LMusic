@@ -34,6 +34,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
+interface EnhanceBrowser {
+    fun playById(mediaId: String): Boolean
+    fun addToNext(mediaId: String): Boolean
+}
+
 @ObsoleteCoroutinesApi
 @SuppressLint("UnsafeOptInUsageError")
 @ExperimentalCoroutinesApi
@@ -43,7 +48,7 @@ class MSongBrowser @Inject constructor(
     private val mContext: Context,
     private val mediaSource: BaseMediaSource,
     private val searchManager: SearchManager
-) : DefaultLifecycleObserver, CoroutineScope {
+) : DefaultLifecycleObserver, CoroutineScope, EnhanceBrowser {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
     val browser: MediaBrowser?
@@ -64,10 +69,7 @@ class MSongBrowser @Inject constructor(
     }.flowOn(Dispatchers.IO)
         .asLiveData()
 
-    val originPlaylistIdLiveData: LiveData<List<String>> = _playlistFlow
-        .mapLatest { it.map { item -> item.mediaId } }
-        .flowOn(Dispatchers.IO)
-        .asLiveData()
+    var originPlaylistIds: List<String> = emptyList()
 
     val playlistLiveData: LiveData<List<MediaItem>> =
         _playlistFlow.combine(_currentMediaItemFlow) { items, item ->
@@ -159,6 +161,7 @@ class MSongBrowser @Inject constructor(
                     )
                 }
                 launch(Dispatchers.IO) {
+                    originPlaylistIds = temps.mapNotNull { it?.mediaId }
                     _playlistFlow.emit(temps.mapNotNull { it })
                 }
             }
@@ -211,5 +214,26 @@ class MSongBrowser @Inject constructor(
         if (!force) {
             Handler().postDelayed(this::updatePosition, 100)
         }
+    }
+
+    override fun playById(mediaId: String): Boolean {
+        val index = originPlaylistIds.indexOf(mediaId)
+        browser?.seekToDefaultPosition(index)
+        return index >= 0
+    }
+
+    override fun addToNext(mediaId: String): Boolean {
+        val currentIndex = browser?.currentMediaItemIndex ?: return false
+        if (currentIndex < 0) return false
+
+        if (originPlaylistIds.contains(mediaId)) {
+            val nowIndex = originPlaylistIds.indexOf(mediaId)
+            if (nowIndex < 0 || currentIndex == nowIndex) return false
+            browser?.moveMediaItem(nowIndex, currentIndex + 1)
+        } else {
+            val item = mediaSource.getItemById(ITEM_PREFIX + mediaId) ?: return false
+            browser?.addMediaItem(currentIndex + 1, item)
+        }
+        return true
     }
 }
