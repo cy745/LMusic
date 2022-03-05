@@ -70,7 +70,10 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
                     )
                 )
                 toastThen("保存匹配歌词成功") {
-                    findNavController().navigateUp()
+                    try {
+                        findNavController().navigateUp()
+                    } catch (e: Exception) {
+                    }
                 }
             }
         }
