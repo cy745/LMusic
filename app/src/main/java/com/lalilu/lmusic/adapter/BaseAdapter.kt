@@ -58,7 +58,10 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
 
     open fun setDiffNewData(list: MutableList<I>?) {
         val temp = list ?: ArrayList()
-        itemCallback ?: return run { data = temp }
+        itemCallback ?: return run {
+            data = temp
+            notifyDataSetChanged()
+        }
 
         val diffResult = DiffUtil.calculateDiff(Callback(this.data, temp, itemCallback!!))
         data = temp

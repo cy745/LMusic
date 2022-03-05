@@ -135,5 +135,53 @@
         <argument
             android:name="mediaId"
             app:argType="string" />
+        <action
+            android:id="@+id/songDetailToAddToPlaylist"
+            app:destination="@id/addToPlaylistFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/songDetailFragment" />
+        <action
+            android:id="@+id/songDetailToSearchForLyric"
+            app:destination="@id/searchForLyricFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/songDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addToPlaylistFragment"
+        android:name="com.lalilu.lmusic.fragment.AddToPlaylistFragment"
+        android:label="AddToPlaylistFragment"
+        tools:layout="@layout/fragment_add_to_playlist">
+        <argument
+            android:name="mediaId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchForLyricFragment"
+        android:name="com.lalilu.lmusic.fragment.SearchForLyricFragment"
+        android:label="SearchForLyricFragment"
+        tools:layout="@layout/fragment_search_for_lyric">
+        <argument
+            android:name="mediaTitle"
+            app:argType="string"
+            app:nullable="false" />
+
+        <argument
+            android:name="artistName"
+            app:argType="string"
+            app:nullable="true" />
+
+        <argument
+            android:name="albumTitle"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="mediaId"
+            app:argType="string" />
     </fragment>
 </navigation>

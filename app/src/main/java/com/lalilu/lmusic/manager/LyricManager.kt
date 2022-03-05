@@ -54,17 +54,19 @@ class LyricManager(
     private val _currentPositionFlow: MutableStateFlow<Long> = MutableStateFlow(0)
     private val _currentMediaItemFlow: MutableStateFlow<MediaItem?> = MutableStateFlow(null)
 
-    private val _songLyrics: Flow<List<LyricEntry>?> = _currentMediaItemFlow.mapLatest {
+    private var lastLyric: String? = ""
+    private var lastIndex: Int = 0
+
+    private val _songLyrics = _currentMediaItemFlow.mapLatest {
         pusher.clearLyric()
         it ?: return@mapLatest null
 
-        return@mapLatest LyricUtil.parseLrc(
-            arrayOf(EmbeddedDataUtils.loadLyric(it.mediaMetadata.getSongData()), null)
+        LyricUtil.parseLrc(
+            arrayOf(
+                EmbeddedDataUtils.loadLyric(it.mediaMetadata.getSongData()), null
+            )
         )
-    }
-    private var lastLyric: String? = ""
-    private var lastIndex: Int = 0
-    private val _singleLyric = _songLyrics.combine(_currentPositionFlow) { list, time ->
+    }.combine(_currentPositionFlow) { list, time ->
         val index = findShowLine(list, time)
         val lyricEntry = list?.let {
             if (it.isEmpty()) null else it[index]
@@ -75,8 +77,12 @@ class LyricManager(
 
         lastIndex = index
         lastLyric = nowLyric
-        return@combine nowLyric
+        nowLyric
     }.flowOn(Dispatchers.IO)
+        .onEach {
+            it ?: return@onEach
+            pusher.pushLyric(it)
+        }.launchIn(this)
 
     private fun findShowLine(list: List<LyricEntry>?, time: Long): Int {
         if (list == null || list.isEmpty()) return 0
@@ -95,15 +101,5 @@ class LyricManager(
             }
         }
         return 0
-    }
-
-    init {
-        launch(Dispatchers.IO) {
-            _singleLyric.collect {
-                if (it != null) {
-                    pusher.pushLyric(it)
-                }
-            }
-        }
     }
 }
