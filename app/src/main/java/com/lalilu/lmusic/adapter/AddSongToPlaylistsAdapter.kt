@@ -3,8 +3,9 @@ package com.lalilu.lmusic.adapter
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlaylistBinding
 import com.lalilu.lmusic.datasource.entity.MPlaylist
+import javax.inject.Inject
 
-class AddSongToPlaylistsAdapter :
+class AddSongToPlaylistsAdapter @Inject constructor() :
     BaseAdapter<MPlaylist, ItemPlaylistBinding>(R.layout.item_playlist) {
     val selectedSet: LinkedHashSet<MPlaylist> = LinkedHashSet()
 

@@ -95,7 +95,7 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             fmTopPic.setCoverSourceUri(it?.mediaMetadata?.mediaUri)
         }
         mSongBrowser.currentLyricLiveData.observe(viewLifecycleOwner) {
-            fmLyricViewX.loadLyric(it, null)
+            fmLyricViewX.loadLyric(it?.first, it?.second)
         }
         mSongBrowser.currentPositionLiveData.observe(viewLifecycleOwner) {
             fmLyricViewX.updateTime(it)

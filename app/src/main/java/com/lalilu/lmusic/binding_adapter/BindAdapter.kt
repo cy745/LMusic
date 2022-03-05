@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.MutableLiveData
+import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.GridLayoutManager
@@ -16,7 +17,6 @@ import coil.load
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.datasource.extensions.getSongData
 import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
@@ -24,7 +24,6 @@ import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
 import com.lalilu.lmusic.utils.EmbeddedDataUtils
 import com.lalilu.lmusic.utils.GridItemDecoration
 import com.lalilu.lmusic.utils.TextUtils
-import com.lalilu.lmusic.utils.fetcher.toEmbeddedLyricSource
 import com.lalilu.material.appbar.AppBarLayout
 
 
@@ -43,11 +42,11 @@ fun setIcon(imageView: ImageView, string: String?) {
 }
 
 @BindingAdapter("setLyricSource")
-fun setLyricSource(imageView: ImageView, mediaMetadata: MediaMetadata) {
-    val songData = mediaMetadata.getSongData()
+fun setLyricSource(imageView: ImageView, mediaItem: MediaItem?) {
+    mediaItem ?: return
 
     val imageRequest = ImageRequest.Builder(imageView.context)
-        .data(songData.toEmbeddedLyricSource())
+        .data(mediaItem)
         .target(onSuccess = {
             imageView.visibility = View.VISIBLE
         }, onError = {
@@ -116,4 +115,9 @@ fun addGridItemDecoration(recyclerView: RecyclerView, gridGap: Int, gridSpanCoun
 @BindingAdapter("setDuration")
 fun setDuration(textView: TextView, metadata: MediaMetadata) {
     textView.text = TextUtils.durationToString(metadata.getDuration())
+}
+
+@BindingAdapter("setDuration")
+fun setDuration(textView: TextView, duration: Long) {
+    textView.text = TextUtils.durationToString(duration)
 }

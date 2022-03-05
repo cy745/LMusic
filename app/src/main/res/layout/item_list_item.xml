@@ -97,7 +97,7 @@
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toStartOf="@+id/song_type"
             app:layout_constraintTop_toTopOf="parent"
-            app:setLyricSource="@{mediaItem.mediaMetadata}"
+            app:setLyricSource="@{mediaItem}"
             app:srcCompat="@drawable/ic_lrc_fill" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

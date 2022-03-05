@@ -20,6 +20,7 @@ import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
+import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.datasource.extensions.getSongData
 import com.lalilu.lmusic.manager.SearchManager
 import com.lalilu.lmusic.utils.EmbeddedDataUtils
@@ -47,7 +48,8 @@ class MSongBrowser @Inject constructor(
     @ApplicationContext
     private val mContext: Context,
     private val mediaSource: BaseMediaSource,
-    private val searchManager: SearchManager
+    private val searchManager: SearchManager,
+    private val dataBase: LMusicDataBase
 ) : DefaultLifecycleObserver, CoroutineScope, EnhanceBrowser {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
@@ -64,8 +66,15 @@ class MSongBrowser @Inject constructor(
     private val _currentMediaItemFlow: MutableStateFlow<MediaItem?> = MutableStateFlow(null)
     private val _playlistFlow: MutableStateFlow<List<MediaItem>> = MutableStateFlow(emptyList())
 
-    val currentLyricLiveData: LiveData<String?> = _currentMediaItemFlow.mapLatest {
-        return@mapLatest EmbeddedDataUtils.loadLyric(it?.mediaMetadata?.getSongData())
+    val currentLyricLiveData: LiveData<Pair<String, String?>?> = _currentMediaItemFlow.mapLatest {
+        it ?: return@mapLatest null
+        dataBase.persistLyricDao().getById(it.mediaId)?.let { lrc ->
+            return@mapLatest Pair(lrc.lyric, lrc.tlyric)
+        }
+        EmbeddedDataUtils.loadLyric(it.mediaMetadata.getSongData())?.let { lrc ->
+            return@mapLatest Pair(lrc, null)
+        }
+        return@mapLatest null
     }.flowOn(Dispatchers.IO)
         .asLiveData()
 
