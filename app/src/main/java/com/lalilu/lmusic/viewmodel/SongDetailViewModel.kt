@@ -7,6 +7,5 @@ import androidx.media3.common.MediaItem
 import javax.inject.Inject
 
 class SongDetailViewModel @Inject constructor() : ViewModel() {
-    val _song: MutableLiveData<MediaItem?> = MutableLiveData()
-    val song: LiveData<MediaItem?> = _song
+    val song: MutableLiveData<MediaItem?> = MutableLiveData()
 }

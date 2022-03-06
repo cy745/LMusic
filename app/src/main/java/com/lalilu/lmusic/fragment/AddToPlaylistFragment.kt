@@ -3,7 +3,6 @@ package com.lalilu.lmusic.fragment
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentAddToPlaylistBinding
@@ -12,6 +11,8 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.datasource.SongInPlaylist
+import com.lalilu.lmusic.viewmodel.AddToPlaylistViewModel
+import com.lalilu.lmusic.viewmodel.bindViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,16 +27,31 @@ class AddToPlaylistFragment : DataBindingFragment(), CoroutineScope {
     private val args: AddToPlaylistFragmentArgs by navArgs()
 
     @Inject
+    lateinit var mState: AddToPlaylistViewModel
+
+    @Inject
     lateinit var mAdapter: AddSongToPlaylistsAdapter
 
     @Inject
     lateinit var dataBase: LMusicDataBase
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter.stateRestorationPolicy =
-            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+        mAdapter.bindViewModel(mState, viewLifecycleOwner)
+        mAdapter.onItemClick = {
+            val index = mAdapter.data.indexOf(it)
+            val checkedSet = mAdapter.selectedSet
+            if (checkedSet.contains(it)) checkedSet.remove(it)
+            else checkedSet.add(it)
+            mAdapter.notifyItemChanged(index)
+
+            mState.title.postValue(
+                if (checkedSet.size == 0) "添加至歌单"
+                else "已选中: ${checkedSet.size}"
+            )
+        }
         return DataBindingConfig(R.layout.fragment_add_to_playlist)
             .addParam(BR.adapter, mAdapter)
+            .addParam(BR.vm, mState)
     }
 
     override fun onViewCreated() {
@@ -57,24 +73,15 @@ class AddToPlaylistFragment : DataBindingFragment(), CoroutineScope {
                 mAdapter.selectedSet.clear()
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "添加成功", Toast.LENGTH_SHORT).show()
-                    findNavController().navigateUp()
+                    try {
+                        findNavController().navigateUp()
+                    } catch (_: Exception) {
+                    }
                 }
             }
         }
-        mAdapter.onItemClick = {
-            val index = mAdapter.data.indexOf(it)
-            val checkedSet = mAdapter.selectedSet
-            if (checkedSet.contains(it)) checkedSet.remove(it)
-            else checkedSet.add(it)
-            mAdapter.notifyItemChanged(index)
-
-            binding.addToPlaylistTips.text = if (checkedSet.size == 0) "添加至歌单"
-            else "已选中: ${checkedSet.size}"
-        }
         dataBase.playlistDao().getAllLiveDataSortByTime().observe(viewLifecycleOwner) {
-            println(it.size)
-            mAdapter.setDiffNewData(it.toMutableList())
-            println(mAdapter.data.size)
+            mState.postData(it)
         }
     }
 }

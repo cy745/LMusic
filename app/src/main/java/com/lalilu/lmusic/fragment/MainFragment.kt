@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.fragment
 
-import android.annotation.SuppressLint
 import androidx.databinding.library.baseAdapters.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentMainBinding
@@ -18,10 +17,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import javax.inject.Inject
 
-@SuppressLint("UnsafeOptInUsageError")
-@ExperimentalCoroutinesApi
 @AndroidEntryPoint
 @ObsoleteCoroutinesApi
+@ExperimentalCoroutinesApi
 class MainFragment : DataBindingFragment() {
 
     @Inject

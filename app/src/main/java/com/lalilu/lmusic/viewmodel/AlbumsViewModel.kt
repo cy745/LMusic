@@ -7,5 +7,5 @@ import javax.inject.Inject
  * 为AlbumsFragment保存数据的ViewModel
  *
  */
-class AlbumsViewModel @Inject constructor() : BaseViewModel<MediaItem>() {
+class AlbumsViewModel @Inject constructor() : BaseViewModel<List<MediaItem>>() {
 }

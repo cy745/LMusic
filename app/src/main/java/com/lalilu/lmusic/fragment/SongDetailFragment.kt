@@ -1,22 +1,20 @@
 package com.lalilu.lmusic.fragment
 
-import android.annotation.SuppressLint
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentSongDetailBinding
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.binding_adapter.setCoverSourceUri
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
-
 
 @FlowPreview
 @AndroidEntryPoint
@@ -37,18 +35,12 @@ class SongDetailFragment : DataBindingFragment(), CoroutineScope {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.fragment_song_detail)
+            .addParam(BR.vm, mState)
     }
 
-    @SuppressLint("UnsafeOptInUsageError")
     override fun onViewCreated() {
         val binding = mBinding as FragmentSongDetailBinding
-        mState._song.observe(viewLifecycleOwner) {
-            it ?: return@observe
-            binding.songDetailTitle.text = it.mediaMetadata.title.toString()
-            binding.songDetailArtist.text = it.mediaMetadata.artist.toString()
-            binding.detailCover.setCoverSourceUri(it.mediaMetadata.mediaUri)
-        }
-        mState._song.postValue(
+        mState.song.postValue(
             mediaSource.getItemById(ITEM_PREFIX + args.mediaId)
         )
         binding.songDetailSetSongToNextButton.setOnClickListener {

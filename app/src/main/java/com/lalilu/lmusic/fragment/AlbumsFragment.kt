@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.fragment
 
-import android.annotation.SuppressLint
 import androidx.databinding.library.baseAdapters.BR
 import androidx.navigation.fragment.findNavController
 import com.lalilu.R
@@ -33,7 +32,6 @@ class AlbumsFragment : DataBindingFragment(), CoroutineScope {
     @Inject
     lateinit var mediaSource: BaseMediaSource
 
-    @SuppressLint("UnsafeOptInUsageError")
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
         mAdapter.onItemClick = {
