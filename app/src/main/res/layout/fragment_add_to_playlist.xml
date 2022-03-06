@@ -6,6 +6,10 @@
     <data>
 
         <variable
+            name="vm"
+            type="com.lalilu.lmusic.viewmodel.AddToPlaylistViewModel" />
+
+        <variable
             name="adapter"
             type="com.lalilu.lmusic.adapter.AddSongToPlaylistsAdapter" />
     </data>
@@ -28,7 +32,7 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="15dp"
                 android:layout_marginBottom="20dp"
-                android:text="@string/destination_label_add_song_to_playlist"
+                android:text="@{vm.title}"
                 android:textAppearance="@style/dayNightPrimaryText"
                 android:textColor="@color/daynight_0"
                 android:textSize="20sp"

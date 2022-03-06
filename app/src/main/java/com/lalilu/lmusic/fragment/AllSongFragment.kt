@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.fragment
 
-import android.annotation.SuppressLint
 import androidx.databinding.library.baseAdapters.BR
 import androidx.media3.common.Player
 import androidx.navigation.fragment.findNavController
@@ -11,6 +10,9 @@ import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.viewmodel.AllSongViewModel
+import com.lalilu.lmusic.viewmodel.bindViewModel
+import com.lalilu.lmusic.viewmodel.savePosition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,9 +24,11 @@ import kotlin.coroutines.CoroutineContext
 @AndroidEntryPoint
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
-@SuppressLint("UnsafeOptInUsageError")
 class AllSongFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
+
+    @Inject
+    lateinit var mState: AllSongViewModel
 
     @Inject
     lateinit var mAdapter: ListAdapter
@@ -36,6 +40,7 @@ class AllSongFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mediaSource: BaseMediaSource
 
     override fun getDataBindingConfig(): DataBindingConfig {
+        mAdapter.bindViewModel(mState, viewLifecycleOwner)
         // 添加 item 被选中时的处理逻辑
         mAdapter.onItemClick = { item ->
             mSongBrowser.browser?.apply {
@@ -48,6 +53,7 @@ class AllSongFragment : DataBindingFragment(), CoroutineScope {
             }
         }
         mAdapter.onItemLongClick = {
+            mAdapter.savePosition(mState)
             findNavController().navigate(
                 AllSongFragmentDirections.allSongToSongDetail(it.mediaId)
             )
@@ -57,6 +63,6 @@ class AllSongFragment : DataBindingFragment(), CoroutineScope {
     }
 
     override fun onViewCreated() {
-        mAdapter.setDiffNewData(mediaSource.getChildren(ALL_ID)?.toMutableList())
+        mState.postData(mediaSource.getChildren(ALL_ID) ?: emptyList())
     }
 }

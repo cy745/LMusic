@@ -11,10 +11,15 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.ALBUM_PREFIX
 import com.lalilu.lmusic.datasource.BaseMediaSource
-import com.lalilu.lmusic.viewmodel.AlbumDetailViewModel
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.viewmodel.AlbumDetailViewModel
+import com.lalilu.lmusic.viewmodel.bindViewModel
+import com.lalilu.lmusic.viewmodel.savePosition
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -39,6 +44,7 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mSongBrowser: MSongBrowser
 
     override fun getDataBindingConfig(): DataBindingConfig {
+        mAdapter.bindViewModel(mState, viewLifecycleOwner)
         mAdapter.onItemClick = { item ->
             mSongBrowser.browser?.apply {
                 clearMediaItems()
@@ -50,6 +56,7 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
             }
         }
         mAdapter.onItemLongClick = {
+            mAdapter.savePosition(mState)
             findNavController().navigate(
                 AlbumDetailFragmentDirections.albumToSongDetail(it.mediaId)
             )
@@ -60,15 +67,10 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
     }
 
     override fun onViewCreated() {
-        mState.album.observe(viewLifecycleOwner) { item ->
-            item ?: return@observe
-            val list = mediaSource.getChildren(ALBUM_PREFIX + item.mediaId)
-            launch(Dispatchers.Main) {
-                mAdapter.setDiffNewData(list?.toMutableList())
-            }
-        }
-        mState._album.postValue(
-            mediaSource.getItemById(ALBUM_PREFIX + args.albumId)
+        mState.album.postValue(mediaSource.getItemById(ALBUM_PREFIX + args.albumId))
+        mState.postData(
+            mediaSource.getChildren(ALBUM_PREFIX + args.albumId)
+                ?: emptyList()
         )
     }
 }

@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.fragment
 
-import android.annotation.SuppressLint
 import android.text.TextUtils
 import com.lalilu.BR
 import com.lalilu.R
@@ -12,6 +11,8 @@ import com.lalilu.lmusic.base.showDialog
 import com.lalilu.lmusic.binding_adapter.setCoverSourceUri
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lmusic.viewmodel.bindViewModel
 import com.lalilu.material.appbar.ExpendHeaderBehavior
 import com.lalilu.material.appbar.MyAppbarBehavior
 import com.lalilu.material.appbar.STATE_COLLAPSED
@@ -26,10 +27,12 @@ import kotlin.coroutines.CoroutineContext
 
 @ObsoleteCoroutinesApi
 @AndroidEntryPoint
-@SuppressLint("UnsafeOptInUsageError")
 @ExperimentalCoroutinesApi
 class PlayingFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Main
+
+    @Inject
+    lateinit var mState: PlayingViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -49,6 +52,7 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
+        mAdapter.bindViewModel(mState, viewLifecycleOwner)
         mAdapter.onItemClick = {
             if (mSongBrowser.playById(it.mediaId)) {
                 mSongBrowser.browser?.apply {
@@ -88,6 +92,9 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
                     fmToolbar.collapseActionView()
             }
         })
+        mSongBrowser.playlistLiveData.observe(viewLifecycleOwner) {
+            mState.postData(it)
+        }
         mSongBrowser.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             val title = it?.mediaMetadata?.title
             val text = if (TextUtils.isEmpty(title)) defaultSlogan else title
@@ -95,13 +102,11 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             fmTopPic.setCoverSourceUri(it?.mediaMetadata?.mediaUri)
         }
         mSongBrowser.currentLyricLiveData.observe(viewLifecycleOwner) {
+            fmLyricViewX.setLyricEntryList(emptyList())
             fmLyricViewX.loadLyric(it?.first, it?.second)
         }
         mSongBrowser.currentPositionLiveData.observe(viewLifecycleOwner) {
             fmLyricViewX.updateTime(it)
-        }
-        mSongBrowser.playlistLiveData.observe(viewLifecycleOwner) {
-            mAdapter.setDiffNewData(it.toMutableList())
         }
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
             it?.get { fmAppbarLayout.setExpanded(false, true) }

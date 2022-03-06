@@ -15,8 +15,10 @@ import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
+import com.lalilu.lmusic.viewmodel.bindViewModel
+import com.lalilu.lmusic.viewmodel.savePosition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -47,6 +49,7 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mSongBrowser: MSongBrowser
 
     override fun getDataBindingConfig(): DataBindingConfig {
+        mAdapter.bindViewModel(mState, viewLifecycleOwner)
         mAdapter.onItemClick = { item ->
             mSongBrowser.browser?.apply {
                 clearMediaItems()
@@ -58,6 +61,7 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
             }
         }
         mAdapter.onItemLongClick = {
+            mAdapter.savePosition(mState)
             findNavController().navigate(
                 PlaylistDetailFragmentDirections.playlistToSongDetail(it.mediaId)
             )
@@ -68,23 +72,16 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
     }
 
     override fun onViewCreated() {
-        mState.playlist.observe(viewLifecycleOwner) { playlist ->
-            playlist?.playlistId ?: return@observe
-
-            launch(Dispatchers.IO) {
-                val songs = dataBase.songInPlaylistDao()
-                    .getAllByPlaylistId(playlist.playlistId)
+        launch(Dispatchers.IO) {
+            mState.playlist.postValue(
+                dataBase.playlistDao().getById(args.playlistId)
+            )
+            mState.postData(
+                dataBase.songInPlaylistDao()
+                    .getAllByPlaylistId(args.playlistId)
                     .mapNotNull {
                         mediaSource.getItemById(ITEM_PREFIX + it.mediaId)
-                    }.toMutableList()
-                withContext(Dispatchers.Main) {
-                    mAdapter.setDiffNewData(songs)
-                }
-            }
-        }
-        launch(Dispatchers.IO) {
-            mState._playlist.postValue(
-                dataBase.playlistDao().getById(args.playlistId)
+                    }
             )
         }
         val binding = mBinding as FragmentDetailPlaylistBinding

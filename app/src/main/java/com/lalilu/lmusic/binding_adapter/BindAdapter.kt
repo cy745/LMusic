@@ -21,7 +21,6 @@ import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
-import com.lalilu.lmusic.utils.EmbeddedDataUtils
 import com.lalilu.lmusic.utils.GridItemDecoration
 import com.lalilu.lmusic.utils.TextUtils
 import com.lalilu.material.appbar.AppBarLayout
@@ -70,23 +69,7 @@ fun setNormalUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = 
 
 @BindingAdapter(value = ["setCoverSourceUri", "samplingValue"], requireAll = false)
 fun setCoverSourceUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
-    uri ?: return
-    val samplingTo = if (samplingValue <= 0)
-        imageView.width else samplingValue
-
-    EmbeddedDataUtils.loadCover(
-        imageView.context, mediaUri = uri,
-        samplingValue = samplingTo,
-        onStart = {
-            imageView.scaleType = ImageView.ScaleType.CENTER
-            imageView.setImageDrawable(it)
-        }, onError = {
-            imageView.scaleType = ImageView.ScaleType.CENTER
-            imageView.setImageDrawable(it)
-        }, onSuccess = {
-            imageView.setImageDrawable(it)
-            imageView.scaleType = ImageView.ScaleType.CENTER_CROP
-        })
+    imageView.setCoverSourceUri(uri, samplingValue)
 }
 
 @BindingAdapter("bgPaletteLiveData")
