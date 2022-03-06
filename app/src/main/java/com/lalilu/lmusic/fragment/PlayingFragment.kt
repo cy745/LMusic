@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.fragment
 
-import android.text.TextUtils
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayingBinding
@@ -8,7 +7,6 @@ import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
-import com.lalilu.lmusic.binding_adapter.setCoverSourceUri
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -47,10 +45,6 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         NavigatorFragment()
     }
 
-    private val defaultSlogan: String by lazy {
-        requireActivity().resources.getString(R.string.default_slogan)
-    }
-
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
         mAdapter.onItemClick = {
@@ -71,19 +65,19 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             }
         }
         return DataBindingConfig(R.layout.fragment_playing)
+            .addParam(BR.vm, mState)
             .addParam(BR.ev, mEvent)
             .addParam(BR.adapter, mAdapter)
     }
 
     override fun onViewCreated() {
         val binding = mBinding as FragmentPlayingBinding
-        val fmCollapseLayout = binding.fmCollapseLayout
         val fmAppbarLayout = binding.fmAppbarLayout
         val fmLyricViewX = binding.fmLyricViewX
         val fmToolbar = binding.fmToolbar
-        val fmTopPic = binding.fmTopPic
-        mActivity?.setSupportActionBar(fmToolbar)
         val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
+
+        mActivity?.setSupportActionBar(fmToolbar)
         behavior.addOnStateChangeListener(object :
             ExpendHeaderBehavior.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {
             override fun onScrollToStateListener() {
@@ -95,10 +89,7 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             mState.postData(it)
         }
         mSongBrowser.currentMediaItemLiveData.observe(viewLifecycleOwner) {
-            val title = it?.mediaMetadata?.title
-            val text = if (TextUtils.isEmpty(title)) defaultSlogan else title
-            if (fmCollapseLayout.title != text) fmCollapseLayout.title = text
-            fmTopPic.setCoverSourceUri(it?.mediaMetadata?.mediaUri)
+            mState.song.postValue(it)
         }
         mSongBrowser.currentLyricLiveData.observe(viewLifecycleOwner) {
             fmLyricViewX.setLyricEntryList(emptyList())

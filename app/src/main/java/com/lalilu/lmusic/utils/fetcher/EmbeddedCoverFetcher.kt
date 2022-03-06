@@ -1,6 +1,6 @@
 package com.lalilu.lmusic.utils.fetcher
 
-import android.net.Uri
+import androidx.media3.common.MediaItem
 import coil.bitmap.BitmapPool
 import coil.decode.DataSource
 import coil.decode.Options
@@ -8,25 +8,26 @@ import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.fetch.SourceResult
 import coil.size.Size
-import com.lalilu.lmusic.utils.EmbeddedDataUtils
+import com.lalilu.lmusic.utils.sources.CoverSourceFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 
-fun Uri.toEmbeddedCoverSource(): EmbeddedCoverSourceUri = EmbeddedCoverSourceUri(this)
+fun MediaItem.getCoverFromMediaItem(): GetCoverFromMediaItem = GetCoverFromMediaItem(this)
 
-class EmbeddedCoverSourceUri(val sourceUri: Uri = Uri.EMPTY)
+class GetCoverFromMediaItem(val mediaItem: MediaItem)
 
 @Singleton
-class EmbeddedCoverFetcher @Inject constructor() : Fetcher<EmbeddedCoverSourceUri> {
+class EmbeddedCoverFetcher @Inject constructor(
+    private val coverSourceFactory: CoverSourceFactory
+) : Fetcher<GetCoverFromMediaItem> {
     override suspend fun fetch(
         pool: BitmapPool,
-        data: EmbeddedCoverSourceUri,
+        data: GetCoverFromMediaItem,
         size: Size,
         options: Options
     ): FetchResult {
-        val bufferedSource = EmbeddedDataUtils.loadCoverBufferSource(
-            options.context, data.sourceUri, data.sourceUri.path
-        ) ?: throw NullPointerException()
+        val bufferedSource = coverSourceFactory.getCover(data.mediaItem)
+            ?: throw NullPointerException()
         return SourceResult(
             source = bufferedSource,
             mimeType = null,
@@ -34,7 +35,7 @@ class EmbeddedCoverFetcher @Inject constructor() : Fetcher<EmbeddedCoverSourceUr
         )
     }
 
-    override fun key(data: EmbeddedCoverSourceUri): String {
-        return "embedded_cover_${data.sourceUri}"
+    override fun key(data: GetCoverFromMediaItem): String? {
+        return "embedded_cover_${data.mediaItem.mediaId}"
     }
 }

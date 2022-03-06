@@ -5,18 +5,24 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
-import com.lalilu.lmusic.datasource.extensions.getSongData
-import com.lalilu.lmusic.utils.EmbeddedDataUtils
+import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
+interface LyricPusher {
+    fun clearLyric()
+    fun pushLyric(sentence: String)
+}
+
 @ExperimentalCoroutinesApi
-class LyricManager(
-    private val pusher: LyricPusher
+class LyricManager @Inject constructor(
+    private val pusher: LyricPusher,
+    private val lyricSourceFactory: LyricSourceFactory
 ) : Player.Listener, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     var positionGet: () -> Long = { 0L }
@@ -24,11 +30,6 @@ class LyricManager(
             field = value
             updatePosition()
         }
-
-    interface LyricPusher {
-        fun clearLyric()
-        fun pushLyric(sentence: String)
-    }
 
     val playerListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -61,11 +62,8 @@ class LyricManager(
         pusher.clearLyric()
         it ?: return@mapLatest null
 
-        LyricUtil.parseLrc(
-            arrayOf(
-                EmbeddedDataUtils.loadLyric(it.mediaMetadata.getSongData()), null
-            )
-        )
+        val pair = lyricSourceFactory.getLyric(it)
+        LyricUtil.parseLrc(arrayOf(pair?.first, pair?.second))
     }.combine(_currentPositionFlow) { list, time ->
         val index = findShowLine(list, time)
         val lyricEntry = list?.let {

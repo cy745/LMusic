@@ -12,9 +12,8 @@ import androidx.media3.common.MediaMetadata
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import coil.imageLoader
 import coil.load
-import coil.request.ImageRequest
+import coil.loadAny
 import com.lalilu.R
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.ui.drawee.BlurImageView
@@ -23,8 +22,9 @@ import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
 import com.lalilu.lmusic.utils.GridItemDecoration
 import com.lalilu.lmusic.utils.TextUtils
+import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.material.appbar.AppBarLayout
-
+import com.lalilu.material.appbar.CollapsingToolbarLayout
 
 @BindingAdapter("iconRec")
 fun setIcon(imageView: ImageView, string: String?) {
@@ -44,15 +44,13 @@ fun setIcon(imageView: ImageView, string: String?) {
 fun setLyricSource(imageView: ImageView, mediaItem: MediaItem?) {
     mediaItem ?: return
 
-    val imageRequest = ImageRequest.Builder(imageView.context)
-        .data(mediaItem)
-        .target(onSuccess = {
+    imageView.loadAny(mediaItem) {
+        target(onSuccess = {
             imageView.visibility = View.VISIBLE
         }, onError = {
             imageView.visibility = View.INVISIBLE
-        }).build()
-
-    imageView.context.imageLoader.enqueue(imageRequest)
+        })
+    }
 }
 
 @BindingAdapter(value = ["setNormalUri", "samplingValue"], requireAll = false)
@@ -67,14 +65,58 @@ fun setNormalUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = 
     }
 }
 
-@BindingAdapter(value = ["setCoverSourceUri", "samplingValue"], requireAll = false)
-fun setCoverSourceUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
-    imageView.setCoverSourceUri(uri, samplingValue)
+@BindingAdapter(value = ["loadCover", "samplingValue"], requireAll = false)
+fun loadCover(imageView: BlurImageView, mediaItem: MediaItem?, samplingValue: Int = -1) {
+    mediaItem ?: return
+    val samplingTo = if (samplingValue <= 0)
+        imageView.width else samplingValue
+
+    imageView.loadAny(mediaItem.getCoverFromMediaItem()) {
+        if (samplingTo > 0) size(samplingTo)
+        allowHardware(false)
+        target(onSuccess = {
+            imageView.loadImageFromDrawable(it)
+        }, onError = {
+            imageView.clearImage()
+        }).build()
+    }
+}
+
+@BindingAdapter(value = ["loadCover", "samplingValue"], requireAll = false)
+fun loadCover(imageView: AppCompatImageView, mediaItem: MediaItem?, samplingValue: Int = -1) {
+    mediaItem ?: return
+    val samplingTo = if (samplingValue <= 0)
+        imageView.width else samplingValue
+
+    imageView.loadAny(mediaItem.getCoverFromMediaItem()) {
+        if (samplingTo > 0) size(samplingTo)
+        target(onStart = {
+            imageView.scaleType = ImageView.ScaleType.CENTER
+            imageView.setImageDrawable(it)
+        }, onError = {
+            imageView.scaleType = ImageView.ScaleType.CENTER
+            imageView.setImageDrawable(it)
+        }, onSuccess = {
+            imageView.setImageDrawable(it)
+            imageView.scaleType = ImageView.ScaleType.CENTER_CROP
+        })
+    }
+}
+
+@BindingAdapter("setSongTitle")
+fun setSongTitle(collapsingToolbarLayout: CollapsingToolbarLayout, mediaItem: MediaItem?) {
+    collapsingToolbarLayout.title =
+        if (mediaItem == null || android.text.TextUtils.isEmpty(mediaItem.mediaMetadata.title)) {
+            collapsingToolbarLayout.context.getString(R.string.default_slogan)
+        } else {
+            mediaItem.mediaMetadata.title.toString()
+        }
 }
 
 @BindingAdapter("bgPaletteLiveData")
 fun setBGPaletteLiveData(
-    imageView: BlurImageView, liveData: MutableLiveData<Palette?>
+    imageView: BlurImageView,
+    liveData: MutableLiveData<Palette?>
 ) {
     imageView.palette = liveData
 }

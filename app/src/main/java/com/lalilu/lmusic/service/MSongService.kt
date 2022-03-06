@@ -44,6 +44,9 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     lateinit var mediaSource: BaseMediaSource
 
     @Inject
+    lateinit var lyricManager: LyricManager
+
+    @Inject
     lateinit var notificationProvider: LMusicNotificationProvider
 
     @SuppressLint("UnsafeOptInUsageError")
@@ -78,8 +81,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         val controllerFuture =
             MediaController.Builder(this, mediaLibrarySession.token)
                 .buildAsync()
-
-        val lyricManager = LyricManager(notificationProvider)
 
         controllerFuture.addListener({
             mediaController = controllerFuture.get()
