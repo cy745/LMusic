@@ -4,6 +4,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentSearchForLyricBinding
@@ -36,7 +37,14 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
     lateinit var dataBase: LMusicDataBase
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter = SearchForLyricAdapter()
+        mAdapter.onItemClick = {
+            val oldIndex = mAdapter.data.indexOf(mAdapter.singleSelected)
+            val newIndex = mAdapter.data.indexOf(it)
+
+            mAdapter.singleSelected = it
+            mAdapter.notifyItemChanged(oldIndex)
+            mAdapter.notifyItemChanged(newIndex)
+        }
         return DataBindingConfig(R.layout.fragment_search_for_lyric)
             .addParam(BR.adapter, mAdapter)
     }
@@ -51,15 +59,23 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
             val id = mAdapter.singleSelected?.id
             saveSongLyric(id)
         }
-        mAdapter.onItemClick = {
-            val oldIndex = mAdapter.data.indexOf(mAdapter.singleSelected)
-            val newIndex = mAdapter.data.indexOf(it)
-
-            mAdapter.singleSelected = it
-            mAdapter.notifyItemChanged(oldIndex)
-            mAdapter.notifyItemChanged(newIndex)
+        binding.searchForLyricKeyword.setOnEditorActionListener { textView, _, _ ->
+            getSongResult(binding, textView.text.toString())
+            textView.clearFocus()
+            KeyboardUtils.hideSoftInput(textView)
+            return@setOnEditorActionListener true
         }
-        val keyword = "${args.mediaTitle} ${args.artistName}"
+        KeyboardUtils.registerSoftInputChangedListener(requireActivity()) {
+            if (it > 0) return@registerSoftInputChangedListener
+            when {
+                binding.searchForLyricKeyword.isFocused ->
+                    binding.searchForLyricKeyword.onEditorAction(0)
+                binding.searchForLyricKeyword.isFocused ->
+                    binding.searchForLyricKeyword.onEditorAction(0)
+            }
+        }
+        val keyword = "${args.mediaTitle} ${args.artistName} ${args.albumTitle}"
+        binding.searchForLyricKeyword.setText(keyword)
         getSongResult(binding, keyword)
     }
 
