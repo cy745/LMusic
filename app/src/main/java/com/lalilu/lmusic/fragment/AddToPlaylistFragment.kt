@@ -35,6 +35,10 @@ class AddToPlaylistFragment : DataBindingFragment(), CoroutineScope {
     @Inject
     lateinit var dataBase: LMusicDataBase
 
+    private val defaultTitle: String by lazy {
+        requireContext().resources.getString(R.string.destination_label_add_song_to_playlist)
+    }
+
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
         mAdapter.onItemClick = {
@@ -45,7 +49,7 @@ class AddToPlaylistFragment : DataBindingFragment(), CoroutineScope {
             mAdapter.notifyItemChanged(index)
 
             mState.title.postValue(
-                if (checkedSet.size == 0) "添加至歌单"
+                if (checkedSet.size == 0) defaultTitle
                 else "已选中: ${checkedSet.size}"
             )
         }
@@ -80,6 +84,7 @@ class AddToPlaylistFragment : DataBindingFragment(), CoroutineScope {
                 }
             }
         }
+        mState.title.postValue(defaultTitle)
         dataBase.playlistDao().getAllLiveDataSortByTime().observe(viewLifecycleOwner) {
             mState.postData(it)
         }

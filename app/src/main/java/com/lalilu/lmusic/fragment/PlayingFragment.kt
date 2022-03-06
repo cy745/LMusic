@@ -64,10 +64,9 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         mAdapter.onItemLongClick = {
             showDialog(dialog) {
                 (this as NavigatorFragment)
-                    .getNavController(singleUse = true)
+                    .navigateFrom(R.id.songDetailFragment)
                     .navigate(
-                        LibraryFragmentDirections
-                            .libraryToSongDetail(it.mediaId)
+                        LibraryFragmentDirections.libraryToSongDetail(it.mediaId)
                     )
             }
         }
