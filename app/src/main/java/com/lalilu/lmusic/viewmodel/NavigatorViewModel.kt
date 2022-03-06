@@ -6,5 +6,5 @@ import javax.inject.Singleton
 
 @Singleton
 class NavigatorViewModel @Inject constructor() : ViewModel() {
-    var singleUseFlag: Boolean = false
+    var startFrom: Int = -1
 }
