@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.fragment.viewmodel
+package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import javax.inject.Inject

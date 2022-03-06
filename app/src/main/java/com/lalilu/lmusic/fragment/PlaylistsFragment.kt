@@ -2,7 +2,6 @@ package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
 import com.lalilu.databinding.FragmentListPlaylistsBinding
 import com.lalilu.lmusic.adapter.PlaylistsAdapter
@@ -11,8 +10,10 @@ import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.datasource.SongInPlaylist
 import com.lalilu.lmusic.datasource.entity.MPlaylist
-import com.lalilu.lmusic.fragment.viewmodel.PlaylistsViewModel
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
+import com.lalilu.lmusic.viewmodel.bindViewModel
+import com.lalilu.lmusic.viewmodel.savePosition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -37,13 +38,14 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mediaBrowser: MSongBrowser
 
     override fun getDataBindingConfig(): DataBindingConfig {
+        mAdapter.bindViewModel(mState, viewLifecycleOwner)
         mAdapter.onItemLongClick = {
             launch(Dispatchers.IO) {
                 dataBase.playlistDao().delete(it)
             }
         }
         mAdapter.onItemClick = {
-            mState._position.postValue(requireScrollOffset())
+            mAdapter.savePosition(mState)
             findNavController().navigate(
                 PlaylistsFragmentDirections.toPlaylistDetail(
                     playlistId = it.playlistId,
@@ -51,27 +53,15 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
                 )
             )
         }
-        mAdapter.stateRestorationPolicy =
-            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         return DataBindingConfig(R.layout.fragment_list_playlists)
             .addParam(BR.playlistAdapter, mAdapter)
     }
 
     override fun onViewCreated() {
         val binding = mBinding as FragmentListPlaylistsBinding
-        val recyclerView = binding.playlistsRecyclerView
 
         dataBase.playlistDao().getAllLiveDataSortByTime().observe(viewLifecycleOwner) {
-            mAdapter.setDiffNewData(it.toMutableList())
-            recyclerView.scrollToPosition(0)
-        }
-
-        mState.position.observe(viewLifecycleOwner) {
-            it ?: return@observe
-            launch {
-                delay(50)
-                recyclerView.scrollToPosition(it)
-            }
+            mState.postData(it)
         }
 
         binding.playlistCopyCurrentButton.setOnClickListener {
@@ -96,14 +86,5 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
                 )
             }
         }
-    }
-
-    private fun requireScrollOffset(): Int {
-        if (mBinding == null || mBinding !is FragmentListPlaylistsBinding) {
-            return 0
-        }
-        return (mBinding as FragmentListPlaylistsBinding)
-            .playlistsRecyclerView
-            .computeVerticalScrollOffset()
     }
 }

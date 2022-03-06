@@ -15,7 +15,7 @@ import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.fragment.viewmodel.PlaylistDetailViewModel
+import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
 import com.lalilu.lmusic.service.MSongBrowser
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*

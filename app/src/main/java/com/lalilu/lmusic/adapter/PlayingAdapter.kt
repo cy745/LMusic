@@ -3,7 +3,6 @@ package com.lalilu.lmusic.adapter
 import android.annotation.SuppressLint
 import androidx.media3.common.MediaItem
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlayingBinding
 import com.lalilu.lmusic.datasource.extensions.getDuration
@@ -32,14 +31,8 @@ class PlayingAdapter @Inject constructor() :
         binding.mediaItem = item
     }
 
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        mRecyclerView = recyclerView
-    }
-
-    private var mRecyclerView: RecyclerView? = null
-
     override fun setDiffNewData(list: MutableList<MediaItem>?) {
-        if (mRecyclerView == null) {
+        if (mRecyclerView == null || mRecyclerView?.get() == null) {
             super.setDiffNewData(list)
             return
         }
@@ -50,8 +43,8 @@ class PlayingAdapter @Inject constructor() :
             // 预先将头部部分差异进行转移
             val size = oldList.indexOfFirst { it.mediaId == newList[0].mediaId }
             if (size > 0 && size >= oldList.size / 2 &&
-                mRecyclerView!!.computeVerticalScrollOffset() >
-                mRecyclerView!!.computeVerticalScrollRange() / 2
+                mRecyclerView!!.get()!!.computeVerticalScrollOffset() >
+                mRecyclerView!!.get()!!.computeVerticalScrollRange() / 2
             ) {
                 oldList = oldList.moveHeadToTail(size)
 
@@ -65,6 +58,6 @@ class PlayingAdapter @Inject constructor() :
         )
         data = newList
         diffResult.dispatchUpdatesTo(this)
-        mRecyclerView!!.scrollToPosition(0)
+        mRecyclerView!!.get()!!.scrollToPosition(0)
     }
 }

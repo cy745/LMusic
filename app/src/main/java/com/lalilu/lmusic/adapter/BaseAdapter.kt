@@ -7,6 +7,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import java.lang.ref.WeakReference
 
 const val VIEW_NORMAL = 0
 const val VIEW_HEADER = 1
@@ -20,16 +21,20 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
     private val layoutId: Int
 ) : RecyclerView.Adapter<BaseAdapter<I, B>.BaseViewHolder>() {
 
-    var offset: Int = 0
     var data: MutableList<I> = ArrayList()
     open var onItemClick: (item: I) -> Unit = {}
     open var onItemLongClick: (item: I) -> Unit = {}
     open val itemCallback: DiffUtil.ItemCallback<I>? = null
+    open var mRecyclerView: WeakReference<RecyclerView>? = null
 
     abstract fun onBind(binding: B, item: I)
 
     inner class BaseViewHolder constructor(val binding: B) :
         RecyclerView.ViewHolder(binding.root)
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        mRecyclerView = WeakReference(recyclerView)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         return BaseViewHolder(
@@ -42,8 +47,7 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         val binding = holder.binding
-        val offsetPosition = (position + offset) % data.size
-        val item = data[offsetPosition]
+        val item = data[position]
         binding.root.setOnClickListener {
             onItemClick(item)
         }

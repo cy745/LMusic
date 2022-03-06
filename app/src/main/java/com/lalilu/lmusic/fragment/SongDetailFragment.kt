@@ -10,7 +10,7 @@ import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.binding_adapter.setCoverSourceUri
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.fragment.viewmodel.SongDetailViewModel
+import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lmusic.service.MSongBrowser
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
