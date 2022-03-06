@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.service
 
-import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
@@ -10,6 +9,7 @@ import androidx.lifecycle.*
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.SessionToken
@@ -20,10 +20,8 @@ import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.datasource.extensions.getSongData
 import com.lalilu.lmusic.manager.SearchManager
-import com.lalilu.lmusic.utils.EmbeddedDataUtils
+import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
@@ -40,16 +38,15 @@ interface EnhanceBrowser {
     fun addToNext(mediaId: String): Boolean
 }
 
-@ObsoleteCoroutinesApi
-@SuppressLint("UnsafeOptInUsageError")
-@ExperimentalCoroutinesApi
 @Singleton
+@ObsoleteCoroutinesApi
+@ExperimentalCoroutinesApi
 class MSongBrowser @Inject constructor(
     @ApplicationContext
     private val mContext: Context,
     private val mediaSource: BaseMediaSource,
     private val searchManager: SearchManager,
-    private val dataBase: LMusicDataBase
+    private val lyricSourceFactory: LyricSourceFactory
 ) : DefaultLifecycleObserver, CoroutineScope, EnhanceBrowser {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
@@ -68,13 +65,7 @@ class MSongBrowser @Inject constructor(
 
     val currentLyricLiveData: LiveData<Pair<String, String?>?> = _currentMediaItemFlow.mapLatest {
         it ?: return@mapLatest null
-        dataBase.persistLyricDao().getById(it.mediaId)?.let { lrc ->
-            return@mapLatest Pair(lrc.lyric, lrc.tlyric)
-        }
-        EmbeddedDataUtils.loadLyric(it.mediaMetadata.getSongData())?.let { lrc ->
-            return@mapLatest Pair(lrc, null)
-        }
-        return@mapLatest null
+        return@mapLatest lyricSourceFactory.getLyric(it)
     }.flowOn(Dispatchers.IO)
         .asLiveData()
 
@@ -113,6 +104,7 @@ class MSongBrowser @Inject constructor(
     val currentMediaItemLiveData: LiveData<MediaItem?> = _currentMediaItemFlow.asLiveData()
     val currentPositionLiveData: LiveData<Long> = _currentPositionLiveData
 
+    @UnstableApi
     override fun onStart(owner: LifecycleOwner) {
         browserFuture = MediaBrowser.Builder(
             mContext, SessionToken(mContext, ComponentName(mContext, MSongService::class.java))

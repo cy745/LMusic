@@ -16,9 +16,13 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.MediaNotification
 import androidx.palette.graphics.Palette
 import com.lalilu.R
-import com.lalilu.lmusic.manager.LyricManager
+import com.lalilu.lmusic.manager.LyricPusher
 import com.lalilu.lmusic.utils.getAutomaticColor
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,12 +31,21 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
+@Module
+@ExperimentalCoroutinesApi
+@InstallIn(SingletonComponent::class)
+abstract class LyricPusherModule {
+
+    @Binds
+    abstract fun bindLyricPush(pusher: LMusicNotificationProvider): LyricPusher
+}
+
 @Singleton
 @UnstableApi
 @ExperimentalCoroutinesApi
 class LMusicNotificationProvider @Inject constructor(
     @ApplicationContext private val mContext: Context,
-) : MediaNotification.Provider, LyricManager.LyricPusher, CoroutineScope {
+) : MediaNotification.Provider, LyricPusher, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val notificationManager: NotificationManager = ContextCompat.getSystemService(

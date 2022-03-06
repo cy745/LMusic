@@ -12,9 +12,7 @@ import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.size.Size
 import com.lalilu.R
-import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.datasource.extensions.getSongData
-import com.lalilu.lmusic.utils.EmbeddedDataUtils
+import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,8 +20,8 @@ import javax.inject.Singleton
 @Singleton
 @SuppressLint("UseCompatLoadingForDrawables")
 class EmbeddedLyricFetchers @Inject constructor(
-    @ApplicationContext val mContext: Context,
-    val dataBase: LMusicDataBase
+    @ApplicationContext private val mContext: Context,
+    private val lyricSourceFactory: LyricSourceFactory
 ) : Fetcher<MediaItem> {
     private val lrcIcon = mContext.resources.getDrawable(R.drawable.ic_lrc_fill, mContext.theme)
 
@@ -33,16 +31,8 @@ class EmbeddedLyricFetchers @Inject constructor(
         size: Size,
         options: Options
     ): FetchResult {
-        var lyric = dataBase.persistLyricDao().getById(data.mediaId)?.lyric
-
-        if (!TextUtils.isEmpty(lyric)) return DrawableResult(
-            drawable = lrcIcon,
-            isSampled = false,
-            dataSource = DataSource.DISK
-        )
-
-        lyric = EmbeddedDataUtils.loadLyric(data.mediaMetadata.getSongData())
-        if (TextUtils.isEmpty(lyric)) throw NullPointerException()
+        val pair = lyricSourceFactory.getLyric(data)
+        if (TextUtils.isEmpty(pair?.first)) throw NullPointerException()
 
         return DrawableResult(
             drawable = lrcIcon,

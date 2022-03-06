@@ -7,16 +7,15 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.util.AttributeSet
-import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.animation.addListener
 import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
-import coil.imageLoader
-import coil.request.ImageRequest
+import coil.load
 import com.lalilu.lmusic.utils.StackBlurUtils
 import com.lalilu.lmusic.utils.addShadow
 import com.lalilu.lmusic.utils.toBitmap
@@ -36,7 +35,7 @@ import kotlin.math.roundToInt
 @AndroidEntryPoint
 class BlurImageView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
-) : View(context, attrs), CoroutineScope {
+) : AppCompatImageView(context, attrs), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     @Inject
@@ -252,16 +251,18 @@ class BlurImageView @JvmOverloads constructor(
      *
      * @param uri 图片地址（可为本地亦或是网络图片）
      */
-    fun setImageURI(uri: Uri?) = launch(Dispatchers.IO) {
+    override fun setImageURI(uri: Uri?) {
         if (uri == null) clearImage()
 
-        context.imageLoader.enqueue(
-            ImageRequest.Builder(context)
-                .data(uri)
-                .allowHardware(false)
-                .target { loadImageFromDrawable(it) }
-                .build()
-        )
+        load(uri) {
+            if (width > 0) size(width)
+            allowHardware(false)
+            target(onError = {
+                clearImage()
+            }, onSuccess = {
+                loadImageFromDrawable(it)
+            })
+        }
     }
 
     /**

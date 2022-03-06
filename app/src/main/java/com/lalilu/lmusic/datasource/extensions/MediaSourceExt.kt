@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.datasource.extensions
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.media3.common.MediaMetadata
@@ -25,22 +24,18 @@ fun Bundle.setSongData(songData: String): Bundle {
     return this
 }
 
-@SuppressLint("UnsafeOptInUsageError")
 fun MediaMetadata.getDuration(): Long {
     return this.extras?.getLong(MediaStore.Audio.Media.DURATION) ?: 0L
 }
 
-@SuppressLint("UnsafeOptInUsageError")
 fun MediaMetadata.getArtistId(): Long {
     return this.extras?.getLong(MediaStore.Audio.Media.ARTIST_ID) ?: 0L
 }
 
-@SuppressLint("UnsafeOptInUsageError")
 fun MediaMetadata.getAlbumId(): Long {
     return this.extras?.getLong(MediaStore.Audio.Media.ALBUM_ID) ?: 0L
 }
 
-@SuppressLint("UnsafeOptInUsageError")
-fun MediaMetadata.getSongData(): String {
-    return this.extras?.getString(MediaStore.Audio.Media.DATA) ?: ""
+fun MediaMetadata.getSongData(): String? {
+    return this.extras?.getString(MediaStore.Audio.Media.DATA)
 }
