@@ -8,7 +8,7 @@ import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentSearchForLyricBinding
 import com.lalilu.lmusic.adapter.SearchForLyricAdapter
-import com.lalilu.lmusic.apis.NetworkLyric
+import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.LMusicDataBase
@@ -30,7 +30,7 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mAdapter: SearchForLyricAdapter
 
     @Inject
-    lateinit var networkLyric: NetworkLyric
+    lateinit var neteaseDataSource: NeteaseDataSource
 
     @Inject
     lateinit var dataBase: LMusicDataBase
@@ -49,37 +49,8 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
         }
         binding.searchForLyricConfirm.setOnClickListener {
             val id = mAdapter.singleSelected?.id
-            if (id == null) {
-                toastThen("未选择匹配歌曲")
-                return@setOnClickListener
-            }
-            launch(Dispatchers.IO) {
-                toastThen("开始获取歌词")
-                val response = networkLyric.searchForLyric(id)
-                val lyric = response?.lrc?.lyric ?: run {
-                    toastThen("选中歌曲无歌词")
-                    return@launch
-                }
-                val tlyric = response.tlyric?.lyric
-
-                dataBase.persistLyricDao().save(
-                    PersistLyric(
-                        mediaId = args.mediaId,
-                        lyric = lyric,
-                        tlyric = tlyric
-                    )
-                )
-                toastThen("保存匹配歌词成功") {
-                    try {
-                        findNavController().navigateUp()
-                    } catch (e: Exception) {
-                    }
-                }
-            }
+            saveSongLyric(id)
         }
-
-        val keyword = "${args.mediaTitle} ${args.artistName}"
-
         mAdapter.onItemClick = {
             val oldIndex = mAdapter.data.indexOf(mAdapter.singleSelected)
             val newIndex = mAdapter.data.indexOf(it)
@@ -88,9 +59,49 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
             mAdapter.notifyItemChanged(oldIndex)
             mAdapter.notifyItemChanged(newIndex)
         }
+        val keyword = "${args.mediaTitle} ${args.artistName}"
+        getSongResult(binding, keyword)
+    }
 
-        launch {
-            val response = networkLyric.searchForSong(keyword)
+    private fun saveSongLyric(songId: Long?) =
+        launch(Dispatchers.IO) {
+            songId ?: run {
+                toastThen("未选择匹配歌曲")
+                return@launch
+            }
+
+            toastThen("开始获取歌词")
+            val response = neteaseDataSource.searchForLyric(songId)
+            val lyric = response?.lrc?.lyric ?: run {
+                toastThen("选中歌曲无歌词")
+                return@launch
+            }
+            val tlyric = response.tlyric?.lyric
+
+            dataBase.persistLyricDao().save(
+                PersistLyric(
+                    mediaId = args.mediaId,
+                    lyric = lyric,
+                    tlyric = tlyric
+                )
+            )
+            toastThen("保存匹配歌词成功") {
+                try {
+                    findNavController().navigateUp()
+                } catch (e: Exception) {
+                }
+            }
+        }
+
+    private fun getSongResult(binding: FragmentSearchForLyricBinding, keyword: String) =
+        launch(Dispatchers.IO) {
+            withContext(Dispatchers.Main) {
+                mAdapter.setDiffNewData(ArrayList())
+                binding.searchForLyricRefreshAndTipsButton.text =
+                    requireContext().getString(R.string.button_search_for_lyric_searching)
+                binding.searchForLyricRefreshAndTipsButton.visibility = View.VISIBLE
+            }
+            val response = neteaseDataSource.searchForSong(keyword)
             val results = response?.result?.songs ?: emptyList()
 
             withContext(Dispatchers.Main) {
@@ -104,7 +115,6 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
                 mAdapter.setDiffNewData(results.toMutableList())
             }
         }
-    }
 
     private fun toastThen(text: String, then: () -> Unit = {}) = launch(Dispatchers.Main) {
         Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
