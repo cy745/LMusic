@@ -7,7 +7,7 @@ import com.lalilu.R
 import com.lalilu.databinding.DialogNavigatorBinding
 import com.lalilu.lmusic.base.BaseBottomSheetFragment
 import com.lalilu.lmusic.base.DataBindingConfig
-import com.lalilu.lmusic.fragment.viewmodel.NavigatorViewModel
+import com.lalilu.lmusic.viewmodel.NavigatorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject

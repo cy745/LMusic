@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.fragment.viewmodel
+package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

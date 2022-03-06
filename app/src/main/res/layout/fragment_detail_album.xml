@@ -11,7 +11,7 @@
 
         <variable
             name="vm"
-            type="com.lalilu.lmusic.fragment.viewmodel.AlbumDetailViewModel" />
+            type="com.lalilu.lmusic.viewmodel.AlbumDetailViewModel" />
     </data>
 
     <androidx.appcompat.widget.LinearLayoutCompat
