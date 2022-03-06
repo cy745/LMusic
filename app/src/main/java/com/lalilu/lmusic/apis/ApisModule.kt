@@ -24,7 +24,7 @@ class ApisModule {
 
     @Provides
     @Singleton
-    fun provideNetWorkLyricService(retrofit: Retrofit): NetworkLyric {
-        return retrofit.create(NetworkLyric::class.java)
+    fun provideNetWorkLyricService(retrofit: Retrofit): NeteaseDataSource {
+        return retrofit.create(NeteaseDataSource::class.java)
     }
 }
