@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.service
 
-import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.SharedPreferences
@@ -19,7 +18,7 @@ import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.manager.LyricManager
+import com.lalilu.lmusic.event.GlobalViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,26 +35,24 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     private lateinit var mediaLibrarySession: MediaLibrarySession
     private lateinit var mediaController: MediaController
 
-    private val playerSp: SharedPreferences by lazy {
-        getSharedPreferences(Config.LAST_PLAYED_SP, Context.MODE_PRIVATE)
-    }
+    @Inject
+    lateinit var mGlobal: GlobalViewModel
 
     @Inject
     lateinit var mediaSource: BaseMediaSource
 
     @Inject
-    lateinit var lyricManager: LyricManager
-
-    @Inject
     lateinit var notificationProvider: LMusicNotificationProvider
 
-    @SuppressLint("UnsafeOptInUsageError")
+    private val playerSp: SharedPreferences by lazy {
+        getSharedPreferences(Config.LAST_PLAYED_SP, Context.MODE_PRIVATE)
+    }
+
     private val audioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
         .build()
 
-    @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate() {
         super.onCreate()
         player = ExoPlayer.Builder(this)
@@ -84,9 +81,10 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
         controllerFuture.addListener({
             mediaController = controllerFuture.get()
-            mediaController.addListener(lyricManager.playerListener)
+            mediaController.addListener(mGlobal.playerListener)
             mediaController.addListener(LastPlayedListener())
-            lyricManager.positionGet = mediaController::getCurrentPosition
+            mGlobal.getIsPlayingFromPlayer = mediaController::isPlaying
+            mGlobal.getPositionFromPlayer = mediaController::getCurrentPosition
         }, MoreExecutors.directExecutor())
 
         setMediaNotificationProvider(notificationProvider)
@@ -110,7 +108,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     }
 
     private inner class CustomMediaItemFiller : MediaSession.MediaItemFiller {
-        @SuppressLint("UnsafeOptInUsageError")
         override fun fillInLocalConfiguration(
             session: MediaSession,
             controller: MediaSession.ControllerInfo,
@@ -120,7 +117,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         }
     }
 
-    @SuppressLint("UnsafeOptInUsageError")
     private inner class CustomMediaLibrarySessionCallback :
         MediaLibrarySession.MediaLibrarySessionCallback {
         override fun onGetLibraryRoot(

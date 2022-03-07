@@ -7,7 +7,9 @@ import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
+import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
+import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.bindViewModel
@@ -28,6 +30,12 @@ import kotlin.coroutines.CoroutineContext
 @ExperimentalCoroutinesApi
 class PlayingFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Main
+
+    @Inject
+    lateinit var lyricManager: LyricManager
+
+    @Inject
+    lateinit var mGlobal: GlobalViewModel
 
     @Inject
     lateinit var mState: PlayingViewModel
@@ -85,18 +93,18 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
                     fmToolbar.collapseActionView()
             }
         })
-        mSongBrowser.playlistLiveData.observe(viewLifecycleOwner) {
+        mGlobal.currentPlaylistLiveData.observe(viewLifecycleOwner) {
             mState.postData(it)
         }
-        mSongBrowser.currentMediaItemLiveData.observe(viewLifecycleOwner) {
+        mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             mState.song.postValue(it)
         }
-        mSongBrowser.currentLyricLiveData.observe(viewLifecycleOwner) {
+        mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
+            fmLyricViewX.updateTime(it)
+        }
+        lyricManager.songLyric.observe(viewLifecycleOwner) {
             fmLyricViewX.setLyricEntryList(emptyList())
             fmLyricViewX.loadLyric(it?.first, it?.second)
-        }
-        mSongBrowser.currentPositionLiveData.observe(viewLifecycleOwner) {
-            fmLyricViewX.updateTime(it)
         }
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
             it?.get { fmAppbarLayout.setExpanded(false, true) }

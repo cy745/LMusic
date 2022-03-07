@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.utils
 
 import android.content.ContentUris
-import android.content.SharedPreferences
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -12,7 +11,6 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.GradientDrawable.Orientation.*
 import android.net.Uri
 import android.provider.MediaStore
-import android.support.v4.media.MediaMetadataCompat
 import androidx.palette.graphics.Palette
 import kotlin.math.roundToInt
 
@@ -143,13 +141,3 @@ fun Cursor.getMediaUri(): Uri {
         getSongId().toString()
     )
 }
-
-fun MediaMetadataCompat.Builder.moveStringData(
-    from: SharedPreferences,
-    key: String,
-    defaultValue: String? = ""
-): MediaMetadataCompat.Builder {
-    putString(key, from.getString(key, defaultValue))
-    return this
-}
-

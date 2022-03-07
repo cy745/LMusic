@@ -1,16 +1,15 @@
 package com.lalilu.lmusic.manager
 
-import android.os.Handler
-import androidx.media3.common.MediaItem
+import androidx.lifecycle.asLiveData
 import androidx.media3.common.Player
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
+import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -21,66 +20,49 @@ interface LyricPusher {
 
 @ExperimentalCoroutinesApi
 class LyricManager @Inject constructor(
+    mGlobal: GlobalViewModel,
     private val pusher: LyricPusher,
     private val lyricSourceFactory: LyricSourceFactory
 ) : Player.Listener, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-    var positionGet: () -> Long = { 0L }
-        set(value) {
-            field = value
-            updatePosition()
-        }
-
-    val playerListener = object : Player.Listener {
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            launch { _currentMediaItemFlow.emit(mediaItem) }
-            updatePosition(true)
-        }
-
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-            if (isPlaying) {
-                updatePosition(true)
-            } else {
-                pusher.clearLyric()
-            }
-        }
-    }
-
-    private fun updatePosition(force: Boolean = false) {
-        val position = positionGet.invoke()
-        launch { _currentPositionFlow.emit(position) }
-        if (!force) Handler().postDelayed(this::updatePosition, 100)
-    }
-
-    private val _currentPositionFlow: MutableStateFlow<Long> = MutableStateFlow(0)
-    private val _currentMediaItemFlow: MutableStateFlow<MediaItem?> = MutableStateFlow(null)
-
     private var lastLyric: String? = ""
     private var lastIndex: Int = 0
 
-    private val _songLyrics = _currentMediaItemFlow.mapLatest {
-        pusher.clearLyric()
-        it ?: return@mapLatest null
+    private val _songLyric: Flow<Pair<String, String?>?> =
+        mGlobal.currentMediaItem.mapLatest {
+            pusher.clearLyric()
+            it ?: return@mapLatest null
 
-        val pair = lyricSourceFactory.getLyric(it)
-        LyricUtil.parseLrc(arrayOf(pair?.first, pair?.second))
-    }.combine(_currentPositionFlow) { list, time ->
-        val index = findShowLine(list, time)
-        val lyricEntry = list?.let {
-            if (it.isEmpty()) null else it[index]
+            lyricSourceFactory.getLyric(it)
         }
-        val nowLyric = lyricEntry?.text ?: lyricEntry?.secondText
-        if (nowLyric == lastLyric && index == lastIndex)
-            return@combine null
 
-        lastIndex = index
-        lastLyric = nowLyric
-        nowLyric
-    }.flowOn(Dispatchers.IO)
-        .onEach {
-            it ?: return@onEach
-            pusher.pushLyric(it)
-        }.launchIn(this)
+    val songLyric = _songLyric.asLiveData()
+
+    init {
+        _songLyric.combine(mGlobal.currentPosition) { pair, time ->
+            if (pair == null) return@combine null
+
+            val list = LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
+            val index = findShowLine(list, time)
+            val lyricEntry = list?.let {
+                if (it.isEmpty()) null else it[index]
+            }
+            val nowLyric = lyricEntry?.text ?: lyricEntry?.secondText
+            if (nowLyric == lastLyric && index == lastIndex)
+                return@combine null
+
+            lastIndex = index
+            lastLyric = nowLyric
+            nowLyric
+        }.flowOn(Dispatchers.IO)
+            .onEach {
+                if (it == null) {
+                    pusher.clearLyric()
+                    return@onEach
+                }
+                pusher.pushLyric(it)
+            }.launchIn(this)
+    }
 
     private fun findShowLine(list: List<LyricEntry>?, time: Long): Int {
         if (list == null || list.isEmpty()) return 0
