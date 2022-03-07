@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import com.lalilu.lmusic.datasource.extensions.partCopy
 import com.lalilu.lmusic.manager.SearchManager
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -61,6 +64,16 @@ class GlobalViewModel @Inject constructor(
             lastPlayState = isPlaying
         }
         handler.postDelayed(this::updatePosition, 100)
+    }
+
+    @UnstableApi
+    suspend fun updateCurrentMediaItem(targetMediaItemId: String) = withContext(Dispatchers.IO) {
+        val mediaItem = currentMediaItem.value
+            ?: return@withContext
+
+        if (mediaItem.mediaId == targetMediaItemId) {
+            currentMediaItem.emit(mediaItem.partCopy())
+        }
     }
 
     val currentIsPlaying: MutableStateFlow<Boolean> = MutableStateFlow(false)

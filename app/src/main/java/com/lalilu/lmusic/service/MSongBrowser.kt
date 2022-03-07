@@ -101,6 +101,7 @@ class MSongBrowser @Inject constructor(
         playerSp.getString(Config.LAST_PLAYED_ID, null)?.let { id ->
             val index = ids.indexOfFirst { it == id }
             if (index >= 0) {
+                browser.repeatMode = Player.REPEAT_MODE_ALL
                 browser.seekToDefaultPosition(index)
                 browser.prepare()
             }

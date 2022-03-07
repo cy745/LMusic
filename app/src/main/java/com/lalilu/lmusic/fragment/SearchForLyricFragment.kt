@@ -3,6 +3,7 @@ package com.lalilu.lmusic.fragment
 import android.text.TextUtils
 import android.view.View
 import android.widget.Toast
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.blankj.utilcode.util.KeyboardUtils
@@ -15,6 +16,7 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.datasource.PersistLyric
+import com.lalilu.lmusic.event.GlobalViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -26,6 +28,9 @@ import kotlin.coroutines.CoroutineContext
 class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val args: SearchForLyricFragmentArgs by navArgs()
+
+    @Inject
+    lateinit var mGlobal: GlobalViewModel
 
     @Inject
     lateinit var mAdapter: SearchForLyricAdapter
@@ -49,6 +54,7 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
             .addParam(BR.adapter, mAdapter)
     }
 
+    @UnstableApi
     override fun onViewCreated() {
         val binding = mBinding as FragmentSearchForLyricBinding
 
@@ -79,6 +85,7 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
         getSongResult(binding, keyword)
     }
 
+    @UnstableApi
     private fun saveSongLyric(songId: Long?) =
         launch(Dispatchers.IO) {
             flow {
@@ -104,6 +111,9 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
                         tlyric = it.second
                     )
                 )
+
+                mGlobal.updateCurrentMediaItem(args.mediaId)
+
                 toastThen("保存匹配歌词成功") {
                     try {
                         findNavController().navigateUp()
