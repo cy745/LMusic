@@ -48,38 +48,38 @@
                 app:layout_constraintTop_toBottomOf="@+id/all_song_detail_title"
                 app:layout_constraintVertical_bias="0.0" />
 
-            <com.lalilu.lmusic.ui.ChangeOrderButton
-                android:id="@+id/all_song_sort_by"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:backgroundTint="@color/gray_400"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="0dp"
-                android:textColor="@android:color/black"
-                app:icon="@drawable/ic_time_line"
-                app:iconGravity="end"
-                app:iconTint="@android:color/black"
-                app:layout_constraintEnd_toStartOf="@+id/all_song_sort_order"
-                app:layout_constraintTop_toTopOf="parent" />
+            <!--            <com.lalilu.lmusic.ui.ChangeOrderButton-->
+            <!--                android:id="@+id/all_song_sort_by"-->
+            <!--                style="@style/Widget.MaterialComponents.Button.TextButton"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_marginEnd="10dp"-->
+            <!--                android:backgroundTint="@color/gray_400"-->
+            <!--                android:insetTop="0dp"-->
+            <!--                android:insetBottom="0dp"-->
+            <!--                android:minWidth="0dp"-->
+            <!--                android:textColor="@android:color/black"-->
+            <!--                app:icon="@drawable/ic_time_line"-->
+            <!--                app:iconGravity="end"-->
+            <!--                app:iconTint="@android:color/black"-->
+            <!--                app:layout_constraintEnd_toStartOf="@+id/all_song_sort_order"-->
+            <!--                app:layout_constraintTop_toTopOf="parent" />-->
 
-            <com.lalilu.lmusic.ui.ChangeOrderButton
-                android:id="@+id/all_song_sort_order"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/gray_400"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="0dp"
-                android:textColor="@android:color/black"
-                app:icon="@drawable/ic_sort_desc"
-                app:iconGravity="end"
-                app:iconTint="@android:color/black"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            <!--            <com.lalilu.lmusic.ui.ChangeOrderButton-->
+            <!--                android:id="@+id/all_song_sort_order"-->
+            <!--                style="@style/Widget.MaterialComponents.Button.TextButton"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:backgroundTint="@color/gray_400"-->
+            <!--                android:insetTop="0dp"-->
+            <!--                android:insetBottom="0dp"-->
+            <!--                android:minWidth="0dp"-->
+            <!--                android:textColor="@android:color/black"-->
+            <!--                app:icon="@drawable/ic_sort_desc"-->
+            <!--                app:iconGravity="end"-->
+            <!--                app:iconTint="@android:color/black"-->
+            <!--                app:layout_constraintEnd_toEndOf="parent"-->
+            <!--                app:layout_constraintTop_toTopOf="parent" />-->
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <me.qinc.lib.edgetranslucent.EdgeTransparentView
