@@ -52,10 +52,15 @@ class LMusicNotificationProvider @Inject constructor(
         mContext, NotificationManager::class.java
     ) as NotificationManager
 
+    private val defaultIconResId: Int by lazy {
+        val appIcon = mContext.applicationInfo.icon
+        if (appIcon != 0) appIcon else R.drawable.ic_launcher_foreground
+    }
+
     companion object {
-        const val NOTIFICATION_ID_PLAYER = 1001
-        const val NOTIFICATION_ID_LOGGER = 1002
-        const val NOTIFICATION_ID_LYRIC = 1003
+        const val NOTIFICATION_ID_PLAYER = 7
+        const val NOTIFICATION_ID_LOGGER = 6
+        const val NOTIFICATION_ID_LYRIC = 5
 
         const val NOTIFICATION_CHANNEL_NAME_PLAYER = "LMusic Player"
         const val NOTIFICATION_CHANNEL_NAME_LOGGER = "LMusic Logger"
@@ -179,7 +184,7 @@ class LMusicNotificationProvider @Inject constructor(
             .setSubText(metadata.albumTitle)
             .setColor(notificationBgColor)
             .setLargeIcon(placeHolder)
-            .setSmallIcon(getSmallIconResId(mContext))
+            .setSmallIcon(defaultIconResId)
             .setStyle(mediaStyle)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOngoing(false)
@@ -265,22 +270,24 @@ class LMusicNotificationProvider @Inject constructor(
         notificationManager.cancel(NOTIFICATION_ID_LYRIC)
     }
 
-    override fun pushLyric(sentence: String) {
-        ensureNotificationChannel()
-        val builder = NotificationCompat.Builder(mContext, NOTIFICATION_CHANNEL_ID_LYRICS)
-        builder.setContentText("歌词")
-            .setShowWhen(false)
-            .setTicker(sentence)
-            .setOngoing(true)
-            .setSmallIcon(getSmallIconResId(mContext))
-        val notification = builder.build()
-        notification.flags = notification.flags.or(FLAG_ALWAYS_SHOW_TICKER)
-        notification.flags = notification.flags.or(FLAG_ONLY_UPDATE_TICKER)
-        notificationManager.notify(NOTIFICATION_ID_LYRIC, notification)
+    private val lyricBuilder = NotificationCompat.Builder(
+        mContext,
+        NOTIFICATION_CHANNEL_ID_LYRICS
+    ).apply {
+        setContentText("歌词")
+        setShowWhen(false)
+        setOngoing(true)
+        setSmallIcon(defaultIconResId)
     }
 
-    private fun getSmallIconResId(context: Context): Int {
-        val appIcon = context.applicationInfo.icon
-        return if (appIcon != 0) appIcon else R.drawable.ic_launcher_foreground
+    override fun pushLyric(sentence: String) {
+        ensureNotificationChannel()
+        lyricBuilder.setTicker(sentence)
+
+        notificationManager.notify(NOTIFICATION_ID_LYRIC,
+            lyricBuilder.build().also {
+                it.flags = it.flags.or(FLAG_ALWAYS_SHOW_TICKER)
+                it.flags = it.flags.or(FLAG_ONLY_UPDATE_TICKER)
+            })
     }
 }
