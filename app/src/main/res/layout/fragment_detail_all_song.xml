@@ -32,7 +32,6 @@
                 android:textAppearance="@style/dayNightPrimaryText"
                 android:textColor="@color/daynight_0"
                 android:textSize="24sp"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -45,11 +44,42 @@
                 android:textColor="@color/daynight_0.4"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/all_song_detail_title"
                 app:layout_constraintVertical_bias="0.0" />
+
+            <com.lalilu.lmusic.ui.ChangeOrderButton
+                android:id="@+id/all_song_sort_by"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:backgroundTint="@color/gray_400"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:textColor="@android:color/black"
+                app:icon="@drawable/ic_time_line"
+                app:iconGravity="end"
+                app:iconTint="@android:color/black"
+                app:layout_constraintEnd_toStartOf="@+id/all_song_sort_order"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.lalilu.lmusic.ui.ChangeOrderButton
+                android:id="@+id/all_song_sort_order"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/gray_400"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:textColor="@android:color/black"
+                app:icon="@drawable/ic_sort_desc"
+                app:iconGravity="end"
+                app:iconTint="@android:color/black"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <me.qinc.lib.edgetranslucent.EdgeTransparentView
@@ -62,12 +92,12 @@
                 android:id="@+id/all_song_detail_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:adapter="@{adapter}"
                 android:clipToPadding="false"
                 android:fillViewport="true"
                 android:overScrollMode="never"
                 android:paddingTop="20dp"
                 android:paddingBottom="20dp"
+                app:adapter="@{adapter}"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_list_item" />
         </me.qinc.lib.edgetranslucent.EdgeTransparentView>

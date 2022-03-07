@@ -7,6 +7,7 @@ import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
 import com.lalilu.lmusic.datasource.extensions.getDuration
+import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarDragUpToThresholdListener
@@ -21,6 +22,9 @@ import javax.inject.Inject
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 class MainFragment : DataBindingFragment() {
+
+    @Inject
+    lateinit var mGlobal: GlobalViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
@@ -38,11 +42,10 @@ class MainFragment : DataBindingFragment() {
         val dialog = NavigatorFragment()
 
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
-        mSongBrowser.currentMediaItemLiveData.observe(viewLifecycleOwner) {
+        mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             seekBar.setSumDuration(it?.mediaMetadata?.getDuration()?.coerceAtLeast(0) ?: 0)
         }
-
-        mSongBrowser.currentPositionLiveData.observe(viewLifecycleOwner) {
+        mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
             seekBar.updatePosition(it)
         }
 
