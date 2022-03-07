@@ -27,6 +27,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/item_bg"
         android:minHeight="72dp"
+        android:padding="20dp"
         android:paddingHorizontal="20dp"
         android:paddingVertical="15dp">
 
@@ -40,7 +41,6 @@
             android:text="@{title}"
             android:textColor="@color/daynight_0"
             android:textSize="16sp"
-            app:layout_constraintBottom_toTopOf="@+id/music_album"
             app:layout_constraintEnd_toStartOf="@+id/music_duration"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -70,6 +70,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
+            android:layout_marginTop="10dp"
             android:ellipsize="end"
             android:maxLines="2"
             android:text="@{album}"
@@ -80,6 +81,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/music_artist"
+            app:layout_constraintTop_toBottomOf="@+id/music_title"
             tools:text="@tools:sample/cities" />
 
         <TextView
@@ -87,10 +89,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/daynight_0"
-            app:layout_constraintBottom_toBottomOf="@+id/music_title"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/music_title"
-            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintTop_toTopOf="parent"
             app:setDuration="@{duration}"
             tools:text="@tools:sample/date/hhmm" />
 
