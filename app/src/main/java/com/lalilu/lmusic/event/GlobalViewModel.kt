@@ -42,20 +42,28 @@ class GlobalViewModel @Inject constructor(
     private var lastPlayState = false
     fun updatePosition(force: Boolean = false) {
         if (force) {
+            val isPlaying = getIsPlayingFromPlayer()
             val position = getPositionFromPlayer()
-            launch { currentPosition.emit(position) }
+            launch {
+                currentIsPlaying.emit(isPlaying)
+                currentPosition.emit(position)
+            }
             return
         }
         val isPlaying = getIsPlayingFromPlayer()
         if (lastPlayState == isPlaying) {
             val position = getPositionFromPlayer()
-            launch { currentPosition.emit(position) }
+            launch {
+                currentIsPlaying.emit(isPlaying)
+                currentPosition.emit(position)
+            }
         } else {
             lastPlayState = isPlaying
         }
         handler.postDelayed(this::updatePosition, 100)
     }
 
+    val currentIsPlaying: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val currentPosition: MutableStateFlow<Long> = MutableStateFlow(0L)
     val currentMediaItem: MutableStateFlow<MediaItem?> = MutableStateFlow(null)
     val currentPlaylist: MutableStateFlow<List<MediaItem>> = MutableStateFlow(emptyList())

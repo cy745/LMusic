@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 interface LyricPusher {
@@ -18,6 +19,7 @@ interface LyricPusher {
     fun pushLyric(sentence: String)
 }
 
+@Singleton
 @ExperimentalCoroutinesApi
 class LyricManager @Inject constructor(
     mGlobal: GlobalViewModel,
@@ -26,11 +28,10 @@ class LyricManager @Inject constructor(
 ) : Player.Listener, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private var lastLyric: String? = ""
-    private var lastIndex: Int = 0
+    private var lastIndex: Int = -1
 
     private val _songLyric: Flow<Pair<String, String?>?> =
         mGlobal.currentMediaItem.mapLatest {
-            pusher.clearLyric()
             it ?: return@mapLatest null
 
             lyricSourceFactory.getLyric(it)
@@ -39,12 +40,24 @@ class LyricManager @Inject constructor(
     val songLyric = _songLyric.asLiveData()
 
     init {
-        _songLyric.combine(mGlobal.currentPosition) { pair, time ->
-            if (pair == null) return@combine null
+        mGlobal.currentIsPlaying.onEach { isPlaying ->
+            if (!isPlaying) pusher.clearLyric()
+        }.launchIn(this)
 
-            val list = LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
-            val index = findShowLine(list, time)
-            val lyricEntry = list?.let {
+        _songLyric.mapLatest { pair ->
+            if (pair == null) {
+                pusher.clearLyric()
+                return@mapLatest null
+            }
+            LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
+        }.combine(mGlobal.currentPosition) { list, time ->
+            list ?: return@combine null
+            if (time == 0L) {
+                return@combine null
+            }
+
+            val index = findShowLine(list, time + 200)
+            val lyricEntry = list.let {
                 if (it.isEmpty()) null else it[index]
             }
             val nowLyric = lyricEntry?.text ?: lyricEntry?.secondText
@@ -54,14 +67,10 @@ class LyricManager @Inject constructor(
             lastIndex = index
             lastLyric = nowLyric
             nowLyric
-        }.flowOn(Dispatchers.IO)
-            .onEach {
-                if (it == null) {
-                    pusher.clearLyric()
-                    return@onEach
-                }
-                pusher.pushLyric(it)
-            }.launchIn(this)
+        }.onEach {
+            it ?: return@onEach
+            pusher.pushLyric(it)
+        }.launchIn(this)
     }
 
     private fun findShowLine(list: List<LyricEntry>?, time: Long): Int {
