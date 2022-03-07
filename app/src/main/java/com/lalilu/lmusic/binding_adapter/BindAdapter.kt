@@ -90,16 +90,7 @@ fun loadCover(imageView: AppCompatImageView, mediaItem: MediaItem?, samplingValu
 
     imageView.loadAny(mediaItem.getCoverFromMediaItem()) {
         if (samplingTo > 0) size(samplingTo)
-        target(onStart = {
-            imageView.scaleType = ImageView.ScaleType.CENTER
-            imageView.setImageDrawable(it)
-        }, onError = {
-            imageView.scaleType = ImageView.ScaleType.CENTER
-            imageView.setImageDrawable(it)
-        }, onSuccess = {
-            imageView.setImageDrawable(it)
-            imageView.scaleType = ImageView.ScaleType.CENTER_CROP
-        })
+        crossfade(150)
     }
 }
 
