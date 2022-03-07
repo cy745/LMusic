@@ -33,7 +33,6 @@ class LyricManager @Inject constructor(
     private val _songLyric: Flow<Pair<String, String?>?> =
         mGlobal.currentMediaItem.mapLatest {
             it ?: return@mapLatest null
-
             lyricSourceFactory.getLyric(it)
         }
 
