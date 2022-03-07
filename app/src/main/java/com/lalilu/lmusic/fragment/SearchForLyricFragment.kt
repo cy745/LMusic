@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.fragment
 
+import android.text.TextUtils
 import android.view.View
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
@@ -15,14 +16,13 @@ import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.datasource.PersistLyric
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
+@ExperimentalCoroutinesApi
 class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val args: SearchForLyricFragmentArgs by navArgs()
@@ -81,32 +81,38 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
 
     private fun saveSongLyric(songId: Long?) =
         launch(Dispatchers.IO) {
-            songId ?: run {
-                toastThen("未选择匹配歌曲")
-                return@launch
-            }
+            flow {
+                if (songId != null) emit(songId)
+                else toastThen("未选择匹配歌曲")
+            }.mapLatest {
+                toastThen("开始获取歌词")
+                neteaseDataSource.searchForLyric(it)
+            }.mapLatest {
+                val lyric = it?.lrc?.lyric
+                val tlyric = it?.tlyric?.lyric
 
-            toastThen("开始获取歌词")
-            val response = neteaseDataSource.searchForLyric(songId)
-            val lyric = response?.lrc?.lyric ?: run {
-                toastThen("选中歌曲无歌词")
-                return@launch
-            }
-            val tlyric = response.tlyric?.lyric
-
-            dataBase.persistLyricDao().save(
-                PersistLyric(
-                    mediaId = args.mediaId,
-                    lyric = lyric,
-                    tlyric = tlyric
-                )
-            )
-            toastThen("保存匹配歌词成功") {
-                try {
-                    findNavController().navigateUp()
-                } catch (e: Exception) {
+                if (!TextUtils.isEmpty(lyric)) Pair(lyric!!, tlyric) else {
+                    toastThen("选中歌曲无歌词")
+                    null
                 }
-            }
+            }.onEach {
+                it ?: return@onEach
+                dataBase.persistLyricDao().save(
+                    PersistLyric(
+                        mediaId = args.mediaId,
+                        lyric = it.first,
+                        tlyric = it.second
+                    )
+                )
+                toastThen("保存匹配歌词成功") {
+                    try {
+                        findNavController().navigateUp()
+                    } catch (_: Exception) {
+                    }
+                }
+            }.catch {
+                toastThen("保存失败")
+            }.launchIn(this)
         }
 
     private fun getSongResult(binding: FragmentSearchForLyricBinding, keyword: String) =
@@ -117,19 +123,27 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
                     requireContext().getString(R.string.button_search_for_lyric_searching)
                 binding.searchForLyricRefreshAndTipsButton.visibility = View.VISIBLE
             }
-            val response = neteaseDataSource.searchForSong(keyword)
-            val results = response?.result?.songs ?: emptyList()
-
-            withContext(Dispatchers.Main) {
-                if (results.isEmpty()) {
-                    binding.searchForLyricRefreshAndTipsButton.text =
-                        requireContext().getString(R.string.button_search_for_lyric_no_result)
-                } else {
-                    binding.searchForLyricRefreshAndTipsButton.text = ""
-                    binding.searchForLyricRefreshAndTipsButton.visibility = View.GONE
+            flow {
+                val response = neteaseDataSource.searchForSong(keyword)
+                val results = response?.result?.songs ?: emptyList()
+                emit(results)
+            }.onEach {
+                withContext(Dispatchers.Main) {
+                    if (it.isEmpty()) {
+                        binding.searchForLyricRefreshAndTipsButton.text =
+                            requireContext().getString(R.string.button_search_for_lyric_no_result)
+                    } else {
+                        binding.searchForLyricRefreshAndTipsButton.text = ""
+                        binding.searchForLyricRefreshAndTipsButton.visibility = View.GONE
+                    }
+                    mAdapter.setDiffNewData(it.toMutableList())
                 }
-                mAdapter.setDiffNewData(results.toMutableList())
-            }
+            }.catch {
+                withContext(Dispatchers.Main) {
+                    binding.searchForLyricRefreshAndTipsButton.text = "搜索失败"
+                    mAdapter.setDiffNewData(ArrayList())
+                }
+            }.launchIn(this)
         }
 
     private fun toastThen(text: String, then: () -> Unit = {}) = launch(Dispatchers.Main) {
