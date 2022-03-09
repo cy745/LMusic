@@ -1,6 +1,6 @@
 package com.lalilu.lmusic.fragment
 
-import android.view.View
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.lalilu.BR
 import com.lalilu.R
@@ -8,18 +8,17 @@ import com.lalilu.databinding.FragmentSongDetailBinding
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.BaseMediaSource
-import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.datasource.SongInPlaylist
-import com.lalilu.lmusic.domain.entity.MPlaylist
-import com.lalilu.lmusic.fragment.viewmodel.SongDetailViewModel
-import com.lalilu.lmusic.ui.MyPopupWindow
+import com.lalilu.lmusic.datasource.ITEM_PREFIX
+import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
-
+@FlowPreview
 @AndroidEntryPoint
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 class SongDetailFragment : DataBindingFragment(), CoroutineScope {
     private val args: SongDetailFragmentArgs by navArgs()
@@ -32,7 +31,7 @@ class SongDetailFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mediaSource: BaseMediaSource
 
     @Inject
-    lateinit var dataBase: LMusicDataBase
+    lateinit var mSongBrowser: MSongBrowser
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.fragment_song_detail)
@@ -41,47 +40,28 @@ class SongDetailFragment : DataBindingFragment(), CoroutineScope {
 
     override fun onViewCreated() {
         val binding = mBinding as FragmentSongDetailBinding
-        mState._song.postValue(
-            mediaSource.getSongById(args.songId)
+        mState.song.postValue(
+            mediaSource.getItemById(ITEM_PREFIX + args.mediaId)
         )
+        binding.songDetailSetSongToNextButton.setOnClickListener {
+            mSongBrowser.addToNext(args.mediaId)
+        }
         binding.songDetailAddSongToPlaylistButton.setOnClickListener {
-            showSongToPlaylistPopupWindow(binding.root)
+            findNavController().navigate(
+                SongDetailFragmentDirections.songDetailToAddToPlaylist(args.mediaId)
+            )
+        }
+        binding.songDetailSearchForLyricButton.setOnClickListener {
+            val mediaItem = mState.song.value ?: return@setOnClickListener
+            val metadata = mediaItem.mediaMetadata
+            findNavController().navigate(
+                SongDetailFragmentDirections.songDetailToSearchForLyric(
+                    mediaTitle = metadata.title.toString(),
+                    artistName = metadata.artist.toString(),
+                    albumTitle = metadata.albumTitle.toString(),
+                    mediaId = mediaItem.mediaId
+                )
+            )
         }
     }
-
-    /**
-     * 显示用于选择歌单的PopupWindow，并传入所需展示的歌单列表，
-     * 设置好回调获取被选中的歌单列表
-     *
-     * @param anchorView 给PopupWindow作为锚点的View
-     */
-    private fun showSongToPlaylistPopupWindow(anchorView: View) =
-        launch(Dispatchers.IO) {
-            val list = dataBase.playlistDao().getAll().toMutableList()
-            withContext(Dispatchers.Main) {
-                MyPopupWindow(requireActivity()) {
-                    saveSongToPlaylist(it)
-                }.apply {
-                    setData(list)
-                }.showAsDropDown(anchorView)
-            }
-        }
-
-    /**
-     * 将获取到的Playlist列表取其id作为参数，创建实体存入数据库中
-     *
-     * @param targetList 获取到的歌单列表
-     */
-    private fun saveSongToPlaylist(targetList: List<MPlaylist>) =
-        launch(Dispatchers.IO) {
-            targetList.forEach { playlist ->
-                playlist.playlistId ?: return@forEach
-                dataBase.songInPlaylistDao().save(
-                    SongInPlaylist(
-                        playlistId = playlist.playlistId,
-                        songId = args.songId
-                    )
-                )
-            }
-        }
 }

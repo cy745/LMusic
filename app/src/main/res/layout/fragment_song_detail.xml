@@ -7,7 +7,7 @@
 
         <variable
             name="vm"
-            type="com.lalilu.lmusic.fragment.viewmodel.SongDetailViewModel" />
+            type="com.lalilu.lmusic.viewmodel.SongDetailViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="20dp"
-            android:text="@{vm.song.songTitle}"
+            android:text="@{vm.song.mediaMetadata.title}"
             android:textAppearance="@style/dayNightPrimaryText"
             android:textColor="@color/daynight_0"
             android:textSize="24sp"
@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_marginEnd="20dp"
-            android:text="@{vm.song.showingArtist}"
+            android:text="@{vm.song.mediaMetadata.artist}"
             android:textColor="@color/daynight_0.4"
             android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -64,7 +64,8 @@
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
                 android:background="@color/daynight_0.4"
-                app:setCoverSourceUri="@{vm.song.songUri}"
+                android:minHeight="100dp"
+                app:loadCover="@{vm.song}"
                 tools:src="@tools:sample/avatars" />
         </androidx.cardview.widget.CardView>
 
@@ -76,20 +77,53 @@
             app:barrierMargin="20dp"
             app:constraint_referenced_ids="song_detail_card,song_detail_artist" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/song_detail_add_song_to_playlist_button"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
+        <com.nex3z.flowlayout.FlowLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
-            android:text="@string/button_add_song_to_playlist"
-            android:textColor="#006E7C"
-            android:textSize="14sp"
-            app:backgroundTint="@color/song_detail_add_song_to_playlist_button_bg"
+            app:flChildSpacing="15dp"
+            app:flRowSpacing="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/barrier3"
-            app:rippleColor="#006E7C" />
+            app:layout_constraintTop_toBottomOf="@id/barrier3">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/song_detail_add_song_to_playlist_button"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:text="@string/button_add_song_to_playlist"
+                android:textColor="#006E7C"
+                android:textSize="14sp"
+                app:backgroundTint="@color/song_detail_add_song_to_playlist_button_bg"
+                app:rippleColor="#006E7C" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/song_detail_set_song_to_next_button"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:text="@string/button_set_song_to_next"
+                android:textColor="#006E7C"
+                android:textSize="14sp"
+                app:backgroundTint="@color/song_detail_add_song_to_playlist_button_bg"
+                app:rippleColor="#006E7C" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/song_detail_search_for_lyric_button"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:text="@string/button_search_for_lyric"
+                android:textColor="#006E7C"
+                android:textSize="14sp"
+                app:backgroundTint="@color/song_detail_add_song_to_playlist_button_bg"
+                app:rippleColor="#006E7C" />
+        </com.nex3z.flowlayout.FlowLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

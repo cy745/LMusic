@@ -6,6 +6,7 @@ import android.util.DisplayMetrics
 import android.view.*
 import android.widget.OverScroller
 import androidx.annotation.FloatRange
+import androidx.annotation.IntDef
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.util.ObjectsCompat
 import androidx.core.view.ViewCompat
@@ -19,6 +20,12 @@ import kotlin.math.roundToInt
 
 const val INVALID_POINTER = -1
 
+const val STATE_NORMAL = 1
+const val STATE_MIDDLE = 2
+const val STATE_COLLAPSED = 3
+const val STATE_EXPENDED = 4
+const val STATE_FULLY_EXPENDED = 5
+
 abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     private val mContext: Context?, attrs: AttributeSet?
 ) : ViewOffsetExpendBehavior<V>(mContext, attrs), AntiMisTouchEvent {
@@ -27,36 +34,39 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
      * [ExpendHeaderBehavior]
      *  可能的几种状态
      */
-    enum class State {
+    @IntDef(
         STATE_NORMAL,
         STATE_MIDDLE,
         STATE_COLLAPSED,
         STATE_EXPENDED,
         STATE_FULLY_EXPENDED
-    }
+    )
+    @Retention(AnnotationRetention.SOURCE)
+    annotation class State
 
     /**
      * 监听状态变化的基础接口
      */
     interface OnStateChangeListener {
-        fun onStateChange(lastState: State, nowState: State)
+        fun onStateChange(@State lastState: Int, @State nowState: Int)
     }
 
-    interface OnScrollToThresholdListener : OnStateChangeListener {
-        fun onScrollToThreshold()
-        override fun onStateChange(lastState: State, nowState: State) {
-            if (lastState != State.STATE_MIDDLE && nowState == State.STATE_MIDDLE) {
+    abstract class OnScrollToThresholdListener : OnStateChangeListener {
+        abstract fun onScrollToThreshold()
+        override fun onStateChange(@State lastState: Int, @State nowState: Int) {
+            if (lastState != STATE_MIDDLE && nowState == STATE_MIDDLE) {
                 onScrollToThreshold()
             }
         }
     }
 
     abstract class OnScrollToStateListener(
-        private val targetState: State
+        @State private val startState: Int,
+        @State private val targetState: Int
     ) : OnStateChangeListener {
         abstract fun onScrollToStateListener()
-        override fun onStateChange(lastState: State, nowState: State) {
-            if (nowState == targetState && nowState != lastState) {
+        override fun onStateChange(@State lastState: Int, @State nowState: Int) {
+            if (lastState == startState && nowState == targetState && nowState != lastState) {
                 onScrollToStateListener()
             }
         }
@@ -75,18 +85,27 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     private var lastMotionY = 0
     private var touchSlop = -1
 
-    private var tempState: State = State.STATE_EXPENDED
-    private var lastState: State = State.STATE_EXPENDED
-    private val nowState: State
-        get() = if (topAndBottomOffset < getMaxDragOffset() * getMaxDragThreshold() && topAndBottomOffset >= 0)
-            State.STATE_EXPENDED
-        else if (topAndBottomOffset > getFullyExpendOffset() - getMaxDragOffset() * getMaxDragThreshold())
-            State.STATE_FULLY_EXPENDED
-        else if (topAndBottomOffset == getCollapsedOffset())
-            State.STATE_COLLAPSED
-        else if (topAndBottomOffset < 0)
-            State.STATE_NORMAL
-        else State.STATE_MIDDLE
+    @State
+    private var tempState: Int = STATE_EXPENDED
+
+    @State
+    private var lastState: Int = STATE_EXPENDED
+
+    @State
+    val nowState: Int
+        get() {
+            val min = getCollapsedOffset()
+            val dragOffset = (getMaxDragOffset() * getMaxDragThreshold()).toInt()
+            val max = getFullyExpendOffset()
+
+            return when (topAndBottomOffset) {
+                in min until (min + dragOffset) -> STATE_COLLAPSED
+                in (min + dragOffset) until -dragOffset -> STATE_NORMAL
+                in -dragOffset until dragOffset -> STATE_EXPENDED
+                in dragOffset until (max - dragOffset) -> STATE_MIDDLE
+                else -> STATE_FULLY_EXPENDED
+            }
+        }
 
     protected var parentWeakReference: WeakReference<CoordinatorLayout>? = null
     protected var childWeakReference: WeakReference<V>? = null
@@ -294,16 +313,16 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
      */
     fun snapToChildIfNeeded() {
         val offsetTo = when (nowState) {
-            State.STATE_EXPENDED -> 0
-            State.STATE_COLLAPSED -> getCollapsedOffset()
-            State.STATE_FULLY_EXPENDED -> getFullyExpendOffset()
-            State.STATE_NORMAL -> calculateSnapOffset(
+            STATE_EXPENDED -> 0
+            STATE_COLLAPSED -> getCollapsedOffset()
+            STATE_FULLY_EXPENDED -> getFullyExpendOffset()
+            STATE_NORMAL -> calculateSnapOffset(
                 topAndBottomOffset, 0, getCollapsedOffset()
             )
-            State.STATE_MIDDLE -> when (lastState) {
-                State.STATE_FULLY_EXPENDED -> 0
-                State.STATE_NORMAL,
-                State.STATE_EXPENDED -> getFullyExpendOffset()
+            STATE_MIDDLE -> when (lastState) {
+                STATE_FULLY_EXPENDED -> 0
+                STATE_NORMAL,
+                STATE_EXPENDED -> getFullyExpendOffset()
                 else -> null
             }
             else -> null
@@ -398,15 +417,15 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
             minOffset, maxOffset                   // minY / maxY
         )
         when (nowState) {
-            State.STATE_COLLAPSED,
-            State.STATE_NORMAL,
-            State.STATE_EXPENDED -> {
+            STATE_COLLAPSED,
+            STATE_NORMAL,
+            STATE_EXPENDED -> {
                 animateOffsetTo(
                     calculateSnapOffset(scroller!!.finalY, 0, minOffset)
                 )
             }
-            State.STATE_MIDDLE,
-            State.STATE_FULLY_EXPENDED -> {
+            STATE_MIDDLE,
+            STATE_FULLY_EXPENDED -> {
                 snapToChildIfNeeded()
             }
         }

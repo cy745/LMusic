@@ -2,16 +2,19 @@ package com.lalilu.lmusic.fragment
 
 import androidx.databinding.library.baseAdapters.BR
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.R
-import com.lalilu.databinding.FragmentListAlbumsBinding
 import com.lalilu.lmusic.adapter.AlbumsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
+import com.lalilu.lmusic.datasource.ALBUM_ID
 import com.lalilu.lmusic.datasource.BaseMediaSource
-import com.lalilu.lmusic.fragment.viewmodel.AlbumsViewModel
+import com.lalilu.lmusic.viewmodel.AlbumsViewModel
+import com.lalilu.lmusic.viewmodel.bindViewModel
+import com.lalilu.lmusic.viewmodel.savePosition
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -27,45 +30,24 @@ class AlbumsFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mAdapter: AlbumsAdapter
 
     @Inject
-    lateinit var baseMediaSource: BaseMediaSource
+    lateinit var mediaSource: BaseMediaSource
 
     override fun getDataBindingConfig(): DataBindingConfig {
+        mAdapter.bindViewModel(mState, viewLifecycleOwner)
         mAdapter.onItemClick = {
-            mState._position.postValue(requireScrollOffset())
+            mAdapter.savePosition(mState)
             findNavController().navigate(
                 AlbumsFragmentDirections.toAlbumDetail(
-                    albumId = it.albumId,
-                    albumTitle = it.albumTitle
+                    albumId = it.mediaId,
+                    albumTitle = it.mediaMetadata.albumTitle.toString()
                 )
             )
         }
-        mAdapter.stateRestorationPolicy =
-            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         return DataBindingConfig(R.layout.fragment_list_albums)
             .addParam(BR.albumsAdapter, mAdapter)
     }
 
     override fun onViewCreated() {
-        val binding = mBinding as FragmentListAlbumsBinding
-        val recyclerView = binding.albumsRecyclerView
-        baseMediaSource.albums.observe(viewLifecycleOwner) {
-            mAdapter.setDiffNewData(it?.toMutableList())
-        }
-        mState.position.observe(viewLifecycleOwner) {
-            it ?: return@observe
-            launch {
-                delay(50)
-                recyclerView.scrollToPosition(it)
-            }
-        }
-    }
-
-    private fun requireScrollOffset(): Int {
-        if (mBinding == null || mBinding !is FragmentListAlbumsBinding) {
-            return 0
-        }
-        return (mBinding as FragmentListAlbumsBinding)
-            .albumsRecyclerView
-            .computeVerticalScrollOffset()
+        mState.postData(mediaSource.getChildren(ALBUM_ID) ?: emptyList())
     }
 }

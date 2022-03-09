@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">LMusic</string>
 
-    <string name="empty_tips">EMPTY</string>
     <string name="audio_type">音频格式</string>
     <string name="default_slogan">LMusic…</string>
 
@@ -10,8 +9,14 @@
     <string name="text_button_pause">暂停</string>
     <string name="text_button_search">搜索</string>
     <string name="text_button_settings">设置</string>
-
-    <string name="song_non_exist_tips">该本地歌曲已丢失，重启LMusic后将清除该歌曲😥</string>
+    <string name="text_button_previous">前一首</string>
+    <string name="text_button_next">后一首</string>
+    <string name="text_button_repeat_one">单曲循环</string>
+    <string name="text_button_repeat_all">列表循环</string>
+    <string name="text_button_shuffle_on">随机播放</string>
+    <string name="text_button_close">关闭</string>
+    <string name="text_button_cancel">取消</string>
+    <string name="text_button_confirm">确认</string>
 
     <string name="dialog_bottom_sheet_navigator_back">返回</string>
     <string name="dialog_bottom_sheet_navigator_close">关闭</string>
@@ -23,6 +28,24 @@
     <string name="destination_label_album_detail">专辑详情</string>
     <string name="destination_label_playlist_detail">歌单详情</string>
     <string name="destination_label_song_detail">歌曲详情</string>
+    <string name="destination_label_add_song_to_playlist">添加至歌单</string>
+    <string name="destination_label_search_for_lyric">搜索歌词</string>
+
+    <string name="destination_subtitle_library">各种各样的选项</string>
+    <string name="destination_subtitle_albums">所有专辑</string>
+    <string name="destination_subtitle_playlists">所有歌单</string>
+    <string name="destination_subtitle_all_song">所有歌曲</string>
+    <string name="destination_subtitle_album_detail">专辑详情</string>
+    <string name="destination_subtitle_playlist_detail">歌单详情</string>
+    <string name="destination_subtitle_song_detail">歌曲详情</string>
+
+    <string name="button_search_for_lyric_searching">搜索中…</string>
+    <string name="button_search_for_lyric_no_result">无结果</string>
+
+    <string name="button_create_playlist">CREATE</string>
+    <string name="button_copy_current_playlist">COPY</string>
 
     <string name="button_add_song_to_playlist">添加至歌单</string>
+    <string name="button_set_song_to_next">下一首播放</string>
+    <string name="button_search_for_lyric">搜索网络歌词</string>
 </resources>

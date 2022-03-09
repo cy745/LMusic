@@ -4,27 +4,38 @@ import android.media.AudioManager
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import com.lalilu.R
 import com.lalilu.lmusic.base.DataBindingActivity
 import com.lalilu.lmusic.base.DataBindingConfig
-import com.lalilu.lmusic.event.PlayerModule
+import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
+import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchBar
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import javax.inject.Inject
 
 @AndroidEntryPoint
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 class LMusicActivity : DataBindingActivity() {
+
+    @Inject
+    lateinit var mGlobal: GlobalViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
 
     @Inject
-    lateinit var playerModule: PlayerModule
+    lateinit var mediaSource: BaseMediaSource
+
+    @Inject
+    lateinit var mSongBrowser: MSongBrowser
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.activity_main)
@@ -33,14 +44,16 @@ class LMusicActivity : DataBindingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         StatusBarUtil.immerseStatusBar(this)
-        PermissionUtils.requestPermission(this)
-
-//        println("isPad: ${DeviceUtil.isPad(this)}")
-//        requestedOrientation = if (DeviceUtil.isPad(this)) {
-//            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-//        } else {
-//            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-//        }
+        PermissionUtils.requestPermission(this, onSuccess = {
+            mediaSource.whenReady {
+                mSongBrowser.recoverLastPlayedItem()
+            }
+            mediaSource.loadSync()
+        }, onFailed = {
+            Toast.makeText(this, "无外部存储读取权限，无法读取歌曲", Toast.LENGTH_SHORT).show()
+        })
+        volumeControlStream = AudioManager.STREAM_MUSIC
+        lifecycle.addObserver(mSongBrowser)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -50,25 +63,10 @@ class LMusicActivity : DataBindingActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onPause() {
-        playerModule.disconnect()
-        super.onPause()
-    }
-
-    override fun onResume() {
-        volumeControlStream = AudioManager.STREAM_MUSIC
-        playerModule.connect()
-        super.onResume()
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_appbar, menu)
-        val items = menu.findItem(R.id.appbar_search)
-        val searchBar = MySearchBar(items) {
-            playerModule.searchFor(it)
-        }
-        mEvent.isSearchViewExpand.observe(this) {
-            it?.get { searchBar.collapse() }
+        MySearchBar(menu.findItem(R.id.appbar_search)) {
+            mGlobal.searchFor(it)
         }
         return super.onCreateOptionsMenu(menu)
     }

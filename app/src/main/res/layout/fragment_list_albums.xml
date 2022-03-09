@@ -28,29 +28,27 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                android:text="专辑"
+                android:text="@string/destination_label_albums"
                 android:textAppearance="@style/dayNightPrimaryText"
                 android:textColor="@color/daynight_0"
                 android:textSize="24sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="@tools:sample/cities" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/album_detail_artist"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="所有专辑"
+                android:text="@string/destination_subtitle_albums"
                 android:textColor="@color/daynight_0.4"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/album_detail_title"
-                app:layout_constraintVertical_bias="0.0"
-                tools:text="Artists" />
+                app:layout_constraintVertical_bias="0.0" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <me.qinc.lib.edgetranslucent.EdgeTransparentView

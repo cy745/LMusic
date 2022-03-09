@@ -5,11 +5,9 @@
 
     <data>
 
-        <import type="com.lalilu.lmusic.utils.TextUtils" />
-
         <variable
-            name="song"
-            type="com.lalilu.lmusic.domain.entity.MSong" />
+            name="mediaItem"
+            type="androidx.media3.common.MediaItem" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -27,7 +25,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:setCoverSourceUri="@{song.songUri}"
+            app:loadCover="@{mediaItem}"
             tools:src="@tools:sample/avatars" />
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -37,7 +35,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="5dp"
             android:letterSpacing="0.05"
-            android:text="@{song.songTitle}"
+            android:text="@{mediaItem.mediaMetadata.title}"
             android:textColor="@color/daynight_0"
             android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@+id/song_singer"
@@ -53,7 +51,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:letterSpacing="0.05"
-            android:text="@{song.showingArtist}"
+            android:text="@{mediaItem.mediaMetadata.artist}"
             android:textColor="@color/daynight_0.6"
             android:textSize="10sp"
             android:textStyle="bold"
@@ -69,12 +67,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
-            android:text="@{TextUtils.INSTANCE.durationToString(song.songDuration)}"
             android:textAlignment="center"
             android:textColor="@color/daynight_0"
             app:layout_constraintBottom_toBottomOf="@+id/song_singer"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/song_singer"
+            app:setDuration="@{mediaItem.mediaMetadata}"
             tools:text="@tools:sample/date/hhmm" />
 
         <ImageView
@@ -83,7 +81,7 @@
             android:layout_height="20dp"
             android:layout_marginEnd="20dp"
             android:contentDescription="@string/audio_type"
-            app:iconRec="@{song.songMimeType}"
+            app:iconRec="@{mediaItem.localConfiguration.mimeType}"
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -99,7 +97,7 @@
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toStartOf="@+id/song_type"
             app:layout_constraintTop_toTopOf="parent"
-            app:setLyricSourceUri="@{song.songData}"
+            app:setLyricSource="@{mediaItem}"
             app:srcCompat="@drawable/ic_lrc_fill" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

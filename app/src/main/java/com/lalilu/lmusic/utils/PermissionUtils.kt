@@ -8,12 +8,17 @@ import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
 
 object PermissionUtils {
-    fun requestPermission(context: Activity) {
+    fun requestPermission(
+        context: Activity,
+        onSuccess: () -> Unit = {},
+        onFailed: () -> Unit = {}
+    ) {
         XXPermissions.with(context)
             .permission(Permission.READ_EXTERNAL_STORAGE)
             .request(object : OnPermissionCallback {
                 override fun onGranted(permissions: List<String>, all: Boolean) {
                     if (all) {
+                        onSuccess.invoke()
                         println("获取权限成功")
                     } else {
                         println("获取部分权限成功，但部分权限未正常授予，程序可能无法成功运作")
@@ -26,8 +31,7 @@ object PermissionUtils {
                             .show()
                         XXPermissions.startPermissionActivity(context, permissions)
                     } else {
-                        Toast.makeText(context, "获取相关权限失败，程序可能无法成功运作", Toast.LENGTH_SHORT)
-                            .show()
+                        onFailed.invoke()
                     }
                 }
             })

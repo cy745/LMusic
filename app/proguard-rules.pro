@@ -20,6 +20,9 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+# retrofit 使用的所有bean都不可以混淆
+-keep  class com.lalilu.lmusic.apis.bean.** { *; }
+
 # jaudiotagger release打包后可能会出现MP3格式无法读取歌词的问题
 -keep class org.jaudiotagger.tag.** { *; }
 
