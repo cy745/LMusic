@@ -1,22 +1,24 @@
 package com.lalilu.lmusic.service
 
 import android.app.PendingIntent
-import android.content.Intent
-import android.os.Bundle
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
-import androidx.core.content.ContextCompat
-import androidx.media.MediaBrowserServiceCompat
-import androidx.media.session.MediaButtonReceiver
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.media3.common.*
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaController
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaSession
+import com.blankj.utilcode.util.GsonUtils
+import com.google.common.collect.ImmutableList
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
-import com.lalilu.lmusic.event.DataModule
-import com.lalilu.lmusic.manager.LMusicNotificationManager
-import com.lalilu.lmusic.manager.LMusicNotificationManager.Companion.NOTIFICATION_PLAYER_ID
-import com.lalilu.lmusic.manager.MusicNoisyReceiver
-import com.lalilu.lmusic.service.playback.Playback
+import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.ITEM_PREFIX
+import com.lalilu.lmusic.event.GlobalViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,127 +27,144 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
+@UnstableApi
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class MSongService : MediaBrowserServiceCompat(), CoroutineScope,
-    Playback.OnPlayerCallback, MusicNoisyReceiver.OnBecomingNoisyListener {
+class MSongService : MediaLibraryService(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
+    private lateinit var player: ExoPlayer
+    private lateinit var mediaLibrarySession: MediaLibrarySession
+    private lateinit var mediaController: MediaController
 
     @Inject
-    @SessionActivityPendingIntent
-    lateinit var pendingIntent: PendingIntent
+    lateinit var mGlobal: GlobalViewModel
 
     @Inject
-    lateinit var mediaSession: MediaSessionCompat
+    lateinit var mediaSource: BaseMediaSource
 
     @Inject
-    lateinit var noisyReceiver: MusicNoisyReceiver
+    lateinit var notificationProvider: LMusicNotificationProvider
 
-    @Inject
-    lateinit var mNotificationManager: LMusicNotificationManager
+    private val playerSp: SharedPreferences by lazy {
+        getSharedPreferences(Config.LAST_PLAYED_SP, Context.MODE_PRIVATE)
+    }
 
-    @Inject
-    lateinit var mSessionCallback: MSongSessionCallback
-
-    @Inject
-    lateinit var dataModule: DataModule
+    private val audioAttributes = AudioAttributes.Builder()
+        .setContentType(C.CONTENT_TYPE_MUSIC)
+        .setUsage(C.USAGE_MEDIA)
+        .build()
 
     override fun onCreate() {
         super.onCreate()
-
-        mediaSession.also {
-            it.setSessionActivity(pendingIntent)
-            it.setCallback(mSessionCallback)
-            this.sessionToken = it.sessionToken
-        }
-        mSessionCallback.playback.onPlayerCallback = this
-        noisyReceiver.onBecomingNoisyListener = this
-
-        dataModule.repeatMode.observeForever {
-            mediaSession.setRepeatMode(it)
-        }
-    }
-
-    override fun onBecomingNoisy() {
-        mediaSession.controller.transportControls.pause()
-    }
-
-    override fun onPlaybackStateChanged(newState: Int) {
-        if (newState == PlaybackStateCompat.STATE_STOPPED) {
-            try {
-                stopForeground(true)
-                stopSelf()
-                mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
-                dataModule.updatePlaybackState(MEDIA_STOPPED_STATE)
-                this.unregisterReceiver(noisyReceiver)
-            } catch (ignored: Exception) {
-            }
-            return
-        }
-
-        val position = mSessionCallback.playback.getPosition()
-        val state = PlaybackStateCompat.Builder()
-            .setActions(Config.MEDIA_DEFAULT_ACTION)
-            .setState(newState, position, 1.0f)
+        player = ExoPlayer.Builder(this)
+            .setUseLazyPreparation(false)
+            .setAudioAttributes(audioAttributes, true)
+            .setHandleAudioBecomingNoisy(true)
             .build()
-        mediaSession.setPlaybackState(state)
-        dataModule.updatePlaybackState(state)
 
-        launch {
-            val notification = mNotificationManager.getNotification(mediaSession)
-            when (state.state) {
-                PlaybackStateCompat.STATE_PLAYING -> {
-                    this@MSongService.registerReceiver(noisyReceiver, Config.FILTER_BECOMING_NOISY)
-                    val intent = Intent(this@MSongService, MSongService::class.java)
-                    ContextCompat.startForegroundService(this@MSongService, intent)
-                    startForeground(NOTIFICATION_PLAYER_ID, notification)
-                }
-                PlaybackStateCompat.STATE_PAUSED -> {
-                    stopForeground(false)
-                    mNotificationManager.pushNotification(NOTIFICATION_PLAYER_ID, notification)
-                }
-                else -> return@launch
+        val pendingIntent: PendingIntent =
+            packageManager.getLaunchIntentForPackage(packageName).let { sessionIntent ->
+                PendingIntent.getActivity(
+                    this, 0, sessionIntent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            }
+
+        mediaLibrarySession =
+            MediaLibrarySession.Builder(this, player, CustomMediaLibrarySessionCallback())
+                .setMediaItemFiller(CustomMediaItemFiller())
+                .setSessionActivity(pendingIntent)
+                .build()
+
+        val controllerFuture =
+            MediaController.Builder(this, mediaLibrarySession.token)
+                .buildAsync()
+
+        controllerFuture.addListener({
+            mediaController = controllerFuture.get()
+            mediaController.addListener(mGlobal.playerListener)
+            mediaController.addListener(LastPlayedListener())
+            mGlobal.getIsPlayingFromPlayer = mediaController::isPlaying
+            mGlobal.getPositionFromPlayer = mediaController::getCurrentPosition
+        }, MoreExecutors.directExecutor())
+
+        setMediaNotificationProvider(notificationProvider)
+    }
+
+    private inner class LastPlayedListener : Player.Listener {
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            launch {
+                playerSp.edit()
+                    .putString(Config.LAST_PLAYED_ID, mediaItem?.mediaId)
+                    .apply()
+            }
+        }
+
+        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+            val list = List(mediaController.mediaItemCount) {
+                mediaController.getMediaItemAt(it).mediaId
+            }
+            launch {
+                playerSp.edit()
+                    .putString(Config.LAST_PLAYED_LIST, GsonUtils.toJson(list))
+                    .apply()
             }
         }
     }
 
-    override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-        mediaSession.setMetadata(metadata)
-        dataModule.updateMetadata(metadata)
-        mediaSession.isActive = true
+    private inner class CustomMediaItemFiller : MediaSession.MediaItemFiller {
+        override fun fillInLocalConfiguration(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            mediaItem: MediaItem
+        ): MediaItem {
+            return mediaSource.getItemById(ITEM_PREFIX + mediaItem.mediaId) ?: mediaItem
+        }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val customAction =
-            intent?.extras?.getInt(PlaybackStateCompat.ACTION_SET_REPEAT_MODE.toString())
-        when (customAction) {
-            PlaybackStateCompat.REPEAT_MODE_ONE,
-            PlaybackStateCompat.REPEAT_MODE_ALL -> {
-                dataModule.updateRepeatMode(customAction)
-                mediaSession.setRepeatMode(customAction)
-                onPlaybackStateChanged(mediaSession.controller.playbackState.state)
-            }
+    private inner class CustomMediaLibrarySessionCallback :
+        MediaLibrarySession.MediaLibrarySessionCallback {
+        override fun onGetLibraryRoot(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            params: LibraryParams?
+        ): ListenableFuture<LibraryResult<MediaItem>> {
+            return Futures.immediateFuture(LibraryResult.ofItem(mediaSource.getRootItem(), params))
         }
 
-        MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return super.onStartCommand(intent, flags, startId)
+        override fun onGetItem(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            mediaId: String
+        ): ListenableFuture<LibraryResult<MediaItem>> {
+            val item = mediaSource.getItemById(mediaId) ?: return Futures.immediateFuture(
+                LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+            )
+            return Futures.immediateFuture(LibraryResult.ofItem(item, null))
+        }
+
+        override fun onGetChildren(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            parentId: String,
+            page: Int,
+            pageSize: Int,
+            params: LibraryParams?
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+            val children = mediaSource.getChildren(parentId) ?: return Futures.immediateFuture(
+                LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+            )
+            return Futures.immediateFuture(LibraryResult.ofItemList(children, params))
+        }
     }
 
-    override fun onLoadChildren(
-        parentId: String,
-        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
-    ) {
-        result.sendResult(ArrayList())
-        dataModule.updateMetadata(mediaSession.controller.metadata)
-        dataModule.updatePlaybackState(mediaSession.controller.playbackState)
+    override fun onDestroy() {
+        player.release()
+        mediaLibrarySession.release()
+        super.onDestroy()
     }
 
-    override fun onGetRoot(
-        clientPackageName: String,
-        clientUid: Int,
-        rootHints: Bundle?
-    ): BrowserRoot {
-        println("MSongService: onGetRoot: clientPackageName: $clientPackageName, clientUid: $clientUid")
-        return BrowserRoot("normal", null)
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession {
+        return mediaLibrarySession
     }
 }

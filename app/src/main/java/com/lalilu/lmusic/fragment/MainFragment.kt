@@ -1,35 +1,36 @@
 package com.lalilu.lmusic.fragment
 
-import android.media.MediaMetadata
 import androidx.databinding.library.baseAdapters.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentMainBinding
-import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
-import com.lalilu.lmusic.event.DataModule
-import com.lalilu.lmusic.event.PlayerModule
+import com.lalilu.lmusic.datasource.extensions.getDuration
+import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
+import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarDragUpToThresholdListener
 import com.lalilu.lmusic.ui.seekbar.OnSeekBarListenerAdapter
 import com.lalilu.lmusic.utils.HapticUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import javax.inject.Inject
 
-@ExperimentalCoroutinesApi
 @AndroidEntryPoint
+@ObsoleteCoroutinesApi
+@ExperimentalCoroutinesApi
 class MainFragment : DataBindingFragment() {
+
+    @Inject
+    lateinit var mGlobal: GlobalViewModel
 
     @Inject
     lateinit var mEvent: SharedViewModel
 
     @Inject
-    lateinit var playerModule: PlayerModule
-
-    @Inject
-    lateinit var dataModule: DataModule
+    lateinit var mSongBrowser: MSongBrowser
 
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.fragment_main, BR.ev, mEvent)
@@ -41,13 +42,10 @@ class MainFragment : DataBindingFragment() {
         val dialog = NavigatorFragment()
 
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
-        playerModule.metadataLiveData.observe(viewLifecycleOwner) {
-            if (it == null) return@observe
-            val sum = it.getLong(MediaMetadata.METADATA_KEY_DURATION)
-            seekBar.setSumDuration(sum)
+        mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
+            seekBar.setSumDuration(it?.mediaMetadata?.getDuration()?.coerceAtLeast(0) ?: 0)
         }
-
-        dataModule.songPosition.observe(viewLifecycleOwner) {
+        mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
             seekBar.updatePosition(it)
         }
 
@@ -61,24 +59,26 @@ class MainFragment : DataBindingFragment() {
         // 为 SeekBar 添加监听器
         seekBar.onSeekBarListener = object : OnSeekBarListenerAdapter() {
             override fun onPositionUpdate(position: Long) {
-                playerModule.mediaController?.transportControls?.seekTo(position)
+                mSongBrowser.browser?.seekTo(position)
                 HapticUtils.haptic(seekBar.rootView, HapticUtils.Strength.HAPTIC_WEAK)
             }
 
             override fun onPlayPause() {
-                playerModule.mediaController?.transportControls?.sendCustomAction(
-                    Config.ACTION_PLAY_PAUSE, null
-                )
+                if (mSongBrowser.browser?.isPlaying == true) {
+                    mSongBrowser.browser?.pause()
+                } else {
+                    mSongBrowser.browser?.play()
+                }
                 HapticUtils.haptic(seekBar.rootView)
             }
 
             override fun onPlayNext() {
-                playerModule.mediaController?.transportControls?.skipToNext()
+                mSongBrowser.browser?.seekToNext()
                 HapticUtils.doubleHaptic(seekBar.rootView)
             }
 
             override fun onPlayPrevious() {
-                playerModule.mediaController?.transportControls?.skipToPrevious()
+                mSongBrowser.browser?.seekToPrevious()
                 HapticUtils.doubleHaptic(seekBar.rootView)
             }
 

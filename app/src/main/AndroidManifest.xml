@@ -12,32 +12,22 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Music"
         tools:ignore="AllowBackup">
-        <receiver
-            android:name="com.lalilu.lmusic.manager.MusicNoisyReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.media.AUDIO_BECOMING_NOISY" />
-            </intent-filter>
-        </receiver>
 
-        <receiver
-            android:name="androidx.media.session.MediaButtonReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
+        <meta-data
+            android:name="ScopedStorage"
+            android:value="true" />
 
         <service
             android:name="com.lalilu.lmusic.service.MSongService"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
+                <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
@@ -46,7 +36,8 @@
             android:name=".lmusic.LMusicActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

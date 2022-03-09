@@ -13,6 +13,7 @@
     <color name="daynight_0">#FFFFFFFF</color>
 
     <color name="item_selected_bg">#121212</color>
+    <color name="edit_text_bg">#0DFFFFFF</color>
 
     <color name="bottom_sheet_bg">#292929</color>
     <color name="bottom_sheet_divider">#373737</color>

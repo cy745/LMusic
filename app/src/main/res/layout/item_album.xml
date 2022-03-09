@@ -6,8 +6,8 @@
     <data>
 
         <variable
-            name="album"
-            type="com.lalilu.lmusic.domain.entity.MAlbum" />
+            name="mediaItem"
+            type="androidx.media3.common.MediaItem" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -27,8 +27,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:samplingValue="@{400}"
-            app:setNormalUri="@{album.albumCoverUri}"
+            app:setNormalUri="@{mediaItem.mediaMetadata.artworkUri}"
             tools:placeholderImage="@tools:sample/avatars" />
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -41,7 +40,7 @@
             android:layout_marginBottom="5dp"
             android:ellipsize="end"
             android:maxLines="2"
-            android:text="@{album.albumTitle}"
+            android:text="@{mediaItem.mediaMetadata.albumTitle}"
             android:textColor="@color/daynight_0"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

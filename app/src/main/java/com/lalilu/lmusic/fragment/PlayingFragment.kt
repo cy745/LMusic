@@ -1,28 +1,43 @@
 package com.lalilu.lmusic.fragment
 
+import androidx.media3.common.MediaItem
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.PlayingAdapter
+import com.lalilu.lmusic.adapter.PlayingAdapter.OnItemDragOrSwipedListener
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
-import com.lalilu.lmusic.event.DataModule
-import com.lalilu.lmusic.event.PlayerModule
+import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
-import com.lalilu.lmusic.fragment.viewmodel.PlayingViewModel
-import com.lalilu.material.appbar.AppBarLayout
+import com.lalilu.lmusic.manager.LyricManager
+import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lmusic.viewmodel.bindViewModel
+import com.lalilu.material.appbar.ExpendHeaderBehavior
+import com.lalilu.material.appbar.MyAppbarBehavior
+import com.lalilu.material.appbar.STATE_COLLAPSED
+import com.lalilu.material.appbar.STATE_NORMAL
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
+@ObsoleteCoroutinesApi
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
 class PlayingFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Main
+
+    @Inject
+    lateinit var lyricManager: LyricManager
+
+    @Inject
+    lateinit var mGlobal: GlobalViewModel
 
     @Inject
     lateinit var mState: PlayingViewModel
@@ -34,60 +49,72 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     lateinit var mAdapter: PlayingAdapter
 
     @Inject
-    lateinit var playerModule: PlayerModule
+    lateinit var mSongBrowser: MSongBrowser
 
-    @Inject
-    lateinit var dataModule: DataModule
+    private val dialog: NavigatorFragment by lazy {
+        NavigatorFragment()
+    }
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter.onItemClick = {
-            playerModule.mediaController?.transportControls
-                ?.playFromMediaId(it.songId.toString(), null)
+        mAdapter.bindViewModel(mState, viewLifecycleOwner)
+        mAdapter.onItemDragOrSwipedListener = object : OnItemDragOrSwipedListener {
+            override fun onDelete(mediaItem: MediaItem) {
+                mSongBrowser.removeById(mediaItem.mediaId)
+            }
         }
-        val dialog = NavigatorFragment()
-        mAdapter.onItemLongClick = { song ->
+        mAdapter.onItemClick = {
+            if (mSongBrowser.playById(it.mediaId)) {
+                mSongBrowser.browser?.apply {
+                    prepare()
+                    play()
+                }
+            }
+        }
+        mAdapter.onItemLongClick = {
             showDialog(dialog) {
                 (this as NavigatorFragment)
-                    .getNavController(singleUse = true)
+                    .navigateFrom(R.id.songDetailFragment)
                     .navigate(
-                        LibraryFragmentDirections
-                            .libraryToSongDetail(song.songId)
+                        LibraryFragmentDirections.libraryToSongDetail(it.mediaId)
                     )
             }
         }
         return DataBindingConfig(R.layout.fragment_playing)
-            .addParam(BR.ev, mEvent)
             .addParam(BR.vm, mState)
-            .addParam(BR.playingAdapter, mAdapter)
+            .addParam(BR.ev, mEvent)
+            .addParam(BR.adapter, mAdapter)
     }
 
     override fun onViewCreated() {
         val binding = mBinding as FragmentPlayingBinding
         val fmAppbarLayout = binding.fmAppbarLayout
-        mActivity?.setSupportActionBar(binding.fmToolbar)
+        val fmLyricViewX = binding.fmLyricViewX
+        val fmToolbar = binding.fmToolbar
+        val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
 
-        playerModule.metadataLiveData.observe(viewLifecycleOwner) {
-            mState._title.postValue(it?.description?.title.toString())
-            mState._mediaUri.postValue(it?.description?.mediaUri)
+        mActivity?.setSupportActionBar(fmToolbar)
+        behavior.addOnStateChangeListener(object :
+            ExpendHeaderBehavior.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {
+            override fun onScrollToStateListener() {
+                if (fmToolbar.hasExpandedActionView())
+                    fmToolbar.collapseActionView()
+            }
+        })
+        mGlobal.currentPlaylistLiveData.observe(viewLifecycleOwner) {
+            mState.postData(it)
         }
-        dataModule.songLyric.observe(viewLifecycleOwner) {
-            mState._lyric.postValue(it)
+        mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
+            mState.song.postValue(it)
         }
-        dataModule.songPosition.observe(viewLifecycleOwner) {
-            mState._position.postValue(it)
+        mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
+            fmLyricViewX.updateTime(it)
         }
-        playerModule.mSongsLiveData.observe(viewLifecycleOwner) {
-            mState._songs.postValue(it)
+        lyricManager.songLyric.observe(viewLifecycleOwner) {
+            fmLyricViewX.setLyricEntryList(emptyList())
+            fmLyricViewX.loadLyric(it?.first, it?.second)
         }
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
             it?.get { fmAppbarLayout.setExpanded(false, true) }
         }
-
-        var lastOffset = 0
-        fmAppbarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appbarLayout, verticalOffset ->
-            if ((lastOffset - verticalOffset < 0) && verticalOffset >= (-appbarLayout.totalScrollRange * 3 / 4))
-                mEvent.collapseSearchView()
-            lastOffset = verticalOffset
-        })
     }
 }
