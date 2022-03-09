@@ -45,20 +45,19 @@ class PlayingAdapter @Inject constructor() :
     }
 
     override fun setDiffNewData(list: MutableList<MediaItem>?) {
-        if (mRecyclerView == null || mRecyclerView?.get() == null) {
+        val recyclerView = mRecyclerView?.get() ?: run {
             super.setDiffNewData(list)
             return
         }
         var oldList = data.toMutableList()
         val newList = list?.toMutableList() ?: ArrayList()
+        val oldScrollOffset = recyclerView.computeVerticalScrollOffset()
+        val oldScrollRange = recyclerView.computeVerticalScrollRange()
 
         if (newList.isNotEmpty()) {
             // 预先将头部部分差异进行转移
             val size = oldList.indexOfFirst { it.mediaId == newList[0].mediaId }
-            if (size > 0 && size >= oldList.size / 2 &&
-                mRecyclerView!!.get()!!.computeVerticalScrollOffset() >
-                mRecyclerView!!.get()!!.computeVerticalScrollRange() / 2
-            ) {
+            if (size > 0 && size >= oldList.size / 2 && oldScrollOffset > oldScrollRange / 2) {
                 oldList = oldList.moveHeadToTail(size)
 
                 notifyItemRangeRemoved(0, size)
@@ -71,5 +70,8 @@ class PlayingAdapter @Inject constructor() :
         )
         data = newList
         diffResult.dispatchUpdatesTo(this)
+        if (oldScrollOffset <= 0) {
+            recyclerView.scrollToPosition(0)
+        }
     }
 }
