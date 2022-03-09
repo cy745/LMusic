@@ -1,8 +1,8 @@
 package com.lalilu.lmusic.adapter
 
-import android.annotation.SuppressLint
 import androidx.media3.common.MediaItem
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ItemTouchHelper
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlayingBinding
 import com.lalilu.lmusic.datasource.extensions.getDuration
@@ -12,14 +12,27 @@ import javax.inject.Inject
 class PlayingAdapter @Inject constructor() :
     BaseAdapter<MediaItem, ItemPlayingBinding>(R.layout.item_playing) {
 
+    interface OnItemDragOrSwipedListener {
+        fun onDelete(mediaItem: MediaItem)
+    }
+
+    var onItemDragOrSwipedListener: OnItemDragOrSwipedListener? = null
+
+    override val itemDragCallback: OnItemTouchCallbackAdapter
+        get() = object : OnItemTouchCallbackAdapter() {
+            override val swipeFlags: Int = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+
+            override fun onDelete(item: MediaItem) {
+                onItemDragOrSwipedListener?.onDelete(item)
+            }
+        }
+
     override val itemCallback: DiffUtil.ItemCallback<MediaItem>
         get() = object : DiffUtil.ItemCallback<MediaItem>() {
-            @SuppressLint("UnsafeOptInUsageError")
             override fun areItemsTheSame(oldItem: MediaItem, newItem: MediaItem): Boolean {
                 return oldItem.mediaId == newItem.mediaId
             }
 
-            @SuppressLint("UnsafeOptInUsageError")
             override fun areContentsTheSame(oldItem: MediaItem, newItem: MediaItem): Boolean {
                 return oldItem.mediaId == newItem.mediaId &&
                         oldItem.mediaMetadata.title == newItem.mediaMetadata.title &&
@@ -58,6 +71,5 @@ class PlayingAdapter @Inject constructor() :
         )
         data = newList
         diffResult.dispatchUpdatesTo(this)
-        mRecyclerView!!.get()!!.scrollToPosition(0)
     }
 }

@@ -28,6 +28,8 @@ import kotlin.coroutines.CoroutineContext
 interface EnhanceBrowser {
     fun playById(mediaId: String): Boolean
     fun addToNext(mediaId: String): Boolean
+    fun removeById(mediaId: String): Boolean
+    fun moveByDelta(mediaId: String, delta: Int): Boolean
 }
 
 @Singleton
@@ -145,5 +147,25 @@ class MSongBrowser @Inject constructor(
             browser?.addMediaItem(currentIndex + 1, item)
         }
         return true
+    }
+
+    override fun removeById(mediaId: String): Boolean {
+        return try {
+            val index = originPlaylistIds.indexOf(mediaId)
+            browser?.removeMediaItem(index)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override fun moveByDelta(mediaId: String, delta: Int): Boolean {
+        return try {
+            val index = originPlaylistIds.indexOf(mediaId)
+            browser?.moveMediaItem(index, index + delta)
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 }

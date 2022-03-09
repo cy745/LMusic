@@ -2,20 +2,13 @@ package com.lalilu.lmusic.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.annotation.IntDef
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import java.lang.ref.WeakReference
-
-const val VIEW_NORMAL = 0
-const val VIEW_HEADER = 1
-const val VIEW_FOOTER = 2
-
-@IntDef(VIEW_NORMAL, VIEW_HEADER, VIEW_FOOTER)
-@Retention(AnnotationRetention.SOURCE)
-annotation class AdapterViewType
+import java.util.*
 
 abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
     private val layoutId: Int
@@ -25,6 +18,7 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
     open var onItemClick: (item: I) -> Unit = {}
     open var onItemLongClick: (item: I) -> Unit = {}
     open val itemCallback: DiffUtil.ItemCallback<I>? = null
+    open val itemDragCallback: OnItemTouchCallbackAdapter? = null
     open var mRecyclerView: WeakReference<RecyclerView>? = null
 
     abstract fun onBind(binding: B, item: I)
@@ -33,6 +27,10 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
         RecyclerView.ViewHolder(binding.root)
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        itemDragCallback?.let {
+            ItemTouchHelper(it)
+                .attachToRecyclerView(recyclerView)
+        }
         mRecyclerView = WeakReference(recyclerView)
     }
 
@@ -70,6 +68,50 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
         val diffResult = DiffUtil.calculateDiff(Callback(this.data, temp, itemCallback!!))
         data = temp
         diffResult.dispatchUpdatesTo(this)
+    }
+
+    abstract inner class OnItemTouchCallbackAdapter : ItemTouchHelper.Callback() {
+        open val swipeFlags: Int = 0
+        open val dragFlags: Int = 0
+
+        open fun onDelete(item: I) {}
+        open fun onMove(item: I, from: Int, to: Int): Boolean = false
+
+        override fun isItemViewSwipeEnabled(): Boolean = swipeFlags != 0
+        override fun isLongPressDragEnabled(): Boolean = dragFlags != 0
+
+        override fun getMovementFlags(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder
+        ): Int {
+            return makeMovementFlags(dragFlags, swipeFlags)
+        }
+
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            Collections.swap(
+                data,
+                viewHolder.absoluteAdapterPosition,
+                target.absoluteAdapterPosition
+            )
+            notifyItemMoved(viewHolder.absoluteAdapterPosition, target.absoluteAdapterPosition)
+            return onMove(
+                data[viewHolder.absoluteAdapterPosition],
+                viewHolder.absoluteAdapterPosition,
+                target.absoluteAdapterPosition
+            )
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val index = viewHolder.absoluteAdapterPosition
+            val item = data[index]
+            data.remove(item)
+            notifyItemRemoved(index)
+            onDelete(item)
+        }
     }
 
     inner class Callback<Item : I>(
