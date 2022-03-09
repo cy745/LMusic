@@ -1,9 +1,11 @@
 package com.lalilu.lmusic.fragment
 
+import androidx.media3.common.MediaItem
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.PlayingAdapter
+import com.lalilu.lmusic.adapter.PlayingAdapter.OnItemDragOrSwipedListener
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
@@ -55,6 +57,11 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
+        mAdapter.onItemDragOrSwipedListener = object : OnItemDragOrSwipedListener {
+            override fun onDelete(mediaItem: MediaItem) {
+                mSongBrowser.removeById(mediaItem.mediaId)
+            }
+        }
         mAdapter.onItemClick = {
             if (mSongBrowser.playById(it.mediaId)) {
                 mSongBrowser.browser?.apply {
