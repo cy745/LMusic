@@ -22,7 +22,7 @@ class PlaylistsAdapter @Inject constructor() :
             }
         }
 
-    override fun onBind(binding: ItemPlaylistBinding, item: MPlaylist) {
+    override fun onBind(binding: ItemPlaylistBinding, item: MPlaylist, position: Int) {
         binding.title = item.playlistTitle
     }
 }

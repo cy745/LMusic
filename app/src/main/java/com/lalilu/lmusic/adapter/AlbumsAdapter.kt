@@ -26,7 +26,7 @@ class AlbumsAdapter @Inject constructor() :
             }
         }
 
-    override fun onBind(binding: ItemAlbumBinding, item: MediaItem) {
+    override fun onBind(binding: ItemAlbumBinding, item: MediaItem, position: Int) {
         binding.mediaItem = item
     }
 }

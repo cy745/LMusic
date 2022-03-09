@@ -6,6 +6,10 @@
     <data>
 
         <variable
+            name="index"
+            type="String" />
+
+        <variable
             name="mediaItem"
             type="androidx.media3.common.MediaItem" />
     </data>
@@ -51,7 +55,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:letterSpacing="0.05"
-            android:text="@{mediaItem.mediaMetadata.artist}"
+            android:text="@{index + mediaItem.mediaMetadata.artist}"
             android:textColor="@color/daynight_0.6"
             android:textSize="10sp"
             android:textStyle="bold"

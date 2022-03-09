@@ -31,7 +31,7 @@ class SearchForLyricAdapter @Inject constructor() :
             }
         }
 
-    override fun onBind(binding: ItemSongWithLyricBinding, item: SongSearchSong) {
+    override fun onBind(binding: ItemSongWithLyricBinding, item: SongSearchSong, position: Int) {
         binding.title = item.name
         binding.album = item.album?.name
         binding.artist = item.artists.joinToString("/") { it.name }
