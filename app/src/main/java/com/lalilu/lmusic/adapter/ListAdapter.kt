@@ -23,8 +23,9 @@ class ListAdapter @Inject constructor() :
             }
         }
 
-    override fun onBind(binding: ItemListItemBinding, item: MediaItem) {
+    override fun onBind(binding: ItemListItemBinding, item: MediaItem, position: Int) {
         binding.mediaItem = item
+        binding.index = "#${position + 1}  "
     }
 }
 

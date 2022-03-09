@@ -21,7 +21,7 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
     open val itemDragCallback: OnItemTouchCallbackAdapter? = null
     open var mRecyclerView: WeakReference<RecyclerView>? = null
 
-    abstract fun onBind(binding: B, item: I)
+    abstract fun onBind(binding: B, item: I, position: Int)
 
     inner class BaseViewHolder constructor(val binding: B) :
         RecyclerView.ViewHolder(binding.root)
@@ -53,7 +53,7 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
             onItemLongClick(item)
             return@setOnLongClickListener true
         }
-        onBind(binding, item)
+        onBind(binding, item, position)
     }
 
     override fun getItemCount(): Int = data.size

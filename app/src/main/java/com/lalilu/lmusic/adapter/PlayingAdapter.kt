@@ -40,7 +40,7 @@ class PlayingAdapter @Inject constructor() :
             }
         }
 
-    override fun onBind(binding: ItemPlayingBinding, item: MediaItem) {
+    override fun onBind(binding: ItemPlayingBinding, item: MediaItem, position: Int) {
         binding.mediaItem = item
     }
 
