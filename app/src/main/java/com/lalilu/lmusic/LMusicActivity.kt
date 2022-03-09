@@ -45,6 +45,9 @@ class LMusicActivity : DataBindingActivity() {
         super.onCreate(savedInstanceState)
         StatusBarUtil.immerseStatusBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
+            mediaSource.whenReady {
+                mSongBrowser.recoverLastPlayedItem()
+            }
             mediaSource.loadSync()
         }, onFailed = {
             Toast.makeText(this, "无外部存储读取权限，无法读取歌曲", Toast.LENGTH_SHORT).show()
