@@ -314,6 +314,9 @@ class BlurImageView @JvmOverloads constructor(
         this@BlurImageView.sourceBitmap = null
         this@BlurImageView.samplingBitmap = null
         this@BlurImageView.blurBitmap = null
+        this@BlurImageView.newSourceBitmap = null
+        this@BlurImageView.newSamplingBitmap = null
+        this@BlurImageView.newBlurBitmap = null
         palette.postValue(null)
         stackBlur.evictAll()
         refresh()
