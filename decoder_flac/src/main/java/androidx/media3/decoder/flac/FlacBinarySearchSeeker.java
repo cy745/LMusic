@@ -18,6 +18,7 @@ package androidx.media3.decoder.flac;
 import static java.lang.Math.max;
 
 import androidx.media3.common.util.Assertions;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.extractor.BinarySearchSeeker;
 import androidx.media3.extractor.ExtractorInput;
 import androidx.media3.extractor.FlacStreamMetadata;
@@ -31,7 +32,7 @@ import java.nio.ByteBuffer;
  * <p>This seeker performs seeking by using binary search within the stream, until it finds the
  * frame that contains the target sample.
  */
-/* package */ final class FlacBinarySearchSeeker extends BinarySearchSeeker {
+/* package */@UnstableApi final class FlacBinarySearchSeeker extends BinarySearchSeeker {
 
   /**
    * Holds a frame extracted from a stream, together with the time stamp of the frame in
