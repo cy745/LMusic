@@ -23,6 +23,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -92,18 +93,22 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
     private inner class LastPlayedListener : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            playerSp.edit()
-                .putString(Config.LAST_PLAYED_ID, mediaItem?.mediaId)
-                .apply()
+            launch {
+                playerSp.edit()
+                    .putString(Config.LAST_PLAYED_ID, mediaItem?.mediaId)
+                    .apply()
+            }
         }
 
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {
             val list = List(mediaController.mediaItemCount) {
                 mediaController.getMediaItemAt(it).mediaId
             }
-            playerSp.edit()
-                .putString(Config.LAST_PLAYED_LIST, GsonUtils.toJson(list))
-                .apply()
+            launch {
+                playerSp.edit()
+                    .putString(Config.LAST_PLAYED_LIST, GsonUtils.toJson(list))
+                    .apply()
+            }
         }
     }
 
