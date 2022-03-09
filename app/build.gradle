@@ -91,12 +91,9 @@ dependencies {
     // https://github.com/androidx/media
     // Apache-2.0 License
     // 媒体组件库
-//    implementation "androidx.media3:media3-common:$media3_version"
-//    implementation "androidx.media3:media3-session:$media3_version"
-//    implementation "androidx.media3:media3-exoplayer:$media3_version"
-    implementation project(':media-lib-exoplayer')
-    implementation project(':media-lib-session')
-    implementation project(':media-lib-common')
+    implementation "androidx.media3:media3-common:$media3_version"
+    implementation "androidx.media3:media3-session:$media3_version"
+    implementation "androidx.media3:media3-exoplayer:$media3_version"
     implementation project(':media-lib-decoder-flac')
 
     // https://gitee.com/simplepeng/SpiderMan
@@ -152,9 +149,6 @@ dependencies {
     // 权限请求框架
     implementation "com.github.getActivity:XXPermissions:13.5"
 
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation 'androidx.preference:preference-ktx:1.2.0'
     implementation "androidx.media:media:1.5.0"
     implementation "androidx.core:core-ktx:1.7.0"
@@ -166,7 +160,9 @@ dependencies {
     implementation "androidx.room:room-ktx:$room_version"
     implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
     implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
-//    implementation "androidx.viewpager2:viewpager2:1.0.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
     implementation 'com.google.android.material:material:1.5.0'
