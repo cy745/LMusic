@@ -67,7 +67,10 @@ fun setNormalUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = 
 
 @BindingAdapter(value = ["loadCover", "samplingValue"], requireAll = false)
 fun loadCover(imageView: BlurImageView, mediaItem: MediaItem?, samplingValue: Int = -1) {
-    mediaItem ?: return
+    mediaItem ?: run {
+        imageView.clearImage()
+        return
+    }
     val samplingTo = if (samplingValue <= 0)
         imageView.width else samplingValue
 
