@@ -47,12 +47,12 @@ inline fun <I> SearchTextUtil.filter(
         if (isContainChinese || isContainKatakanaOrHinagana) {
             if (isContainChinese) {
                 val chinese = toHanYuPinyinString(originStr)
-                resultStr = "$resultStr $chinese"
+                resultStr += " $chinese"
             }
 
             val japanese = toHiraString(originStr)
             val romaji = toRomajiString(japanese)
-            resultStr = "$resultStr $romaji"
+            resultStr += " $romaji"
         }
         checkKeywords(resultStr, keywords)
     }

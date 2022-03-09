@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
@@ -16,6 +17,7 @@ import com.google.common.reflect.TypeToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.event.GlobalViewModel
@@ -80,8 +82,8 @@ class MSongBrowser @Inject constructor(
         println("[MSongBrowser]#onConnected")
         val browser = browserFuture.get() ?: return
 
-        if (browser.currentMediaItem == null) {
-            recoverLastPlayedItem(browser, recoverLastPlayedList(browser))
+        if (browser.mediaItemCount == 0) {
+            recoverLastPlayedItem()
         }
 
         browser.addListener(object : Player.Listener {
@@ -102,29 +104,29 @@ class MSongBrowser @Inject constructor(
         })
     }
 
-    private fun recoverLastPlayedItem(browser: MediaBrowser, ids: List<String>) {
-        playerSp.getString(Config.LAST_PLAYED_ID, null)?.let { id ->
-            val index = ids.indexOfFirst { it == id }
-            if (index >= 0) {
-                browser.repeatMode = Player.REPEAT_MODE_ALL
-                browser.seekToDefaultPosition(index)
-                browser.prepare()
+    fun recoverLastPlayedItem() =
+        launch(Dispatchers.IO) {
+            val items = recoverLastPlayedList()
+            val index = playerSp.getString(Config.LAST_PLAYED_ID, null)?.let { id ->
+                items.indexOfFirst { it.mediaId == id }
+            }?.coerceAtLeast(0) ?: 0
+            withContext(Dispatchers.Main) {
+                browser?.setMediaItems(items)
+                browser?.repeatMode = Player.REPEAT_MODE_ALL
+                browser?.seekToDefaultPosition(index)
+                browser?.prepare()
             }
         }
-    }
 
-    private fun recoverLastPlayedList(browser: MediaBrowser): List<String> {
-        playerSp.getString(Config.LAST_PLAYED_LIST, null)?.let { json ->
-            val typeToken = object : TypeToken<List<String>>() {}
-            val list = GsonUtils.fromJson<List<String>>(json, typeToken.type)
-
-            browser.setMediaItems(list.mapNotNull {
-                mediaSource.getItemById(ITEM_PREFIX + it)
-            })
-            return list
+    private suspend fun recoverLastPlayedList(): List<MediaItem> =
+        withContext(Dispatchers.IO) {
+            playerSp.getString(Config.LAST_PLAYED_LIST, null)?.let { json ->
+                val typeToken = object : TypeToken<List<String>>() {}
+                return@withContext GsonUtils.fromJson<List<String>>(json, typeToken.type)
+                    .mapNotNull { mediaSource.getItemById(ITEM_PREFIX + it) }
+            }
+            return@withContext mediaSource.getChildren(ALL_ID) ?: emptyList()
         }
-        return emptyList()
-    }
 
     override fun playById(mediaId: String): Boolean {
         val index = originPlaylistIds.indexOf(mediaId)
