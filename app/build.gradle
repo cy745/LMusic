@@ -20,8 +20,8 @@ android {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
         targetSdkVersion 32
-        versionCode 23
-        versionName "1.4.5"
+        versionCode 24
+        versionName "1.4.6"
         vectorDrawables {
             useSupportLibrary true
         }
@@ -94,7 +94,7 @@ dependencies {
     implementation "androidx.media3:media3-common:$media3_version"
     implementation "androidx.media3:media3-session:$media3_version"
     implementation "androidx.media3:media3-exoplayer:$media3_version"
-    implementation project(':media-lib-decoder-flac')
+    implementation project(':decoder_flac')
 
     // https://gitee.com/simplepeng/SpiderMan
     // Apache-2.0 License
