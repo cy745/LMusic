@@ -36,24 +36,26 @@ fun Drawable.toBitmap(): Bitmap {
 
 fun Bitmap.addShadow(
     fromColor: Int, toColor: Int, percent: Float,
-    orientation: GradientDrawable.Orientation
+    vararg orientation: GradientDrawable.Orientation
 ): Bitmap {
-    val mBackShadowColors = intArrayOf(fromColor, toColor)
-    val mBackShadowDrawableLR = GradientDrawable(orientation, mBackShadowColors)
-    val bound = Rect(0, 0, width, height)
-    val percentHeight = (height * percent).roundToInt()
-    val percentWidth = (width * percent).roundToInt()
+    orientation.forEach {
+        val mBackShadowColors = intArrayOf(fromColor, toColor)
+        val mBackShadowDrawableLR = GradientDrawable(it, mBackShadowColors)
+        val bound = Rect(0, 0, width, height)
+        val percentHeight = (height * percent).roundToInt()
+        val percentWidth = (width * percent).roundToInt()
 
-    when (orientation) {
-        TOP_BOTTOM -> bound.set(0, 0, width, percentHeight)
-        RIGHT_LEFT -> bound.set(0, 0, percentWidth, height)
-        BOTTOM_TOP -> bound.set(0, height - percentHeight, width, height)
-        LEFT_RIGHT -> bound.set(width - percentWidth, 0, width, height)
-        else -> {}
+        when (it) {
+            TOP_BOTTOM -> bound.set(0, 0, width, percentHeight)
+            RIGHT_LEFT -> bound.set(0, 0, percentWidth, height)
+            BOTTOM_TOP -> bound.set(0, height - percentHeight, width, height)
+            LEFT_RIGHT -> bound.set(width - percentWidth, 0, width, height)
+            else -> {}
+        }
+        mBackShadowDrawableLR.bounds = bound
+        mBackShadowDrawableLR.gradientType = GradientDrawable.LINEAR_GRADIENT
+        mBackShadowDrawableLR.draw(Canvas(this))
     }
-    mBackShadowDrawableLR.bounds = bound
-    mBackShadowDrawableLR.gradientType = GradientDrawable.LINEAR_GRADIENT
-    mBackShadowDrawableLR.draw(Canvas(this))
     return this
 }
 
