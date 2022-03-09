@@ -87,6 +87,15 @@ class BlurImageView @JvmOverloads constructor(
     private var samplingRect = Rect()
     private var destRect = RectF()
 
+    private var newBitmapPainter: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var newSourceBitmap: Bitmap? = null
+    private var newSamplingBitmap: Bitmap? = null
+    private var newBlurBitmap: Bitmap? = null
+
+    private var newSourceRect = Rect()
+    private var newSamplingRect = Rect()
+    private var newDestRect = RectF()
+
     /**
      * 按照CenterCrop的规则，获取调整后的dest位置
      *
@@ -146,33 +155,51 @@ class BlurImageView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         destRect.set(0f, 0f, width.toFloat(), width.toFloat())
+        newDestRect.set(0f, 0f, width.toFloat(), width.toFloat())
+
         sourceBitmap?.let {
             sourceRect.set(0, 0, it.width, it.height)
             centerCrop(sourceRect, destRect, dragPercent)
             scaleTransform(destRect, scalePercent)
             canvas.drawBitmap(it, sourceRect, destRect, bitmapPainter)
         }
+        newSourceBitmap?.let {
+            newSourceRect.set(0, 0, it.width, it.height)
+            centerCrop(newSourceRect, newDestRect, dragPercent)
+            scaleTransform(newDestRect, scalePercent)
+            canvas.drawBitmap(it, newSourceRect, newDestRect, newBitmapPainter)
+        }
         blurBitmap?.let {
             samplingRect.set(0, 0, it.width, it.height)
             canvas.drawBitmap(it, samplingRect, destRect, bitmapPainter)
         }
+        newBlurBitmap?.let {
+            newSamplingRect.set(0, 0, it.width, it.height)
+            canvas.drawBitmap(it, newSamplingRect, newDestRect, newBitmapPainter)
+        }
     }
 
     /**
-     * 用于执行fadeIn效果的Animator
+     * 用于执行CrossFade效果的Animator
      */
     private val animator = ValueAnimator.ofFloat(0f, 1f).apply {
-        duration = 500
+        duration = 300
         addListener(onStart = {
-            bitmapPainter.alpha = 0
+            newBitmapPainter.alpha = 0
             invalidate()
         }, onEnd = {
-            bitmapPainter.alpha = 255
+            newBitmapPainter.alpha = 0
+            sourceBitmap = newSourceBitmap
+            samplingBitmap = newSamplingBitmap
+            blurBitmap = newBlurBitmap
+            newSourceBitmap = null
+            newSamplingBitmap = null
+            newBlurBitmap = null
             invalidate()
         })
         addUpdateListener {
             val value = it.animatedValue as Float
-            bitmapPainter.alpha = (value * 255).roundToInt()
+            newBitmapPainter.alpha = (value * 255).roundToInt()
             invalidate()
         }
     }
@@ -180,7 +207,7 @@ class BlurImageView @JvmOverloads constructor(
     /**
      * 调用animator执行fadeIn过渡
      */
-    private suspend fun fadeIn() = withContext(Dispatchers.Main) {
+    private suspend fun crossFade() = withContext(Dispatchers.Main) {
         if (animator.isStarted || animator.isRunning) animator.end()
         animator.start()
     }
@@ -193,9 +220,7 @@ class BlurImageView @JvmOverloads constructor(
     private suspend inline fun updateBg(radius: Int) =
         withContext(Dispatchers.IO) {
             blurBitmap = createBlurBitmap(samplingBitmap, radius)
-            withContext(Dispatchers.Main) {
-                invalidate()
-            }
+            refresh()
         }
 
     /**
@@ -269,19 +294,17 @@ class BlurImageView @JvmOverloads constructor(
      * 外部创建Coil的ImageRequest，传入onSucceed的Drawable
      */
     fun loadImageFromDrawable(drawable: Drawable) = launch(Dispatchers.IO) {
-        fadeIn()
-        sourceBitmap = drawable.toBitmap()
-        sourceBitmap?.addShadow(
+        newSourceBitmap = drawable.toBitmap().addShadow(
             Color.argb(55, 0, 0, 0),
-            Color.TRANSPARENT, 0.25f, GradientDrawable.Orientation.TOP_BOTTOM
+            Color.TRANSPARENT,
+            0.25f,
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            GradientDrawable.Orientation.BOTTOM_TOP
         )
-        sourceBitmap?.addShadow(
-            Color.argb(55, 0, 0, 0),
-            Color.TRANSPARENT, 0.25f, GradientDrawable.Orientation.BOTTOM_TOP
-        )
-        samplingBitmap = createSamplingBitmap(sourceBitmap, samplingValue)
-        updatePalette(samplingBitmap)
-        updateBg(blurRadius)
+        newSamplingBitmap = createSamplingBitmap(newSourceBitmap, samplingValue)
+        updatePalette(newSamplingBitmap)
+        newBlurBitmap = createBlurBitmap(newSamplingBitmap, blurRadius)
+        crossFade()
     }
 
     /**
@@ -293,6 +316,11 @@ class BlurImageView @JvmOverloads constructor(
         this@BlurImageView.blurBitmap = null
         palette.postValue(null)
         stackBlur.evictAll()
-        withContext(Dispatchers.Main) { invalidate() }
+        refresh()
     }
+
+    private suspend inline fun refresh() =
+        withContext(Dispatchers.Main) {
+            invalidate()
+        }
 }
