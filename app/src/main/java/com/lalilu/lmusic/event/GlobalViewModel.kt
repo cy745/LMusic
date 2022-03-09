@@ -2,7 +2,6 @@ package com.lalilu.lmusic.event
 
 import android.os.Handler
 import android.os.Looper
-import android.text.TextUtils
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -10,7 +9,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import com.lalilu.lmusic.datasource.extensions.partCopy
-import com.lalilu.lmusic.manager.SearchManager
+import com.lalilu.lmusic.manager.SearchTextUtil
+import com.lalilu.lmusic.manager.filter
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +25,7 @@ import kotlin.coroutines.CoroutineContext
 
 @Singleton
 class GlobalViewModel @Inject constructor(
-    private val searchManager: SearchManager
+    private val searchTextUtil: SearchTextUtil
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val handler = Handler(Looper.getMainLooper())
@@ -36,7 +36,10 @@ class GlobalViewModel @Inject constructor(
             stopUpdate()
             updatePosition()
         }
-    var searchFor = searchManager::searchFor
+
+    fun searchFor(keyword: String?) = launch {
+        currentSearchKeyword.emit(keyword)
+    }
 
     private fun stopUpdate() {
         handler.removeCallbacks(this::updatePosition)
@@ -80,33 +83,16 @@ class GlobalViewModel @Inject constructor(
     val currentPosition: MutableStateFlow<Long> = MutableStateFlow(0L)
     val currentMediaItem: MutableStateFlow<MediaItem?> = MutableStateFlow(null)
     val currentPlaylist: MutableStateFlow<List<MediaItem>> = MutableStateFlow(emptyList())
+    private val currentSearchKeyword: MutableStateFlow<String?> = MutableStateFlow(null)
 
     val currentPlaylistLiveData = currentPlaylist.combine(currentMediaItem) { items, item ->
         item ?: return@combine items
         items.moveHeadToTailWithSearch(item.mediaId) { listItem, id ->
             listItem.mediaId == id
         }
-    }.flowOn(Dispatchers.IO).combine(searchManager.keyword) { items, keyword ->
-        if (keyword == null || TextUtils.isEmpty(keyword)) return@combine items
-        val keywords = keyword.split(" ")
-
-        items.filter {
-            val originStr = "${it.mediaMetadata.title} ${it.mediaMetadata.artist}"
-            var resultStr = originStr
-            val isContainChinese = searchManager.isContainChinese(originStr)
-            val isContainKatakanaOrHinagana =
-                searchManager.isContainKatakanaOrHinagana(originStr)
-            if (isContainChinese || isContainKatakanaOrHinagana) {
-                if (isContainChinese) {
-                    val chinese = searchManager.toHanYuPinyinString(originStr)
-                    resultStr = "$resultStr $chinese"
-                }
-
-                val japanese = searchManager.toHiraString(originStr)
-                val romaji = searchManager.toRomajiString(japanese)
-                resultStr = "$resultStr $romaji"
-            }
-            searchManager.checkKeywords(resultStr, keywords)
+    }.flowOn(Dispatchers.IO).combine(currentSearchKeyword) { items, keyword ->
+        searchTextUtil.filter(keyword, items) {
+            "${it.mediaMetadata.title} ${it.mediaMetadata.artist}"
         }
     }.flowOn(Dispatchers.IO).asLiveData()
     val currentMediaItemLiveData: LiveData<MediaItem?> = currentMediaItem.asLiveData()

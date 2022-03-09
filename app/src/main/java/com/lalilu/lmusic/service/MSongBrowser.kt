@@ -84,14 +84,17 @@ class MSongBrowser @Inject constructor(
 
         browser.addListener(object : Player.Listener {
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                val temps = MutableList(browser.mediaItemCount) {
-                    return@MutableList mediaSource.getItemById(
-                        ITEM_PREFIX + browser.getMediaItemAt(it).mediaId
-                    )
+                val ids = MutableList(browser.mediaItemCount) {
+                    return@MutableList browser.getMediaItemAt(it).mediaId
                 }
+
                 launch(Dispatchers.IO) {
-                    originPlaylistIds = temps.mapNotNull { it?.mediaId }
-                    mGlobal.currentPlaylist.emit(temps.mapNotNull { it })
+                    originPlaylistIds = ids
+                    mGlobal.currentPlaylist.emit(ids.mapNotNull {
+                        mediaSource.getItemById(
+                            ITEM_PREFIX + it
+                        )
+                    })
                 }
             }
         })
