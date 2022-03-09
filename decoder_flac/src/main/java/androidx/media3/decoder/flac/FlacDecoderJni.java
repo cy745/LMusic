@@ -20,6 +20,7 @@ import static java.lang.Math.min;
 import androidx.annotation.Nullable;
 import androidx.media3.common.C;
 import androidx.media3.common.ParserException;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 import androidx.media3.extractor.ExtractorInput;
 import androidx.media3.extractor.FlacStreamMetadata;
@@ -29,7 +30,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /** JNI wrapper for the libflac Flac decoder. */
-/* package */ final class FlacDecoderJni {
+/* package */ @UnstableApi final class FlacDecoderJni {
 
   /** Exception to be thrown if {@link #decodeSample(ByteBuffer)} fails to decode a frame. */
   public static final class FlacFrameDecodeException extends Exception {
