@@ -35,7 +35,6 @@
                 android:drawableEnd="@drawable/ic_edit_line"
                 android:imeOptions="actionDone"
                 android:text="@{vm.playlist.playlistTitle}"
-                android:textAppearance="@style/dayNightPrimaryText"
                 android:textColor="@color/daynight_0"
                 android:textSize="24sp"
                 app:layout_constraintEnd_toEndOf="parent"

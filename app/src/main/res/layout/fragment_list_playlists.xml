@@ -29,7 +29,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:text="@string/destination_label_playlists"
-                android:textAppearance="@style/dayNightPrimaryText"
                 android:textColor="@color/daynight_0"
                 android:textSize="24sp"
                 app:layout_constraintStart_toStartOf="parent"
