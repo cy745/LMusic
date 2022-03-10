@@ -45,20 +45,20 @@ class AlbumDetailFragment : DataBindingFragment(), CoroutineScope {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
-        mAdapter.onItemClick = { item ->
+        mAdapter.onItemClick = { item, position ->
             mSongBrowser.browser?.apply {
                 clearMediaItems()
                 setMediaItems(mAdapter.data)
-                seekToDefaultPosition(mAdapter.data.indexOfFirst { it.mediaId == item.mediaId })
+                seekToDefaultPosition(position)
                 repeatMode = Player.REPEAT_MODE_ALL
                 prepare()
                 play()
             }
         }
-        mAdapter.onItemLongClick = {
+        mAdapter.onItemLongClick = { item, position ->
             mAdapter.savePosition(mState)
             findNavController().navigate(
-                AlbumDetailFragmentDirections.albumToSongDetail(it.mediaId)
+                AlbumDetailFragmentDirections.albumToSongDetail(item.mediaId)
             )
         }
         return DataBindingConfig(R.layout.fragment_detail_album)

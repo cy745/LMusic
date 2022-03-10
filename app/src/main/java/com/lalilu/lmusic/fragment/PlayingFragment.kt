@@ -62,20 +62,20 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
                 mSongBrowser.removeById(mediaItem.mediaId)
             }
         }
-        mAdapter.onItemClick = {
-            if (mSongBrowser.playById(it.mediaId)) {
+        mAdapter.onItemClick = { item, position ->
+            if (mSongBrowser.playById(item.mediaId)) {
                 mSongBrowser.browser?.apply {
                     prepare()
                     play()
                 }
             }
         }
-        mAdapter.onItemLongClick = {
+        mAdapter.onItemLongClick = { item, position ->
             showDialog(dialog) {
                 (this as NavigatorFragment)
                     .navigateFrom(R.id.songDetailFragment)
                     .navigate(
-                        LibraryFragmentDirections.libraryToSongDetail(it.mediaId)
+                        LibraryFragmentDirections.libraryToSongDetail(item.mediaId)
                     )
             }
         }

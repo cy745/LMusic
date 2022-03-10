@@ -41,12 +41,11 @@ class AddToPlaylistFragment : DataBindingFragment(), CoroutineScope {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
-        mAdapter.onItemClick = {
-            val index = mAdapter.data.indexOf(it)
+        mAdapter.onItemClick = { item, position ->
             val checkedSet = mAdapter.selectedSet
-            if (checkedSet.contains(it)) checkedSet.remove(it)
-            else checkedSet.add(it)
-            mAdapter.notifyItemChanged(index)
+            if (checkedSet.contains(item)) checkedSet.remove(item)
+            else checkedSet.add(item)
+            mAdapter.notifyItemChanged(position)
 
             mState.title.postValue(
                 if (checkedSet.size == 0) defaultTitle

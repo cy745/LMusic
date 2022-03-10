@@ -42,20 +42,20 @@ class AllSongFragment : DataBindingFragment(), CoroutineScope {
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
         // 添加 item 被选中时的处理逻辑
-        mAdapter.onItemClick = { item ->
+        mAdapter.onItemClick = { item, position ->
             mSongBrowser.browser?.apply {
                 clearMediaItems()
                 setMediaItems(mAdapter.data)
-                seekToDefaultPosition(mAdapter.data.indexOfFirst { it.mediaId == item.mediaId })
+                seekToDefaultPosition(position)
                 repeatMode = Player.REPEAT_MODE_ALL
                 prepare()
                 play()
             }
         }
-        mAdapter.onItemLongClick = {
+        mAdapter.onItemLongClick = { item, position ->
             mAdapter.savePosition(mState)
             findNavController().navigate(
-                AllSongFragmentDirections.allSongToSongDetail(it.mediaId)
+                AllSongFragmentDirections.allSongToSongDetail(item.mediaId)
             )
         }
         return DataBindingConfig(R.layout.fragment_detail_all_song)

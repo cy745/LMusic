@@ -42,13 +42,12 @@ class SearchForLyricFragment : DataBindingFragment(), CoroutineScope {
     lateinit var dataBase: LMusicDataBase
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        mAdapter.onItemClick = {
+        mAdapter.onItemClick = { item, position ->
             val oldIndex = mAdapter.data.indexOf(mAdapter.singleSelected)
-            val newIndex = mAdapter.data.indexOf(it)
 
-            mAdapter.singleSelected = it
+            mAdapter.singleSelected = item
             mAdapter.notifyItemChanged(oldIndex)
-            mAdapter.notifyItemChanged(newIndex)
+            mAdapter.notifyItemChanged(position)
         }
         return DataBindingConfig(R.layout.fragment_search_for_lyric)
             .addParam(BR.adapter, mAdapter)

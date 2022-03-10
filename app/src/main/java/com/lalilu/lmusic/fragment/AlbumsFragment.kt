@@ -34,12 +34,12 @@ class AlbumsFragment : DataBindingFragment(), CoroutineScope {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
-        mAdapter.onItemClick = {
+        mAdapter.onItemClick = { item, position ->
             mAdapter.savePosition(mState)
             findNavController().navigate(
                 AlbumsFragmentDirections.toAlbumDetail(
-                    albumId = it.mediaId,
-                    albumTitle = it.mediaMetadata.albumTitle.toString()
+                    albumId = item.mediaId,
+                    albumTitle = item.mediaMetadata.albumTitle.toString()
                 )
             )
         }
