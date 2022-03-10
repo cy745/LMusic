@@ -41,7 +41,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="@tools:sample/cities" />
+                tools:text="@string/destination_label_playlist_detail" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/playlist_detail_info"
@@ -60,7 +60,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/playlist_detail_title"
                 app:layout_constraintVertical_bias="0.0"
-                tools:text="Artists" />
+                tools:text="@string/destination_label_playlist_detail" />
 
             <TextView
                 android:id="@+id/playlist_detail_create_time"
@@ -87,12 +87,12 @@
                 android:id="@+id/playlist_detail_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:adapter="@{adapter}"
                 android:clipToPadding="false"
                 android:fillViewport="true"
                 android:overScrollMode="never"
                 android:paddingTop="20dp"
                 android:paddingBottom="20dp"
+                app:adapter="@{adapter}"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_list_item" />
         </me.qinc.lib.edgetranslucent.EdgeTransparentView>

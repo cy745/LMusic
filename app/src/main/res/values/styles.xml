@@ -20,4 +20,8 @@
         <item name="searchHintIcon">@drawable/ic_search_2_line</item>
         <item name="searchIcon">@drawable/ic_search_2_line</item>
     </style>
+
+    <style name="MY_SettingsPreferences" parent="@style/PreferenceThemeOverlay">
+        <item name="android:layout">@layout/fragment_settings</item>
+    </style>
 </resources>

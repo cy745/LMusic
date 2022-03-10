@@ -31,7 +31,7 @@
             app:layout_constraintEnd_toStartOf="@+id/song_detail_card"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@tools:sample/cities" />
+            tools:text="@string/destination_label_song_detail" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/song_detail_artist"
@@ -47,7 +47,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/song_detail_title"
             app:layout_constraintVertical_bias="0.0"
-            tools:text="Artists" />
+            tools:text="@string/destination_label_song_detail" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/song_detail_card"

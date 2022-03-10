@@ -10,6 +10,7 @@
         <item name="searchViewStyle">@style/MY_SearchView</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowBackground">@color/activity_window_bg</item>
+        <item name="preferenceFragmentCompatStyle">@style/MY_SettingsPreferences</item>
     </style>
 
     <style name="expandedTitleText">
