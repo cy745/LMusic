@@ -12,7 +12,8 @@ import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.MSongBrowser
-import com.lalilu.lmusic.ui.MySearchBar
+import com.lalilu.lmusic.ui.MySearchView
+import com.lalilu.lmusic.ui.bind
 import com.lalilu.lmusic.utils.PermissionUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
 import dagger.hilt.android.AndroidEntryPoint
@@ -65,7 +66,9 @@ class LMusicActivity : DataBindingActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_appbar, menu)
-        MySearchBar(menu.findItem(R.id.appbar_search)) {
+        val searchView = menu.findItem(R.id.appbar_search)
+            .actionView as MySearchView
+        searchView.bind {
             mGlobal.searchFor(it)
         }
         return super.onCreateOptionsMenu(menu)
