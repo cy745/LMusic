@@ -8,6 +8,6 @@
         android:imeOptions="actionSearch"
         android:title="@string/text_button_search"
         android:visible="true"
-        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:actionViewClass="com.lalilu.lmusic.ui.MySearchView"
         app:showAsAction="collapseActionView|ifRoom" />
 </menu>
