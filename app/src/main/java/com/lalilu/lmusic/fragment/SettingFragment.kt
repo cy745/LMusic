@@ -6,6 +6,6 @@ import com.lalilu.R
 
 class SettingFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.settings_preference, null)
+        setPreferencesFromResource(R.xml.settings_preference, rootKey)
     }
 }

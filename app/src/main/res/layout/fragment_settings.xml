@@ -21,7 +21,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:text="@string/destination_label_settings"
-                android:textAppearance="@style/dayNightPrimaryText"
                 android:textColor="@color/daynight_0"
                 android:textSize="24sp"
                 app:layout_constraintEnd_toEndOf="parent"

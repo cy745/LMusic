@@ -6,6 +6,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat.SHOW_DIVIDER_NONE
 import androidx.appcompat.widget.SearchView
 import com.blankj.utilcode.util.ConvertUtils
@@ -18,9 +19,13 @@ class MySearchBar constructor(
 
     init {
         val searchView = menuItem.actionView as SearchView
+        val searchSrcText = searchView.findViewById<TextView>(R.id.search_src_text)
         val mUnderline = searchView.findViewById<View>(R.id.search_plate)
         val closeButton = searchView.findViewById<ImageView>(R.id.search_close_btn)
         val searchEditFrame = searchView.findViewById<LinearLayout>(R.id.search_edit_frame)
+
+        searchSrcText.setTextColor(Color.WHITE)
+        closeButton.setColorFilter(Color.WHITE)
 
         mUnderline.setBackgroundColor(Color.argb(0, 255, 255, 255))
         (searchEditFrame.layoutParams as LinearLayout.LayoutParams)
