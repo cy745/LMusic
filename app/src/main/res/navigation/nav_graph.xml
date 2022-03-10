@@ -36,6 +36,9 @@
         <action
             android:id="@+id/libraryToSongDetail"
             app:destination="@id/songDetailFragment" />
+        <action
+            android:id="@+id/libraryToSettings"
+            app:destination="@id/settingFragment" />
     </fragment>
 
     <fragment
@@ -184,4 +187,9 @@
             android:name="mediaId"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="com.lalilu.lmusic.fragment.SettingFragment"
+        android:label="SettingFragment"
+        tools:layout="@layout/fragment_settings" />
 </navigation>

@@ -39,7 +39,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/add_to_playlist_cancel"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="@string/destination_label_add_song_to_playlist" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/add_to_playlist_cancel"
