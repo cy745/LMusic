@@ -15,8 +15,8 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
 ) : RecyclerView.Adapter<BaseAdapter<I, B>.BaseViewHolder>() {
 
     var data: MutableList<I> = ArrayList()
-    open var onItemClick: (item: I) -> Unit = {}
-    open var onItemLongClick: (item: I) -> Unit = {}
+    open var onItemClick: (item: I, position: Int) -> Unit = { _, _ -> }
+    open var onItemLongClick: (item: I, position: Int) -> Unit = { _, _ -> }
     open val itemCallback: DiffUtil.ItemCallback<I>? = null
     open val itemDragCallback: OnItemTouchCallbackAdapter? = null
     open var mRecyclerView: WeakReference<RecyclerView>? = null
@@ -47,10 +47,10 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
         val binding = holder.binding
         val item = data[position]
         binding.root.setOnClickListener {
-            onItemClick(item)
+            onItemClick(item, holder.absoluteAdapterPosition)
         }
         binding.root.setOnLongClickListener {
-            onItemLongClick(item)
+            onItemLongClick(item, holder.absoluteAdapterPosition)
             return@setOnLongClickListener true
         }
         onBind(binding, item, position)

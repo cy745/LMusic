@@ -38,7 +38,12 @@
             app:destination="@id/songDetailFragment" />
         <action
             android:id="@+id/libraryToSettings"
-            app:destination="@id/settingFragment" />
+            app:destination="@id/settingFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/libraryFragment" />
     </fragment>
 
     <fragment

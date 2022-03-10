@@ -39,17 +39,17 @@ class PlaylistsFragment : DataBindingFragment(), CoroutineScope {
 
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
-        mAdapter.onItemLongClick = {
+        mAdapter.onItemLongClick = { item, position ->
             launch(Dispatchers.IO) {
-                dataBase.playlistDao().delete(it)
+                dataBase.playlistDao().delete(item)
             }
         }
-        mAdapter.onItemClick = {
+        mAdapter.onItemClick = { item, position ->
             mAdapter.savePosition(mState)
             findNavController().navigate(
                 PlaylistsFragmentDirections.toPlaylistDetail(
-                    playlistId = it.playlistId,
-                    playlistTitle = it.playlistTitle
+                    playlistId = item.playlistId,
+                    playlistTitle = item.playlistTitle
                 )
             )
         }
