@@ -1,11 +1,11 @@
 package com.lalilu.lmusic.fragment
 
 import android.os.Bundle
-import androidx.preference.PreferenceFragmentCompat
 import com.lalilu.R
+import com.lalilu.preference.BasePreferenceFragmentCompat
 
-class SettingFragment : PreferenceFragmentCompat() {
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+class SettingFragment : BasePreferenceFragmentCompat() {
+    override fun initPreference(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings_preference, rootKey)
     }
 }

@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <SwitchPreferenceCompat
         app:key="LAST_REPEAT_MODE"
         app:summary="切换。。。。"
         app:title="开关" />
+
+    <PreferenceCategory
+        android:icon="@drawable/ic_lrc_fill"
+        app:title="歌词显示设置">
+        <SeekBarPreference app:defaultValue="16" />
+        <SwitchPreferenceCompat app:title="开关" />
+    </PreferenceCategory>
 </PreferenceScreen>

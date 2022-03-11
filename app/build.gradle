@@ -25,9 +25,9 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
-        ndk {
-            abiFilters "armeabi-v7a"
-        }
+//        ndk {
+//            abiFilters "armeabi-v7a"
+//        }
     }
 
     kotlinOptions {
@@ -64,6 +64,7 @@ android.sourceSets.all {
 }
 
 dependencies {
+    implementation project(":preference")
     // https://github.com/scwang90/SmartRefreshLayout
     // Apache-2.0 License
     // implementation 'io.github.scwang90:refresh-layout-kernel:2.0.5'

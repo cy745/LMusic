@@ -7,11 +7,13 @@
         <item name="android:windowBackground">@color/activity_window_bg</item>
 
         <item name="android:colorPrimary">@color/colorPrimary</item>
+        <item name="android:colorAccent">@color/daynight_0</item>
+
         <item name="android:textColorPrimary">@color/daynight_0</item>
         <item name="android:textColorSecondary">@color/daynight_0.4</item>
         <item name="android:colorControlNormal">@android:color/white</item>
 
+        <item name="preferenceTheme">@style/MY_PreferenceTheme</item>
         <item name="searchViewStyle">@style/MY_SearchView</item>
-        <item name="preferenceFragmentCompatStyle">@style/MY_SettingsPreferences</item>
     </style>
 </resources>
