@@ -14,6 +14,7 @@ class PlayingAdapter @Inject constructor() :
 
     interface OnItemDragOrSwipedListener {
         fun onDelete(mediaItem: MediaItem)
+        fun onAddToNext(mediaItem: MediaItem)
     }
 
     var onItemDragOrSwipedListener: OnItemDragOrSwipedListener? = null
@@ -22,8 +23,14 @@ class PlayingAdapter @Inject constructor() :
         get() = object : OnItemTouchCallbackAdapter() {
             override val swipeFlags: Int = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
 
-            override fun onDelete(item: MediaItem) {
-                onItemDragOrSwipedListener?.onDelete(item)
+            override fun onSwiped(item: MediaItem, direction: Int) {
+                onItemDragOrSwipedListener ?: return
+                val function = when (direction) {
+                    ItemTouchHelper.LEFT -> onItemDragOrSwipedListener!!::onAddToNext
+                    ItemTouchHelper.RIGHT -> onItemDragOrSwipedListener!!::onDelete
+                    else -> null
+                }
+                function?.invoke(item)
             }
         }
 
