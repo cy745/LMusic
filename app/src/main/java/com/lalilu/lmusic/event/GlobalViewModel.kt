@@ -16,7 +16,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -90,11 +89,11 @@ class GlobalViewModel @Inject constructor(
         items.moveHeadToTailWithSearch(item.mediaId) { listItem, id ->
             listItem.mediaId == id
         }
-    }.flowOn(Dispatchers.IO).combine(currentSearchKeyword) { items, keyword ->
+    }.combine(currentSearchKeyword) { items, keyword ->
         searchTextUtil.filter(keyword, items) {
             "${it.mediaMetadata.title} ${it.mediaMetadata.artist}"
         }
-    }.flowOn(Dispatchers.IO).asLiveData()
+    }.asLiveData()
     val currentMediaItemLiveData: LiveData<MediaItem?> = currentMediaItem.asLiveData()
     val currentPositionLiveData: LiveData<Long> = currentPosition.asLiveData()
 

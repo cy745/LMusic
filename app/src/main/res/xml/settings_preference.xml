@@ -1,15 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <SwitchPreferenceCompat
-        app:key="LAST_REPEAT_MODE"
-        app:summary="切换。。。。"
-        app:title="开关" />
+    <PreferenceCategory
+        android:icon="@drawable/ic_settings_4_line"
+        android:title="@string/preference_player_settings">
+        <SwitchPreferenceCompat
+            android:key="@string/sp_key_player_settings_ignore_audio_focus"
+            android:title="@string/preference_player_settings_ignore_audio_focus"
+            app:allowDividerBelow="false" />
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:icon="@drawable/ic_lrc_fill"
-        app:title="歌词显示设置">
-        <SeekBarPreference app:defaultValue="16" />
-        <SwitchPreferenceCompat app:title="开关" />
+        android:title="@string/preference_lyric_settings">
+        <SeekBarPreference
+            android:key="@string/sp_key_lyric_settings_text_size"
+            android:title="@string/preference_lyric_settings_text_size" />
+        <SeekBarPreference
+            android:key="@string/sp_key_lyric_settings_secondary_text_size"
+            android:title="@string/preference_lyric_settings_secondary_text_size"
+            app:allowDividerBelow="false" />
     </PreferenceCategory>
+
+    <PreferenceCategory
+        android:icon="@drawable/ic_scan_line"
+        android:title="@string/preference_media_source_settings"
+        app:allowDividerAbove="true">
+        <SwitchPreferenceCompat
+            android:key="@string/sp_key_media_source_settings_unknown_filter"
+            android:title="@string/preference_media_source_settings_unknown_filter" />
+        <SeekBarPreference
+            android:key="@string/sp_key_media_source_settings_duration_filter"
+            android:title="@string/preference_media_source_settings_duration_filter" />
+    </PreferenceCategory>
+
+    <Preference
+        android:layout="@layout/my_preference_layout"
+        android:title="@string/preference_opensource_licence" />
 </PreferenceScreen>
