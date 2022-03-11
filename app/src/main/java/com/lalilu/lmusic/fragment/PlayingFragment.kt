@@ -61,6 +61,10 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             override fun onDelete(mediaItem: MediaItem) {
                 mSongBrowser.removeById(mediaItem.mediaId)
             }
+
+            override fun onAddToNext(mediaItem: MediaItem) {
+                mSongBrowser.addToNext(mediaItem.mediaId)
+            }
         }
         mAdapter.onItemClick = { item, position ->
             if (mSongBrowser.playById(item.mediaId)) {

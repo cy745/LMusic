@@ -74,7 +74,7 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
         open val swipeFlags: Int = 0
         open val dragFlags: Int = 0
 
-        open fun onDelete(item: I) {}
+        open fun onSwiped(item: I, direction: Int) {}
         open fun onMove(item: I, from: Int, to: Int): Boolean = false
 
         override fun isItemViewSwipeEnabled(): Boolean = swipeFlags != 0
@@ -110,7 +110,7 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
             val item = data[index]
             data.remove(item)
             notifyItemRemoved(index)
-            onDelete(item)
+            onSwiped(item, direction)
         }
     }
 
