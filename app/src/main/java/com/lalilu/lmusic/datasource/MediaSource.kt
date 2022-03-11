@@ -95,10 +95,10 @@ abstract class AbstractMediaSource : MediaSource {
     }
 
     inner class MediaItemNode(val item: MediaItem) {
-        private val children: MutableList<MediaItem> = ArrayList()
+        private val children: LinkedHashSet<MediaItem> = LinkedHashSet()
 
         fun addChild(childID: String) {
-            this.children.add(treeNodes[childID]!!.item)
+            children.add(treeNodes[childID]!!.item)
         }
 
         fun getChildren(): List<MediaItem> {
