@@ -31,7 +31,11 @@
         <item name="searchIcon">@drawable/ic_search_2_line</item>
     </style>
 
-    <style name="MY_SettingsPreferences" parent="@style/PreferenceThemeOverlay">
+    <style name="MY_PreferenceTheme" parent="@style/PreferenceThemeOverlay">
+        <item name="preferenceFragmentCompatStyle">@style/MY_SettingsPreferencesFragment</item>
+    </style>
+
+    <style name="MY_SettingsPreferencesFragment" parent="@style/PreferenceFragment.Material">
         <item name="android:layout">@layout/fragment_settings</item>
     </style>
 </resources>
