@@ -6,6 +6,7 @@ import com.cm55.kanhira.KakasiDictReader
 import com.cm55.kanhira.Kanhira
 import com.lalilu.R
 import com.lalilu.lmusic.utils.KanaToRomaji
+import com.lalilu.lmusic.utils.PinyinUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,11 +14,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import net.sourceforge.pinyin4j.PinyinHelper
-import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType
-import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat
-import net.sourceforge.pinyin4j.format.HanyuPinyinToneType
-import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType
 import java.util.*
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -71,11 +67,6 @@ class SearchTextUtil @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val kanaToRomaji = KanaToRomaji()
-    private val format = HanyuPinyinOutputFormat().also {
-        it.caseType = HanyuPinyinCaseType.UPPERCASE
-        it.toneType = HanyuPinyinToneType.WITHOUT_TONE
-        it.vCharType = HanyuPinyinVCharType.WITH_U_UNICODE
-    }
 
     /**
      * 异步加载Kanhira组件
@@ -117,7 +108,7 @@ class SearchTextUtil @Inject constructor(
      * 将汉字转为拼音
      */
     fun toHanYuPinyinString(text: String): String? {
-        return PinyinHelper.toHanYuPinyinString(text, format, "", true)
+        return PinyinUtils.ccs2Pinyin(text)
     }
 
     /**
