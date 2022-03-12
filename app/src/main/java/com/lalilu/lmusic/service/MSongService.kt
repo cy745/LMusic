@@ -11,14 +11,17 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import com.blankj.utilcode.util.GsonUtils
+import com.blankj.utilcode.util.SPUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.event.GlobalViewModel
+import com.lalilu.lmusic.utils.listen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,8 +48,12 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     @Inject
     lateinit var notificationProvider: LMusicNotificationProvider
 
-    private val playerSp: SharedPreferences by lazy {
-        getSharedPreferences(Config.LAST_PLAYED_SP, Context.MODE_PRIVATE)
+    private val lastPlayedSp: SPUtils by lazy {
+        SPUtils.getInstance(Config.LAST_PLAYED_SP)
+    }
+
+    private val settingsSp: SharedPreferences by lazy {
+        getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
     }
 
     private val audioAttributes = AudioAttributes.Builder()
@@ -58,9 +65,15 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         super.onCreate()
         player = ExoPlayer.Builder(this)
             .setUseLazyPreparation(false)
-            .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .build()
+
+        settingsSp.listen(
+            R.string.sp_key_player_settings_ignore_audio_focus,
+            true
+        ) {
+            player.setAudioAttributes(audioAttributes, it)
+        }
 
         val pendingIntent: PendingIntent =
             packageManager.getLaunchIntentForPackage(packageName).let { sessionIntent ->
@@ -94,9 +107,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     private inner class LastPlayedListener : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             launch {
-                playerSp.edit()
-                    .putString(Config.LAST_PLAYED_ID, mediaItem?.mediaId)
-                    .apply()
+                lastPlayedSp.put(Config.LAST_PLAYED_ID, mediaItem?.mediaId)
             }
         }
 
@@ -105,9 +116,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
                 mediaController.getMediaItemAt(it).mediaId
             }
             launch {
-                playerSp.edit()
-                    .putString(Config.LAST_PLAYED_LIST, GsonUtils.toJson(list))
-                    .apply()
+                lastPlayedSp.put(Config.LAST_PLAYED_LIST, GsonUtils.toJson(list))
             }
         }
     }
