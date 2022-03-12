@@ -64,7 +64,6 @@ android.sourceSets.all {
 }
 
 dependencies {
-    implementation project(":preference")
     // https://github.com/scwang90/SmartRefreshLayout
     // Apache-2.0 License
     // implementation 'io.github.scwang90:refresh-layout-kernel:2.0.5'
@@ -83,6 +82,11 @@ dependencies {
     // 内存泄露监控组件
     // debugImplementation because LeakCanary should only run in debug builds.
     // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
+
+    // https://github.com/belerweb/pinyin4j
+    // https://mvnrepository.com/artifact/com.belerweb/pinyin4j
+    // 汉字转拼音库
+    // implementation 'com.belerweb:pinyin4j:2.5.1'
 
     // https://github.com/nex3z/FlowLayout
     // Apache-2.0 License
@@ -128,11 +132,6 @@ dependencies {
     // 汉字转平假名库
     implementation 'com.github.cy745:kanhira:2de73b1f0a'
 
-    // https://github.com/belerweb/pinyin4j
-    // https://mvnrepository.com/artifact/com.belerweb/pinyin4j
-    // 汉字转拼音库
-    implementation 'com.belerweb:pinyin4j:2.5.1'
-
     // https://github.com/Moriafly/LyricViewX
     // https://github.com/cy745/LyricViewX
     // GPL-3.0 License
@@ -167,6 +166,8 @@ dependencies {
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
     implementation 'com.google.android.material:material:1.5.0'
+
+    implementation project(":preference")
 
     kapt "androidx.hilt:hilt-compiler:1.0.0"
     kapt "androidx.room:room-compiler:$room_version"
