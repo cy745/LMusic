@@ -5,37 +5,47 @@ import android.content.res.Resources
 import androidx.annotation.IdRes
 import com.blankj.utilcode.util.Utils
 
+val list: MutableList<SharedPreferences.OnSharedPreferenceChangeListener> = ArrayList()
 
 inline fun <reified T> SharedPreferences.listen(
     @IdRes resId: Int,
     defaultValue: T? = null,
+    initialize: Boolean = true,
     crossinline callback: (T) -> Unit = {}
-): T? {
+): Boolean {
     val targetKey = try {
         Utils.getApp().resources.getString(resId)
     } catch (e: Resources.NotFoundException) {
-        return null
+        return false
     }
 
+    return listen(targetKey, defaultValue, initialize, callback)
+}
+
+inline fun <reified T> SharedPreferences.listen(
+    targetKey: String,
+    defaultValue: T? = null,
+    initialize: Boolean = true,
+    crossinline callback: (T) -> Unit = {}
+): Boolean {
     val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
         if (targetKey == key) {
-            val value = this.get(key, defaultValue)
-            value?.let { callback(it) }
+            get(key, defaultValue, callback)
         }
     }
     list.add(listener)
 
     registerOnSharedPreferenceChangeListener(listener)
-    val value = this.get(targetKey, defaultValue)
-    value?.let { callback(it) }
-    return value
+    if (initialize) {
+        get(targetKey, defaultValue, callback)
+    }
+    return true
 }
-
-val list: MutableList<SharedPreferences.OnSharedPreferenceChangeListener> = ArrayList()
 
 inline fun <reified T> SharedPreferences.get(
     key: String,
-    defaultValue: T? = null
+    defaultValue: T? = null,
+    callback: (T) -> Unit = {}
 ): T? {
     val value = try {
         when (T::class.java) {
@@ -48,5 +58,6 @@ inline fun <reified T> SharedPreferences.get(
     } catch (e: Exception) {
         return null
     }
+    value?.let(callback)
     return value
 }

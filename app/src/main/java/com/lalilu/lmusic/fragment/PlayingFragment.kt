@@ -1,9 +1,13 @@
 package com.lalilu.lmusic.fragment
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.media3.common.MediaItem
+import com.blankj.utilcode.util.AdaptScreenUtils
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayingBinding
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.adapter.PlayingAdapter.OnItemDragOrSwipedListener
 import com.lalilu.lmusic.base.DataBindingConfig
@@ -13,6 +17,7 @@ import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.utils.listen
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.bindViewModel
 import com.lalilu.material.appbar.ExpendHeaderBehavior
@@ -50,6 +55,10 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 
     @Inject
     lateinit var mSongBrowser: MSongBrowser
+
+    private val settingsSp: SharedPreferences by lazy {
+        requireContext().getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
+    }
 
     private val dialog: NavigatorFragment by lazy {
         NavigatorFragment()
@@ -95,6 +104,15 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         val fmLyricViewX = binding.fmLyricViewX
         val fmToolbar = binding.fmToolbar
         val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
+
+        settingsSp.listen(R.string.sp_key_lyric_settings_text_size, 12) {
+            fmLyricViewX.setCurrentTextSize(AdaptScreenUtils.pt2Px(it.toFloat()).toFloat())
+            fmLyricViewX.invalidate()
+        }
+        settingsSp.listen(R.string.sp_key_lyric_settings_secondary_text_size, 12) {
+            fmLyricViewX.setNormalTextSize(AdaptScreenUtils.pt2Px(it.toFloat()).toFloat())
+            fmLyricViewX.invalidate()
+        }
 
         mActivity?.setSupportActionBar(fmToolbar)
         behavior.addOnStateChangeListener(object :

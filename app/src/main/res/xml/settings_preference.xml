@@ -5,6 +5,7 @@
         android:icon="@drawable/ic_settings_4_line"
         android:title="@string/preference_player_settings">
         <SwitchPreferenceCompat
+            android:defaultValue="false"
             android:key="@string/sp_key_player_settings_ignore_audio_focus"
             android:title="@string/preference_player_settings_ignore_audio_focus"
             app:allowDividerBelow="false" />
@@ -14,12 +15,18 @@
         android:icon="@drawable/ic_lrc_fill"
         android:title="@string/preference_lyric_settings">
         <SeekBarPreference
+            android:defaultValue="12"
             android:key="@string/sp_key_lyric_settings_text_size"
-            android:title="@string/preference_lyric_settings_text_size" />
+            android:max="20"
+            android:title="@string/preference_lyric_settings_text_size"
+            app:min="5" />
         <SeekBarPreference
+            android:defaultValue="10"
             android:key="@string/sp_key_lyric_settings_secondary_text_size"
+            android:max="20"
             android:title="@string/preference_lyric_settings_secondary_text_size"
-            app:allowDividerBelow="false" />
+            app:allowDividerBelow="false"
+            app:min="5" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -27,9 +34,11 @@
         android:title="@string/preference_media_source_settings"
         app:allowDividerAbove="true">
         <SwitchPreferenceCompat
+            android:defaultValue="true"
             android:key="@string/sp_key_media_source_settings_unknown_filter"
             android:title="@string/preference_media_source_settings_unknown_filter" />
         <SeekBarPreference
+            android:defaultValue="30"
             android:key="@string/sp_key_media_source_settings_duration_filter"
             android:title="@string/preference_media_source_settings_duration_filter" />
     </PreferenceCategory>

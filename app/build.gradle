@@ -20,14 +20,14 @@ android {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
         targetSdkVersion 32
-        versionCode 24
-        versionName "1.4.6"
+        versionCode 25
+        versionName "1.4.7"
         vectorDrawables {
             useSupportLibrary true
         }
-//        ndk {
-//            abiFilters "armeabi-v7a"
-//        }
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
     }
 
     kotlinOptions {

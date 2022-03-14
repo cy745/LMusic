@@ -70,9 +70,9 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
         settingsSp.listen(
             R.string.sp_key_player_settings_ignore_audio_focus,
-            true
+            false
         ) {
-            player.setAudioAttributes(audioAttributes, it)
+            player.setAudioAttributes(audioAttributes, !it)
         }
 
         val pendingIntent: PendingIntent =
