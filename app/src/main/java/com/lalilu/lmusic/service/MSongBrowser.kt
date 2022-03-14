@@ -3,6 +3,7 @@ package com.lalilu.lmusic.service
 import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.MediaItem
@@ -46,7 +47,7 @@ class MSongBrowser @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
 
-    private val playerSp: SharedPreferences by lazy {
+    private val lastPlayedSp: SharedPreferences by lazy {
         mContext.getSharedPreferences(Config.LAST_PLAYED_SP, Context.MODE_PRIVATE)
     }
 
@@ -107,7 +108,7 @@ class MSongBrowser @Inject constructor(
     fun recoverLastPlayedItem() =
         launch(Dispatchers.IO) {
             val items = recoverLastPlayedList()
-            val index = playerSp.getString(Config.LAST_PLAYED_ID, null)?.let { id ->
+            val index = lastPlayedSp.getString(Config.LAST_PLAYED_ID, null)?.let { id ->
                 items.indexOfFirst { it.mediaId == id }
             }?.coerceAtLeast(0) ?: 0
             withContext(Dispatchers.Main) {
@@ -120,7 +121,7 @@ class MSongBrowser @Inject constructor(
 
     private suspend fun recoverLastPlayedList(): List<MediaItem> =
         withContext(Dispatchers.IO) {
-            playerSp.getString(Config.LAST_PLAYED_LIST, null)?.let { json ->
+            lastPlayedSp.getString(Config.LAST_PLAYED_LIST, null)?.let { json ->
                 val typeToken = object : TypeToken<List<String>>() {}
                 return@withContext GsonUtils.fromJson<List<String>>(json, typeToken.type)
                     .mapNotNull { mediaSource.getItemById(ITEM_PREFIX + it) }

@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.datasource
 
-import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -44,7 +43,6 @@ const val ARTIST_PREFIX = "[artist]"
 const val ITEM_PREFIX = "[item]"
 const val ALL_PREFIX = "[all]"
 
-@SuppressLint("UnsafeOptInUsageError")
 abstract class AbstractMediaSource : MediaSource {
     private var treeNodes: MutableMap<String, MediaItemNode> = mutableMapOf()
 
@@ -132,7 +130,8 @@ abstract class AbstractMediaSource : MediaSource {
         }
     }
 
-    init {
+    private fun initialize() {
+        treeNodes.clear()
         treeNodes[ROOT_ID] = MediaItemNode(
             buildMediaItem(
                 title = "Root Folder",
@@ -184,6 +183,7 @@ abstract class AbstractMediaSource : MediaSource {
     @Throws(Exception::class)
     fun initialize(data: List<MediaItem>) {
         readyState = STATE_INITIALIZING
+        initialize()
         data.forEach {
             val idInTree = ITEM_PREFIX + it.mediaId
             val albumFolderIdInTree = ALBUM_PREFIX + getAlbumIdFromMediaItem(it)

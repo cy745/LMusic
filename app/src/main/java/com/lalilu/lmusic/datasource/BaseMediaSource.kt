@@ -1,7 +1,7 @@
 package com.lalilu.lmusic.datasource
 
-import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
@@ -12,6 +12,8 @@ import android.provider.MediaStore
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MediaMetadata.FOLDER_TYPE_PLAYLISTS
+import com.lalilu.R
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.extensions.*
 import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,25 +25,39 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
+const val unknownArtist = "<unknown>"
+const val minDurationLimit = 30 * 1000
+
 @Singleton
-@SuppressLint("UnsafeOptInUsageError")
 class BaseMediaSource @Inject constructor(
     @ApplicationContext private val mContext: Context
 ) : CoroutineScope, AbstractMediaSource() {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val targetUri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-    private val minDurationLimit = 30 * 1000
-    private val minSizeLimit = 500 * 1024
-    private val unknownArtist = "<unknown>"
+    private val minSizeLimit = 0
+    private var artistFilter = unknownArtist
+    private var minDurationFilter = minDurationLimit
+    private lateinit var settingsSp: SharedPreferences
 
     init {
         mContext.contentResolver
             .registerContentObserver(targetUri, true, MediaSourceObserver())
+        settingsSp = mContext.getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
+        settingsSp.listen(R.string.sp_key_media_source_settings_unknown_filter, true) {
+            artistFilter = if (it) unknownArtist else ""
+            loadSync()
+        }
+        settingsSp.listen(R.string.sp_key_media_source_settings_duration_filter, 30) {
+            minDurationFilter = it * 1000
+            loadSync()
+        }
     }
 
     inner class MediaSourceObserver : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
-
+            launch(Dispatchers.IO) {
+                initialize(loadMediaItems())
+            }
         }
     }
 
@@ -126,7 +142,7 @@ class BaseMediaSource @Inject constructor(
                 selection = "${MediaStore.Audio.Media.SIZE} >= ? " +
                         "and ${MediaStore.Audio.Media.DURATION} >= ? " +
                         "and ${MediaStore.Audio.Artists.ARTIST} != ?",
-                selectionArgs = arrayOf("$minSizeLimit", "$minDurationLimit", unknownArtist),
+                selectionArgs = arrayOf("$minSizeLimit", "$minDurationFilter", artistFilter),
                 sortOrder = "${MediaStore.Audio.Media._ID} DESC"
             ) ?: return@withContext ArrayList()
 
