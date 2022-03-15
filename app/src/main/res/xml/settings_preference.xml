@@ -15,18 +15,20 @@
         android:icon="@drawable/ic_lrc_fill"
         android:title="@string/preference_lyric_settings">
         <SeekBarPreference
-            android:defaultValue="12"
+            android:defaultValue="9"
             android:key="@string/sp_key_lyric_settings_text_size"
-            android:max="20"
+            android:max="15"
             android:title="@string/preference_lyric_settings_text_size"
-            app:min="5" />
+            app:min="5"
+            app:showSeekBarValue="true" />
         <SeekBarPreference
-            android:defaultValue="10"
+            android:defaultValue="8"
             android:key="@string/sp_key_lyric_settings_secondary_text_size"
-            android:max="20"
+            android:max="15"
             android:title="@string/preference_lyric_settings_secondary_text_size"
             app:allowDividerBelow="false"
-            app:min="5" />
+            app:min="5"
+            app:showSeekBarValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -40,7 +42,9 @@
         <SeekBarPreference
             android:defaultValue="30"
             android:key="@string/sp_key_media_source_settings_duration_filter"
-            android:title="@string/preference_media_source_settings_duration_filter" />
+            android:max="90"
+            android:title="@string/preference_media_source_settings_duration_filter"
+            app:showSeekBarValue="true" />
     </PreferenceCategory>
 
     <Preference
