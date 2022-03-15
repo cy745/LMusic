@@ -163,7 +163,7 @@
     <fragment
         android:id="@+id/addToPlaylistFragment"
         android:name="com.lalilu.lmusic.fragment.AddToPlaylistFragment"
-        android:label="AddToPlaylistFragment"
+        android:label="@string/destination_label_add_song_to_playlist"
         tools:layout="@layout/fragment_add_to_playlist">
         <argument
             android:name="mediaId"
@@ -172,7 +172,7 @@
     <fragment
         android:id="@+id/searchForLyricFragment"
         android:name="com.lalilu.lmusic.fragment.SearchForLyricFragment"
-        android:label="SearchForLyricFragment"
+        android:label="@string/destination_label_search_for_lyric"
         tools:layout="@layout/fragment_search_for_lyric">
         <argument
             android:name="mediaTitle"
@@ -195,6 +195,20 @@
     <fragment
         android:id="@+id/settingFragment"
         android:name="com.lalilu.lmusic.fragment.SettingFragment"
-        android:label="SettingFragment"
-        tools:layout="@layout/fragment_settings" />
+        android:label="@string/destination_label_settings"
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/settingsToLicence"
+            app:destination="@id/licenceFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/settingFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/licenceFragment"
+        android:name="com.lalilu.lmusic.fragment.LicenceFragment"
+        android:label="@string/destination_label_opensource_licence"
+        tools:layout="@layout/fragment_licence" />
 </navigation>

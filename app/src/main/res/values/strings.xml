@@ -31,6 +31,7 @@
     <string name="destination_label_song_detail">歌曲详情</string>
     <string name="destination_label_add_song_to_playlist">添加至歌单</string>
     <string name="destination_label_search_for_lyric">搜索歌词</string>
+    <string name="destination_label_opensource_licence">开放源代码许可</string>
 
     <string name="destination_subtitle_library">各种各样的选项</string>
     <string name="destination_subtitle_albums">所有专辑</string>
@@ -40,6 +41,8 @@
     <string name="destination_subtitle_album_detail">专辑详情</string>
     <string name="destination_subtitle_playlist_detail">歌单详情</string>
     <string name="destination_subtitle_song_detail">歌曲详情</string>
+    <string name="destination_subtitle_opensource_licence">使用到的开源代码</string>
+
 
     <string name="button_search_for_lyric_searching">搜索中…</string>
     <string name="button_search_for_lyric_no_result">无结果</string>
@@ -61,8 +64,6 @@
 
     <string name="preference_player_settings">播放设置</string>
     <string name="preference_player_settings_ignore_audio_focus">允许与其他应用同时播放</string>
-
-    <string name="preference_opensource_licence">开源代码许可</string>
 
     <string name="sp_key_lyric_settings_text_size">sp_key_lyric_settings_text_size</string>
     <string name="sp_key_lyric_settings_secondary_text_size">sp_key_lyric_settings_secondary_text_size</string>

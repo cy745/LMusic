@@ -1,0 +1,50 @@
+https://github.com/getActivity/XXPermissions
+Apache-2.0
+权限请求框架
+
+https://github.com/qinci/EdgeTranslucent
+https://github.com/cy745/EdgeTranslucent
+Undeclared License
+实现边沿渐变透明
+
+https://github.com/Moriafly/LyricViewX
+https://github.com/cy745/LyricViewX
+GPL-3.0 License
+歌词组件
+
+https://github.com/sachiotomita/kanhira
+https://github.com/cy745/kanhira
+汉字转平假名库
+
+https://github.com/coil-kt/coil
+Apache-2.0 License
+图片加载库
+
+https://github.com/Commit451/NativeStackBlur
+Apache-2.0 License
+Bitmap的Blur实现库
+
+https://github.com/square/retrofit
+https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
+Apache-2.0 License
+
+https://github.com/Blankj/AndroidUtilCode/
+Apache-2.0 License
+安卓工具类库
+
+https://gitee.com/simplepeng/SpiderMan
+Apache-2.0 License
+闪退崩溃日志捕获库
+
+https://github.com/androidx/media
+Apache-2.0 License
+媒体组件库
+
+https://github.com/nex3z/FlowLayout
+Apache-2.0 License
+流式标签布局
+
+http://www.jthink.net/jaudiotagger/
+https://github.com/hexise/jaudiotagger-android
+LGPL-3.0 License
+音频标签读写库
