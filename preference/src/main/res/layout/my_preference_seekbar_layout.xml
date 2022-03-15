@@ -49,8 +49,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="marquee"
                 android:labelFor="@id/seekbar"
-                android:singleLine="true"
-                android:textAppearance="?android:attr/textAppearanceListItem" />
+                android:singleLine="true" />
 
             <TextView
                 android:id="@android:id/summary"
