@@ -75,9 +75,10 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
         open val swipeFlags: Int = 0
         open val dragFlags: Int = 0
 
-        open fun onSwiped(item: I, direction: Int) {}
+        open fun onSwiped(item: I, direction: Int, position: Int) {}
         open fun onMove(item: I, from: Int, to: Int): Boolean = false
 
+        override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder): Float = 1f
         override fun isItemViewSwipeEnabled(): Boolean = swipeFlags != 0
         override fun isLongPressDragEnabled(): Boolean = dragFlags != 0
 
@@ -98,7 +99,10 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
                 viewHolder.absoluteAdapterPosition,
                 target.absoluteAdapterPosition
             )
-            notifyItemMoved(viewHolder.absoluteAdapterPosition, target.absoluteAdapterPosition)
+            notifyItemMoved(
+                viewHolder.absoluteAdapterPosition,
+                target.absoluteAdapterPosition
+            )
             return onMove(
                 data[viewHolder.absoluteAdapterPosition],
                 viewHolder.absoluteAdapterPosition,
@@ -107,11 +111,8 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            val index = viewHolder.absoluteAdapterPosition
-            val item = data[index]
-            data.remove(item)
-            notifyItemRemoved(index)
-            onSwiped(item, direction)
+            val position = viewHolder.absoluteAdapterPosition
+            onSwiped(data[position], direction, position)
         }
 
         override fun onChildDraw(
@@ -125,6 +126,15 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
         ) {
             // TODO: 添加阻尼效果、松手振动
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+        }
+
+        fun remove(position: Int) {
+            data.removeAt(position)
+            notifyItemRemoved(position)
+        }
+
+        fun recover(position: Int) {
+            notifyItemChanged(position)
         }
     }
 
