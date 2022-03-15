@@ -111,8 +111,7 @@
                 android:paddingStart="8dp"
                 android:paddingEnd="0dp"
                 android:scrollbars="none"
-                android:singleLine="true"
-                android:textAppearance="?android:attr/textAppearanceListItem" />
+                android:singleLine="true" />
 
         </com.lalilu.preference.UnPressableLinearLayout>
     </LinearLayout>
