@@ -1,5 +1,6 @@
 package com.lalilu.lmusic
 
+import android.content.Intent
 import android.media.AudioManager
 import android.os.Bundle
 import android.view.Menu
@@ -55,6 +56,21 @@ class LMusicActivity : DataBindingActivity() {
         })
         volumeControlStream = AudioManager.STREAM_MUSIC
         lifecycle.addObserver(mSongBrowser)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        println(
+            """
+                [LMusicActivity]#onNewIntent
+                action: ${intent?.action}
+                category: ${intent?.categories}
+                data: ${intent?.data}
+                author: ${intent?.data?.authority}
+                path: ${intent?.data?.path}
+            """.trimIndent()
+        )
+        // TODO: 处理外部传入的intent，需要记录传入的Uri
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

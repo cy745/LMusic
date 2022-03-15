@@ -29,6 +29,7 @@ import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 interface EnhanceBrowser {
+    fun playByUri(uri: Uri): Boolean
     fun playById(mediaId: String): Boolean
     fun addToNext(mediaId: String): Boolean
     fun removeById(mediaId: String): Boolean
@@ -128,6 +129,17 @@ class MSongBrowser @Inject constructor(
             }
             return@withContext mediaSource.getChildren(ALL_ID) ?: emptyList()
         }
+
+    override fun playByUri(uri: Uri): Boolean {
+        // TODO: 需要将uri保存，并可直接从Service读取到该uri
+        browser?.apply {
+            addMediaItem(currentMediaItemIndex, MediaItem.fromUri(uri))
+            seekToDefaultPosition(currentMediaItemIndex)
+            prepare()
+            play()
+        }
+        return true
+    }
 
     override fun playById(mediaId: String): Boolean {
         val index = originPlaylistIds.indexOf(mediaId)
