@@ -184,10 +184,15 @@ class LMusicNotificationProvider @Inject constructor(
             .setSubText(metadata.albumTitle)
             .setColor(notificationBgColor)
             .setLargeIcon(placeHolder)
-            .setSmallIcon(defaultIconResId)
             .setStyle(mediaStyle)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOngoing(false)
+
+        if (Build.VERSION.SDK_INT <= 25) {
+            builder.setSmallIcon(R.drawable.media3_notification_small_icon)
+        } else {
+            builder.setSmallIcon(defaultIconResId)
+        }
 
         metadata.artworkData?.let {
             launch(Dispatchers.IO) {
@@ -277,7 +282,12 @@ class LMusicNotificationProvider @Inject constructor(
         setContentText("歌词")
         setShowWhen(false)
         setOngoing(true)
-        setSmallIcon(defaultIconResId)
+
+        if (Build.VERSION.SDK_INT <= 25) {
+            setSmallIcon(R.drawable.media3_notification_small_icon)
+        } else {
+            setSmallIcon(defaultIconResId)
+        }
     }
 
     override fun pushLyric(sentence: String) {

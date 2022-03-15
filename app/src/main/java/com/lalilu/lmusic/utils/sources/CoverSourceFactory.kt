@@ -2,6 +2,7 @@ package com.lalilu.lmusic.utils.sources
 
 import android.content.Context
 import android.media.MediaMetadataRetriever
+import android.os.Build
 import androidx.media3.common.MediaItem
 import com.lalilu.lmusic.datasource.extensions.getSongData
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -13,6 +14,7 @@ import okio.source
 import org.jaudiotagger.audio.AudioFileIO
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.inject.Inject
@@ -30,8 +32,18 @@ class CoverSourceFactory @Inject constructor(
     private val sources: MutableList<CoverSource> = ArrayList()
 
     init {
-        sources.add(retrieverCoverSource)
-        sources.add(audioTagCoverSource)
+        /**
+         * Android 7.1.1 以下使用MediaMetadataRetriever
+         * 获取到的embeddedPicture转BufferedSource存在莫名阻塞的bug
+         * 故 Android 7.1.1 以下优先使用AudioTag的获取方式
+         */
+        if (Build.VERSION.SDK_INT <= 25) {
+            sources.add(audioTagCoverSource)
+            sources.add(retrieverCoverSource)
+        } else {
+            sources.add(retrieverCoverSource)
+            sources.add(audioTagCoverSource)
+        }
     }
 
     suspend fun getCover(
@@ -60,8 +72,10 @@ class RetrieverCoverSource @Inject constructor(
             retriever = MediaMetadataRetriever()
             retriever.setDataSource(mContext, mediaUri)
             retriever.embeddedPicture ?: throw NullPointerException()
-            ByteArrayInputStream(retriever.embeddedPicture)
-                .source().buffer()
+            val source = ByteArrayInputStream(retriever.embeddedPicture).source()
+            source.timeout().timeout(50, TimeUnit.MILLISECONDS)
+
+            source.buffer()
         } catch (e: NullPointerException) {
             null
         } finally {
