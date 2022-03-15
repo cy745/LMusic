@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.manager
 
 import android.content.Context
+import android.os.Build
 import android.text.TextUtils
 import com.cm55.kanhira.KakasiDictReader
 import com.cm55.kanhira.Kanhira
@@ -72,6 +73,7 @@ class SearchTextUtil @Inject constructor(
      * 异步加载Kanhira组件
      */
     private val mKanhira = MutableStateFlow<Kanhira?>(null).apply {
+        if (Build.VERSION.SDK_INT <= 23) return@apply
         launch {
             emit(
                 Kanhira(
