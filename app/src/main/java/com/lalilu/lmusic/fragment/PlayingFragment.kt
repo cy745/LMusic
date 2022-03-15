@@ -67,12 +67,12 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     override fun getDataBindingConfig(): DataBindingConfig {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
         mAdapter.onItemDragOrSwipedListener = object : OnItemDragOrSwipedListener {
-            override fun onDelete(mediaItem: MediaItem) {
-                mSongBrowser.removeById(mediaItem.mediaId)
+            override fun onDelete(mediaItem: MediaItem): Boolean {
+                return mSongBrowser.removeById(mediaItem.mediaId)
             }
 
-            override fun onAddToNext(mediaItem: MediaItem) {
-                mSongBrowser.addToNext(mediaItem.mediaId)
+            override fun onAddToNext(mediaItem: MediaItem): Boolean {
+                return mSongBrowser.addToNext(mediaItem.mediaId)
             }
         }
         mAdapter.onItemClick = { item, position ->

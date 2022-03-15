@@ -151,10 +151,10 @@ class MSongBrowser @Inject constructor(
         val currentIndex = browser?.currentMediaItemIndex ?: return false
         if (currentIndex < 0) return false
 
-        if (originPlaylistIds.contains(mediaId)) {
-            val nowIndex = originPlaylistIds.indexOf(mediaId)
-            if (nowIndex < 0 || currentIndex == nowIndex) return false
+        val nowIndex = originPlaylistIds.indexOf(mediaId)
+        if (currentIndex == nowIndex || (currentIndex + 1) == nowIndex) return false
 
+        if (nowIndex >= 0) {
             val targetIndex = if (nowIndex < currentIndex) currentIndex else currentIndex + 1
             browser?.moveMediaItem(nowIndex, targetIndex)
         } else {
@@ -165,9 +165,15 @@ class MSongBrowser @Inject constructor(
     }
 
     override fun removeById(mediaId: String): Boolean {
+        browser ?: return false
         return try {
             val index = originPlaylistIds.indexOf(mediaId)
-            browser?.removeMediaItem(index)
+            if (index == browser!!.currentMediaItemIndex) {
+                mGlobal.currentMediaItem.tryEmit(
+                    browser!!.getMediaItemAt(browser!!.nextMediaItemIndex)
+                )
+            }
+            browser!!.removeMediaItem(index)
             true
         } catch (e: Exception) {
             false
