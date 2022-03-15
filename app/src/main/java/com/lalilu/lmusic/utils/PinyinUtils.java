@@ -138,7 +138,7 @@ public final class PinyinUtils {
     private static final String pinyinTable;
 
     static {
-        SURNAMES = new SimpleArrayMap<>(35);
+        SURNAMES = new SimpleArrayMap<>(36);
         SURNAMES.put('乐', "yue");
         SURNAMES.put('乘', "sheng");
         SURNAMES.put('乜', "nie");
@@ -174,6 +174,8 @@ public final class PinyinUtils {
         SURNAMES.put('阿', "e");
         SURNAMES.put('难', "ning");
         SURNAMES.put('黑', "he");
+        SURNAMES.put('女', "nv");
+        SURNAMES.put('绿', "lv");
 
         //noinspection StringBufferReplaceableByString
         pinyinTable = new StringBuilder(125412)
