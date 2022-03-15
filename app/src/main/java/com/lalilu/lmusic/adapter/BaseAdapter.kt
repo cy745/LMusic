@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.adapter
 
+import android.graphics.Canvas
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
@@ -111,6 +112,19 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
             data.remove(item)
             notifyItemRemoved(index)
             onSwiped(item, direction)
+        }
+
+        override fun onChildDraw(
+            c: Canvas,
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            dX: Float,
+            dY: Float,
+            actionState: Int,
+            isCurrentlyActive: Boolean
+        ) {
+            // TODO: 添加阻尼效果、松手振动
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
         }
     }
 
