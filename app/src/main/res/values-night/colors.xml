@@ -3,6 +3,7 @@
     <color name="colorPrimary">#FE4141</color>
     <color name="colorPrimaryVariant">#FF444444</color>
     <color name="colorOnPrimary">#D9D9D9</color>
+    <color name="ic_launcher_background">#FE4141</color>
 
     <color name="gray_400">#FFBDBDBD</color>
     <color name="gray_600">#FF757575</color>
