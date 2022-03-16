@@ -15,7 +15,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaNotification
 import androidx.palette.graphics.Palette
+import com.blankj.utilcode.util.RomUtils
+import com.blankj.utilcode.util.SPUtils
 import com.lalilu.R
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.LyricPusher
 import com.lalilu.lmusic.utils.getAutomaticColor
 import dagger.Binds
@@ -56,6 +59,13 @@ class LMusicNotificationProvider @Inject constructor(
         val appIcon = mContext.applicationInfo.icon
         if (appIcon != 0) appIcon else R.drawable.ic_launcher_foreground
     }
+
+    private val settingsSp: SPUtils by lazy {
+        SPUtils.getInstance(Config.SETTINGS_SP)
+    }
+
+    private val statusBarLyricKey =
+        mContext.resources.getString(R.string.sp_key_lyric_settings_status_bar_lyric)
 
     companion object {
         const val NOTIFICATION_ID_PLAYER = 7
@@ -259,7 +269,7 @@ class LMusicNotificationProvider @Inject constructor(
         }
         if (notificationManager.getNotificationChannel(
                 NOTIFICATION_CHANNEL_ID_LYRICS
-            ) == null
+            ) == null && RomUtils.isMeizu()
         ) {
             notificationManager.createNotificationChannel(
                 NotificationChannel(
@@ -291,6 +301,9 @@ class LMusicNotificationProvider @Inject constructor(
     }
 
     override fun pushLyric(sentence: String) {
+        if (!settingsSp.getBoolean(statusBarLyricKey)) {
+            return
+        }
         ensureNotificationChannel()
         lyricBuilder.setTicker(sentence)
 

@@ -55,6 +55,7 @@
     <string name="button_search_for_lyric">搜索网络歌词</string>
 
     <string name="preference_lyric_settings">歌词显示设置</string>
+    <string name="preference_lyric_settings_status_bar_lyric">状态栏歌词</string>
     <string name="preference_lyric_settings_text_size">主文字大小</string>
     <string name="preference_lyric_settings_secondary_text_size">次文字大小</string>
 
@@ -65,6 +66,7 @@
     <string name="preference_player_settings">播放设置</string>
     <string name="preference_player_settings_ignore_audio_focus">允许与其他应用同时播放</string>
 
+    <string name="sp_key_lyric_settings_status_bar_lyric">状态栏歌词</string>
     <string name="sp_key_lyric_settings_text_size">sp_key_lyric_settings_text_size</string>
     <string name="sp_key_lyric_settings_secondary_text_size">sp_key_lyric_settings_secondary_text_size</string>
 
