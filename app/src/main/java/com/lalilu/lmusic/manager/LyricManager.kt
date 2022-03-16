@@ -19,6 +19,9 @@ interface LyricPusher {
     fun pushLyric(sentence: String)
 }
 
+/**
+ * 专门负责歌词解析处理的全局单例
+ */
 @Singleton
 @ExperimentalCoroutinesApi
 class LyricManager @Inject constructor(

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
     <PreferenceCategory
         android:icon="@drawable/ic_settings_4_line"
         android:title="@string/preference_player_settings">
@@ -14,6 +15,13 @@
     <PreferenceCategory
         android:icon="@drawable/ic_lrc_fill"
         android:title="@string/preference_lyric_settings">
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="@string/sp_key_lyric_settings_status_bar_lyric"
+            android:title="@string/preference_lyric_settings_status_bar_lyric"
+            app:allowDividerBelow="false"
+            app:isPreferenceVisible="false"
+            tools:isPreferenceVisible="true" />
         <SeekBarPreference
             android:defaultValue="9"
             android:key="@string/sp_key_lyric_settings_text_size"
