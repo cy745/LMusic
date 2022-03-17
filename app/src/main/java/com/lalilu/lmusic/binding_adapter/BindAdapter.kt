@@ -17,7 +17,7 @@ import coil.loadAny
 import com.lalilu.R
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.ui.drawee.BlurImageView
-import com.lalilu.lmusic.ui.seekbar.LMusicSeekBar
+import com.lalilu.lmusic.ui.seekbar.NewProgressBar
 import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
 import com.lalilu.lmusic.utils.GridItemDecoration
@@ -121,8 +121,8 @@ fun setAppbarBGColor(appBarLayout: AppBarLayout, palette: Palette?) {
 }
 
 @BindingAdapter("bgPalette")
-fun setSeekBarBGColor(seekBar: LMusicSeekBar, palette: Palette?) {
-    seekBar.setThumbColor(getAutomaticColor(palette))
+fun setSeekBarBGColor(seekBar: NewProgressBar, palette: Palette?) {
+    seekBar.thumbColor = getAutomaticColor(palette)
 }
 
 @BindingAdapter(value = ["gridGap", "gridSpanCount"], requireAll = true)

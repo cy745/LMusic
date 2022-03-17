@@ -10,8 +10,7 @@ import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.MSongBrowser
-import com.lalilu.lmusic.ui.seekbar.OnSeekBarDragUpToThresholdListener
-import com.lalilu.lmusic.ui.seekbar.OnSeekBarListenerAdapter
+import com.lalilu.lmusic.ui.seekbar.*
 import com.lalilu.lmusic.utils.HapticUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,60 +42,63 @@ class MainFragment : DataBindingFragment() {
 
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
         mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
-            seekBar.setSumDuration(it?.mediaMetadata?.getDuration()?.coerceAtLeast(0) ?: 0)
+            seekBar.sumValue = (it?.mediaMetadata?.getDuration()?.coerceAtLeast(0) ?: 0f).toFloat()
         }
         mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
-            seekBar.updatePosition(it)
+            seekBar.updateValue(it.toFloat())
         }
+        seekBar.clickListeners.add(object : OnSeekBarClickListener {
+            override fun onClick(@ClickPart clickPart: Int, action: Int) {
+                haptic()
+                when (mSongBrowser.browser?.isPlaying) {
+                    true -> mSongBrowser.browser?.pause()
+                    false -> mSongBrowser.browser?.play()
+                    else -> {}
+                }
+            }
 
-        seekBar.addDragUpProgressListener(object : OnSeekBarDragUpToThresholdListener() {
-            override fun onDragUpToThreshold() {
-                showDialog(dialog)
-                HapticUtils.haptic(seekBar.rootView, HapticUtils.Strength.HAPTIC_STRONG)
+            override fun onDoubleClick(@ClickPart clickPart: Int, action: Int) {
+                doubleHaptic()
+                when (clickPart) {
+                    CLICK_PART_LEFT -> mSongBrowser.browser?.seekToPrevious()
+                    CLICK_PART_RIGHT -> mSongBrowser.browser?.seekToNext()
+                }
+            }
+
+            override fun onLongClick(@ClickPart clickPart: Int, action: Int) {
+                println("onLongClick: $clickPart action: $action")
+                haptic()
             }
         })
-
-        // 为 SeekBar 添加监听器
-        seekBar.onSeekBarListener = object : OnSeekBarListenerAdapter() {
-            override fun onPositionUpdate(position: Long) {
-                mSongBrowser.browser?.seekTo(position)
-                HapticUtils.haptic(seekBar.rootView, HapticUtils.Strength.HAPTIC_WEAK)
-            }
-
-            override fun onPlayPause() {
-                if (mSongBrowser.browser?.isPlaying == true) {
-                    mSongBrowser.browser?.pause()
-                } else {
-                    mSongBrowser.browser?.play()
+        seekBar.seekToListeners.add(
+            object : OnSeekBarSeekToListener {
+                override fun onSeekTo(value: Float) {
+                    mSongBrowser.browser?.seekTo(value.toLong())
                 }
-                HapticUtils.haptic(seekBar.rootView)
             }
+        )
+        seekBar.scrollListeners.add(
+            object : OnSeekBarScrollToThresholdListener(300f) {
+                override fun onScrollToThreshold() {
+                    showDialog(dialog)
+                    haptic()
+                }
+            }
+        )
+        seekBar.cancelListeners.add(
+            object : OnSeekBarCancelListener {
+                override fun onCancel() {
+                    haptic()
+                }
+            }
+        )
+    }
 
-            override fun onPlayNext() {
-                mSongBrowser.browser?.seekToNext()
-                HapticUtils.doubleHaptic(seekBar.rootView)
-            }
+    fun haptic() {
+        HapticUtils.haptic(this.requireView(), HapticUtils.Strength.HAPTIC_STRONG)
+    }
 
-            override fun onPlayPrevious() {
-                mSongBrowser.browser?.seekToPrevious()
-                HapticUtils.doubleHaptic(seekBar.rootView)
-            }
-
-            override fun onProgressToMax() {
-                HapticUtils.haptic(seekBar.rootView)
-            }
-
-            override fun onProgressToMin() {
-                HapticUtils.haptic(seekBar.rootView)
-            }
-
-            override fun onProgressToMiddle() {
-                HapticUtils.haptic(seekBar.rootView)
-            }
-
-            override fun onProgressCanceled() {
-                HapticUtils.haptic(seekBar.rootView, HapticUtils.Strength.HAPTIC_WEAK)
-            }
-        }
+    fun doubleHaptic() {
+        HapticUtils.doubleHaptic(this.requireView())
     }
 }
