@@ -12,7 +12,7 @@ import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.TextUtils
-
+import kotlin.math.abs
 
 const val CLICK_PART_UNSPECIFIED = 0
 const val CLICK_PART_LEFT = 1
@@ -28,36 +28,49 @@ const val CLICK_PART_RIGHT = 3
 @Retention(AnnotationRetention.SOURCE)
 annotation class ClickPart
 
-interface OnSeekBarClickListener {
-    fun onClick(@ClickPart clickPart: Int = CLICK_PART_UNSPECIFIED)
-    fun onLongClick(@ClickPart clickPart: Int = CLICK_PART_UNSPECIFIED)
-    fun onDoubleClick(@ClickPart clickPart: Int = CLICK_PART_UNSPECIFIED)
-}
-
 interface OnSeekBarScrollListener {
-    fun onScroll(dX: Float, scrollY: Float)
+    fun onScroll(scrollValue: Float)
 }
 
 interface OnSeekBarCancelListener {
     fun onCancel()
 }
 
+interface OnSeekBarSeekToListener {
+    fun onSeekTo(value: Float)
+}
+
+interface OnSeekBarClickListener {
+    fun onClick(
+        @ClickPart clickPart: Int = CLICK_PART_UNSPECIFIED,
+        action: Int
+    )
+
+    fun onLongClick(
+        @ClickPart clickPart: Int = CLICK_PART_UNSPECIFIED,
+        action: Int
+    )
+
+    fun onDoubleClick(
+        @ClickPart clickPart: Int = CLICK_PART_UNSPECIFIED,
+        action: Int
+    )
+}
+
 abstract class OnSeekBarScrollToThresholdListener(
     var threshold: Float
 ) : OnSeekBarScrollListener {
-    private var handle: Boolean = false
+    private val helper = ThresholdHelper { it >= threshold }
 
     abstract fun onScrollToThreshold()
     open fun onScrollRecover() {}
-    override fun onScroll(dX: Float, scrollY: Float) {
-        if (scrollY >= threshold && !handle) {
-            onScrollToThreshold()
-            handle = true
-        }
-        if (scrollY < threshold) {
-            onScrollRecover()
-            handle = false
-        }
+
+    override fun onScroll(scrollValue: Float) {
+        helper.check(
+            scrollValue,
+            this::onScrollToThreshold,
+            this::onScrollRecover
+        )
     }
 }
 
@@ -70,13 +83,12 @@ class NewSeekBar @JvmOverloads constructor(
             cancelScrollListener.threshold = value
         }
 
-    var scaleAnimatorDuration = 100L
-    var scaleAnimatorTo = 1.1f
-
+    var sensitivity = 1.3f
 
     val scrollListeners = ArrayList<OnSeekBarScrollListener>()
     val clickListeners = ArrayList<OnSeekBarClickListener>()
     val cancelListeners = ArrayList<OnSeekBarCancelListener>()
+    val seekToListeners = ArrayList<OnSeekBarSeekToListener>()
 
     private var canceled = true
     private var touching = false
@@ -91,8 +103,8 @@ class NewSeekBar @JvmOverloads constructor(
     private val cancelScrollListener =
         object : OnSeekBarScrollToThresholdListener(cancelThreshold) {
             override fun onScrollToThreshold() {
+                animateValueTo(dataValue)
                 cancelListeners.forEach { it.onCancel() }
-                animateProgressTo(dataValue)
                 canceled = true
             }
 
@@ -121,7 +133,7 @@ class NewSeekBar @JvmOverloads constructor(
      * 判断触摸事件所点击的部分位置
      */
     fun checkClickPart(e: MotionEvent): Int {
-        return when (e.x.toInt()) {
+        return when (e.rawX.toInt()) {
             in previousLeft..previousRight -> CLICK_PART_LEFT
             in previousRight..nextLeft -> CLICK_PART_MIDDLE
             in nextLeft..nextRight -> CLICK_PART_RIGHT
@@ -132,34 +144,33 @@ class NewSeekBar @JvmOverloads constructor(
     private val gestureDetector = GestureDetectorCompat(context,
         object : GestureDetector.SimpleOnGestureListener() {
             override fun onDown(e: MotionEvent?): Boolean {
+                touching = true
+                canceled = false
                 startValue = nowValue
-                animateScaleTo(scaleAnimatorTo)
                 return super.onDown(e)
-            }
-
-            override fun onShowPress(e: MotionEvent?) {
-                super.onShowPress(e)
             }
 
             override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                 clickListeners.forEach {
-                    it.onClick(checkClickPart(e))
+                    it.onClick(checkClickPart(e), e.action)
                 }
+                performClick()
                 return super.onSingleTapConfirmed(e)
             }
 
-            override fun onDoubleTapEvent(e: MotionEvent): Boolean {
+            override fun onDoubleTap(e: MotionEvent): Boolean {
                 clickListeners.forEach {
-                    it.onDoubleClick(checkClickPart(e))
+                    it.onDoubleClick(checkClickPart(e), e.action)
                 }
-                return super.onDoubleTapEvent(e)
+                return super.onDoubleTap(e)
             }
 
             override fun onLongPress(e: MotionEvent) {
                 clickListeners.forEach {
-                    it.onLongClick(checkClickPart(e))
+                    it.onLongClick(checkClickPart(e), e.action)
                 }
-                super.onLongPress(e)
+                animateValueTo(dataValue)
+                canceled = true
             }
 
             override fun onScroll(
@@ -168,30 +179,51 @@ class NewSeekBar @JvmOverloads constructor(
                 distanceX: Float,
                 distanceY: Float
             ): Boolean {
+                updateValueByDelta(-distanceX)
                 scrollListeners.forEach {
-                    it.onScroll(distanceX, (top - moveEvent.rawY).coerceAtLeast(0f))
+                    it.onScroll((top - moveEvent.rawY).coerceAtLeast(0f))
                 }
                 return super.onScroll(downEvent, moveEvent, distanceX, distanceY)
             }
         })
 
+    fun updateValueByDelta(delta: Float) {
+        if (touching && !canceled) {
+            mProgressAnimation.cancel()
+            nowValue = (nowValue + delta / width * sumValue * sensitivity)
+                .coerceIn(0f, sumValue)
+        }
+    }
+
+    fun updateValue(value: Float) {
+        if (value !in 0f..sumValue) return
+
+        if (!touching || canceled) {
+            animateValueTo(value)
+        }
+        dataValue = value
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         gestureDetector.onTouchEvent(event)
+        when (event.action) {
+            MotionEvent.ACTION_UP,
+            MotionEvent.ACTION_POINTER_UP,
+            MotionEvent.ACTION_CANCEL -> {
+                if (!canceled && abs(nowValue - startValue) > 500) {
+                    seekToListeners.forEach { it.onSeekTo(nowValue) }
+                }
+                touching = false
+                canceled = false
+            }
+        }
         return true
     }
 
-    fun animateScaleTo(scaleValue: Float) {
-        this.animate()
-            .scaleY(scaleValue)
-            .scaleX(scaleValue)
-            .setDuration(scaleAnimatorDuration)
-            .start()
-    }
-
-    fun animateProgressTo(progress: Float) {
+    fun animateValueTo(value: Float) {
         mProgressAnimation.cancel()
-        mProgressAnimation.animateToFinalPosition(progress)
+        mProgressAnimation.animateToFinalPosition(value)
     }
 
     override fun valueToText(value: Float): String {

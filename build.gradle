@@ -6,7 +6,7 @@ buildscript {
     ext.hilt_version = "2.40.5"
     ext.lifecycle_version = "2.4.1"
     ext.navigation_version = "2.4.1"
-    ext.media3_version = "1.0.0-alpha02"
+    ext.media3_version = "1.0.0-alpha03"
 
     repositories {
         google()
