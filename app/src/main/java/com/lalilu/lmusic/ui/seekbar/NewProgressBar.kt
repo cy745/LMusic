@@ -5,11 +5,66 @@ import android.graphics.*
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
+import androidx.annotation.IntDef
 import androidx.annotation.IntRange
+
+const val CURRENT_STATE_UNSPECIFIED = 0
+const val CURRENT_STATE_MIN = 1
+const val CURRENT_STATE_MIDDLE = 2
+const val CURRENT_STATE_MAX = 3
+
+@IntDef(
+    CURRENT_STATE_UNSPECIFIED,
+    CURRENT_STATE_MIN,
+    CURRENT_STATE_MIDDLE,
+    CURRENT_STATE_MAX
+)
+@Retention(AnnotationRetention.SOURCE)
+annotation class CurrentState
+
+interface OnProgressChangeListener {
+    fun onProgressChange(value: Float)
+}
+
+interface OnProgressToListener {
+    fun onProgressToMax(value: Float) {}
+    fun onProgressToMin(value: Float) {}
+    fun onProgressToMiddle(value: Float) {}
+}
 
 open class NewProgressBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : View(context, attrs) {
+    inner class OnProgressBarProgressToListener : OnProgressChangeListener {
+        @CurrentState
+        var currentState = 0
+            set(value) {
+                if (field == value) return
+                field = value
+                when (value) {
+                    CURRENT_STATE_MIN -> progressToListener.forEach { it.onProgressToMin(nowValue) }
+                    CURRENT_STATE_MAX -> progressToListener.forEach { it.onProgressToMax(nowValue) }
+                    CURRENT_STATE_MIDDLE -> progressToListener.forEach {
+                        it.onProgressToMiddle(
+                            nowValue
+                        )
+                    }
+                }
+            }
+
+        override fun onProgressChange(value: Float) {
+            currentState = when {
+                value <= minValue -> CURRENT_STATE_MIN
+                value >= maxValue -> CURRENT_STATE_MAX
+                value > minValue && value < maxValue -> CURRENT_STATE_MIDDLE
+                else -> CURRENT_STATE_UNSPECIFIED
+            }
+        }
+    }
+
+    val progressChangeListener = ArrayList<OnProgressChangeListener>()
+    val progressToListener = ArrayList<OnProgressToListener>()
+
     var bgColor = Color.argb(50, 100, 100, 100)
         set(value) {
             field = value
@@ -58,6 +113,7 @@ open class NewProgressBar @JvmOverloads constructor(
     var nowValue: Float = 0f
         set(value) {
             field = value
+            progressChangeListener.forEach { it.onProgressChange(value) }
             invalidate()
         }
 
@@ -147,7 +203,7 @@ open class NewProgressBar @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        thumbWidth = nowValue / (maxValue - minValue) * getInsideWidth()
+        thumbWidth = nowValue / (maxValue - minValue) * (width - padding)
         maxValueText = valueToText(maxValue)
         nowValueText = valueToText(nowValue)
         maxValueTextWidth = textPaintDayNight.measureText(maxValueText)
@@ -216,11 +272,7 @@ open class NewProgressBar @JvmOverloads constructor(
         pathInside.addRoundRect(rect, radius, radius, Path.Direction.CW)
     }
 
-    private fun getInsideWidth(): Float {
-        return width - padding - padding
-    }
-
-    private fun getInsideHeight(): Float {
-        return height - padding - padding
+    init {
+        progressChangeListener.add(OnProgressBarProgressToListener())
     }
 }
