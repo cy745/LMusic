@@ -118,9 +118,44 @@ open class NewProgressBar @JvmOverloads constructor(
         }
 
     /**
+     * 最大值文字颜色
+     */
+    var nowTextDarkModeColor: Int? = null
+    var nowTextColor: Int = Color.WHITE
+        get() {
+            if (isDarkModeNow()) return nowTextDarkModeColor ?: field
+            return field
+        }
+        set(value) {
+            field = value
+            nowTextPaint.color = value
+            invalidate()
+        }
+
+    /**
+     * 最大值文字颜色
+     */
+    var maxTextDarkModeColor: Int? = Color.WHITE
+    var maxTextColor: Int = Color.BLACK
+        get() {
+            if (isDarkModeNow()) return maxTextDarkModeColor ?: field
+            return field
+        }
+        set(value) {
+            field = value
+            maxTextPaint.color = value
+            invalidate()
+        }
+
+    /**
      * 上层滑块颜色
      */
+    var thumbDarkModeColor: Int? = null
     var thumbColor: Int = Color.DKGRAY
+        get() {
+            if (isDarkModeNow()) return thumbDarkModeColor ?: field
+            return field
+        }
         set(value) {
             field = value
             thumbPaint.color = value
@@ -132,9 +167,11 @@ open class NewProgressBar @JvmOverloads constructor(
      * 绘制时将忽略该值的透明度
      * 由 [outSideAlpha] 控制其透明度
      */
+    var outSideDarkModeColor: Int? = Color.DKGRAY
     var outSideColor: Int = Color.WHITE
         get() {
-            return if (isDarkModeNow()) Color.DKGRAY else field
+            if (isDarkModeNow()) return outSideDarkModeColor ?: field
+            return field
         }
         set(value) {
             field = value
@@ -167,16 +204,14 @@ open class NewProgressBar @JvmOverloads constructor(
         Paint(Paint.ANTI_ALIAS_FLAG).also {
             it.color = Color.DKGRAY
         }
-    private var textPaintDayNight =
+    private var maxTextPaint =
         TextPaint(Paint.ANTI_ALIAS_FLAG).also {
             it.textSize = textHeight
-            it.color = Color.BLACK
             it.isSubpixelText = true
         }
-    private var textPaintWhite =
+    private var nowTextPaint =
         TextPaint(Paint.ANTI_ALIAS_FLAG).also {
             it.textSize = textHeight
-            it.color = Color.WHITE
             it.isSubpixelText = true
         }
 
@@ -203,19 +238,20 @@ open class NewProgressBar @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        thumbWidth = nowValue / (maxValue - minValue) * (width - padding)
+        thumbWidth = (nowValue - minValue) / (maxValue - minValue) * (width - padding)
         maxValueText = valueToText(maxValue)
         nowValueText = valueToText(nowValue)
-        maxValueTextWidth = textPaintDayNight.measureText(maxValueText)
-        nowValueTextWidth = textPaintWhite.measureText(nowValueText)
+        maxValueTextWidth = maxTextPaint.measureText(maxValueText)
+        nowValueTextWidth = nowTextPaint.measureText(nowValueText)
 
-        val textCenterHeight = (height + textPaintDayNight.textSize) / 2f - 5
+        val textCenterHeight = (height + maxTextPaint.textSize) / 2f - 5
         val offsetTemp = nowValueTextWidth + textPadding * 2
 
         nowValueTextOffset =
             if (offsetTemp < thumbWidth) thumbWidth else offsetTemp
-        textPaintDayNight.color =
-            if (isDarkModeNow()) Color.WHITE else Color.BLACK
+        nowTextPaint.color = nowTextColor
+        maxTextPaint.color = maxTextColor
+        thumbPaint.color = thumbColor
 
         // 截取外部框范围
         canvas.clipPath(pathOutside)
@@ -239,7 +275,7 @@ open class NewProgressBar @JvmOverloads constructor(
             maxValueText,
             width - maxValueTextWidth - textPadding,
             textCenterHeight,
-            textPaintDayNight
+            maxTextPaint
         )
 
         // 绘制进度条滑动块
@@ -258,7 +294,7 @@ open class NewProgressBar @JvmOverloads constructor(
             nowValueText,
             nowValueTextOffset - nowValueTextWidth - textPadding,
             textCenterHeight,
-            textPaintWhite
+            nowTextPaint
         )
     }
 
