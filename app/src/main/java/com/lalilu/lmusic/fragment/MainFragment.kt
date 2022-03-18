@@ -92,6 +92,12 @@ class MainFragment : DataBindingFragment() {
                 }
             }
         )
+        seekBar.progressToListener.add(
+            object : OnProgressToListener {
+                override fun onProgressToMax(value: Float) = haptic()
+                override fun onProgressToMin(value: Float) = haptic()
+            }
+        )
     }
 
     fun haptic() {

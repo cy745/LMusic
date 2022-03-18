@@ -10,6 +10,7 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
+import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.TextUtils
 import kotlin.math.abs
@@ -39,11 +40,6 @@ interface OnSeekBarCancelListener {
 
 interface OnSeekBarSeekToListener {
     fun onSeekTo(value: Float)
-}
-
-interface OnSeekBarDragToMinOrMaxListener {
-    fun onDragToMax(value: Float)
-    fun onDragToMin(value: Float)
 }
 
 interface OnSeekBarClickListener {
@@ -95,7 +91,6 @@ class NewSeekBar @JvmOverloads constructor(
     val clickListeners = ArrayList<OnSeekBarClickListener>()
     val cancelListeners = ArrayList<OnSeekBarCancelListener>()
     val seekToListeners = ArrayList<OnSeekBarSeekToListener>()
-    val dragToListeners = ArrayList<OnSeekBarDragToMinOrMaxListener>()
 
     private var canceled = true
     private var touching = false
@@ -168,7 +163,7 @@ class NewSeekBar @JvmOverloads constructor(
                 touching = true
                 canceled = false
                 startValue = nowValue
-                animateScaleTo(5f)
+                animateScaleTo(SizeUtils.dp2px(3f).toFloat())
                 animateOutSideAlphaTo(255f)
                 return super.onDown(e)
             }
