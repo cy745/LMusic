@@ -85,12 +85,11 @@ class NewSeekBar @JvmOverloads constructor(
             cancelScrollListener.threshold = value
         }
 
-    var sensitivity = 1.3f
-
     val scrollListeners = ArrayList<OnSeekBarScrollListener>()
     val clickListeners = ArrayList<OnSeekBarClickListener>()
     val cancelListeners = ArrayList<OnSeekBarCancelListener>()
     val seekToListeners = ArrayList<OnSeekBarSeekToListener>()
+    var valueToText: ((Float) -> String)? = null
 
     private var canceled = true
     private var touching = false
@@ -101,6 +100,7 @@ class NewSeekBar @JvmOverloads constructor(
 
     var startValue: Float = nowValue
     var dataValue: Float = nowValue
+    var sensitivity = 1.3f
 
     private val cancelScrollListener =
         object : OnSeekBarScrollToThresholdListener(cancelThreshold) {
@@ -135,6 +135,14 @@ class NewSeekBar @JvmOverloads constructor(
             spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
             spring.stiffness = SpringForce.STIFFNESS_LOW
         }
+    }
+
+    override fun valueToText(value: Float): String {
+        return valueToText?.invoke(value) ?: TextUtils.durationToString(value)
+    }
+
+    override fun isDarkModeNow(): Boolean {
+        return StatusBarUtil.isDarkMode(context)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -201,6 +209,7 @@ class NewSeekBar @JvmOverloads constructor(
                 scrollListeners.forEach {
                     it.onScroll((top - moveEvent.rawY).coerceAtLeast(0f))
                 }
+                parent.requestDisallowInterceptTouchEvent(true)
                 return super.onScroll(downEvent, moveEvent, distanceX, distanceY)
             }
         })
@@ -236,6 +245,7 @@ class NewSeekBar @JvmOverloads constructor(
                 animateOutSideAlphaTo(0f)
                 touching = false
                 canceled = false
+                parent.requestDisallowInterceptTouchEvent(false)
             }
         }
         return true
@@ -254,14 +264,6 @@ class NewSeekBar @JvmOverloads constructor(
     fun animateValueTo(value: Float) {
         mProgressAnimation.cancel()
         mProgressAnimation.animateToFinalPosition(value)
-    }
-
-    override fun valueToText(value: Float): String {
-        return TextUtils.durationToString(value)
-    }
-
-    override fun isDarkModeNow(): Boolean {
-        return StatusBarUtil.isDarkMode(context)
     }
 
     class ProgressFloatProperty :
