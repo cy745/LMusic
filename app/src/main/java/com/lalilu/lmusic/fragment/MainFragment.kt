@@ -42,7 +42,7 @@ class MainFragment : DataBindingFragment() {
 
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
         mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
-            seekBar.sumValue = (it?.mediaMetadata?.getDuration()?.coerceAtLeast(0) ?: 0f).toFloat()
+            seekBar.maxValue = (it?.mediaMetadata?.getDuration()?.coerceAtLeast(0) ?: 0f).toFloat()
         }
         mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
             seekBar.updateValue(it.toFloat())
