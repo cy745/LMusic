@@ -13,6 +13,7 @@ import androidx.dynamicanimation.animation.SpringForce
 import com.lalilu.lmusic.utils.StatusBarUtil
 import com.lalilu.lmusic.utils.TextUtils
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 const val CLICK_PART_UNSPECIFIED = 0
 const val CLICK_PART_LEFT = 1
@@ -38,6 +39,11 @@ interface OnSeekBarCancelListener {
 
 interface OnSeekBarSeekToListener {
     fun onSeekTo(value: Float)
+}
+
+interface OnSeekBarDragToMinOrMaxListener {
+    fun onDragToMax(value: Float)
+    fun onDragToMin(value: Float)
 }
 
 interface OnSeekBarClickListener {
@@ -89,6 +95,7 @@ class NewSeekBar @JvmOverloads constructor(
     val clickListeners = ArrayList<OnSeekBarClickListener>()
     val cancelListeners = ArrayList<OnSeekBarCancelListener>()
     val seekToListeners = ArrayList<OnSeekBarSeekToListener>()
+    val dragToListeners = ArrayList<OnSeekBarDragToMinOrMaxListener>()
 
     private var canceled = true
     private var touching = false
@@ -97,8 +104,8 @@ class NewSeekBar @JvmOverloads constructor(
     private var nextLeft = -1
     private var nextRight = -1
 
-    var startValue: Float = 0f
-    var dataValue: Float = 0f
+    var startValue: Float = nowValue
+    var dataValue: Float = nowValue
 
     private val cancelScrollListener =
         object : OnSeekBarScrollToThresholdListener(cancelThreshold) {
@@ -116,6 +123,20 @@ class NewSeekBar @JvmOverloads constructor(
 
     private val mProgressAnimation: SpringAnimation by lazy {
         SpringAnimation(this, ProgressFloatProperty(), nowValue).apply {
+            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            spring.stiffness = SpringForce.STIFFNESS_LOW
+        }
+    }
+
+    private val mPaddingAnimation: SpringAnimation by lazy {
+        SpringAnimation(this, PaddingFloatProperty(), padding).apply {
+            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            spring.stiffness = SpringForce.STIFFNESS_LOW
+        }
+    }
+
+    private val mOutSideAlphaAnimation: SpringAnimation by lazy {
+        SpringAnimation(this, OutSideAlphaFloatProperty(), outSideAlpha.toFloat()).apply {
             spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
             spring.stiffness = SpringForce.STIFFNESS_LOW
         }
@@ -147,6 +168,8 @@ class NewSeekBar @JvmOverloads constructor(
                 touching = true
                 canceled = false
                 startValue = nowValue
+                animateScaleTo(5f)
+                animateOutSideAlphaTo(255f)
                 return super.onDown(e)
             }
 
@@ -169,7 +192,7 @@ class NewSeekBar @JvmOverloads constructor(
                 clickListeners.forEach {
                     it.onLongClick(checkClickPart(e), e.action)
                 }
-                animateValueTo(dataValue)
+                animateValueTo(startValue)
                 canceled = true
             }
 
@@ -190,13 +213,13 @@ class NewSeekBar @JvmOverloads constructor(
     fun updateValueByDelta(delta: Float) {
         if (touching && !canceled) {
             mProgressAnimation.cancel()
-            nowValue = (nowValue + delta / width * sumValue * sensitivity)
-                .coerceIn(0f, sumValue)
+            nowValue = (nowValue + delta / width * maxValue * sensitivity)
+                .coerceIn(minValue, maxValue)
         }
     }
 
     fun updateValue(value: Float) {
-        if (value !in 0f..sumValue) return
+        if (value !in minValue..maxValue) return
 
         if (!touching || canceled) {
             animateValueTo(value)
@@ -214,11 +237,23 @@ class NewSeekBar @JvmOverloads constructor(
                 if (!canceled && abs(nowValue - startValue) > 500) {
                     seekToListeners.forEach { it.onSeekTo(nowValue) }
                 }
+                animateScaleTo(0f)
+                animateOutSideAlphaTo(0f)
                 touching = false
                 canceled = false
             }
         }
         return true
+    }
+
+    fun animateOutSideAlphaTo(value: Float) {
+        mOutSideAlphaAnimation.cancel()
+        mOutSideAlphaAnimation.animateToFinalPosition(value)
+    }
+
+    fun animateScaleTo(value: Float) {
+        mPaddingAnimation.cancel()
+        mPaddingAnimation.animateToFinalPosition(value)
     }
 
     fun animateValueTo(value: Float) {
@@ -239,6 +274,23 @@ class NewSeekBar @JvmOverloads constructor(
         override fun getValue(obj: NewProgressBar): Float = obj.nowValue
         override fun setValue(obj: NewProgressBar, value: Float) {
             obj.nowValue = value
+        }
+    }
+
+    class PaddingFloatProperty :
+        FloatPropertyCompat<NewProgressBar>("padding") {
+        override fun getValue(obj: NewProgressBar): Float = obj.padding
+        override fun setValue(obj: NewProgressBar, value: Float) {
+            obj.padding = value
+            obj.outSideAlpha = (value * 50f).toInt()
+        }
+    }
+
+    class OutSideAlphaFloatProperty :
+        FloatPropertyCompat<NewProgressBar>("outside_alpha") {
+        override fun getValue(obj: NewProgressBar): Float = obj.outSideAlpha.toFloat()
+        override fun setValue(obj: NewProgressBar, value: Float) {
+            obj.outSideAlpha = value.roundToInt()
         }
     }
 

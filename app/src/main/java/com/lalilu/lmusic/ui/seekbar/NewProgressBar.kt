@@ -5,6 +5,7 @@ import android.graphics.*
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
+import androidx.annotation.IntRange
 
 open class NewProgressBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -25,10 +26,27 @@ open class NewProgressBar @JvmOverloads constructor(
             invalidate()
         }
 
+
+    var padding: Float = 0f
+        set(value) {
+            field = value
+            updatePath()
+            invalidate()
+        }
+
     /**
      *  记录最大值
      */
-    var sumValue: Float = 0f
+    var minValue: Float = 0f
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    /**
+     *  记录最大值
+     */
+    var maxValue: Float = 0f
         set(value) {
             field = value
             invalidate()
@@ -50,17 +68,43 @@ open class NewProgressBar @JvmOverloads constructor(
         set(value) {
             field = value
             thumbPaint.color = value
+            invalidate()
+        }
+
+    /**
+     * 外部框背景颜色
+     * 绘制时将忽略该值的透明度
+     * 由 [outSideAlpha] 控制其透明度
+     */
+    var outSideColor: Int = Color.WHITE
+        get() {
+            return if (isDarkModeNow()) Color.DKGRAY else field
+        }
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    /**
+     * 外部框背景透明度
+     */
+    @IntRange(from = 0, to = 255)
+    var outSideAlpha: Int = 0
+        set(value) {
+            field = value
+            invalidate()
         }
 
     private var thumbWidth: Float = 0f
-    private var sunValueText: String = ""
+    private var maxValueText: String = ""
     private var nowValueText: String = ""
-    private var sunValueTextWidth: Float = 0f
+    private var maxValueTextWidth: Float = 0f
     private var nowValueTextWidth: Float = 0f
     private var nowValueTextOffset: Float = 0f
     private var textHeight: Float = 45f
     private var textPadding: Long = 40L
-    private var path = Path()
+    private var pathInside = Path()
+    private var pathOutside = Path()
     private var rect = RectF()
 
     private var thumbPaint: Paint =
@@ -103,11 +147,10 @@ open class NewProgressBar @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        thumbWidth = nowValue / sumValue * width
-
-        sunValueText = valueToText(sumValue)
+        thumbWidth = nowValue / (maxValue - minValue) * getInsideWidth()
+        maxValueText = valueToText(maxValue)
         nowValueText = valueToText(nowValue)
-        sunValueTextWidth = textPaintDayNight.measureText(sunValueText)
+        maxValueTextWidth = textPaintDayNight.measureText(maxValueText)
         nowValueTextWidth = textPaintWhite.measureText(nowValueText)
 
         val textCenterHeight = (height + textPaintDayNight.textSize) / 2f - 5
@@ -118,36 +161,66 @@ open class NewProgressBar @JvmOverloads constructor(
         textPaintDayNight.color =
             if (isDarkModeNow()) Color.WHITE else Color.BLACK
 
+        // 截取外部框范围
+        canvas.clipPath(pathOutside)
+
+        // 绘制外部框背景
+        canvas.drawARGB(
+            outSideAlpha,
+            Color.red(outSideColor),
+            Color.green(outSideColor),
+            Color.blue(outSideColor)
+        )
+
         // 只保留圆角矩形path部分
-        canvas.clipPath(path)
+        canvas.clipPath(pathInside)
 
         // 绘制背景
         canvas.drawColor(bgColor)
 
         // 绘制总时长文字
         canvas.drawText(
-            sunValueText,
-            width - sunValueTextWidth - textPadding,
+            maxValueText,
+            width - maxValueTextWidth - textPadding,
             textCenterHeight,
             textPaintDayNight
         )
 
         // 绘制进度条滑动块
         canvas.drawRoundRect(
-            0f, 0f, thumbWidth, height.toFloat(), radius, radius, thumbPaint
+            padding,
+            padding,
+            thumbWidth,
+            height - padding,
+            radius,
+            radius,
+            thumbPaint
         )
 
         // 绘制进度时间文字
         canvas.drawText(
-            nowValueText, nowValueTextOffset - nowValueTextWidth - textPadding,
+            nowValueText,
+            nowValueTextOffset - nowValueTextWidth - textPadding,
             textCenterHeight,
             textPaintWhite
         )
     }
 
-    private fun updatePath() {
+    open fun updatePath() {
         rect.set(0f, 0f, width.toFloat(), height.toFloat())
-        path.reset()
-        path.addRoundRect(rect, radius, radius, Path.Direction.CW)
+        pathOutside.reset()
+        pathOutside.addRoundRect(rect, radius, radius, Path.Direction.CW)
+
+        rect.set(padding, padding, width - padding, height - padding)
+        pathInside.reset()
+        pathInside.addRoundRect(rect, radius, radius, Path.Direction.CW)
+    }
+
+    private fun getInsideWidth(): Float {
+        return width - padding - padding
+    }
+
+    private fun getInsideHeight(): Float {
+        return height - padding - padding
     }
 }
