@@ -16,7 +16,7 @@ import kotlin.coroutines.CoroutineContext
 
 interface LyricPusher {
     fun clearLyric()
-    fun pushLyric(sentence: String)
+    fun pushLyric(sentence: String?)
 }
 
 /**
