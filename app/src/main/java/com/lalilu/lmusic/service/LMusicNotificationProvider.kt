@@ -15,7 +15,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaNotification
 import androidx.palette.graphics.Palette
-import com.blankj.utilcode.util.RomUtils
 import com.blankj.utilcode.util.SPUtils
 import com.lalilu.R
 import com.lalilu.lmusic.Config
@@ -70,15 +69,12 @@ class LMusicNotificationProvider @Inject constructor(
     companion object {
         const val NOTIFICATION_ID_PLAYER = 7
         const val NOTIFICATION_ID_LOGGER = 6
-        const val NOTIFICATION_ID_LYRIC = 5
 
         const val NOTIFICATION_CHANNEL_NAME_PLAYER = "LMusic Player"
         const val NOTIFICATION_CHANNEL_NAME_LOGGER = "LMusic Logger"
-        const val NOTIFICATION_CHANNEL_NAME_LYRICS = "LMusic Lyrics"
 
         const val NOTIFICATION_CHANNEL_ID_PLAYER = "${NOTIFICATION_CHANNEL_NAME_PLAYER}_ID"
         const val NOTIFICATION_CHANNEL_ID_LOGGER = "${NOTIFICATION_CHANNEL_NAME_LOGGER}_ID"
-        const val NOTIFICATION_CHANNEL_ID_LYRICS = "${NOTIFICATION_CHANNEL_NAME_LYRICS}_ID"
 
         const val FLAG_ALWAYS_SHOW_TICKER = 0x1000000
         const val FLAG_ONLY_UPDATE_TICKER = 0x2000000
@@ -93,6 +89,8 @@ class LMusicNotificationProvider @Inject constructor(
     )
 
     private var notificationBgColor = 0
+
+    private var lyricBuilder: NotificationCompat.Builder? = null
 
     override fun createNotification(
         mediaController: MediaController,
@@ -213,12 +211,13 @@ class LMusicNotificationProvider @Inject constructor(
 
                 builder.setLargeIcon(bitmap)
                 builder.color = notificationBgColor
+                lyricBuilder = builder
                 onNotificationChangedCallback.onNotificationChanged(
                     MediaNotification(NOTIFICATION_ID_PLAYER, builder.build())
                 )
             }
         }
-
+        lyricBuilder = builder
         return MediaNotification(NOTIFICATION_ID_PLAYER, builder.build())
     }
 
@@ -267,48 +266,25 @@ class LMusicNotificationProvider @Inject constructor(
                 )
             )
         }
-        if (notificationManager.getNotificationChannel(
-                NOTIFICATION_CHANNEL_ID_LYRICS
-            ) == null && RomUtils.isMeizu()
-        ) {
-            notificationManager.createNotificationChannel(
-                NotificationChannel(
-                    NOTIFICATION_CHANNEL_ID_LYRICS,
-                    NOTIFICATION_CHANNEL_NAME_LYRICS,
-                    NotificationManager.IMPORTANCE_LOW
-                )
-            )
-        }
     }
 
     override fun clearLyric() {
-        notificationManager.cancel(NOTIFICATION_ID_LYRIC)
+        pushLyric(null)
     }
 
-    private val lyricBuilder = NotificationCompat.Builder(
-        mContext,
-        NOTIFICATION_CHANNEL_ID_LYRICS
-    ).apply {
-        setContentText("歌词")
-        setShowWhen(false)
-        setOngoing(true)
-
-        if (Build.VERSION.SDK_INT <= 25) {
-            setSmallIcon(R.drawable.media3_notification_small_icon)
-        } else {
-            setSmallIcon(defaultIconResId)
-        }
-    }
-
-    override fun pushLyric(sentence: String) {
-        if (!settingsSp.getBoolean(statusBarLyricKey)) {
-            return
-        }
+    override fun pushLyric(sentence: String?) {
+        lyricBuilder ?: return
         ensureNotificationChannel()
-        lyricBuilder.setTicker(sentence)
 
-        notificationManager.notify(NOTIFICATION_ID_LYRIC,
-            lyricBuilder.build().also {
+        var mSentence = sentence
+        if (!settingsSp.getBoolean(statusBarLyricKey)) {
+            mSentence = null
+        }
+        lyricBuilder!!.setTicker(mSentence)
+
+        notificationManager.notify(
+            NOTIFICATION_ID_PLAYER,
+            lyricBuilder!!.build().also {
                 it.flags = it.flags.or(FLAG_ALWAYS_SHOW_TICKER)
                 it.flags = it.flags.or(FLAG_ONLY_UPDATE_TICKER)
             })
