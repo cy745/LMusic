@@ -17,14 +17,16 @@ class NewSeekBarPreference constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : Preference(context, attrs, R.attr.seekBarPreferenceStyle, 0),
-    OnSeekBarSeekToListener, OnProgressToListener {
+    OnSeekBarSeekToListener, OnProgressToListener, OnSeekBarCancelListener {
     private var seekBar: NewSeekBar? = null
 
     var mValue = 0f
         set(value) {
-            field = value
+            if (field == value) return
             seekBar?.nowValue = value
-            callChangeListener(value)
+            println("seekBar.nowValue: $value")
+            setValue(value)
+            field = value
         }
 
     var mMin = 0f
@@ -47,10 +49,22 @@ class NewSeekBarPreference constructor(
         val attr = context.obtainStyledAttributes(
             attrs, R.styleable.SeekBarPreference, R.attr.seekBarPreferenceStyle, 0
         )
-        mMin = attr.getInt(R.styleable.SeekBarPreference_min, 0).toFloat()
-        mMax = attr.getInt(R.styleable.SeekBarPreference_android_max, 100).toFloat()
-        mIncrement = attr.getInt(R.styleable.SeekBarPreference_seekBarIncrement, 0)
-        mShowValue = attr.getBoolean(R.styleable.SeekBarPreference_showSeekBarValue, true)
+        mMin = attr.getInt(
+            R.styleable.SeekBarPreference_min,
+            0
+        ).toFloat()
+        mMax = attr.getInt(
+            R.styleable.SeekBarPreference_android_max,
+            100
+        ).toFloat()
+        mIncrement = attr.getInt(
+            R.styleable.SeekBarPreference_seekBarIncrement,
+            0
+        )
+        mShowValue = attr.getBoolean(
+            R.styleable.SeekBarPreference_showSeekBarValue,
+            true
+        )
         attr.recycle()
     }
 
@@ -60,7 +74,7 @@ class NewSeekBarPreference constructor(
         seekBar ?: throw NullPointerException()
         seekBar?.let {
             it.seekToListeners.add(this)
-            it.progressToListener.add(this)
+            it.cancelListeners.add(this)
             it.valueToText = { value -> value.roundToInt().toString() }
             it.radius = SizeUtils.dp2px(25f).toFloat()
             it.maxValue = mMax
@@ -71,13 +85,20 @@ class NewSeekBarPreference constructor(
         }
     }
 
+    fun setValue(value: Number) {
+        val intValue = value.toInt()
+        if (callChangeListener(intValue)) {
+            persistInt(intValue)
+            notifyChanged()
+        }
+    }
+
     override fun onSetInitialValue(defaultValue: Any?) {
-        if (defaultValue == null) {
-            mValue = 0f
+        if (defaultValue != null) {
+            mValue = (defaultValue as Number).toFloat()
             return
         }
-        mValue = (defaultValue as Number).toFloat()
-        println("onSetInitialValue: $mValue")
+        mValue = getPersistedInt(mMin.toInt()).toFloat()
     }
 
     override fun onGetDefaultValue(a: TypedArray, index: Int): Any {
@@ -93,6 +114,10 @@ class NewSeekBarPreference constructor(
     }
 
     override fun onProgressToMax(value: Float) {
+        seekBar?.let { HapticUtils.haptic(it) }
+    }
+
+    override fun onCancel() {
         seekBar?.let { HapticUtils.haptic(it) }
     }
 }
