@@ -31,6 +31,9 @@ class MainFragment : DataBindingFragment() {
     @Inject
     lateinit var mSongBrowser: MSongBrowser
 
+    @Inject
+    lateinit var dialog: NavigatorFragment
+
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.fragment_main, BR.ev, mEvent)
     }
@@ -38,7 +41,6 @@ class MainFragment : DataBindingFragment() {
     override fun onViewCreated() {
         val binding = (mBinding as FragmentMainBinding)
         val seekBar = binding.maSeekBar
-        val dialog = NavigatorFragment()
 
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
         mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {

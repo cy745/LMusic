@@ -10,9 +10,26 @@ import com.lalilu.databinding.DialogNavigatorBinding
 import com.lalilu.lmusic.base.BaseBottomSheetFragment
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.viewmodel.NavigatorViewModel
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
+import javax.inject.Singleton
+
+@Module
+@ExperimentalCoroutinesApi
+@InstallIn(SingletonComponent::class)
+class NavigatorDialogModule {
+
+    @Provides
+    @Singleton
+    fun provideNavigatorDialog(): NavigatorFragment {
+        return NavigatorFragment()
+    }
+}
 
 @ExperimentalCoroutinesApi
 fun NavigatorFragment.navigateFrom(@IdRes startDestinationId: Int): NavController {
