@@ -17,4 +17,8 @@
     <attr name="song_detail_add_song_to_playlist_button_bg" format="color" />
 
     <attr name="activity_window_bg" format="color" />
+
+    <declare-styleable name="NewProgressBar">
+        <attr name="radius" format="dimension" />
+    </declare-styleable>
 </resources>

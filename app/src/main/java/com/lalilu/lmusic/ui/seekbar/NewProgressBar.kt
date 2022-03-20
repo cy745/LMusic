@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.IntDef
 import androidx.annotation.IntRange
+import com.lalilu.R
 
 const val CURRENT_STATE_UNSPECIFIED = 0
 const val CURRENT_STATE_MIN = 1
@@ -309,6 +310,9 @@ open class NewProgressBar @JvmOverloads constructor(
     }
 
     init {
+        val attr = context.obtainStyledAttributes(attrs, R.styleable.NewProgressBar)
+        radius = attr.getDimension(R.styleable.NewProgressBar_radius, 30f)
+        attr.recycle()
         progressChangeListener.add(OnProgressBarProgressToListener())
     }
 }

@@ -104,11 +104,17 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         val fmToolbar = binding.fmToolbar
         val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
 
-        settingsSp.listen(R.string.sp_key_lyric_settings_text_size, 12) {
+        settingsSp.listen(
+            R.string.sp_key_lyric_settings_text_size,
+            resources.getInteger(R.integer.sp_key_lyric_settings_text_default_size)
+        ) {
             fmLyricViewX.setCurrentTextSize(AdaptScreenUtils.pt2Px(it.toFloat()).toFloat())
             fmLyricViewX.invalidate()
         }
-        settingsSp.listen(R.string.sp_key_lyric_settings_secondary_text_size, 12) {
+        settingsSp.listen(
+            R.string.sp_key_lyric_settings_secondary_text_size,
+            resources.getInteger(R.integer.sp_key_lyric_settings_secondary_text_default_size)
+        ) {
             fmLyricViewX.setNormalTextSize(AdaptScreenUtils.pt2Px(it.toFloat()).toFloat())
             fmLyricViewX.invalidate()
         }

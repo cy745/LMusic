@@ -8,7 +8,6 @@ import android.util.AttributeSet
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import androidx.preference.R
-import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.lmusic.utils.HapticUtils
 import kotlin.math.roundToInt
 
@@ -76,7 +75,6 @@ class NewSeekBarPreference constructor(
             it.seekToListeners.add(this)
             it.cancelListeners.add(this)
             it.valueToText = { value -> value.roundToInt().toString() }
-            it.radius = SizeUtils.dp2px(25f).toFloat()
             it.maxValue = mMax
             it.minValue = mMin
             it.nowValue = mValue

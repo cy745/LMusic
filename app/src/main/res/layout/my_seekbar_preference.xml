@@ -16,6 +16,7 @@
 
 <!-- Layout used by SeekBarPreference for the seekbar widget style. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -90,7 +91,8 @@
                 android:layout_height="36dp"
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="6dp"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                app:radius="25dp" />
 
         </com.lalilu.preference.UnPressableLinearLayout>
     </LinearLayout>
