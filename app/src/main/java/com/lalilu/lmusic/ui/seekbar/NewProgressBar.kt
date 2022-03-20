@@ -113,8 +113,8 @@ open class NewProgressBar @JvmOverloads constructor(
      */
     var nowValue: Float = 0f
         set(value) {
-            field = value
-            progressChangeListener.forEach { it.onProgressChange(value) }
+            field = value.coerceIn(minValue, maxValue)
+            progressChangeListener.forEach { it.onProgressChange(field) }
             invalidate()
         }
 
