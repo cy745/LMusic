@@ -171,6 +171,7 @@ class NewSeekBar @JvmOverloads constructor(
                 touching = true
                 canceled = false
                 startValue = nowValue
+                dataValue = nowValue
                 animateScaleTo(SizeUtils.dp2px(3f).toFloat())
                 animateOutSideAlphaTo(255f)
                 return super.onDown(e)
@@ -207,7 +208,7 @@ class NewSeekBar @JvmOverloads constructor(
             ): Boolean {
                 updateValueByDelta(-distanceX)
                 scrollListeners.forEach {
-                    it.onScroll((top - moveEvent.rawY).coerceAtLeast(0f))
+                    it.onScroll((-moveEvent.y).coerceAtLeast(0f))
                 }
                 parent.requestDisallowInterceptTouchEvent(true)
                 return super.onScroll(downEvent, moveEvent, distanceX, distanceY)
@@ -238,7 +239,7 @@ class NewSeekBar @JvmOverloads constructor(
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_CANCEL -> {
-                if (!canceled && abs(nowValue - startValue) > 500) {
+                if (!canceled && abs(nowValue - startValue) > mIncrement) {
                     seekToListeners.forEach { it.onSeekTo(nowValue) }
                 }
                 animateScaleTo(0f)

@@ -49,6 +49,7 @@ class MainFragment : DataBindingFragment() {
         mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
             seekBar.updateValue(it.toFloat())
         }
+        seekBar.mIncrement = 500f
         seekBar.clickListeners.add(object : OnSeekBarClickListener {
             override fun onClick(@ClickPart clickPart: Int, action: Int) {
                 haptic()
