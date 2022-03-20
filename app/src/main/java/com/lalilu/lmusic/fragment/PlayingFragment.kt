@@ -56,12 +56,11 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     @Inject
     lateinit var mSongBrowser: MSongBrowser
 
+    @Inject
+    lateinit var dialog: NavigatorFragment
+
     private val settingsSp: SharedPreferences by lazy {
         requireContext().getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
-    }
-
-    private val dialog: NavigatorFragment by lazy {
-        NavigatorFragment()
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
