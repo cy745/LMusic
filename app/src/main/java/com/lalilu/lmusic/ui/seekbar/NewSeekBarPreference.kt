@@ -73,6 +73,7 @@ class NewSeekBarPreference constructor(
         seekBar?.let {
             it.seekToListeners.add(this)
             it.cancelListeners.add(this)
+            it.progressToListener.add(this)
             it.valueToText = { value -> value.roundToInt().toString() }
             it.maxValue = mMax
             it.minValue = mMin

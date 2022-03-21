@@ -130,7 +130,7 @@ open class NewProgressBar @JvmOverloads constructor(
     var minIncrement: Float = 0f
 
     /**
-     * 最大值文字颜色
+     * 当前值文字颜色
      */
     var nowTextDarkModeColor: Int? = null
     var nowTextColor: Int = Color.WHITE
@@ -147,8 +147,8 @@ open class NewProgressBar @JvmOverloads constructor(
     /**
      * 最大值文字颜色
      */
-    var maxTextDarkModeColor: Int? = Color.WHITE
-    var maxTextColor: Int = Color.BLACK
+    var maxTextDarkModeColor: Int? = null
+    var maxTextColor: Int = Color.WHITE
         get() {
             if (isDarkModeNow()) return maxTextDarkModeColor ?: field
             return field
