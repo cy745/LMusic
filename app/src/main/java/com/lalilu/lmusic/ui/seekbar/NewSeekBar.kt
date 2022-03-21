@@ -60,9 +60,10 @@ interface OnSeekBarClickListener {
 }
 
 abstract class OnSeekBarScrollToThresholdListener(
-    var threshold: Float
+    private val threshold: () -> Number
 ) : OnSeekBarScrollListener {
-    private val helper = ThresholdHelper { it >= threshold }
+    private val helper = ThresholdHelper { it >= threshold().toFloat() }
+    val reset = helper::reset
 
     abstract fun onScrollToThreshold()
     open fun onScrollRecover() {}
@@ -80,10 +81,6 @@ class NewSeekBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : NewProgressBar(context, attrs) {
     var cancelThreshold = 100f
-        set(value) {
-            field = value
-            cancelScrollListener.threshold = value
-        }
 
     val scrollListeners = ArrayList<OnSeekBarScrollListener>()
     val clickListeners = ArrayList<OnSeekBarClickListener>()
@@ -91,6 +88,7 @@ class NewSeekBar @JvmOverloads constructor(
     val seekToListeners = ArrayList<OnSeekBarSeekToListener>()
     var valueToText: ((Float) -> String)? = null
 
+    private var moved = false
     private var canceled = true
     private var touching = false
     private var previousLeft = -1
@@ -103,7 +101,7 @@ class NewSeekBar @JvmOverloads constructor(
     var sensitivity = 1.3f
 
     private val cancelScrollListener =
-        object : OnSeekBarScrollToThresholdListener(cancelThreshold) {
+        object : OnSeekBarScrollToThresholdListener(this::cancelThreshold) {
             override fun onScrollToThreshold() {
                 animateValueTo(dataValue)
                 cancelListeners.forEach { it.onCancel() }
@@ -148,8 +146,8 @@ class NewSeekBar @JvmOverloads constructor(
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         previousLeft = left
-        previousRight = left + width * 2 / 5
-        nextLeft = left + width * 3 / 5
+        previousRight = left + width * 1 / 3
+        nextLeft = left + width * 2 / 3
         nextRight = left + width
     }
 
@@ -170,6 +168,7 @@ class NewSeekBar @JvmOverloads constructor(
             override fun onDown(e: MotionEvent?): Boolean {
                 touching = true
                 canceled = false
+                moved = false
                 startValue = nowValue
                 dataValue = nowValue
                 animateScaleTo(SizeUtils.dp2px(3f).toFloat())
@@ -206,6 +205,7 @@ class NewSeekBar @JvmOverloads constructor(
                 distanceX: Float,
                 distanceY: Float
             ): Boolean {
+                moved = true
                 updateValueByDelta(-distanceX)
                 scrollListeners.forEach {
                     it.onScroll((-moveEvent.y).coerceAtLeast(0f))
@@ -218,8 +218,8 @@ class NewSeekBar @JvmOverloads constructor(
     fun updateValueByDelta(delta: Float) {
         if (touching && !canceled) {
             mProgressAnimation.cancel()
-            nowValue = (nowValue + delta / width * maxValue * sensitivity)
-                .coerceIn(minValue, maxValue)
+            val value = nowValue + delta / width * (maxValue - minValue) * sensitivity
+            updateProgress(value, true)
         }
     }
 
@@ -239,13 +239,15 @@ class NewSeekBar @JvmOverloads constructor(
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_CANCEL -> {
-                if (!canceled && abs(nowValue - startValue) > mIncrement) {
+                if (moved && !canceled && abs(nowValue - startValue) > minIncrement) {
                     seekToListeners.forEach { it.onSeekTo(nowValue) }
                 }
                 animateScaleTo(0f)
                 animateOutSideAlphaTo(0f)
                 touching = false
                 canceled = false
+                moved = false
+                cancelScrollListener.reset()
                 parent.requestDisallowInterceptTouchEvent(false)
             }
         }
@@ -271,7 +273,7 @@ class NewSeekBar @JvmOverloads constructor(
         FloatPropertyCompat<NewProgressBar>("progress") {
         override fun getValue(obj: NewProgressBar): Float = obj.nowValue
         override fun setValue(obj: NewProgressBar, value: Float) {
-            obj.nowValue = value
+            obj.updateProgress(value, false)
         }
     }
 
