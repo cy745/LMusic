@@ -29,6 +29,7 @@ import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 interface EnhanceBrowser {
+    fun togglePlay(): Boolean
     fun playByUri(uri: Uri): Boolean
     fun playById(mediaId: String): Boolean
     fun addToNext(mediaId: String): Boolean
@@ -104,6 +105,15 @@ class MSongBrowser @Inject constructor(
                 }
             }
         })
+    }
+
+    override fun togglePlay(): Boolean {
+        when (browser?.isPlaying) {
+            true -> browser?.pause()
+            false -> browser?.play()
+            else -> {}
+        }
+        return browser?.isPlaying == true
     }
 
     fun recoverLastPlayedItem() =
