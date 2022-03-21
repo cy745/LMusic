@@ -24,13 +24,13 @@ const val CURRENT_STATE_MAX = 3
 annotation class CurrentState
 
 interface OnProgressChangeListener {
-    fun onProgressChange(value: Float)
+    fun onProgressChange(value: Float, fromUser: Boolean)
 }
 
 interface OnProgressToListener {
-    fun onProgressToMax(value: Float) {}
-    fun onProgressToMin(value: Float) {}
-    fun onProgressToMiddle(value: Float) {}
+    fun onProgressToMax(value: Float, fromUser: Boolean) {}
+    fun onProgressToMin(value: Float, fromUser: Boolean) {}
+    fun onProgressToMiddle(value: Float, fromUser: Boolean) {}
 }
 
 open class NewProgressBar @JvmOverloads constructor(
@@ -38,29 +38,39 @@ open class NewProgressBar @JvmOverloads constructor(
 ) : View(context, attrs) {
     inner class OnProgressBarProgressToListener : OnProgressChangeListener {
         @CurrentState
-        var currentState = 0
-            set(value) {
-                if (field == value) return
-                field = value
-                when (value) {
-                    CURRENT_STATE_MIN -> progressToListener.forEach { it.onProgressToMin(nowValue) }
-                    CURRENT_STATE_MAX -> progressToListener.forEach { it.onProgressToMax(nowValue) }
-                    CURRENT_STATE_MIDDLE -> progressToListener.forEach {
-                        it.onProgressToMiddle(
-                            nowValue
-                        )
-                    }
+        private var currentState = 0
+
+        private fun updateCurrentState(@CurrentState state: Int, fromUser: Boolean) {
+            if (currentState == state) return
+            when (state) {
+                CURRENT_STATE_MIN -> progressToListener.forEach {
+                    it.onProgressToMin(nowValue, fromUser)
+                }
+                CURRENT_STATE_MAX -> progressToListener.forEach {
+                    it.onProgressToMax(nowValue, fromUser)
+                }
+                CURRENT_STATE_MIDDLE -> progressToListener.forEach {
+                    it.onProgressToMiddle(nowValue, fromUser)
                 }
             }
-
-        override fun onProgressChange(value: Float) {
-            currentState = when {
-                value <= minValue -> CURRENT_STATE_MIN
-                value >= maxValue -> CURRENT_STATE_MAX
-                value > minValue && value < maxValue -> CURRENT_STATE_MIDDLE
-                else -> CURRENT_STATE_UNSPECIFIED
-            }
+            currentState = state
         }
+
+        override fun onProgressChange(value: Float, fromUser: Boolean) {
+            updateCurrentState(
+                when {
+                    value <= minValue -> CURRENT_STATE_MIN
+                    value >= maxValue -> CURRENT_STATE_MAX
+                    value > minValue && value < maxValue -> CURRENT_STATE_MIDDLE
+                    else -> CURRENT_STATE_UNSPECIFIED
+                }, fromUser
+            )
+        }
+    }
+
+    fun updateProgress(value: Float, fromUser: Boolean = false) {
+        nowValue = value
+        progressChangeListener.forEach { it.onProgressChange(nowValue, fromUser) }
     }
 
     val progressChangeListener = ArrayList<OnProgressChangeListener>()
@@ -114,9 +124,10 @@ open class NewProgressBar @JvmOverloads constructor(
     var nowValue: Float = 0f
         set(value) {
             field = value.coerceIn(minValue, maxValue)
-            progressChangeListener.forEach { it.onProgressChange(field) }
             invalidate()
         }
+
+    var minIncrement: Float = 0f
 
     /**
      * 最大值文字颜色

@@ -97,8 +97,13 @@ class MainFragment : DataBindingFragment() {
         )
         seekBar.progressToListener.add(
             object : OnProgressToListener {
-                override fun onProgressToMax(value: Float) = haptic()
-                override fun onProgressToMin(value: Float) = haptic()
+                override fun onProgressToMax(value: Float, fromUser: Boolean) {
+                    if (fromUser) haptic()
+                }
+
+                override fun onProgressToMin(value: Float, fromUser: Boolean) {
+                    if (fromUser) haptic()
+                }
             }
         )
     }

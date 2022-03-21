@@ -22,8 +22,7 @@ class NewSeekBarPreference constructor(
     var mValue = 0f
         set(value) {
             if (field == value) return
-            seekBar?.nowValue = value
-            println("seekBar.nowValue: $value")
+            seekBar?.updateProgress(value, false)
             setValue(value)
             field = value
         }
@@ -107,12 +106,16 @@ class NewSeekBarPreference constructor(
         mValue = value
     }
 
-    override fun onProgressToMin(value: Float) {
-        seekBar?.let { HapticUtils.haptic(it) }
+    override fun onProgressToMin(value: Float, fromUser: Boolean) {
+        if (fromUser) {
+            seekBar?.let { HapticUtils.haptic(it) }
+        }
     }
 
-    override fun onProgressToMax(value: Float) {
-        seekBar?.let { HapticUtils.haptic(it) }
+    override fun onProgressToMax(value: Float, fromUser: Boolean) {
+        if (fromUser) {
+            seekBar?.let { HapticUtils.haptic(it) }
+        }
     }
 
     override fun onCancel() {
