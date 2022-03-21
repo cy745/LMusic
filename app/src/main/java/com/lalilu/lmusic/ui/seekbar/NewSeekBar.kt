@@ -30,6 +30,18 @@ const val CLICK_PART_RIGHT = 3
 @Retention(AnnotationRetention.SOURCE)
 annotation class ClickPart
 
+const val THRESHOLD_STATE_UNREACHED = 0
+const val THRESHOLD_STATE_REACHED = 1
+const val THRESHOLD_STATE_RETURN = 2
+
+@IntDef(
+    THRESHOLD_STATE_REACHED,
+    THRESHOLD_STATE_UNREACHED,
+    THRESHOLD_STATE_RETURN
+)
+@Retention(AnnotationRetention.SOURCE)
+annotation class ThresholdState
+
 interface OnSeekBarScrollListener {
     fun onScroll(scrollValue: Float)
 }
@@ -62,18 +74,27 @@ interface OnSeekBarClickListener {
 abstract class OnSeekBarScrollToThresholdListener(
     private val threshold: () -> Number
 ) : OnSeekBarScrollListener {
-    private val helper = ThresholdHelper { it >= threshold().toFloat() }
-    val reset = helper::reset
-
     abstract fun onScrollToThreshold()
     open fun onScrollRecover() {}
 
+    @ThresholdState
+    var state: Int = THRESHOLD_STATE_UNREACHED
+        set(value) {
+            if (field == value) return
+            when (value) {
+                THRESHOLD_STATE_REACHED -> onScrollToThreshold()
+                THRESHOLD_STATE_RETURN -> onScrollRecover()
+            }
+            field = value
+        }
+
     override fun onScroll(scrollValue: Float) {
-        helper.check(
-            scrollValue,
-            this::onScrollToThreshold,
-            this::onScrollRecover
-        )
+        state = if (scrollValue >= threshold().toFloat()) {
+            THRESHOLD_STATE_REACHED
+        } else {
+            if (state == THRESHOLD_STATE_REACHED) THRESHOLD_STATE_RETURN
+            else THRESHOLD_STATE_UNREACHED
+        }
     }
 }
 
@@ -247,7 +268,11 @@ class NewSeekBar @JvmOverloads constructor(
                 touching = false
                 canceled = false
                 moved = false
-                cancelScrollListener.reset()
+                scrollListeners.forEach {
+                    if (it is OnSeekBarScrollToThresholdListener) {
+                        it.state = THRESHOLD_STATE_UNREACHED
+                    }
+                }
                 parent.requestDisallowInterceptTouchEvent(false)
             }
         }
