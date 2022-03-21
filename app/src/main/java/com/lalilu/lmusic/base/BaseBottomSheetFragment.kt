@@ -18,6 +18,7 @@ fun <I : Any, B : ViewDataBinding> Fragment.showDialog(
     dialog: BaseBottomSheetFragment<I, B>?, bindData: I? = null,
     callback: BaseBottomSheetFragment<I, B>.() -> Unit = {}
 ) {
+    if (dialog?.isAdded == true) dialog.dismiss()
     dialog?.onInitialized = callback
     dialog?.bind(bindData)
     dialog?.show(requireActivity().supportFragmentManager, dialog.tag)
