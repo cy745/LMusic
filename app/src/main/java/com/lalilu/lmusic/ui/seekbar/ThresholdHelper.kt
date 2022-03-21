@@ -16,9 +16,13 @@ class ThresholdHelper(var threshold: (value: Float) -> Boolean) {
             callback()
             handle = true
         }
-        if (!threshold(value)) {
+        if (!threshold(value) && handle) {
             recover()
             handle = false
         }
+    }
+
+    fun reset() {
+        handle = false
     }
 }
