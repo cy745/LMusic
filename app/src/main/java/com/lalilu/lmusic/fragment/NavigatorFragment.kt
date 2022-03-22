@@ -10,35 +10,15 @@ import com.lalilu.databinding.DialogNavigatorBinding
 import com.lalilu.lmusic.base.BaseBottomSheetFragment
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.viewmodel.NavigatorViewModel
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Module
-@ExperimentalCoroutinesApi
-@InstallIn(SingletonComponent::class)
-class NavigatorDialogModule {
-
-    @Provides
-    @Singleton
-    fun provideNavigatorDialog(): NavigatorFragment {
-        return NavigatorFragment()
-    }
-}
-
-@ExperimentalCoroutinesApi
 fun NavigatorFragment.navigateFrom(@IdRes startDestinationId: Int): NavController {
     mState.startFrom = startDestinationId
     return getNavController()
 }
 
 @AndroidEntryPoint
-@ExperimentalCoroutinesApi
 class NavigatorFragment : BaseBottomSheetFragment<Any, DialogNavigatorBinding>() {
     @Inject
     lateinit var mState: NavigatorViewModel
@@ -54,26 +34,31 @@ class NavigatorFragment : BaseBottomSheetFragment<Any, DialogNavigatorBinding>()
 
     override fun onBackPressed(): Boolean {
         if (isStartDestination()) {
-            this.dismiss()
+            cancel()
             return false
         }
         return getNavController().navigateUp()
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
+    override fun onCancel(dialog: DialogInterface) {
         mState.startFrom = -1
-        super.onDismiss(dialog)
+        super.onCancel(dialog)
+    }
+
+    fun cancel() {
+        mState.startFrom = -1
+        this.dismiss()
     }
 
     override fun onBind(data: Any?, binding: ViewDataBinding) {
         val bd = binding as DialogNavigatorBinding
         bd.dialogBackButton.setOnClickListener {
             if (!onBackPressed()) {
-                this.dismiss()
+                cancel()
             }
         }
         bd.dialogCloseButton.setOnClickListener {
-            this.dismiss()
+            cancel()
         }
     }
 
