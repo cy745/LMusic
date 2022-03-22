@@ -35,7 +35,9 @@ import kotlin.coroutines.CoroutineContext
 @ExperimentalCoroutinesApi
 class MSongService : MediaLibraryService(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-    private lateinit var player: ExoPlayer
+    private lateinit var player: Player
+    private lateinit var exoPlayer: ExoPlayer
+
     private lateinit var mediaLibrarySession: MediaLibrarySession
     private lateinit var mediaController: MediaController
 
@@ -63,16 +65,26 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
     override fun onCreate() {
         super.onCreate()
-        player = ExoPlayer.Builder(this)
+        exoPlayer = ExoPlayer.Builder(this)
             .setUseLazyPreparation(false)
             .setHandleAudioBecomingNoisy(true)
             .build()
+        player = object : ForwardingPlayer(exoPlayer) {
+            override fun getMaxSeekToPreviousPosition(): Long = Long.MAX_VALUE
+            override fun seekToPrevious() {
+                if (player.hasPreviousMediaItem() && player.currentPosition <= maxSeekToPreviousPosition) {
+                    seekToPreviousMediaItem()
+                    return
+                }
+                super.seekToPrevious()
+            }
+        }
 
         settingsSp.listen(
             R.string.sp_key_player_settings_ignore_audio_focus,
             false
         ) {
-            player.setAudioAttributes(audioAttributes, !it)
+            exoPlayer.setAudioAttributes(audioAttributes, !it)
         }
 
         val pendingIntent: PendingIntent =
