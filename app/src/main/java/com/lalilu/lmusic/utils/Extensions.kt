@@ -4,23 +4,13 @@ import android.content.ContentUris
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.GradientDrawable.Orientation.*
 import android.net.Uri
 import android.provider.MediaStore
-import androidx.palette.graphics.Palette
 import kotlin.math.roundToInt
-
-fun Palette?.getAutomaticColor(): Int {
-    if (this == null) return Color.DKGRAY
-    var oldColor = this.getDarkVibrantColor(Color.LTGRAY)
-    if (ColorUtils.isLightColor(oldColor))
-        oldColor = this.getDarkMutedColor(Color.LTGRAY)
-    return oldColor
-}
 
 fun Drawable.toBitmap(): Bitmap {
     val w = this.intrinsicWidth

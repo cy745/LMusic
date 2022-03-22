@@ -9,9 +9,9 @@ import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.dirror.lyricviewx.LyricViewX
 import com.lalilu.R
+import com.lalilu.common.DeviceUtil
 import com.lalilu.lmusic.ui.drawee.BlurImageView
-import com.lalilu.lmusic.utils.DeviceUtil
-import com.lalilu.lmusic.utils.HapticUtils
+import com.lalilu.common.HapticUtils
 import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
 import com.lalilu.material.appbar.AppBarLayout
 import com.lalilu.material.appbar.AppBarLayout.OnOffsetChangedListener

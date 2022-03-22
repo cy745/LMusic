@@ -17,11 +17,11 @@ import coil.loadAny
 import com.lalilu.R
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.ui.drawee.BlurImageView
-import com.lalilu.lmusic.ui.seekbar.NewProgressBar
-import com.lalilu.lmusic.utils.ColorAnimator.setBgColorFromPalette
-import com.lalilu.lmusic.utils.ColorUtils.getAutomaticColor
+import com.lalilu.ui.NewProgressBar
+import com.lalilu.common.ColorAnimator.setBgColorFromPalette
+import com.lalilu.common.ColorUtils.getAutomaticColor
 import com.lalilu.lmusic.utils.GridItemDecoration
-import com.lalilu.lmusic.utils.TextUtils
+import com.lalilu.common.TextUtils
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.material.appbar.AppBarLayout
 import com.lalilu.material.appbar.CollapsingToolbarLayout

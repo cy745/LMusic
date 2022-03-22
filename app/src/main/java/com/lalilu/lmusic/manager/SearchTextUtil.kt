@@ -6,8 +6,8 @@ import android.text.TextUtils
 import com.cm55.kanhira.KakasiDictReader
 import com.cm55.kanhira.Kanhira
 import com.lalilu.R
-import com.lalilu.lmusic.utils.KanaToRomaji
-import com.lalilu.lmusic.utils.PinyinUtils
+import com.lalilu.common.KanaToRomaji
+import com.lalilu.common.PinyinUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

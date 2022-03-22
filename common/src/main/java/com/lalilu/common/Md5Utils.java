@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils;
+package com.lalilu.common;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;

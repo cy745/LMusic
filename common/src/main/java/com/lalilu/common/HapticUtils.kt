@@ -1,12 +1,8 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.common
 
 import android.os.Build
 import android.view.HapticFeedbackConstants
 import android.view.View
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 object HapticUtils {
     enum class Strength(var value: Int) {
@@ -39,16 +35,7 @@ object HapticUtils {
     }
 
     fun doubleHaptic(view: View) {
-        GlobalScope.launch(Dispatchers.Default) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
-                delay(100)
-                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_PRESS)
-            } else {
-                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                delay(100)
-                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-            }
-        }
+        haptic(view)
+        view.postDelayed({ haptic(view) }, 100)
     }
 }
