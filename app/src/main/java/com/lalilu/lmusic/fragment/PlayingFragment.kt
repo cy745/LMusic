@@ -7,6 +7,7 @@ import com.blankj.utilcode.util.AdaptScreenUtils
 import com.blankj.utilcode.util.SnackbarUtils
 import com.lalilu.BR
 import com.lalilu.R
+import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.PlayingAdapter
@@ -14,6 +15,7 @@ import com.lalilu.lmusic.adapter.PlayingAdapter.OnItemDragOrSwipedListener
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
+import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.manager.LyricManager
@@ -25,6 +27,7 @@ import com.lalilu.material.appbar.ExpendHeaderBehavior
 import com.lalilu.material.appbar.MyAppbarBehavior
 import com.lalilu.material.appbar.STATE_COLLAPSED
 import com.lalilu.material.appbar.STATE_NORMAL
+import com.lalilu.ui.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -116,6 +119,7 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         val fmAppbarLayout = binding.fmAppbarLayout
         val fmLyricViewX = binding.fmLyricViewX
         val fmToolbar = binding.fmToolbar
+        val seekBar = binding.maSeekBar
         val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
 
         settingsSp.listen(
@@ -150,6 +154,13 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
             fmLyricViewX.updateTime(it)
         }
+        // 从 metadata 中获取歌曲的总时长传递给 SeekBar
+        mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
+            seekBar.maxValue = (it?.mediaMetadata?.getDuration()?.coerceAtLeast(0) ?: 0f).toFloat()
+        }
+        mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
+            seekBar.updateValue(it.toFloat())
+        }
         lyricManager.songLyric.observe(viewLifecycleOwner) {
             fmLyricViewX.setLyricEntryList(emptyList())
             fmLyricViewX.loadLyric(it?.first, it?.second)
@@ -157,5 +168,75 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
             it?.get { fmAppbarLayout.setExpanded(false, true) }
         }
+        seekBar.minIncrement = 500f
+        seekBar.clickListeners.add(object : OnSeekBarClickListener {
+            override fun onClick(@ClickPart clickPart: Int, action: Int) {
+                haptic()
+                when (clickPart) {
+                    CLICK_PART_LEFT -> mSongBrowser.browser?.seekToPrevious()
+                    CLICK_PART_MIDDLE -> mSongBrowser.togglePlay()
+                    CLICK_PART_RIGHT -> mSongBrowser.browser?.seekToNext()
+                }
+            }
+
+            override fun onDoubleClick(@ClickPart clickPart: Int, action: Int) {
+                doubleHaptic()
+//                when (clickPart) {
+//                    CLICK_PART_LEFT -> mSongBrowser.browser?.seekToPrevious()
+//                    CLICK_PART_RIGHT -> mSongBrowser.browser?.seekToNext()
+//                }
+            }
+
+            override fun onLongClick(@ClickPart clickPart: Int, action: Int) {
+                println("onLongClick: $clickPart action: $action")
+                haptic()
+            }
+        })
+        seekBar.seekToListeners.add(
+            object : OnSeekBarSeekToListener {
+                override fun onSeekTo(value: Float) {
+                    mSongBrowser.browser?.seekTo(value.toLong())
+                }
+            }
+        )
+        seekBar.scrollListeners.add(
+            object : OnSeekBarScrollToThresholdListener({ 300f }) {
+                override fun onScrollToThreshold() {
+                    showDialog(dialog)
+                    haptic()
+                }
+
+                override fun onScrollRecover() {
+                    dialog.dismiss()
+                    haptic()
+                }
+            }
+        )
+        seekBar.cancelListeners.add(
+            object : OnSeekBarCancelListener {
+                override fun onCancel() {
+                    haptic()
+                }
+            }
+        )
+        seekBar.progressToListener.add(
+            object : OnProgressToListener {
+                override fun onProgressToMax(value: Float, fromUser: Boolean) {
+                    if (fromUser) haptic()
+                }
+
+                override fun onProgressToMin(value: Float, fromUser: Boolean) {
+                    if (fromUser) haptic()
+                }
+            }
+        )
+    }
+
+    fun haptic() {
+        HapticUtils.haptic(this.requireView(), HapticUtils.Strength.HAPTIC_STRONG)
+    }
+
+    fun doubleHaptic() {
+        HapticUtils.doubleHaptic(this.requireView())
     }
 }
