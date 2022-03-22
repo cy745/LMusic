@@ -13,6 +13,8 @@
         <item name="android:textColorSecondary">@color/daynight_0.4</item>
         <item name="android:colorControlNormal">@android:color/white</item>
 
+        <item name="snackbarTextViewStyle">@style/MY_SnackBarTextViewStyle</item>
+        <item name="snackbarStyle">@style/MY_SnackBarStyle</item>
         <item name="preferenceTheme">@style/MY_PreferenceTheme</item>
         <item name="searchViewStyle">@style/MY_SearchView</item>
     </style>

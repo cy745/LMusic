@@ -34,6 +34,7 @@ interface EnhanceBrowser {
     fun playById(mediaId: String): Boolean
     fun addToNext(mediaId: String): Boolean
     fun removeById(mediaId: String): Boolean
+    fun revokeRemove(): Boolean
     fun moveByDelta(mediaId: String, delta: Int): Boolean
 }
 
@@ -174,20 +175,42 @@ class MSongBrowser @Inject constructor(
         return true
     }
 
+    private var lastRemovedItem: MediaItem? = null
+    private var lastRemovedIndex: Int = -1
+    private var lastPlayIndex: Int = -1
+
     override fun removeById(mediaId: String): Boolean {
         browser ?: return false
         return try {
-            val index = originPlaylistIds.indexOf(mediaId)
-            if (index == browser!!.currentMediaItemIndex) {
+            lastRemovedIndex = originPlaylistIds.indexOf(mediaId)
+            if (lastRemovedIndex == browser!!.currentMediaItemIndex) {
                 mGlobal.currentMediaItem.tryEmit(
                     browser!!.getMediaItemAt(browser!!.nextMediaItemIndex)
                 )
             }
-            browser!!.removeMediaItem(index)
+            lastPlayIndex = browser!!.currentMediaItemIndex
+            lastRemovedItem = browser!!.getMediaItemAt(lastRemovedIndex)
+            browser!!.removeMediaItem(lastRemovedIndex)
             true
         } catch (e: Exception) {
             false
         }
+    }
+
+    override fun revokeRemove(): Boolean {
+        if (lastRemovedIndex < 0 || lastRemovedItem == null || browser == null)
+            return false
+
+        if (lastRemovedIndex >= browser!!.mediaItemCount) {
+            browser!!.addMediaItem(lastRemovedItem!!)
+        } else {
+            browser!!.addMediaItem(lastRemovedIndex, lastRemovedItem!!)
+        }
+
+        if (lastPlayIndex == lastRemovedIndex) {
+            browser!!.seekToDefaultPosition(lastPlayIndex)
+        }
+        return true
     }
 
     override fun moveByDelta(mediaId: String, delta: Int): Boolean {
