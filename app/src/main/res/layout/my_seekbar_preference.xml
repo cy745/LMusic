@@ -26,7 +26,7 @@
     android:clipToPadding="false"
     android:gravity="center_vertical"
     android:minHeight="?android:attr/listPreferredItemHeightSmall"
-    android:paddingStart="20dp"
+    android:paddingStart="22dp"
     android:paddingEnd="20dp"
     tools:ignore="PrivateResource">
 
@@ -88,7 +88,7 @@
             <com.lalilu.lmusic.ui.seekbar.NewSeekBar
                 android:id="@+id/seekbar"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="32dp"
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="6dp"
                 android:layout_weight="1"
