@@ -8,11 +8,13 @@
 
         <item name="android:colorPrimary">@color/colorPrimary</item>
         <item name="android:colorAccent">@color/daynight_0</item>
+        <item name="colorControlActivated">@color/daynight_0.6</item>
 
         <item name="android:textColorPrimary">@color/daynight_0</item>
         <item name="android:textColorSecondary">@color/daynight_0.4</item>
         <item name="android:colorControlNormal">@android:color/white</item>
 
+        <item name="snackbarButtonStyle">@style/MY_SnackBarButtonStyle</item>
         <item name="snackbarTextViewStyle">@style/MY_SnackBarTextViewStyle</item>
         <item name="snackbarStyle">@style/MY_SnackBarStyle</item>
         <item name="preferenceTheme">@style/MY_PreferenceTheme</item>

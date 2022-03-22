@@ -2,6 +2,9 @@ package com.lalilu.lmusic.fragment
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.text.SpannableStringBuilder
+import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+import android.text.style.RelativeSizeSpan
 import androidx.media3.common.MediaItem
 import com.blankj.utilcode.util.AdaptScreenUtils
 import com.blankj.utilcode.util.SnackbarUtils
@@ -73,11 +76,16 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         mAdapter.onItemDragOrSwipedListener = object : OnItemDragOrSwipedListener {
             override fun onDelete(mediaItem: MediaItem): Boolean {
                 return mSongBrowser.removeById(mediaItem.mediaId).also {
+                    val message = SpannableStringBuilder()
+                        .append(
+                            "已移除\n", RelativeSizeSpan(0.8f),
+                            SPAN_EXCLUSIVE_EXCLUSIVE
+                        ).append(mediaItem.mediaMetadata.title)
+
                     SnackbarUtils.with(mBinding!!.root)
                         .setDuration(SnackbarUtils.LENGTH_LONG)
-                        .setMessage("已移除 ${mediaItem.mediaMetadata.title}")
+                        .setMessage(message)
                         .setAction("撤回") {
-                            R.styleable.Snackbar_snackbarStyle
                             mSongBrowser.revokeRemove()
                         }.show()
                 }
@@ -85,9 +93,15 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 
             override fun onAddToNext(mediaItem: MediaItem): Boolean {
                 return mSongBrowser.addToNext(mediaItem.mediaId).also {
+                    val message = SpannableStringBuilder()
+                        .append(
+                            "下一首播放\n", RelativeSizeSpan(0.8f),
+                            SPAN_EXCLUSIVE_EXCLUSIVE
+                        ).append(mediaItem.mediaMetadata.title)
+
                     SnackbarUtils.with(mBinding!!.root)
                         .setDuration(SnackbarUtils.LENGTH_SHORT)
-                        .setMessage("下一首播放 ${mediaItem.mediaMetadata.title}")
+                        .setMessage(message)
                         .show()
                 }
             }

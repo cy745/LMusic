@@ -112,7 +112,7 @@
             android:layout_height="48dp"
             android:layout_marginStart="50dp"
             android:layout_marginEnd="50dp"
-            android:layout_marginBottom="64dp"
+            android:layout_marginBottom="72dp"
             app:bgPalette="@{ev.nowBgPalette}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
