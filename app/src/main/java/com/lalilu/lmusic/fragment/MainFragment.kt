@@ -10,8 +10,8 @@ import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.MSongBrowser
-import com.lalilu.lmusic.ui.seekbar.*
-import com.lalilu.lmusic.utils.HapticUtils
+import com.lalilu.common.HapticUtils
+import com.lalilu.ui.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi

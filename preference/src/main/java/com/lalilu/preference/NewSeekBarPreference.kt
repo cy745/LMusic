@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui.seekbar
+package com.lalilu.preference
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -7,8 +7,11 @@ import android.graphics.Color
 import android.util.AttributeSet
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
-import androidx.preference.R
-import com.lalilu.lmusic.utils.HapticUtils
+import com.lalilu.common.HapticUtils
+import com.lalilu.ui.NewSeekBar
+import com.lalilu.ui.OnProgressToListener
+import com.lalilu.ui.OnSeekBarCancelListener
+import com.lalilu.ui.OnSeekBarSeekToListener
 import kotlin.math.roundToInt
 
 @SuppressLint("PrivateResource")
@@ -43,7 +46,7 @@ class NewSeekBarPreference constructor(
     var mShowValue = true
 
     init {
-        layoutResource = com.lalilu.R.layout.my_seekbar_preference
+        layoutResource = R.layout.my_seekbar_preference
         val attr = context.obtainStyledAttributes(
             attrs, R.styleable.SeekBarPreference, R.attr.seekBarPreferenceStyle, 0
         )

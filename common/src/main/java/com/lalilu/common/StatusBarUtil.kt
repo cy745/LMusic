@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.common
 
 import android.app.Activity
 import android.app.Application

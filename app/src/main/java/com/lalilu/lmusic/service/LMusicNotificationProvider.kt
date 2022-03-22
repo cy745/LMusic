@@ -17,9 +17,9 @@ import androidx.media3.session.MediaNotification
 import androidx.palette.graphics.Palette
 import com.blankj.utilcode.util.SPUtils
 import com.lalilu.R
+import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.LyricPusher
-import com.lalilu.lmusic.utils.getAutomaticColor
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

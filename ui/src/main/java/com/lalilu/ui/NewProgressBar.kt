@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui.seekbar
+package com.lalilu.ui
 
 import android.content.Context
 import android.graphics.*
@@ -7,7 +7,6 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.IntDef
 import androidx.annotation.IntRange
-import com.lalilu.R
 
 const val CURRENT_STATE_UNSPECIFIED = 0
 const val CURRENT_STATE_MIN = 1

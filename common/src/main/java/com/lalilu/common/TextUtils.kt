@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.common
 
 object TextUtils {
     fun durationToString(duration: Number): String {

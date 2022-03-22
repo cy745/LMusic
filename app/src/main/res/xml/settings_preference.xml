@@ -21,14 +21,14 @@
             app:allowDividerBelow="false"
             app:isPreferenceVisible="false"
             tools:isPreferenceVisible="true" />
-        <com.lalilu.lmusic.ui.seekbar.NewSeekBarPreference
+        <com.lalilu.preference.NewSeekBarPreference
             android:defaultValue="9"
             android:key="@string/sp_key_lyric_settings_text_size"
             android:max="15"
             android:title="@string/preference_lyric_settings_text_size"
             app:min="5" />
 
-        <com.lalilu.lmusic.ui.seekbar.NewSeekBarPreference
+        <com.lalilu.preference.NewSeekBarPreference
             android:defaultValue="8"
             android:key="@string/sp_key_lyric_settings_secondary_text_size"
             android:max="15"
@@ -44,7 +44,7 @@
             android:defaultValue="true"
             android:key="@string/sp_key_media_source_settings_unknown_filter"
             android:title="@string/preference_media_source_settings_unknown_filter" />
-        <com.lalilu.lmusic.ui.seekbar.NewSeekBarPreference
+        <com.lalilu.preference.NewSeekBarPreference
             android:defaultValue="30"
             android:key="@string/sp_key_media_source_settings_duration_filter"
             android:max="90"

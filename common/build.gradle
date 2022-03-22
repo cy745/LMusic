@@ -30,8 +30,15 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.preference:preference-ktx:1.2.0'
+    // https://github.com/getActivity/XXPermissions
+    // Apache-2.0
+    // 权限请求框架
+    implementation "com.github.getActivity:XXPermissions:13.5"
 
-    implementation project(":ui")
-    implementation project(":common")
+    // https://github.com/Blankj/AndroidUtilCode/
+    // Apache-2.0 License
+    // 安卓工具类库
+    implementation 'com.blankj:utilcodex:1.31.0'
+    implementation "androidx.palette:palette-ktx:1.0.0"
+    implementation "androidx.core:core-ktx:1.7.0"
 }

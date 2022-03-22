@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui.seekbar
+package com.lalilu.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -11,8 +11,8 @@ import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.blankj.utilcode.util.SizeUtils
-import com.lalilu.lmusic.utils.StatusBarUtil
-import com.lalilu.lmusic.utils.TextUtils
+import com.lalilu.common.StatusBarUtil
+import com.lalilu.common.TextUtils
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
