@@ -44,6 +44,10 @@ class LyricManager @Inject constructor(
     init {
         mGlobal.currentIsPlaying.onEach { isPlaying ->
             if (!isPlaying) pusher.clearLyric()
+            else {
+                if (!lastLyric.isNullOrEmpty())
+                    pusher.pushLyric(lastLyric)
+            }
         }.launchIn(this)
 
         _songLyric.mapLatest { pair ->

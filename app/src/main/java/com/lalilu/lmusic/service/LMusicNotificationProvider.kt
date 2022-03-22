@@ -90,16 +90,18 @@ class LMusicNotificationProvider @Inject constructor(
 
     private var notificationBgColor = 0
 
-    private var lyricBuilder: NotificationCompat.Builder? = null
+    private var builder: NotificationCompat.Builder? = null
+    private var callback: MediaNotification.Provider.Callback? = null
 
     override fun createNotification(
         mediaController: MediaController,
         actionFactory: MediaNotification.ActionFactory,
         onNotificationChangedCallback: MediaNotification.Provider.Callback
     ): MediaNotification {
+        callback = onNotificationChangedCallback
         ensureNotificationChannel()
 
-        val builder = NotificationCompat.Builder(
+        builder = NotificationCompat.Builder(
             mContext, NOTIFICATION_CHANNEL_ID_PLAYER
         )
 
@@ -131,7 +133,7 @@ class LMusicNotificationProvider @Inject constructor(
 //            )
 //        )
 
-        builder.addAction(
+        builder?.addAction(
             actionFactory.createMediaAction(
                 IconCompat.createWithResource(mContext, R.drawable.ic_skip_back_line),
                 mContext.resources.getString(R.string.text_button_previous),
@@ -140,7 +142,7 @@ class LMusicNotificationProvider @Inject constructor(
         )
 
         if (mediaController.playWhenReady) {
-            builder.addAction(
+            builder?.addAction(
                 actionFactory.createMediaAction(
                     IconCompat.createWithResource(mContext, R.drawable.ic_pause_line),
                     mContext.resources.getString(R.string.text_button_pause),
@@ -148,7 +150,7 @@ class LMusicNotificationProvider @Inject constructor(
                 )
             )
         } else {
-            builder.addAction(
+            builder?.addAction(
                 actionFactory.createMediaAction(
                     IconCompat.createWithResource(mContext, R.drawable.ic_play_line),
                     mContext.resources.getString(R.string.text_button_play),
@@ -157,7 +159,7 @@ class LMusicNotificationProvider @Inject constructor(
             )
         }
 
-        builder.addAction(
+        builder?.addAction(
             actionFactory.createMediaAction(
                 IconCompat.createWithResource(mContext, R.drawable.ic_skip_forward_line),
                 mContext.resources.getString(R.string.text_button_next),
@@ -184,7 +186,7 @@ class LMusicNotificationProvider @Inject constructor(
 
         val metadata = mediaController.mediaMetadata
 
-        builder.setContentIntent(mediaController.sessionActivity)
+        builder!!.setContentIntent(mediaController.sessionActivity)
             .setDeleteIntent(stopIntent)
             .setOnlyAlertOnce(true)
             .setContentTitle(metadata.title)
@@ -196,11 +198,13 @@ class LMusicNotificationProvider @Inject constructor(
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOngoing(false)
 
-        if (Build.VERSION.SDK_INT <= 25) {
-            builder.setSmallIcon(R.drawable.media3_notification_small_icon)
-        } else {
-            builder.setSmallIcon(defaultIconResId)
-        }
+        builder?.setSmallIcon(
+            if (Build.VERSION.SDK_INT <= 25) {
+                R.drawable.media3_notification_small_icon
+            } else {
+                defaultIconResId
+            }
+        )
 
         metadata.artworkData?.let {
             launch(Dispatchers.IO) {
@@ -209,16 +213,14 @@ class LMusicNotificationProvider @Inject constructor(
                 val palette = Palette.from(bitmap).generate()
                 notificationBgColor = palette.getAutomaticColor()
 
-                builder.setLargeIcon(bitmap)
-                builder.color = notificationBgColor
-                lyricBuilder = builder
+                builder?.setLargeIcon(bitmap)
+                builder?.color = notificationBgColor
                 onNotificationChangedCallback.onNotificationChanged(
-                    MediaNotification(NOTIFICATION_ID_PLAYER, builder.build())
+                    MediaNotification(NOTIFICATION_ID_PLAYER, builder!!.build())
                 )
             }
         }
-        lyricBuilder = builder
-        return MediaNotification(NOTIFICATION_ID_PLAYER, builder.build())
+        return MediaNotification(NOTIFICATION_ID_PLAYER, builder!!.build())
     }
 
     override fun handleCustomAction(
@@ -273,20 +275,22 @@ class LMusicNotificationProvider @Inject constructor(
     }
 
     override fun pushLyric(sentence: String?) {
-        lyricBuilder ?: return
+        builder ?: return
         ensureNotificationChannel()
 
         var mSentence = sentence
         if (!settingsSp.getBoolean(statusBarLyricKey)) {
             mSentence = null
         }
-        lyricBuilder!!.setTicker(mSentence)
+        builder!!.setTicker(mSentence)
 
-        notificationManager.notify(
-            NOTIFICATION_ID_PLAYER,
-            lyricBuilder!!.build().also {
-                it.flags = it.flags.or(FLAG_ALWAYS_SHOW_TICKER)
-                it.flags = it.flags.or(FLAG_ONLY_UPDATE_TICKER)
-            })
+        callback?.onNotificationChanged(
+            MediaNotification(
+                NOTIFICATION_ID_PLAYER,
+                builder!!.build().apply {
+                    flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+                    flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+                })
+        )
     }
 }
