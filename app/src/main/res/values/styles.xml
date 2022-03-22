@@ -22,6 +22,14 @@
         <item name="android:windowExitAnimation">@anim/dialog_show_out_anim</item>
     </style>
 
+    <style name="MY_SnackBarStyle" parent="Widget.MaterialComponents.Snackbar.FullWidth">
+        <item name="animationMode">slide</item>
+    </style>
+
+    <style name="MY_SnackBarTextViewStyle" parent="Widget.MaterialComponents.Snackbar.TextView">
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
     <style name="MY_BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@drawable/dialog_radius_bg</item>
     </style>

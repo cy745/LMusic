@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.media3.common.MediaItem
 import com.blankj.utilcode.util.AdaptScreenUtils
+import com.blankj.utilcode.util.SnackbarUtils
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentPlayingBinding
@@ -67,11 +68,24 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         mAdapter.bindViewModel(mState, viewLifecycleOwner)
         mAdapter.onItemDragOrSwipedListener = object : OnItemDragOrSwipedListener {
             override fun onDelete(mediaItem: MediaItem): Boolean {
-                return mSongBrowser.removeById(mediaItem.mediaId)
+                return mSongBrowser.removeById(mediaItem.mediaId).also {
+                    SnackbarUtils.with(mBinding!!.root)
+                        .setDuration(SnackbarUtils.LENGTH_LONG)
+                        .setMessage("已移除 ${mediaItem.mediaMetadata.title}")
+                        .setAction("撤回") {
+                            R.styleable.Snackbar_snackbarStyle
+                            mSongBrowser.revokeRemove()
+                        }.show()
+                }
             }
 
             override fun onAddToNext(mediaItem: MediaItem): Boolean {
-                return mSongBrowser.addToNext(mediaItem.mediaId)
+                return mSongBrowser.addToNext(mediaItem.mediaId).also {
+                    SnackbarUtils.with(mBinding!!.root)
+                        .setDuration(SnackbarUtils.LENGTH_SHORT)
+                        .setMessage("下一首播放 ${mediaItem.mediaMetadata.title}")
+                        .show()
+                }
             }
         }
         mAdapter.onItemClick = { item, position ->

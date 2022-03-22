@@ -4,11 +4,11 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_main"
-        android:name="com.lalilu.lmusic.fragment.MainFragment"
+        android:name="com.lalilu.lmusic.fragment.PlayingFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        tools:layout="@layout/fragment_main" />
+        tools:layout="@layout/fragment_playing" />
 </layout>
 
 

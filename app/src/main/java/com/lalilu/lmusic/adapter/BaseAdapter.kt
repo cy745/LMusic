@@ -78,7 +78,6 @@ abstract class BaseAdapter<I : Any, B : ViewDataBinding> constructor(
         open fun onSwiped(item: I, direction: Int, position: Int) {}
         open fun onMove(item: I, from: Int, to: Int): Boolean = false
 
-        override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder): Float = 1f
         override fun isItemViewSwipeEnabled(): Boolean = swipeFlags != 0
         override fun isLongPressDragEnabled(): Boolean = dragFlags != 0
 
