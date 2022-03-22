@@ -42,18 +42,13 @@ class LyricManager @Inject constructor(
     val songLyric = _songLyric.asLiveData()
 
     init {
-        mGlobal.currentIsPlaying.onEach { isPlaying ->
-            if (!isPlaying) pusher.clearLyric()
-            else {
+        _songLyric.combine(mGlobal.currentIsPlaying) { pair, isPlaying ->
+            if (!isPlaying || pair == null) {
+                pusher.clearLyric()
+                return@combine null
+            } else {
                 if (!lastLyric.isNullOrEmpty())
                     pusher.pushLyric(lastLyric)
-            }
-        }.launchIn(this)
-
-        _songLyric.mapLatest { pair ->
-            if (pair == null) {
-                pusher.clearLyric()
-                return@mapLatest null
             }
             LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
         }.combine(mGlobal.currentPosition) { list, time ->
