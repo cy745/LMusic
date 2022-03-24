@@ -81,6 +81,13 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         }
 
         settingsSp.listen(
+            R.string.sp_key_player_settings_skip_silent,
+            false
+        ) {
+            exoPlayer.skipSilenceEnabled = it
+        }
+
+        settingsSp.listen(
             R.string.sp_key_player_settings_ignore_audio_focus,
             false
         ) {

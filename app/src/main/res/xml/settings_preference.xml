@@ -9,6 +9,10 @@
             android:defaultValue="false"
             android:key="@string/sp_key_player_settings_ignore_audio_focus"
             android:title="@string/preference_player_settings_ignore_audio_focus" />
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="@string/sp_key_player_settings_skip_silent"
+            android:title="@string/preference_player_settings_skip_silent" />
     </PreferenceCategory>
 
     <PreferenceCategory
