@@ -7,11 +7,11 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.blankj.utilcode.util.ScreenUtils
 import com.dirror.lyricviewx.LyricViewX
 import com.lalilu.R
-import com.lalilu.common.DeviceUtil
-import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.common.HapticUtils
+import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
 import com.lalilu.material.appbar.AppBarLayout
 import com.lalilu.material.appbar.AppBarLayout.OnOffsetChangedListener
@@ -45,7 +45,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
         mEdgeTransparentView = findViewById(R.id.fm_edge_transparent_view)
         mCollapsingToolbarLayout = findViewById(R.id.fm_collapse_layout)
 
-        val deviceHeight = DeviceUtil.getHeight(context)
+        val deviceHeight = ScreenUtils.getScreenHeight()
         setHeightToView(mDraweeView, deviceHeight)
         setHeightToView(mLyricViewX, deviceHeight - 100)
         setHeightToView(mEdgeTransparentView, deviceHeight - 100)
