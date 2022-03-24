@@ -44,6 +44,14 @@
             app:popEnterAnim="@anim/dialog_nav_enter_anim"
             app:popExitAnim="@anim/dialog_nav_exit_anim"
             app:popUpTo="@id/libraryFragment" />
+        <action
+            android:id="@+id/libraryToGenres"
+            app:destination="@id/genresFragment"
+            app:enterAnim="@anim/dialog_nav_enter_anim"
+            app:exitAnim="@anim/dialog_nav_exit_anim"
+            app:popEnterAnim="@anim/dialog_nav_enter_anim"
+            app:popExitAnim="@anim/dialog_nav_exit_anim"
+            app:popUpTo="@id/libraryFragment" />
     </fragment>
 
     <fragment
@@ -211,4 +219,9 @@
         android:name="com.lalilu.lmusic.fragment.LicenceFragment"
         android:label="@string/destination_label_opensource_licence"
         tools:layout="@layout/fragment_licence" />
+    <fragment
+        android:id="@+id/genresFragment"
+        android:name="com.lalilu.lmusic.fragment.GenresFragment"
+        android:label="@string/destination_label_genres"
+        tools:layout="@layout/fragment_list_genres" />
 </navigation>

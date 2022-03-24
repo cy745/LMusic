@@ -21,6 +21,7 @@ object SystemUiUtil {
     }
 
     fun immerseNavigationBar(activity: Activity) {
+        // https://www.jianshu.com/p/add47d6bde29
         val window = activity.window
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
