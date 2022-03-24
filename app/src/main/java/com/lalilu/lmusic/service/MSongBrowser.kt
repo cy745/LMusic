@@ -86,7 +86,7 @@ class MSongBrowser @Inject constructor(
         println("[MSongBrowser]#onConnected")
         val browser = browserFuture.get() ?: return
 
-        if (browser.mediaItemCount == 0) {
+        if (browser.mediaItemCount == 0 || browser.currentMediaItem == null) {
             recoverLastPlayedItem()
         }
 

@@ -85,7 +85,7 @@ class GlobalViewModel @Inject constructor(
     private val currentSearchKeyword: MutableStateFlow<String?> = MutableStateFlow(null)
 
     val currentPlaylistLiveData = currentPlaylist.combine(currentMediaItem) { items, item ->
-        item ?: return@combine items
+        item ?: return@combine emptyList()
         items.moveHeadToTailWithSearch(item.mediaId) { listItem, id ->
             listItem.mediaId == id
         }
