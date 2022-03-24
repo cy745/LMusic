@@ -7,7 +7,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import com.lalilu.R
-import com.lalilu.common.StatusBarUtil
+import com.lalilu.common.PermissionUtils
+import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmusic.base.DataBindingActivity
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.datasource.BaseMediaSource
@@ -16,7 +17,6 @@ import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
 import com.lalilu.lmusic.ui.bind
-import com.lalilu.common.PermissionUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
@@ -45,7 +45,7 @@ class LMusicActivity : DataBindingActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        StatusBarUtil.immerseStatusBar(this)
+        SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
             mediaSource.whenReady {
                 mSongBrowser.recoverLastPlayedItem()

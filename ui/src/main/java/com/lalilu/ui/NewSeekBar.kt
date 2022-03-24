@@ -11,8 +11,8 @@ import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.blankj.utilcode.util.SizeUtils
-import com.lalilu.common.StatusBarUtil
-import com.lalilu.common.TextUtils
+import com.blankj.utilcode.util.TimeUtils
+import com.lalilu.common.SystemUiUtil
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -157,11 +157,11 @@ class NewSeekBar @JvmOverloads constructor(
     }
 
     override fun valueToText(value: Float): String {
-        return valueToText?.invoke(value) ?: TextUtils.durationToString(value)
+        return valueToText?.invoke(value) ?: TimeUtils.millis2String(value.toLong(), "mm:ss")
     }
 
     override fun isDarkModeNow(): Boolean {
-        return StatusBarUtil.isDarkMode(context)
+        return SystemUiUtil.isDarkMode(context)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

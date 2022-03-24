@@ -14,17 +14,17 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.loadAny
+import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
-import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.ui.drawee.BlurImageView
-import com.lalilu.ui.NewProgressBar
 import com.lalilu.common.ColorAnimator.setBgColorFromPalette
 import com.lalilu.common.ColorUtils.getAutomaticColor
+import com.lalilu.lmusic.datasource.extensions.getDuration
+import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.GridItemDecoration
-import com.lalilu.common.TextUtils
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.material.appbar.AppBarLayout
 import com.lalilu.material.appbar.CollapsingToolbarLayout
+import com.lalilu.ui.NewProgressBar
 
 @BindingAdapter("iconRec")
 fun setIcon(imageView: ImageView, string: String?) {
@@ -133,10 +133,10 @@ fun addGridItemDecoration(recyclerView: RecyclerView, gridGap: Int, gridSpanCoun
 
 @BindingAdapter("setDuration")
 fun setDuration(textView: TextView, metadata: MediaMetadata) {
-    textView.text = TextUtils.durationToString(metadata.getDuration())
+    textView.text = TimeUtils.millis2String(metadata.getDuration(), "mm:ss")
 }
 
 @BindingAdapter("setDuration")
 fun setDuration(textView: TextView, duration: Long) {
-    textView.text = TextUtils.durationToString(duration)
+    textView.text = TimeUtils.millis2String(duration, "mm:ss")
 }

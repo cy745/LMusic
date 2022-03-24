@@ -13,6 +13,10 @@
 
     <style name="MY_BottomSheet" parent="Theme.Design.BottomSheetDialog">
         <item name="android:backgroundDimAmount">0.5</item>
+
+        <!-- https://stackoverflow.com/questions/47553936/prevent-bottomsheetdialogfragment-covering-navigation-bar -->
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:navigationBarColor">@color/bottom_sheet_bg</item>
         <item name="android:windowAnimationStyle">@style/MY_WindowAnimation</item>
         <item name="bottomSheetStyle">@style/MY_BottomSheetStyle</item>
     </style>
