@@ -26,5 +26,8 @@ class LibraryFragment : DataBindingFragment() {
         binding.toSettings.setOnClickListener {
             findNavController().navigate(R.id.libraryToSettings)
         }
+        binding.toGenres.setOnClickListener {
+            findNavController().navigate(R.id.libraryToGenres)
+        }
     }
 }

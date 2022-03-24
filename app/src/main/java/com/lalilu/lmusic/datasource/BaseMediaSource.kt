@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -21,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -37,7 +39,26 @@ class BaseMediaSource @Inject constructor(
     private val minSizeLimit = 0
     private var artistFilter = unknownArtist
     private var minDurationFilter = minDurationLimit
-    private lateinit var settingsSp: SharedPreferences
+    private val settingsSp: SharedPreferences
+
+    private val baseProjection = ArrayList(
+        listOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.ARTIST_ID,
+            MediaStore.Audio.Media.SIZE,
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.MIME_TYPE
+        )
+    ).also {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            it.add(MediaStore.Audio.Media.GENRE)
+        }
+    }.toTypedArray()
 
     init {
         mContext.contentResolver
@@ -106,6 +127,7 @@ class BaseMediaSource @Inject constructor(
                 MediaMetadata.Builder()
                     .setTitle(mediaItem.mediaMetadata.genre.toString())
                     .setAlbumTitle(mediaItem.mediaMetadata.genre.toString())
+                    .setGenre(mediaItem.mediaMetadata.genre.toString())
                     .setIsPlayable(false)
                     .setFolderType(FOLDER_TYPE_PLAYLISTS)
                     .build()
@@ -127,18 +149,7 @@ class BaseMediaSource @Inject constructor(
     private suspend fun loadMediaItems(): MutableList<MediaItem> =
         withContext(Dispatchers.IO) {
             val cursor = searchForMedia(
-                projection = arrayOf(
-                    MediaStore.Audio.Media._ID,
-                    MediaStore.Audio.Media.TITLE,
-                    MediaStore.Audio.Media.ALBUM_ID,
-                    MediaStore.Audio.Media.ALBUM,
-                    MediaStore.Audio.Media.ARTIST,
-                    MediaStore.Audio.Media.ARTIST_ID,
-                    MediaStore.Audio.Media.SIZE,
-                    MediaStore.Audio.Media.DATA,
-                    MediaStore.Audio.Media.DURATION,
-                    MediaStore.Audio.Media.MIME_TYPE
-                ),
+                projection = baseProjection,
                 selection = "${MediaStore.Audio.Media.SIZE} >= ? " +
                         "and ${MediaStore.Audio.Media.DURATION} >= ? " +
                         "and ${MediaStore.Audio.Artists.ARTIST} != ?",
@@ -175,6 +186,10 @@ class BaseMediaSource @Inject constructor(
         setMediaUri(cursor.getMediaUri())
         setAlbumArtist(cursor.getArtist())
         setArtworkUri(cursor.getAlbumArt())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val genre = cursor.getSongGenre() ?: "Empty"
+            setGenre(genre.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() })
+        }
         setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
         setIsPlayable(true)
         setExtras(

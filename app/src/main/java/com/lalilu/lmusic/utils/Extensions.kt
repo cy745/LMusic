@@ -9,7 +9,9 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.GradientDrawable.Orientation.*
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
+import androidx.annotation.RequiresApi
 import kotlin.math.roundToInt
 
 fun Drawable.toBitmap(): Bitmap {
@@ -115,9 +117,10 @@ fun Cursor.getSongMimeType(): String {
     return if (index < 0) "" else this.getString(index)
 }
 
-fun Cursor.getSongGenre(): String {
-    val index = this.getColumnIndex(MediaStore.EXTRA_MEDIA_GENRE)
-    return if (index < 0) "" else this.getString(index)
+@RequiresApi(Build.VERSION_CODES.R)
+fun Cursor.getSongGenre(): String? {
+    val index = this.getColumnIndex(MediaStore.Audio.AudioColumns.GENRE)
+    return if (index == -1) null else this.getString(index)
 }
 
 fun Cursor.getAlbumArt(): Uri {
