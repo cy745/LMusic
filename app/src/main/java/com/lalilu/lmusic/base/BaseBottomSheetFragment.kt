@@ -10,6 +10,8 @@ import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.fragment.app.Fragment
+import com.blankj.utilcode.util.BarUtils
+import com.blankj.utilcode.util.ScreenUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.lalilu.R
@@ -45,7 +47,12 @@ abstract class BaseBottomSheetFragment<I : Any, B : ViewDataBinding> :
     }
 
     open fun getHeight(): Int {
-        return context?.resources?.displayMetrics?.heightPixels ?: 0
+        var height = context?.resources?.displayMetrics?.heightPixels
+            ?: ScreenUtils.getAppScreenHeight()
+        if (ScreenUtils.getScreenHeight() == height) {
+            height -= BarUtils.getStatusBarHeight()
+        }
+        return height
     }
 
     open fun getPeekHeight(): Int {
