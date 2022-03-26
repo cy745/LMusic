@@ -63,6 +63,8 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     @Inject
     lateinit var mSongBrowser: MSongBrowser
 
+    private var needRefresh = true
+
     private val dialog: NavigatorFragment by lazy {
         NavigatorFragment()
     }
@@ -167,7 +169,8 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             mState.song.postValue(it)
         }
         mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
-            fmLyricViewX.updateTime(it)
+            fmLyricViewX.updateTime(it, needRefresh)
+            needRefresh = false
         }
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
         mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
@@ -245,6 +248,11 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
                 }
             }
         )
+    }
+
+    override fun onStart() {
+        needRefresh = true
+        super.onStart()
     }
 
     fun haptic() {
