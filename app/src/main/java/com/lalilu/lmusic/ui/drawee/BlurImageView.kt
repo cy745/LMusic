@@ -78,6 +78,9 @@ class BlurImageView @JvmOverloads constructor(
     @FloatRange(from = 0.0, to = 1.0)
     var scalePercent: Float = 0f
 
+    private var maskPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).also {
+        it.color = Color.BLACK
+    }
     private var bitmapPainter: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var sourceBitmap: Bitmap? = null
     private var samplingBitmap: Bitmap? = null
@@ -177,6 +180,8 @@ class BlurImageView @JvmOverloads constructor(
             newSamplingRect.set(0, 0, it.width, it.height)
             canvas.drawBitmap(it, newSamplingRect, newDestRect, newBitmapPainter)
         }
+        maskPaint.alpha = (blurPercent * 100f).coerceIn(0f, 255f).toInt()
+        canvas.drawRect(destRect, maskPaint)
     }
 
     /**
