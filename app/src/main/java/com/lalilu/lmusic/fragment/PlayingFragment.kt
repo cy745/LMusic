@@ -8,6 +8,9 @@ import android.text.style.RelativeSizeSpan
 import androidx.media3.common.MediaItem
 import com.blankj.utilcode.util.AdaptScreenUtils
 import com.blankj.utilcode.util.SnackbarUtils
+import com.dirror.lyricviewx.GRAVITY_CENTER
+import com.dirror.lyricviewx.GRAVITY_LEFT
+import com.dirror.lyricviewx.GRAVITY_RIGHT
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
@@ -23,14 +26,15 @@ import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.utils.get
 import com.lalilu.lmusic.utils.listen
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.bindViewModel
-import com.lalilu.material.appbar.ExpendHeaderBehavior
-import com.lalilu.material.appbar.MyAppbarBehavior
-import com.lalilu.material.appbar.STATE_COLLAPSED
-import com.lalilu.material.appbar.STATE_NORMAL
 import com.lalilu.ui.*
+import com.lalilu.ui.appbar.ExpendHeaderBehavior
+import com.lalilu.ui.appbar.MyAppbarBehavior
+import com.lalilu.ui.appbar.STATE_COLLAPSED
+import com.lalilu.ui.appbar.STATE_NORMAL
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -71,6 +75,10 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 
     private val settingsSp: SharedPreferences by lazy {
         requireContext().getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
+    }
+
+    private val seekbarHandlerKey: String by lazy {
+        resources.getString(R.string.sp_key_player_settings_seekbar_handler)
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
@@ -153,6 +161,15 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             fmLyricViewX.setNormalTextSize(AdaptScreenUtils.pt2Px(it.toFloat()).toFloat())
             fmLyricViewX.invalidate()
         }
+        settingsSp.listen(
+            R.string.sp_key_lyric_settings_text_gravity, 1
+        ) {
+            when (it) {
+                0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
+                1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
+                2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
+            }
+        }
 
         mActivity?.setSupportActionBar(fmToolbar)
         behavior.addOnStateChangeListener(object :
@@ -189,25 +206,26 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         seekBar.minIncrement = 500f
         seekBar.clickListeners.add(object : OnSeekBarClickListener {
             override fun onClick(@ClickPart clickPart: Int, action: Int) {
-                haptic()
-                when (clickPart) {
-                    CLICK_PART_LEFT -> mSongBrowser.browser?.seekToPrevious()
-                    CLICK_PART_MIDDLE -> mSongBrowser.togglePlay()
-                    CLICK_PART_RIGHT -> mSongBrowser.browser?.seekToNext()
+                if (settingsSp.get(seekbarHandlerKey, 0) == 0) {
+                    playHandle(clickPart)
+                } else {
+                    mSongBrowser.togglePlay()
                 }
-            }
-
-            override fun onDoubleClick(@ClickPart clickPart: Int, action: Int) {
-                doubleHaptic()
-//                when (clickPart) {
-//                    CLICK_PART_LEFT -> mSongBrowser.browser?.seekToPrevious()
-//                    CLICK_PART_RIGHT -> mSongBrowser.browser?.seekToNext()
-//                }
+                haptic()
             }
 
             override fun onLongClick(@ClickPart clickPart: Int, action: Int) {
-                println("onLongClick: $clickPart action: $action")
+                if (settingsSp.get(seekbarHandlerKey, 0) == 1) {
+                    playHandle(clickPart)
+                }
                 haptic()
+            }
+
+            override fun onDoubleClick(@ClickPart clickPart: Int, action: Int) {
+                if (settingsSp.get(seekbarHandlerKey, 0) == 2) {
+                    playHandle(clickPart)
+                }
+                doubleHaptic()
             }
         })
         seekBar.seekToListeners.add(
@@ -248,6 +266,14 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
                 }
             }
         )
+    }
+
+    fun playHandle(@ClickPart clickPart: Int) {
+        when (clickPart) {
+            CLICK_PART_LEFT -> mSongBrowser.browser?.seekToPrevious()
+            CLICK_PART_MIDDLE -> mSongBrowser.togglePlay()
+            CLICK_PART_RIGHT -> mSongBrowser.browser?.seekToNext()
+        }
     }
 
     override fun onStart() {
