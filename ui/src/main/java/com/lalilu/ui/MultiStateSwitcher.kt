@@ -25,7 +25,10 @@ interface OnStateChangeListener {
 class MultiStateSwitcher @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : StateSwitcher(context, attrs, defStyleAttr) {
-    val stateChangeListeners = ArrayList<OnStateChangeListener>()
+    var state: Int = 0
+
+    val offsetChangeListeners = HashSet<OnOffsetChangeListener>()
+    val stateChangeListeners = HashSet<OnStateChangeListener>()
 
     val mStateAnchor: List<Float>
         get() {
@@ -75,11 +78,7 @@ class MultiStateSwitcher @JvmOverloads constructor(
             }
 
             override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-//                clickListeners.forEach {
-//                    it.onClick(checkClickPart(e), e.action)
-//                }
-                snapAnimateOffsetTo(e.x - singleWidth / 2f)
-
+                snapAnimateOffsetTo(e.x - singleWidth / 2f, false)
                 performClick()
                 return super.onSingleTapConfirmed(e)
             }
@@ -92,9 +91,9 @@ class MultiStateSwitcher @JvmOverloads constructor(
             ): Boolean {
                 moved = true
                 updateOffsetByDelta(-distanceX)
-//                scrollListeners.forEach {
-//                    it.onScroll((-moveEvent.y).coerceAtLeast(0f))
-//                }
+                offsetChangeListeners.forEach {
+                    it.onOffsetChange(thumbOffset, true)
+                }
                 parent.requestDisallowInterceptTouchEvent(true)
                 return super.onScroll(downEvent, moveEvent, distanceX, distanceY)
             }
@@ -104,6 +103,17 @@ class MultiStateSwitcher @JvmOverloads constructor(
         updateOffset(thumbOffset + delta, true)
     }
 
+    override fun updateOffset(offset: Float, fromUser: Boolean) {
+        super.updateOffset(offset, fromUser)
+        closeToStateByOffset(thumbOffset)?.let {
+            if (state == it) return
+            state = it
+            stateChangeListeners.forEach { listener ->
+                listener.onStateChange(state, fromUser)
+            }
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         gestureDetector.onTouchEvent(event)
@@ -111,10 +121,7 @@ class MultiStateSwitcher @JvmOverloads constructor(
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_CANCEL -> {
-                if (moved && !canceled) {
-                    snapAnimateOffsetTo(thumbOffset)
-//                    seekToListeners.forEach { it.onSeekTo(nowValue) }
-                }
+                snapAnimateOffsetTo(thumbOffset, false)
                 animateScaleTo(0f)
                 animateOutSideAlphaTo(0f)
                 touching = false
@@ -126,19 +133,38 @@ class MultiStateSwitcher @JvmOverloads constructor(
         return true
     }
 
-    fun snapAnimateOffsetTo(value: Float) {
+    /**
+     * 计算[offset]最接近的State
+     */
+    private fun closeToStateByOffset(offset: Float): Int? {
         var snapTo = -1
         var min = Float.MAX_VALUE
         mStateAnchor.forEachIndexed { index, anchor ->
-            val offset = abs(value - anchor)
-            if (offset < min) {
-                min = offset
+            val value = abs(offset - anchor)
+            if (value < min) {
+                min = value
                 snapTo = index
             }
         }
+        if (snapTo !in mStateText.indices) {
+            return null
+        }
+        return snapTo
+    }
 
-        if (snapTo in mStateAnchor.indices) {
-            animateOffsetTo(mStateAnchor[snapTo])
+    fun snapAnimateOffsetTo(offset: Float, force: Boolean) {
+        val snapTo = closeToStateByOffset(offset) ?: return
+        snapAnimateStateTo(snapTo, force)
+    }
+
+    fun snapAnimateStateTo(state: Int, force: Boolean) {
+        if (state !in mStateText.indices) return
+        val offset = mStateAnchor[state]
+
+        if (force) {
+            updateOffset(offset, false)
+        } else {
+            animateOffsetTo(offset)
         }
     }
 
@@ -180,10 +206,5 @@ class MultiStateSwitcher @JvmOverloads constructor(
         override fun setValue(obj: StateSwitcher, value: Float) {
             obj.outSideAlpha = value.roundToInt()
         }
-    }
-
-    init {
-        thumbOffset = 300f
-        mStateText = listOf("靠左", "居中", "靠右")
     }
 }

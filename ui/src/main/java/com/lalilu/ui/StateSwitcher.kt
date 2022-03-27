@@ -8,12 +8,15 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.IntRange
+import com.lalilu.common.ReadyHelper
+import com.lalilu.common.STATE_INITIALIZED
+import com.lalilu.common.STATE_INITIALIZING
 import com.lalilu.common.SystemUiUtil
-
 
 open class StateSwitcher @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
+    val readyHelper: ReadyHelper = ReadyHelper()
     private var mStateStaticLayout: List<StaticLayout> = emptyList()
 
     var mStateText: List<String> = emptyList()
@@ -184,6 +187,7 @@ open class StateSwitcher @JvmOverloads constructor(
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         initStaticLayout()
+        readyHelper.readyState = STATE_INITIALIZED
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -230,8 +234,15 @@ open class StateSwitcher @JvmOverloads constructor(
         get() = availableWidth / mStateText.size
 
     init {
+        readyHelper.readyState = STATE_INITIALIZING
         val attr = context.obtainStyledAttributes(attrs, R.styleable.StateSwitcher)
-        radius = attr.getDimension(R.styleable.StateSwitcher_st_radius, 30f)
+        radius = attr.getDimension(
+            R.styleable.StateSwitcher_st_radius, 30f
+        )
+        val textArrayId = attr.getResourceId(
+            R.styleable.StateSwitcher_st_text, R.array.st_text_default
+        )
+        mStateText = context.resources.getStringArray(textArrayId).toList()
         attr.recycle()
     }
 }
