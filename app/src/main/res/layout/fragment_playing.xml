@@ -40,7 +40,7 @@
                 android:fitsSystemWindows="true"
                 app:bgPalette="@{ev.nowBgPalette}">
 
-                <com.lalilu.material.appbar.CollapsingToolbarLayout
+                <com.lalilu.ui.appbar.CollapsingToolbarLayout
                     android:id="@+id/fm_collapse_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -93,7 +93,7 @@
                         app:layout_collapseMode="pin"
                         app:menu="@menu/menu_appbar"
                         app:title="@string/default_slogan" />
-                </com.lalilu.material.appbar.CollapsingToolbarLayout>
+                </com.lalilu.ui.appbar.CollapsingToolbarLayout>
             </com.lalilu.lmusic.ui.SquareAppBarLayout>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -106,7 +106,7 @@
                 android:paddingBottom="128dp"
                 app:adapter="@{adapter}"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:layout_behavior="com.lalilu.material.appbar.MyScrollingViewBehavior"
+                app:layout_behavior="com.lalilu.ui.appbar.MyScrollingViewBehavior"
                 tools:listitem="@layout/item_playing" />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

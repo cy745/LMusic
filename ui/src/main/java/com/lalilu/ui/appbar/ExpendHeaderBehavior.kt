@@ -1,4 +1,4 @@
-package com.lalilu.material.appbar
+package com.lalilu.ui.appbar
 
 import android.content.Context
 import android.util.AttributeSet

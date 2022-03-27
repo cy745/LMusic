@@ -13,11 +13,11 @@ import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
-import com.lalilu.material.appbar.AppBarLayout
-import com.lalilu.material.appbar.AppBarLayout.OnOffsetChangedListener
-import com.lalilu.material.appbar.CollapsingToolbarLayout
-import com.lalilu.material.appbar.ExpendHeaderBehavior
-import com.lalilu.material.appbar.MyAppbarBehavior
+import com.lalilu.ui.appbar.AppBarLayout
+import com.lalilu.ui.appbar.AppBarLayout.OnOffsetChangedListener
+import com.lalilu.ui.appbar.CollapsingToolbarLayout
+import com.lalilu.ui.appbar.ExpendHeaderBehavior
+import com.lalilu.ui.appbar.MyAppbarBehavior
 import me.qinc.lib.edgetranslucent.EdgeTransparentView
 import kotlin.math.max
 import kotlin.math.roundToInt

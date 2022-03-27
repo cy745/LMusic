@@ -22,8 +22,8 @@ import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.GridItemDecoration
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
-import com.lalilu.material.appbar.AppBarLayout
-import com.lalilu.material.appbar.CollapsingToolbarLayout
+import com.lalilu.ui.appbar.AppBarLayout
+import com.lalilu.ui.appbar.CollapsingToolbarLayout
 import com.lalilu.ui.NewProgressBar
 
 @BindingAdapter("iconRec")

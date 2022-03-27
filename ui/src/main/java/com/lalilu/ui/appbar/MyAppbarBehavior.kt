@@ -1,4 +1,4 @@
-package com.lalilu.material.appbar
+package com.lalilu.ui.appbar
 
 import android.content.Context
 import android.util.AttributeSet
@@ -7,8 +7,8 @@ import android.view.View.MeasureSpec
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewCompat.NestedScrollType
-import com.lalilu.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
-import com.lalilu.material.appbar.AppBarLayout.LayoutParams.WRAP_CONTENT
+import com.lalilu.ui.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
+import com.lalilu.ui.appbar.AppBarLayout.LayoutParams.WRAP_CONTENT
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
