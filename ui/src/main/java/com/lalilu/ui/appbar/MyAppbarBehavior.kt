@@ -191,7 +191,13 @@ class MyAppbarBehavior(
 
         // We may have changed size, so let's constrain the top and bottom offset correctly,
         // just in case we're out of the bounds
-        setHeaderTopBottomOffset(topAndBottomOffset)
+        val offset = when (nowState) {
+            STATE_FULLY_EXPENDED -> getFullyExpendOffset(parent, child)
+            STATE_COLLAPSED -> getCollapsedOffset(parent, child)
+            STATE_EXPENDED -> 0
+            else -> topAndBottomOffset
+        }
+        setTopAndBottomOffset(offset)
 
         // Update the AppBarLayout's drawable state for any elevation changes. This is needed so that
         // the elevation is set in the first layout, so that we don't get a visual jump pre-N (due to

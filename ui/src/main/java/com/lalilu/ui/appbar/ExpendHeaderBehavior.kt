@@ -1,6 +1,7 @@
 package com.lalilu.ui.appbar
 
 import android.content.Context
+import android.os.Build
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.*
@@ -72,7 +73,7 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         }
     }
 
-    open val interceptSize: Int = 100
+    open val interceptSize: Int = 200
 
     private var mScrollAnimation: SpringAnimation? = null
     private var scroller: OverScroller? = null
@@ -86,25 +87,15 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     private var touchSlop = -1
 
     @State
-    private var tempState: Int = STATE_EXPENDED
-
-    @State
     private var lastState: Int = STATE_EXPENDED
 
     @State
-    val nowState: Int
-        get() {
-            val min = getCollapsedOffset()
-            val dragOffset = (getMaxDragOffset() * getMaxDragThreshold()).toInt()
-            val max = getFullyExpendOffset()
-
-            return when (topAndBottomOffset) {
-                in min until (min + dragOffset) -> STATE_COLLAPSED
-                in (min + dragOffset) until -dragOffset -> STATE_NORMAL
-                in -dragOffset until dragOffset -> STATE_EXPENDED
-                in dragOffset until (max - dragOffset) -> STATE_MIDDLE
-                else -> STATE_FULLY_EXPENDED
-            }
+    var nowState: Int = STATE_EXPENDED
+        set(value) {
+            if (field == value) return
+            lastState = field
+            stateChangeListeners.forEach { it.onStateChange(lastState, value) }
+            field = value
         }
 
     protected var parentWeakReference: WeakReference<CoordinatorLayout>? = null
@@ -151,9 +142,13 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     ): Int {
         mContext?.let { context ->
             val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val bound = windowManager.currentWindowMetrics.bounds
+                return bound.height() - bound.width()
+            }
             val outMetrics = DisplayMetrics()
             windowManager.defaultDisplay.getRealMetrics(outMetrics)
-            parent?.let { return outMetrics.heightPixels - parent.width }
+            return outMetrics.heightPixels - outMetrics.widthPixels
         }
         return 0
     }
@@ -165,13 +160,19 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
     }
 
     override fun setTopAndBottomOffset(offset: Int): Boolean {
-        val result = super.setTopAndBottomOffset(offset)
-        if (tempState != nowState) {
-            lastState = tempState
-            stateChangeListeners.forEach { it.onStateChange(lastState, nowState) }
-            tempState = nowState
+        return super.setTopAndBottomOffset(offset).also {
+            val min = getCollapsedOffset()
+            val dragOffset = (getMaxDragOffset() * getMaxDragThreshold()).toInt()
+            val max = getFullyExpendOffset()
+
+            nowState = when (topAndBottomOffset) {
+                in min until (min + dragOffset) -> STATE_COLLAPSED
+                in (min + dragOffset) until -dragOffset -> STATE_NORMAL
+                in -dragOffset until dragOffset -> STATE_EXPENDED
+                in dragOffset until (max - dragOffset) -> STATE_MIDDLE
+                else -> STATE_FULLY_EXPENDED
+            }
         }
-        return result
     }
 
     open fun setHeaderTopBottomOffset(

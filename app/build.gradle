@@ -20,8 +20,8 @@ android {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
         targetSdkVersion 32
-        versionCode 27
-        versionName "1.4.9"
+        versionCode 29
+        versionName "1.4.9_2"
         vectorDrawables {
             useSupportLibrary true
         }

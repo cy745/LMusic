@@ -7,10 +7,11 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import com.blankj.utilcode.util.ScreenUtils
 import com.dirror.lyricviewx.LyricViewX
 import com.lalilu.R
+import com.lalilu.common.DeviceUtils
 import com.lalilu.common.HapticUtils
+import com.lalilu.common.ifNaN
 import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
 import com.lalilu.ui.appbar.AppBarLayout
@@ -45,7 +46,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
         mEdgeTransparentView = findViewById(R.id.fm_edge_transparent_view)
         mCollapsingToolbarLayout = findViewById(R.id.fm_collapse_layout)
 
-        val deviceHeight = ScreenUtils.getScreenHeight()
+        val deviceHeight = DeviceUtils.getHeight(context)
         setHeightToView(mDraweeView, deviceHeight)
         setHeightToView(mLyricViewX, deviceHeight - 100)
         setHeightToView(mEdgeTransparentView, deviceHeight - 100)
@@ -69,13 +70,13 @@ class SquareAppBarLayout @JvmOverloads constructor(
     }
 
     private fun getMutableDragPercent(offset: Float): Float {
-        return (offset / getMutableDragOffset()).coerceIn(0F, 1F)
+        return (offset / getMutableDragOffset()).coerceIn(0F, 1F).ifNaN(0f)
     }
 
-    private fun getMutableScalePercent(offset: Float, fullyExpendedOffset: Int): Float {
+    private fun getMutableScalePercent(offset: Float, fullyExpendedOffset: Number): Float {
         val dragOffset = (mDraweeView?.maxOffset ?: 0).toFloat()
-        return ((offset - dragOffset) / (fullyExpendedOffset - dragOffset))
-            .coerceIn(0F, 1F)
+        return ((offset - dragOffset) / (fullyExpendedOffset.toFloat() - dragOffset))
+            .coerceIn(0F, 1F).ifNaN(0f)
     }
 
     override fun onAttachedToWindow() {
@@ -97,9 +98,9 @@ class SquareAppBarLayout @JvmOverloads constructor(
             val expendedPercent = (expendedOffset / maxExpendedOffset.toFloat()).coerceIn(0F, 1F)
 
             val interpolation = interpolator.getInterpolation(expendedPercent)
+            val reverseValue = parabolaInterpolator.getInterpolation(expendedPercent)
             val alphaPercentDecrease = (1F - interpolation * 2).coerceAtLeast(0F)
             val alphaPercentIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
-            val reverseValue = parabolaInterpolator.getInterpolation(expendedPercent)
 
             val scalePercent = getMutableScalePercent(expendedOffset, maxExpendedOffset)
             val dragPercent = getMutableDragPercent(expendedOffset)
