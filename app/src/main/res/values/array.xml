@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="lyric_gravity_text">
+        <item>靠左</item>
+        <item>居中</item>
+        <item>靠右</item>
+    </string-array>
+
+    <string-array name="seekbar_handler">
+        <item>单击</item>
+        <item>长按</item>
+        <item>双击</item>
+    </string-array>
+</resources>

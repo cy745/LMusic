@@ -12,32 +12,14 @@
         <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="@string/sp_key_player_settings_skip_silent"
+            android:summary="实验性功能"
             android:title="@string/preference_player_settings_skip_silent" />
-    </PreferenceCategory>
 
-    <PreferenceCategory
-        android:icon="@drawable/ic_lrc_fill"
-        android:title="@string/preference_lyric_settings">
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="@string/sp_key_lyric_settings_status_bar_lyric"
-            android:title="@string/preference_lyric_settings_status_bar_lyric"
-            app:allowDividerBelow="false"
-            app:isPreferenceVisible="false"
-            tools:isPreferenceVisible="true" />
-        <com.lalilu.preference.NewSeekBarPreference
-            android:defaultValue="9"
-            android:key="@string/sp_key_lyric_settings_text_size"
-            android:max="15"
-            android:title="@string/preference_lyric_settings_text_size"
-            app:min="5" />
-
-        <com.lalilu.preference.NewSeekBarPreference
-            android:defaultValue="8"
-            android:key="@string/sp_key_lyric_settings_secondary_text_size"
-            android:max="15"
-            android:title="@string/preference_lyric_settings_secondary_text_size"
-            app:min="5" />
+        <com.lalilu.preference.MultiStatePreference
+            android:defaultValue="0"
+            android:key="@string/sp_key_player_settings_seekbar_handler"
+            android:title="@string/preference_player_settings_seekbar_handler"
+            app:mt_text_array="@array/seekbar_handler" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -53,6 +35,59 @@
             android:key="@string/sp_key_media_source_settings_duration_filter"
             android:max="90"
             android:title="@string/preference_media_source_settings_duration_filter" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:icon="@drawable/ic_lrc_fill"
+        android:title="@string/preference_lyric_settings">
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="@string/sp_key_lyric_settings_status_bar_lyric"
+            android:title="@string/preference_lyric_settings_status_bar_lyric"
+            app:allowDividerBelow="false"
+            app:isPreferenceVisible="false"
+            tools:isPreferenceVisible="true" />
+
+        <com.lalilu.preference.MultiStatePreference
+            android:defaultValue="1"
+            android:key="@string/sp_key_lyric_settings_text_gravity"
+            android:title="@string/preference_lyric_settings_text_gravity"
+            app:mt_text_array="@array/lyric_gravity_text" />
+
+        <com.lalilu.preference.NewSeekBarPreference
+            android:defaultValue="@integer/sp_key_lyric_settings_text_default_size"
+            android:key="@string/sp_key_lyric_settings_text_size"
+            android:max="15"
+            android:title="@string/preference_lyric_settings_text_size"
+            app:min="5" />
+
+        <com.lalilu.preference.NewSeekBarPreference
+            android:defaultValue="@integer/sp_key_lyric_settings_secondary_text_default_size"
+            android:key="@string/sp_key_lyric_settings_secondary_text_size"
+            android:max="15"
+            android:title="@string/preference_lyric_settings_secondary_text_size"
+            app:min="5" />
+
+        <!--        <com.lalilu.preference.NewSeekBarPreference-->
+        <!--            android:defaultValue="@integer/sp_key_lyric_settings_translate_text_scale_value_default_size"-->
+        <!--            android:key="@string/sp_key_lyric_settings_translate_text_scale_value"-->
+        <!--            android:max="2"-->
+        <!--            android:title="@string/preference_lyric_settings_translate_text_scale_value"-->
+        <!--            app:min="0" />-->
+
+        <!--        <com.lalilu.preference.NewSeekBarPreference-->
+        <!--            android:defaultValue="@integer/sp_key_lyric_settings_lyric_divider_height"-->
+        <!--            android:key="@string/sp_key_lyric_settings_lyric_divider_height"-->
+        <!--            android:max="50"-->
+        <!--            android:title="@string/preference_lyric_settings_lyric_divider_height"-->
+        <!--            app:min="5" />-->
+
+        <!--        <com.lalilu.preference.NewSeekBarPreference-->
+        <!--            android:defaultValue="@integer/sp_key_lyric_settings_translate_divider_height"-->
+        <!--            android:key="@string/sp_key_lyric_settings_translate_divider_height"-->
+        <!--            android:max="10"-->
+        <!--            android:title="@string/preference_lyric_settings_translate_divider_height"-->
+        <!--            app:min="0" />-->
     </PreferenceCategory>
 
     <Preference

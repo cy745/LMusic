@@ -6,5 +6,12 @@
 
     <declare-styleable name="StateSwitcher">
         <attr name="st_radius" format="dimension" />
+        <attr name="st_text" format="reference" />
     </declare-styleable>
+
+    <string-array name="st_text_default">
+        <item>左</item>
+        <item>中</item>
+        <item>右</item>
+    </string-array>
 </resources>
