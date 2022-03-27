@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.lalilu.material.appbar;
+package com.lalilu.ui.appbar;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

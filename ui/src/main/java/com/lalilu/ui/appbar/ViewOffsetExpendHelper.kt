@@ -1,4 +1,4 @@
-package com.lalilu.material.appbar
+package com.lalilu.ui.appbar
 
 import android.view.View
 import androidx.core.view.ViewCompat
