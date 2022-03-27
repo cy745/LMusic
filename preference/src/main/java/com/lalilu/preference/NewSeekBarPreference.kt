@@ -95,11 +95,12 @@ class NewSeekBarPreference constructor(
     }
 
     override fun onSetInitialValue(defaultValue: Any?) {
-        if (defaultValue != null) {
-            mValue = (defaultValue as Number).toFloat()
-            return
+        mValue = if (defaultValue != null) {
+            if (defaultValue !is Number) throw ClassCastException("defaultValue should be Number.")
+            defaultValue.toFloat()
+        } else {
+            getPersistedInt(mMin.toInt()).toFloat()
         }
-        mValue = getPersistedInt(mMin.toInt()).toFloat()
     }
 
     override fun onGetDefaultValue(a: TypedArray, index: Int): Any {

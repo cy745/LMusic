@@ -103,10 +103,10 @@ class NewSeekBar @JvmOverloads constructor(
 ) : NewProgressBar(context, attrs) {
     var cancelThreshold = 100f
 
-    val scrollListeners = ArrayList<OnSeekBarScrollListener>()
-    val clickListeners = ArrayList<OnSeekBarClickListener>()
-    val cancelListeners = ArrayList<OnSeekBarCancelListener>()
-    val seekToListeners = ArrayList<OnSeekBarSeekToListener>()
+    val scrollListeners = HashSet<OnSeekBarScrollListener>()
+    val clickListeners = HashSet<OnSeekBarClickListener>()
+    val cancelListeners = HashSet<OnSeekBarCancelListener>()
+    val seekToListeners = HashSet<OnSeekBarSeekToListener>()
     var valueToText: ((Float) -> String)? = null
 
     private var moved = false
