@@ -68,7 +68,7 @@
                 android:layout_marginTop="20dp"
                 android:text="@{vm.playlist.playlistCreateTime.toLocaleString()}"
                 android:textColor="@color/daynight_0.4"
-                android:textSize="10dp"
+                android:textSize="10sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
