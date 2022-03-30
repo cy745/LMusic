@@ -17,6 +17,7 @@ import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
 import com.lalilu.lmusic.ui.bind
+import com.lalilu.lmusic.viewmodel.AblyService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
@@ -32,6 +33,9 @@ class LMusicActivity : DataBindingActivity() {
 
     @Inject
     lateinit var mEvent: SharedViewModel
+
+    @Inject
+    lateinit var ablyService: AblyService
 
     @Inject
     lateinit var mediaSource: BaseMediaSource
@@ -56,6 +60,7 @@ class LMusicActivity : DataBindingActivity() {
         })
         volumeControlStream = AudioManager.STREAM_MUSIC
         lifecycle.addObserver(mSongBrowser)
+        lifecycle.addObserver(ablyService)
     }
 
     override fun onNewIntent(intent: Intent?) {

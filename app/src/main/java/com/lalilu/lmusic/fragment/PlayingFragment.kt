@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.text.SpannableStringBuilder
 import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 import android.text.style.RelativeSizeSpan
+import android.view.View
 import androidx.media3.common.MediaItem
 import com.blankj.utilcode.util.AdaptScreenUtils
 import com.blankj.utilcode.util.SnackbarUtils
@@ -28,7 +29,9 @@ import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.utils.get
 import com.lalilu.lmusic.utils.listen
+import com.lalilu.lmusic.viewmodel.AblyService
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lmusic.viewmodel.STATE_LISTENING
 import com.lalilu.lmusic.viewmodel.bindViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.ExpendHeaderBehavior
@@ -66,6 +69,9 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 
     @Inject
     lateinit var mSongBrowser: MSongBrowser
+
+    @Inject
+    lateinit var ablyService: AblyService
 
     private var needRefresh = true
 
@@ -145,6 +151,7 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         val fmLyricViewX = binding.fmLyricViewX
         val fmToolbar = binding.fmToolbar
         val seekBar = binding.maSeekBar
+        val fmTips = binding.fmTips
         val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
 
         settingsSp.listen(
@@ -184,6 +191,7 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         }
         mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             mState.song.postValue(it)
+            ablyService.listenChannel?.publish(STATE_LISTENING, it?.mediaMetadata?.title)
         }
         mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
             fmLyricViewX.updateTime(it, needRefresh)
@@ -202,6 +210,11 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         }
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
             it?.get { fmAppbarLayout.setExpanded(false, true) }
+        }
+
+        ablyService.otherHistoryLiveData.observe(viewLifecycleOwner) {
+            fmTips.visibility = if (it == null) View.GONE else View.VISIBLE
+            fmTips.text = "Users: ${it?.size}"
         }
         seekBar.minIncrement = 500f
         seekBar.clickListeners.add(object : OnSeekBarClickListener {

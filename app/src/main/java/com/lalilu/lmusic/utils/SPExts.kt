@@ -42,6 +42,20 @@ inline fun <reified T> SharedPreferences.listen(
     return true
 }
 
+inline fun <reified T> SharedPreferences.getByResId(
+    @IdRes resId: Int,
+    defaultValue: T? = null,
+    callback: (T) -> Unit = {}
+): T? {
+    val targetKey = try {
+        Utils.getApp().resources.getString(resId)
+    } catch (e: Resources.NotFoundException) {
+        return null
+    }
+
+    return get(targetKey, defaultValue, callback)
+}
+
 inline fun <reified T> SharedPreferences.get(
     key: String,
     defaultValue: T? = null,
