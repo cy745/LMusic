@@ -54,7 +54,9 @@ class AblyService @Inject constructor(
         MutableStateFlow(false)
 
     val historyLiveData = history.combine(newestMessage) { map, msg ->
-        msg ?: return@combine map
+        msg ?: return@combine map.filter { pair ->
+            (now - pair.value.timestamp) <= 300000 && pair.value.name != STATE_OFFLINE
+        }
         map[msg.connectionId] = msg
         val now = System.currentTimeMillis()
         return@combine map.filter { pair ->
@@ -123,6 +125,10 @@ class AblyService @Inject constructor(
     override fun onCreate(owner: LifecycleOwner) {
         ably = ably ?: createAbly()
         ably?.connect()
+    }
+
+    override fun onResume(owner: LifecycleOwner) {
+        newestMessage.tryEmit(null)
     }
 
 //    override fun onResume(owner: LifecycleOwner) {
