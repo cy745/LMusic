@@ -39,10 +39,7 @@ import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.appbar.STATE_COLLAPSED
 import com.lalilu.ui.appbar.STATE_NORMAL
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -192,7 +189,9 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             mState.song.postValue(it)
             it.toShareDto()?.toJson()?.let { json ->
-                ablyService.listenChannel?.publish(STATE_LISTENING, json)
+                launch(Dispatchers.IO) {
+                    ablyService.listenChannel?.publish(STATE_LISTENING, json)
+                }
             }
         }
         mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
