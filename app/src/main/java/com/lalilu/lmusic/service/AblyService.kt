@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.viewmodel
+package com.lalilu.lmusic.service
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -49,12 +49,12 @@ class AblyService @Inject constructor(
 
     private val newestMessage: MutableStateFlow<Message?> =
         MutableStateFlow(null)
-    private val otherHistory: MutableStateFlow<LinkedHashMap<String, Message>> =
+    private val history: MutableStateFlow<LinkedHashMap<String, Message>> =
         MutableStateFlow(LinkedHashMap())
     private val isEnable: MutableStateFlow<Boolean> =
         MutableStateFlow(false)
 
-    val otherHistoryLiveData = otherHistory.combine(newestMessage) { map, msg ->
+    val otherHistoryLiveData = history.combine(newestMessage) { map, msg ->
         msg ?: return@combine map
         map[msg.connectionId] = msg
         if (msg.name == STATE_OFFLINE)
@@ -129,6 +129,7 @@ class AblyService @Inject constructor(
 
     override fun onResume(owner: LifecycleOwner) {
         ably = ably ?: createAbly()
+        history.tryEmit(LinkedHashMap())
         ably?.connect()
     }
 
@@ -140,6 +141,7 @@ class AblyService @Inject constructor(
         settingsSp.listen(R.string.sp_key_ably_service_enable, false) {
             if (it) {
                 ably = ably ?: createAbly()
+                history.tryEmit(LinkedHashMap())
                 ably?.connect()
             } else shutdownAbly()
             isEnable.tryEmit(it)

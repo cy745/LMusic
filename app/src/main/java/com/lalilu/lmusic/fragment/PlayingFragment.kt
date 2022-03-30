@@ -26,12 +26,12 @@ import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.event.GlobalViewModel
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.manager.LyricManager
+import com.lalilu.lmusic.service.AblyService
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.service.STATE_LISTENING
 import com.lalilu.lmusic.utils.get
 import com.lalilu.lmusic.utils.listen
-import com.lalilu.lmusic.viewmodel.AblyService
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.lalilu.lmusic.viewmodel.STATE_LISTENING
 import com.lalilu.lmusic.viewmodel.bindViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.ExpendHeaderBehavior
