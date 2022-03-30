@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.text.SpannableStringBuilder
 import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 import android.text.style.RelativeSizeSpan
-import android.view.View
 import androidx.media3.common.MediaItem
 import com.blankj.utilcode.util.AdaptScreenUtils
 import com.blankj.utilcode.util.SnackbarUtils
@@ -19,6 +18,7 @@ import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.adapter.PlayingAdapter.OnItemDragOrSwipedListener
+import com.lalilu.lmusic.apis.bean.toShareDto
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
@@ -191,7 +191,9 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         }
         mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             mState.song.postValue(it)
-            ablyService.listenChannel?.publish(STATE_LISTENING, it?.mediaMetadata?.title)
+            it.toShareDto()?.toJson()?.let { json ->
+                ablyService.listenChannel?.publish(STATE_LISTENING, json)
+            }
         }
         mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
             fmLyricViewX.updateTime(it, needRefresh)
@@ -211,10 +213,8 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         mEvent.isAppbarLayoutExpand.observe(viewLifecycleOwner) {
             it?.get { fmAppbarLayout.setExpanded(false, true) }
         }
-
-        ablyService.otherHistoryLiveData.observe(viewLifecycleOwner) {
-            fmTips.visibility = if (it == null) View.GONE else View.VISIBLE
-            fmTips.text = "Users: ${it?.size}"
+        ablyService.historyLiveData.observe(viewLifecycleOwner) {
+            fmTips.text = if (it != null) "ONLINE: ${it.size}" else ""
         }
         seekBar.minIncrement = 500f
         seekBar.clickListeners.add(object : OnSeekBarClickListener {
