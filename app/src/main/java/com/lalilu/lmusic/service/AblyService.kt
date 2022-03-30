@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.asLiveData
-import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.utils.getByResId
@@ -20,7 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.getAndUpdate
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.set
@@ -54,12 +53,13 @@ class AblyService @Inject constructor(
     private val isEnable: MutableStateFlow<Boolean> =
         MutableStateFlow(false)
 
-    val otherHistoryLiveData = history.combine(newestMessage) { map, msg ->
+    val historyLiveData = history.combine(newestMessage) { map, msg ->
         msg ?: return@combine map
         map[msg.connectionId] = msg
-        if (msg.name == STATE_OFFLINE)
-            map.remove(msg.connectionId)
-        return@combine map
+        val now = System.currentTimeMillis()
+        return@combine map.filter { pair ->
+            (now - pair.value.timestamp) <= 300000 && pair.value.name != STATE_OFFLINE
+        }
     }.combine(isEnable) { map, isEnable ->
         if (isEnable) map else null
     }.asLiveData()
@@ -106,21 +106,18 @@ class AblyService @Inject constructor(
     override fun onMessage(message: Message) {
         if (ably?.connection?.id == message.connectionId) return
         newestMessage.tryEmit(message)
-
-        launch {
-            ToastUtils.showLong(
-                """
-                    [channel]
-                    msg.id: ${message.id}
-                    msg.name: ${message.name}
-                    msg.data: ${message.data}
-                    msg.encoding: ${message.encoding}
-                    msg.clientId: ${message.clientId}
-                    msg.connectionId: ${message.connectionId}
-                    msg.timestamp: ${message.timestamp}
-                    """.trimIndent()
-            )
-        }
+        println(
+            """
+            [channel]
+            msg.id: ${message.id}
+            msg.name: ${message.name}
+            msg.data: ${message.data}
+            msg.encoding: ${message.encoding}
+            msg.clientId: ${message.clientId}
+            msg.connectionId: ${message.connectionId}
+            msg.timestamp: ${message.timestamp}
+            """.trimIndent()
+        )
     }
 
     override fun onCreate(owner: LifecycleOwner) {
@@ -129,7 +126,7 @@ class AblyService @Inject constructor(
 
     override fun onResume(owner: LifecycleOwner) {
         ably = ably ?: createAbly()
-        history.tryEmit(LinkedHashMap())
+        history.getAndUpdate { map -> map.also { it.clear() } }
         ably?.connect()
     }
 
@@ -138,13 +135,13 @@ class AblyService @Inject constructor(
     }
 
     init {
-        settingsSp.listen(R.string.sp_key_ably_service_enable, false) {
-            if (it) {
+        settingsSp.listen(R.string.sp_key_ably_service_enable, false) { enable ->
+            if (enable) {
                 ably = ably ?: createAbly()
-                history.tryEmit(LinkedHashMap())
+                history.getAndUpdate { map -> map.also { it.clear() } }
                 ably?.connect()
             } else shutdownAbly()
-            isEnable.tryEmit(it)
+            isEnable.tryEmit(enable)
         }
     }
 }
