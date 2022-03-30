@@ -54,11 +54,11 @@ class AblyService @Inject constructor(
         MutableStateFlow(false)
 
     val historyLiveData = history.combine(newestMessage) { map, msg ->
+        val now = System.currentTimeMillis()
         msg ?: return@combine map.filter { pair ->
             (now - pair.value.timestamp) <= 300000 && pair.value.name != STATE_OFFLINE
         }
         map[msg.connectionId] = msg
-        val now = System.currentTimeMillis()
         return@combine map.filter { pair ->
             (now - pair.value.timestamp) <= 300000 && pair.value.name != STATE_OFFLINE
         }
