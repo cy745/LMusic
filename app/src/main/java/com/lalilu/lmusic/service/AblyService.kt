@@ -95,7 +95,7 @@ class AblyService @Inject constructor(
         }
     }
 
-    private fun shutdownAbly() {
+    fun shutdownAbly() {
         ably ?: return
         listenChannel?.publish(STATE_OFFLINE, STATE_OFFLINE)
         listenChannel?.unsubscribe(this)
@@ -122,17 +122,18 @@ class AblyService @Inject constructor(
 
     override fun onCreate(owner: LifecycleOwner) {
         ably = ably ?: createAbly()
-    }
-
-    override fun onResume(owner: LifecycleOwner) {
-        ably = ably ?: createAbly()
-        history.getAndUpdate { map -> map.also { it.clear() } }
         ably?.connect()
     }
 
-    override fun onStop(owner: LifecycleOwner) {
-        shutdownAbly()
-    }
+//    override fun onResume(owner: LifecycleOwner) {
+//        ably = ably ?: createAbly()
+//        history.getAndUpdate { map -> map.also { it.clear() } }
+//        ably?.connect()
+//    }
+
+//    override fun onStop(owner: LifecycleOwner) {
+//        shutdownAbly()
+//    }
 
     init {
         settingsSp.listen(R.string.sp_key_ably_service_enable, false) { enable ->

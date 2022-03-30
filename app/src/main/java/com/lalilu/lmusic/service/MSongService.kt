@@ -50,6 +50,9 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     @Inject
     lateinit var notificationProvider: LMusicNotificationProvider
 
+    @Inject
+    lateinit var ablyService: AblyService
+
     private val lastPlayedSp: SPUtils by lazy {
         SPUtils.getInstance(Config.LAST_PLAYED_SP)
     }
@@ -187,6 +190,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     }
 
     override fun onDestroy() {
+        ablyService.shutdownAbly()
         player.release()
         mediaLibrarySession.release()
         super.onDestroy()
