@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.dirror.lyricviewx.LyricViewX
@@ -26,6 +27,7 @@ import kotlin.math.roundToInt
 class SquareAppBarLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : AppBarLayout(context, attrs, defStyleAttr) {
+    private var mTips: TextView? = null
     private var mToolbar: Toolbar? = null
     private var mLyricViewX: LyricViewX? = null
     private var mDraweeView: BlurImageView? = null
@@ -40,6 +42,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         super.onLayout(changed, l, t, r, b)
 
+        mTips = findViewById(R.id.fm_tips)
         mToolbar = findViewById(R.id.fm_toolbar)
         mDraweeView = findViewById(R.id.fm_top_pic)
         mLyricViewX = findViewById(R.id.fm_lyric_view_x)
@@ -121,6 +124,12 @@ class SquareAppBarLayout @JvmOverloads constructor(
             }
 
             mToolbar?.let {
+                it.visibility =
+                    if (alphaPercentDecrease <= 0.05) View.INVISIBLE else View.VISIBLE
+                it.alpha = alphaPercentDecrease
+            }
+
+            mTips?.let {
                 it.visibility =
                     if (alphaPercentDecrease <= 0.05) View.INVISIBLE else View.VISIBLE
                 it.alpha = alphaPercentDecrease

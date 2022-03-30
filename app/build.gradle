@@ -64,6 +64,10 @@ android.sourceSets.all {
 }
 
 dependencies {
+    // https://github.com/ably/ably-java
+    // Apache-2.0 License
+    implementation 'io.ably:ably-android:1.2.11'
+
     // https://github.com/scwang90/SmartRefreshLayout
     // Apache-2.0 License
     // implementation 'io.github.scwang90:refresh-layout-kernel:2.0.5'
