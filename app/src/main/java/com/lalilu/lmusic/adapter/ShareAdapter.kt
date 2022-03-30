@@ -2,8 +2,10 @@ package com.lalilu.lmusic.adapter
 
 import android.annotation.SuppressLint
 import androidx.recyclerview.widget.DiffUtil
+import com.blankj.utilcode.util.GsonUtils
 import com.lalilu.R
 import com.lalilu.databinding.ItemShareItemBinding
+import com.lalilu.lmusic.apis.bean.ShareDto
 import io.ably.lib.types.Message
 import javax.inject.Inject
 
@@ -25,8 +27,15 @@ class ShareAdapter @Inject constructor() :
         }
 
     override fun onBind(binding: ItemShareItemBinding, item: Message, position: Int) {
-        binding.username = item.connectionId
-        binding.musicTitle = item.data.toString()
-        binding.musicArtist = item.name
+        binding.name = item.connectionId
+        binding.state = item.name
+
+        try {
+            val shareDto = GsonUtils.fromJson(item.data.toString(), ShareDto::class.java)
+            binding.musicTitle = shareDto.title
+            binding.musicArtist = shareDto.artist
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

@@ -6,7 +6,11 @@
     <data>
 
         <variable
-            name="username"
+            name="name"
+            type="String" />
+
+        <variable
+            name="state"
             type="String" />
 
         <variable
@@ -20,34 +24,60 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:background="@drawable/item_bg">
+        android:layout_height="wrap_content"
+        android:background="@drawable/item_bg"
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/user_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="10dp"
-            android:text="@{username}"
+            android:text="@{name}"
             android:textColor="@color/daynight_0"
             android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@+id/user_state"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="UserName" />
 
-        <androidx.cardview.widget.CardView
+        <TextView
+            android:id="@+id/user_state"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="20dp"
+            android:text="@{state}"
+            android:textColor="@color/daynight_0.6"
+            android:textSize="10sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/user_name"
+            tools:text="UserState" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="right"
+            app:constraint_referenced_ids="user_name,user_state"
+            tools:layout_editor_absoluteX="20dp" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
             app:cardCornerRadius="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/barrier5"
             app:layout_constraintTop_toTopOf="parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="15dp">
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/song_album_pic"
@@ -62,10 +92,9 @@
 
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/song_title"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
+                    android:layout_marginEnd="15dp"
                     android:letterSpacing="0.05"
                     android:text="@{musicTitle}"
                     android:textColor="@color/daynight_0"
@@ -79,10 +108,10 @@
 
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/song_singer"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="15dp"
                     android:letterSpacing="0.05"
                     android:text="@{musicArtist}"
                     android:textColor="@color/daynight_0.6"
