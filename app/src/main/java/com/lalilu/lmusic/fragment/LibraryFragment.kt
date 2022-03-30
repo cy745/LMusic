@@ -29,5 +29,8 @@ class LibraryFragment : DataBindingFragment() {
         binding.toGenres.setOnClickListener {
             findNavController().navigate(R.id.libraryToGenres)
         }
+        binding.toShare.setOnClickListener {
+            findNavController().navigate(R.id.libraryToShare)
+        }
     }
 }
