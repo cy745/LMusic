@@ -18,7 +18,6 @@ import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.adapter.PlayingAdapter.OnItemDragOrSwipedListener
-import com.lalilu.lmusic.apis.bean.toShareDto
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.base.showDialog
@@ -28,7 +27,6 @@ import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.service.AblyService
 import com.lalilu.lmusic.service.MSongBrowser
-import com.lalilu.lmusic.service.STATE_LISTENING
 import com.lalilu.lmusic.utils.get
 import com.lalilu.lmusic.utils.listen
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -188,11 +186,6 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         }
         mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             mState.song.postValue(it)
-            it.toShareDto()?.toJson()?.let { json ->
-                launch(Dispatchers.IO) {
-                    ablyService.listenChannel?.publish(STATE_LISTENING, json)
-                }
-            }
         }
         mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
             fmLyricViewX.updateTime(it, needRefresh)

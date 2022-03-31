@@ -7,6 +7,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.asLiveData
 import com.lalilu.R
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.apis.bean.ShareDto
 import com.lalilu.lmusic.utils.getByResId
 import com.lalilu.lmusic.utils.listen
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -17,9 +18,8 @@ import io.ably.lib.types.ClientOptions
 import io.ably.lib.types.Message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.set
@@ -32,6 +32,7 @@ const val STATE_LISTENING = "st_listening"
 const val CHANNEL_NORMAL = "cn_normal"
 
 @Singleton
+@ExperimentalCoroutinesApi
 class AblyService @Inject constructor(
     @ApplicationContext val context: Context
 ) : DefaultLifecycleObserver, CoroutineScope,
@@ -41,27 +42,29 @@ class AblyService @Inject constructor(
     private val settingsSp: SharedPreferences =
         context.getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
 
+    val maxAvailableDuration = 5 * 60 * 1000
+    var availableMessageFilter: (Map.Entry<String, Message>, now: Long) -> Boolean = { pair, now ->
+        (now - pair.value.timestamp) <= maxAvailableDuration && pair.value.name != STATE_OFFLINE
+    }
+
     var ably: AblyRealtime? = null
         get() = field ?: createAbly()
     val listenChannel: Channel?
         get() = ably?.let { getChannel(it) }
 
-    private val newestMessage: MutableStateFlow<Message?> =
+    val latestSharedDto: MutableStateFlow<ShareDto?> =
+        MutableStateFlow(null)
+    private val latestReceivedMessage: MutableStateFlow<Message?> =
         MutableStateFlow(null)
     private val history: MutableStateFlow<LinkedHashMap<String, Message>> =
         MutableStateFlow(LinkedHashMap())
     private val isEnable: MutableStateFlow<Boolean> =
         MutableStateFlow(false)
 
-    val historyLiveData = history.combine(newestMessage) { map, msg ->
+    val historyLiveData = history.combine(latestReceivedMessage) { map, msg ->
         val now = System.currentTimeMillis()
-        msg ?: return@combine map.filter { pair ->
-            (now - pair.value.timestamp) <= 300000 && pair.value.name != STATE_OFFLINE
-        }
-        map[msg.connectionId] = msg
-        return@combine map.filter { pair ->
-            (now - pair.value.timestamp) <= 300000 && pair.value.name != STATE_OFFLINE
-        }
+        if (msg != null) map[msg.connectionId] = msg
+        map.filter { availableMessageFilter(it, now) }
     }.combine(isEnable) { map, isEnable ->
         if (isEnable) map else null
     }.asLiveData()
@@ -107,7 +110,7 @@ class AblyService @Inject constructor(
 
     override fun onMessage(message: Message) {
         if (ably?.connection?.id == message.connectionId) return
-        newestMessage.tryEmit(message)
+        latestReceivedMessage.tryEmit(message)
         println(
             """
             [channel]
@@ -128,7 +131,7 @@ class AblyService @Inject constructor(
     }
 
     override fun onResume(owner: LifecycleOwner) {
-        newestMessage.tryEmit(null)
+        latestReceivedMessage.tryEmit(null)
     }
 
 //    override fun onResume(owner: LifecycleOwner) {
@@ -150,5 +153,13 @@ class AblyService @Inject constructor(
             } else shutdownAbly()
             isEnable.tryEmit(enable)
         }
+        latestSharedDto.mapLatest {
+            it ?: return@mapLatest null
+            Message(STATE_LISTENING, it.toJson())
+        }.distinctUntilChanged()
+            .onEach {
+                it ?: return@onEach
+                listenChannel?.publish(it)
+            }.launchIn(this)
     }
 }
