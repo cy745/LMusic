@@ -20,15 +20,16 @@ import java.util.logging.Logger
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface CoverSource {
+    suspend fun loadCoverBytes(mediaItem: MediaItem): ByteArray?
+    suspend fun loadCover(mediaItem: MediaItem): BufferedSource?
+}
+
 @Singleton
 class CoverSourceFactory @Inject constructor(
     retrieverCoverSource: RetrieverCoverSource,
     audioTagCoverSource: AudioTagCoverSource
-) {
-    interface CoverSource {
-        suspend fun loadCover(mediaItem: MediaItem): BufferedSource?
-    }
-
+) : CoverSource {
     private val sources: MutableList<CoverSource> = ArrayList()
 
     init {
@@ -46,36 +47,35 @@ class CoverSourceFactory @Inject constructor(
         }
     }
 
-    suspend fun getCover(
-        mediaItem: MediaItem,
-        callback: (BufferedSource?) -> Unit = { }
-    ): BufferedSource? = withContext(Dispatchers.IO) {
-        sources.forEach { source ->
-            val cover = source.loadCover(mediaItem)
-            if (cover != null) {
-                callback(cover)
-                return@withContext cover
+    override suspend fun loadCoverBytes(mediaItem: MediaItem): ByteArray? =
+        withContext(Dispatchers.IO) {
+            sources.forEach { source ->
+                val bytes = source.loadCoverBytes(mediaItem)
+                if (bytes != null) return@withContext bytes
             }
+            return@withContext null
         }
-        callback(null)
-        return@withContext null
-    }
+
+    override suspend fun loadCover(mediaItem: MediaItem): BufferedSource? =
+        withContext(Dispatchers.IO) {
+            sources.forEach { source ->
+                val cover = source.loadCover(mediaItem)
+                if (cover != null) return@withContext cover
+            }
+            return@withContext null
+        }
 }
 
 class RetrieverCoverSource @Inject constructor(
     @ApplicationContext private val mContext: Context
-) : CoverSourceFactory.CoverSource {
-    override suspend fun loadCover(mediaItem: MediaItem): BufferedSource? {
+) : CoverSource {
+    override suspend fun loadCoverBytes(mediaItem: MediaItem): ByteArray? {
         val mediaUri = mediaItem.mediaMetadata.mediaUri ?: return null
         var retriever: MediaMetadataRetriever? = null
         return try {
             retriever = MediaMetadataRetriever()
             retriever.setDataSource(mContext, mediaUri)
             retriever.embeddedPicture ?: throw NullPointerException()
-            val source = ByteArrayInputStream(retriever.embeddedPicture).source()
-            source.timeout().timeout(50, TimeUnit.MILLISECONDS)
-
-            source.buffer()
         } catch (e: NullPointerException) {
             null
         } finally {
@@ -83,21 +83,32 @@ class RetrieverCoverSource @Inject constructor(
             retriever?.release()
         }
     }
+
+    override suspend fun loadCover(mediaItem: MediaItem): BufferedSource? {
+        val bytes = loadCoverBytes(mediaItem) ?: return null
+        val source = ByteArrayInputStream(bytes).source()
+        source.timeout().timeout(50, TimeUnit.MILLISECONDS)
+        return source.buffer()
+    }
 }
 
-class AudioTagCoverSource @Inject constructor() : CoverSourceFactory.CoverSource {
-    override suspend fun loadCover(mediaItem: MediaItem): BufferedSource? {
+class AudioTagCoverSource @Inject constructor() : CoverSource {
+    override suspend fun loadCoverBytes(mediaItem: MediaItem): ByteArray? {
         val songData = mediaItem.mediaMetadata.getSongData() ?: return null
         val file = File(songData)
         if (!file.exists()) return null
 
         kotlin.runCatching {
             Logger.getLogger("org.jaudiotagger").level = Level.OFF
-            val binaryData = AudioFileIO.read(file)?.tag?.firstArtwork?.binaryData
-                ?: return null
-            return ByteArrayInputStream(binaryData)
-                .source().buffer()
+            return AudioFileIO.read(file)?.tag?.firstArtwork?.binaryData
         }
         return null
+    }
+
+    override suspend fun loadCover(mediaItem: MediaItem): BufferedSource? {
+        val bytes = loadCoverBytes(mediaItem) ?: return null
+        val source = ByteArrayInputStream(bytes).source()
+        source.timeout().timeout(50, TimeUnit.MILLISECONDS)
+        return source.buffer()
     }
 }
