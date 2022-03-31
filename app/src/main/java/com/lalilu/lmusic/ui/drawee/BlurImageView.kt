@@ -181,7 +181,7 @@ class BlurImageView @JvmOverloads constructor(
             canvas.drawBitmap(it, newSamplingRect, newDestRect, newBitmapPainter)
         }
         maskPaint.alpha = (blurPercent * 100f).coerceIn(0f, 255f).toInt()
-        canvas.drawRect(destRect, maskPaint)
+        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), maskPaint)
     }
 
     /**
