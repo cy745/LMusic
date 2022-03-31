@@ -26,7 +26,7 @@ class EmbeddedCoverFetcher @Inject constructor(
         size: Size,
         options: Options
     ): FetchResult {
-        val bufferedSource = coverSourceFactory.getCover(data.mediaItem)
+        val bufferedSource = coverSourceFactory.loadCover(data.mediaItem)
             ?: throw NullPointerException()
         return SourceResult(
             source = bufferedSource,
