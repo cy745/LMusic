@@ -3,6 +3,7 @@ package com.lalilu.lmusic.service
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
@@ -15,10 +16,13 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaNotification
 import androidx.palette.graphics.Palette
+import com.blankj.utilcode.util.EncodeUtils
+import com.blankj.utilcode.util.ImageUtils
 import com.blankj.utilcode.util.SPUtils
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.apis.bean.toShareDto
 import com.lalilu.lmusic.manager.LyricPusher
 import dagger.Binds
 import dagger.Module
@@ -50,6 +54,7 @@ abstract class LyricPusherModule {
 @ExperimentalCoroutinesApi
 class LMusicNotificationProvider @Inject constructor(
     @ApplicationContext private val mContext: Context,
+    private val ablyService: AblyService
 ) : MediaNotification.Provider, LyricPusher, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -229,6 +234,13 @@ class LMusicNotificationProvider @Inject constructor(
                 onNotificationChangedCallback.onNotificationChanged(
                     mediaNotification!!
                 )
+                ablyService.latestSharedDto.emit(metadata.toShareDto()?.also {
+                    val small = Bitmap.createScaledBitmap(bitmap, 64, 64, false)
+                    val bytes = ImageUtils.bitmap2Bytes(small)
+                    it.coverBase64 = EncodeUtils.base64Encode2String(bytes)
+                    it.coverBaseColor = notificationBgColor
+                    small.recycle()
+                })
             }
         }
         mediaNotification = MediaNotification(

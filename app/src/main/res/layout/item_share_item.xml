@@ -61,12 +61,14 @@
             tools:layout_editor_absoluteX="20dp" />
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/song_card_bg"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="5dp"
             android:layout_marginBottom="5dp"
+            android:visibility="gone"
             app:cardCornerRadius="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -80,7 +82,7 @@
                 android:padding="15dp">
 
                 <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/song_album_pic"
+                    android:id="@+id/song_card_cover"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:background="@drawable/item_cover_bg"
@@ -91,7 +93,7 @@
                     tools:src="@tools:sample/avatars" />
 
                 <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/song_title"
+                    android:id="@+id/song_card_title"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="15dp"
@@ -99,29 +101,29 @@
                     android:text="@{musicTitle}"
                     android:textColor="@color/daynight_0"
                     android:textSize="14sp"
-                    app:layout_constraintBottom_toTopOf="@+id/song_singer"
-                    app:layout_constraintEnd_toStartOf="@+id/song_album_pic"
+                    app:layout_constraintBottom_toTopOf="@+id/song_card_artist"
+                    app:layout_constraintEnd_toStartOf="@+id/song_card_cover"
                     app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:text="@tools:sample/cities" />
 
                 <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/song_singer"
+                    android:id="@+id/song_card_artist"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="15dp"
                     android:letterSpacing="0.05"
                     android:text="@{musicArtist}"
-                    android:textColor="@color/daynight_0.6"
+                    android:textColor="#FFBDBDBD"
                     android:textSize="10sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/song_album_pic"
+                    app:layout_constraintEnd_toStartOf="@+id/song_card_cover"
                     app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/song_title"
+                    app:layout_constraintTop_toBottomOf="@+id/song_card_title"
                     tools:ignore="SmallSp"
                     tools:text="@tools:sample/full_names[2]" />
             </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,21 +1,28 @@
 package com.lalilu.lmusic.apis.bean
 
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import com.blankj.utilcode.util.GsonUtils
 
 data class ShareDto(
     val title: String,
     val artist: String,
-    val coverBase64: String = ""
+    var coverBase64: String? = null,
+    var coverBaseColor: Int? = null
 ) {
     fun toJson(): String {
         return GsonUtils.toJson(this)
     }
 }
 
+fun MediaMetadata?.toShareDto(): ShareDto? {
+    this ?: return null
+    val title = this.title?.toString() ?: return null
+    val artist = this.artist?.toString() ?: return null
+    return ShareDto(title, artist)
+}
+
 fun MediaItem?.toShareDto(): ShareDto? {
     this ?: return null
-    val title = this.mediaMetadata.title?.toString() ?: return null
-    val artist = this.mediaMetadata.artist?.toString() ?: return null
-    return ShareDto(title, artist)
+    return this.mediaMetadata.toShareDto()
 }
