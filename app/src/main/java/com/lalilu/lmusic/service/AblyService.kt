@@ -35,8 +35,10 @@ const val CHANNEL_NORMAL = "cn_normal"
 @ExperimentalCoroutinesApi
 class AblyService @Inject constructor(
     @ApplicationContext val context: Context
-) : DefaultLifecycleObserver, CoroutineScope,
-    ChannelBase.MessageListener {
+) : AblyRealtime(ClientOptions().also {
+    it.autoConnect = false
+    it.authUrl = Config.ABLY_AUTH_BASE_URL
+}), DefaultLifecycleObserver, CoroutineScope, ChannelBase.MessageListener {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val settingsSp: SharedPreferences =
@@ -47,10 +49,7 @@ class AblyService @Inject constructor(
         (now - pair.value.timestamp) <= maxAvailableDuration && pair.value.name != STATE_OFFLINE
     }
 
-    var ably: AblyRealtime? = null
-        get() = field ?: createAbly()
-    val listenChannel: Channel?
-        get() = ably?.let { getChannel(it) }
+    val listenChannel: Channel = channels.get(CHANNEL_NORMAL)
 
     val latestSharedDto: MutableStateFlow<ShareDto?> =
         MutableStateFlow(null)
@@ -69,47 +68,19 @@ class AblyService @Inject constructor(
         if (isEnable) map else null
     }.asLiveData()
 
-    fun getChannel(ablyRealtime: AblyRealtime): Channel {
-        return ablyRealtime.channels.get(CHANNEL_NORMAL)
-    }
-
-    private fun createAbly(): AblyRealtime? {
+    fun launchAbly() {
         if (settingsSp.getByResId(R.string.sp_key_ably_service_enable, false) != true)
-            return null
-
-        return AblyRealtime(ClientOptions().also {
-            it.autoConnect = false
-            it.authUrl = Config.ABLY_AUTH_BASE_URL
-        }).also {
-            it.connection.on { connectState ->
-                if (connectState.current.name == "connected") {
-                    getChannel(it).let { channel ->
-                        channel.subscribe(this)
-                        channel.publish(STATE_ONLINE, STATE_ONLINE)
-                    }
-                }
-                println(
-                    """
-                    [connection]
-                    it.event.name: ${connectState?.event?.name}
-                    it.current.name: ${connectState?.current?.name}
-                    it.reason.message: ${connectState?.reason?.message}
-                    """.trimIndent()
-                )
-            }
-        }
+            return
+        connect()
     }
 
     fun shutdownAbly() {
-        ably ?: return
-        listenChannel?.publish(STATE_OFFLINE, STATE_OFFLINE)
-        listenChannel?.unsubscribe(this)
-        ably?.close()
-        ably = null
+        listenChannel.publish(STATE_OFFLINE, STATE_OFFLINE)
+        close()
     }
 
     override fun onMessage(message: Message) {
-        if (ably?.connection?.id == message.connectionId) return
+        if (connection?.id == message.connectionId) return
         latestReceivedMessage.tryEmit(message)
         println(
             """
@@ -126,40 +97,42 @@ class AblyService @Inject constructor(
     }
 
     override fun onCreate(owner: LifecycleOwner) {
-        ably = ably ?: createAbly()
-        ably?.connect()
+        launchAbly()
     }
 
     override fun onResume(owner: LifecycleOwner) {
         latestReceivedMessage.tryEmit(null)
     }
 
-//    override fun onResume(owner: LifecycleOwner) {
-//        ably = ably ?: createAbly()
-//        history.getAndUpdate { map -> map.also { it.clear() } }
-//        ably?.connect()
-//    }
-
-//    override fun onStop(owner: LifecycleOwner) {
-//        shutdownAbly()
-//    }
-
     init {
         settingsSp.listen(R.string.sp_key_ably_service_enable, false) { enable ->
-            if (enable) {
-                ably = ably ?: createAbly()
-                history.getAndUpdate { map -> map.also { it.clear() } }
-                ably?.connect()
-            } else shutdownAbly()
+            if (enable) launchAbly() else shutdownAbly()
             isEnable.tryEmit(enable)
         }
+
         latestSharedDto.mapLatest {
             it ?: return@mapLatest null
             Message(STATE_LISTENING, it.toJson())
         }.distinctUntilChanged()
             .onEach {
                 it ?: return@onEach
-                listenChannel?.publish(it)
+                listenChannel.publish(it)
             }.launchIn(this)
+
+        connection.on { connectState ->
+            if (connectState.current.name == "connected") {
+                listenChannel.publish(STATE_ONLINE, STATE_ONLINE)
+            }
+            println(
+                """
+                    [connection: ${connection?.state?.name}]
+                    it.event.name: ${connectState?.event?.name}
+                    it.current.name: ${connectState?.current?.name}
+                    it.reason.message: ${connectState?.reason?.message}
+                    """.trimIndent()
+            )
+        }
+
+        listenChannel.subscribe(this)
     }
 }

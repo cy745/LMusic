@@ -43,8 +43,8 @@ class ShareAdapter @Inject constructor() :
                 binding.musicTitle = shareDto.title
                 binding.musicArtist = shareDto.artist
 
-                shareDto.coverBaseColor?.let(binding.songCardBg::setCardBackgroundColor)
-                shareDto.coverBase64?.getBase64Cover()?.let(binding.songCardCover::loadAny)
+                binding.songCardBg.setCardBackgroundColor(shareDto.coverBaseColor ?: Color.WHITE)
+                binding.songCardCover.loadAny(shareDto.coverBase64?.getBase64Cover())
                 val isLightBg =
                     ColorUtils.isLightColor(binding.songCardBg.cardBackgroundColor.defaultColor)
                 binding.songCardTitle.setTextColor(if (isLightBg) Color.BLACK else Color.WHITE)
