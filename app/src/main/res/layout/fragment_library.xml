@@ -44,20 +44,17 @@
                 tools:text="Artists" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <androidx.gridlayout.widget.GridLayout
+        <com.nex3z.flowlayout.FlowLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="20dp"
-            app:alignmentMode="alignBounds"
-            app:columnCount="2">
+            android:padding="20dp"
+            app:flChildSpacing="10dp"
+            app:flRowSpacing="10dp">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/to_playlists"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="10dp"
                 app:cardBackgroundColor="@color/bottom_sheet_card_bg"
                 app:cardCornerRadius="10dp"
                 app:layout_gravity="fill_horizontal">
@@ -85,6 +82,8 @@
                         android:id="@+id/playlist_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
                         android:text="@string/destination_label_playlists"
                         android:textColor="@color/daynight_0"
                         android:textSize="16sp"
@@ -109,9 +108,6 @@
                 android:id="@+id/to_albums"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="20dp"
                 app:cardBackgroundColor="@color/bottom_sheet_card_bg"
                 app:cardCornerRadius="10dp"
                 app:layout_gravity="fill_horizontal">
@@ -139,6 +135,8 @@
                         android:id="@+id/album_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
                         android:text="@string/destination_label_albums"
                         android:textColor="@color/daynight_0"
                         android:textSize="16sp"
@@ -163,9 +161,6 @@
                 android:id="@+id/to_all_song"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="10dp"
                 app:cardBackgroundColor="@color/bottom_sheet_card_bg"
                 app:cardCornerRadius="10dp"
                 app:layout_gravity="fill_horizontal">
@@ -219,10 +214,6 @@
                 android:id="@+id/to_settings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="20dp"
-
                 app:cardBackgroundColor="@color/bottom_sheet_card_bg"
                 app:cardCornerRadius="10dp"
                 app:layout_gravity="fill_horizontal">
@@ -276,9 +267,6 @@
                 android:id="@+id/to_share"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="10dp"
                 app:cardBackgroundColor="@color/bottom_sheet_card_bg"
                 app:cardCornerRadius="10dp"
                 app:layout_gravity="fill_horizontal">
@@ -333,9 +321,6 @@
                 android:id="@+id/to_genres"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="10dp"
                 android:visibility="gone"
                 app:cardBackgroundColor="@color/bottom_sheet_card_bg"
                 app:cardCornerRadius="10dp"
@@ -386,7 +371,7 @@
                         app:srcCompat="@drawable/ic_arrow_right_s_line" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
-        </androidx.gridlayout.widget.GridLayout>
+        </com.nex3z.flowlayout.FlowLayout>
     </androidx.appcompat.widget.LinearLayoutCompat>
 </layout>
 
