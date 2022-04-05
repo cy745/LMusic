@@ -1,8 +1,10 @@
 package com.lalilu.lmusic.adapter
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Color
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import coil.loadAny
 import com.blankj.utilcode.util.ColorUtils
@@ -12,11 +14,13 @@ import com.lalilu.databinding.ItemShareItemBinding
 import com.lalilu.lmusic.apis.bean.ShareDto
 import com.lalilu.lmusic.service.STATE_LISTENING
 import com.lalilu.lmusic.utils.fetcher.getBase64Cover
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.ably.lib.types.Message
 import javax.inject.Inject
 
-class ShareAdapter @Inject constructor() :
-    BaseAdapter<Message, ItemShareItemBinding>(R.layout.item_share_item) {
+class ShareAdapter @Inject constructor(
+    @ApplicationContext val context: Context
+) : BaseAdapter<Message, ItemShareItemBinding>(R.layout.item_share_item) {
     override val itemCallback: DiffUtil.ItemCallback<Message>
         get() = object : DiffUtil.ItemCallback<Message>() {
             override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean {
@@ -43,7 +47,9 @@ class ShareAdapter @Inject constructor() :
                 binding.musicTitle = shareDto.title
                 binding.musicArtist = shareDto.artist
 
-                binding.songCardBg.setCardBackgroundColor(shareDto.coverBaseColor ?: Color.WHITE)
+                binding.songCardBg.setCardBackgroundColor(
+                    shareDto.coverBaseColor ?: ContextCompat.getColor(context, R.color.daynight_1)
+                )
                 binding.songCardCover.loadAny(shareDto.coverBase64?.getBase64Cover())
                 val isLightBg =
                     ColorUtils.isLightColor(binding.songCardBg.cardBackgroundColor.defaultColor)
