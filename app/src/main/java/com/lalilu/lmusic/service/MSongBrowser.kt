@@ -21,9 +21,12 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.event.GlobalViewModel
+import com.lalilu.lmusic.event.GlobalData
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -32,6 +35,7 @@ interface EnhanceBrowser {
     fun togglePlay(): Boolean
     fun playByUri(uri: Uri): Boolean
     fun playById(mediaId: String): Boolean
+    fun playById(mediaId: String, playWhenReady: Boolean): Boolean
     fun addToNext(mediaId: String): Boolean
     fun removeById(mediaId: String): Boolean
     fun revokeRemove(): Boolean
@@ -39,12 +43,9 @@ interface EnhanceBrowser {
 }
 
 @Singleton
-@ObsoleteCoroutinesApi
-@ExperimentalCoroutinesApi
 class MSongBrowser @Inject constructor(
     @ApplicationContext
     private val mContext: Context,
-    private val mGlobal: GlobalViewModel,
     private val mediaSource: BaseMediaSource
 ) : DefaultLifecycleObserver, CoroutineScope, EnhanceBrowser {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -96,9 +97,9 @@ class MSongBrowser @Inject constructor(
                     return@MutableList browser.getMediaItemAt(it).mediaId
                 }
 
-                launch(Dispatchers.IO) {
+                launch(Dispatchers.Main) {
                     originPlaylistIds = ids
-                    mGlobal.currentPlaylist.emit(ids.mapNotNull {
+                    GlobalData.currentPlaylist.emit(ids.mapNotNull {
                         mediaSource.getItemById(
                             ITEM_PREFIX + it
                         )
@@ -158,6 +159,17 @@ class MSongBrowser @Inject constructor(
         return index >= 0
     }
 
+    override fun playById(mediaId: String, playWhenReady: Boolean): Boolean {
+        if (playById(mediaId) && playWhenReady) {
+            browser?.apply {
+                prepare()
+                play()
+            }
+            return true
+        }
+        return false
+    }
+
     override fun addToNext(mediaId: String): Boolean {
         val currentIndex = browser?.currentMediaItemIndex ?: return false
         if (currentIndex < 0) return false
@@ -184,7 +196,7 @@ class MSongBrowser @Inject constructor(
         return try {
             lastRemovedIndex = originPlaylistIds.indexOf(mediaId)
             if (lastRemovedIndex == browser!!.currentMediaItemIndex) {
-                mGlobal.currentMediaItem.tryEmit(
+                GlobalData.currentMediaItem.tryEmit(
                     browser!!.getMediaItemAt(browser!!.nextMediaItemIndex)
                 )
             }

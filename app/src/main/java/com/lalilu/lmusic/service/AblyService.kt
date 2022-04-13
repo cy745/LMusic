@@ -31,8 +31,8 @@ const val STATE_LISTENING = "st_listening"
 
 const val CHANNEL_NORMAL = "cn_normal"
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
-@ExperimentalCoroutinesApi
 class AblyService @Inject constructor(
     @ApplicationContext val context: Context
 ) : AblyRealtime(ClientOptions().also {

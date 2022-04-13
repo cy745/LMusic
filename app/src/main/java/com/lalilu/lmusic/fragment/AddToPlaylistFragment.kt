@@ -2,7 +2,6 @@ package com.lalilu.lmusic.fragment
 
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.databinding.FragmentAddToPlaylistBinding
@@ -10,7 +9,6 @@ import com.lalilu.lmusic.adapter.AddSongToPlaylistsAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.datasource.SongInPlaylist
 import com.lalilu.lmusic.viewmodel.AddToPlaylistViewModel
 import com.lalilu.lmusic.viewmodel.bindViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,7 +22,7 @@ import kotlin.coroutines.CoroutineContext
 @AndroidEntryPoint
 class AddToPlaylistFragment : DataBindingFragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-    private val args: AddToPlaylistFragmentArgs by navArgs()
+//    private val args: AddToPlaylistFragmentArgs by navArgs()
 
     @Inject
     lateinit var mState: AddToPlaylistViewModel
@@ -65,14 +63,14 @@ class AddToPlaylistFragment : DataBindingFragment(), CoroutineScope {
         }
         binding.addToPlaylistConfirm.setOnClickListener {
             launch(Dispatchers.IO) {
-                dataBase.songInPlaylistDao().save(
-                    mAdapter.selectedSet.map { playlist ->
-                        SongInPlaylist(
-                            playlistId = playlist.playlistId,
-                            mediaId = args.mediaId
-                        )
-                    }
-                )
+//                dataBase.songInPlaylistDao().save(
+//                    mAdapter.selectedSet.map { playlist ->
+//                        SongInPlaylist(
+//                            playlistId = playlist.playlistId,
+//                            mediaId = args.mediaId
+//                        )
+//                    }
+//                )
                 mAdapter.selectedSet.clear()
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "添加成功", Toast.LENGTH_SHORT).show()

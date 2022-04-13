@@ -3,7 +3,6 @@ package com.lalilu.common
 import android.animation.ValueAnimator
 import android.graphics.Color
 import android.os.Build
-import android.view.ViewGroup
 import androidx.palette.graphics.Palette
 
 fun Palette?.getAutomaticColor(): Int {
@@ -38,22 +37,30 @@ object ColorAnimator {
 
     fun setBgColorFromPalette(
         palette: Palette?,
-        viewGroup: ViewGroup
+        setColor: (Int) -> Unit
     ) {
         val plColor = palette.getAutomaticColor()
-        val oldColor = colorMap[viewGroup.id] ?: Color.DKGRAY
+        setBgColor(plColor, setColor)
+    }
+
+    fun setBgColor(
+        plColor: Int,
+        setColor: (Int) -> Unit
+    ) {
+        val id = setColor.hashCode()
+        val oldColor = colorMap[id] ?: Color.DKGRAY
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ValueAnimator.ofArgb(oldColor, plColor).apply {
                 duration = transitionDuration
                 addUpdateListener {
                     val color = it.animatedValue as Int
-                    viewGroup.setBackgroundColor(color)
+                    setColor(color)
                 }
             }.start()
         } else {
-            viewGroup.setBackgroundColor(plColor)
+            setColor(plColor)
         }
-        colorMap[viewGroup.id] = plColor
+        colorMap[id] = plColor
     }
 }
