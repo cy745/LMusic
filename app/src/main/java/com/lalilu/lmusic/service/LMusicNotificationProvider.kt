@@ -47,7 +47,6 @@ abstract class LyricPusherModule {
 
 @Singleton
 @UnstableApi
-@ExperimentalCoroutinesApi
 class LMusicNotificationProvider @Inject constructor(
     @ApplicationContext private val mContext: Context
 ) : MediaNotification.Provider, LyricPusher, CoroutineScope {

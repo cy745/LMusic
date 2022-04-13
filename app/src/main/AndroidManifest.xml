@@ -33,7 +33,7 @@
         </service>
 
         <activity
-            android:name=".lmusic.LMusicActivity"
+            android:name=".lmusic.MainActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:launchMode="singleTop"

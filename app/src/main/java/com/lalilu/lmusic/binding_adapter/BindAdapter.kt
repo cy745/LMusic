@@ -6,7 +6,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.databinding.BindingAdapter
-import androidx.lifecycle.MutableLiveData
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.palette.graphics.Palette
@@ -17,14 +16,13 @@ import coil.loadAny
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.common.ColorAnimator.setBgColorFromPalette
-import com.lalilu.common.ColorUtils.getAutomaticColor
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.GridItemDecoration
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
+import com.lalilu.ui.NewProgressBar
 import com.lalilu.ui.appbar.AppBarLayout
 import com.lalilu.ui.appbar.CollapsingToolbarLayout
-import com.lalilu.ui.NewProgressBar
 
 @BindingAdapter("iconRec")
 fun setIcon(imageView: ImageView, string: String?) {
@@ -107,22 +105,14 @@ fun setSongTitle(collapsingToolbarLayout: CollapsingToolbarLayout, mediaItem: Me
         }
 }
 
-@BindingAdapter("bgPaletteLiveData")
-fun setBGPaletteLiveData(
-    imageView: BlurImageView,
-    liveData: MutableLiveData<Palette?>
-) {
-    imageView.palette = liveData
-}
-
 @BindingAdapter("bgPalette")
 fun setAppbarBGColor(appBarLayout: AppBarLayout, palette: Palette?) {
-    setBgColorFromPalette(palette, appBarLayout)
+    setBgColorFromPalette(palette, appBarLayout::setBackgroundColor)
 }
 
 @BindingAdapter("bgPalette")
 fun setSeekBarBGColor(seekBar: NewProgressBar, palette: Palette?) {
-    seekBar.thumbColor = getAutomaticColor(palette)
+    setBgColorFromPalette(palette, seekBar::thumbColor::set)
 }
 
 @BindingAdapter(value = ["gridGap", "gridSpanCount"], requireAll = true)
@@ -132,11 +122,11 @@ fun addGridItemDecoration(recyclerView: RecyclerView, gridGap: Int, gridSpanCoun
 }
 
 @BindingAdapter("setDuration")
-fun setDuration(textView: TextView, metadata: MediaMetadata) {
-    textView.text = TimeUtils.millis2String(metadata.getDuration(), "mm:ss")
+fun setDuration(textView: TextView, duration: Long) {
+    textView.text = TimeUtils.millis2String(duration, "mm:ss")
 }
 
 @BindingAdapter("setDuration")
-fun setDuration(textView: TextView, duration: Long) {
-    textView.text = TimeUtils.millis2String(duration, "mm:ss")
+fun setDuration(textView: TextView, metadata: MediaMetadata) {
+    setDuration(textView, metadata.getDuration())
 }

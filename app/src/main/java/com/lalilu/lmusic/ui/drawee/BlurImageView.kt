@@ -19,12 +19,10 @@ import coil.load
 import com.lalilu.lmusic.utils.StackBlurUtils
 import com.lalilu.lmusic.utils.addShadow
 import com.lalilu.lmusic.utils.toBitmap
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -32,14 +30,10 @@ import kotlin.math.roundToInt
 /**
  * 结合StackBlur的自定义ImageView
  */
-@AndroidEntryPoint
 class BlurImageView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : AppCompatImageView(context, attrs), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-
-    @Inject
-    lateinit var stackBlur: StackBlurUtils
 
     var palette: MutableLiveData<Palette?> = MutableLiveData(null)
     var maxOffset = 0
@@ -249,7 +243,7 @@ class BlurImageView @JvmOverloads constructor(
     private suspend inline fun createBlurBitmap(source: Bitmap?, radius: Int): Bitmap? =
         withContext(Dispatchers.IO) {
             if (radius == 0) return@withContext null
-            return@withContext stackBlur.processWithCache(source, radius)
+            return@withContext StackBlurUtils.processWithCache(source, radius)
         }
 
     /**
@@ -323,7 +317,7 @@ class BlurImageView @JvmOverloads constructor(
         this@BlurImageView.newSamplingBitmap = null
         this@BlurImageView.newBlurBitmap = null
         palette.postValue(null)
-        stackBlur.evictAll()
+        StackBlurUtils.evictAll()
         refresh()
     }
 

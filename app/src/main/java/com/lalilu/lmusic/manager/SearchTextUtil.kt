@@ -8,7 +8,6 @@ import com.cm55.kanhira.Kanhira
 import com.lalilu.R
 import com.lalilu.common.KanaToRomaji
 import com.lalilu.common.PinyinUtils
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,8 +16,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.*
 import java.util.regex.Pattern
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -61,10 +58,7 @@ inline fun <I> SearchTextUtil.filter(
  * 包含功能：汉字转拼音、汉字转假名、假名转罗马字
  *         字符串汉字检测，字符串匹配
  */
-@Singleton
-class SearchTextUtil @Inject constructor(
-    @ApplicationContext context: Context
-) : CoroutineScope {
+object SearchTextUtil : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val kanaToRomaji = KanaToRomaji()
@@ -72,18 +66,18 @@ class SearchTextUtil @Inject constructor(
     /**
      * 异步加载Kanhira组件
      */
-    private val mKanhira = MutableStateFlow<Kanhira?>(null).apply {
-        if (Build.VERSION.SDK_INT <= 23) return@apply
-        launch {
-            emit(
-                Kanhira(
-                    KakasiDictReader.load(
-                        context.resources.openRawResource(R.raw.kakasidict_utf_8),
-                        Charsets.UTF_8.name()
-                    )
+    private val mKanhira = MutableStateFlow<Kanhira?>(null)
+
+    fun initKanhira(context: Context) = launch(Dispatchers.IO) {
+        if (Build.VERSION.SDK_INT <= 23) return@launch
+        mKanhira.emit(
+            Kanhira(
+                KakasiDictReader.load(
+                    context.resources.openRawResource(R.raw.kakasidict_utf_8),
+                    Charsets.UTF_8.name()
                 )
             )
-        }
+        )
     }
 
     /**

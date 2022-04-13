@@ -11,7 +11,6 @@ import com.blankj.utilcode.util.SnackbarUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
-import com.lalilu.BR
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
@@ -20,9 +19,8 @@ import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.adapter.PlayingAdapter.OnItemDragOrSwipedListener
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
-import com.lalilu.lmusic.base.showDialog
 import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.event.GlobalViewModel
+import com.lalilu.lmusic.event.GlobalData
 import com.lalilu.lmusic.event.SharedViewModel
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.service.AblyService
@@ -37,7 +35,10 @@ import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.appbar.STATE_COLLAPSED
 import com.lalilu.ui.appbar.STATE_NORMAL
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -49,9 +50,6 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
 
     @Inject
     lateinit var lyricManager: LyricManager
-
-    @Inject
-    lateinit var mGlobal: GlobalViewModel
 
     @Inject
     lateinit var mState: PlayingViewModel
@@ -69,10 +67,6 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
     lateinit var ablyService: AblyService
 
     private var needRefresh = true
-
-    private val dialog: NavigatorFragment by lazy {
-        NavigatorFragment()
-    }
 
     private val settingsSp: SharedPreferences by lazy {
         requireContext().getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
@@ -126,18 +120,8 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
             }
         }
         mAdapter.onItemLongClick = { item, position ->
-            showDialog(dialog) {
-                (this as NavigatorFragment)
-                    .navigateFrom(R.id.songDetailFragment)
-                    .navigate(
-                        LibraryFragmentDirections.libraryToSongDetail(item.mediaId)
-                    )
-            }
         }
         return DataBindingConfig(R.layout.fragment_playing)
-            .addParam(BR.vm, mState)
-            .addParam(BR.ev, mEvent)
-            .addParam(BR.adapter, mAdapter)
     }
 
     override fun onViewCreated() {
@@ -181,21 +165,21 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
                     fmToolbar.collapseActionView()
             }
         })
-        mGlobal.currentPlaylistLiveData.observe(viewLifecycleOwner) {
+        GlobalData.currentPlaylistLiveData.observe(viewLifecycleOwner) {
             mState.postData(it)
         }
-        mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
+        GlobalData.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             mState.song.postValue(it)
         }
-        mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
+        GlobalData.currentPositionLiveData.observe(viewLifecycleOwner) {
             fmLyricViewX.updateTime(it, needRefresh)
             needRefresh = false
         }
         // 从 metadata 中获取歌曲的总时长传递给 SeekBar
-        mGlobal.currentMediaItemLiveData.observe(viewLifecycleOwner) {
+        GlobalData.currentMediaItemLiveData.observe(viewLifecycleOwner) {
             seekBar.maxValue = (it?.mediaMetadata?.getDuration()?.coerceAtLeast(0) ?: 0f).toFloat()
         }
-        mGlobal.currentPositionLiveData.observe(viewLifecycleOwner) {
+        GlobalData.currentPositionLiveData.observe(viewLifecycleOwner) {
             seekBar.updateValue(it.toFloat())
         }
         lyricManager.songLyric.observe(viewLifecycleOwner) {
@@ -243,12 +227,10 @@ class PlayingFragment : DataBindingFragment(), CoroutineScope {
         seekBar.scrollListeners.add(
             object : OnSeekBarScrollToThresholdListener({ 300f }) {
                 override fun onScrollToThreshold() {
-                    showDialog(dialog)
                     haptic()
                 }
 
                 override fun onScrollRecover() {
-                    dialog.dismiss()
                     haptic()
                 }
             }

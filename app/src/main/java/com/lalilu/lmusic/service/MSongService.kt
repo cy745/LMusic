@@ -3,8 +3,6 @@ package com.lalilu.lmusic.service
 import android.app.PendingIntent
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.media3.common.*
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -12,35 +10,27 @@ import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import androidx.palette.graphics.Palette
-import com.blankj.utilcode.util.EncodeUtils
 import com.blankj.utilcode.util.GsonUtils
-import com.blankj.utilcode.util.ImageUtils
 import com.blankj.utilcode.util.SPUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.R
-import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.apis.bean.toShareDto
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.event.GlobalViewModel
+import com.lalilu.lmusic.event.GlobalData
 import com.lalilu.lmusic.utils.listen
-import com.lalilu.lmusic.utils.sources.CoverSourceFactory
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 @UnstableApi
 @AndroidEntryPoint
-@ExperimentalCoroutinesApi
 class MSongService : MediaLibraryService(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var player: Player
@@ -50,19 +40,16 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     private lateinit var mediaController: MediaController
 
     @Inject
-    lateinit var mGlobal: GlobalViewModel
-
-    @Inject
     lateinit var mediaSource: BaseMediaSource
 
     @Inject
     lateinit var notificationProvider: LMusicNotificationProvider
 
-    @Inject
-    lateinit var ablyService: AblyService
+//    @Inject
+//    lateinit var ablyService: AblyService
 
-    @Inject
-    lateinit var coverSourceFactory: CoverSourceFactory
+//    @Inject
+//    lateinit var coverSourceFactory: CoverSourceFactory
 
     private val lastPlayedSp: SPUtils by lazy {
         SPUtils.getInstance(Config.LAST_PLAYED_SP)
@@ -129,10 +116,10 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
         controllerFuture.addListener({
             mediaController = controllerFuture.get()
-            mediaController.addListener(mGlobal.playerListener)
+            mediaController.addListener(GlobalData.playerListener)
             mediaController.addListener(LastPlayedListener())
-            mGlobal.getIsPlayingFromPlayer = mediaController::isPlaying
-            mGlobal.getPositionFromPlayer = mediaController::getCurrentPosition
+            GlobalData.getIsPlayingFromPlayer = mediaController::isPlaying
+            GlobalData.getPositionFromPlayer = mediaController::getCurrentPosition
         }, MoreExecutors.directExecutor())
 
         setMediaNotificationProvider(notificationProvider)
@@ -142,22 +129,22 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             launch {
                 lastPlayedSp.put(Config.LAST_PLAYED_ID, mediaItem?.mediaId)
-                mediaItem ?: return@launch
-                coverSourceFactory.loadCoverBytes(mediaItem)?.let {
-                    val bitmap = BitmapFactory.decodeByteArray(it, 0, it.size)
-                    val color = Palette.from(bitmap).generate().getAutomaticColor()
-                    ablyService.latestSharedDto.emit(
-                        mediaItem.mediaMetadata.toShareDto()?.also { dto ->
-                            val small = Bitmap.createScaledBitmap(bitmap, 64, 64, false)
-                            dto.coverBase64 = EncodeUtils.base64Encode2String(
-                                ImageUtils.bitmap2Bytes(small)
-                            )
-                            dto.coverBaseColor = color
-                            small.recycle()
-                        })
-                    return@launch
-                }
-                ablyService.latestSharedDto.emit(mediaItem.mediaMetadata.toShareDto())
+//                mediaItem ?: return@launch
+//                coverSourceFactory.loadCoverBytes(mediaItem)?.let {
+//                    val bitmap = BitmapFactory.decodeByteArray(it, 0, it.size)
+//                    val color = Palette.from(bitmap).generate().getAutomaticColor()
+//                    ablyService.latestSharedDto.emit(
+//                        mediaItem.mediaMetadata.toShareDto()?.also { dto ->
+//                            val small = Bitmap.createScaledBitmap(bitmap, 64, 64, false)
+//                            dto.coverBase64 = EncodeUtils.base64Encode2String(
+//                                ImageUtils.bitmap2Bytes(small)
+//                            )
+//                            dto.coverBaseColor = color
+//                            small.recycle()
+//                        })
+//                    return@launch
+//                }
+//                ablyService.latestSharedDto.emit(mediaItem.mediaMetadata.toShareDto())
             }
         }
 
@@ -218,7 +205,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     }
 
     override fun onDestroy() {
-        ablyService.shutdownAbly()
+//        ablyService.shutdownAbly()
         player.release()
         mediaLibrarySession.release()
         super.onDestroy()

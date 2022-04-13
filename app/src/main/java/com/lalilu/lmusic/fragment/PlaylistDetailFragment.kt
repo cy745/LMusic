@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.widget.TextView
 import androidx.databinding.library.baseAdapters.BR
 import androidx.media3.common.Player
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
 import com.lalilu.databinding.FragmentDetailPlaylistBinding
@@ -13,7 +11,6 @@ import com.lalilu.lmusic.adapter.ListAdapter
 import com.lalilu.lmusic.base.DataBindingConfig
 import com.lalilu.lmusic.base.DataBindingFragment
 import com.lalilu.lmusic.datasource.BaseMediaSource
-import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
@@ -30,7 +27,6 @@ import kotlin.coroutines.CoroutineContext
 @ExperimentalCoroutinesApi
 @SuppressLint("UnsafeOptInUsageError")
 class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
-    private val args: PlaylistDetailFragmentArgs by navArgs()
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     @Inject
@@ -62,9 +58,7 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
         }
         mAdapter.onItemLongClick = { item, position ->
             mAdapter.savePosition(mState)
-            findNavController().navigate(
-                PlaylistDetailFragmentDirections.playlistToSongDetail(item.mediaId)
-            )
+
         }
         return DataBindingConfig(R.layout.fragment_detail_playlist)
             .addParam(BR.adapter, mAdapter)
@@ -73,16 +67,16 @@ class PlaylistDetailFragment : DataBindingFragment(), CoroutineScope {
 
     override fun onViewCreated() {
         launch(Dispatchers.IO) {
-            mState.playlist.postValue(
-                dataBase.playlistDao().getById(args.playlistId)
-            )
-            mState.postData(
-                dataBase.songInPlaylistDao()
-                    .getAllByPlaylistId(args.playlistId)
-                    .mapNotNull {
-                        mediaSource.getItemById(ITEM_PREFIX + it.mediaId)
-                    }
-            )
+//            mState.playlist.postValue(
+//                dataBase.playlistDao().getById(args.playlistId)
+//            )
+//            mState.postData(
+//                dataBase.songInPlaylistDao()
+//                    .getAllByPlaylistId(args.playlistId)
+//                    .mapNotNull {
+//                        mediaSource.getItemById(ITEM_PREFIX + it.mediaId)
+//                    }
+//            )
         }
         val binding = mBinding as FragmentDetailPlaylistBinding
         val callback = TextView.OnEditorActionListener { view, _, _ ->

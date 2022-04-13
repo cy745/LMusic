@@ -91,15 +91,9 @@ class BaseMediaSource @Inject constructor(
     }
 
     override fun songItemToAlbumItem(mediaItem: MediaItem): MediaItem {
-        return MediaItem.Builder()
-            .setMediaId(getAlbumIdFromMediaItem(mediaItem))
+        return mediaItem.buildUpon()
             .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(mediaItem.mediaMetadata.albumTitle)
-                    .setAlbumTitle(mediaItem.mediaMetadata.albumTitle)
-                    .setArtist(mediaItem.mediaMetadata.artist)
-                    .setAlbumArtist(mediaItem.mediaMetadata.albumArtist)
-                    .setArtworkUri(mediaItem.mediaMetadata.artworkUri)
+                mediaItem.mediaMetadata.buildUpon()
                     .setIsPlayable(false)
                     .setFolderType(FOLDER_TYPE_PLAYLISTS)
                     .build()
@@ -107,13 +101,9 @@ class BaseMediaSource @Inject constructor(
     }
 
     override fun songItemToArtistItem(mediaItem: MediaItem): MediaItem {
-        return MediaItem.Builder()
-            .setMediaId(getArtistIdFromMediaItem(mediaItem))
+        return mediaItem.buildUpon()
             .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(mediaItem.mediaMetadata.artist)
-                    .setAlbumTitle(mediaItem.mediaMetadata.artist)
-                    .setArtist(mediaItem.mediaMetadata.artist)
+                mediaItem.mediaMetadata.buildUpon()
                     .setIsPlayable(false)
                     .setFolderType(FOLDER_TYPE_PLAYLISTS)
                     .build()
@@ -121,13 +111,10 @@ class BaseMediaSource @Inject constructor(
     }
 
     override fun songItemToGenreItem(mediaItem: MediaItem): MediaItem {
-        return MediaItem.Builder()
+        return mediaItem.buildUpon()
             .setMediaId(mediaItem.mediaMetadata.genre.toString())
             .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(mediaItem.mediaMetadata.genre.toString())
-                    .setAlbumTitle(mediaItem.mediaMetadata.genre.toString())
-                    .setGenre(mediaItem.mediaMetadata.genre.toString())
+                mediaItem.mediaMetadata.buildUpon()
                     .setIsPlayable(false)
                     .setFolderType(FOLDER_TYPE_PLAYLISTS)
                     .build()
