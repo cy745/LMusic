@@ -20,7 +20,7 @@ import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.event.GlobalData
+import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.screen.viewmodel.MainViewModel
 import com.lalilu.ui.*
 import kotlinx.coroutines.CoroutineScope

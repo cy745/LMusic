@@ -9,7 +9,7 @@ fun <T> sort(
     list: MutableList<T>,
     getTimeField: (T) -> Long,
     getTextField: (T) -> String
-) {
+): List<T> {
     when (sortBy) {
         SORT_BY_TIME -> if (sortDesc) {
             list.sortByDescending(getTimeField)
@@ -22,6 +22,7 @@ fun <T> sort(
             list.sortBy(getTextField)
         }
     }
+    return list
 }
 
 fun next(sortBy: Int): Int {

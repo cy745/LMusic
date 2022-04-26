@@ -7,9 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Divider
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -123,7 +121,9 @@ fun LyricCard(
     onClick: () -> Unit = {}
 ) {
     val color: Color by animateColorAsState(
-        if (selected) Color(0x22000000) else Color.Transparent
+        if (selected) contentColorFor(
+            backgroundColor = MaterialTheme.colors.background
+        ).copy(0.2f) else Color.Transparent
     )
 
     Surface(

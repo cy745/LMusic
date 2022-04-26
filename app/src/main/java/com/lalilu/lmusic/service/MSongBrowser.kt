@@ -21,7 +21,6 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.event.GlobalData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

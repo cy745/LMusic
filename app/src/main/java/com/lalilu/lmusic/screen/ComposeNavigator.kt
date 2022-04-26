@@ -49,12 +49,12 @@ fun ComposeNavigator(
         modifier = modifier
     ) {
         composable(
-            MainScreenData.Library.name
+            route = MainScreenData.Library.name
         ) {
             LibraryScreen(navigateTo = navController::navigate)
         }
         composable(
-            MainScreenData.AllSongs.name
+            route = MainScreenData.AllSongs.name
         ) {
             AllSongsScreen(
                 navigateTo = navController::navigate,
@@ -62,7 +62,7 @@ fun ComposeNavigator(
             )
         }
         composable(
-            MainScreenData.Albums.name
+            route = MainScreenData.Albums.name
         ) {
             val albums = mediaSource.getChildren(ALBUM_ID) ?: emptyList()
             AlbumsScreen(
@@ -72,7 +72,7 @@ fun ComposeNavigator(
             )
         }
         composable(
-            MainScreenData.Playlists.name
+            route = MainScreenData.Playlists.name
         ) {
             PlaylistsScreen(
                 navigateTo = navController::navigate,
@@ -80,7 +80,7 @@ fun ComposeNavigator(
             )
         }
         composable(
-            "${MainScreenData.PlaylistDetail.name}/{playlistId}",
+            route = "${MainScreenData.PlaylistDetail.name}/{playlistId}",
             arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
         ) { backStackEntry ->
             val playlistId = backStackEntry.arguments?.getString("playlistId")?.toLong()
@@ -94,7 +94,7 @@ fun ComposeNavigator(
             }
         }
         composable(
-            "${MainScreenData.SongDetail.name}/{mediaId}",
+            route = "${MainScreenData.SongDetail.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
@@ -109,7 +109,7 @@ fun ComposeNavigator(
             } ?: EmptySongDetailScreen()
         }
         composable(
-            "${MainScreenData.AlbumDetail.name}/{albumId}",
+            route = "${MainScreenData.AlbumDetail.name}/{albumId}",
             arguments = listOf(navArgument("albumId") { type = NavType.StringType })
         ) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId")
@@ -128,7 +128,37 @@ fun ComposeNavigator(
             } ?: EmptyAlbumDetailScreen()
         }
         composable(
-            "${MainScreenData.SearchForLyric.name}/{mediaId}",
+            route = MainScreenData.AddToPlaylist.name,
+            arguments = listOf(navArgument("mediaIds") { type = NavType.StringArrayType })
+        ) { backStackEntry ->
+            val mediaIds = backStackEntry.arguments?.getStringArrayList("mediaIds")
+
+            mediaIds?.takeIf { it.isNotEmpty() }?.let {
+                PlaylistsScreen(
+                    navigateUp = navController::navigateUp,
+                    contentPaddingForFooter = contentPaddingForFooter,
+                    isAddingSongToPlaylist = true,
+                    mediaIds = it
+                )
+            }
+        }
+        composable(
+            route = "${MainScreenData.AddToPlaylist.name}/{mediaId}",
+            arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val mediaId = backStackEntry.arguments?.getString("mediaId")
+
+            mediaId?.let {
+                PlaylistsScreen(
+                    navigateUp = navController::navigateUp,
+                    contentPaddingForFooter = contentPaddingForFooter,
+                    isAddingSongToPlaylist = true,
+                    mediaIds = listOf(it)
+                )
+            }
+        }
+        composable(
+            route = "${MainScreenData.SearchForLyric.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
@@ -191,6 +221,11 @@ enum class MainScreenData(
         title = R.string.destination_label_song_detail,
         subTitle = R.string.destination_subtitle_song_detail
     ),
+    AddToPlaylist(
+        icon = R.drawable.ic_play_list_line,
+        title = R.string.destination_label_add_song_to_playlist,
+        subTitle = R.string.destination_label_add_song_to_playlist
+    ),
     SearchForLyric(
         icon = R.drawable.ic_lrc_fill,
         title = R.string.destination_label_search_for_lyric,
@@ -207,6 +242,7 @@ enum class MainScreenData(
                 SongDetail.name -> SongDetail
                 AlbumDetail.name -> AlbumDetail
                 PlaylistDetail.name -> PlaylistDetail
+                AddToPlaylist.name -> AddToPlaylist
                 SearchForLyric.name -> SearchForLyric
                 else -> null
             }

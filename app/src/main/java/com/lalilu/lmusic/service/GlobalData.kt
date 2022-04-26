@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.event
+package com.lalilu.lmusic.service
 
 import android.os.Handler
 import android.os.Looper

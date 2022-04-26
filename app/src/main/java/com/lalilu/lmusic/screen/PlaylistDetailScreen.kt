@@ -6,10 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.toMutableStateList
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -39,20 +36,25 @@ fun PlaylistDetailScreen(
     mediaBrowserViewModel: MediaBrowserViewModel = hiltViewModel()
 ) {
     val haptic = LocalHapticFeedback.current
-    var playlist = remember { MPlaylist(playlistId) }
-    val sortedItems = remember { emptyList<MediaItem>().toMutableStateList() }
-    val title = remember(playlist) { playlist.playlistTitle }
-    val subTitle = remember(playlist) { playlist.playlistInfo }
+    var playlist by remember { mutableStateOf(MPlaylist(playlistId)) }
+    val playlistItems = remember { emptyList<MediaItem>().toMutableStateList() }
+
     var sortByState by rememberDataSaverState("KEY_SORT_BY_PlaylistDetailScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_PlaylistDetailScreen", true)
+    val sortedItems = remember(sortByState, sortDesc, playlistItems) {
+        sort(sortByState, sortDesc, playlistItems,
+            getTextField = { it.mediaMetadata.albumTitle.toString() },
+            getTimeField = { it.mediaId.toLong() }
+        )
+    }
 
     LaunchedEffect(playlistId) {
         viewModel.getPlaylistById(playlistId)?.let {
             playlist = it
         }
         viewModel.getSongsByPlaylistId(playlistId).let {
-            sortedItems.clear()
-            sortedItems.addAll(it)
+            playlistItems.clear()
+            playlistItems.addAll(it)
         }
     }
 
@@ -72,24 +74,18 @@ fun PlaylistDetailScreen(
         }
     }
 
-    val sort = {
-        sort(sortByState, sortDesc, sortedItems,
-            getTextField = { it.mediaMetadata.albumTitle.toString() },
-            getTimeField = { it.mediaId.toLong() }
-        )
-    }
-
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        NavigatorHeaderWithButtons(title = title, subTitle = subTitle) {
+        NavigatorHeaderWithButtons(
+            title = playlist.playlistTitle,
+            subTitle = playlist.playlistInfo
+        ) {
             LazyListSortToggleButton(sortByState = sortByState) {
                 sortByState = next(sortByState)
-                sort()
             }
             SortToggleButton(sortDesc = sortDesc) {
                 sortDesc = !sortDesc
-                sort()
             }
         }
         LazyColumn(

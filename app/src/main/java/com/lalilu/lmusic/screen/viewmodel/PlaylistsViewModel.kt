@@ -39,9 +39,9 @@ class PlaylistsViewModel @Inject constructor(
             return@withContext dataBase.playlistDao().getById(playlistId)
         }
 
-    fun createNewPlaylist() = launch {
+    fun createNewPlaylist(title: String? = null) = launch {
         dataBase.playlistDao().save(
-            MPlaylist(playlistTitle = "空歌单")
+            MPlaylist(playlistTitle = title ?: "空歌单")
         )
     }
 
@@ -63,5 +63,12 @@ class PlaylistsViewModel @Inject constructor(
         )
     }
 
-
+    fun addSongsIntoPlaylists(mediaIds: List<String>, playlistIds: List<Long>) = launch {
+        val songInPlaylist = playlistIds.flatMap { playlistId ->
+            mediaIds.map { mediaId ->
+                SongInPlaylist(playlistId = playlistId, mediaId = mediaId)
+            }
+        }
+        dataBase.songInPlaylistDao().save(songInPlaylist)
+    }
 }
