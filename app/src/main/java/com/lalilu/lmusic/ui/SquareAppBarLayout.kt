@@ -61,11 +61,14 @@ class SquareAppBarLayout @JvmOverloads constructor(
         super.onMeasure(widthMeasureSpec, widthMeasureSpec)
     }
 
+    /**
+     * 修改View的高度，使用LayoutParams修改的方法时灵时不灵，故直接修改其top和bottom
+     */
     private fun setHeightToView(view: View?, height: Number) {
-        view?.let {
-            if (it.height == height.toInt()) return
-            it.layoutParams = it.layoutParams.also { params -> params.height = height.toInt() }
-        }
+        view ?: return
+        if (view.height == height.toInt()) return
+        view.top = 0
+        view.bottom = height.toInt()
     }
 
     private fun getMutableDragOffset(): Float {
