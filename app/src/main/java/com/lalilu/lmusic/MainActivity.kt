@@ -14,11 +14,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
@@ -27,6 +29,7 @@ import com.funny.data_saver.core.DataSaverPreferences
 import com.funny.data_saver.core.DataSaverPreferences.Companion.setContext
 import com.funny.data_saver.core.LocalDataSaver
 import com.lalilu.R
+import com.lalilu.common.DeviceUtils
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmusic.datasource.BaseMediaSource
@@ -98,14 +101,21 @@ fun MainScreen(
     mediaSource: BaseMediaSource,
     activity: AppCompatActivity
 ) {
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
     val scaffoldState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
     )
-    val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
-    val screenHeight = LocalDensity.current.run { screenHeightDp.toPx() }
-    val navBarHeightDp = LocalDensity.current.run { BarUtils.getNavBarHeight().toDp() }
+
+    val screenHeight = remember(configuration.screenHeightDp) {
+        DeviceUtils.getHeight(context)
+    }
+    val screenHeightDp = density.run { screenHeight.toDp() }
+    val statusBarHeightDp = density.run { BarUtils.getStatusBarHeight().toDp() }
+    val navBarHeightDp = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val isVisible = { scaffoldState.offset.value < screenHeight }
 
     ModalBottomSheetLayout(
@@ -116,7 +126,7 @@ fun MainScreen(
         sheetContent = {
             Box(
                 modifier = Modifier
-                    .height(screenHeightDp + navBarHeightDp)
+                    .height(screenHeightDp - statusBarHeightDp)
             ) {
                 ComposeNavigator(
                     scope = scope,
@@ -133,7 +143,7 @@ fun MainScreen(
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
                         .background(color = MaterialTheme.colors.background.copy(alpha = 0.9f))
-                        .padding(PaddingValues(bottom = navBarHeightDp)),
+                        .navigationBarsPadding(),
                     navController = navController,
                     popUp = {
                         if (!navController.navigateUp()) {

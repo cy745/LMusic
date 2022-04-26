@@ -2,12 +2,17 @@ package com.lalilu.lmusic.screen
 
 import android.content.Context
 import android.content.ContextWrapper
+import android.view.ViewGroup
 import androidx.annotation.IntDef
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
@@ -60,6 +65,10 @@ fun PlayingScreen(
             scope.launch { it() }
         }
     }
+
+    val statusBarPadding = WindowInsets.statusBars.asPaddingValues()
+    val statusPaddingTop =
+        LocalDensity.current.run { statusBarPadding.calculateTopPadding().toPx() }
 
     val context = LocalContext.current
     AndroidViewBinding(factory = { inflater, parent, attachToParent ->
@@ -134,7 +143,11 @@ fun PlayingScreen(
                 fmLyricViewX.loadLyric(it?.first, it?.second)
             }
         }
-    })
+    }) {
+        (fmToolbar.layoutParams as ViewGroup.MarginLayoutParams).also {
+            it.topMargin = statusPaddingTop.toInt()
+        }
+    }
 }
 
 fun Context.getActivity(): AppCompatActivity? {

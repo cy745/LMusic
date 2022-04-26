@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     buildToolsVersion "32.0.0"
 
     buildFeatures {
@@ -20,9 +20,9 @@ android {
     defaultConfig {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
-        targetSdkVersion 31
-        versionCode 31
-        versionName "1.4.10_1"
+        targetSdkVersion 32
+        versionCode 32
+        versionName "1.4.11"
         vectorDrawables {
             useSupportLibrary true
         }
@@ -55,7 +55,7 @@ android {
             excludes += ['META-INF/CONTRIBUTORS.md', 'META-INF/LICENSE.md']
         }
     }
-    lintOptions {
+    lint {
         checkDependencies true
     }
 }
