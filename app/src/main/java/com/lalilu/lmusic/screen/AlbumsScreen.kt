@@ -30,14 +30,13 @@ fun AlbumsScreen(
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", false)
     var sortByState by rememberDataSaverState("KEY_SORT_BY_AlbumsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", false)
-    val sortedItems = remember { albums.toMutableStateList() }
-
-    val sort = {
-        sort(sortByState, sortDesc, sortedItems,
+    val sortedItems = remember(sortByState, sortDesc, albums) {
+        sort(sortByState, sortDesc, albums.toMutableStateList(),
             getTextField = { it.mediaMetadata.albumTitle.toString() },
             getTimeField = { it.mediaId.toLong() }
         )
     }
+
     val onAlbumSelected = remember {
         { albumId: String ->
             navigateTo("${MainScreenData.AlbumDetail.name}/$albumId")
@@ -48,11 +47,9 @@ fun AlbumsScreen(
         NavigatorHeaderWithButtons(route = MainScreenData.Albums) {
             LazyListSortToggleButton(sortByState = sortByState) {
                 sortByState = next(sortByState)
-                sort()
             }
             SortToggleButton(sortDesc = sortDesc) {
                 sortDesc = !sortDesc
-                sort()
             }
             TextVisibleToggleButton(textVisible = textVisible) {
                 textVisible = !textVisible

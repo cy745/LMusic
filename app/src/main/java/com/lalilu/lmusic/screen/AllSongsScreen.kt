@@ -34,14 +34,11 @@ fun AllSongsScreen(
     val allSongs: List<MediaItem> by allSongViewModel.allSongsLiveData.collectAsState(emptyList())
     var sortByState by rememberDataSaverState("KEY_SORT_BY_AllSongsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AllSongsScreen", true)
-
-    val sortedItems = remember(allSongs) {
-        allSongs.toMutableStateList().also { list ->
-            sort(sortByState, sortDesc, list,
-                getTextField = { it.mediaMetadata.albumTitle.toString() },
-                getTimeField = { it.mediaId.toLong() }
-            )
-        }
+    val sortedItems = remember(sortByState, sortDesc, allSongs) {
+        sort(sortByState, sortDesc, allSongs.toMutableStateList(),
+            getTextField = { it.mediaMetadata.albumTitle.toString() },
+            getTimeField = { it.mediaId.toLong() }
+        )
     }
     val onSongSelected: (Int) -> Unit = remember(sortedItems) {
         { index ->
@@ -57,22 +54,14 @@ fun AllSongsScreen(
             navigateTo("${MainScreenData.SongDetail.name}/$mediaId")
         }
     }
-    val sort = {
-        sort(sortByState, sortDesc, sortedItems,
-            getTextField = { it.mediaMetadata.albumTitle.toString() },
-            getTimeField = { it.mediaId.toLong() }
-        )
-    }
 
     Column {
         NavigatorHeaderWithButtons(route = MainScreenData.AllSongs) {
             LazyListSortToggleButton(sortByState = sortByState) {
                 sortByState = next(sortByState)
-                sort()
             }
             SortToggleButton(sortDesc = sortDesc) {
                 sortDesc = !sortDesc
-                sort()
             }
         }
         LazyColumn(

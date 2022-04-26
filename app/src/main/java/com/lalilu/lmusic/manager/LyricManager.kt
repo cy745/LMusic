@@ -4,7 +4,7 @@ import androidx.lifecycle.asLiveData
 import androidx.media3.common.Player
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
-import com.lalilu.lmusic.event.GlobalData
+import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

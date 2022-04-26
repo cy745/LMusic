@@ -10,7 +10,7 @@ import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.apis.bean.SongSearchSong
 import com.lalilu.lmusic.datasource.LMusicDataBase
 import com.lalilu.lmusic.datasource.PersistLyric
-import com.lalilu.lmusic.event.GlobalData
+import com.lalilu.lmusic.service.GlobalData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*

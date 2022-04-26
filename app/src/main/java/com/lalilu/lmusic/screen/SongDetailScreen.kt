@@ -44,6 +44,12 @@ fun SongDetailScreen(
         imagePainter = imagePainter,
         onSearchForLyric = {
             navigateTo("${MainScreenData.SearchForLyric.name}/${mediaItem.mediaId}")
+        },
+        onAddSongToPlaylist = {
+            navigateTo("${MainScreenData.AddToPlaylist.name}/${mediaItem.mediaId}")
+        },
+        onSetSongToNext = {
+
         }
     )
 }
