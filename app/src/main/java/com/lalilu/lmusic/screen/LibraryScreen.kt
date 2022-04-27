@@ -18,7 +18,7 @@ import com.lalilu.lmusic.screen.component.NavigatorHeader
 @Composable
 fun LibraryScreen(
     navigateTo: (destination: String) -> Unit = {},
-    ContentPaddingForFooter: Dp = 0.dp
+    contentPaddingForFooter: Dp = 0.dp
 ) {
     Column(
         modifier = Modifier.fillMaxSize()

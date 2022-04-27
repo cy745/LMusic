@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="preference_lyric_experimental">实验性功能</string>
     <string name="preference_lyric_settings">歌词显示设置</string>
     <string name="preference_lyric_settings_status_bar_lyric">状态栏歌词</string>
     <string name="preference_lyric_settings_text_gravity">歌词方向</string>
