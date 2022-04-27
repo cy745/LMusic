@@ -51,7 +51,10 @@ fun ComposeNavigator(
         composable(
             route = MainScreenData.Library.name
         ) {
-            LibraryScreen(navigateTo = navController::navigate)
+            LibraryScreen(
+                navigateTo = navController::navigate,
+                contentPaddingForFooter = contentPaddingForFooter
+            )
         }
         composable(
             route = MainScreenData.AllSongs.name
@@ -174,6 +177,13 @@ fun ComposeNavigator(
                 }
             } ?: EmptySearchForLyricScreen()
         }
+        composable(
+            route = MainScreenData.Settings.name
+        ) {
+            SettingsScreen(
+                contentPaddingForFooter = contentPaddingForFooter
+            )
+        }
     }
 }
 
@@ -230,6 +240,12 @@ enum class MainScreenData(
         icon = R.drawable.ic_lrc_fill,
         title = R.string.destination_label_search_for_lyric,
         subTitle = R.string.destination_label_search_for_lyric
+    ),
+    Settings(
+        icon = R.drawable.ic_settings_4_line,
+        title = R.string.destination_label_settings,
+        subTitle = R.string.destination_subtitle_settings,
+        showNavigateButton = true
     );
 
     companion object {
@@ -237,12 +253,13 @@ enum class MainScreenData(
             when (route?.substringBefore("/")) {
                 Albums.name -> Albums
                 Library.name -> Library
+                Settings.name -> Settings
                 AllSongs.name -> AllSongs
                 Playlists.name -> Playlists
                 SongDetail.name -> SongDetail
                 AlbumDetail.name -> AlbumDetail
-                PlaylistDetail.name -> PlaylistDetail
                 AddToPlaylist.name -> AddToPlaylist
+                PlaylistDetail.name -> PlaylistDetail
                 SearchForLyric.name -> SearchForLyric
                 else -> null
             }
