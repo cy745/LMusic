@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
@@ -55,7 +54,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     }
 
     private val settingsSp: SharedPreferences by lazy {
-        getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
+        getSharedPreferences(applicationContext.packageName, Context.MODE_PRIVATE)
     }
 
     private val audioAttributes = AudioAttributes.Builder()
@@ -81,15 +80,15 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             }
         }
 
-        settingsSp.listen(
-            R.string.sp_key_player_settings_skip_silent,
-            false
-        ) {
-            exoPlayer.skipSilenceEnabled = it
-        }
+//        settingsSp.listen(
+//            R.string.sp_key_player_settings_skip_silent,
+//            false
+//        ) {
+//            exoPlayer.skipSilenceEnabled = it
+//        }
 
         settingsSp.listen(
-            R.string.sp_key_player_settings_ignore_audio_focus,
+            "KEY_SETTINGS_ignore_audio_focus",
             false
         ) {
             exoPlayer.setAudioAttributes(audioAttributes, !it)

@@ -33,12 +33,12 @@ import com.lalilu.common.DeviceUtils
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmusic.datasource.BaseMediaSource
-import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.screen.ComposeNavigator
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.PlayingScreen
 import com.lalilu.lmusic.screen.clearBackStack
 import com.lalilu.lmusic.screen.component.NavigatorFooter
+import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
 import com.lalilu.lmusic.ui.bind

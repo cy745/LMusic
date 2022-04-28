@@ -16,19 +16,23 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
+import com.dirror.lyricviewx.GRAVITY_CENTER
+import com.dirror.lyricviewx.GRAVITY_LEFT
+import com.dirror.lyricviewx.GRAVITY_RIGHT
 import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.screen.viewmodel.MainViewModel
+import com.lalilu.lmusic.service.GlobalData
+import com.lalilu.lmusic.utils.listen
 import com.lalilu.ui.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 const val CLICK_HANDLE_MODE_CLICK = 0
-const val CLICK_HANDLE_MODE_LONG_CLICK = 1
-const val CLICK_HANDLE_MODE_DOUBLE_CLICK = 2
+const val CLICK_HANDLE_MODE_DOUBLE_CLICK = 1
+const val CLICK_HANDLE_MODE_LONG_CLICK = 2
 
 @IntDef(
     CLICK_HANDLE_MODE_CLICK,
@@ -52,8 +56,7 @@ fun PlayingScreen(
     onPlayPrevious: suspend () -> Unit = {},
     onPlayPause: suspend () -> Unit = {},
     onSeekToPosition: suspend (Float) -> Unit = {},
-    mainViewModel: MainViewModel = hiltViewModel(),
-    @ClickHandleMode clickHandleMode: Int = CLICK_HANDLE_MODE_CLICK
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     fun playHandle(@ClickPart clickPart: Int) {
         when (clickPart) {
@@ -76,10 +79,28 @@ fun PlayingScreen(
             val activity = context.getActivity()!!
             val haptic = { HapticUtils.haptic(this.root) }
             val doubleHaptic = { HapticUtils.doubleHaptic(this.root) }
+            val settingsSp = context.getSharedPreferences(
+                context.applicationContext.packageName,
+                Context.MODE_PRIVATE
+            )
             adapter = PlayingAdapter().apply {
                 onItemClick = { item, _ -> scope.launch { onSongSelected(item) } }
                 onItemLongClick = { item, _ -> scope.launch { onSongShowDetail(item) } }
             }
+            @ClickHandleMode
+            var clickHandleMode = CLICK_HANDLE_MODE_CLICK
+
+            settingsSp.listen("KEY_SETTINGS_lyric_gravity", 1) {
+                when (it) {
+                    0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
+                    1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
+                    2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
+                }
+            }
+            settingsSp.listen("KEY_SETTINGS_seekbar_handler", CLICK_HANDLE_MODE_CLICK) {
+                clickHandleMode = it
+            }
+
             maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {
                 override fun onScrollToThreshold() {
                     scope.launch { scaffoldShow() }

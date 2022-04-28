@@ -14,7 +14,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MediaMetadata.FOLDER_TYPE_PLAYLISTS
 import com.lalilu.R
-import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.extensions.*
 import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -63,8 +62,11 @@ class BaseMediaSource @Inject constructor(
     init {
         mContext.contentResolver
             .registerContentObserver(targetUri, true, MediaSourceObserver())
-        settingsSp = mContext.getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
-        settingsSp.listen(R.string.sp_key_media_source_settings_unknown_filter, true) {
+        settingsSp = mContext.getSharedPreferences(
+            mContext.applicationContext.packageName,
+            Context.MODE_PRIVATE
+        )
+        settingsSp.listen("KEY_SETTINGS_ably_unknown_filter", true) {
             artistFilter = if (it) unknownArtist else ""
             loadSync()
         }
