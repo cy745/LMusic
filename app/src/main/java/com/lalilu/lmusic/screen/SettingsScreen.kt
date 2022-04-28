@@ -68,8 +68,9 @@ fun SettingsScreen(
                     titleRes = R.string.preference_media_source_settings
                 ) {
                     SettingSwitcher(
+                        state = unknownFilter,
                         titleRes = R.string.preference_media_source_settings_unknown_filter,
-                        state = unknownFilter
+                        subTitleRes = R.string.preference_media_source_tips
                     )
                 }
             }
