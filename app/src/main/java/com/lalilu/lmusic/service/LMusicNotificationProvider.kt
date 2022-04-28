@@ -18,7 +18,6 @@ import androidx.palette.graphics.Palette
 import com.blankj.utilcode.util.SPUtils
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
-import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.LyricPusher
 import dagger.Binds
 import dagger.Module
@@ -62,11 +61,10 @@ class LMusicNotificationProvider @Inject constructor(
     }
 
     private val settingsSp: SPUtils by lazy {
-        SPUtils.getInstance(Config.SETTINGS_SP)
+        SPUtils.getInstance(mContext.applicationContext.packageName)
     }
 
-    private val statusBarLyricKey =
-        mContext.resources.getString(R.string.sp_key_lyric_settings_status_bar_lyric)
+    private val statusBarLyricKey = "KEY_SETTINGS_status_bar_lyric"
 
     companion object {
         const val NOTIFICATION_ID_PLAYER = 7

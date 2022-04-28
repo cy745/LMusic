@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.blankj.utilcode.util.RomUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmusic.screen.component.NavigatorHeader
@@ -55,7 +56,7 @@ fun SettingsScreen(
                     )
                     SettingStateSeekBar(
                         state = seekbarHandler,
-                        selection = listOf("单击", "双击", "长按测试"),
+                        selection = listOf("单击", "双击", "长按"),
                         titleRes = R.string.preference_player_settings_seekbar_handler
                     )
                 }
@@ -78,13 +79,15 @@ fun SettingsScreen(
                     iconRes = R.drawable.ic_lrc_fill,
                     titleRes = R.string.preference_lyric_settings
                 ) {
-                    SettingSwitcher(
-                        titleRes = R.string.preference_lyric_settings_status_bar_lyric,
-                        state = statusBarLyric
-                    )
+                    if (RomUtils.isMeizu()) {
+                        SettingSwitcher(
+                            titleRes = R.string.preference_lyric_settings_status_bar_lyric,
+                            state = statusBarLyric
+                        )
+                    }
                     SettingStateSeekBar(
                         state = lyricGravity,
-                        selection = listOf("靠左", "居中", "靠右", "随意"),
+                        selection = listOf("靠左", "居中", "靠右"),
                         titleRes = R.string.preference_lyric_settings_text_gravity
                     )
                 }
