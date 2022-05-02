@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui.drawee
+package com.lalilu.lmusic.ui
 
 import android.animation.ValueAnimator
 import android.content.Context

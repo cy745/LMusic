@@ -17,7 +17,7 @@ import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.common.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.ui.drawee.BlurImageView
+import com.lalilu.lmusic.ui.BlurImageView
 import com.lalilu.lmusic.utils.GridItemDecoration
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.ui.NewProgressBar

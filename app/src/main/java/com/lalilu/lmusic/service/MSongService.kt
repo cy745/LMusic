@@ -43,12 +43,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     @Inject
     lateinit var notificationProvider: LMusicNotificationProvider
 
-//    @Inject
-//    lateinit var ablyService: AblyService
-
-//    @Inject
-//    lateinit var coverSourceFactory: CoverSourceFactory
-
     private val lastPlayedSp: SPUtils by lazy {
         SPUtils.getInstance(Config.LAST_PLAYED_SP)
     }
@@ -127,22 +121,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             launch {
                 lastPlayedSp.put(Config.LAST_PLAYED_ID, mediaItem?.mediaId)
-//                mediaItem ?: return@launch
-//                coverSourceFactory.loadCoverBytes(mediaItem)?.let {
-//                    val bitmap = BitmapFactory.decodeByteArray(it, 0, it.size)
-//                    val color = Palette.from(bitmap).generate().getAutomaticColor()
-//                    ablyService.latestSharedDto.emit(
-//                        mediaItem.mediaMetadata.toShareDto()?.also { dto ->
-//                            val small = Bitmap.createScaledBitmap(bitmap, 64, 64, false)
-//                            dto.coverBase64 = EncodeUtils.base64Encode2String(
-//                                ImageUtils.bitmap2Bytes(small)
-//                            )
-//                            dto.coverBaseColor = color
-//                            small.recycle()
-//                        })
-//                    return@launch
-//                }
-//                ablyService.latestSharedDto.emit(mediaItem.mediaMetadata.toShareDto())
             }
         }
 
@@ -203,7 +181,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     }
 
     override fun onDestroy() {
-//        ablyService.shutdownAbly()
         player.release()
         mediaLibrarySession.release()
         super.onDestroy()

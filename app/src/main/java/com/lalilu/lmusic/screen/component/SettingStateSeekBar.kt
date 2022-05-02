@@ -45,21 +45,23 @@ fun SettingStateSeekBar(
     var value by state
     val tempValue = remember(value) { mutableStateOf(value.toFloat()) }
     val interactionSource = remember { MutableInteractionSource() }
-    val indication = rememberRipple()
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,
-                indication = indication,
+                indication = rememberRipple(),
                 onClick = { }
             )
             .padding(horizontal = 20.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = title)
+        Text(
+            text = title,
+            fontSize = 14.sp
+        )
         StateSeekBar(
             value = tempValue.value,
             selections = selection,
@@ -68,7 +70,6 @@ fun SettingStateSeekBar(
             steps = selection.size - 2,
             onValueChangeFinished = {
                 value = tempValue.value.roundToInt()
-                println("result: $value")
             }
         )
         if (subTitle != null) {

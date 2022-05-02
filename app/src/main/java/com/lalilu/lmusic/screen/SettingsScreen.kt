@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -13,10 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.RomUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
-import com.lalilu.lmusic.screen.component.NavigatorHeader
-import com.lalilu.lmusic.screen.component.SettingCategory
-import com.lalilu.lmusic.screen.component.SettingStateSeekBar
-import com.lalilu.lmusic.screen.component.SettingSwitcher
+import com.lalilu.lmusic.manager.SearchTextUtil
+import com.lalilu.lmusic.screen.component.*
 
 @Composable
 fun SettingsScreen(
@@ -28,6 +28,7 @@ fun SettingsScreen(
     val statusBarLyric = rememberDataSaverState("KEY_SETTINGS_status_bar_lyric", false)
     val seekbarHandler = rememberDataSaverState("KEY_SETTINGS_seekbar_handler", 0)
     val lyricGravity = rememberDataSaverState("KEY_SETTINGS_lyric_gravity", 0)
+    val kanhiraEnable = rememberDataSaverState("KEY_SETTINGS_kanhira_enable", false)
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -64,19 +65,6 @@ fun SettingsScreen(
 
             item {
                 SettingCategory(
-                    iconRes = R.drawable.ic_scan_line,
-                    titleRes = R.string.preference_media_source_settings
-                ) {
-                    SettingSwitcher(
-                        state = unknownFilter,
-                        titleRes = R.string.preference_media_source_settings_unknown_filter,
-                        subTitleRes = R.string.preference_media_source_tips
-                    )
-                }
-            }
-
-            item {
-                SettingCategory(
                     iconRes = R.drawable.ic_lrc_fill,
                     titleRes = R.string.preference_lyric_settings
                 ) {
@@ -90,6 +78,35 @@ fun SettingsScreen(
                         state = lyricGravity,
                         selection = listOf("靠左", "居中", "靠右"),
                         titleRes = R.string.preference_lyric_settings_text_gravity
+                    )
+                }
+            }
+
+            item {
+                SettingCategory(
+                    iconRes = R.drawable.ic_scan_line,
+                    titleRes = R.string.preference_media_source_settings
+                ) {
+                    SettingSwitcher(
+                        state = unknownFilter,
+                        titleRes = R.string.preference_media_source_settings_unknown_filter,
+                        subTitleRes = R.string.preference_media_source_tips
+                    )
+                }
+            }
+
+            item {
+                val isKanhiraInitialed by SearchTextUtil.isKanhiraInitialed
+                    .collectAsState(initial = false)
+
+                SettingCategory(
+                    iconRes = R.drawable.ic_lrc_fill,
+                    titleRes = R.string.preference_lyric_settings
+                ) {
+                    SettingExtensionSwitcher(
+                        state = kanhiraEnable,
+                        initialed = isKanhiraInitialed,
+                        title = "罗马字匹配功能"
                     )
                 }
             }

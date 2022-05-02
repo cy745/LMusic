@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.manager
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import android.text.TextUtils
 import com.cm55.kanhira.KakasiDictReader
@@ -8,12 +9,10 @@ import com.cm55.kanhira.Kanhira
 import com.lalilu.R
 import com.lalilu.common.KanaToRomaji
 import com.lalilu.common.PinyinUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.mapLatest
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.coroutines.CoroutineContext
@@ -32,6 +31,7 @@ inline fun <I> SearchTextUtil.filter(
 ): List<I> {
     if (keyword == null || TextUtils.isEmpty(keyword)) return list
     val keywords = keyword.split(" ")
+    val kanhiraEnable = isKanhiraEnable()
 
     return list.filter {
         val originStr = getString(it)
@@ -44,9 +44,11 @@ inline fun <I> SearchTextUtil.filter(
                 resultStr += " $chinese"
             }
 
-            val japanese = toHiraString(originStr)
-            val romaji = toRomajiString(japanese)
-            resultStr += " $romaji"
+            if (kanhiraEnable) {
+                val japanese = toHiraString(originStr)
+                val romaji = toRomajiString(japanese)
+                resultStr += " $romaji"
+            }
         }
         checkKeywords(resultStr, keywords)
     }
@@ -61,15 +63,22 @@ inline fun <I> SearchTextUtil.filter(
 object SearchTextUtil : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
-    private val kanaToRomaji = KanaToRomaji()
-
     /**
      * 异步加载Kanhira组件
      */
     private val mKanhira = MutableStateFlow<Kanhira?>(null)
+    private val kanaToRomaji = KanaToRomaji()
+    private var sharedPreferences: SharedPreferences? = null
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val isKanhiraInitialed = mKanhira.mapLatest { it != null }
 
     fun initKanhira(context: Context) = launch(Dispatchers.IO) {
-        if (Build.VERSION.SDK_INT <= 23) return@launch
+        sharedPreferences = context.getSharedPreferences(
+            context.applicationContext.packageName,
+            Context.MODE_PRIVATE
+        )
+        if (Build.VERSION.SDK_INT <= 23 || !isKanhiraEnable()) return@launch
         mKanhira.emit(
             Kanhira(
                 KakasiDictReader.load(
@@ -78,6 +87,10 @@ object SearchTextUtil : CoroutineScope {
                 )
             )
         )
+    }
+
+    fun isKanhiraEnable(): Boolean {
+        return sharedPreferences?.getBoolean("KEY_SETTINGS_kanhira_enable", false) == true
     }
 
     /**
