@@ -33,26 +33,15 @@ fun SettingSwitcher(
     title: String,
     subTitle: String? = null
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val indication = rememberRipple()
     var value by state
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                interactionSource = interactionSource,
-                indication = indication,
-                onClick = { value = !value }
+
+    SettingSwitcher(
+        onContentStartClick = { value = !value },
+        contentStart = {
+            Text(
+                text = title,
+                fontSize = 14.sp
             )
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
-            Text(text = title)
             if (subTitle != null) {
                 Text(
                     text = subTitle,
@@ -63,15 +52,46 @@ fun SettingSwitcher(
                 )
             }
         }
+    ) { interaction ->
         Switch(
             checked = value,
             onCheckedChange = { value = it },
-            interactionSource = interactionSource,
+            interactionSource = interaction,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
                     .multiply(0.7f)
             )
         )
+    }
+}
+
+@Composable
+fun SettingSwitcher(
+    onContentStartClick: () -> Unit = {},
+    contentStart: @Composable () -> Unit = {},
+    contentEnd: @Composable (MutableInteractionSource) -> Unit = {}
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = rememberRipple(),
+                onClick = onContentStartClick
+            )
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            contentStart()
+        }
+        contentEnd(interactionSource)
     }
 }
 

@@ -13,7 +13,6 @@ import com.lalilu.R
 import com.lalilu.common.DeviceUtils
 import com.lalilu.common.HapticUtils
 import com.lalilu.common.ifNaN
-import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
 import com.lalilu.ui.appbar.AppBarLayout
 import com.lalilu.ui.appbar.AppBarLayout.OnOffsetChangedListener

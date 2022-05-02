@@ -50,7 +50,7 @@
                     app:setSongTitle="@{song}"
                     app:statusBarScrim="@android:color/transparent">
 
-                    <com.lalilu.lmusic.ui.drawee.BlurImageView
+                    <com.lalilu.lmusic.ui.BlurImageView
                         android:id="@+id/fm_top_pic"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
