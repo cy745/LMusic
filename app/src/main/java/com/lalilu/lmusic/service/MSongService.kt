@@ -1,8 +1,6 @@
 package com.lalilu.lmusic.service
 
 import android.app.PendingIntent
-import android.content.Context
-import android.content.SharedPreferences
 import androidx.media3.common.*
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -19,7 +17,7 @@ import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.utils.listen
+import com.lalilu.lmusic.manager.SpManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,10 +45,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         SPUtils.getInstance(Config.LAST_PLAYED_SP)
     }
 
-    private val settingsSp: SharedPreferences by lazy {
-        getSharedPreferences(applicationContext.packageName, Context.MODE_PRIVATE)
-    }
-
     private val audioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
@@ -74,19 +68,10 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             }
         }
 
-//        settingsSp.listen(
-//            R.string.sp_key_player_settings_skip_silent,
-//            false
-//        ) {
-//            exoPlayer.skipSilenceEnabled = it
-//        }
-
-        settingsSp.listen(
-            "KEY_SETTINGS_ignore_audio_focus",
-            false
-        ) {
-            exoPlayer.setAudioAttributes(audioAttributes, !it)
-        }
+        SpManager.listen("KEY_SETTINGS_ignore_audio_focus",
+            SpManager.SpBoolListener(false) {
+                exoPlayer.setAudioAttributes(audioAttributes, !it)
+            })
 
         val pendingIntent: PendingIntent =
             packageManager.getLaunchIntentForPackage(packageName).let { sessionIntent ->
