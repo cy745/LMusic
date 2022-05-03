@@ -6,6 +6,7 @@ import coil.ImageLoaderFactory
 import com.lalilu.R
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.manager.SearchTextUtil
+import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.fetcher.Base64CoverFetcher
 import com.lalilu.lmusic.utils.fetcher.EmbeddedCoverFetcher
 import com.lalilu.lmusic.utils.fetcher.EmbeddedLyricFetchers
@@ -44,5 +45,6 @@ class LMusicApp : Application(), ImageLoaderFactory, CoroutineScope {
         super.onCreate()
         SpiderMan.setTheme(R.style.SpiderManTheme_Dark)
         SearchTextUtil.initKanhira(this)
+        SpManager.init(this)
     }
 }

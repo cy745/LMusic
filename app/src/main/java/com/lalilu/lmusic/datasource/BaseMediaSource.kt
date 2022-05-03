@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.datasource
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
@@ -13,8 +12,8 @@ import android.provider.MediaStore
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MediaMetadata.FOLDER_TYPE_PLAYLISTS
-import com.lalilu.R
 import com.lalilu.lmusic.datasource.extensions.*
+import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -38,7 +37,6 @@ class BaseMediaSource @Inject constructor(
     private val minSizeLimit = 0
     private var artistFilter = unknownArtist
     private var minDurationFilter = minDurationLimit
-    private val settingsSp: SharedPreferences
 
     private val baseProjection = ArrayList(
         listOf(
@@ -62,18 +60,17 @@ class BaseMediaSource @Inject constructor(
     init {
         mContext.contentResolver
             .registerContentObserver(targetUri, true, MediaSourceObserver())
-        settingsSp = mContext.getSharedPreferences(
-            mContext.applicationContext.packageName,
-            Context.MODE_PRIVATE
-        )
-        settingsSp.listen("KEY_SETTINGS_ably_unknown_filter", true) {
-            artistFilter = if (it) unknownArtist else ""
-            loadSync()
-        }
-        settingsSp.listen(R.string.sp_key_media_source_settings_duration_filter, 30) {
-            minDurationFilter = it * 1000
-            loadSync()
-        }
+
+        SpManager.listen("KEY_SETTINGS_ably_unknown_filter",
+            SpManager.SpBoolListener(true) {
+                artistFilter = if (it) unknownArtist else ""
+                loadSync()
+            })
+        SpManager.listen("KEY_SETTINGS_ably_unknown_filter",
+            SpManager.SpIntListener(30) {
+                minDurationFilter = it * 1000
+                loadSync()
+            })
     }
 
     inner class MediaSourceObserver : ContentObserver(Handler(Looper.getMainLooper())) {

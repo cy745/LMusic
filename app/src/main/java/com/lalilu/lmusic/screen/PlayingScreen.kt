@@ -23,9 +23,9 @@ import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.datasource.extensions.getDuration
+import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.screen.viewmodel.MainViewModel
 import com.lalilu.lmusic.service.GlobalData
-import com.lalilu.lmusic.utils.listen
 import com.lalilu.ui.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -70,36 +70,39 @@ fun PlayingScreen(
     }
 
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues()
-    val statusPaddingTop =
-        LocalDensity.current.run { statusBarPadding.calculateTopPadding().toPx() }
+    val statusPaddingTop = LocalDensity.current.run {
+        statusBarPadding.calculateTopPadding().toPx()
+    }
 
     val context = LocalContext.current
     AndroidViewBinding(factory = { inflater, parent, attachToParent ->
         FragmentPlayingBinding.inflate(inflater, parent, attachToParent).apply {
+            @ClickHandleMode
+            var clickHandleMode = CLICK_HANDLE_MODE_CLICK
             val activity = context.getActivity()!!
             val haptic = { HapticUtils.haptic(this.root) }
             val doubleHaptic = { HapticUtils.doubleHaptic(this.root) }
-            val settingsSp = context.getSharedPreferences(
-                context.applicationContext.packageName,
-                Context.MODE_PRIVATE
-            )
+
             adapter = PlayingAdapter().apply {
                 onItemClick = { item, _ -> scope.launch { onSongSelected(item) } }
                 onItemLongClick = { item, _ -> scope.launch { onSongShowDetail(item) } }
             }
-            @ClickHandleMode
-            var clickHandleMode = CLICK_HANDLE_MODE_CLICK
 
-            settingsSp.listen("KEY_SETTINGS_lyric_gravity", 1) {
-                when (it) {
-                    0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
-                    1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
-                    2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
-                }
-            }
-            settingsSp.listen("KEY_SETTINGS_seekbar_handler", CLICK_HANDLE_MODE_CLICK) {
-                clickHandleMode = it
-            }
+            SpManager.listen("KEY_SETTINGS_lyric_gravity",
+                SpManager.SpIntListener(1) {
+                    when (it) {
+                        0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
+                        1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
+                        2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
+                    }
+                })
+            SpManager.listen("KEY_SETTINGS_seekbar_handler",
+                SpManager.SpIntListener(CLICK_HANDLE_MODE_CLICK) {
+                    clickHandleMode = it
+                })
+
+            activity.setSupportActionBar(fmToolbar)
+            fmTopPic.palette.observe(activity, this::setPalette)
 
             maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {
                 override fun onScrollToThreshold() {
@@ -117,9 +120,9 @@ fun PlayingScreen(
                     haptic()
                     if (clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
                         scope.launch { onPlayPause() }
-                    } else {
-                        playHandle(clickPart)
+                        return
                     }
+                    playHandle(clickPart)
                 }
 
                 override fun onLongClick(@ClickPart clickPart: Int, action: Int) {
@@ -144,9 +147,6 @@ fun PlayingScreen(
                     haptic()
                 }
             })
-            activity.setSupportActionBar(fmToolbar)
-            fmTopPic.palette.observe(activity, this::setPalette)
-
             GlobalData.currentPlaylistLiveData.observe(activity) {
                 adapter?.setDiffNewData(it.toMutableList())
             }
