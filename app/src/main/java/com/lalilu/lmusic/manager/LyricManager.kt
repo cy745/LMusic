@@ -14,11 +14,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
-interface LyricPusher {
-    fun clearLyric()
-    fun pushLyric(sentence: String?)
-}
-
 /**
  * 专门负责歌词解析处理的全局单例
  */
@@ -30,6 +25,11 @@ class LyricManager @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private var lastLyric: String? = ""
     private var lastIndex: Int = -1
+
+    interface LyricPusher {
+        fun clearLyric()
+        fun pushLyric(sentence: String?)
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _songLyric: Flow<Pair<String, String?>?> =
