@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.binding_adapter
 
-import android.net.Uri
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -9,16 +8,12 @@ import androidx.databinding.BindingAdapter
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.palette.graphics.Palette
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import coil.load
 import coil.loadAny
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.common.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.ui.BlurImageView
-import com.lalilu.lmusic.utils.GridItemDecoration
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.ui.NewProgressBar
 import com.lalilu.ui.appbar.AppBarLayout
@@ -48,18 +43,6 @@ fun setLyricSource(imageView: ImageView, mediaItem: MediaItem?) {
         }, onError = {
             imageView.visibility = View.INVISIBLE
         })
-    }
-}
-
-@BindingAdapter(value = ["setNormalUri", "samplingValue"], requireAll = false)
-fun setNormalUri(imageView: AppCompatImageView, uri: Uri?, samplingValue: Int = -1) {
-    uri ?: return
-    val samplingTo = if (samplingValue <= 0)
-        imageView.width else samplingValue
-
-    imageView.load(uri) {
-        if (samplingValue > 0) size(samplingTo)
-        crossfade(150)
     }
 }
 
@@ -113,12 +96,6 @@ fun setAppbarBGColor(appBarLayout: AppBarLayout, palette: Palette?) {
 @BindingAdapter("bgPalette")
 fun setSeekBarBGColor(seekBar: NewProgressBar, palette: Palette?) {
     setBgColorFromPalette(palette, seekBar::thumbColor::set)
-}
-
-@BindingAdapter(value = ["gridGap", "gridSpanCount"], requireAll = true)
-fun addGridItemDecoration(recyclerView: RecyclerView, gridGap: Int, gridSpanCount: Int) {
-    recyclerView.layoutManager = GridLayoutManager(recyclerView.context, gridSpanCount)
-    recyclerView.addItemDecoration(GridItemDecoration(gridGap, gridSpanCount))
 }
 
 @BindingAdapter("setDuration")
