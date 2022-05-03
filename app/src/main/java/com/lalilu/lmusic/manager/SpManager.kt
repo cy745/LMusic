@@ -24,6 +24,11 @@ object SpManager {
         callback: (Int) -> Unit
     ) : SpListener<Int>(callback)
 
+    class SpStringListener(
+        val defaultValue: String = "",
+        callback: (String) -> Unit
+    ) : SpListener<String>(callback)
+
     private val onSharedPreferenceChangeListener =
         SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
             update(sp, key)
@@ -46,6 +51,9 @@ object SpManager {
                 is SpBoolListener -> it.onUpdate(sp.getBoolean(key, it.defaultValue))
                 is SpFloatListener -> it.onUpdate(sp.getFloat(key, it.defaultValue))
                 is SpIntListener -> it.onUpdate(sp.getInt(key, it.defaultValue))
+                is SpStringListener -> it.onUpdate(
+                    sp.getString(key, it.defaultValue) ?: it.defaultValue
+                )
             }
         }
     }
@@ -54,4 +62,24 @@ object SpManager {
         listeners[key] = listener
         sp?.let { update(it, key) }
     }
+//
+//    fun update(key: String, value: Any) {
+//        listeners[key]?.let { listener ->
+//            when {
+//                listener is SpBoolListener && value is Boolean -> {
+//                    sp?.edit()?.putBoolean(key, value)?.apply()
+//                }
+//                listener is SpFloatListener && value is Float -> {
+//                    sp?.edit()?.putFloat(key, value)?.apply()
+//                }
+//                listener is SpIntListener && value is Int -> {
+//                    sp?.edit()?.putInt(key, value)?.apply()
+//                }
+//                listener is SpStringListener && value is String -> {
+//                    sp?.edit()?.putString(key, value)?.apply()
+//                }
+//                else -> {}
+//            }
+//        }
+//    }
 }
