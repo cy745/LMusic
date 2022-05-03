@@ -6,8 +6,7 @@ import androidx.lifecycle.asLiveData
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.lalilu.lmusic.datasource.extensions.partCopy
-import com.lalilu.lmusic.manager.SearchTextUtil
-import com.lalilu.lmusic.manager.filter
+import com.lalilu.lmusic.manager.SearchTextManager
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -82,7 +81,7 @@ object GlobalData : CoroutineScope {
             listItem.mediaId == id
         }
     }.combine(currentSearchKeyword) { items, keyword ->
-        SearchTextUtil.filter(keyword, items) {
+        SearchTextManager.filter(keyword, items) {
             "${it.mediaMetadata.title} ${it.mediaMetadata.artist}"
         }
     }.asLiveData()
