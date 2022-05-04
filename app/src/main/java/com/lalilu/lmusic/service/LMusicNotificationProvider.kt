@@ -15,10 +15,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaNotification
 import androidx.palette.graphics.Palette
-import com.blankj.utilcode.util.SPUtils
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.manager.LyricManager
+import com.lalilu.lmusic.manager.SpManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,12 +45,6 @@ class LMusicNotificationProvider @Inject constructor(
         val appIcon = mContext.applicationInfo.icon
         if (appIcon != 0) appIcon else R.drawable.ic_launcher_foreground
     }
-
-    private val settingsSp: SPUtils by lazy {
-        SPUtils.getInstance(mContext.applicationContext.packageName)
-    }
-
-    private val statusBarLyricKey = "KEY_SETTINGS_status_bar_lyric"
 
     companion object {
         const val NOTIFICATION_ID_PLAYER = 7
@@ -270,12 +264,11 @@ class LMusicNotificationProvider @Inject constructor(
         pushLyric(null)
     }
 
+    private var lyricPusherEnable = false
+    private var sentenceToPush: String? = null
     override fun pushLyric(sentence: String?) {
-        var mSentence = sentence
-        if (!settingsSp.getBoolean(statusBarLyricKey)) {
-            mSentence = null
-        }
-        sentenceFlow.tryEmit(mSentence)
+        sentenceToPush = sentence
+        sentenceFlow.tryEmit(if (lyricPusherEnable) sentenceToPush else null)
     }
 
     init {
@@ -289,5 +282,10 @@ class LMusicNotificationProvider @Inject constructor(
             ensureNotificationChannel()
             callback?.onNotificationChanged(mediaNotification!!)
         }.launchIn(this)
+
+        SpManager.listen("KEY_SETTINGS_status_bar_lyric", SpManager.SpBoolListener {
+            lyricPusherEnable = it
+            pushLyric(sentenceToPush)
+        })
     }
 }
