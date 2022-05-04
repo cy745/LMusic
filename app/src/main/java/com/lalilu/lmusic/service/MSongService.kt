@@ -68,7 +68,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             }
         }
 
-        SpManager.listen("KEY_SETTINGS_ignore_audio_focus",
+        SpManager.listen(Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
             SpManager.SpBoolListener(false) {
                 exoPlayer.setAudioAttributes(audioAttributes, !it)
             })

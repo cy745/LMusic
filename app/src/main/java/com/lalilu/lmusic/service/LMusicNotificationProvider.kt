@@ -17,6 +17,7 @@ import androidx.media3.session.MediaNotification
 import androidx.palette.graphics.Palette
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.manager.SpManager
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -283,7 +284,7 @@ class LMusicNotificationProvider @Inject constructor(
             callback?.onNotificationChanged(mediaNotification!!)
         }.launchIn(this)
 
-        SpManager.listen("KEY_SETTINGS_status_bar_lyric", SpManager.SpBoolListener {
+        SpManager.listen(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE, SpManager.SpBoolListener {
             lyricPusherEnable = it
             pushLyric(sentenceToPush)
         })

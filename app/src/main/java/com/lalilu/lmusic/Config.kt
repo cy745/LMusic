@@ -2,11 +2,15 @@ package com.lalilu.lmusic
 
 object Config {
     const val BASE_URL = "https://apis.lalilu.cn/"
-    const val ABLY_AUTH_BASE_URL = "https://chat.lalilu.cn/api/createTokenRequest"
 
     const val LAST_PLAYED_SP = "LAST_PLAYED_SP"
     const val LAST_PLAYED_ID = "LAST_PLAYED_ID"
     const val LAST_PLAYED_LIST = "LAST_PLAYED_LIST"
 
-    const val SETTINGS_SP = "SETTINGS_SP"
+    const val KEY_SETTINGS_MEDIA_UNKNOWN_FILTER = "KEY_SETTINGS_MEDIA_UNKNOWN_FILTER"
+    const val KEY_SETTINGS_KANHIRA_ENABLE = "KEY_SETTINGS_KANHIRA_ENABLE"
+    const val KEY_SETTINGS_LYRIC_GRAVITY = "KEY_SETTINGS_LYRIC_GRAVITY"
+    const val KEY_SETTINGS_SEEKBAR_HANDLER = "KEY_SETTINGS_SEEKBAR_HANDLER"
+    const val KEY_SETTINGS_STATUS_LYRIC_ENABLE = "KEY_SETTINGS_STATUS_LYRIC_ENABLE"
+    const val KEY_SETTINGS_IGNORE_AUDIO_FOCUS = "KEY_SETTINGS_IGNORE_AUDIO_FOCUS"
 }

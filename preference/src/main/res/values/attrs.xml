@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <declare-styleable name="MultiStatePreference">
-        <attr name="mt_text_array" format="reference" />
-    </declare-styleable>
-</resources>
