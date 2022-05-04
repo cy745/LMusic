@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.RomUtils
@@ -49,7 +50,7 @@ fun SettingsScreen(
                     )
                     SettingStateSeekBar(
                         state = seekbarHandler,
-                        selection = listOf("单击", "双击", "长按"),
+                        selection = stringArrayResource(id = R.array.seekbar_handler).toList(),
                         titleRes = R.string.preference_player_settings_seekbar_handler
                     )
                 }
@@ -68,7 +69,7 @@ fun SettingsScreen(
                     }
                     SettingStateSeekBar(
                         state = lyricGravity,
-                        selection = listOf("靠左", "居中", "靠右"),
+                        selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
                         titleRes = R.string.preference_lyric_settings_text_gravity
                     )
                 }
