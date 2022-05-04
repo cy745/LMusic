@@ -36,7 +36,7 @@ fun AllSongsScreen(
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AllSongsScreen", true)
     val sortedItems = remember(sortByState, sortDesc, allSongs) {
         sort(sortByState, sortDesc, allSongs.toMutableStateList(),
-            getTextField = { it.mediaMetadata.albumTitle.toString() },
+            getTextField = { it.mediaMetadata.title.toString() },
             getTimeField = { it.mediaId.toLong() }
         )
     }

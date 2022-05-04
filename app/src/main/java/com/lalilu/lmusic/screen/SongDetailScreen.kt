@@ -12,9 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import com.blankj.utilcode.util.SizeUtils
@@ -30,7 +34,6 @@ fun SongDetailScreen(
     val imagePainter = rememberImagePainter(
         data = mediaItem.getCoverFromMediaItem()
     ) {
-        placeholder(R.drawable.item_cover_bg)
         size(SizeUtils.dp2px(128f))
     }
     val title = mediaItem.mediaMetadata.title?.toString()
@@ -54,6 +57,7 @@ fun SongDetailScreen(
     )
 }
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun SongDetailScreen(
     title: String,
@@ -71,16 +75,29 @@ fun SongDetailScreen(
                 elevation = 4.dp,
                 shape = RoundedCornerShape(2.dp)
             ) {
-                Image(
-                    painter = imagePainter, contentDescription = "CoverImage",
-                    modifier = Modifier
-                        .sizeIn(
-                            minHeight = 64.dp,
-                            maxHeight = 128.dp,
-                            minWidth = 64.dp,
-                            maxWidth = 144.dp
-                        )
-                )
+                if (imagePainter.state.painter != null) {
+                    Image(
+                        painter = imagePainter, contentDescription = "CoverImage",
+                        modifier = Modifier
+                            .sizeIn(
+                                minHeight = 64.dp,
+                                maxHeight = 128.dp,
+                                minWidth = 64.dp,
+                                maxWidth = 144.dp
+                            )
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_music_line),
+                        contentDescription = "",
+                        contentScale = FixedScale(2.5f),
+                        colorFilter = ColorFilter.tint(color = Color.LightGray),
+                        modifier = Modifier
+                            .size(128.dp)
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                    )
+                }
             }
         }
         Row(

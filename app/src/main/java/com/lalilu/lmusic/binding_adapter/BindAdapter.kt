@@ -74,6 +74,7 @@ fun loadCover(imageView: AppCompatImageView, mediaItem: MediaItem?, samplingValu
 
     imageView.loadAny(mediaItem.getCoverFromMediaItem()) {
         if (samplingTo > 0) size(samplingTo)
+        error(R.drawable.ic_music_line)
         crossfade(150)
     }
 }
