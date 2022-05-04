@@ -27,6 +27,7 @@ fun SettingsScreen(
     val seekbarHandler = rememberDataSaverState(Config.KEY_SETTINGS_SEEKBAR_HANDLER, 0)
     val lyricGravity = rememberDataSaverState(Config.KEY_SETTINGS_LYRIC_GRAVITY, 0)
     val kanhiraEnable = rememberDataSaverState(Config.KEY_SETTINGS_KANHIRA_ENABLE, false)
+    val repeatMode = rememberDataSaverState(Config.KEY_SETTINGS_REPEAT_MODE, 0)
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -47,6 +48,11 @@ fun SettingsScreen(
                     SettingSwitcher(
                         titleRes = R.string.preference_player_settings_ignore_audio_focus,
                         state = ignoreAudioFocus
+                    )
+                    SettingStateSeekBar(
+                        state = repeatMode,
+                        selection = listOf("列表循环", "单曲循环", "随机播放"),
+                        title = "循环模式"
                     )
                     SettingStateSeekBar(
                         state = seekbarHandler,
