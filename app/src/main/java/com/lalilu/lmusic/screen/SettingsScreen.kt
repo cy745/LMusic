@@ -13,19 +13,19 @@ import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.RomUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.screen.component.*
 
 @Composable
 fun SettingsScreen(
     contentPaddingForFooter: Dp = 0.dp
 ) {
-    val ignoreAudioFocus = rememberDataSaverState("KEY_SETTINGS_ignore_audio_focus", false)
-    val ablyServiceEnable = rememberDataSaverState("KEY_SETTINGS_ably_service_enable", false)
-    val unknownFilter = rememberDataSaverState("KEY_SETTINGS_ably_unknown_filter", true)
-    val statusBarLyric = rememberDataSaverState("KEY_SETTINGS_status_bar_lyric", false)
-    val seekbarHandler = rememberDataSaverState("KEY_SETTINGS_seekbar_handler", 0)
-    val lyricGravity = rememberDataSaverState("KEY_SETTINGS_lyric_gravity", 0)
-    val kanhiraEnable = rememberDataSaverState("KEY_SETTINGS_kanhira_enable", false)
+    val ignoreAudioFocus = rememberDataSaverState(Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS, false)
+    val unknownFilter = rememberDataSaverState(Config.KEY_SETTINGS_MEDIA_UNKNOWN_FILTER, true)
+    val statusBarLyric = rememberDataSaverState(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE, false)
+    val seekbarHandler = rememberDataSaverState(Config.KEY_SETTINGS_SEEKBAR_HANDLER, 0)
+    val lyricGravity = rememberDataSaverState(Config.KEY_SETTINGS_LYRIC_GRAVITY, 0)
+    val kanhiraEnable = rememberDataSaverState(Config.KEY_SETTINGS_KANHIRA_ENABLE, false)
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -46,11 +46,6 @@ fun SettingsScreen(
                     SettingSwitcher(
                         titleRes = R.string.preference_player_settings_ignore_audio_focus,
                         state = ignoreAudioFocus
-                    )
-                    SettingSwitcher(
-                        titleRes = R.string.preference_ably_service_enable,
-                        subTitleRes = R.string.preference_lyric_experimental,
-                        state = ablyServiceEnable
                     )
                     SettingStateSeekBar(
                         state = seekbarHandler,

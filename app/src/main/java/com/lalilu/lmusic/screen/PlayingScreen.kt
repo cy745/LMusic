@@ -21,6 +21,7 @@ import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
 import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.manager.SpManager
@@ -88,7 +89,7 @@ fun PlayingScreen(
                 onItemLongClick = { item, _ -> scope.launch { onSongShowDetail(item) } }
             }
 
-            SpManager.listen("KEY_SETTINGS_lyric_gravity",
+            SpManager.listen(Config.KEY_SETTINGS_LYRIC_GRAVITY,
                 SpManager.SpIntListener(1) {
                     when (it) {
                         0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
@@ -96,7 +97,7 @@ fun PlayingScreen(
                         2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
                     }
                 })
-            SpManager.listen("KEY_SETTINGS_seekbar_handler",
+            SpManager.listen(Config.KEY_SETTINGS_SEEKBAR_HANDLER,
                 SpManager.SpIntListener(CLICK_HANDLE_MODE_CLICK) {
                     clickHandleMode = it
                 })

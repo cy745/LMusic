@@ -8,6 +8,7 @@ import com.cm55.kanhira.Kanhira
 import com.lalilu.R
 import com.lalilu.common.KanaToRomaji
 import com.lalilu.common.PinyinUtils
+import com.lalilu.lmusic.Config
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -131,7 +132,7 @@ object KanjiToHiraTransformer : CoroutineScope, SearchTextManager.TextTransforme
     fun init(context: Context) {
         if (Build.VERSION.SDK_INT <= 23) return
 
-        SpManager.listen("KEY_SETTINGS_kanhira_enable",
+        SpManager.listen(Config.KEY_SETTINGS_KANHIRA_ENABLE,
             SpManager.SpBoolListener(true) {
                 if (!it) {
                     mKanhira = null

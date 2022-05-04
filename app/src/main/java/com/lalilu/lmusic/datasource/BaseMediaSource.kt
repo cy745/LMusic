@@ -12,6 +12,7 @@ import android.provider.MediaStore
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MediaMetadata.FOLDER_TYPE_PLAYLISTS
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.extensions.*
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.*
@@ -61,7 +62,7 @@ class BaseMediaSource @Inject constructor(
         mContext.contentResolver
             .registerContentObserver(targetUri, true, MediaSourceObserver())
 
-        SpManager.listen("KEY_SETTINGS_ably_unknown_filter",
+        SpManager.listen(Config.KEY_SETTINGS_MEDIA_UNKNOWN_FILTER,
             SpManager.SpBoolListener(true) {
                 artistFilter = if (it) unknownArtist else ""
                 loadSync()
