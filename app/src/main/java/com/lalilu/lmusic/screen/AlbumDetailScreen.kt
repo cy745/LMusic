@@ -12,13 +12,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
+import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
@@ -27,7 +32,10 @@ import com.lalilu.lmusic.screen.component.SongCard
 import com.lalilu.lmusic.screen.viewmodel.MediaBrowserViewModel
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalFoundationApi::class,
+    ExperimentalCoilApi::class
+)
 fun AlbumDetailScreen(
     album: MediaItem,
     songs: List<MediaItem>,
@@ -45,7 +53,6 @@ fun AlbumDetailScreen(
     val imagePainter = rememberImagePainter(
         data = album.mediaMetadata.artworkUri
     ) {
-        placeholder(R.drawable.item_cover_bg)
         size(SizeUtils.dp2px(128f))
     }
 
@@ -73,16 +80,29 @@ fun AlbumDetailScreen(
                 elevation = 4.dp,
                 shape = RoundedCornerShape(2.dp)
             ) {
-                Image(
-                    painter = imagePainter, contentDescription = "CoverImage",
-                    modifier = Modifier
-                        .sizeIn(
-                            minHeight = 64.dp,
-                            maxHeight = 128.dp,
-                            minWidth = 64.dp,
-                            maxWidth = 144.dp
-                        )
-                )
+                if (imagePainter.state.painter != null) {
+                    Image(
+                        painter = imagePainter, contentDescription = "CoverImage",
+                        modifier = Modifier
+                            .sizeIn(
+                                minHeight = 64.dp,
+                                maxHeight = 128.dp,
+                                minWidth = 64.dp,
+                                maxWidth = 144.dp
+                            )
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_music_2_line),
+                        contentDescription = "",
+                        contentScale = FixedScale(2.5f),
+                        colorFilter = ColorFilter.tint(color = Color.LightGray),
+                        modifier = Modifier
+                            .size(128.dp)
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                    )
+                }
             }
         }
         LazyColumn(

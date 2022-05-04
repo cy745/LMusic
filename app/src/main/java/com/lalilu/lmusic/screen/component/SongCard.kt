@@ -13,13 +13,16 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
+import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
@@ -28,7 +31,10 @@ import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalFoundationApi::class,
+    ExperimentalCoilApi::class
+)
 fun SongCard(
     modifier: Modifier = Modifier,
     index: Int,
@@ -40,7 +46,6 @@ fun SongCard(
         data = mediaItem.getCoverFromMediaItem()
     ) {
         crossfade(true)
-        placeholder(R.drawable.item_cover_bg)
         size(SizeUtils.dp2px(64f))
     }
     val lrcIconPainter = rememberImagePainter(
@@ -131,14 +136,27 @@ fun SongCard(
             elevation = 2.dp,
             shape = RoundedCornerShape(1.dp)
         ) {
-            Image(
-                painter = imagePainter,
-                contentDescription = "SongCardImage",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(64.dp)
-                    .aspectRatio(1f)
-            )
+            if (imagePainter.state.painter != null) {
+                Image(
+                    painter = imagePainter,
+                    contentDescription = "SongCardImage",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .aspectRatio(1f)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_music_line),
+                    contentDescription = "",
+                    contentScale = FixedScale(1f),
+                    colorFilter = ColorFilter.tint(color = Color.LightGray),
+                    modifier = Modifier
+                        .size(64.dp)
+                        .aspectRatio(1f)
+                )
+            }
+
         }
     }
 }

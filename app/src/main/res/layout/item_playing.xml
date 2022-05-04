@@ -16,7 +16,7 @@
         android:background="@drawable/item_bg">
 
         <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/song_album_pic"
+            android:id="@+id/song_pic"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_marginStart="20dp"
@@ -40,7 +40,7 @@
             android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@+id/song_singer"
             app:layout_constraintEnd_toStartOf="@+id/song_lrc"
-            app:layout_constraintStart_toEndOf="@+id/song_album_pic"
+            app:layout_constraintStart_toEndOf="@+id/song_pic"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@tools:sample/cities" />
 
@@ -57,7 +57,7 @@
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/song_duration"
-            app:layout_constraintStart_toEndOf="@+id/song_album_pic"
+            app:layout_constraintStart_toEndOf="@+id/song_pic"
             app:layout_constraintTop_toBottomOf="@+id/song_title"
             tools:ignore="SmallSp"
             tools:text="@tools:sample/full_names" />
