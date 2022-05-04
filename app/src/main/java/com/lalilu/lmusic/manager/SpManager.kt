@@ -58,6 +58,9 @@ object SpManager {
         }
     }
 
+    /**
+     * 监听对应key的更新，需要注意一个Key暂时只能对应一个监听器
+     */
     fun <K : Any, T : SpListener<K>> listen(key: String, listener: T) {
         listeners[key] = listener
         sp?.let { update(it, key) }

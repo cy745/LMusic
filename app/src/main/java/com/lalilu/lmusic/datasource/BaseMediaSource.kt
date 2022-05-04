@@ -66,11 +66,11 @@ class BaseMediaSource @Inject constructor(
                 artistFilter = if (it) unknownArtist else ""
                 loadSync()
             })
-        SpManager.listen("KEY_SETTINGS_ably_unknown_filter",
-            SpManager.SpIntListener(30) {
-                minDurationFilter = it * 1000
-                loadSync()
-            })
+//        SpManager.listen("KEY_SETTINGS_ably_unknown_filter",
+//            SpManager.SpIntListener(30) {
+//                minDurationFilter = it * 1000
+//                loadSync()
+//            })
     }
 
     inner class MediaSourceObserver : ContentObserver(Handler(Looper.getMainLooper())) {
