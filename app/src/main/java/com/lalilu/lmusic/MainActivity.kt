@@ -3,12 +3,12 @@ package com.lalilu.lmusic
 import android.media.AudioManager
 import android.os.Bundle
 import android.view.Menu
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.CompositionLocalProvider
+import com.blankj.utilcode.util.ToastUtils
 import com.funny.data_saver.core.DataSaverPreferences
 import com.funny.data_saver.core.DataSaverPreferences.Companion.setContext
 import com.funny.data_saver.core.LocalDataSaver
@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             mediaSource.whenReady { mSongBrowser.recoverLastPlayedItem() }
             mediaSource.loadSync()
         }, onFailed = {
-            Toast.makeText(this, "无外部存储读取权限，无法读取歌曲", Toast.LENGTH_SHORT).show()
+            ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
         })
         volumeControlStream = AudioManager.STREAM_MUSIC
         lifecycle.addObserver(mSongBrowser)
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
                     MainScreen(
                         mSongBrowser = mSongBrowser,
                         mediaSource = mediaSource,
-                        activity = this
+                        onMoveTaskToBack = { moveTaskToBack(false) }
                     )
                 }
             }
