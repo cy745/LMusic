@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.screen
 
 import androidx.activity.compose.BackHandler
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -31,7 +30,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     mSongBrowser: MSongBrowser,
     mediaSource: BaseMediaSource,
-    activity: AppCompatActivity
+    onMoveTaskToBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -78,8 +77,10 @@ fun MainScreen(
                         .navigationBarsPadding(),
                     navController = navController,
                     popUp = {
-                        if (!navController.navigateUp()) {
+                        if (navController.previousBackStackEntry == null) {
                             scope.launch { scaffoldState.hide() }
+                        } else {
+                            navController.navigateUp()
                         }
                     },
                     close = { scope.launch { scaffoldState.hide() } }
@@ -114,7 +115,7 @@ fun MainScreen(
             if (isVisible()) {
                 scope.launch { scaffoldState.hide() }
             } else {
-                activity.moveTaskToBack(false)
+                onMoveTaskToBack()
             }
         }
     )
