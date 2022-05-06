@@ -16,10 +16,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
+import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.ConvertUtils
+import com.blankj.utilcode.util.KeyboardUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
+import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.Config
@@ -29,6 +32,7 @@ import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.screen.viewmodel.MainViewModel
 import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.ui.*
+import com.lalilu.ui.appbar.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -84,11 +88,46 @@ fun PlayingScreen(
             val activity = context.getActivity()!!
             val haptic = { HapticUtils.haptic(this.root) }
             val doubleHaptic = { HapticUtils.doubleHaptic(this.root) }
+            val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
+            activity.setSupportActionBar(fmToolbar)
 
             adapter = PlayingAdapter().apply {
                 onItemClick = { item, _ -> scope.launch { onSongSelected(item) } }
                 onItemLongClick = { item, _ -> scope.launch { onSongShowDetail(item) } }
             }
+
+            behavior.addOnStateChangeListener(object :
+                ExpendHeaderBehavior.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {
+                override fun onScrollToStateListener() {
+                    if (fmToolbar.hasExpandedActionView())
+                        fmToolbar.collapseActionView()
+                }
+            })
+            behavior.addOnStateChangeListener(object :
+                ExpendHeaderBehavior.OnScrollToStateListener(STATE_NORMAL, STATE_EXPENDED) {
+                override fun onScrollToStateListener() {
+                    if (fmToolbar.hasExpandedActionView())
+                        fmToolbar.collapseActionView()
+                }
+            })
+
+            fmToolbar.setOnMenuItemClickListener {
+                if (it.itemId == R.id.appbar_search) {
+                    fmAppbarLayout.setExpanded(false, true)
+                }
+                true
+            }
+
+            fmRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    if (dy > 0 &&
+                        fmToolbar.hasExpandedActionView() &&
+                        KeyboardUtils.isSoftInputVisible(activity)
+                    ) {
+                        KeyboardUtils.hideSoftInput(activity)
+                    }
+                }
+            })
 
             SpManager.listen(Config.KEY_SETTINGS_LYRIC_GRAVITY,
                 SpManager.SpIntListener(1) {
@@ -110,7 +149,6 @@ fun PlayingScreen(
                     fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
                 })
 
-            activity.setSupportActionBar(fmToolbar)
             fmTopPic.palette.observe(activity, this::setPalette)
 
             maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {

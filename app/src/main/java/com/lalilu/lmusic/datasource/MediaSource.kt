@@ -193,21 +193,15 @@ abstract class AbstractMediaSource : MediaSource {
             treeNodes[idInTree] = MediaItemNode(it)
 
             if (!treeNodes.containsKey(albumFolderIdInTree)) {
-                treeNodes[albumFolderIdInTree] = MediaItemNode(
-                    songItemToAlbumItem(it)
-                )
+                treeNodes[albumFolderIdInTree] = MediaItemNode(songItemToAlbumItem(it))
                 treeNodes[ALBUM_ID]!!.addChild(albumFolderIdInTree)
             }
             if (!treeNodes.containsKey(artistFolderIdInTree)) {
-                treeNodes[artistFolderIdInTree] = MediaItemNode(
-                    songItemToArtistItem(it)
-                )
+                treeNodes[artistFolderIdInTree] = MediaItemNode(songItemToArtistItem(it))
                 treeNodes[ARTIST_ID]!!.addChild(artistFolderIdInTree)
             }
             if (!treeNodes.containsKey(genreFolderIdInTree)) {
-                treeNodes[genreFolderIdInTree] = MediaItemNode(
-                    songItemToGenreItem(it)
-                )
+                treeNodes[genreFolderIdInTree] = MediaItemNode(songItemToGenreItem(it))
                 treeNodes[GENRE_ID]!!.addChild(genreFolderIdInTree)
             }
 

@@ -39,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
-            mediaSource.whenReady { mSongBrowser.recoverLastPlayedItem() }
             mediaSource.loadSync()
         }, onFailed = {
             ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
