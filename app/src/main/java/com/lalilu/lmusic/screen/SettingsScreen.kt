@@ -15,7 +15,8 @@ import com.blankj.utilcode.util.RomUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.screen.component.*
+import com.lalilu.lmusic.screen.component.NavigatorHeader
+import com.lalilu.lmusic.screen.component.settings.*
 
 @Composable
 fun SettingsScreen(
@@ -26,6 +27,7 @@ fun SettingsScreen(
     val statusBarLyric = rememberDataSaverState(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE, false)
     val seekbarHandler = rememberDataSaverState(Config.KEY_SETTINGS_SEEKBAR_HANDLER, 0)
     val lyricGravity = rememberDataSaverState(Config.KEY_SETTINGS_LYRIC_GRAVITY, 0)
+    val lyricTextSize = rememberDataSaverState(Config.KEY_SETTINGS_LYRIC_TEXT_SIZE, 5)
     val kanhiraEnable = rememberDataSaverState(Config.KEY_SETTINGS_KANHIRA_ENABLE, false)
     val repeatMode = rememberDataSaverState(Config.KEY_SETTINGS_REPEAT_MODE, 0)
 
@@ -77,6 +79,11 @@ fun SettingsScreen(
                         state = lyricGravity,
                         selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
                         titleRes = R.string.preference_lyric_settings_text_gravity
+                    )
+                    SettingProgressSeekBar(
+                        state = lyricTextSize,
+                        title = "歌词文字大小",
+                        valueRange = 12..26
                     )
                 }
             }

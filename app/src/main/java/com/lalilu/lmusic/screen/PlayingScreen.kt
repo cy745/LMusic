@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
+import com.blankj.utilcode.util.ConvertUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
@@ -100,6 +101,13 @@ fun PlayingScreen(
             SpManager.listen(Config.KEY_SETTINGS_SEEKBAR_HANDLER,
                 SpManager.SpIntListener(CLICK_HANDLE_MODE_CLICK) {
                     clickHandleMode = it
+                })
+
+            SpManager.listen(Config.KEY_SETTINGS_LYRIC_TEXT_SIZE,
+                SpManager.SpIntListener(16) {
+                    val textSize = ConvertUtils.sp2px(it.toFloat()).toFloat()
+                    fmLyricViewX.setNormalTextSize(textSize)
+                    fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
                 })
 
             activity.setSupportActionBar(fmToolbar)

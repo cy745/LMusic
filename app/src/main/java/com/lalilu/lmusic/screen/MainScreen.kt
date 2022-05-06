@@ -2,6 +2,7 @@ package com.lalilu.lmusic.screen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,7 +39,10 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
     val scaffoldState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden
+        initialValue = ModalBottomSheetValue.Hidden,
+        animationSpec = SpringSpec(
+            stiffness = 800f
+        )
     )
 
     val screenHeight = remember(configuration.screenHeightDp) {

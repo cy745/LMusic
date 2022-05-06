@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.component
+package com.lalilu.lmusic.screen.component.settings
 
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -6,6 +6,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import com.funny.data_saver.core.DataSaverMutableState
 import com.lalilu.R
+import com.lalilu.lmusic.screen.component.settings.SettingSwitcher
+import com.lalilu.lmusic.screen.component.settings.multiply
 
 @Composable
 fun SettingExtensionSwitcher(
