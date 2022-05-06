@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.component
+package com.lalilu.lmusic.screen.component.settings
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.component
+package com.lalilu.lmusic.screen.component.settings
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
@@ -20,10 +20,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.funny.data_saver.core.DataSaverMutableState
+import com.lalilu.lmusic.screen.component.ProgressSeekBar
 import kotlin.math.roundToInt
 
 @Composable
-fun SettingStateSeekBar(
+fun SettingProgressSeekBar(
     state: DataSaverMutableState<Int>,
     selection: List<String>,
     @StringRes titleRes: Int,
@@ -36,11 +37,11 @@ fun SettingStateSeekBar(
 )
 
 @Composable
-fun SettingStateSeekBar(
+fun SettingProgressSeekBar(
     state: DataSaverMutableState<Int>,
-    selection: List<String>,
     title: String,
-    subTitle: String? = null
+    subTitle: String? = null,
+    valueRange: IntRange
 ) {
     var value by state
     val tempValue = remember(value) { mutableStateOf(value.toFloat()) }
@@ -62,12 +63,11 @@ fun SettingStateSeekBar(
             text = title,
             fontSize = 14.sp
         )
-        StateSeekBar(
+        ProgressSeekBar(
             value = tempValue.value,
-            selections = selection,
             onValueChange = { tempValue.value = it },
-            valueRange = 0f..(selection.size - 1f),
-            steps = selection.size - 2,
+            valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
+            steps = valueRange.last - valueRange.first - 1,
             onValueChangeFinished = {
                 value = tempValue.value.roundToInt()
             }
