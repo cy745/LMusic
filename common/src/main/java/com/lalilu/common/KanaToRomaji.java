@@ -34,7 +34,7 @@ public class KanaToRomaji {
         aMap.put("ケ", "ke");
         aMap.put("け", "ke");
         aMap.put("コ", "ko");
-        aMap.put("こ", "ke");
+        aMap.put("こ", "ko");
         aMap.put("サ", "sa");
         aMap.put("さ", "sa");
         aMap.put("シ", "shi");

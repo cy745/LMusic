@@ -1,6 +1,5 @@
 rootProject.name = "lmusic"
 include ':app'
 include ':decoder_flac'
-include ':preference'
 include ':ui'
 include ':common'

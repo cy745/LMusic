@@ -1,18 +1,11 @@
 package com.lalilu.lmusic.datasource
 
-import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
 import com.lalilu.lmusic.datasource.entity.MPlaylist
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
 import java.util.*
-import javax.inject.Singleton
 
 @Entity(
     tableName = "song_in_playlist",
@@ -48,21 +41,6 @@ data class PersistLyric(
     @ColumnInfo(name = "network_lyric_tlyric")
     val tlyric: String? = null
 )
-
-@Module
-@InstallIn(SingletonComponent::class)
-object LMusicDataBaseModule {
-    @Provides
-    @Singleton
-    fun provideLMusicDatabase(@ApplicationContext context: Context): LMusicDataBase {
-        return Room.databaseBuilder(
-            context,
-            LMusicDataBase::class.java,
-            "LMusic_database"
-        ).fallbackToDestructiveMigration()
-            .build()
-    }
-}
 
 @Database(
     entities = [

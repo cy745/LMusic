@@ -1,9 +1,9 @@
 package com.lalilu.ui.appbar
 
 import android.content.Context
+import android.graphics.Point
 import android.os.Build
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.view.*
 import android.widget.OverScroller
 import androidx.annotation.FloatRange
@@ -146,9 +146,9 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
                 val bound = windowManager.currentWindowMetrics.bounds
                 return bound.height() - bound.width()
             }
-            val outMetrics = DisplayMetrics()
-            windowManager.defaultDisplay.getRealMetrics(outMetrics)
-            return outMetrics.heightPixels - outMetrics.widthPixels
+            val point = Point()
+            windowManager.defaultDisplay.getSize(point)
+            return point.y - point.x
         }
         return 0
     }

@@ -13,7 +13,6 @@ import com.lalilu.R
 import com.lalilu.common.DeviceUtils
 import com.lalilu.common.HapticUtils
 import com.lalilu.common.ifNaN
-import com.lalilu.lmusic.ui.drawee.BlurImageView
 import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
 import com.lalilu.ui.appbar.AppBarLayout
 import com.lalilu.ui.appbar.AppBarLayout.OnOffsetChangedListener
@@ -51,8 +50,8 @@ class SquareAppBarLayout @JvmOverloads constructor(
 
         val deviceHeight = DeviceUtils.getHeight(context)
         setHeightToView(mDraweeView, deviceHeight)
-        setHeightToView(mLyricViewX, deviceHeight - 100)
-        setHeightToView(mEdgeTransparentView, deviceHeight - 100)
+        setHeightToView(mLyricViewX, deviceHeight)
+        setHeightToView(mEdgeTransparentView, deviceHeight)
     }
 
     override fun getBehavior(): CoordinatorLayout.Behavior<AppBarLayout> = behavior
@@ -61,11 +60,14 @@ class SquareAppBarLayout @JvmOverloads constructor(
         super.onMeasure(widthMeasureSpec, widthMeasureSpec)
     }
 
+    /**
+     * 修改View的高度，使用LayoutParams修改的方法时灵时不灵，故直接修改其top和bottom
+     */
     private fun setHeightToView(view: View?, height: Number) {
-        view?.let {
-            if (it.height == height.toInt()) return
-            it.layoutParams = it.layoutParams.also { params -> params.height = height.toInt() }
-        }
+        view ?: return
+        if (view.height == height.toInt()) return
+        view.top = 0
+        view.bottom = height.toInt()
     }
 
     private fun getMutableDragOffset(): Float {

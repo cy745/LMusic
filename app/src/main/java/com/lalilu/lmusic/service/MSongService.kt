@@ -1,10 +1,6 @@
 package com.lalilu.lmusic.service
 
 import android.app.PendingIntent
-import android.content.Context
-import android.content.SharedPreferences
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.media3.common.*
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -12,35 +8,25 @@ import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import androidx.palette.graphics.Palette
-import com.blankj.utilcode.util.EncodeUtils
 import com.blankj.utilcode.util.GsonUtils
-import com.blankj.utilcode.util.ImageUtils
 import com.blankj.utilcode.util.SPUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import com.lalilu.R
-import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.apis.bean.toShareDto
 import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.event.GlobalViewModel
-import com.lalilu.lmusic.utils.listen
-import com.lalilu.lmusic.utils.sources.CoverSourceFactory
+import com.lalilu.lmusic.manager.SpManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 @UnstableApi
 @AndroidEntryPoint
-@ExperimentalCoroutinesApi
 class MSongService : MediaLibraryService(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var player: Player
@@ -50,26 +36,13 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     private lateinit var mediaController: MediaController
 
     @Inject
-    lateinit var mGlobal: GlobalViewModel
-
-    @Inject
     lateinit var mediaSource: BaseMediaSource
 
     @Inject
     lateinit var notificationProvider: LMusicNotificationProvider
 
-    @Inject
-    lateinit var ablyService: AblyService
-
-    @Inject
-    lateinit var coverSourceFactory: CoverSourceFactory
-
     private val lastPlayedSp: SPUtils by lazy {
         SPUtils.getInstance(Config.LAST_PLAYED_SP)
-    }
-
-    private val settingsSp: SharedPreferences by lazy {
-        getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
     }
 
     private val audioAttributes = AudioAttributes.Builder()
@@ -95,19 +68,17 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             }
         }
 
-        settingsSp.listen(
-            R.string.sp_key_player_settings_skip_silent,
-            false
-        ) {
-            exoPlayer.skipSilenceEnabled = it
-        }
+        SpManager.listen(Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
+            SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_IGNORE_AUDIO_FOCUS) {
+                exoPlayer.setAudioAttributes(audioAttributes, !it)
+            })
 
-        settingsSp.listen(
-            R.string.sp_key_player_settings_ignore_audio_focus,
-            false
-        ) {
-            exoPlayer.setAudioAttributes(audioAttributes, !it)
-        }
+        SpManager.listen(Config.KEY_SETTINGS_REPEAT_MODE,
+            SpManager.SpIntListener(Config.DEFAULT_SETTINGS_REPEAT_MODE) {
+                exoPlayer.shuffleModeEnabled = it == 2
+                exoPlayer.repeatMode =
+                    if (it == 1) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_ALL
+            })
 
         val pendingIntent: PendingIntent =
             packageManager.getLaunchIntentForPackage(packageName).let { sessionIntent ->
@@ -129,10 +100,10 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
         controllerFuture.addListener({
             mediaController = controllerFuture.get()
-            mediaController.addListener(mGlobal.playerListener)
+            mediaController.addListener(GlobalData.playerListener)
             mediaController.addListener(LastPlayedListener())
-            mGlobal.getIsPlayingFromPlayer = mediaController::isPlaying
-            mGlobal.getPositionFromPlayer = mediaController::getCurrentPosition
+            GlobalData.getIsPlayingFromPlayer = mediaController::isPlaying
+            GlobalData.getPositionFromPlayer = mediaController::getCurrentPosition
         }, MoreExecutors.directExecutor())
 
         setMediaNotificationProvider(notificationProvider)
@@ -142,22 +113,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             launch {
                 lastPlayedSp.put(Config.LAST_PLAYED_ID, mediaItem?.mediaId)
-                mediaItem ?: return@launch
-                coverSourceFactory.loadCoverBytes(mediaItem)?.let {
-                    val bitmap = BitmapFactory.decodeByteArray(it, 0, it.size)
-                    val color = Palette.from(bitmap).generate().getAutomaticColor()
-                    ablyService.latestSharedDto.emit(
-                        mediaItem.mediaMetadata.toShareDto()?.also { dto ->
-                            val small = Bitmap.createScaledBitmap(bitmap, 64, 64, false)
-                            dto.coverBase64 = EncodeUtils.base64Encode2String(
-                                ImageUtils.bitmap2Bytes(small)
-                            )
-                            dto.coverBaseColor = color
-                            small.recycle()
-                        })
-                    return@launch
-                }
-                ablyService.latestSharedDto.emit(mediaItem.mediaMetadata.toShareDto())
             }
         }
 
@@ -218,7 +173,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     }
 
     override fun onDestroy() {
-        ablyService.shutdownAbly()
         player.release()
         mediaLibrarySession.release()
         super.onDestroy()

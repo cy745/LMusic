@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.datasource
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
@@ -13,9 +12,9 @@ import android.provider.MediaStore
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MediaMetadata.FOLDER_TYPE_PLAYLISTS
-import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.extensions.*
+import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -39,7 +38,6 @@ class BaseMediaSource @Inject constructor(
     private val minSizeLimit = 0
     private var artistFilter = unknownArtist
     private var minDurationFilter = minDurationLimit
-    private val settingsSp: SharedPreferences
 
     private val baseProjection = ArrayList(
         listOf(
@@ -63,15 +61,17 @@ class BaseMediaSource @Inject constructor(
     init {
         mContext.contentResolver
             .registerContentObserver(targetUri, true, MediaSourceObserver())
-        settingsSp = mContext.getSharedPreferences(Config.SETTINGS_SP, Context.MODE_PRIVATE)
-        settingsSp.listen(R.string.sp_key_media_source_settings_unknown_filter, true) {
-            artistFilter = if (it) unknownArtist else ""
-            loadSync()
-        }
-        settingsSp.listen(R.string.sp_key_media_source_settings_duration_filter, 30) {
-            minDurationFilter = it * 1000
-            loadSync()
-        }
+
+        SpManager.listen(Config.KEY_SETTINGS_MEDIA_UNKNOWN_FILTER,
+            SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_MEDIA_UNKNOWN_FILTER) {
+                artistFilter = if (it) unknownArtist else ""
+                loadSync()
+            })
+//        SpManager.listen("KEY_SETTINGS_ably_unknown_filter",
+//            SpManager.SpIntListener(30) {
+//                minDurationFilter = it * 1000
+//                loadSync()
+//            })
     }
 
     inner class MediaSourceObserver : ContentObserver(Handler(Looper.getMainLooper())) {
@@ -91,15 +91,9 @@ class BaseMediaSource @Inject constructor(
     }
 
     override fun songItemToAlbumItem(mediaItem: MediaItem): MediaItem {
-        return MediaItem.Builder()
-            .setMediaId(getAlbumIdFromMediaItem(mediaItem))
+        return mediaItem.buildUpon()
             .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(mediaItem.mediaMetadata.albumTitle)
-                    .setAlbumTitle(mediaItem.mediaMetadata.albumTitle)
-                    .setArtist(mediaItem.mediaMetadata.artist)
-                    .setAlbumArtist(mediaItem.mediaMetadata.albumArtist)
-                    .setArtworkUri(mediaItem.mediaMetadata.artworkUri)
+                mediaItem.mediaMetadata.buildUpon()
                     .setIsPlayable(false)
                     .setFolderType(FOLDER_TYPE_PLAYLISTS)
                     .build()
@@ -107,13 +101,9 @@ class BaseMediaSource @Inject constructor(
     }
 
     override fun songItemToArtistItem(mediaItem: MediaItem): MediaItem {
-        return MediaItem.Builder()
-            .setMediaId(getArtistIdFromMediaItem(mediaItem))
+        return mediaItem.buildUpon()
             .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(mediaItem.mediaMetadata.artist)
-                    .setAlbumTitle(mediaItem.mediaMetadata.artist)
-                    .setArtist(mediaItem.mediaMetadata.artist)
+                mediaItem.mediaMetadata.buildUpon()
                     .setIsPlayable(false)
                     .setFolderType(FOLDER_TYPE_PLAYLISTS)
                     .build()
@@ -121,13 +111,10 @@ class BaseMediaSource @Inject constructor(
     }
 
     override fun songItemToGenreItem(mediaItem: MediaItem): MediaItem {
-        return MediaItem.Builder()
+        return mediaItem.buildUpon()
             .setMediaId(mediaItem.mediaMetadata.genre.toString())
             .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(mediaItem.mediaMetadata.genre.toString())
-                    .setAlbumTitle(mediaItem.mediaMetadata.genre.toString())
-                    .setGenre(mediaItem.mediaMetadata.genre.toString())
+                mediaItem.mediaMetadata.buildUpon()
                     .setIsPlayable(false)
                     .setFolderType(FOLDER_TYPE_PLAYLISTS)
                     .build()

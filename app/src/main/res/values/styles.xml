@@ -11,21 +11,6 @@
         <item name="android:textSize">18sp</item>
     </style>
 
-    <style name="MY_BottomSheet" parent="Theme.Design.BottomSheetDialog">
-        <item name="android:backgroundDimAmount">0.5</item>
-
-        <!-- https://stackoverflow.com/questions/47553936/prevent-bottomsheetdialogfragment-covering-navigation-bar -->
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:navigationBarColor">@color/bottom_sheet_bg</item>
-        <item name="android:windowAnimationStyle">@style/MY_WindowAnimation</item>
-        <item name="bottomSheetStyle">@style/MY_BottomSheetStyle</item>
-    </style>
-
-    <style name="MY_WindowAnimation" parent="Animation.AppCompat.Dialog">
-        <item name="android:windowEnterAnimation">@anim/dialog_show_in_anim</item>
-        <item name="android:windowExitAnimation">@anim/dialog_show_out_anim</item>
-    </style>
-
     <style name="MY_SnackBarStyle" parent="Widget.MaterialComponents.Snackbar.FullWidth">
         <item name="animationMode">slide</item>
     </style>
@@ -52,13 +37,5 @@
     <style name="MY_SearchView" parent="Widget.AppCompat.SearchView">
         <item name="searchHintIcon">@drawable/ic_search_2_line</item>
         <item name="searchIcon">@drawable/ic_search_2_line</item>
-    </style>
-
-    <style name="MY_PreferenceTheme" parent="@style/PreferenceThemeOverlay">
-        <item name="preferenceFragmentCompatStyle">@style/MY_SettingsPreferencesFragment</item>
-    </style>
-
-    <style name="MY_SettingsPreferencesFragment" parent="@style/PreferenceFragment.Material">
-        <item name="android:layout">@layout/fragment_settings</item>
     </style>
 </resources>
