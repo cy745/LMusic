@@ -284,9 +284,10 @@ class LMusicNotificationProvider @Inject constructor(
             callback?.onNotificationChanged(mediaNotification!!)
         }.launchIn(this)
 
-        SpManager.listen(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE, SpManager.SpBoolListener {
-            lyricPusherEnable = it
-            pushLyric(sentenceToPush)
-        })
+        SpManager.listen(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE,
+            SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_STATUS_LYRIC_ENABLE) {
+                lyricPusherEnable = it
+                pushLyric(sentenceToPush)
+            })
     }
 }

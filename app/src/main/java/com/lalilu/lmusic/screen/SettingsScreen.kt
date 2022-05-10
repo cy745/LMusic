@@ -22,14 +22,38 @@ import com.lalilu.lmusic.screen.component.settings.*
 fun SettingsScreen(
     contentPaddingForFooter: Dp = 0.dp
 ) {
-    val ignoreAudioFocus = rememberDataSaverState(Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS, false)
-    val unknownFilter = rememberDataSaverState(Config.KEY_SETTINGS_MEDIA_UNKNOWN_FILTER, true)
-    val statusBarLyric = rememberDataSaverState(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE, false)
-    val seekbarHandler = rememberDataSaverState(Config.KEY_SETTINGS_SEEKBAR_HANDLER, 0)
-    val lyricGravity = rememberDataSaverState(Config.KEY_SETTINGS_LYRIC_GRAVITY, 0)
-    val lyricTextSize = rememberDataSaverState(Config.KEY_SETTINGS_LYRIC_TEXT_SIZE, 5)
-    val kanhiraEnable = rememberDataSaverState(Config.KEY_SETTINGS_KANHIRA_ENABLE, false)
-    val repeatMode = rememberDataSaverState(Config.KEY_SETTINGS_REPEAT_MODE, 0)
+    val ignoreAudioFocus = rememberDataSaverState(
+        Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
+        Config.DEFAULT_SETTINGS_IGNORE_AUDIO_FOCUS
+    )
+    val unknownFilter = rememberDataSaverState(
+        Config.KEY_SETTINGS_MEDIA_UNKNOWN_FILTER,
+        Config.DEFAULT_SETTINGS_MEDIA_UNKNOWN_FILTER
+    )
+    val statusBarLyric = rememberDataSaverState(
+        Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE,
+        Config.DEFAULT_SETTINGS_STATUS_LYRIC_ENABLE
+    )
+    val seekbarHandler = rememberDataSaverState(
+        Config.KEY_SETTINGS_SEEKBAR_HANDLER,
+        Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
+    )
+    val lyricGravity = rememberDataSaverState(
+        Config.KEY_SETTINGS_LYRIC_GRAVITY,
+        Config.DEFAULT_SETTINGS_LYRIC_GRAVITY
+    )
+    val lyricTextSize = rememberDataSaverState(
+        Config.KEY_SETTINGS_LYRIC_TEXT_SIZE,
+        Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
+    )
+    val kanhiraEnable = rememberDataSaverState(
+        Config.KEY_SETTINGS_KANHIRA_ENABLE,
+        Config.DEFAULT_SETTINGS_KANHIRA_ENABLE
+    )
+    val repeatMode = rememberDataSaverState(
+        Config.KEY_SETTINGS_REPEAT_MODE,
+        Config.DEFAULT_SETTINGS_REPEAT_MODE
+    )
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -106,8 +130,8 @@ fun SettingsScreen(
 //                    .collectAsState(initial = false)
 
                 SettingCategory(
-                    iconRes = R.drawable.ic_lrc_fill,
-                    titleRes = R.string.preference_lyric_settings
+                    iconRes = R.drawable.ic_gradienter_line,
+                    titleRes = R.string.preference_extensions
                 ) {
                     SettingExtensionSwitcher(
                         state = kanhiraEnable,

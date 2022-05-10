@@ -133,7 +133,7 @@ object KanjiToHiraTransformer : CoroutineScope, SearchTextManager.TextTransforme
         if (Build.VERSION.SDK_INT <= 23) return
 
         SpManager.listen(Config.KEY_SETTINGS_KANHIRA_ENABLE,
-            SpManager.SpBoolListener(true) {
+            SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_KANHIRA_ENABLE) {
                 if (!it) {
                     mKanhira = null
                     return@SpBoolListener

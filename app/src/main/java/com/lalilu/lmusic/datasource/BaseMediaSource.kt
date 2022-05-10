@@ -63,7 +63,7 @@ class BaseMediaSource @Inject constructor(
             .registerContentObserver(targetUri, true, MediaSourceObserver())
 
         SpManager.listen(Config.KEY_SETTINGS_MEDIA_UNKNOWN_FILTER,
-            SpManager.SpBoolListener(true) {
+            SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_MEDIA_UNKNOWN_FILTER) {
                 artistFilter = if (it) unknownArtist else ""
                 loadSync()
             })
