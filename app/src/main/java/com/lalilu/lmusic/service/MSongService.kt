@@ -69,12 +69,12 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         }
 
         SpManager.listen(Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
-            SpManager.SpBoolListener(false) {
+            SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_IGNORE_AUDIO_FOCUS) {
                 exoPlayer.setAudioAttributes(audioAttributes, !it)
             })
 
         SpManager.listen(Config.KEY_SETTINGS_REPEAT_MODE,
-            SpManager.SpIntListener(0) {
+            SpManager.SpIntListener(Config.DEFAULT_SETTINGS_REPEAT_MODE) {
                 exoPlayer.shuffleModeEnabled = it == 2
                 exoPlayer.repeatMode =
                     if (it == 1) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_ALL

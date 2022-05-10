@@ -29,11 +29,6 @@ object SpManager {
         callback: (String) -> Unit
     ) : SpListener<String>(callback)
 
-    private val onSharedPreferenceChangeListener =
-        SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
-            update(sp, key)
-        }
-
     private var sp: SharedPreferences? = null
     private val listeners: LinkedHashMap<String, SpListener<out Any>> = linkedMapOf()
 
@@ -41,18 +36,26 @@ object SpManager {
         sp = context.getSharedPreferences(
             context.applicationContext.packageName, Context.MODE_PRIVATE
         ).also {
-            it.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+            it.registerOnSharedPreferenceChangeListener { sp, key ->
+                update(sp, key)
+            }
         }
     }
 
-    fun update(sp: SharedPreferences, key: String) {
+    fun update(sp: SharedPreferences?, key: String) {
         listeners[key]?.let {
             when (it) {
-                is SpBoolListener -> it.onUpdate(sp.getBoolean(key, it.defaultValue))
-                is SpFloatListener -> it.onUpdate(sp.getFloat(key, it.defaultValue))
-                is SpIntListener -> it.onUpdate(sp.getInt(key, it.defaultValue))
+                is SpBoolListener -> it.onUpdate(
+                    sp?.getBoolean(key, it.defaultValue) ?: it.defaultValue
+                )
+                is SpFloatListener -> it.onUpdate(
+                    sp?.getFloat(key, it.defaultValue) ?: it.defaultValue
+                )
+                is SpIntListener -> it.onUpdate(
+                    sp?.getInt(key, it.defaultValue) ?: it.defaultValue
+                )
                 is SpStringListener -> it.onUpdate(
-                    sp.getString(key, it.defaultValue) ?: it.defaultValue
+                    sp?.getString(key, it.defaultValue) ?: it.defaultValue
                 )
             }
         }
@@ -63,7 +66,7 @@ object SpManager {
      */
     fun <K : Any, T : SpListener<K>> listen(key: String, listener: T) {
         listeners[key] = listener
-        sp?.let { update(it, key) }
+        update(sp, key)
     }
 //
 //    fun update(key: String, value: Any) {

@@ -130,7 +130,7 @@ fun PlayingScreen(
             })
 
             SpManager.listen(Config.KEY_SETTINGS_LYRIC_GRAVITY,
-                SpManager.SpIntListener(1) {
+                SpManager.SpIntListener(Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
                     when (it) {
                         0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
                         1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
@@ -138,12 +138,12 @@ fun PlayingScreen(
                     }
                 })
             SpManager.listen(Config.KEY_SETTINGS_SEEKBAR_HANDLER,
-                SpManager.SpIntListener(CLICK_HANDLE_MODE_CLICK) {
+                SpManager.SpIntListener(Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER) {
                     clickHandleMode = it
                 })
 
             SpManager.listen(Config.KEY_SETTINGS_LYRIC_TEXT_SIZE,
-                SpManager.SpIntListener(16) {
+                SpManager.SpIntListener(Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE) {
                     val textSize = ConvertUtils.sp2px(it.toFloat()).toFloat()
                     fmLyricViewX.setNormalTextSize(textSize)
                     fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
