@@ -105,7 +105,9 @@ fun MainScreen(
             onSeekToPosition = { mSongBrowser.browser?.seekTo(it.toLong()) },
             onPlayNext = { mSongBrowser.browser?.seekToNext() },
             onPlayPrevious = { mSongBrowser.browser?.seekToPrevious() },
-            onPlayPause = { mSongBrowser.togglePlay() }
+            onPlayPause = { mSongBrowser.togglePlay() },
+            onSongMoveToNext = { mSongBrowser.addToNext(it.mediaId) },
+            onSongRemoved = { mSongBrowser.removeById(it.mediaId) }
         )
     }
 

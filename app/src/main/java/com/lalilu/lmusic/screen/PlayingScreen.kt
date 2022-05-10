@@ -55,8 +55,8 @@ fun PlayingScreen(
     scaffoldShow: suspend () -> Unit = {},
     scaffoldHide: suspend () -> Unit = {},
     onSongSelected: suspend (MediaItem) -> Unit = {},
-    onSongMoveToNext: suspend (MediaItem) -> Unit = {},
-    onSongRemoved: suspend (MediaItem) -> Unit = {},
+    onSongMoveToNext: (MediaItem) -> Boolean = { false },
+    onSongRemoved: (MediaItem) -> Boolean = { false },
     onSongShowDetail: suspend (MediaItem) -> Unit = {},
     onPlayNext: suspend () -> Unit = {},
     onPlayPrevious: suspend () -> Unit = {},
@@ -94,6 +94,15 @@ fun PlayingScreen(
             adapter = PlayingAdapter().apply {
                 onItemClick = { item, _ -> scope.launch { onSongSelected(item) } }
                 onItemLongClick = { item, _ -> scope.launch { onSongShowDetail(item) } }
+                onItemDragOrSwipedListener = object : PlayingAdapter.OnItemDragOrSwipedListener {
+                    override fun onDelete(mediaItem: MediaItem): Boolean {
+                        return onSongRemoved(mediaItem)
+                    }
+
+                    override fun onAddToNext(mediaItem: MediaItem): Boolean {
+                        return onSongMoveToNext(mediaItem)
+                    }
+                }
             }
 
             behavior.addOnStateChangeListener(object :

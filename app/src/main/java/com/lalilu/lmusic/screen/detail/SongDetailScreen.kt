@@ -17,6 +17,7 @@ import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
@@ -25,12 +26,14 @@ import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
+import com.lalilu.lmusic.screen.viewmodel.MediaBrowserViewModel
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 
 @Composable
 fun SongDetailScreen(
     mediaItem: MediaItem,
-    navigateTo: (destination: String) -> Unit = {}
+    navigateTo: (destination: String) -> Unit = {},
+    mediaBrowserViewModel: MediaBrowserViewModel = hiltViewModel()
 ) {
     val imagePainter = rememberImagePainter(
         data = mediaItem.getCoverFromMediaItem()
@@ -39,8 +42,7 @@ fun SongDetailScreen(
     }
     val title = mediaItem.mediaMetadata.title?.toString()
         ?: stringResource(id = MainScreenData.SongDetail.title)
-    val subTitle = mediaItem.mediaMetadata.artist?.toString()
-        ?: stringResource(id = MainScreenData.SongDetail.subTitle)
+    val subTitle = "${mediaItem.mediaMetadata.artist}\n\n${mediaItem.mediaMetadata.albumTitle}"
 
     SongDetailScreen(
         title = title,
@@ -53,7 +55,7 @@ fun SongDetailScreen(
             navigateTo("${MainScreenData.AddToPlaylist.name}/${mediaItem.mediaId}")
         },
         onSetSongToNext = {
-
+            mediaBrowserViewModel.addSongToNext(mediaItem.mediaId)
         }
     )
 }
