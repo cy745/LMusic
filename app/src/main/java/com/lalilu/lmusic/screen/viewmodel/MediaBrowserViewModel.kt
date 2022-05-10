@@ -17,6 +17,10 @@ class MediaBrowserViewModel @Inject constructor(
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
+    fun addSongToNext(mediaId: String) {
+        mediaBrowser.addToNext(mediaId)
+    }
+
     fun playSongWithPlaylist(items: List<MediaItem>, index: Int) =
         launch(Dispatchers.Main) {
             mediaBrowser.browser?.apply {
