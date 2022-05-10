@@ -14,14 +14,15 @@ android {
     buildFeatures {
         viewBinding true
         dataBinding true
+        compose true
     }
 
     defaultConfig {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
         targetSdkVersion 32
-        versionCode 31
-        versionName "1.4.10_1"
+        versionCode 32
+        versionName "1.4.11"
         vectorDrawables {
             useSupportLibrary true
         }
@@ -46,12 +47,15 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion compose_version
+    }
     packagingOptions {
         resources {
             excludes += ['META-INF/CONTRIBUTORS.md', 'META-INF/LICENSE.md']
         }
     }
-    lintOptions {
+    lint {
         checkDependencies true
     }
 }
@@ -64,9 +68,20 @@ android.sourceSets.all {
 }
 
 dependencies {
+    // https://github.com/FunnySaltyFish/ComposeDataSaver
+    // Apache-2.0 License
+    implementation 'com.github.FunnySaltyFish.ComposeDataSaver:data-saver:v1.0.2'
+
+    implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
+    implementation "androidx.compose.material:material:$compose_version"
+    implementation "androidx.compose.ui:ui:$compose_version"
+    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
+    implementation "androidx.compose.ui:ui-viewbinding:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+
     // https://github.com/ably/ably-java
     // Apache-2.0 License
-    implementation 'io.ably:ably-android:1.2.11'
+    // implementation 'io.ably:ably-android:1.2.11'
 
     // https://github.com/scwang90/SmartRefreshLayout
     // Apache-2.0 License
@@ -95,7 +110,7 @@ dependencies {
     // https://github.com/nex3z/FlowLayout
     // Apache-2.0 License
     // 流式标签布局
-    implementation 'com.nex3z:flow-layout:1.3.3'
+    // implementation 'com.nex3z:flow-layout:1.3.3'
 
     // https://github.com/androidx/media
     // Apache-2.0 License
@@ -129,7 +144,8 @@ dependencies {
     // https://github.com/coil-kt/coil
     // Apache-2.0 License
     // 图片加载库
-    implementation "io.coil-kt:coil:1.4.0"
+    implementation "io.coil-kt:coil:$coil_version"
+    implementation "io.coil-kt:coil-compose:$coil_version"
 
     // https://github.com/sachiotomita/kanhira
     // https://github.com/cy745/kanhira
@@ -158,20 +174,22 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.2.1"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
-    implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
+//    implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
+//    implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
+    implementation "androidx.navigation:navigation-compose:$navigation_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
-
+    implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
     implementation "com.google.dagger:hilt-android:$hilt_version"
     implementation 'com.google.android.material:material:1.5.0'
 
-    implementation project(":preference")
     implementation project(":common")
     implementation project(":ui")
 
     kapt "androidx.hilt:hilt-compiler:1.0.0"
     kapt "androidx.room:room-compiler:$room_version"
+    kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 }

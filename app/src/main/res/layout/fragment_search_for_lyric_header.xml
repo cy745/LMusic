@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:paddingTop="40dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/search_for_lyric_refresh_and_tips_button"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:checkable="false"
+            android:minHeight="48dp"
+            android:text="@string/button_search_for_lyric_searching"
+            android:textColor="#7785DD"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@+id/search_for_lyric_tips"
+            app:layout_constraintStart_toEndOf="@+id/search_for_lyric_tips"
+            app:layout_constraintTop_toTopOf="@+id/search_for_lyric_tips"
+            app:rippleColor="#7785DD" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/search_for_lyric_tips"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/destination_label_search_for_lyric"
+            android:textColor="@color/daynight_0"
+            android:textSize="24sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/search_for_lyric_keyword"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/edittext_radius_bg"
+            android:drawableEnd="@drawable/ic_edit_line"
+            android:ellipsize="none"
+            android:imeOptions="actionDone"
+            android:lineSpacingMultiplier="1.2"
+            android:minHeight="64dp"
+            android:padding="8dp"
+            android:textColor="@color/daynight_0.6"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/barrier4"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/search_for_lyric_tips"
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="@tools:sample/lorem" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/search_for_lyric_cancel"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#0DFE4141"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="70dp"
+            android:text="@string/text_button_cancel"
+            android:textColor="@color/colorPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:rippleColor="@color/colorPrimary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/search_for_lyric_confirm"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp"
+            android:backgroundTint="#0D007C15"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="70dp"
+            android:text="@string/text_button_confirm"
+            android:textColor="#007C15"
+            app:layout_constraintBottom_toTopOf="@+id/search_for_lyric_cancel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0"
+            app:rippleColor="#007C15" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="left"
+            app:constraint_referenced_ids="search_for_lyric_confirm,search_for_lyric_cancel" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

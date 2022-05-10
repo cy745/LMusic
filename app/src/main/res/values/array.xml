@@ -8,7 +8,7 @@
 
     <string-array name="seekbar_handler">
         <item>单击</item>
-        <item>长按</item>
         <item>双击</item>
+        <item>长按</item>
     </string-array>
 </resources>

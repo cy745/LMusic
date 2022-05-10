@@ -4,7 +4,7 @@ import androidx.lifecycle.asLiveData
 import androidx.media3.common.Player
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
-import com.lalilu.lmusic.event.GlobalViewModel
+import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,18 +14,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
-interface LyricPusher {
-    fun clearLyric()
-    fun pushLyric(sentence: String?)
-}
-
 /**
  * 专门负责歌词解析处理的全局单例
  */
 @Singleton
-@ExperimentalCoroutinesApi
 class LyricManager @Inject constructor(
-    mGlobal: GlobalViewModel,
     private val pusher: LyricPusher,
     private val lyricSourceFactory: LyricSourceFactory
 ) : Player.Listener, CoroutineScope {
@@ -33,8 +26,14 @@ class LyricManager @Inject constructor(
     private var lastLyric: String? = ""
     private var lastIndex: Int = -1
 
+    interface LyricPusher {
+        fun clearLyric()
+        fun pushLyric(sentence: String?)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val _songLyric: Flow<Pair<String, String?>?> =
-        mGlobal.currentMediaItem.mapLatest {
+        GlobalData.currentMediaItem.mapLatest {
             it ?: return@mapLatest null
             lyricSourceFactory.getLyric(it)
         }
@@ -42,7 +41,7 @@ class LyricManager @Inject constructor(
     val songLyric = _songLyric.asLiveData()
 
     init {
-        _songLyric.combine(mGlobal.currentIsPlaying) { pair, isPlaying ->
+        _songLyric.combine(GlobalData.currentIsPlaying) { pair, isPlaying ->
             if (!isPlaying || pair == null) {
                 pusher.clearLyric()
                 return@combine null
@@ -51,7 +50,7 @@ class LyricManager @Inject constructor(
                     pusher.pushLyric(lastLyric)
             }
             LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
-        }.combine(mGlobal.currentPosition) { list, time ->
+        }.combine(GlobalData.currentPosition) { list, time ->
             list ?: return@combine null
             if (time == 0L) {
                 return@combine null

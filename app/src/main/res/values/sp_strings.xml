@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="preference_lyric_experimental">实验性功能</string>
+    <string name="preference_media_source_tips">将重载曲库</string>
+    <string name="preference_extensions">扩展功能</string>
+
     <string name="preference_lyric_settings">歌词显示设置</string>
     <string name="preference_lyric_settings_status_bar_lyric">状态栏歌词</string>
     <string name="preference_lyric_settings_text_gravity">歌词方向</string>
@@ -17,23 +21,4 @@
     <string name="preference_player_settings_ignore_audio_focus">允许与其他应用同时播放</string>
     <string name="preference_player_settings_skip_silent">切歌时跳过空白</string>
     <string name="preference_player_settings_seekbar_handler">切歌操作</string>
-
-    <string name="preference_ably_service_enable">高级网络功能</string>
-
-    <string name="sp_key_lyric_settings_status_bar_lyric">sp_key_lyric_settings_status_bar_lyric</string>
-    <string name="sp_key_lyric_settings_text_gravity">sp_key_lyric_settings_text_gravity</string>
-    <string name="sp_key_lyric_settings_text_size">sp_key_lyric_settings_text_size</string>
-    <string name="sp_key_lyric_settings_secondary_text_size">sp_key_lyric_settings_secondary_text_size</string>
-    <string name="sp_key_lyric_settings_translate_text_scale_value">sp_key_lyric_settings_translate_text_scale_value</string>
-    <string name="sp_key_lyric_settings_translate_divider_height">sp_key_lyric_settings_translate_divider_height</string>
-    <string name="sp_key_lyric_settings_lyric_divider_height">sp_key_lyric_settings_lyric_divider_height</string>
-
-    <string name="sp_key_media_source_settings_unknown_filter">sp_key_media_source_settings_unknown_filter</string>
-    <string name="sp_key_media_source_settings_duration_filter">sp_key_media_source_settings_duration_filter</string>
-
-    <string name="sp_key_player_settings_ignore_audio_focus">sp_key_player_settings_ignore_audio_focus</string>
-    <string name="sp_key_player_settings_skip_silent">sp_key_player_settings_skip_silent</string>
-    <string name="sp_key_player_settings_seekbar_handler">sp_key_player_settings_seekbar_handler</string>
-
-    <string name="sp_key_ably_service_enable">sp_key_ably_service_enable</string>
 </resources>

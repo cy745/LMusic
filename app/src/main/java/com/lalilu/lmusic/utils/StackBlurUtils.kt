@@ -3,11 +3,8 @@ package com.lalilu.lmusic.utils
 import android.graphics.Bitmap
 import android.util.LruCache
 import com.enrique.stackblur.NativeBlurProcess
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class StackBlurUtils @Inject constructor() : NativeBlurProcess() {
+object StackBlurUtils : NativeBlurProcess() {
     private val cache = LruCache<String, Bitmap?>(50)
     private var sourceId = -1
 

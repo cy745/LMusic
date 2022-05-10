@@ -15,19 +15,14 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaNotification
 import androidx.palette.graphics.Palette
-import com.blankj.utilcode.util.SPUtils
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.manager.LyricPusher
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
+import com.lalilu.lmusic.manager.LyricManager
+import com.lalilu.lmusic.manager.SpManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -36,21 +31,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
-@Module
-@ExperimentalCoroutinesApi
-@InstallIn(SingletonComponent::class)
-abstract class LyricPusherModule {
-
-    @Binds
-    abstract fun bindLyricPush(pusher: LMusicNotificationProvider): LyricPusher
-}
-
 @Singleton
 @UnstableApi
-@ExperimentalCoroutinesApi
 class LMusicNotificationProvider @Inject constructor(
     @ApplicationContext private val mContext: Context
-) : MediaNotification.Provider, LyricPusher, CoroutineScope {
+) : MediaNotification.Provider, LyricManager.LyricPusher, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val notificationManager: NotificationManager = ContextCompat.getSystemService(
@@ -61,13 +46,6 @@ class LMusicNotificationProvider @Inject constructor(
         val appIcon = mContext.applicationInfo.icon
         if (appIcon != 0) appIcon else R.drawable.ic_launcher_foreground
     }
-
-    private val settingsSp: SPUtils by lazy {
-        SPUtils.getInstance(Config.SETTINGS_SP)
-    }
-
-    private val statusBarLyricKey =
-        mContext.resources.getString(R.string.sp_key_lyric_settings_status_bar_lyric)
 
     companion object {
         const val NOTIFICATION_ID_PLAYER = 7
@@ -287,12 +265,11 @@ class LMusicNotificationProvider @Inject constructor(
         pushLyric(null)
     }
 
+    private var lyricPusherEnable = false
+    private var sentenceToPush: String? = null
     override fun pushLyric(sentence: String?) {
-        var mSentence = sentence
-        if (!settingsSp.getBoolean(statusBarLyricKey)) {
-            mSentence = null
-        }
-        sentenceFlow.tryEmit(mSentence)
+        sentenceToPush = sentence
+        sentenceFlow.tryEmit(if (lyricPusherEnable) sentenceToPush else null)
     }
 
     init {
@@ -306,5 +283,11 @@ class LMusicNotificationProvider @Inject constructor(
             ensureNotificationChannel()
             callback?.onNotificationChanged(mediaNotification!!)
         }.launchIn(this)
+
+        SpManager.listen(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE,
+            SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_STATUS_LYRIC_ENABLE) {
+                lyricPusherEnable = it
+                pushLyric(sentenceToPush)
+            })
     }
 }
