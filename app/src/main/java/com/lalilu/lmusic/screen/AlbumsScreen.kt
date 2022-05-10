@@ -27,9 +27,9 @@ fun AlbumsScreen(
     navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp
 ) {
-    var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", false)
+    var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
     var sortByState by rememberDataSaverState("KEY_SORT_BY_AlbumsScreen", SORT_BY_TIME)
-    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", false)
+    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)
     val sortedItems = remember(sortByState, sortDesc, albums) {
         sort(sortByState, sortDesc, albums.toMutableStateList(),
             getTextField = { it.mediaMetadata.albumTitle.toString() },
