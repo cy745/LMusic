@@ -28,7 +28,7 @@ fun ArtistScreen(
     contentPaddingForFooter: Dp = 0.dp
 ) {
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistScreen", SORT_BY_TIME)
-    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistScreen", false)
+    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistScreen", true)
     val sortedItems = remember(sortByState, sortDesc) {
         sort(sortByState, sortDesc, artists.toMutableStateList(),
             getTextField = { it.mediaMetadata.artist.toString() },

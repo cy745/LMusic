@@ -49,7 +49,7 @@ fun PlaylistsScreen(
     val playlists by viewModel.playlists.observeAsState(initial = emptyList())
 
     var sortByState by rememberDataSaverState("KEY_SORT_BY_PlaylistsScreen", SORT_BY_TIME)
-    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_PlaylistsScreen", false)
+    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_PlaylistsScreen", true)
     val selectedItems = remember { emptyList<MPlaylist>().toMutableStateList() }
     val sortedItems = remember(sortByState, sortDesc, playlists) {
         sort(sortByState, sortDesc, playlists.toMutableStateList(),
