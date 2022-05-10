@@ -84,7 +84,7 @@ fun SearchForLyricScreen(
         }) {
             searchForLyricKeyword.setText(keyword)
         }
-        Divider()
+//        Divider()
         LazyColumn(contentPadding = PaddingValues(bottom = contentPaddingForFooter)) {
             itemsIndexed(lyrics) { index, item ->
                 LyricCard(

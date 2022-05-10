@@ -17,10 +17,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.lalilu.R
-import com.lalilu.lmusic.datasource.ALBUM_ID
-import com.lalilu.lmusic.datasource.ALBUM_PREFIX
-import com.lalilu.lmusic.datasource.BaseMediaSource
-import com.lalilu.lmusic.datasource.ITEM_PREFIX
+import com.lalilu.lmusic.datasource.*
+import com.lalilu.lmusic.screen.detail.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -56,6 +54,7 @@ fun ComposeNavigator(
                 contentPaddingForFooter = contentPaddingForFooter
             )
         }
+
         composable(
             route = MainScreenData.AllSongs.name
         ) {
@@ -64,6 +63,18 @@ fun ComposeNavigator(
                 contentPaddingForFooter = contentPaddingForFooter
             )
         }
+
+        composable(
+            route = MainScreenData.Artist.name
+        ) {
+            val artists = mediaSource.getChildren(ARTIST_ID) ?: emptyList()
+            ArtistScreen(
+                artists = artists,
+                navigateTo = navController::navigate,
+                contentPaddingForFooter = contentPaddingForFooter
+            )
+        }
+
         composable(
             route = MainScreenData.Albums.name
         ) {
@@ -111,6 +122,28 @@ fun ComposeNavigator(
                 }
             } ?: EmptySongDetailScreen()
         }
+
+        composable(
+            route = "${MainScreenData.ArtistDetail.name}/{artistId}",
+            arguments = listOf(navArgument("artistId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val artistId = backStackEntry.arguments?.getString("artistId")
+
+            artistId?.let { id ->
+                println(mediaSource.getItemById(ARTIST_PREFIX + id))
+                mediaSource.getItemById(ARTIST_PREFIX + id)?.let { artist ->
+                    mediaSource.getChildren(ARTIST_PREFIX + id)?.also { songs ->
+                        ArtistDetailScreen(
+                            artist = artist,
+                            songs = songs,
+                            navigateTo = navController::navigate,
+                            contentPaddingForFooter = contentPaddingForFooter
+                        )
+                    }
+                }
+            } ?: EmptyArtistDetailScreen()
+        }
+
         composable(
             route = "${MainScreenData.AlbumDetail.name}/{albumId}",
             arguments = listOf(navArgument("albumId") { type = NavType.StringType })
@@ -204,6 +237,12 @@ enum class MainScreenData(
         subTitle = R.string.destination_subtitle_all_song,
         showNavigateButton = true
     ),
+    Artist(
+        icon = R.drawable.ic_user_line,
+        title = R.string.destination_label_artist,
+        subTitle = R.string.destination_subtitle_artist,
+        showNavigateButton = true
+    ),
     Albums(
         icon = R.drawable.ic_album_fill,
         title = R.string.destination_label_albums,
@@ -220,6 +259,11 @@ enum class MainScreenData(
         icon = R.drawable.ic_play_list_line,
         title = R.string.destination_label_playlist_detail,
         subTitle = R.string.destination_subtitle_playlist_detail
+    ),
+    ArtistDetail(
+        icon = R.drawable.ic_user_line,
+        title = R.string.destination_label_artist,
+        subTitle = R.string.destination_subtitle_artist
     ),
     AlbumDetail(
         icon = R.drawable.ic_album_fill,
@@ -249,19 +293,9 @@ enum class MainScreenData(
     );
 
     companion object {
-        fun fromRoute(route: String?): MainScreenData? =
-            when (route?.substringBefore("/")) {
-                Albums.name -> Albums
-                Library.name -> Library
-                Settings.name -> Settings
-                AllSongs.name -> AllSongs
-                Playlists.name -> Playlists
-                SongDetail.name -> SongDetail
-                AlbumDetail.name -> AlbumDetail
-                AddToPlaylist.name -> AddToPlaylist
-                PlaylistDetail.name -> PlaylistDetail
-                SearchForLyric.name -> SearchForLyric
-                else -> null
-            }
+        fun fromRoute(route: String?): MainScreenData? {
+            val target = route?.substringBefore("/")
+            return values().find { it.name == target }
+        }
     }
 }

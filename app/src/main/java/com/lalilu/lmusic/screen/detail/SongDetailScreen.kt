@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen
+package com.lalilu.lmusic.screen.detail
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -23,6 +23,7 @@ import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
+import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 

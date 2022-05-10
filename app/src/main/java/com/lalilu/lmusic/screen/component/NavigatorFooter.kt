@@ -43,11 +43,11 @@ fun NavigatorFooter(
         ?: stringResource(id = R.string.dialog_bottom_sheet_navigator_back)
 
     Column(modifier = modifier) {
-        Divider(
-            modifier = Modifier.padding(horizontal = 5.dp),
-            color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
-                .copy(0.2f)
-        )
+//        Divider(
+//            modifier = Modifier.padding(horizontal = 5.dp),
+//            color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+//                .copy(0.2f)
+//        )
         Row(
             modifier = Modifier
                 .height(52.dp)
