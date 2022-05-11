@@ -1,13 +1,17 @@
 # LMusic
 
 #### 介绍
-一个简洁且独特的音乐播放器，在其中学习使用了MVVM架构，且遵循最小权限原则。
+一个简洁且独特的音乐播放器，遵循最小权限原则，目标是打造一个简洁好用的音乐播放器，还要够方便够好用。
 
-目标是打造一个简洁好用的音乐播放器，还要够方便够好用。
+在其中学习使用了MVVM架构，现已从传统View架构转为Compose架构，大量使用了Kotlin Coroutines Flow、协程，以用来形成单向数据流。
 
-|![APP主页面](https://images.gitee.com/uploads/images/2021/0709/200325_4de1a5b6_7470859.png "951717920c93efe624eba615ad09c7a.png")主页面|![歌单页](https://images.gitee.com/uploads/images/2021/0709/200402_32064a62_7470859.png "e88edff0f98ddc3ca3fc22da9699a81.png")歌单页|
+
+|![APP主页面](https://gitee.com/lalilu/lmusic/raw/master/screenshots/202205112338172.png "主页面")主页面|![歌词页](https://gitee.com/lalilu/lmusic/raw/master/screenshots/20220511233817.jpg "歌词页")歌词页|
 |--|--|
-|![平板横向布局，主界面](https://images.gitee.com/uploads/images/2021/1127/151143_108c998c_7470859.jpeg "Screenshot_20211127_151125_com.lalilu.lmusic.jpg")平板横向布局，主界面|![平板横向布局，展开歌词界面](https://images.gitee.com/uploads/images/2021/1127/151007_8135cbde_7470859.jpeg "Screenshot_20211127_145058_com.lalilu.lmusic.jpg")平板横向布局，展开歌词界面|
+|![歌曲页](https://gitee.com/lalilu/lmusic/raw/master/screenshots/202205112338171.jpg "歌曲页")歌曲页|![专辑页](https://gitee.com/lalilu/lmusic/raw/master/screenshots/202205112338171.png "专辑页")专辑页|
+
+##### Tips
+在这个项目中尝试过自定义View，也尝试修改Google的Material库以获得满足目标的效果，但大部分都已经用Compose重新实现了，需要看旧的传统View的实现请查阅v1.4.9以前版本的代码。
 
 #### 参与贡献
 欢迎提Issues和PR，你的Issues就是我最大的动力，你的PR是对我最大的支持，十分感谢！！！
