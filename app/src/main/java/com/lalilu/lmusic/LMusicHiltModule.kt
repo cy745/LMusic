@@ -3,7 +3,7 @@ package com.lalilu.lmusic
 import android.content.Context
 import androidx.room.Room
 import com.lalilu.lmusic.apis.NeteaseDataSource
-import com.lalilu.lmusic.datasource.LMusicDataBase
+import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.service.LMusicNotificationProvider
 import dagger.Binds
@@ -33,10 +33,10 @@ object LMusicHiltModule {
 
     @Provides
     @Singleton
-    fun provideLMusicDatabase(@ApplicationContext context: Context): LMusicDataBase {
+    fun provideLMusicDatabase(@ApplicationContext context: Context): MDataBase {
         return Room.databaseBuilder(
             context,
-            LMusicDataBase::class.java,
+            MDataBase::class.java,
             "LMusic_database"
         ).fallbackToDestructiveMigration()
             .build()
