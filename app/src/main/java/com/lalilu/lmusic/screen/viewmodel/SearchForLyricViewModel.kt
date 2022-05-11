@@ -8,8 +8,8 @@ import com.lalilu.R
 import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
 import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.apis.bean.SongSearchSong
-import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.datasource.PersistLyric
+import com.lalilu.lmusic.datasource.MDataBase
+import com.lalilu.lmusic.datasource.entity.MLyric
 import com.lalilu.lmusic.service.GlobalData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -20,7 +20,7 @@ import kotlin.coroutines.CoroutineContext
 @HiltViewModel
 class SearchForLyricViewModel @Inject constructor(
     private val neteaseDataSource: NeteaseDataSource,
-    private val dataBase: LMusicDataBase
+    private val dataBase: MDataBase
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -81,8 +81,8 @@ class SearchForLyricViewModel @Inject constructor(
             }
         }.onEach {
             it ?: return@onEach
-            dataBase.persistLyricDao().save(
-                PersistLyric(
+            dataBase.lyricDao().save(
+                MLyric(
                     mediaId = mediaId,
                     lyric = it.first,
                     tlyric = it.second
