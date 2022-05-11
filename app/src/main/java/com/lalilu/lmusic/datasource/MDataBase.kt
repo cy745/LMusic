@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.lalilu.lmusic.datasource.converter.DateConverter
 import com.lalilu.lmusic.datasource.converter.UriConverter
+import com.lalilu.lmusic.datasource.dao.MArtistDao
 import com.lalilu.lmusic.datasource.dao.MLyricDao
 import com.lalilu.lmusic.datasource.dao.MPlaylistDao
 import com.lalilu.lmusic.datasource.dao.SongInPlaylistDao
@@ -27,6 +28,7 @@ import com.lalilu.lmusic.datasource.entity.*
 )
 abstract class MDataBase : RoomDatabase() {
     abstract fun lyricDao(): MLyricDao
+    abstract fun artistDao(): MArtistDao
     abstract fun playlistDao(): MPlaylistDao
     abstract fun songInPlaylistDao(): SongInPlaylistDao
 }
