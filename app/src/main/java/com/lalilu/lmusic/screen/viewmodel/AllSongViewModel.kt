@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.lalilu.lmusic.datasource.ALL_ID
-import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.service.MSongBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -16,7 +16,7 @@ import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
 class AllSongViewModel @Inject constructor(
-    private val mediaSource: BaseMediaSource,
+    private val mediaSource: MMediaSource,
     private val mediaBrowser: MSongBrowser
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO

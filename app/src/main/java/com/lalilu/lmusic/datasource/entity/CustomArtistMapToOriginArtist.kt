@@ -9,19 +9,19 @@ import androidx.room.ForeignKey
     foreignKeys = [
         ForeignKey(
             entity = MArtist::class,
-            parentColumns = ["artist_id"],
-            childColumns = ["artist_id"],
+            parentColumns = ["artist_name"],
+            childColumns = ["artist_name"],
             onDelete = ForeignKey.CASCADE
         )
     ],
     primaryKeys = [
-        "artist_id",
+        "artist_name",
         "origin_artist_id"
     ]
 )
 data class CustomArtistMapToOriginArtist(
-    @ColumnInfo(name = "artist_id")
-    val artistId: Long,
+    @ColumnInfo(name = "artist_name")
+    val artistName: String,
     @ColumnInfo(name = "origin_artist_id")
     val originArtistId: String
 )

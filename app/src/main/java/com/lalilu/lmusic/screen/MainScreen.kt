@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.blankj.utilcode.util.BarUtils
 import com.lalilu.common.DeviceUtils
-import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.screen.component.NavigatorFooter
 import com.lalilu.lmusic.service.MSongBrowser
 import kotlinx.coroutines.launch
@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 @ExperimentalAnimationApi
 fun MainScreen(
     mSongBrowser: MSongBrowser,
-    mediaSource: BaseMediaSource,
+    mediaSource: MMediaSource,
     onMoveTaskToBack: () -> Unit = {}
 ) {
     val context = LocalContext.current

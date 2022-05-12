@@ -2,7 +2,7 @@ package com.lalilu.lmusic.screen.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.media3.common.MediaItem
-import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MPlaylist
@@ -20,7 +20,7 @@ import kotlin.coroutines.CoroutineContext
 class PlaylistsViewModel @Inject constructor(
     private val dataBase: MDataBase,
     private val mediaBrowser: MSongBrowser,
-    private val mediaSource: BaseMediaSource
+    private val mediaSource: MMediaSource
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     val playlists = dataBase.playlistDao().getAllLiveDataSortByTime()

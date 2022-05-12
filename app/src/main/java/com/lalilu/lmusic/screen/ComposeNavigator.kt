@@ -34,7 +34,7 @@ fun ComposeNavigator(
     scope: CoroutineScope = rememberCoroutineScope(),
     navController: NavHostController,
     scaffoldState: ModalBottomSheetState,
-    mediaSource: BaseMediaSource,
+    mediaSource: MMediaSource,
     contentPaddingForFooter: Dp = 0.dp,
 ) {
     val expendScaffold: () -> Unit = {
