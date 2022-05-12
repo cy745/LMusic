@@ -17,10 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.lalilu.R
-import com.lalilu.lmusic.datasource.ALBUM_ID
-import com.lalilu.lmusic.datasource.ALBUM_PREFIX
-import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.datasource.MMediaSource
+import com.lalilu.lmusic.datasource.*
 import com.lalilu.lmusic.screen.detail.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -61,7 +58,9 @@ fun ComposeNavigator(
         composable(
             route = MainScreenData.AllSongs.name
         ) {
+            val songs = mediaSource.getChildren(ALL_ID) ?: emptyList()
             AllSongsScreen(
+                songs = songs,
                 navigateTo = navController::navigate,
                 contentPaddingForFooter = contentPaddingForFooter
             )
