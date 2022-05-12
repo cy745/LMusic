@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 
 @Entity(
-    tableName = "custom_artist_map_to_origin_artist",
+    tableName = "m_artist_map_id",
     foreignKeys = [
         ForeignKey(
             entity = MArtist::class,
@@ -19,7 +19,7 @@ import androidx.room.ForeignKey
         "origin_artist_id"
     ]
 )
-data class CustomArtistMapToOriginArtist(
+data class MArtistMapId(
     @ColumnInfo(name = "artist_name")
     val artistName: String,
     @ColumnInfo(name = "origin_artist_id")

@@ -28,6 +28,12 @@ import kotlin.coroutines.CoroutineContext
 
 const val unknownArtist = "<unknown>"
 const val minDurationLimit = 30 * 1000
+const val minSizeLimit = 0
+
+const val baseSortOrder = "${MediaStore.Audio.Media._ID} DESC"
+const val baseSelections = "${MediaStore.Audio.Media.SIZE} >= ? " +
+        "and ${MediaStore.Audio.Media.DURATION} >= ? " +
+        "and ${MediaStore.Audio.Artists.ARTIST} != ?"
 
 @Singleton
 class MMediaSource @Inject constructor(
@@ -35,9 +41,6 @@ class MMediaSource @Inject constructor(
 ) : CoroutineScope, AbstractMediaSource() {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val targetUri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-    private val minSizeLimit = 0
-    private var artistFilter = unknownArtist
-    private var minDurationFilter = minDurationLimit
 
     private val baseProjection = ArrayList(
         listOf(
@@ -58,6 +61,9 @@ class MMediaSource @Inject constructor(
         }
     }.toTypedArray()
 
+    private var artistFilter = unknownArtist
+    private var minDurationFilter = minDurationLimit
+
     init {
         mContext.contentResolver
             .registerContentObserver(targetUri, true, MediaSourceObserver())
@@ -67,11 +73,6 @@ class MMediaSource @Inject constructor(
                 artistFilter = if (it) unknownArtist else ""
                 loadSync()
             })
-//        SpManager.listen("KEY_SETTINGS_ably_unknown_filter",
-//            SpManager.SpIntListener(30) {
-//                minDurationFilter = it * 1000
-//                loadSync()
-//            })
     }
 
     inner class MediaSourceObserver : ContentObserver(Handler(Looper.getMainLooper())) {
@@ -80,6 +81,96 @@ class MMediaSource @Inject constructor(
                 initialize(loadMediaItems())
             }
         }
+    }
+
+
+    fun loadSync() = launch {
+        load()
+    }
+
+    override suspend fun load() {
+        try {
+            initialize(loadMediaItems())
+        } catch (e: Exception) {
+            readyState = STATE_ERROR
+        }
+    }
+
+    private suspend fun loadMediaItems(): MutableList<MediaItem> =
+        withContext(Dispatchers.IO) {
+            return@withContext searchForMedia(
+                projection = baseProjection,
+                selection = baseSelections,
+                sortOrder = baseSortOrder,
+                selectionArgs = arrayOf(
+                    minSizeLimit.toString(),
+                    minDurationFilter.toString(),
+                    artistFilter
+                )
+            ).getMediaItems()
+        }
+
+    private fun Cursor?.getMediaItems(): ArrayList<MediaItem> {
+        this ?: return ArrayList()
+        return ArrayList<MediaItem>().apply {
+            while (this@getMediaItems.moveToNext()) {
+                add(
+                    MediaItem.Builder()
+                        .from(this@getMediaItems)
+                        .setMediaMetadata(
+                            MediaMetadata.Builder()
+                                .from(this@getMediaItems)
+                                .build()
+                        ).build()
+                )
+            }
+        }
+    }
+
+    fun MediaItem.Builder.from(cursor: Cursor): MediaItem.Builder {
+        setMediaId(cursor.getSongId().toString())
+        setMimeType(cursor.getSongMimeType())
+        setUri(cursor.getMediaUri())
+        return this
+    }
+
+    fun MediaMetadata.Builder.from(cursor: Cursor): MediaMetadata.Builder {
+        setArtist(cursor.getArtist())
+        setTitle(cursor.getSongTitle())
+        setMediaUri(cursor.getMediaUri())
+        setAlbumArtist(cursor.getArtist())
+        setArtworkUri(cursor.getAlbumArt())
+        setAlbumTitle(cursor.getAlbumTitle())
+        setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
+        setIsPlayable(true)
+        setExtras(
+            Bundle()
+                .setAlbumId(cursor.getAlbumId())
+                .setArtistId(cursor.getArtistId())
+                .setSongData(cursor.getSongData())
+                .setDuration(cursor.getSongDuration())
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val genre = cursor.getSongGenre() ?: "Empty"
+            setGenre(genre.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() })
+        }
+        return this
+    }
+
+    private fun searchForMedia(
+        selection: String? = null,
+        projection: Array<String>? = null,
+        selectionArgs: Array<String>? = null,
+        sortOrder: String? = null
+    ): Cursor? {
+        return mContext.contentResolver.query(
+            targetUri,
+            projection,
+            selection,
+            selectionArgs,
+            sortOrder
+        )
     }
 
     override fun getAlbumIdFromMediaItem(mediaItem: MediaItem): String {
@@ -119,88 +210,5 @@ class MMediaSource @Inject constructor(
                     .setFolderType(FOLDER_TYPE_PLAYLISTS)
                     .build()
             ).build()
-    }
-
-    fun loadSync() = launch {
-        load()
-    }
-
-    override suspend fun load() {
-        try {
-            initialize(loadMediaItems())
-        } catch (e: Exception) {
-            readyState = STATE_ERROR
-        }
-    }
-
-    private suspend fun loadMediaItems(): MutableList<MediaItem> =
-        withContext(Dispatchers.IO) {
-            val cursor = searchForMedia(
-                projection = baseProjection,
-                selection = "${MediaStore.Audio.Media.SIZE} >= ? " +
-                        "and ${MediaStore.Audio.Media.DURATION} >= ? " +
-                        "and ${MediaStore.Audio.Artists.ARTIST} != ?",
-                selectionArgs = arrayOf("$minSizeLimit", "$minDurationFilter", artistFilter),
-                sortOrder = "${MediaStore.Audio.Media._ID} DESC"
-            ) ?: return@withContext ArrayList()
-
-            return@withContext ArrayList<MediaItem>().apply {
-                while (cursor.moveToNext()) {
-                    add(
-                        MediaItem.Builder()
-                            .from(cursor)
-                            .setMediaMetadata(
-                                MediaMetadata.Builder()
-                                    .from(cursor)
-                                    .build()
-                            ).build()
-                    )
-                }
-            }
-        }
-
-    fun MediaItem.Builder.from(cursor: Cursor): MediaItem.Builder {
-        setMediaId(cursor.getSongId().toString())
-        setMimeType(cursor.getSongMimeType())
-        setUri(cursor.getMediaUri())
-        return this
-    }
-
-    fun MediaMetadata.Builder.from(cursor: Cursor): MediaMetadata.Builder {
-        setArtist(cursor.getArtist())
-        setAlbumTitle(cursor.getAlbumTitle())
-        setTitle(cursor.getSongTitle())
-        setMediaUri(cursor.getMediaUri())
-        setAlbumArtist(cursor.getArtist())
-        setArtworkUri(cursor.getAlbumArt())
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val genre = cursor.getSongGenre() ?: "Empty"
-            setGenre(genre.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() })
-        }
-        setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
-        setIsPlayable(true)
-        setExtras(
-            Bundle()
-                .setAlbumId(cursor.getAlbumId())
-                .setArtistId(cursor.getArtistId())
-                .setDuration(cursor.getSongDuration())
-                .setSongData(cursor.getSongData())
-        )
-        return this
-    }
-
-    private fun searchForMedia(
-        selection: String? = null,
-        projection: Array<String>? = null,
-        selectionArgs: Array<String>? = null,
-        sortOrder: String? = null
-    ): Cursor? {
-        return mContext.contentResolver.query(
-            targetUri,
-            projection,
-            selection,
-            selectionArgs,
-            sortOrder
-        )
     }
 }
