@@ -15,7 +15,7 @@ import com.funny.data_saver.core.LocalDataSaver
 import com.lalilu.R
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
-import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.screen.MainScreen
 import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.service.MSongBrowser
@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var mSongBrowser: MSongBrowser
 
     @Inject
-    lateinit var mediaSource: BaseMediaSource
+    lateinit var mediaSource: MMediaSource
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

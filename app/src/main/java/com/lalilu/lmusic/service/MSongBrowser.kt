@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.ALL_ID
-import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +34,7 @@ import kotlin.coroutines.CoroutineContext
 class MSongBrowser @Inject constructor(
     @ApplicationContext
     private val mContext: Context,
-    private val mediaSource: BaseMediaSource
+    private val mediaSource: MMediaSource
 ) : DefaultLifecycleObserver, CoroutineScope, EnhanceBrowser {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>

@@ -15,7 +15,7 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.manager.SpManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,7 +36,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     private lateinit var mediaController: MediaController
 
     @Inject
-    lateinit var mediaSource: BaseMediaSource
+    lateinit var mediaSource: MMediaSource
 
     @Inject
     lateinit var notificationProvider: LMusicNotificationProvider

@@ -4,7 +4,7 @@ import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.lalilu.R
-import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.KanjiToHiraTransformer
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.fetcher.Base64CoverFetcher
@@ -31,7 +31,7 @@ class LMusicApp : Application(), ImageLoaderFactory, CoroutineScope {
     lateinit var base64CoverFetcher: Base64CoverFetcher
 
     @Inject
-    lateinit var mediaSource: BaseMediaSource
+    lateinit var mediaSource: MMediaSource
 
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)

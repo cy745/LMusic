@@ -30,7 +30,7 @@ const val unknownArtist = "<unknown>"
 const val minDurationLimit = 30 * 1000
 
 @Singleton
-class BaseMediaSource @Inject constructor(
+class MMediaSource @Inject constructor(
     @ApplicationContext private val mContext: Context
 ) : CoroutineScope, AbstractMediaSource() {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
