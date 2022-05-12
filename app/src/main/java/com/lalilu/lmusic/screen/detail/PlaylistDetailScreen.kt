@@ -24,8 +24,8 @@ import com.lalilu.lmusic.screen.component.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SongCard
 import com.lalilu.lmusic.screen.component.SortToggleButton
-import com.lalilu.lmusic.screen.viewmodel.MediaBrowserViewModel
-import com.lalilu.lmusic.screen.viewmodel.PlaylistsViewModel
+import com.lalilu.lmusic.viewmodel.MediaBrowserViewModel
+import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)

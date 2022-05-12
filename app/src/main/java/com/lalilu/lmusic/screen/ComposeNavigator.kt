@@ -17,7 +17,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.lalilu.R
-import com.lalilu.lmusic.datasource.*
+import com.lalilu.lmusic.datasource.ALBUM_ID
+import com.lalilu.lmusic.datasource.ALBUM_PREFIX
+import com.lalilu.lmusic.datasource.ITEM_PREFIX
+import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.screen.detail.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -67,9 +70,7 @@ fun ComposeNavigator(
         composable(
             route = MainScreenData.Artist.name
         ) {
-            val artists = mediaSource.getChildren(ARTIST_ID) ?: emptyList()
             ArtistScreen(
-                artists = artists,
                 navigateTo = navController::navigate,
                 contentPaddingForFooter = contentPaddingForFooter
             )
@@ -124,23 +125,17 @@ fun ComposeNavigator(
         }
 
         composable(
-            route = "${MainScreenData.ArtistDetail.name}/{artistId}",
-            arguments = listOf(navArgument("artistId") { type = NavType.StringType })
+            route = "${MainScreenData.ArtistDetail.name}/{artistName}",
+            arguments = listOf(navArgument("artistName") { type = NavType.StringType })
         ) { backStackEntry ->
-            val artistId = backStackEntry.arguments?.getString("artistId")
+            val artistName = backStackEntry.arguments?.getString("artistName")
 
-            artistId?.let { id ->
-                println(mediaSource.getItemById(ARTIST_PREFIX + id))
-                mediaSource.getItemById(ARTIST_PREFIX + id)?.let { artist ->
-                    mediaSource.getChildren(ARTIST_PREFIX + id)?.also { songs ->
-                        ArtistDetailScreen(
-                            artist = artist,
-                            songs = songs,
-                            navigateTo = navController::navigate,
-                            contentPaddingForFooter = contentPaddingForFooter
-                        )
-                    }
-                }
+            artistName?.let { name ->
+                ArtistDetailScreen(
+                    artistName = name,
+                    navigateTo = navController::navigate,
+                    contentPaddingForFooter = contentPaddingForFooter
+                )
             } ?: EmptyArtistDetailScreen()
         }
 

@@ -13,13 +13,13 @@ import com.lalilu.lmusic.datasource.entity.*
 
 @Database(
     entities = [
-        MPlaylist::class,
         MLyric::class,
         MArtist::class,
+        MPlaylist::class,
         SongInPlaylist::class,
-        CustomArtistMapToOriginArtist::class
+        MArtistMapId::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 @TypeConverters(

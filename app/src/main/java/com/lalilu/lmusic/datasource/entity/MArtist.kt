@@ -24,9 +24,6 @@ data class MArtist(
     @ColumnInfo(name = "artist_name")
     val artistName: String,
 
-    /**
-     * 查询所有 [mapToArtist] 为 null 的 [MArtist] 即可只查询到顶级的 [MArtist]
-     */
     @ColumnInfo(name = "map_to_artist")
-    val mapToArtist: String
+    val mapToArtist: String? = null
 )

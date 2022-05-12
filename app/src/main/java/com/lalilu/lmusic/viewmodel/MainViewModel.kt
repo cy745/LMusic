@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.viewmodel
+package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.lalilu.lmusic.manager.LyricManager

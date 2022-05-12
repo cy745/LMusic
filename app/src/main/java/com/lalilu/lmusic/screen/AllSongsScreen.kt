@@ -21,7 +21,7 @@ import com.lalilu.lmusic.screen.component.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SongCard
 import com.lalilu.lmusic.screen.component.SortToggleButton
-import com.lalilu.lmusic.screen.viewmodel.AllSongViewModel
+import com.lalilu.lmusic.viewmodel.AllSongViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

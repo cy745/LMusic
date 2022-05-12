@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.viewmodel
+package com.lalilu.lmusic.viewmodel
 
 import android.text.TextUtils
 import android.view.View

@@ -30,7 +30,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SongCard
-import com.lalilu.lmusic.screen.viewmodel.MediaBrowserViewModel
+import com.lalilu.lmusic.viewmodel.MediaBrowserViewModel
 
 @Composable
 @OptIn(
