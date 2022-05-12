@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.lalilu.R
 import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
 import com.lalilu.lmusic.apis.NeteaseDataSource
-import com.lalilu.lmusic.apis.bean.SongSearchSong
+import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MLyric
 import com.lalilu.lmusic.service.GlobalData
@@ -72,13 +72,12 @@ class SearchForLyricViewModel @Inject constructor(
             toastTips("开始获取歌词")
             neteaseDataSource.searchForLyric(it)
         }.mapLatest {
-            val lyric = it?.lrc?.lyric
-            val tlyric = it?.tlyric?.lyric
-
-            if (!TextUtils.isEmpty(lyric)) Pair(lyric!!, tlyric) else {
+            val lyric = it?.mainLyric
+            if (TextUtils.isEmpty(lyric)) {
                 toastTips("选中歌曲无歌词")
-                null
+                return@mapLatest null
             }
+            Pair(lyric!!, it.translateLyric)
         }.onEach {
             it ?: return@onEach
             dataBase.lyricDao().save(

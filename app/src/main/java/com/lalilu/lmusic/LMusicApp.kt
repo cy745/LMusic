@@ -7,7 +7,6 @@ import com.lalilu.R
 import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.KanjiToHiraTransformer
 import com.lalilu.lmusic.manager.SpManager
-import com.lalilu.lmusic.utils.fetcher.Base64CoverFetcher
 import com.lalilu.lmusic.utils.fetcher.EmbeddedCoverFetcher
 import com.lalilu.lmusic.utils.fetcher.EmbeddedLyricFetchers
 import com.simple.spiderman.SpiderMan
@@ -28,9 +27,6 @@ class LMusicApp : Application(), ImageLoaderFactory, CoroutineScope {
     lateinit var coverFetcher: EmbeddedCoverFetcher
 
     @Inject
-    lateinit var base64CoverFetcher: Base64CoverFetcher
-
-    @Inject
     lateinit var mediaSource: MMediaSource
 
     override fun newImageLoader(): ImageLoader =
@@ -38,7 +34,6 @@ class LMusicApp : Application(), ImageLoaderFactory, CoroutineScope {
             .componentRegistry {
                 add(coverFetcher)
                 add(lyricFetchers)
-                add(base64CoverFetcher)
             }.build()
 
     override fun onCreate() {
