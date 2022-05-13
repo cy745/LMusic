@@ -20,7 +20,6 @@ import com.lalilu.lmusic.screen.MainScreen
 import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
-import com.lalilu.lmusic.ui.bind
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
