@@ -95,7 +95,7 @@ data class LyricSearchResponse(
     }
 
     override val mainLyric: String?
-        get() = klyric?.lyric
+        get() = lrc?.lyric
     override val translateLyric: String?
         get() = tlyric?.lyric
     override val fromPlatform: Int

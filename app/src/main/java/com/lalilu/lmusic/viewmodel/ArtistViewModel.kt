@@ -21,7 +21,7 @@ class ArtistViewModel @Inject constructor(
         get() = database.artistDao().getAllArtistMapId()
 
     suspend fun getSongsByName(artistName: String): List<MediaItem> = withContext(Dispatchers.IO) {
-        val artist = database.artistDao().getArtistByName(artistName)
+        val artist = database.artistDao().getCustomMapArtists(artistName)
         return@withContext artist.mapIds
             .mapNotNull {
                 mediaSource.getChildren(ARTIST_PREFIX + it.originArtistId)
