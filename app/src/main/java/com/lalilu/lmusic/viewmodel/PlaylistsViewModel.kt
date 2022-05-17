@@ -1,12 +1,12 @@
-package com.lalilu.lmusic.screen.viewmodel
+package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.media3.common.MediaItem
-import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.datasource.SongInPlaylist
+import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MPlaylist
+import com.lalilu.lmusic.datasource.entity.SongInPlaylist
 import com.lalilu.lmusic.service.MSongBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -18,9 +18,9 @@ import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor(
-    private val dataBase: LMusicDataBase,
+    private val dataBase: MDataBase,
     private val mediaBrowser: MSongBrowser,
-    private val mediaSource: BaseMediaSource
+    private val mediaSource: MMediaSource
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     val playlists = dataBase.playlistDao().getAllLiveDataSortByTime()

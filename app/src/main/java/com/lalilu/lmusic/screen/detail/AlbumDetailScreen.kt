@@ -30,7 +30,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SongCard
-import com.lalilu.lmusic.screen.viewmodel.MediaBrowserViewModel
+import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 @OptIn(
@@ -42,7 +42,7 @@ fun AlbumDetailScreen(
     songs: List<MediaItem>,
     contentPaddingForFooter: Dp = 0.dp,
     navigateTo: (destination: String) -> Unit = {},
-    mediaBrowserViewModel: MediaBrowserViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val haptic = LocalHapticFeedback.current
     val sortedItems = remember { songs.toMutableStateList() }
@@ -59,7 +59,7 @@ fun AlbumDetailScreen(
 
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
-            mediaBrowserViewModel.playSongWithPlaylist(
+            mainViewModel.playSongWithPlaylist(
                 items = songs,
                 index = index
             )

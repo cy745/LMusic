@@ -7,12 +7,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,25 +26,34 @@ import com.lalilu.lmusic.screen.component.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SongCard
 import com.lalilu.lmusic.screen.component.SortToggleButton
-import com.lalilu.lmusic.screen.viewmodel.MediaBrowserViewModel
+import com.lalilu.lmusic.viewmodel.ArtistViewModel
+import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ArtistDetailScreen(
-    artist: MediaItem,
-    songs: List<MediaItem>,
+    artistName: String,
     navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp,
-    mediaBrowserViewModel: MediaBrowserViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    artistViewModel: ArtistViewModel = hiltViewModel()
 ) {
-    val title = artist.mediaMetadata.artist?.toString()
-        ?: stringResource(id = MainScreenData.ArtistDetail.title)
-
     val haptic = LocalHapticFeedback.current
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistDetailScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistDetailScreen", true)
-    val sortedItems = remember(sortByState, sortDesc) {
-        sort(sortByState, sortDesc, songs.toMutableStateList(),
+    val songs = remember { emptyList<MediaItem>().toMutableStateList() }
+
+    LaunchedEffect(artistName) {
+        songs.clear()
+        songs.addAll(
+            artistViewModel
+                .getSongsByName(artistName)
+                .toMutableStateList()
+        )
+    }
+
+    val sortedItems = remember(sortByState, sortDesc, songs) {
+        sort(sortByState, sortDesc, songs,
             getTextField = { it.mediaMetadata.title.toString() },
             getTimeField = { it.mediaId.toLong() }
         )
@@ -52,7 +61,7 @@ fun ArtistDetailScreen(
 
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
-            mediaBrowserViewModel.playSongWithPlaylist(
+            mainViewModel.playSongWithPlaylist(
                 items = songs,
                 index = index
             )
@@ -69,7 +78,7 @@ fun ArtistDetailScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        NavigatorHeaderWithButtons(title = title, subTitle = "关联：") {
+        NavigatorHeaderWithButtons(title = artistName, subTitle = "关联：") {
             LazyListSortToggleButton(sortByState = sortByState) {
                 sortByState = next(sortByState)
             }
