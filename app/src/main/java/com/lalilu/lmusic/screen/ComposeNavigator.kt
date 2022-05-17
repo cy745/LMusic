@@ -11,14 +11,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.lalilu.R
-import com.lalilu.lmusic.datasource.*
+import com.lalilu.lmusic.datasource.ALBUM_ID
+import com.lalilu.lmusic.datasource.ALBUM_PREFIX
+import com.lalilu.lmusic.datasource.ALL_ID
+import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.screen.detail.*
+import com.lalilu.lmusic.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -34,9 +39,10 @@ fun ComposeNavigator(
     scope: CoroutineScope = rememberCoroutineScope(),
     navController: NavHostController,
     scaffoldState: ModalBottomSheetState,
-    mediaSource: MMediaSource,
     contentPaddingForFooter: Dp = 0.dp,
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
+    val mediaSource = mainViewModel.mediaSource
     val expendScaffold: () -> Unit = {
         scope.launch { scaffoldState.animateTo(ModalBottomSheetValue.Expanded) }
     }

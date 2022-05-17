@@ -7,14 +7,13 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.google.common.collect.ImmutableList
 import com.lalilu.lmusic.datasource.extensions.containsCaseInsensitive
+import com.lalilu.lmusic.utils.BaseReadyHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
-abstract class AbstractMediaSource : MediaSource, CoroutineScope {
+abstract class AbstractMediaSource : BaseReadyHelper(), MediaSource, CoroutineScope {
     private var treeNodes: MutableMap<String, MediaItemNode> = mutableMapOf()
-    private val readyListener = mutableListOf<suspend (Boolean) -> Unit>()
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     abstract fun getAlbumIdFromMediaItem(mediaItem: MediaItem): String
@@ -47,37 +46,7 @@ abstract class AbstractMediaSource : MediaSource, CoroutineScope {
         }
     }
 
-    @ReadyState
-    var readyState: Int = STATE_CREATED
-        set(value) {
-            when (value) {
-                STATE_INITIALIZED,
-                STATE_ERROR -> synchronized(readyListener) {
-                    field = value
-                    launch {
-                        readyListener.forEach { it.invoke(value != STATE_ERROR) }
-                    }
-                }
-                else -> field = value
-            }
-        }
-
-    override fun whenReady(performAction: suspend (Boolean) -> Unit): Boolean {
-        return when (readyState) {
-            STATE_CREATED, STATE_INITIALIZING -> {
-                readyListener += performAction
-                false
-            }
-            else -> {
-                launch {
-                    performAction.invoke(readyState != STATE_ERROR)
-                }
-                true
-            }
-        }
-    }
-
-    private fun initialize() {
+    fun buildTree() {
         treeNodes.clear()
         System.gc()
         treeNodes[ROOT_ID] = MediaItemNode(
@@ -129,9 +98,8 @@ abstract class AbstractMediaSource : MediaSource, CoroutineScope {
     }
 
     @Throws(Exception::class)
-    fun initialize(data: List<MediaItem>) {
-        readyState = STATE_INITIALIZING
-        initialize()
+    fun fillWithData(data: List<MediaItem>) {
+        buildTree()
         data.forEach {
             val idInTree = ITEM_PREFIX + it.mediaId
             val albumFolderIdInTree = ALBUM_PREFIX + getAlbumIdFromMediaItem(it)
@@ -158,7 +126,6 @@ abstract class AbstractMediaSource : MediaSource, CoroutineScope {
             treeNodes[genreFolderIdInTree]!!.addChild(idInTree)
             treeNodes[ALL_ID]!!.addChild(idInTree)
         }
-        readyState = STATE_INITIALIZED
     }
 
     private fun buildMediaItem(
@@ -255,6 +222,4 @@ abstract class AbstractMediaSource : MediaSource, CoroutineScope {
             return focusSearchResult
         }
     }
-
-    override suspend fun onUpdate() {}
 }

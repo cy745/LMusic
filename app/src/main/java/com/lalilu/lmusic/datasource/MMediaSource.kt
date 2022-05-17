@@ -20,7 +20,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -68,47 +67,37 @@ class MMediaSource @Inject constructor(
         mContext.contentResolver
             .registerContentObserver(targetUri, true, MediaSourceObserver())
 
-        SpManager.listen(Config.KEY_SETTINGS_MEDIA_UNKNOWN_FILTER,
+        SpManager.listen(
+            Config.KEY_SETTINGS_MEDIA_UNKNOWN_FILTER,
             SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_MEDIA_UNKNOWN_FILTER) {
                 artistFilter = if (it) unknownArtist else ""
-                loadSync()
-            })
+                start()
+            }, false
+        )
     }
 
     inner class MediaSourceObserver : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
-            launch(Dispatchers.IO) {
-                initialize(loadMediaItems())
-            }
+            launch(Dispatchers.IO) { start() }
         }
     }
 
-
-    fun loadSync() = launch {
-        load()
+    override fun initialize() {
+        fillWithData(loadMediaItems())
     }
 
-    override suspend fun load() {
-        try {
-            initialize(loadMediaItems())
-        } catch (e: Exception) {
-            readyState = STATE_ERROR
-        }
+    private fun loadMediaItems(): MutableList<MediaItem> {
+        return searchForMedia(
+            projection = baseProjection,
+            selection = baseSelections,
+            sortOrder = baseSortOrder,
+            selectionArgs = arrayOf(
+                minSizeLimit.toString(),
+                minDurationFilter.toString(),
+                artistFilter
+            )
+        ).getMediaItems()
     }
-
-    private suspend fun loadMediaItems(): MutableList<MediaItem> =
-        withContext(Dispatchers.IO) {
-            return@withContext searchForMedia(
-                projection = baseProjection,
-                selection = baseSelections,
-                sortOrder = baseSortOrder,
-                selectionArgs = arrayOf(
-                    minSizeLimit.toString(),
-                    minDurationFilter.toString(),
-                    artistFilter
-                )
-            ).getMediaItems()
-        }
 
     private fun Cursor?.getMediaItems(): ArrayList<MediaItem> {
         this ?: return ArrayList()

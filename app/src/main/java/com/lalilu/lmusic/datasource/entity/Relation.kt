@@ -20,7 +20,5 @@ data class CustomMapArtists(
     )
     val mapArtists: List<MArtist>
 ) {
-    val all: List<MArtist> by lazy {
-        arrayListOf(artist).apply { addAll(mapArtists) }
-    }
+    fun getAll(): List<MArtist> = arrayListOf(artist).apply { addAll(mapArtists) }
 }

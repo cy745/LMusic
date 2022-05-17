@@ -23,7 +23,7 @@ interface MArtistDao {
     @Transaction
     fun getCustomMapArtists(artistName: String): ArtistMapIds {
         val mapArtists = getMapArtistsByName(artistName)
-        return ArtistMapIds(mapArtists.artist, mapArtists.all.map { artist ->
+        return ArtistMapIds(mapArtists.artist, mapArtists.getAll().map { artist ->
             getArtistByName(artist.artistName).mapIds
         }.flatten())
     }

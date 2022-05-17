@@ -15,7 +15,10 @@ import com.funny.data_saver.core.LocalDataSaver
 import com.lalilu.R
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
+import com.lalilu.lmusic.datasource.ALL_ID
+import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
+import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.screen.MainScreen
 import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.service.MSongBrowser
@@ -34,25 +37,39 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var mediaSource: MMediaSource
 
+    private val dataSaverPreferences by lazy {
+        DataSaverPreferences().apply {
+            setContext(context = applicationContext)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
-            mediaSource.loadSync()
+            mediaSource.whenReady(true) {
+                val lastPlaylist = HistoryManager.getLastPlayedListIds()?.mapNotNull {
+                    mediaSource.getItemById(ITEM_PREFIX + it)
+                } ?: mediaSource.getChildren(ALL_ID) ?: emptyList()
+
+                GlobalData.currentMediaItem.emit(
+                    HistoryManager.getLastPlayedId()?.let {
+                        mediaSource.getItemById(ITEM_PREFIX + it)
+                    } ?: lastPlaylist.getOrNull(0)
+                )
+                GlobalData.currentPlaylist.emit(lastPlaylist)
+            }
+            mediaSource.startSync()
         }, onFailed = {
             ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
         })
+
         volumeControlStream = AudioManager.STREAM_MUSIC
         lifecycle.addObserver(mSongBrowser)
-        val dataSaverPreferences = DataSaverPreferences().apply {
-            setContext(context = applicationContext)
-        }
         setContent {
             CompositionLocalProvider(LocalDataSaver provides dataSaverPreferences) {
                 LMusicTheme {
                     MainScreen(
-                        mSongBrowser = mSongBrowser,
-                        mediaSource = mediaSource,
                         onMoveTaskToBack = { moveTaskToBack(false) }
                     )
                 }

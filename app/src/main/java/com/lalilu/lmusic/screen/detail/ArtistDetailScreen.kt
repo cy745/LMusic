@@ -27,7 +27,7 @@ import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SongCard
 import com.lalilu.lmusic.screen.component.SortToggleButton
 import com.lalilu.lmusic.viewmodel.ArtistViewModel
-import com.lalilu.lmusic.viewmodel.MediaBrowserViewModel
+import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -35,7 +35,7 @@ fun ArtistDetailScreen(
     artistName: String,
     navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp,
-    mediaBrowserViewModel: MediaBrowserViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel = hiltViewModel(),
     artistViewModel: ArtistViewModel = hiltViewModel()
 ) {
     val haptic = LocalHapticFeedback.current
@@ -61,7 +61,7 @@ fun ArtistDetailScreen(
 
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
-            mediaBrowserViewModel.playSongWithPlaylist(
+            mainViewModel.playSongWithPlaylist(
                 items = songs,
                 index = index
             )
