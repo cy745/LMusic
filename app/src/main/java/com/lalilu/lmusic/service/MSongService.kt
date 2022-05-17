@@ -13,7 +13,6 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.HistoryManager
@@ -102,14 +101,13 @@ class MSongService : MediaLibraryService() {
 
     private inner class LastPlayedListener : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            HistoryManager.saveLastPlayedId(mediaItem?.mediaId)
+            HistoryManager.lastPlayedId = mediaItem?.mediaId
         }
 
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-            val list = List(mediaController.mediaItemCount) {
+            HistoryManager.lastPlayedListIds = List(mediaController.mediaItemCount) {
                 mediaController.getMediaItemAt(it).mediaId
             }
-            HistoryManager.saveLastPlayedListIds(list)
         }
     }
 

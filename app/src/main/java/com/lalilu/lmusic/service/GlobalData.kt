@@ -55,7 +55,7 @@ object GlobalData : CoroutineScope {
         position: Long = getPositionFromPlayer()
     ) {
         launch {
-            HistoryManager.saveLastPlayedPosition(position)
+            HistoryManager.lastPlayedPosition = position
             currentIsPlaying.emit(isPlaying)
             currentPosition.emit(position)
         }

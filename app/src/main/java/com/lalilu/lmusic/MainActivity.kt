@@ -19,6 +19,7 @@ import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.HistoryManager
+import com.lalilu.lmusic.screen.AgreementDialog
 import com.lalilu.lmusic.screen.MainScreen
 import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.service.MSongBrowser
@@ -48,12 +49,12 @@ class MainActivity : AppCompatActivity() {
         SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
             mediaSource.whenReady(true) {
-                val lastPlaylist = HistoryManager.getLastPlayedListIds()?.mapNotNull {
+                val lastPlaylist = HistoryManager.lastPlayedListIds?.mapNotNull {
                     mediaSource.getItemById(ITEM_PREFIX + it)
                 } ?: mediaSource.getChildren(ALL_ID) ?: emptyList()
 
                 GlobalData.currentMediaItem.emit(
-                    HistoryManager.getLastPlayedId()?.let {
+                    HistoryManager.lastPlayedId?.let {
                         mediaSource.getItemById(ITEM_PREFIX + it)
                     } ?: lastPlaylist.getOrNull(0)
                 )
@@ -72,6 +73,7 @@ class MainActivity : AppCompatActivity() {
                     MainScreen(
                         onMoveTaskToBack = { moveTaskToBack(false) }
                     )
+                    AgreementDialog()
                 }
             }
         }
