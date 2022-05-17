@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.viewmodel
+package com.lalilu.lmusic.viewmodel
 
 import android.text.TextUtils
 import android.view.View
@@ -7,9 +7,9 @@ import androidx.lifecycle.ViewModel
 import com.lalilu.R
 import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
 import com.lalilu.lmusic.apis.NeteaseDataSource
-import com.lalilu.lmusic.apis.bean.SongSearchSong
-import com.lalilu.lmusic.datasource.LMusicDataBase
-import com.lalilu.lmusic.datasource.PersistLyric
+import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
+import com.lalilu.lmusic.datasource.MDataBase
+import com.lalilu.lmusic.datasource.entity.MLyric
 import com.lalilu.lmusic.service.GlobalData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -20,7 +20,7 @@ import kotlin.coroutines.CoroutineContext
 @HiltViewModel
 class SearchForLyricViewModel @Inject constructor(
     private val neteaseDataSource: NeteaseDataSource,
-    private val dataBase: LMusicDataBase
+    private val dataBase: MDataBase
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -72,17 +72,16 @@ class SearchForLyricViewModel @Inject constructor(
             toastTips("开始获取歌词")
             neteaseDataSource.searchForLyric(it)
         }.mapLatest {
-            val lyric = it?.lrc?.lyric
-            val tlyric = it?.tlyric?.lyric
-
-            if (!TextUtils.isEmpty(lyric)) Pair(lyric!!, tlyric) else {
+            val lyric = it?.mainLyric
+            if (TextUtils.isEmpty(lyric)) {
                 toastTips("选中歌曲无歌词")
-                null
+                return@mapLatest null
             }
+            Pair(lyric!!, it.translateLyric)
         }.onEach {
             it ?: return@onEach
-            dataBase.persistLyricDao().save(
-                PersistLyric(
+            dataBase.lyricDao().save(
+                MLyric(
                     mediaId = mediaId,
                     lyric = it.first,
                     tlyric = it.second

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.apis.bean
+package com.lalilu.lmusic.apis.bean.netease
 
 data class SongSearchArtist(
     val id: Long,

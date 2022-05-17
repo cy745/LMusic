@@ -8,27 +8,22 @@ import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import com.blankj.utilcode.util.GsonUtils
-import com.blankj.utilcode.util.SPUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.datasource.BaseMediaSource
+import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
+import com.lalilu.lmusic.datasource.MMediaSource
+import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.manager.SpManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 
 @UnstableApi
 @AndroidEntryPoint
-class MSongService : MediaLibraryService(), CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.IO
+class MSongService : MediaLibraryService() {
     private lateinit var player: Player
     private lateinit var exoPlayer: ExoPlayer
 
@@ -36,14 +31,10 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     private lateinit var mediaController: MediaController
 
     @Inject
-    lateinit var mediaSource: BaseMediaSource
+    lateinit var mediaSource: MMediaSource
 
     @Inject
     lateinit var notificationProvider: LMusicNotificationProvider
-
-    private val lastPlayedSp: SPUtils by lazy {
-        SPUtils.getInstance(Config.LAST_PLAYED_SP)
-    }
 
     private val audioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
@@ -111,18 +102,14 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
     private inner class LastPlayedListener : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            launch {
-                lastPlayedSp.put(Config.LAST_PLAYED_ID, mediaItem?.mediaId)
-            }
+            HistoryManager.saveLastPlayedId(mediaItem?.mediaId)
         }
 
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {
             val list = List(mediaController.mediaItemCount) {
                 mediaController.getMediaItemAt(it).mediaId
             }
-            launch {
-                lastPlayedSp.put(Config.LAST_PLAYED_LIST, GsonUtils.toJson(list))
-            }
+            HistoryManager.saveLastPlayedListIds(list)
         }
     }
 

@@ -16,22 +16,22 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.blankj.utilcode.util.BarUtils
 import com.lalilu.common.DeviceUtils
-import com.lalilu.lmusic.datasource.BaseMediaSource
 import com.lalilu.lmusic.screen.component.NavigatorFooter
-import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
 fun MainScreen(
-    mSongBrowser: MSongBrowser,
-    mediaSource: BaseMediaSource,
-    onMoveTaskToBack: () -> Unit = {}
+    onMoveTaskToBack: () -> Unit = {},
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
+    val mSongBrowser = mainViewModel.mediaBrowser
     val context = LocalContext.current
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
@@ -62,7 +62,6 @@ fun MainScreen(
                 ComposeNavigator(
                     scope = scope,
                     navController = navController,
-                    mediaSource = mediaSource,
                     scaffoldState = scaffoldState,
                     contentPaddingForFooter = navBarHeightDp + 64.dp,
                     modifier = Modifier

@@ -26,15 +26,16 @@ import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
-import com.lalilu.lmusic.screen.viewmodel.MediaBrowserViewModel
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
+import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 fun SongDetailScreen(
     mediaItem: MediaItem,
     navigateTo: (destination: String) -> Unit = {},
-    mediaBrowserViewModel: MediaBrowserViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
+    val mediaBrowser = mainViewModel.mediaBrowser
     val imagePainter = rememberImagePainter(
         data = mediaItem.getCoverFromMediaItem()
     ) {
@@ -55,7 +56,7 @@ fun SongDetailScreen(
             navigateTo("${MainScreenData.AddToPlaylist.name}/${mediaItem.mediaId}")
         },
         onSetSongToNext = {
-            mediaBrowserViewModel.addSongToNext(mediaItem.mediaId)
+            mediaBrowser.addToNext(mediaItem.mediaId)
         }
     )
 }
