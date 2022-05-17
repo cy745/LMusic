@@ -85,13 +85,13 @@ class MSongBrowser @Inject constructor(
     }
 
     private fun recoverLastPlayedData() = launch(Dispatchers.IO) {
-        val items = HistoryManager.getLastPlayedListIds()?.mapNotNull {
+        val items = HistoryManager.lastPlayedListIds?.mapNotNull {
             mediaSource.getItemById(ITEM_PREFIX + it)
         } ?: mediaSource.getChildren(ALL_ID) ?: emptyList()
-        val index = HistoryManager.getLastPlayedId()?.let { id ->
+        val index = HistoryManager.lastPlayedId?.let { id ->
             items.indexOfFirst { it.mediaId == id }
         }?.coerceAtLeast(0) ?: 0
-        val position = HistoryManager.getLastPlayedPosition()
+        val position = HistoryManager.lastPlayedPosition
 
         delay(200)
         withContext(Dispatchers.Main) {

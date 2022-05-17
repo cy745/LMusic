@@ -6,7 +6,6 @@ import com.google.common.reflect.TypeToken
 import com.lalilu.lmusic.Config
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 object HistoryManager : CoroutineScope {
@@ -16,28 +15,18 @@ object HistoryManager : CoroutineScope {
         SPUtils.getInstance(Config.LAST_PLAYED_SP)
     }
 
-    fun saveLastPlayedPosition(position: Long) = launch {
-        lastPlayedSp.put(Config.LAST_PLAYED_POSITION, position)
-    }
+    var lastPlayedPosition: Long
+        set(value) = lastPlayedSp.put(Config.LAST_PLAYED_POSITION, value)
+        get() = lastPlayedSp.getLong(Config.LAST_PLAYED_POSITION, 0L)
 
-    fun saveLastPlayedId(mediaId: String?) = launch {
-        lastPlayedSp.put(Config.LAST_PLAYED_ID, mediaId)
-    }
+    var lastPlayedId: String?
+        set(value) = lastPlayedSp.put(Config.LAST_PLAYED_ID, value)
+        get() = lastPlayedSp.getString(Config.LAST_PLAYED_ID)
 
-    fun saveLastPlayedListIds(mediaIds: List<String>) = launch {
-        lastPlayedSp.put(Config.LAST_PLAYED_LIST, GsonUtils.toJson(mediaIds))
-    }
-
-    fun getLastPlayedPosition(): Long {
-        return lastPlayedSp.getLong(Config.LAST_PLAYED_POSITION, 0L)
-    }
-
-    fun getLastPlayedId(): String? {
-        return lastPlayedSp.getString(Config.LAST_PLAYED_ID)
-    }
-
-    fun getLastPlayedListIds(): List<String>? {
-        val json = lastPlayedSp.getString(Config.LAST_PLAYED_LIST, null) ?: return null
-        return GsonUtils.fromJson<List<String>>(json, typeToken)
-    }
+    var lastPlayedListIds: List<String>?
+        set(value) = lastPlayedSp.put(Config.LAST_PLAYED_LIST, GsonUtils.toJson(value))
+        get() {
+            val json = lastPlayedSp.getString(Config.LAST_PLAYED_LIST, null) ?: return null
+            return GsonUtils.fromJson<List<String>>(json, typeToken)
+        }
 }
