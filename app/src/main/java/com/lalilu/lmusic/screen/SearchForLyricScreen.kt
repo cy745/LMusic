@@ -24,8 +24,8 @@ import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
-import com.lalilu.lmusic.apis.bean.SongSearchSong
-import com.lalilu.lmusic.screen.viewmodel.SearchForLyricViewModel
+import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
+import com.lalilu.lmusic.viewmodel.SearchForLyricViewModel
 
 @Composable
 fun SearchForLyricScreen(

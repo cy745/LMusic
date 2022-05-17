@@ -12,26 +12,6 @@ import androidx.appcompat.widget.SearchView
 import com.blankj.utilcode.util.ConvertUtils
 import com.lalilu.R
 
-fun MySearchView.bind(update: (text: String?) -> Unit) {
-    val listener = object : SearchView.OnQueryTextListener, SearchView.OnCloseListener {
-        override fun onQueryTextSubmit(query: String?): Boolean {
-            return false
-        }
-
-        override fun onQueryTextChange(newText: String?): Boolean {
-            update(newText)
-            return false
-        }
-
-        override fun onClose(): Boolean {
-            update(null)
-            return false
-        }
-    }
-    setOnQueryTextListener(listener)
-    setOnCloseListener(listener)
-}
-
 class MySearchView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : SearchView(context, attrs) {
@@ -60,6 +40,27 @@ class MySearchView @JvmOverloads constructor(
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
+        }
+    }
+
+    fun bind(update: (text: String?) -> Unit) {
+        object : OnQueryTextListener, OnCloseListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                update(newText)
+                return false
+            }
+
+            override fun onClose(): Boolean {
+                update(null)
+                return false
+            }
+        }.also {
+            setOnQueryTextListener(it)
+            setOnCloseListener(it)
         }
     }
 }

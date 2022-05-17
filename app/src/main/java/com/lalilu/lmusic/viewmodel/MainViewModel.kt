@@ -1,8 +1,10 @@
-package com.lalilu.lmusic.screen.viewmodel
+package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import com.lalilu.lmusic.datasource.MMediaSource
+import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.service.MSongBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -12,14 +14,13 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
-class MediaBrowserViewModel @Inject constructor(
-    private val mediaBrowser: MSongBrowser
+class MainViewModel @Inject constructor(
+    lyricManager: LyricManager,
+    val mediaBrowser: MSongBrowser,
+    val mediaSource: MMediaSource
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-
-    fun addSongToNext(mediaId: String) {
-        mediaBrowser.addToNext(mediaId)
-    }
+    val songLyric = lyricManager.songLyric
 
     fun playSongWithPlaylist(items: List<MediaItem>, index: Int) =
         launch(Dispatchers.Main) {
