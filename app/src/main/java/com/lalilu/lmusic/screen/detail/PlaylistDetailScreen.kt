@@ -24,7 +24,7 @@ import com.lalilu.lmusic.screen.component.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SongCard
 import com.lalilu.lmusic.screen.component.SortToggleButton
-import com.lalilu.lmusic.viewmodel.MediaBrowserViewModel
+import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @Composable
@@ -34,7 +34,7 @@ fun PlaylistDetailScreen(
     navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp,
     viewModel: PlaylistsViewModel = hiltViewModel(),
-    mediaBrowserViewModel: MediaBrowserViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val haptic = LocalHapticFeedback.current
     var playlist by remember { mutableStateOf(MPlaylist(playlistId)) }
@@ -61,7 +61,7 @@ fun PlaylistDetailScreen(
 
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
-            mediaBrowserViewModel.playSongWithPlaylist(
+            mainViewModel.playSongWithPlaylist(
                 items = sortedItems,
                 index = index
             )

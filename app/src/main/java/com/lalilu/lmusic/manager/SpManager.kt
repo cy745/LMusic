@@ -2,32 +2,51 @@ package com.lalilu.lmusic.manager
 
 import android.content.Context
 import android.content.SharedPreferences
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.collections.set
+import kotlin.coroutines.CoroutineContext
 
-object SpManager {
-    abstract class SpListener<T>(val callback: (T) -> Unit) {
-        fun onUpdate(newValue: T) = callback(newValue)
+object SpManager : CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+
+    abstract class SpListener<T>(
+        private val callback: suspend (T) -> Unit,
+        private val async: Boolean
+    ) {
+        fun onUpdate(newValue: T) {
+            launch(
+                if (async) Dispatchers.IO else Dispatchers.Unconfined
+            ) {
+                callback(newValue)
+            }
+        }
     }
 
     class SpBoolListener(
         val defaultValue: Boolean = false,
-        callback: (Boolean) -> Unit
-    ) : SpListener<Boolean>(callback)
+        async: Boolean = false,
+        callback: suspend (Boolean) -> Unit
+    ) : SpListener<Boolean>(callback, async)
 
     class SpFloatListener(
         val defaultValue: Float = 0f,
-        callback: (Float) -> Unit
-    ) : SpListener<Float>(callback)
+        async: Boolean = false,
+        callback: suspend (Float) -> Unit
+    ) : SpListener<Float>(callback, async)
 
     class SpIntListener(
         val defaultValue: Int = 0,
-        callback: (Int) -> Unit
-    ) : SpListener<Int>(callback)
+        async: Boolean = false,
+        callback: suspend (Int) -> Unit
+    ) : SpListener<Int>(callback, async)
 
     class SpStringListener(
         val defaultValue: String = "",
-        callback: (String) -> Unit
-    ) : SpListener<String>(callback)
+        async: Boolean = false,
+        callback: suspend (String) -> Unit
+    ) : SpListener<String>(callback, async)
 
     private var sp: SharedPreferences? = null
     private val listeners: LinkedHashMap<String, SpListener<out Any>> = linkedMapOf()
@@ -64,9 +83,15 @@ object SpManager {
     /**
      * 监听对应key的更新，需要注意一个Key暂时只能对应一个监听器
      */
-    fun <K : Any, T : SpListener<K>> listen(key: String, listener: T) {
+    fun <K : Any, T : SpListener<K>> listen(
+        key: String,
+        listener: T,
+        immediate: Boolean = true,
+    ) {
         listeners[key] = listener
-        update(sp, key)
+        if (immediate) {
+            update(sp, key)
+        }
     }
 //
 //    fun update(key: String, value: Any) {

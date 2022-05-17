@@ -21,6 +21,7 @@ interface OnStateChangeListener {
     fun onStateChange(state: Int, fromUser: Boolean)
 }
 
+@Deprecated("取消了Preference构建Settings页的做法，替换为Compose实现更方便")
 @SuppressLint("CustomViewStyleable")
 class MultiStateSwitcher @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
