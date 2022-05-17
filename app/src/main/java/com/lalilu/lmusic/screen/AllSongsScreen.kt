@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -21,28 +23,28 @@ import com.lalilu.lmusic.screen.component.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SongCard
 import com.lalilu.lmusic.screen.component.SortToggleButton
-import com.lalilu.lmusic.screen.viewmodel.AllSongViewModel
+import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AllSongsScreen(
+    songs: List<MediaItem>,
     navigateTo: (destination: String) -> Unit = {},
-    allSongViewModel: AllSongViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel = hiltViewModel(),
     contentPaddingForFooter: Dp = 0.dp
 ) {
     val haptic = LocalHapticFeedback.current
-    val allSongs: List<MediaItem> by allSongViewModel.allSongsLiveData.collectAsState(emptyList())
     var sortByState by rememberDataSaverState("KEY_SORT_BY_AllSongsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AllSongsScreen", true)
-    val sortedItems = remember(sortByState, sortDesc, allSongs) {
-        sort(sortByState, sortDesc, allSongs.toMutableStateList(),
+    val sortedItems = remember(sortByState, sortDesc, songs) {
+        sort(sortByState, sortDesc, songs.toMutableStateList(),
             getTextField = { it.mediaMetadata.title.toString() },
             getTimeField = { it.mediaId.toLong() }
         )
     }
     val onSongSelected: (Int) -> Unit = remember(sortedItems) {
         { index ->
-            allSongViewModel.playSongWithAllSongPlaylist(
+            mainViewModel.playSongWithPlaylist(
                 items = sortedItems,
                 index = index
             )

@@ -1,4 +1,6 @@
-package com.lalilu.lmusic.apis.bean
+package com.lalilu.lmusic.apis.bean.netease
+
+import com.lalilu.lmusic.apis.bean.NetworkLyric
 
 data class KLyricSearchLRC(
     val version: Int,
@@ -87,10 +89,17 @@ data class LyricSearchResponse(
     val klyric: KLyricSearchLRC?,
     val tlyric: TLyricSearchLRC?,
     val code: Int
-) {
+) : NetworkLyric {
     override fun toString(): String {
         return "LyricSearchResponse(lrc=$lrc, klyric=$klyric, tlyric=$tlyric, code=$code)"
     }
+
+    override val mainLyric: String?
+        get() = lrc?.lyric
+    override val translateLyric: String?
+        get() = tlyric?.lyric
+    override val fromPlatform: Int
+        get() = NetworkLyric.PLATFORM_NETEASE
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

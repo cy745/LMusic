@@ -30,7 +30,7 @@ import com.lalilu.lmusic.screen.component.IconResButton
 import com.lalilu.lmusic.screen.component.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SortToggleButton
-import com.lalilu.lmusic.screen.viewmodel.PlaylistsViewModel
+import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @Composable
 @OptIn(

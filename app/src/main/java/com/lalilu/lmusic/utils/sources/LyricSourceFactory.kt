@@ -2,7 +2,7 @@ package com.lalilu.lmusic.utils.sources
 
 import android.text.TextUtils
 import androidx.media3.common.MediaItem
-import com.lalilu.lmusic.datasource.LMusicDataBase
+import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.extensions.getSongData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -83,11 +83,11 @@ class LocalLyricSource @Inject constructor() : LyricSourceFactory.LyricSource {
 }
 
 class DataBaseLyricSource @Inject constructor(
-    val dataBase: LMusicDataBase
+    val dataBase: MDataBase
 ) : LyricSourceFactory.LyricSource {
     override suspend fun loadLyric(mediaItem: MediaItem): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
-            val pair = dataBase.persistLyricDao().getById(mediaItem.mediaId)
+            val pair = dataBase.lyricDao().getById(mediaItem.mediaId)
                 ?: return@withContext null
             Pair(pair.lyric, pair.tlyric)
         }

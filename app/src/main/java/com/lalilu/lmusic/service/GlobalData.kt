@@ -6,6 +6,7 @@ import androidx.lifecycle.asLiveData
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.lalilu.lmusic.datasource.extensions.partCopy
+import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.manager.SearchTextManager
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +26,7 @@ object GlobalData : CoroutineScope {
         set(value) {
             field = value
             stopUpdate()
-            updatePosition()
+            updatePositionLoop()
         }
 
     fun searchFor(keyword: String?) = launch {
@@ -33,31 +34,31 @@ object GlobalData : CoroutineScope {
     }
 
     private fun stopUpdate() {
-        handler.removeCallbacks(this::updatePosition)
+        handler.removeCallbacks(this::updatePositionLoop)
     }
 
     private var lastPlayState = false
-    fun updatePosition(force: Boolean = false) {
-        if (force) {
-            val isPlaying = getIsPlayingFromPlayer()
-            val position = getPositionFromPlayer()
-            launch {
-                currentIsPlaying.emit(isPlaying)
-                currentPosition.emit(position)
-            }
-            return
-        }
+    private fun updatePositionLoop() {
         val isPlaying = getIsPlayingFromPlayer()
-        if (lastPlayState == isPlaying) {
-            val position = getPositionFromPlayer()
-            launch {
-                currentIsPlaying.emit(isPlaying)
-                currentPosition.emit(position)
-            }
+        val position = getPositionFromPlayer()
+
+        if (lastPlayState == isPlaying && isPlaying) {
+            updatePosition(isPlaying, position)
         } else {
             lastPlayState = isPlaying
         }
-        handler.postDelayed(this::updatePosition, 100)
+        handler.postDelayed(this::updatePositionLoop, 100)
+    }
+
+    fun updatePosition(
+        isPlaying: Boolean = getIsPlayingFromPlayer(),
+        position: Long = getPositionFromPlayer()
+    ) {
+        launch {
+            HistoryManager.saveLastPlayedPosition(position)
+            currentIsPlaying.emit(isPlaying)
+            currentPosition.emit(position)
+        }
     }
 
     suspend fun updateCurrentMediaItem(targetMediaItemId: String) = withContext(Dispatchers.IO) {
@@ -92,7 +93,7 @@ object GlobalData : CoroutineScope {
     val playerListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             launch { currentMediaItem.emit(mediaItem) }
-            updatePosition(true)
+            updatePosition()
         }
     }
 }
