@@ -2,11 +2,9 @@ package com.lalilu.lmusic.screen
 
 import android.content.Context
 import android.content.ContextWrapper
-import android.view.ViewGroup
 import androidx.annotation.IntDef
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
@@ -14,6 +12,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
 import androidx.recyclerview.widget.RecyclerView
@@ -29,8 +30,8 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.manager.SpManager
-import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.service.GlobalData
+import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.*
 import kotlinx.coroutines.CoroutineScope
@@ -75,9 +76,13 @@ fun PlayingScreen(
         }
     }
 
-    val statusBarPadding = WindowInsets.statusBars.asPaddingValues()
-    val statusPaddingTop = LocalDensity.current.run {
-        statusBarPadding.calculateTopPadding().toPx()
+    val density = LocalDensity.current
+    val windowInsetsCompat = WindowInsets.statusBars.let {
+        WindowInsetsCompat.Builder()
+            .setInsets(
+                WindowInsetsCompat.Type.statusBars(),
+                Insets.of(0, it.getTop(density), 0, it.getBottom(density))
+            ).build()
     }
 
     val context = LocalContext.current
@@ -221,9 +226,7 @@ fun PlayingScreen(
             }
         }
     }) {
-        (fmToolbar.layoutParams as ViewGroup.MarginLayoutParams).also {
-            it.topMargin = statusPaddingTop.toInt()
-        }
+        ViewCompat.dispatchApplyWindowInsets(root, windowInsetsCompat)
     }
 }
 

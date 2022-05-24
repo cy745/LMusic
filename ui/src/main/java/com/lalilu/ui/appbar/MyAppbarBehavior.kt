@@ -4,11 +4,11 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.view.View.MeasureSpec
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewCompat.NestedScrollType
-import com.lalilu.ui.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
-import com.lalilu.ui.appbar.AppBarLayout.LayoutParams.WRAP_CONTENT
+import com.lalilu.ui.appbar.AppBarLayout.LayoutParams.Companion.SCROLL_FLAG_SCROLL
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
@@ -17,7 +17,8 @@ class MyAppbarBehavior(
 ) : ExpendHeaderBehavior<AppBarLayout>(context, attrs) {
     val offsetDelta: Int = 0
 
-    private var mOffsetChangedListeners: ArrayList<AppBarLayout.OnOffsetChangedListener> = ArrayList()
+    private var mOffsetChangedListeners: ArrayList<AppBarLayout.OnOffsetChangedListener> =
+        ArrayList()
     private val onDragCallback: BaseDragCallback<AppBarLayout>? = null
 
     @NestedScrollType
@@ -47,13 +48,11 @@ class MyAppbarBehavior(
         // Return true if we're nested scrolling vertically, and we either have lift on scroll enabled
         // or we can scroll the children.
         // 决定何时开始接受子View的滑动事件
-        val started =
-            (axes and ViewCompat.SCROLL_AXIS_VERTICAL != 0 && (
-                    child.isLiftOnScroll || canScrollChildren(
-                        parent,
-                        child,
-                        directTargetChild
-                    )))
+        val started = canScrollChildren(
+            parent,
+            child,
+            directTargetChild
+        ) && (axes and ViewCompat.SCROLL_AXIS_VERTICAL != 0)
 
         // 如果决定接受则停止当前动画
         if (started) cancelAnimation()
@@ -199,13 +198,6 @@ class MyAppbarBehavior(
         }
         setTopAndBottomOffset(offset)
 
-        // Update the AppBarLayout's drawable state for any elevation changes. This is needed so that
-        // the elevation is set in the first layout, so that we don't get a visual jump pre-N (due to
-        // the draw dispatch skip)
-        updateAppBarLayoutDrawableState(
-            parent, child, topAndBottomOffset, 0 /* direction */, true /* forceJump */
-        )
-
         // Make sure we dispatch the offset update
         child.onOffsetChanged(topAndBottomOffset.coerceAtMost(0))
         this.onOffsetChanged(child, topAndBottomOffset)
@@ -237,7 +229,7 @@ class MyAppbarBehavior(
                     for (i in 0 until child.childCount) {
                         val params = child.getChildAt(i).layoutParams as AppBarLayout.LayoutParams
                         val scrollEffect = params.scrollEffect
-                        if (scrollEffect != null && params.getScrollFlags() and SCROLL_FLAG_SCROLL != 0) {
+                        if (scrollEffect != null && params.scrollFlags and SCROLL_FLAG_SCROLL != 0) {
                             scrollEffect.onOffsetChanged(
                                 child,
                                 child.getChildAt(i),
@@ -246,7 +238,7 @@ class MyAppbarBehavior(
                         }
                     }
                 }
-                if (!offsetChanged && child.hasChildWithInterpolator()) {
+                if (!offsetChanged && child.haveChildWithInterpolator) {
                     // If the offset hasn't changed and we're using an interpolated scroll
                     // then we need to keep any dependent views updated. CoL will do this for
                     // us when we move, but we need to do it manually when we don't (as an
@@ -257,13 +249,6 @@ class MyAppbarBehavior(
                 // Dispatch the updates to any listeners
                 child.onOffsetChanged(topAndBottomOffset.coerceAtMost(0))
                 this.onOffsetChanged(child, topAndBottomOffset)
-
-                // Update the AppBarLayout's drawable state (for any elevation changes)
-                updateAppBarLayoutDrawableState(
-                    parent, child, offset,
-                    if (offset < curOffset) -1 else 1,
-                    false /* forceJump */
-                )
             }
         }
         return consumed
@@ -287,46 +272,6 @@ class MyAppbarBehavior(
         }
     }
 
-    private fun updateAppBarLayoutDrawableState(
-        parent: CoordinatorLayout,
-        header: AppBarLayout,
-        offset: Int,
-        direction: Int,
-        forceJump: Boolean
-    ) {
-        val child = getAppBarChildOnOffset(header, offset)
-        var lifted = false
-        if (child != null) {
-            val childLp = child.layoutParams as AppBarLayout.LayoutParams
-            val flags = childLp.getScrollFlags()
-            if (flags and SCROLL_FLAG_SCROLL != 0) {
-                val minHeight = ViewCompat.getMinimumHeight(child)
-                lifted = -offset >= child.bottom - minHeight - header.topInset
-            }
-        }
-        val changed: Boolean = header.setLiftedState(lifted)
-        if (forceJump || changed && shouldJumpElevationState(parent, header)) {
-            // If the collapsed state changed, we may need to
-            // jump to the current state if we have an overlapping view
-            header.jumpDrawablesToCurrentState()
-        }
-    }
-
-    private fun shouldJumpElevationState(parent: CoordinatorLayout, layout: AppBarLayout): Boolean {
-        // We should jump the elevated state if we have a dependent scrolling view which has
-        // an overlapping top (i.e. overlaps us)
-        val dependencies = parent.getDependents(layout)
-        for (i in 0 until dependencies.size) {
-            val dependency = dependencies[i]
-            val lp = dependency.layoutParams as CoordinatorLayout.LayoutParams
-            val behavior = lp.behavior
-            if (behavior is MyScrollingViewBehavior) {
-                return behavior.overlayTop != 0
-            }
-        }
-        return false
-    }
-
     private fun getAppBarChildOnOffset(
         layout: AppBarLayout, offset: Int
     ): View? {
@@ -341,7 +286,7 @@ class MyAppbarBehavior(
     private fun canScrollChildren(
         parent: CoordinatorLayout, child: AppBarLayout, directTargetChild: View
     ): Boolean {
-        return child.hasScrollableChildren() && parent.height - directTargetChild.height <= child.height
+        return child.hasScrollableChildren && parent.height - directTargetChild.height <= child.height
     }
 
     abstract class BaseDragCallback<T : AppBarLayout?> {
