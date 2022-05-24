@@ -31,7 +31,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <com.lalilu.lmusic.ui.SquareAppBarLayout
+            <com.lalilu.lmusic.ui.SquareAppbarLayout
                 android:id="@+id/fm_appbar_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -96,7 +96,7 @@
                         app:menu="@menu/menu_appbar"
                         app:title="@string/default_slogan" />
                 </com.lalilu.ui.appbar.CollapsingLayout>
-            </com.lalilu.lmusic.ui.SquareAppBarLayout>
+            </com.lalilu.lmusic.ui.SquareAppbarLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/fm_recyclerView"

@@ -16,7 +16,7 @@ import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.ui.BlurImageView
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.ui.NewProgressBar
-import com.lalilu.ui.appbar.AppBarLayout
+import com.lalilu.ui.appbar.AppbarLayout
 import com.lalilu.ui.appbar.CollapsingLayout
 
 @BindingAdapter("iconRec")
@@ -90,8 +90,8 @@ fun setSongTitle(collapsingLayout: CollapsingLayout, mediaItem: MediaItem?) {
 }
 
 @BindingAdapter("bgPalette")
-fun setAppbarBGColor(appBarLayout: AppBarLayout, palette: Palette?) {
-    setBgColorFromPalette(palette, appBarLayout::setBackgroundColor)
+fun setAppbarBGColor(appbarLayout: AppbarLayout, palette: Palette?) {
+    setBgColorFromPalette(palette, appbarLayout::setBackgroundColor)
 }
 
 @BindingAdapter("bgPalette")
