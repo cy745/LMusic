@@ -19,11 +19,13 @@ import androidx.core.util.ObjectsCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.lalilu.ui.R
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_EXPENDED
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_MIDDLE
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-@SuppressLint("PrivateResource")
+@SuppressLint("PrivateResource", "CustomViewStyleable")
 open class AppbarLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr), AttachedBehavior {
@@ -213,16 +215,57 @@ open class AppbarLayout @JvmOverloads constructor(
         downScrollRange = INVALID_SCROLL_RANGE
     }
 
+    fun autoToggleExpand() {
+        if (shouldSkipExpanded()) {
+            setExpanded(!isExpanded(), true)
+        } else {
+            setExpanded(true, !isFullyExpanded())
+        }
+    }
+
+    fun shouldSkipExpanded(): Boolean {
+        if (behavior is MyAppbarBehavior) {
+            return (behavior as MyAppbarBehavior).shouldSkipExpandedState(this)
+        }
+        return false
+    }
+
+    fun isFullyExpanded(): Boolean {
+        if (behavior is MyAppbarBehavior) {
+            return (behavior as MyAppbarBehavior).stateHelper.nowState >= STATE_MIDDLE
+        }
+        return false
+    }
+
+    fun isExpanded(): Boolean {
+        if (behavior is MyAppbarBehavior) {
+            return (behavior as MyAppbarBehavior).stateHelper.nowState >= STATE_EXPENDED
+        }
+        return false
+    }
+
     fun setExpanded(
-        expanded: Boolean,
+        action: Int,
         animate: Boolean = ViewCompat.isLaidOut(this),
         force: Boolean = true
     ) {
-        pendingAction = ((if (expanded) PENDING_ACTION_EXPANDED else PENDING_ACTION_COLLAPSED)
-                or (if (animate) PENDING_ACTION_ANIMATE_ENABLED else 0)
-                or if (force) PENDING_ACTION_FORCE else 0)
+        pendingAction = action or
+                (if (animate) PENDING_ACTION_ANIMATE_ENABLED else 0) or
+                (if (force) PENDING_ACTION_FORCE else 0)
         requestLayout()
     }
+
+    fun setExpanded(
+        expanded: Boolean,
+        fully: Boolean = false,
+        animate: Boolean = ViewCompat.isLaidOut(this),
+        force: Boolean = true
+    ) = setExpanded(
+        if (expanded)
+            (if (fully) PENDING_ACTION_FULLY_EXPANDED else PENDING_ACTION_EXPANDED)
+        else PENDING_ACTION_COLLAPSED,
+        animate, force
+    )
 
     override fun checkLayoutParams(p: ViewGroup.LayoutParams): Boolean {
         return p is LayoutParams
@@ -418,10 +461,11 @@ open class AppbarLayout @JvmOverloads constructor(
 
     companion object {
         const val PENDING_ACTION_NONE = 0x0
-        const val PENDING_ACTION_EXPANDED = 0x1
-        const val PENDING_ACTION_COLLAPSED = 1 shl 1
-        const val PENDING_ACTION_ANIMATE_ENABLED = 1 shl 2
-        const val PENDING_ACTION_FORCE = 1 shl 3
+        const val PENDING_ACTION_COLLAPSED = 0x1
+        const val PENDING_ACTION_EXPANDED = 0x1 shl 1
+        const val PENDING_ACTION_FULLY_EXPANDED = 0x1 shl 2
+        const val PENDING_ACTION_ANIMATE_ENABLED = 0x1 shl 3
+        const val PENDING_ACTION_FORCE = 0x1 shl 4
         private const val INVALID_SCROLL_RANGE = -1
     }
 
