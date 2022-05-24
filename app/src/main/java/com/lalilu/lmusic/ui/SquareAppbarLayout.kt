@@ -13,7 +13,7 @@ import com.lalilu.common.DeviceUtils
 import com.lalilu.common.HapticUtils
 import com.lalilu.common.ifNaN
 import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
-import com.lalilu.ui.appbar.AppBarLayout
+import com.lalilu.ui.appbar.AppbarLayout
 import com.lalilu.ui.appbar.CollapsingLayout
 import com.lalilu.ui.appbar.ExpendHeaderBehavior
 import com.lalilu.ui.appbar.MyAppbarBehavior
@@ -21,9 +21,9 @@ import me.qinc.lib.edgetranslucent.EdgeTransparentView
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class SquareAppBarLayout @JvmOverloads constructor(
+class SquareAppbarLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : AppBarLayout(context, attrs, defStyleAttr) {
+) : AppbarLayout(context, attrs, defStyleAttr) {
     private var mToolbar: Toolbar? = null
     private var mLyricViewX: LyricViewX? = null
     private var mDraweeView: BlurImageView? = null
@@ -50,7 +50,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
         setHeightToView(mEdgeTransparentView, deviceHeight)
     }
 
-    override fun getBehavior(): CoordinatorLayout.Behavior<AppBarLayout> = behavior
+    override fun getBehavior(): CoordinatorLayout.Behavior<AppbarLayout> = behavior
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, widthMeasureSpec)
@@ -84,7 +84,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
         super.onAttachedToWindow()
         this.clipChildren = false
 
-        addOnOffsetChangedListener { appbar: AppBarLayout, offset: Int ->
+        addOnOffsetChangedListener { appbar: AppbarLayout, offset: Int ->
             if (offset > 0) return@addOnOffsetChangedListener
 
             val collapsedOffset = offset.coerceAtMost(0).toFloat()
@@ -133,7 +133,7 @@ class SquareAppBarLayout @JvmOverloads constructor(
             ExpendHeaderBehavior.OnScrollToThresholdListener() {
             override fun onScrollToThreshold() {
                 HapticUtils.haptic(
-                    this@SquareAppBarLayout,
+                    this@SquareAppbarLayout,
                     HapticUtils.Strength.HAPTIC_STRONG
                 )
             }

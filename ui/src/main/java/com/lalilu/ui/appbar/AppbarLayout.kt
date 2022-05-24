@@ -24,7 +24,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @SuppressLint("PrivateResource")
-open class AppBarLayout @JvmOverloads constructor(
+open class AppbarLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr), AttachedBehavior {
 
@@ -33,7 +33,7 @@ open class AppBarLayout @JvmOverloads constructor(
     }
 
     fun interface OnOffsetChangedListener {
-        fun onOffsetChanged(appBarLayout: AppBarLayout, verticalOffset: Int)
+        fun onOffsetChanged(appbarLayout: AppbarLayout, verticalOffset: Int)
     }
 
     var totalScrollRange = INVALID_SCROLL_RANGE
@@ -358,7 +358,7 @@ open class AppBarLayout @JvmOverloads constructor(
 
     abstract class ChildScrollEffect {
         abstract fun onOffsetChanged(
-            AppbarLayout: AppBarLayout, child: View, offset: Float
+            appbarLayout: AppbarLayout, child: View, offset: Float
         )
     }
 
@@ -366,9 +366,9 @@ open class AppBarLayout @JvmOverloads constructor(
         private val relativeRect = Rect()
         private val ghostRect = Rect()
         override fun onOffsetChanged(
-            AppbarLayout: AppBarLayout, child: View, offset: Float
+            appbarLayout: AppbarLayout, child: View, offset: Float
         ) {
-            updateRelativeRect(relativeRect, AppbarLayout, child)
+            updateRelativeRect(relativeRect, appbarLayout, child)
             val distanceFromCeiling = relativeRect.top - abs(offset)
             // If the view is at the ceiling, begin the compress animation.
             if (distanceFromCeiling <= 0f) {
@@ -408,10 +408,10 @@ open class AppBarLayout @JvmOverloads constructor(
 
         companion object {
             private const val COMPRESS_DISTANCE_FACTOR = .3f
-            private fun updateRelativeRect(rect: Rect, AppbarLayout: AppBarLayout, child: View) {
+            private fun updateRelativeRect(rect: Rect, appbarLayout: AppbarLayout, child: View) {
                 child.getDrawingRect(rect)
-                AppbarLayout.offsetDescendantRectToMyCoords(child, rect)
-                rect.offset(0, -AppbarLayout.topInset)
+                appbarLayout.offsetDescendantRectToMyCoords(child, rect)
+                rect.offset(0, -appbarLayout.topInset)
             }
         }
     }
@@ -428,21 +428,21 @@ open class AppBarLayout @JvmOverloads constructor(
     init {
         orientation = VERTICAL
         val a = context.obtainStyledAttributes(
-            attrs, R.styleable.AppBarLayout, defStyleAttr, R.style.AppBarLayout_Base
+            attrs, R.styleable.AppbarLayout, defStyleAttr, R.style.AppbarLayout_Base
         )
 
-        background = a.getDrawable(R.styleable.AppBarLayout_android_background)
-        if (a.hasValue(R.styleable.AppBarLayout_appbar_expanded)) {
-            setExpanded(a.getBoolean(R.styleable.AppBarLayout_appbar_expanded, false), false, false)
+        background = a.getDrawable(R.styleable.AppbarLayout_android_background)
+        if (a.hasValue(R.styleable.AppbarLayout_appbar_expanded)) {
+            setExpanded(a.getBoolean(R.styleable.AppbarLayout_appbar_expanded, false), false, false)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (a.hasValue(R.styleable.AppBarLayout_android_keyboardNavigationCluster)) {
+            if (a.hasValue(R.styleable.AppbarLayout_android_keyboardNavigationCluster)) {
                 this.isKeyboardNavigationCluster =
-                    a.getBoolean(R.styleable.AppBarLayout_android_keyboardNavigationCluster, false)
+                    a.getBoolean(R.styleable.AppbarLayout_android_keyboardNavigationCluster, false)
             }
-            if (a.hasValue(R.styleable.AppBarLayout_android_touchscreenBlocksFocus)) {
+            if (a.hasValue(R.styleable.AppbarLayout_android_touchscreenBlocksFocus)) {
                 this.touchscreenBlocksFocus =
-                    a.getBoolean(R.styleable.AppBarLayout_android_touchscreenBlocksFocus, false)
+                    a.getBoolean(R.styleable.AppbarLayout_android_touchscreenBlocksFocus, false)
             }
         }
         a.recycle()

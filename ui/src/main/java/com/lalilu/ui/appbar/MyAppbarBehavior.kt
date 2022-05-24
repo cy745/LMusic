@@ -8,38 +8,37 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewCompat.NestedScrollType
-import com.lalilu.ui.appbar.AppBarLayout.LayoutParams.Companion.SCROLL_FLAG_SCROLL
+import com.lalilu.ui.appbar.AppbarLayout.LayoutParams.Companion.SCROLL_FLAG_SCROLL
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 class MyAppbarBehavior(
     context: Context? = null, attrs: AttributeSet? = null
-) : ExpendHeaderBehavior<AppBarLayout>(context, attrs) {
+) : ExpendHeaderBehavior<AppbarLayout>(context, attrs) {
     val offsetDelta: Int = 0
 
-    private var mOffsetChangedListeners: ArrayList<AppBarLayout.OnOffsetChangedListener> =
-        ArrayList()
-    private val onDragCallback: BaseDragCallback<AppBarLayout>? = null
+    private var mOffsetChangedListeners = LinkedHashSet<AppbarLayout.OnOffsetChangedListener>()
+    private val onDragCallback: BaseDragCallback<AppbarLayout>? = null
 
     @NestedScrollType
     private var lastStartedType = 0
     private var lastNestedScrollingChildRef: WeakReference<View>? = null
 
     fun addOnOffsetExpendChangedListener(
-        listener: AppBarLayout.OnOffsetChangedListener
+        listener: AppbarLayout.OnOffsetChangedListener
     ) {
         mOffsetChangedListeners.add(listener)
     }
 
-    private fun onOffsetChanged(appBarLayout: AppBarLayout, offset: Int) {
+    private fun onOffsetChanged(appbarLayout: AppbarLayout, offset: Int) {
         mOffsetChangedListeners.forEach {
-            it.onOffsetChanged(appBarLayout, offset)
+            it.onOffsetChanged(appbarLayout, offset)
         }
     }
 
     override fun onStartNestedScroll(
         parent: CoordinatorLayout,
-        child: AppBarLayout,
+        child: AppbarLayout,
         directTargetChild: View,
         target: View,
         axes: Int,
@@ -68,7 +67,7 @@ class MyAppbarBehavior(
 
     override fun onNestedPreScroll(
         parent: CoordinatorLayout,
-        child: AppBarLayout,
+        child: AppbarLayout,
         target: View,
         dx: Int,
         dy: Int,
@@ -86,7 +85,7 @@ class MyAppbarBehavior(
      */
     override fun onNestedScroll(
         parent: CoordinatorLayout,
-        child: AppBarLayout,
+        child: AppbarLayout,
         target: View,
         dxConsumed: Int,
         dyConsumed: Int,
@@ -104,7 +103,7 @@ class MyAppbarBehavior(
     }
 
     override fun onStopNestedScroll(
-        parent: CoordinatorLayout, child: AppBarLayout, target: View, type: Int
+        parent: CoordinatorLayout, child: AppbarLayout, target: View, type: Int
     ) {
         // onStartNestedScroll for a fling will happen before onStopNestedScroll for the scroll. This
         // isn't necessarily guaranteed yet, but it should be in the future. We use this to our
@@ -121,7 +120,7 @@ class MyAppbarBehavior(
 
     override fun onMeasureChild(
         parent: CoordinatorLayout,
-        child: AppBarLayout,
+        child: AppbarLayout,
         parentWidthMeasureSpec: Int,
         widthUsed: Int,
         parentHeightMeasureSpec: Int,
@@ -155,7 +154,7 @@ class MyAppbarBehavior(
 
     override fun onLayoutChild(
         parent: CoordinatorLayout,
-        child: AppBarLayout,
+        child: AppbarLayout,
         layoutDirection: Int
     ): Boolean {
         val handled = super.onLayoutChild(parent, child, layoutDirection)
@@ -165,18 +164,18 @@ class MyAppbarBehavior(
         // 2. offsets for restorations
         // 3. non-forced pending actions
         val pendingAction: Int = child.pendingAction
-        if (pendingAction and AppBarLayout.PENDING_ACTION_FORCE == 0) {
+        if (pendingAction and AppbarLayout.PENDING_ACTION_FORCE == 0) {
             // TODO: 恢复之前的状态
-        } else if (pendingAction != AppBarLayout.PENDING_ACTION_NONE) {
-            val animate = pendingAction and AppBarLayout.PENDING_ACTION_ANIMATE_ENABLED != 0
-            if (pendingAction and AppBarLayout.PENDING_ACTION_COLLAPSED != 0) {
+        } else if (pendingAction != AppbarLayout.PENDING_ACTION_NONE) {
+            val animate = pendingAction and AppbarLayout.PENDING_ACTION_ANIMATE_ENABLED != 0
+            if (pendingAction and AppbarLayout.PENDING_ACTION_COLLAPSED != 0) {
                 val offset: Int = getCollapsedOffset(parent, child)
                 if (animate) {
                     animateOffsetTo(offset)
                 } else {
                     setHeaderTopBottomOffset(offset)
                 }
-            } else if (pendingAction and AppBarLayout.PENDING_ACTION_EXPANDED != 0) {
+            } else if (pendingAction and AppbarLayout.PENDING_ACTION_EXPANDED != 0) {
                 if (animate) {
                     animateOffsetTo(0)
                 } else {
@@ -227,7 +226,7 @@ class MyAppbarBehavior(
                 if (offsetChanged) {
                     // If the offset has changed, pass the change to any child scroll effect.
                     for (i in 0 until child.childCount) {
-                        val params = child.getChildAt(i).layoutParams as AppBarLayout.LayoutParams
+                        val params = child.getChildAt(i).layoutParams as AppbarLayout.LayoutParams
                         val scrollEffect = params.scrollEffect
                         if (scrollEffect != null && params.scrollFlags and SCROLL_FLAG_SCROLL != 0) {
                             scrollEffect.onOffsetChanged(
@@ -254,7 +253,7 @@ class MyAppbarBehavior(
         return consumed
     }
 
-    override fun canDragView(view: AppBarLayout): Boolean {
+    override fun canDragView(view: AppbarLayout): Boolean {
         if (onDragCallback != null) {
             // If there is a drag callback set, it's in control
             return onDragCallback.canDrag(view)
@@ -273,7 +272,7 @@ class MyAppbarBehavior(
     }
 
     private fun getAppBarChildOnOffset(
-        layout: AppBarLayout, offset: Int
+        layout: AppbarLayout, offset: Int
     ): View? {
         val absOffset = abs(offset)
         for (i in 0 until layout.childCount) {
@@ -284,12 +283,12 @@ class MyAppbarBehavior(
     }
 
     private fun canScrollChildren(
-        parent: CoordinatorLayout, child: AppBarLayout, directTargetChild: View
+        parent: CoordinatorLayout, child: AppbarLayout, directTargetChild: View
     ): Boolean {
         return child.hasScrollableChildren && parent.height - directTargetChild.height <= child.height
     }
 
-    abstract class BaseDragCallback<T : AppBarLayout?> {
+    abstract class BaseDragCallback<T : AppbarLayout?> {
         abstract fun canDrag(appBarLayout: T): Boolean
     }
 }

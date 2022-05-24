@@ -65,11 +65,11 @@
         <attr name="cp_layout_collapseParallaxMultiplier" format="float" />
     </declare-styleable>
 
-    <style name="AppBarLayout_Base">
+    <style name="AppbarLayout_Base">
         <item name="appbar_expanded">true</item>
     </style>
 
-    <declare-styleable name="AppBarLayout">
+    <declare-styleable name="AppbarLayout">
         <attr name="appbar_expanded" format="boolean" />
         <attr name="android:background" />
         <attr name="android:keyboardNavigationCluster" />

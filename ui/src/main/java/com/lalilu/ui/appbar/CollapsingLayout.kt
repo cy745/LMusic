@@ -69,7 +69,7 @@ class CollapsingLayout @JvmOverloads constructor(
     private var forceApplySystemWindowInsetTop = false
     private var extraMultilineHeight = 0
     private var extraMultilineHeightEnabled = false
-    private var onOffsetChangedListener: AppBarLayout.OnOffsetChangedListener? = null
+    private var onOffsetChangedListener: AppbarLayout.OnOffsetChangedListener? = null
     private var lastInsets: WindowInsetsCompat? = null
     val insetTop: Int
         get() = lastInsets?.getInsets(WindowInsetsCompat.Type.statusBars())?.top ?: 0
@@ -100,8 +100,8 @@ class CollapsingLayout @JvmOverloads constructor(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (parent is AppBarLayout) {
-            val appBarLayout = parent as AppBarLayout
+        if (parent is AppbarLayout) {
+            val appBarLayout = parent as AppbarLayout
 
             // Copy over from the ABL whether we should fit system windows
             this.fitsSystemWindows = ViewCompat.getFitsSystemWindows(appBarLayout)
@@ -117,7 +117,7 @@ class CollapsingLayout @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         val parent = parent
-        if (onOffsetChangedListener != null && parent is AppBarLayout) {
+        if (onOffsetChangedListener != null && parent is AppbarLayout) {
             parent.removeOnOffsetChangedListener(onOffsetChangedListener)
         }
         super.onDetachedFromWindow()
@@ -389,8 +389,8 @@ class CollapsingLayout @JvmOverloads constructor(
         return height - offsetHelper.layoutTop - child.height - lp.bottomMargin
     }
 
-    private inner class OffsetUpdateListener : AppBarLayout.OnOffsetChangedListener {
-        override fun onOffsetChanged(appBarLayout: AppBarLayout, verticalOffset: Int) {
+    private inner class OffsetUpdateListener : AppbarLayout.OnOffsetChangedListener {
+        override fun onOffsetChanged(appbarLayout: AppbarLayout, verticalOffset: Int) {
             for (i in 0 until childCount) {
                 val child: View = getChildAt(i)
                 val lp = child.layoutParams as LayoutParams

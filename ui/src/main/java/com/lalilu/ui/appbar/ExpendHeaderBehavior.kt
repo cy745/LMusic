@@ -27,7 +27,7 @@ const val STATE_COLLAPSED = 3
 const val STATE_EXPENDED = 4
 const val STATE_FULLY_EXPENDED = 5
 
-abstract class ExpendHeaderBehavior<V : AppBarLayout>(
+abstract class ExpendHeaderBehavior<V : AppbarLayout>(
     private val mContext: Context?, attrs: AttributeSet?
 ) : ViewOffsetExpendBehavior<V>(mContext, attrs), AntiMisTouchEvent {
 
