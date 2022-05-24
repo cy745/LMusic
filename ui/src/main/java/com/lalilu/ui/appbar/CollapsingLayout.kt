@@ -23,8 +23,8 @@ import androidx.core.util.ObjectsCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.internal.CollapsingTextHelper
 import com.lalilu.ui.R
+import com.lalilu.ui.internal.CollapsingTextHelper
 import com.lalilu.ui.internal.DescendantOffsetUtils
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -542,7 +542,7 @@ class CollapsingLayout @JvmOverloads constructor(
                 a.getInt(R.styleable.CollapsingLayout_cp_max_lines, 1)
         }
 
-        toolbarId = a.getResourceId(R.styleable.CollapsingToolbarLayout_toolbarId, -1)
+        toolbarId = a.getResourceId(R.styleable.CollapsingLayout_cp_toolbar_id, -1)
         forceApplySystemWindowInsetTop =
             a.getBoolean(R.styleable.CollapsingLayout_cp_force_apply_window_inset_top, false)
         extraMultilineHeightEnabled =

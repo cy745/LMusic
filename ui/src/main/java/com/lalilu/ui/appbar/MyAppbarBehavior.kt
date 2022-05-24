@@ -9,6 +9,9 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewCompat.NestedScrollType
 import com.lalilu.ui.appbar.AppbarLayout.LayoutParams.Companion.SCROLL_FLAG_SCROLL
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_EXPENDED
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
@@ -164,23 +167,23 @@ class MyAppbarBehavior(
         // 2. offsets for restorations
         // 3. non-forced pending actions
         val pendingAction: Int = child.pendingAction
+
         if (pendingAction and AppbarLayout.PENDING_ACTION_FORCE == 0) {
+            // FORCE false
+
             // TODO: 恢复之前的状态
         } else if (pendingAction != AppbarLayout.PENDING_ACTION_NONE) {
-            val animate = pendingAction and AppbarLayout.PENDING_ACTION_ANIMATE_ENABLED != 0
-            if (pendingAction and AppbarLayout.PENDING_ACTION_COLLAPSED != 0) {
-                val offset: Int = getCollapsedOffset(parent, child)
-                if (animate) {
-                    animateOffsetTo(offset)
-                } else {
-                    setHeaderTopBottomOffset(offset)
-                }
-            } else if (pendingAction and AppbarLayout.PENDING_ACTION_EXPANDED != 0) {
-                if (animate) {
-                    animateOffsetTo(0)
-                } else {
-                    setHeaderTopBottomOffset(0)
-                }
+            // NONE false
+            when {
+                pendingAction and AppbarLayout.PENDING_ACTION_COLLAPSED != 0 ->
+                    getCollapsedOffset(parent, child)
+                pendingAction and AppbarLayout.PENDING_ACTION_EXPANDED != 0 -> 0
+                pendingAction and AppbarLayout.PENDING_ACTION_FULLY_EXPANDED != 0 ->
+                    getFullyExpendOffset(parent, child)
+                else -> null
+            }?.let {
+                if (pendingAction and AppbarLayout.PENDING_ACTION_ANIMATE_ENABLED != 0)
+                    animateOffsetTo(it) else setHeaderTopBottomOffset(it)
             }
         }
 
@@ -189,7 +192,7 @@ class MyAppbarBehavior(
 
         // We may have changed size, so let's constrain the top and bottom offset correctly,
         // just in case we're out of the bounds
-        val offset = when (nowState) {
+        val offset = when (stateHelper.nowState) {
             STATE_FULLY_EXPENDED -> getFullyExpendOffset(parent, child)
             STATE_COLLAPSED -> getCollapsedOffset(parent, child)
             STATE_EXPENDED -> 0

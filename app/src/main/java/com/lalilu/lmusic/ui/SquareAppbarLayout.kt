@@ -11,12 +11,13 @@ import com.dirror.lyricviewx.LyricViewX
 import com.lalilu.R
 import com.lalilu.common.DeviceUtils
 import com.lalilu.common.HapticUtils
+import com.lalilu.common.calculatePercentIn
 import com.lalilu.common.ifNaN
 import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
 import com.lalilu.ui.appbar.AppbarLayout
 import com.lalilu.ui.appbar.CollapsingLayout
-import com.lalilu.ui.appbar.ExpendHeaderBehavior
 import com.lalilu.ui.appbar.MyAppbarBehavior
+import com.lalilu.ui.internal.StateHelper
 import me.qinc.lib.edgetranslucent.EdgeTransparentView
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -84,19 +85,16 @@ class SquareAppbarLayout @JvmOverloads constructor(
         super.onAttachedToWindow()
         this.clipChildren = false
 
-        addOnOffsetChangedListener { appbar: AppbarLayout, offset: Int ->
-            if (offset > 0) return@addOnOffsetChangedListener
-
-            val collapsedOffset = offset.coerceAtMost(0).toFloat()
-            val minCollapsedOffset = behavior.getCollapsedOffset(parent as View, appbar)
-            val collapsedPercent = (collapsedOffset / minCollapsedOffset.toFloat()).coerceIn(0F, 1F)
-
-            mDraweeView?.let { it.alpha = 1f - collapsedPercent }
-        }
         behavior.addOnOffsetExpendChangedListener { appbar, offset ->
             val expendedOffset = offset.coerceAtLeast(0).toFloat()
+            val minCollapsedOffset = behavior.getCollapsedOffset(parent as View, appbar)
             val maxExpendedOffset = behavior.getFullyExpendOffset(parent as View, appbar)
             val expendedPercent = (expendedOffset / maxExpendedOffset.toFloat()).coerceIn(0F, 1F)
+            val alphaPercent = calculatePercentIn(
+                start = minCollapsedOffset,
+                end = if (shouldSkipExpanded()) maxExpendedOffset else 0,
+                num = offset
+            ).toFloat()
 
             val interpolation = interpolator.getInterpolation(expendedPercent)
             val reverseValue = parabolaInterpolator.getInterpolation(expendedPercent)
@@ -112,6 +110,7 @@ class SquareAppbarLayout @JvmOverloads constructor(
                 it.scalePercent = scalePercent
                 it.blurPercent = scalePercent
                 it.translationY = -topOffset * 0.6f
+                it.alpha = alphaPercent
             }
 
             mCollapsingToolbarLayout?.let {
@@ -129,14 +128,11 @@ class SquareAppbarLayout @JvmOverloads constructor(
                 it.alpha = alphaPercentIncrease
             }
         }
-        behavior.addOnStateChangeListener(object :
-            ExpendHeaderBehavior.OnScrollToThresholdListener() {
-            override fun onScrollToThreshold() {
-                HapticUtils.haptic(
-                    this@SquareAppbarLayout,
-                    HapticUtils.Strength.HAPTIC_STRONG
-                )
-            }
+        behavior.addOnStateChangeListener(StateHelper.OnScrollToThresholdListener {
+            HapticUtils.haptic(
+                this@SquareAppbarLayout,
+                HapticUtils.Strength.HAPTIC_STRONG
+            )
         })
     }
 }

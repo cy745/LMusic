@@ -33,7 +33,11 @@ import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.ui.*
-import com.lalilu.ui.appbar.*
+import com.lalilu.ui.appbar.MyAppbarBehavior
+import com.lalilu.ui.internal.StateHelper
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_EXPENDED
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_NORMAL
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -43,8 +47,8 @@ const val CLICK_HANDLE_MODE_LONG_CLICK = 2
 
 @IntDef(
     CLICK_HANDLE_MODE_CLICK,
-    CLICK_HANDLE_MODE_LONG_CLICK,
-    CLICK_HANDLE_MODE_DOUBLE_CLICK
+    CLICK_HANDLE_MODE_DOUBLE_CLICK,
+    CLICK_HANDLE_MODE_LONG_CLICK
 )
 @Retention(AnnotationRetention.SOURCE)
 annotation class ClickHandleMode
@@ -111,14 +115,14 @@ fun PlayingScreen(
             }
 
             behavior.addOnStateChangeListener(object :
-                ExpendHeaderBehavior.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {
+                StateHelper.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {
                 override fun onScrollToStateListener() {
                     if (fmToolbar.hasExpandedActionView())
                         fmToolbar.collapseActionView()
                 }
             })
             behavior.addOnStateChangeListener(object :
-                ExpendHeaderBehavior.OnScrollToStateListener(STATE_NORMAL, STATE_EXPENDED) {
+                StateHelper.OnScrollToStateListener(STATE_NORMAL, STATE_EXPENDED) {
                 override fun onScrollToStateListener() {
                     if (fmToolbar.hasExpandedActionView())
                         fmToolbar.collapseActionView()
@@ -127,15 +131,14 @@ fun PlayingScreen(
 
             fmToolbar.setOnMenuItemClickListener {
                 if (it.itemId == R.id.appbar_search) {
-                    fmAppbarLayout.setExpanded(false, true)
+                    fmAppbarLayout.setExpanded(expanded = false, animate = true)
                 }
                 true
             }
 
             fmRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    if (dy > 0 &&
-                        fmToolbar.hasExpandedActionView() &&
+                    if (dy > 0 && fmToolbar.hasExpandedActionView() &&
                         KeyboardUtils.isSoftInputVisible(activity)
                     ) {
                         KeyboardUtils.hideSoftInput(activity)
@@ -188,7 +191,12 @@ fun PlayingScreen(
 
                 override fun onLongClick(@ClickPart clickPart: Int, action: Int) {
                     haptic()
-                    if (clickHandleMode != CLICK_HANDLE_MODE_LONG_CLICK) return
+                    if (clickHandleMode != CLICK_HANDLE_MODE_LONG_CLICK ||
+                        clickPart == CLICK_PART_MIDDLE
+                    ) {
+                        fmAppbarLayout.autoToggleExpand()
+                        return
+                    }
                     playHandle(clickPart)
                 }
 

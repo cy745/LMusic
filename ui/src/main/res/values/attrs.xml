@@ -27,6 +27,7 @@
         <attr name="cp_expended_text_margin_bottom" format="dimension" />
         <attr name="cp_force_apply_window_inset_top" format="boolean" />
         <attr name="cp_extra_multiline_height_enabled" format="boolean" />
+        <attr name="cp_toolbar_id" format="reference" />
         <attr name="cp_max_lines" format="integer" />
 
         <attr name="cp_collapsed_title_gravity">
