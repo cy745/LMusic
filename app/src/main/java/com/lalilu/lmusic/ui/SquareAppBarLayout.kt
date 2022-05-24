@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.dirror.lyricviewx.LyricViewX
@@ -15,8 +14,7 @@ import com.lalilu.common.HapticUtils
 import com.lalilu.common.ifNaN
 import com.lalilu.lmusic.utils.interpolator.ParabolaInterpolator
 import com.lalilu.ui.appbar.AppBarLayout
-import com.lalilu.ui.appbar.AppBarLayout.OnOffsetChangedListener
-import com.lalilu.ui.appbar.CollapsingToolbarLayout
+import com.lalilu.ui.appbar.CollapsingLayout
 import com.lalilu.ui.appbar.ExpendHeaderBehavior
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import me.qinc.lib.edgetranslucent.EdgeTransparentView
@@ -26,12 +24,11 @@ import kotlin.math.roundToInt
 class SquareAppBarLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : AppBarLayout(context, attrs, defStyleAttr) {
-    private var mTips: TextView? = null
     private var mToolbar: Toolbar? = null
     private var mLyricViewX: LyricViewX? = null
     private var mDraweeView: BlurImageView? = null
     private var mEdgeTransparentView: EdgeTransparentView? = null
-    private var mCollapsingToolbarLayout: CollapsingToolbarLayout? = null
+    private var mCollapsingToolbarLayout: CollapsingLayout? = null
     private var interpolator = AccelerateDecelerateInterpolator()
     private var parabolaInterpolator = ParabolaInterpolator()
     private var behavior = MyAppbarBehavior(context, null)
@@ -41,7 +38,6 @@ class SquareAppBarLayout @JvmOverloads constructor(
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         super.onLayout(changed, l, t, r, b)
 
-        mTips = findViewById(R.id.fm_tips)
         mToolbar = findViewById(R.id.fm_toolbar)
         mDraweeView = findViewById(R.id.fm_top_pic)
         mLyricViewX = findViewById(R.id.fm_lyric_view_x)
@@ -88,15 +84,15 @@ class SquareAppBarLayout @JvmOverloads constructor(
         super.onAttachedToWindow()
         this.clipChildren = false
 
-        addOnOffsetChangedListener(OnOffsetChangedListener { appbar, offset ->
-            if (offset > 0) return@OnOffsetChangedListener
+        addOnOffsetChangedListener { appbar: AppBarLayout, offset: Int ->
+            if (offset > 0) return@addOnOffsetChangedListener
 
             val collapsedOffset = offset.coerceAtMost(0).toFloat()
             val minCollapsedOffset = behavior.getCollapsedOffset(parent as View, appbar)
             val collapsedPercent = (collapsedOffset / minCollapsedOffset.toFloat()).coerceIn(0F, 1F)
 
             mDraweeView?.let { it.alpha = 1f - collapsedPercent }
-        })
+        }
         behavior.addOnOffsetExpendChangedListener { appbar, offset ->
             val expendedOffset = offset.coerceAtLeast(0).toFloat()
             val maxExpendedOffset = behavior.getFullyExpendOffset(parent as View, appbar)
@@ -120,20 +116,12 @@ class SquareAppBarLayout @JvmOverloads constructor(
 
             mCollapsingToolbarLayout?.let {
                 it.translationY = topOffset
-                val toolbarTextColor =
+                it.expendedTitleColor =
                     Color.argb((alphaPercentDecrease * 255).roundToInt(), 255, 255, 255)
-                it.setExpandedTitleColor(toolbarTextColor)
             }
 
             mToolbar?.let {
-                it.visibility =
-                    if (alphaPercentDecrease <= 0.05) View.INVISIBLE else View.VISIBLE
-                it.alpha = alphaPercentDecrease
-            }
-
-            mTips?.let {
-                it.visibility =
-                    if (alphaPercentDecrease <= 0.05) View.INVISIBLE else View.VISIBLE
+                it.visibility = if (alphaPercentDecrease <= 0.05) INVISIBLE else VISIBLE
                 it.alpha = alphaPercentDecrease
             }
 

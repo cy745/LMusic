@@ -12,8 +12,6 @@
         <item name="android:colorAccent">@color/daynight_0</item>
         <item name="colorControlActivated">@color/daynight_0.6</item>
 
-        <item name="android:textColorPrimary">@color/daynight_0</item>
-        <item name="android:textColorSecondary">@color/daynight_0.4</item>
         <item name="android:colorControlNormal">@android:color/white</item>
 
         <item name="snackbarButtonStyle">@style/MY_SnackBarButtonStyle</item>

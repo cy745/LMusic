@@ -26,7 +26,6 @@ class MyScrollingViewBehavior(
         parent: CoordinatorLayout, child: View, dependency: View
     ): Boolean {
         offsetChildAsNeeded(child, dependency)
-        updateLiftedStateIfNeeded(child, dependency)
         return false
     }
 
@@ -69,7 +68,7 @@ class MyScrollingViewBehavior(
     override fun getOverlapRatioForOffset(header: View?): Float {
         if (header is AppBarLayout) {
             val totalScrollRange = header.totalScrollRange
-            val preScrollDown = header.downNestedPreScrollRange
+            val preScrollDown = header.downPreScrollRange
             val offset = getAppBarLayoutOffset(header)
             if (preScrollDown != 0 && totalScrollRange + offset <= preScrollDown) {
                 // If we're in a pre-scroll down. Don't use the offset at all.
@@ -91,14 +90,6 @@ class MyScrollingViewBehavior(
 
     override fun getScrollRange(v: View): Int {
         return if (v is AppBarLayout) v.totalScrollRange else super.getScrollRange(v)
-    }
-
-    private fun updateLiftedStateIfNeeded(child: View, dependency: View) {
-        if (dependency is AppBarLayout) {
-            if (dependency.isLiftOnScroll) {
-                dependency.setLiftedState(dependency.shouldLift(child))
-            }
-        }
     }
 
     private fun offsetChildAsNeeded(child: View, dependency: View) {
