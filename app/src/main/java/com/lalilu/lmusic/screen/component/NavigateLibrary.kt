@@ -78,8 +78,6 @@ fun RowScope.NavigateLibrary(
                 NavigatorFooter(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .background(color = MaterialTheme.colors.background.copy(alpha = 0.9f))
                         .navigationBarsPadding(),
                     navController = navController,
                     popUp = onPopUp,
