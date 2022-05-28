@@ -206,16 +206,10 @@ fun PlayingScreen(
                     playHandle(clickPart)
                 }
             })
-            maSeekBar.seekToListeners.add(object : OnSeekBarSeekToListener {
-                override fun onSeekTo(value: Float) {
-                    scope.launch { onSeekToPosition(value) }
-                }
+            maSeekBar.seekToListeners.add(OnSeekBarSeekToListener { value ->
+                scope.launch { onSeekToPosition(value) }
             })
-            maSeekBar.cancelListeners.add(object : OnSeekBarCancelListener {
-                override fun onCancel() {
-                    haptic()
-                }
-            })
+            maSeekBar.cancelListeners.add(OnSeekBarCancelListener { haptic() })
             GlobalData.currentPlaylistLiveData.observe(activity) {
                 adapter?.setDiffNewData(it.toMutableList())
             }

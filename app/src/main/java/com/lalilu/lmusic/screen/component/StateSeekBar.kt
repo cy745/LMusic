@@ -80,8 +80,9 @@ private fun SliderImpl(
         targetValue = if (interactions.isNotEmpty()) 8f else 10f
     )
     val backgroundColor = MaterialTheme.colors.background
-    val bgColor = contentColorFor(backgroundColor = backgroundColor).copy(0.2f)
-    val thumbColor = contentColorFor(backgroundColor = backgroundColor).copy(0.7f)
+    val titleColor = contentColorFor(backgroundColor = backgroundColor)
+    val bgColor = titleColor.copy(0.2f)
+    val thumbColor = titleColor.copy(0.7f)
 
     LaunchedEffect(interactionSource) {
         interactionSource.interactions.collect { interaction ->

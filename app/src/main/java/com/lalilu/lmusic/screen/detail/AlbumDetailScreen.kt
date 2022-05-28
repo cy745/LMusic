@@ -3,8 +3,9 @@ package com.lalilu.lmusic.screen.detail
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -30,6 +31,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SongCard
+import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
@@ -40,6 +42,7 @@ import com.lalilu.lmusic.viewmodel.MainViewModel
 fun AlbumDetailScreen(
     album: MediaItem,
     songs: List<MediaItem>,
+    currentWindowSize: WindowSize,
     contentPaddingForFooter: Dp = 0.dp,
     navigateTo: (destination: String) -> Unit = {},
     mainViewModel: MainViewModel = hiltViewModel()
@@ -47,9 +50,9 @@ fun AlbumDetailScreen(
     val haptic = LocalHapticFeedback.current
     val sortedItems = remember { songs.toMutableStateList() }
     val title = album.mediaMetadata.albumTitle?.toString()
-        ?: stringResource(id = MainScreenData.AlbumDetail.title)
+        ?: stringResource(id = MainScreenData.AlbumsDetail.title)
     val subTitle = album.mediaMetadata.albumArtist?.toString()
-        ?: stringResource(id = MainScreenData.AlbumDetail.subTitle)
+        ?: stringResource(id = MainScreenData.AlbumsDetail.subTitle)
 
     val imagePainter = rememberImagePainter(
         data = album.mediaMetadata.artworkUri
@@ -69,7 +72,7 @@ fun AlbumDetailScreen(
     val onSongShowDetail: (String) -> Unit = remember {
         { mediaId ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navigateTo("${MainScreenData.SongDetail.name}/$mediaId")
+            navigateTo("${MainScreenData.SongsDetail.name}/$mediaId")
         }
     }
 
@@ -106,7 +109,8 @@ fun AlbumDetailScreen(
                 }
             }
         }
-        LazyColumn(
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(if (currentWindowSize == WindowSize.Expanded) 2 else 1),
             contentPadding = PaddingValues(
                 bottom = contentPaddingForFooter
             )

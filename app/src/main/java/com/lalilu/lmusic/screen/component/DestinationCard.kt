@@ -50,20 +50,19 @@ fun DestinationCard(
     onClick: () -> Unit
 ) {
     Surface(
-        shape = RoundedCornerShape(15.dp),
-        elevation = 1.dp
+        shape = RoundedCornerShape(10.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround,
             modifier = Modifier
-                .clip(RoundedCornerShape(15.dp))
+                .clip(RoundedCornerShape(10.dp))
                 .clickable(onClick = onClick)
-                .padding(20.dp),
+                .padding(vertical = 20.dp, horizontal = 15.dp),
         ) {
             Image(
                 painter = icon,
-                contentDescription = ""
+                contentDescription = "destination_icon"
             )
             Text(text = title)
             Image(

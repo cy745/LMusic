@@ -19,11 +19,13 @@ import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.bean.sort
 import com.lalilu.lmusic.screen.component.*
+import com.lalilu.lmusic.utils.WindowSize
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun AlbumsScreen(
     albums: List<MediaItem>,
+    currentWindowSize: WindowSize,
     navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp
 ) {
@@ -39,7 +41,7 @@ fun AlbumsScreen(
 
     val onAlbumSelected = remember {
         { albumId: String ->
-            navigateTo("${MainScreenData.AlbumDetail.name}/$albumId")
+            navigateTo("${MainScreenData.AlbumsDetail.name}/$albumId")
         }
     }
 
@@ -57,7 +59,9 @@ fun AlbumsScreen(
         }
         LazyVerticalGrid(
             modifier = Modifier.weight(1f),
-            columns = GridCells.Fixed(2),
+            columns = GridCells.Fixed(
+                if (currentWindowSize == WindowSize.Expanded) 3 else 2
+            ),
             contentPadding = PaddingValues(
                 start = 10.dp,
                 end = 10.dp,

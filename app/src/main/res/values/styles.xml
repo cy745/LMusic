@@ -20,9 +20,9 @@
 <!--        <item name="rippleColor">#007C15</item>-->
 <!--    </style>-->
 
-    <style name="MY_BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
-        <item name="android:background">@drawable/dialog_radius_bg</item>
-    </style>
+<!--    <style name="MY_BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">-->
+<!--        <item name="android:background">@drawable/dialog_radius_bg</item>-->
+<!--    </style>-->
 
     <style name="MY_SearchView" parent="Widget.AppCompat.SearchView">
         <item name="searchHintIcon">@drawable/ic_search_2_line</item>
