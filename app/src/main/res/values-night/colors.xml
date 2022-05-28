@@ -20,7 +20,7 @@
     <color name="bottom_sheet_divider">#373737</color>
     <color name="bottom_sheet_card_bg">#303030</color>
 
-    <color name="activity_window_bg">@color/material_grey_850</color>
+    <color name="activity_window_bg">#1A1A1A</color>
 
     <color name="gray_scale_1">#FFF8F9FA</color>
     <color name="gray_scale_2">#FFE9ECEF</color>

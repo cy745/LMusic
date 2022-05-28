@@ -46,6 +46,7 @@ fun SettingProgressSeekBar(
     var value by state
     val tempValue = remember(value) { mutableStateOf(value.toFloat()) }
     val interactionSource = remember { MutableInteractionSource() }
+    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 
     Column(
         modifier = Modifier
@@ -61,6 +62,7 @@ fun SettingProgressSeekBar(
     ) {
         Text(
             text = title,
+            color = textColor,
             fontSize = 14.sp
         )
         ProgressSeekBar(

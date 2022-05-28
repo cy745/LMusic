@@ -7,7 +7,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -120,15 +123,14 @@ fun LyricCard(
     selected: Boolean = false,
     onClick: () -> Unit = {}
 ) {
+    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
     val color: Color by animateColorAsState(
         if (selected) contentColorFor(
             backgroundColor = MaterialTheme.colors.background
         ).copy(0.2f) else Color.Transparent
     )
 
-    Surface(
-        color = color
-    ) {
+    Surface(color = color) {
         Column(
             Modifier
                 .fillMaxWidth()
@@ -147,12 +149,14 @@ fun LyricCard(
                 Text(
                     text = title,
                     fontSize = 16.sp,
+                    color = textColor,
                     modifier = Modifier.weight(1f)
                 )
                 duration?.let {
                     Text(
                         text = it,
                         fontSize = 12.sp,
+                        color = textColor,
                         textAlign = TextAlign.End
                     )
                 }
@@ -165,6 +169,7 @@ fun LyricCard(
                 Text(
                     text = artist,
                     fontSize = 12.sp,
+                    color = textColor,
                     modifier = Modifier.weight(1f)
                 )
                 albumTitle?.let {

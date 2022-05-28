@@ -6,8 +6,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import com.funny.data_saver.core.DataSaverMutableState
 import com.lalilu.R
-import com.lalilu.lmusic.screen.component.settings.SettingSwitcher
-import com.lalilu.lmusic.screen.component.settings.multiply
 
 @Composable
 fun SettingExtensionSwitcher(
@@ -18,11 +16,13 @@ fun SettingExtensionSwitcher(
     startDownload: () -> Unit = {}
 ) {
     var value by state
+    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 
     SettingSwitcher(
         contentStart = {
             Text(
                 text = title,
+                color = textColor,
                 fontSize = 14.sp
             )
             if (subTitle != null) {

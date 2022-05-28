@@ -4,8 +4,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -26,6 +27,7 @@ import com.lalilu.lmusic.screen.component.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SongCard
 import com.lalilu.lmusic.screen.component.SortToggleButton
+import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.viewmodel.ArtistViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
@@ -33,6 +35,7 @@ import com.lalilu.lmusic.viewmodel.MainViewModel
 @Composable
 fun ArtistDetailScreen(
     artistName: String,
+    currentWindowSize: WindowSize,
     navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp,
     mainViewModel: MainViewModel = hiltViewModel(),
@@ -71,7 +74,7 @@ fun ArtistDetailScreen(
     val onSongShowDetail: (String) -> Unit = remember {
         { mediaId ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navigateTo("${MainScreenData.SongDetail.name}/$mediaId")
+            navigateTo("${MainScreenData.SongsDetail.name}/$mediaId")
         }
     }
 
@@ -86,7 +89,8 @@ fun ArtistDetailScreen(
                 sortDesc = !sortDesc
             }
         }
-        LazyColumn(
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(if (currentWindowSize == WindowSize.Expanded) 2 else 1),
             contentPadding = PaddingValues(
                 bottom = contentPaddingForFooter
             )
