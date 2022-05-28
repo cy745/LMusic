@@ -192,7 +192,7 @@ public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<Vie
 
     /**
      * Returns the distance that this view should overlap any {@link
-     * AppBarLayout}.
+     * AppbarLayout}.
      */
     public final int getOverlayTop() {
         return overlayTop;
@@ -200,7 +200,7 @@ public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<Vie
 
     /**
      * Set the distance that this view should overlap any {@link
-     * AppBarLayout}.
+     * AppbarLayout}.
      *
      * @param overlayTop the distance in px
      */

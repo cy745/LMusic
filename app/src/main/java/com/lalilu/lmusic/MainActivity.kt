@@ -70,9 +70,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             CompositionLocalProvider(LocalDataSaver provides dataSaverPreferences) {
                 LMusicTheme {
-                    MainScreen(
-                        onMoveTaskToBack = { moveTaskToBack(false) }
-                    )
+                    MainScreen { moveTaskToBack(false) }
                     AgreementDialog()
                 }
             }

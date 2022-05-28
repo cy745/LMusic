@@ -22,7 +22,7 @@
     <color name="bottom_sheet_button_close_bg">#25FE4141</color>
     <color name="song_detail_add_song_to_playlist_button_bg">#25006E7C</color>
 
-    <color name="activity_window_bg">@color/material_grey_50</color>
+    <color name="activity_window_bg">#F4F4F4</color>
 
     <color name="gray_scale_1">#FFF8F9FA</color>
     <color name="gray_scale_2">#FFE9ECEF</color>

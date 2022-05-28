@@ -19,21 +19,20 @@ class MyScrollingViewBehavior(
         child: View,
         dependency: View
     ): Boolean {
-        return dependency is AppBarLayout
+        return dependency is AppbarLayout
     }
 
     override fun onDependentViewChanged(
         parent: CoordinatorLayout, child: View, dependency: View
     ): Boolean {
         offsetChildAsNeeded(child, dependency)
-        updateLiftedStateIfNeeded(child, dependency)
         return false
     }
 
     override fun onDependentViewRemoved(
         parent: CoordinatorLayout, child: View, dependency: View
     ) {
-        if (dependency is AppBarLayout) {
+        if (dependency is AppbarLayout) {
             ViewCompat.removeAccessibilityAction(
                 parent,
                 AccessibilityActionCompat.ACTION_SCROLL_FORWARD.id
@@ -67,9 +66,9 @@ class MyScrollingViewBehavior(
     }
 
     override fun getOverlapRatioForOffset(header: View?): Float {
-        if (header is AppBarLayout) {
+        if (header is AppbarLayout) {
             val totalScrollRange = header.totalScrollRange
-            val preScrollDown = header.downNestedPreScrollRange
+            val preScrollDown = header.downPreScrollRange
             val offset = getAppBarLayoutOffset(header)
             if (preScrollDown != 0 && totalScrollRange + offset <= preScrollDown) {
                 // If we're in a pre-scroll down. Don't use the offset at all.
@@ -85,20 +84,12 @@ class MyScrollingViewBehavior(
         return 0f
     }
 
-    override fun findFirstDependency(views: MutableList<View>?): AppBarLayout? {
-        return views?.first { it is AppBarLayout } as AppBarLayout?
+    override fun findFirstDependency(views: MutableList<View>?): AppbarLayout? {
+        return views?.first { it is AppbarLayout } as AppbarLayout?
     }
 
     override fun getScrollRange(v: View): Int {
-        return if (v is AppBarLayout) v.totalScrollRange else super.getScrollRange(v)
-    }
-
-    private fun updateLiftedStateIfNeeded(child: View, dependency: View) {
-        if (dependency is AppBarLayout) {
-            if (dependency.isLiftOnScroll) {
-                dependency.setLiftedState(dependency.shouldLift(child))
-            }
-        }
+        return if (v is AppbarLayout) v.totalScrollRange else super.getScrollRange(v)
     }
 
     private fun offsetChildAsNeeded(child: View, dependency: View) {
@@ -115,7 +106,7 @@ class MyScrollingViewBehavior(
         }
     }
 
-    private fun getAppBarLayoutOffset(abl: AppBarLayout): Int {
+    private fun getAppBarLayoutOffset(abl: AppbarLayout): Int {
         val behavior = (abl.layoutParams as CoordinatorLayout.LayoutParams).behavior
         return if (behavior is MyAppbarBehavior) behavior.topAndBottomOffset else 0
     }

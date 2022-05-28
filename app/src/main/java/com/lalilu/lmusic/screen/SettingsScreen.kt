@@ -4,7 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,9 +18,11 @@ import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.settings.*
+import com.lalilu.lmusic.utils.WindowSize
 
 @Composable
 fun SettingsScreen(
+    currentWindowSize: WindowSize,
     contentPaddingForFooter: Dp = 0.dp
 ) {
     val ignoreAudioFocus = rememberDataSaverState(
@@ -62,7 +65,8 @@ fun SettingsScreen(
     ) {
         NavigatorHeader(route = MainScreenData.Settings)
 
-        LazyColumn(
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(if (currentWindowSize == WindowSize.Expanded) 2 else 1),
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = contentPaddingForFooter)
         ) {

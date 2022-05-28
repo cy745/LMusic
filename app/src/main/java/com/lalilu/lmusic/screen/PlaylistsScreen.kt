@@ -60,7 +60,7 @@ fun PlaylistsScreen(
 
     Column {
         NavigatorHeaderWithButtons(
-            route = if (isAddingSongToPlaylist) MainScreenData.AddToPlaylist else MainScreenData.Playlists
+            route = if (isAddingSongToPlaylist) MainScreenData.SongsAddToPlaylist else MainScreenData.Playlists
         ) {
             LazyListSortToggleButton(sortByState = sortByState) {
                 sortByState = next(sortByState)
@@ -113,7 +113,7 @@ fun PlaylistsScreen(
                         selectedItems.remove(it)
                     else selectedItems.add(it)
                 } else {
-                    navigateTo("${MainScreenData.PlaylistDetail.name}/${it.playlistId}")
+                    navigateTo("${MainScreenData.PlaylistsDetail.name}/${it.playlistId}")
                 }
             }
         )
@@ -197,6 +197,7 @@ fun PlaylistCard(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {}
 ) {
+    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
     val color: Color by animateColorAsState(
         if (selected) contentColorFor(
             backgroundColor = MaterialTheme.colors.background
@@ -213,7 +214,10 @@ fun PlaylistCard(
                 )
                 .padding(20.dp)
         ) {
-            Text(text = title)
+            Text(
+                text = title,
+                color = textColor
+            )
         }
     }
 }

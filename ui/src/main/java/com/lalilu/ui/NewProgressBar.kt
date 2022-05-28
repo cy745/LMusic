@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.IntDef
 import androidx.annotation.IntRange
+import com.blankj.utilcode.util.SizeUtils
 
 const val CURRENT_STATE_UNSPECIFIED = 0
 const val CURRENT_STATE_MIN = 1
@@ -205,7 +206,7 @@ open class NewProgressBar @JvmOverloads constructor(
     private var maxValueTextWidth: Float = 0f
     private var nowValueTextWidth: Float = 0f
     private var nowValueTextOffset: Float = 0f
-    private var textHeight: Float = 45f
+    private var textHeight: Float = SizeUtils.sp2px(18f).toFloat()
     private var textPadding: Long = 40L
     private var pathInside = Path()
     private var pathOutside = Path()

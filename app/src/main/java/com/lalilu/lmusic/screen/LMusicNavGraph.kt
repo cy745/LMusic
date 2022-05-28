@@ -4,14 +4,12 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,29 +21,35 @@ import com.lalilu.lmusic.datasource.ALBUM_PREFIX
 import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.screen.detail.*
+import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 fun NavHostController.clearBackStack() {
     if (popBackStack()) clearBackStack()
 }
 
+fun NavController.navigateTo(destination: String) = navigate(destination) {
+    popUpTo(MainScreenData.Library.name) {
+        inclusive = destination == MainScreenData.Library.name
+    }
+}
+
+fun NavController.navigateSingle(destination: String) = navigate(destination) {
+    launchSingleTop = true
+}
+
 @ExperimentalAnimationApi
 @Composable
 @ExperimentalMaterialApi
-fun ComposeNavigator(
+fun LMusicNavGraph(
     modifier: Modifier = Modifier,
-    scope: CoroutineScope = rememberCoroutineScope(),
+    currentWindowSize: WindowSize,
     navController: NavHostController,
-    scaffoldState: ModalBottomSheetState,
     contentPaddingForFooter: Dp = 0.dp,
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    onExpendModal: () -> Unit = {},
 ) {
     val mediaSource = mainViewModel.mediaSource
-    val expendScaffold: () -> Unit = {
-        scope.launch { scaffoldState.animateTo(ModalBottomSheetValue.Expanded) }
-    }
 
     NavHost(
         navController = navController,
@@ -56,24 +60,26 @@ fun ComposeNavigator(
             route = MainScreenData.Library.name
         ) {
             LibraryScreen(
+                currentWindowSize = currentWindowSize,
                 navigateTo = navController::navigate,
                 contentPaddingForFooter = contentPaddingForFooter
             )
         }
 
         composable(
-            route = MainScreenData.AllSongs.name
+            route = MainScreenData.Songs.name
         ) {
             val songs = mediaSource.getChildren(ALL_ID) ?: emptyList()
-            AllSongsScreen(
+            SongsScreen(
                 songs = songs,
+                currentWindowSize = currentWindowSize,
                 navigateTo = navController::navigate,
                 contentPaddingForFooter = contentPaddingForFooter
             )
         }
 
         composable(
-            route = MainScreenData.Artist.name
+            route = MainScreenData.Artists.name
         ) {
             ArtistScreen(
                 navigateTo = navController::navigate,
@@ -87,6 +93,7 @@ fun ComposeNavigator(
             val albums = mediaSource.getChildren(ALBUM_ID) ?: emptyList()
             AlbumsScreen(
                 albums = albums,
+                currentWindowSize = currentWindowSize,
                 navigateTo = navController::navigate,
                 contentPaddingForFooter = contentPaddingForFooter
             )
@@ -100,7 +107,7 @@ fun ComposeNavigator(
             )
         }
         composable(
-            route = "${MainScreenData.PlaylistDetail.name}/{playlistId}",
+            route = "${MainScreenData.PlaylistsDetail.name}/{playlistId}",
             arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
         ) { backStackEntry ->
             val playlistId = backStackEntry.arguments?.getString("playlistId")?.toLong()
@@ -108,13 +115,14 @@ fun ComposeNavigator(
             playlistId?.let {
                 PlaylistDetailScreen(
                     playlistId = it,
+                    currentWindowSize = currentWindowSize,
                     navigateTo = navController::navigate,
                     contentPaddingForFooter = contentPaddingForFooter
                 )
             }
         }
         composable(
-            route = "${MainScreenData.SongDetail.name}/{mediaId}",
+            route = "${MainScreenData.SongsDetail.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
@@ -130,7 +138,7 @@ fun ComposeNavigator(
         }
 
         composable(
-            route = "${MainScreenData.ArtistDetail.name}/{artistName}",
+            route = "${MainScreenData.ArtistsDetail.name}/{artistName}",
             arguments = listOf(navArgument("artistName") { type = NavType.StringType })
         ) { backStackEntry ->
             val artistName = backStackEntry.arguments?.getString("artistName")
@@ -138,6 +146,7 @@ fun ComposeNavigator(
             artistName?.let { name ->
                 ArtistDetailScreen(
                     artistName = name,
+                    currentWindowSize = currentWindowSize,
                     navigateTo = navController::navigate,
                     contentPaddingForFooter = contentPaddingForFooter
                 )
@@ -145,7 +154,7 @@ fun ComposeNavigator(
         }
 
         composable(
-            route = "${MainScreenData.AlbumDetail.name}/{albumId}",
+            route = "${MainScreenData.AlbumsDetail.name}/{albumId}",
             arguments = listOf(navArgument("albumId") { type = NavType.StringType })
         ) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId")
@@ -156,6 +165,7 @@ fun ComposeNavigator(
                         AlbumDetailScreen(
                             album = album,
                             songs = songs,
+                            currentWindowSize = currentWindowSize,
                             navigateTo = navController::navigate,
                             contentPaddingForFooter = contentPaddingForFooter
                         )
@@ -164,7 +174,7 @@ fun ComposeNavigator(
             } ?: EmptyAlbumDetailScreen()
         }
         composable(
-            route = MainScreenData.AddToPlaylist.name,
+            route = MainScreenData.SongsAddToPlaylist.name,
             arguments = listOf(navArgument("mediaIds") { type = NavType.StringArrayType })
         ) { backStackEntry ->
             val mediaIds = backStackEntry.arguments?.getStringArrayList("mediaIds")
@@ -179,7 +189,7 @@ fun ComposeNavigator(
             }
         }
         composable(
-            route = "${MainScreenData.AddToPlaylist.name}/{mediaId}",
+            route = "${MainScreenData.SongsAddToPlaylist.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
@@ -194,7 +204,7 @@ fun ComposeNavigator(
             }
         }
         composable(
-            route = "${MainScreenData.SearchForLyric.name}/{mediaId}",
+            route = "${MainScreenData.SongsSearchForLyric.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
@@ -204,7 +214,7 @@ fun ComposeNavigator(
                     SearchForLyricScreen(
                         mediaItem = it,
                         navigateUp = navController::navigateUp,
-                        expendScaffold = expendScaffold,
+                        expendScaffold = onExpendModal,
                         contentPaddingForFooter = contentPaddingForFooter
                     )
                 }
@@ -214,6 +224,7 @@ fun ComposeNavigator(
             route = MainScreenData.Settings.name
         ) {
             SettingsScreen(
+                currentWindowSize = currentWindowSize,
                 contentPaddingForFooter = contentPaddingForFooter
             )
         }
@@ -231,13 +242,19 @@ enum class MainScreenData(
         title = R.string.destination_label_library,
         subTitle = R.string.destination_subtitle_library
     ),
-    AllSongs(
+    Songs(
         icon = R.drawable.ic_music_2_line,
         title = R.string.destination_label_all_song,
         subTitle = R.string.destination_subtitle_all_song,
         showNavigateButton = true
     ),
-    Artist(
+    Playlists(
+        icon = R.drawable.ic_play_list_line,
+        title = R.string.destination_label_playlists,
+        subTitle = R.string.destination_subtitle_playlists,
+        showNavigateButton = true
+    ),
+    Artists(
         icon = R.drawable.ic_user_line,
         title = R.string.destination_label_artist,
         subTitle = R.string.destination_subtitle_artist,
@@ -249,47 +266,41 @@ enum class MainScreenData(
         subTitle = R.string.destination_subtitle_albums,
         showNavigateButton = true
     ),
-    Playlists(
-        icon = R.drawable.ic_play_list_line,
-        title = R.string.destination_label_playlists,
-        subTitle = R.string.destination_subtitle_playlists,
-        showNavigateButton = true
-    ),
-    PlaylistDetail(
-        icon = R.drawable.ic_play_list_line,
-        title = R.string.destination_label_playlist_detail,
-        subTitle = R.string.destination_subtitle_playlist_detail
-    ),
-    ArtistDetail(
-        icon = R.drawable.ic_user_line,
-        title = R.string.destination_label_artist,
-        subTitle = R.string.destination_subtitle_artist
-    ),
-    AlbumDetail(
-        icon = R.drawable.ic_album_fill,
-        title = R.string.destination_label_album_detail,
-        subTitle = R.string.destination_subtitle_album_detail
-    ),
-    SongDetail(
-        icon = R.drawable.ic_music_2_line,
-        title = R.string.destination_label_song_detail,
-        subTitle = R.string.destination_subtitle_song_detail
-    ),
-    AddToPlaylist(
-        icon = R.drawable.ic_play_list_line,
-        title = R.string.destination_label_add_song_to_playlist,
-        subTitle = R.string.destination_label_add_song_to_playlist
-    ),
-    SearchForLyric(
-        icon = R.drawable.ic_lrc_fill,
-        title = R.string.destination_label_search_for_lyric,
-        subTitle = R.string.destination_label_search_for_lyric
-    ),
     Settings(
         icon = R.drawable.ic_settings_4_line,
         title = R.string.destination_label_settings,
         subTitle = R.string.destination_subtitle_settings,
         showNavigateButton = true
+    ),
+    PlaylistsDetail(
+        icon = R.drawable.ic_play_list_line,
+        title = R.string.destination_label_playlist_detail,
+        subTitle = R.string.destination_subtitle_playlist_detail
+    ),
+    ArtistsDetail(
+        icon = R.drawable.ic_user_line,
+        title = R.string.destination_label_artist,
+        subTitle = R.string.destination_subtitle_artist
+    ),
+    AlbumsDetail(
+        icon = R.drawable.ic_album_fill,
+        title = R.string.destination_label_album_detail,
+        subTitle = R.string.destination_subtitle_album_detail
+    ),
+    SongsDetail(
+        icon = R.drawable.ic_music_2_line,
+        title = R.string.destination_label_song_detail,
+        subTitle = R.string.destination_subtitle_song_detail
+    ),
+    SongsAddToPlaylist(
+        icon = R.drawable.ic_play_list_line,
+        title = R.string.destination_label_add_song_to_playlist,
+        subTitle = R.string.destination_label_add_song_to_playlist
+    ),
+    SongsSearchForLyric(
+        icon = R.drawable.ic_lrc_fill,
+        title = R.string.destination_label_search_for_lyric,
+        subTitle = R.string.destination_label_search_for_lyric
     );
 
     companion object {

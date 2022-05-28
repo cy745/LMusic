@@ -21,8 +21,8 @@ android {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
         targetSdkVersion 32
-        versionCode 33
-        versionName "1.4.12"
+        versionCode 34
+        versionName "1.4.13"
         vectorDrawables {
             useSupportLibrary true
         }
@@ -78,6 +78,7 @@ dependencies {
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation "androidx.compose.ui:ui-viewbinding:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    implementation "androidx.window:window:1.0.0"
 
     // https://github.com/ably/ably-java
     // Apache-2.0 License
@@ -183,7 +184,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
     implementation "com.google.dagger:hilt-android:$hilt_version"
-    implementation 'com.google.android.material:material:1.5.0'
 
     implementation project(":common")
     implementation project(":ui")
