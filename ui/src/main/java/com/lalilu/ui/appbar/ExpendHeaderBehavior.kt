@@ -92,7 +92,7 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
             }
             val point = Point()
             windowManager.defaultDisplay.getSize(point)
-            return point.y - point.x
+            return point.y - (child?.measuredWidth ?: point.x)
         }
         return 0
     }

@@ -1,6 +1,7 @@
 package com.lalilu.common
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.WindowManager
@@ -12,20 +13,24 @@ import kotlin.math.sqrt
  */
 object DeviceUtils {
 
+    fun getMetricsRect(context: Context): Rect {
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return windowManager.currentWindowMetrics.bounds
+        }
+
+        val outMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getRealMetrics(outMetrics)
+        return Rect(0, 0, outMetrics.widthPixels, outMetrics.heightPixels)
+    }
+
     /**
      * 【适应旋转】
      * 获取设备竖向高度
      */
     fun getHeight(context: Context): Int {
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            return windowManager.currentWindowMetrics.bounds.height()
-        }
-
-        val outMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getRealMetrics(outMetrics)
-        return outMetrics.heightPixels
+        return getMetricsRect(context).height()
     }
 
     /**
@@ -33,15 +38,7 @@ object DeviceUtils {
      * 获取设备横向宽度
      */
     fun getWidth(context: Context): Int {
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            return windowManager.currentWindowMetrics.bounds.width()
-        }
-
-        val outMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getRealMetrics(outMetrics)
-        return outMetrics.widthPixels
+        return getMetricsRect(context).width()
     }
 
     /**
