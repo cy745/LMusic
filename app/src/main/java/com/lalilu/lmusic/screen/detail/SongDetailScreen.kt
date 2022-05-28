@@ -42,7 +42,7 @@ fun SongDetailScreen(
         size(SizeUtils.dp2px(128f))
     }
     val title = mediaItem.mediaMetadata.title?.toString()
-        ?: stringResource(id = MainScreenData.SongDetail.title)
+        ?: stringResource(id = MainScreenData.SongsDetail.title)
     val subTitle = "${mediaItem.mediaMetadata.artist}\n\n${mediaItem.mediaMetadata.albumTitle}"
 
     SongDetailScreen(
@@ -50,10 +50,10 @@ fun SongDetailScreen(
         subTitle = subTitle,
         imagePainter = imagePainter,
         onSearchForLyric = {
-            navigateTo("${MainScreenData.SearchForLyric.name}/${mediaItem.mediaId}")
+            navigateTo("${MainScreenData.SongsSearchForLyric.name}/${mediaItem.mediaId}")
         },
         onAddSongToPlaylist = {
-            navigateTo("${MainScreenData.AddToPlaylist.name}/${mediaItem.mediaId}")
+            navigateTo("${MainScreenData.SongsAddToPlaylist.name}/${mediaItem.mediaId}")
         },
         onSetSongToNext = {
             mediaBrowser.addToNext(mediaItem.mediaId)

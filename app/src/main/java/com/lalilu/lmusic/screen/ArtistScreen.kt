@@ -37,12 +37,12 @@ fun ArtistScreen(
 
     val onArtistSelected = remember {
         { artistId: String ->
-            navigateTo("${MainScreenData.ArtistDetail.name}/$artistId")
+            navigateTo("${MainScreenData.ArtistsDetail.name}/$artistId")
         }
     }
 
     Column {
-        NavigatorHeaderWithButtons(route = MainScreenData.Artist) {
+        NavigatorHeaderWithButtons(route = MainScreenData.Artists) {
             LazyListSortToggleButton(sortByState = sortByState) {
                 sortByState = next(sortByState)
             }

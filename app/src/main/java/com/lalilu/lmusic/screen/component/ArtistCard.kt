@@ -2,7 +2,9 @@ package com.lalilu.lmusic.screen.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +33,8 @@ fun ArtistCard(
     artistTitle: String,
     onClick: () -> Unit
 ) {
+    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+
     Row(
         modifier = Modifier
             .clickable { onClick() }
@@ -52,6 +56,7 @@ fun ArtistCard(
         Text(
             text = artistTitle,
             fontSize = 14.sp,
+            color = textColor,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

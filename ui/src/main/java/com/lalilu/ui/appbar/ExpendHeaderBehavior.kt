@@ -7,7 +7,6 @@ import android.util.AttributeSet
 import android.view.*
 import android.widget.OverScroller
 import androidx.annotation.FloatRange
-import androidx.annotation.IntDef
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.util.ObjectsCompat
 import androidx.core.view.ViewCompat
@@ -15,88 +14,33 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
+import com.lalilu.ui.internal.StateHelper
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_EXPENDED
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_MIDDLE
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_NORMAL
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
 const val INVALID_POINTER = -1
 
-const val STATE_NORMAL = 1
-const val STATE_MIDDLE = 2
-const val STATE_COLLAPSED = 3
-const val STATE_EXPENDED = 4
-const val STATE_FULLY_EXPENDED = 5
-
-abstract class ExpendHeaderBehavior<V : AppBarLayout>(
+abstract class ExpendHeaderBehavior<V : AppbarLayout>(
     private val mContext: Context?, attrs: AttributeSet?
-) : ViewOffsetExpendBehavior<V>(mContext, attrs), AntiMisTouchEvent {
-
-    /**
-     * [ExpendHeaderBehavior]
-     *  可能的几种状态
-     */
-    @IntDef(
-        STATE_NORMAL,
-        STATE_MIDDLE,
-        STATE_COLLAPSED,
-        STATE_EXPENDED,
-        STATE_FULLY_EXPENDED
-    )
-    @Retention(AnnotationRetention.SOURCE)
-    annotation class State
-
-    /**
-     * 监听状态变化的基础接口
-     */
-    interface OnStateChangeListener {
-        fun onStateChange(@State lastState: Int, @State nowState: Int)
-    }
-
-    abstract class OnScrollToThresholdListener : OnStateChangeListener {
-        abstract fun onScrollToThreshold()
-        override fun onStateChange(@State lastState: Int, @State nowState: Int) {
-            if (lastState != STATE_MIDDLE && nowState == STATE_MIDDLE) {
-                onScrollToThreshold()
-            }
-        }
-    }
-
-    abstract class OnScrollToStateListener(
-        @State private val startState: Int,
-        @State private val targetState: Int
-    ) : OnStateChangeListener {
-        abstract fun onScrollToStateListener()
-        override fun onStateChange(@State lastState: Int, @State nowState: Int) {
-            if (lastState == startState && nowState == targetState && nowState != lastState) {
-                onScrollToStateListener()
-            }
-        }
-    }
+) : ViewOffsetExpendBehavior<V>(mContext, attrs), AntiMisTouchEvent, StateHelper.Adapter {
+    override var stateHelper: StateHelper = StateHelper()
 
     open val interceptSize: Int = 200
-
     private var mScrollAnimation: SpringAnimation? = null
     private var scroller: OverScroller? = null
     private var velocityTracker: VelocityTracker? = null
     private var lastInsets: WindowInsetsCompat? = null
-    private var stateChangeListeners: MutableList<OnStateChangeListener> = ArrayList()
 
     private var isBeingDragged = false
     private var activePointerId = INVALID_POINTER
     private var lastMotionY = 0
     private var touchSlop = -1
-
-    @State
-    private var lastState: Int = STATE_EXPENDED
-
-    @State
-    var nowState: Int = STATE_EXPENDED
-        set(value) {
-            if (field == value) return
-            lastState = field
-            stateChangeListeners.forEach { it.onStateChange(lastState, value) }
-            field = value
-        }
 
     protected var parentWeakReference: WeakReference<CoordinatorLayout>? = null
     protected var childWeakReference: WeakReference<V>? = null
@@ -148,15 +92,9 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
             }
             val point = Point()
             windowManager.defaultDisplay.getSize(point)
-            return point.y - point.x
+            return point.y - (child?.measuredWidth ?: point.x)
         }
         return 0
-    }
-
-    fun addOnStateChangeListener(listener: OnStateChangeListener) {
-        if (!stateChangeListeners.contains(listener)) {
-            stateChangeListeners.add(listener)
-        }
     }
 
     override fun setTopAndBottomOffset(offset: Int): Boolean {
@@ -165,7 +103,7 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
             val dragOffset = (getMaxDragOffset() * getMaxDragThreshold()).toInt()
             val max = getFullyExpendOffset()
 
-            nowState = when (topAndBottomOffset) {
+            stateHelper.nowState = when (topAndBottomOffset) {
                 in min until (min + dragOffset) -> STATE_COLLAPSED
                 in (min + dragOffset) until -dragOffset -> STATE_NORMAL
                 in -dragOffset until dragOffset -> STATE_EXPENDED
@@ -227,7 +165,7 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
             activePointerId = INVALID_POINTER
             val x = ev.x.toInt()
             val y = ev.y.toInt()
-            isBeingDragged = canDragView(child) && parent.isPointInChildBounds(child, x, y)
+            isBeingDragged = parent.isPointInChildBounds(child, x, y)
             if (isBeingDragged) {
                 lastMotionY = y
                 activePointerId = ev.getPointerId(0)
@@ -307,28 +245,44 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
         return insets
     }
 
+    fun shouldSkipExpandedState(appbar: V?): Boolean {
+        return appbar?.let { !canDragView(appbar) } ?: false
+    }
+
     /**
      * 根据当前状态 [nowState] 和前一个状态 [lastState] 判断应该贴合的目标边offset
      * 并调用 [animateOffsetTo] 贴合至指定的边
      *
      */
     fun snapToChildIfNeeded() {
-        val offsetTo = when (nowState) {
+        if (shouldSkipExpandedState(childWeakReference?.get())) {
+            when (stateHelper.nowState) {
+                STATE_COLLAPSED -> getCollapsedOffset()
+                STATE_FULLY_EXPENDED -> getFullyExpendOffset()
+                else -> when (stateHelper.lastState) {
+                    STATE_FULLY_EXPENDED -> getCollapsedOffset()
+                    STATE_NORMAL, STATE_EXPENDED -> getFullyExpendOffset()
+                    else -> null
+                }
+            }?.let { animateOffsetTo(it) }
+            return
+        }
+
+        when (stateHelper.nowState) {
             STATE_EXPENDED -> 0
             STATE_COLLAPSED -> getCollapsedOffset()
             STATE_FULLY_EXPENDED -> getFullyExpendOffset()
             STATE_NORMAL -> calculateSnapOffset(
                 topAndBottomOffset, 0, getCollapsedOffset()
             )
-            STATE_MIDDLE -> when (lastState) {
+            STATE_MIDDLE -> when (stateHelper.lastState) {
                 STATE_FULLY_EXPENDED -> 0
                 STATE_NORMAL,
                 STATE_EXPENDED -> getFullyExpendOffset()
                 else -> null
             }
             else -> null
-        }
-        offsetTo?.let { animateOffsetTo(it) }
+        }?.let { animateOffsetTo(it) }
     }
 
     /**
@@ -365,6 +319,12 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
                 spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
                 spring.stiffness = SpringForce.STIFFNESS_LOW
             }
+        if (shouldSkipExpandedState(childWeakReference?.get())) {
+            mScrollAnimation!!.spring.stiffness = 150f
+        } else {
+            mScrollAnimation!!.spring.stiffness = SpringForce.STIFFNESS_LOW
+        }
+
         mScrollAnimation?.cancel()
         mScrollAnimation?.animateToFinalPosition(offset.toFloat())
     }
@@ -417,7 +377,15 @@ abstract class ExpendHeaderBehavior<V : AppBarLayout>(
             0, 0,                       // minX / maxX
             minOffset, maxOffset                   // minY / maxY
         )
-        when (nowState) {
+
+        if (shouldSkipExpandedState(childWeakReference?.get())) {
+            when (stateHelper.nowState) {
+                STATE_COLLAPSED, STATE_NORMAL -> animateOffsetTo(getCollapsedOffset())
+                STATE_EXPENDED, STATE_MIDDLE, STATE_FULLY_EXPENDED -> snapToChildIfNeeded()
+            }
+            return true
+        }
+        when (stateHelper.nowState) {
             STATE_COLLAPSED,
             STATE_NORMAL,
             STATE_EXPENDED -> {

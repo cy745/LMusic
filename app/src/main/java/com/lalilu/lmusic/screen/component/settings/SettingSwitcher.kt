@@ -34,21 +34,21 @@ fun SettingSwitcher(
     subTitle: String? = null
 ) {
     var value by state
+    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 
     SettingSwitcher(
         onContentStartClick = { value = !value },
         contentStart = {
             Text(
                 text = title,
+                color = textColor,
                 fontSize = 14.sp
             )
             if (subTitle != null) {
                 Text(
                     text = subTitle,
                     fontSize = 12.sp,
-                    color = contentColorFor(
-                        backgroundColor = MaterialTheme.colors.background
-                    ).copy(0.5f)
+                    color = textColor.copy(0.5f)
                 )
             }
         }
@@ -58,8 +58,7 @@ fun SettingSwitcher(
             onCheckedChange = { value = it },
             interactionSource = interaction,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
-                    .multiply(0.7f)
+                checkedThumbColor = textColor.multiply(0.7f)
             )
         )
     }

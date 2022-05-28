@@ -16,8 +16,8 @@ import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.ui.BlurImageView
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.ui.NewProgressBar
-import com.lalilu.ui.appbar.AppBarLayout
-import com.lalilu.ui.appbar.CollapsingToolbarLayout
+import com.lalilu.ui.appbar.AppbarLayout
+import com.lalilu.ui.appbar.CollapsingLayout
 
 @BindingAdapter("iconRec")
 fun setIcon(imageView: ImageView, string: String?) {
@@ -80,18 +80,18 @@ fun loadCover(imageView: AppCompatImageView, mediaItem: MediaItem?, samplingValu
 }
 
 @BindingAdapter("setSongTitle")
-fun setSongTitle(collapsingToolbarLayout: CollapsingToolbarLayout, mediaItem: MediaItem?) {
-    collapsingToolbarLayout.title =
+fun setSongTitle(collapsingLayout: CollapsingLayout, mediaItem: MediaItem?) {
+    collapsingLayout.title =
         if (mediaItem == null || android.text.TextUtils.isEmpty(mediaItem.mediaMetadata.title)) {
-            collapsingToolbarLayout.context.getString(R.string.default_slogan)
+            collapsingLayout.context.getString(R.string.default_slogan)
         } else {
             mediaItem.mediaMetadata.title.toString()
         }
 }
 
 @BindingAdapter("bgPalette")
-fun setAppbarBGColor(appBarLayout: AppBarLayout, palette: Palette?) {
-    setBgColorFromPalette(palette, appBarLayout::setBackgroundColor)
+fun setAppbarBGColor(appbarLayout: AppbarLayout, palette: Palette?) {
+    setBgColorFromPalette(palette, appbarLayout::setBackgroundColor)
 }
 
 @BindingAdapter("bgPalette")

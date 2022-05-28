@@ -35,7 +35,8 @@ dependencies {
     // 安卓工具类库
     implementation 'com.blankj:utilcodex:1.31.0'
     implementation "androidx.dynamicanimation:dynamicanimation-ktx:1.0.0-alpha03"
-    implementation 'com.google.android.material:material:1.5.0'
+    implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
+    implementation "androidx.appcompat:appcompat:1.4.1"
 
     implementation project(":common")
 }

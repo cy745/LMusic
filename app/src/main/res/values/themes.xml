@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="Theme.Music" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.Music" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
@@ -12,13 +12,11 @@
         <item name="android:colorAccent">@color/daynight_0</item>
         <item name="colorControlActivated">@color/daynight_0.6</item>
 
-        <item name="android:textColorPrimary">@color/daynight_0</item>
-        <item name="android:textColorSecondary">@color/daynight_0.4</item>
         <item name="android:colorControlNormal">@android:color/white</item>
 
-        <item name="snackbarButtonStyle">@style/MY_SnackBarButtonStyle</item>
-        <item name="snackbarTextViewStyle">@style/MY_SnackBarTextViewStyle</item>
-        <item name="snackbarStyle">@style/MY_SnackBarStyle</item>
+        <!--        <item name="snackbarButtonStyle">@style/MY_SnackBarButtonStyle</item>-->
+        <!--        <item name="snackbarTextViewStyle">@style/MY_SnackBarTextViewStyle</item>-->
+        <!--        <item name="snackbarStyle">@style/MY_SnackBarStyle</item>-->
         <item name="searchViewStyle">@style/MY_SearchView</item>
     </style>
 </resources>

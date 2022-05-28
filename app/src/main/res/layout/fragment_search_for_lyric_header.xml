@@ -9,9 +9,9 @@
         android:padding="20dp"
         android:paddingTop="40dp">
 
-        <com.google.android.material.button.MaterialButton
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/search_for_lyric_refresh_and_tips_button"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
@@ -58,9 +58,9 @@
             app:layout_constraintVertical_bias="0.0"
             tools:text="@tools:sample/lorem" />
 
-        <com.google.android.material.button.MaterialButton
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/search_for_lyric_cancel"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="#0DFE4141"
@@ -73,9 +73,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:rippleColor="@color/colorPrimary" />
 
-        <com.google.android.material.button.MaterialButton
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/search_for_lyric_confirm"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
