@@ -42,15 +42,15 @@ const val THRESHOLD_STATE_RETURN = 2
 @Retention(AnnotationRetention.SOURCE)
 annotation class ThresholdState
 
-interface OnSeekBarScrollListener {
+fun interface OnSeekBarScrollListener {
     fun onScroll(scrollValue: Float)
 }
 
-interface OnSeekBarCancelListener {
+fun interface OnSeekBarCancelListener {
     fun onCancel()
 }
 
-interface OnSeekBarSeekToListener {
+fun interface OnSeekBarSeekToListener {
     fun onSeekTo(value: Float)
 }
 
@@ -112,10 +112,6 @@ class NewSeekBar @JvmOverloads constructor(
     private var moved = false
     private var canceled = true
     private var touching = false
-    private var previousLeft = -1
-    private var previousRight = -1
-    private var nextLeft = -1
-    private var nextRight = -1
 
     var startValue: Float = nowValue
     var dataValue: Float = nowValue
@@ -164,22 +160,14 @@ class NewSeekBar @JvmOverloads constructor(
         return SystemUiUtil.isDarkMode(context)
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        previousLeft = left
-        previousRight = left + width * 1 / 3
-        nextLeft = left + width * 2 / 3
-        nextRight = left + width
-    }
-
     /**
      * 判断触摸事件所点击的部分位置
      */
     fun checkClickPart(e: MotionEvent): Int {
-        return when (e.rawX.toInt()) {
-            in previousLeft..previousRight -> CLICK_PART_LEFT
-            in previousRight..nextLeft -> CLICK_PART_MIDDLE
-            in nextLeft..nextRight -> CLICK_PART_RIGHT
+        return when (e.x.toInt()) {
+            in 0..(width * 1 / 3) -> CLICK_PART_LEFT
+            in (width * 1 / 3)..(width * 2 / 3) -> CLICK_PART_MIDDLE
+            in (width * 2 / 3)..width -> CLICK_PART_RIGHT
             else -> CLICK_PART_UNSPECIFIED
         }
     }
