@@ -95,5 +95,9 @@ object GlobalData : CoroutineScope {
             launch { currentMediaItem.emit(mediaItem) }
             updatePosition()
         }
+
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            updatePosition()
+        }
     }
 }
