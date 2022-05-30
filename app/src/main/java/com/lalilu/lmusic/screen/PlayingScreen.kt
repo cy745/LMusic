@@ -57,8 +57,8 @@ annotation class ClickHandleMode
 @ExperimentalMaterialApi
 fun PlayingScreen(
     scope: CoroutineScope = rememberCoroutineScope(),
-    scaffoldShow: suspend () -> Unit = {},
-    scaffoldHide: suspend () -> Unit = {},
+    onExpendBottomSheet: suspend () -> Unit = {},
+    onCollapseBottomSheet: suspend () -> Unit = {},
     onSongSelected: suspend (MediaItem) -> Unit = {},
     onSongMoveToNext: (MediaItem) -> Boolean = { false },
     onSongRemoved: (MediaItem) -> Boolean = { false },
@@ -170,12 +170,12 @@ fun PlayingScreen(
 
             maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {
                 override fun onScrollToThreshold() {
-                    scope.launch { scaffoldShow() }
+                    scope.launch { onExpendBottomSheet() }
                     haptic()
                 }
 
                 override fun onScrollRecover() {
-                    scope.launch { scaffoldHide() }
+                    scope.launch { onCollapseBottomSheet() }
                     haptic()
                 }
             })

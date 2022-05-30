@@ -20,9 +20,7 @@ object DeviceUtils {
             return windowManager.currentWindowMetrics.bounds
         }
 
-        val outMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getRealMetrics(outMetrics)
-        return Rect(0, 0, outMetrics.widthPixels, outMetrics.heightPixels)
+        return Rect().apply { windowManager.defaultDisplay.getRectSize(this) }
     }
 
     /**

@@ -21,23 +21,10 @@ import com.lalilu.lmusic.utils.WindowSize
 fun RowScope.NavigateLibrary(
     currentWindowSize: WindowSize,
     navController: NavHostController,
-    isForCompact: Boolean = false,
     onExpendModal: () -> Unit,
     onPopUp: () -> Unit,
     onClose: () -> Unit
 ) {
-    if (!isForCompact && currentWindowSize == WindowSize.Compact) {
-        return
-    }
-    if (isForCompact && currentWindowSize != WindowSize.Compact) {
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1f.dp)
-        )
-        return
-    }
-
     val configuration = LocalConfiguration.current
     val navBarHeightDp = WindowInsets.navigationBars
         .asPaddingValues()
@@ -76,9 +63,7 @@ fun RowScope.NavigateLibrary(
                     }
                 )
                 NavigatorFooter(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .navigationBarsPadding(),
+                    modifier = Modifier.align(Alignment.BottomCenter),
                     navController = navController,
                     popUp = onPopUp,
                     close = onClose
