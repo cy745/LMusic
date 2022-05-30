@@ -21,6 +21,7 @@ import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.screen.AgreementDialog
 import com.lalilu.lmusic.screen.MainScreen
+import com.lalilu.lmusic.screen.ShowScreen
 import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
@@ -70,7 +71,8 @@ class MainActivity : AppCompatActivity() {
         setContent {
             CompositionLocalProvider(LocalDataSaver provides dataSaverPreferences) {
                 LMusicTheme {
-                    MainScreen { moveTaskToBack(false) }
+                    MainScreen()
+                    ShowScreen()
                     AgreementDialog()
                 }
             }

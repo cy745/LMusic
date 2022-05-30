@@ -2,6 +2,7 @@ package com.lalilu.lmusic.screen
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
@@ -12,9 +13,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmusic.datasource.ALBUM_ID
 import com.lalilu.lmusic.datasource.ALBUM_PREFIX
@@ -24,18 +25,31 @@ import com.lalilu.lmusic.screen.detail.*
 import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
-fun NavHostController.clearBackStack() {
+
+/**
+ * 递归清除返回栈
+ */
+fun NavController.clearBackStack() {
     if (popBackStack()) clearBackStack()
 }
 
-fun NavController.navigateTo(destination: String) = navigate(destination) {
-    popUpTo(MainScreenData.Library.name) {
-        inclusive = destination == MainScreenData.Library.name
+/**
+ * @param from  所设起点导航位置
+ * @param to    目标导航位置
+ *
+ * 指定导航起点位置和目标位置
+ */
+fun NavController.navigate(
+    to: String,
+    from: String = MainScreenData.Library.name,
+    clearAllBefore: Boolean = false,
+    singleTop: Boolean = true
+) {
+    if (clearAllBefore) clearBackStack()
+    navigate(to) {
+        launchSingleTop = singleTop
+        popUpTo(from) { inclusive = from == to }
     }
-}
-
-fun NavController.navigateSingle(destination: String) = navigate(destination) {
-    launchSingleTop = true
 }
 
 @ExperimentalAnimationApi
@@ -51,10 +65,11 @@ fun LMusicNavGraph(
 ) {
     val mediaSource = mainViewModel.mediaSource
 
-    NavHost(
+    AnimatedNavHost(
         navController = navController,
         startDestination = MainScreenData.Library.name,
-        modifier = modifier
+        modifier = modifier,
+        exitTransition = { ExitTransition.None }
     ) {
         composable(
             route = MainScreenData.Library.name

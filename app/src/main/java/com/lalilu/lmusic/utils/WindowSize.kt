@@ -16,10 +16,8 @@
 
 package com.lalilu.lmusic.utils
 
-import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -37,36 +35,48 @@ import com.lalilu.common.DeviceUtils
  * More info: https://material.io/archive/guidelines/layout/responsive-ui.html
  */
 enum class WindowSize { Compact, Medium, Expanded }
+enum class DeviceType { Phone, Pad }
 
-/**
- * Remembers the [WindowSize] class for the window corresponding to the current window metrics.
- */
-@Composable
-fun rememberWindowSizeClass(): WindowSize {
-    val windowSize = rememberWindowSize()
-    return getWindowSizeClass(windowSize)
-}
-
-/**
- * Remembers the [Size] in pixels of the window corresponding to the current window metrics.
- */
-@Composable
-private fun rememberWindowSize(): DpSize {
-    remember(LocalConfiguration.current) { 0 }
-    return LocalDensity.current.run {
-        DeviceUtils.getMetricsRect(LocalContext.current)
-            .toComposeRect().size
-            .toDpSize()
+data class WindowSizeClass(
+    var windowSize: WindowSize,
+    var deviceType: DeviceType
+) {
+    companion object {
+        @Volatile
+        var instance: WindowSizeClass? = null
+            get() = field ?: synchronized(WindowSizeClass::class) {
+                field ?: WindowSizeClass(
+                    windowSize = WindowSize.Compact,
+                    deviceType = DeviceType.Phone
+                ).also { field = it }
+            }
     }
 }
 
-/**
- * Partitions a [DpSize] into a enumerated [WindowSize] class.
- */
-@VisibleForTesting
-fun getWindowSizeClass(windowDpSize: DpSize): WindowSize = when {
+
+@Composable
+fun rememberWindowSizeClass(): WindowSizeClass {
+    remember(LocalConfiguration.current) { 0 }
+    val dpSize = LocalDensity.current.run {
+        DeviceUtils.getMetricsRect(LocalContext.current)
+            .toComposeRect().size.toDpSize()
+    }
+    return WindowSizeClass(getWindowSize(dpSize), getDeviceType(dpSize)).also {
+        if (WindowSizeClass.instance?.windowSize != it.windowSize || WindowSizeClass.instance?.deviceType != it.deviceType) {
+            WindowSizeClass.instance = it
+        }
+    }
+}
+
+fun getWindowSize(windowDpSize: DpSize): WindowSize = when {
     windowDpSize.width < 0.dp -> throw IllegalArgumentException("Dp value cannot be negative")
     windowDpSize.width < 600.dp -> WindowSize.Compact
     windowDpSize.width < 840.dp -> WindowSize.Medium
     else -> WindowSize.Expanded
+}
+
+fun getDeviceType(windowDpSize: DpSize): DeviceType = when {
+    windowDpSize.width < 0.dp -> throw IllegalArgumentException("Dp value cannot be negative")
+    minOf(windowDpSize.width, windowDpSize.height) < 600.dp -> DeviceType.Phone
+    else -> DeviceType.Pad
 }

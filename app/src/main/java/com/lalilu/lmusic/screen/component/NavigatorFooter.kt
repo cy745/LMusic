@@ -38,6 +38,7 @@ fun NavigatorFooter(
         modifier = modifier
             .clickable(enabled = false) {}
             .background(color = MaterialTheme.colors.background.copy(alpha = 0.9f))
+            .navigationBarsPadding()
             .height(52.dp)
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
