@@ -47,5 +47,6 @@ fun MediaItem.partCopy(): MediaItem {
         .setMediaMetadata(this.mediaMetadata)
         .setMimeType(this.localConfiguration?.mimeType)
         .setMediaId(this.mediaId)
+        .setTag(System.currentTimeMillis())
         .build()
 }
