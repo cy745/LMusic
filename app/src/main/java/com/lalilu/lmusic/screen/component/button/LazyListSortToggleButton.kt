@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.component
+package com.lalilu.lmusic.screen.component.button
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image

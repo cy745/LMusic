@@ -1,13 +1,10 @@
 package com.lalilu.lmusic.screen.detail
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +23,8 @@ import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
+import com.lalilu.lmusic.screen.component.button.TextWithIconButton
+import com.lalilu.lmusic.screen.component.card.NetworkDataCard
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
@@ -48,9 +47,10 @@ fun SongDetailScreen(
     SongDetailScreen(
         title = title,
         subTitle = subTitle,
+        mediaId = mediaItem.mediaId,
         imagePainter = imagePainter,
-        onSearchForLyric = {
-            navigateTo("${MainScreenData.SongsSearchForLyric.name}/${mediaItem.mediaId}")
+        onMatchNetworkData = {
+            navigateTo("${MainScreenData.SongsMatchNetworkData.name}/${mediaItem.mediaId}")
         },
         onAddSongToPlaylist = {
             navigateTo("${MainScreenData.SongsAddToPlaylist.name}/${mediaItem.mediaId}")
@@ -66,10 +66,11 @@ fun SongDetailScreen(
 fun SongDetailScreen(
     title: String,
     subTitle: String,
+    mediaId: String,
     imagePainter: ImagePainter,
     onSetSongToNext: () -> Unit = {},
     onAddSongToPlaylist: () -> Unit = {},
-    onSearchForLyric: () -> Unit = {}
+    onMatchNetworkData: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -104,49 +105,30 @@ fun SongDetailScreen(
                 }
             }
         }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
-            modifier = Modifier.padding(horizontal = 20.dp)
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            SongDetailActionButton(
-                textRes = R.string.button_set_song_to_next,
-                onClick = onSetSongToNext
-            )
-            SongDetailActionButton(
-                textRes = R.string.button_add_song_to_playlist,
-                onClick = onAddSongToPlaylist
-            )
-            SongDetailActionButton(
-                textRes = R.string.button_search_for_lyric,
-                onClick = onSearchForLyric
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                TextWithIconButton(
+                    textRes = R.string.button_set_song_to_next,
+                    color = Color(0xFF006E7C),
+                    onClick = onSetSongToNext
+                )
+                TextWithIconButton(
+                    textRes = R.string.button_add_song_to_playlist,
+                    color = Color(0xFF006E7C),
+                    onClick = onAddSongToPlaylist
+                )
+            }
+            NetworkDataCard(
+                onClick = onMatchNetworkData,
+                mediaId = mediaId
             )
         }
-    }
-}
-
-@Composable
-fun SongDetailActionButton(
-    @StringRes textRes: Int,
-    onClick: () -> Unit = {},
-) = SongDetailActionButton(
-    text = stringResource(id = textRes),
-    onClick = onClick
-)
-
-@Composable
-fun SongDetailActionButton(
-    text: String,
-    onClick: () -> Unit = {}
-) {
-    TextButton(
-        onClick = onClick,
-        colors = ButtonDefaults.textButtonColors(
-            backgroundColor = Color(0x25006E7C),
-            contentColor = Color(0xFF006E7C)
-        )
-    ) {
-        Text(text = text)
     }
 }
 

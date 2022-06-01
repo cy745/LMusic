@@ -87,8 +87,7 @@ class DataBaseLyricSource @Inject constructor(
 ) : LyricSourceFactory.LyricSource {
     override suspend fun loadLyric(mediaItem: MediaItem): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
-            val pair = dataBase.lyricDao().getById(mediaItem.mediaId)
-                ?: return@withContext null
-            Pair(pair.lyric, pair.tlyric)
+            val pair = dataBase.networkDataDao().getById(mediaItem.mediaId)
+            pair?.lyric?.let { Pair(it, pair.tlyric) }
         }
 }

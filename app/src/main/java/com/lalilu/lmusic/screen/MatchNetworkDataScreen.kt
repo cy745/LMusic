@@ -28,16 +28,16 @@ import com.blankj.utilcode.util.TimeUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
 import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
-import com.lalilu.lmusic.viewmodel.SearchForLyricViewModel
+import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 @Composable
-fun SearchForLyricScreen(
+fun MatchNetworkDataScreen(
     mediaItem: MediaItem,
     navigateUp: () -> Unit = {},
     expendScaffold: () -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp,
     context: Context = LocalContext.current,
-    viewModel: SearchForLyricViewModel = hiltViewModel()
+    viewModel: NetworkDataViewModel = hiltViewModel()
 ) {
     val keyword = "${mediaItem.mediaMetadata.title} ${mediaItem.mediaMetadata.artist}"
     val lyrics = remember { mutableStateListOf<SongSearchSong>() }
@@ -51,9 +51,10 @@ fun SearchForLyricScreen(
                 val activity = context.getActivity()!!
                 searchForLyricCancel.setOnClickListener { navigateUp() }
                 searchForLyricConfirm.setOnClickListener {
-                    viewModel.saveSongLyric(
-                        songId = lyrics[selectedIndex].id,
+                    viewModel.saveMatchNetworkData(
                         mediaId = mediaItem.mediaId,
+                        songId = lyrics[selectedIndex].id,
+                        title = lyrics[selectedIndex].name,
                         toastTips = ToastUtils::showShort,
                         success = navigateUp
                     )

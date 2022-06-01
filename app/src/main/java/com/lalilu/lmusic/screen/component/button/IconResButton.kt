@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.component
+package com.lalilu.lmusic.screen.component.button
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.FloatRange
