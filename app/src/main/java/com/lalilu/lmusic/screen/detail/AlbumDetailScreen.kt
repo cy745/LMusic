@@ -30,7 +30,7 @@ import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
-import com.lalilu.lmusic.screen.component.SongCard
+import com.lalilu.lmusic.screen.component.card.SongCard
 import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.component
+package com.lalilu.lmusic.screen.component.card
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

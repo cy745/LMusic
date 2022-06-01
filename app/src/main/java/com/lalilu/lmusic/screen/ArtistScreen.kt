@@ -13,10 +13,10 @@ import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.bean.sort
-import com.lalilu.lmusic.screen.component.ArtistCard
-import com.lalilu.lmusic.screen.component.LazyListSortToggleButton
+import com.lalilu.lmusic.screen.component.card.ArtistCard
+import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
-import com.lalilu.lmusic.screen.component.SortToggleButton
+import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.viewmodel.ArtistViewModel
 
 @Composable

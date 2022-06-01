@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.component
+package com.lalilu.lmusic.screen.component.card
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image

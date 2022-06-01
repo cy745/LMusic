@@ -2,7 +2,7 @@ package com.lalilu.lmusic.apis.bean
 
 
 interface SearchForLyric {
-    suspend fun searchForLyric(id: Long): NetworkLyric?
+    suspend fun searchForLyric(id: String): NetworkLyric?
 }
 
 interface NetworkLyric {

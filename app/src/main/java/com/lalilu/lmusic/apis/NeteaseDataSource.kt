@@ -24,6 +24,6 @@ interface NeteaseDataSource : SearchForLyric {
      */
     @GET("lyric")
     override suspend fun searchForLyric(
-        @Query("id") id: Long
+        @Query("id") id: String
     ): LyricSearchResponse?
 }

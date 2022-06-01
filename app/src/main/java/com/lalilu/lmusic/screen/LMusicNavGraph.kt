@@ -219,14 +219,14 @@ fun LMusicNavGraph(
             }
         }
         composable(
-            route = "${MainScreenData.SongsSearchForLyric.name}/{mediaId}",
+            route = "${MainScreenData.SongsMatchNetworkData.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
 
             mediaId?.let { id ->
                 mediaSource.getItemById(ITEM_PREFIX + id)?.also {
-                    SearchForLyricScreen(
+                    MatchNetworkDataScreen(
                         mediaItem = it,
                         navigateUp = navController::navigateUp,
                         expendScaffold = onExpendModal,
@@ -312,10 +312,10 @@ enum class MainScreenData(
         title = R.string.destination_label_add_song_to_playlist,
         subTitle = R.string.destination_label_add_song_to_playlist
     ),
-    SongsSearchForLyric(
-        icon = R.drawable.ic_lrc_fill,
-        title = R.string.destination_label_search_for_lyric,
-        subTitle = R.string.destination_label_search_for_lyric
+    SongsMatchNetworkData(
+        icon = R.drawable.ic_music_line,
+        title = R.string.destination_label_match_network_data,
+        subTitle = R.string.destination_label_match_network_data
     );
 
     companion object {

@@ -32,7 +32,7 @@
     <string name="destination_label_playlist_detail">歌单详情</string>
     <string name="destination_label_song_detail">歌曲详情</string>
     <string name="destination_label_add_song_to_playlist">添加至歌单</string>
-    <string name="destination_label_search_for_lyric">搜索歌词</string>
+    <string name="destination_label_match_network_data">网络匹配歌曲</string>
     <string name="destination_label_opensource_licence">开放源代码许可</string>
     <string name="destination_label_genres">流派</string>
 
@@ -50,13 +50,13 @@
     <string name="destination_subtitle_genres">各种风格</string>
 
 
-    <string name="button_search_for_lyric_searching">搜索中…</string>
-    <string name="button_search_for_lyric_no_result">无结果</string>
+    <string name="button_match_network_data_searching">搜索中…</string>
+    <string name="button_match_network_data_no_result">无结果</string>
 
     <string name="button_create_playlist">CREATE</string>
     <string name="button_copy_current_playlist">COPY</string>
 
     <string name="button_add_song_to_playlist">添加至歌单</string>
     <string name="button_set_song_to_next">下一首播放</string>
-    <string name="button_search_for_lyric">搜索网络歌词</string>
+    <string name="button_match_network_data">网络匹配歌曲</string>
 </resources>

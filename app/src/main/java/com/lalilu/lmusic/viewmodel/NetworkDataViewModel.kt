@@ -9,7 +9,8 @@ import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
 import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
 import com.lalilu.lmusic.datasource.MDataBase
-import com.lalilu.lmusic.datasource.entity.MLyric
+import com.lalilu.lmusic.datasource.entity.MNetworkData
+import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
 import com.lalilu.lmusic.service.GlobalData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -18,11 +19,14 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
-class SearchForLyricViewModel @Inject constructor(
+class NetworkDataViewModel @Inject constructor(
     private val neteaseDataSource: NeteaseDataSource,
     private val dataBase: MDataBase
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
+
+    fun getNetworkDataFlowByMediaId(mediaId: String) =
+        dataBase.networkDataDao().getFlowById(mediaId)
 
     fun getSongResult(
         binding: FragmentSearchForLyricHeaderBinding,
@@ -32,7 +36,7 @@ class SearchForLyricViewModel @Inject constructor(
         withContext(Dispatchers.Main) {
             items.clear()
             binding.searchForLyricRefreshAndTipsButton.text =
-                binding.root.context.getString(R.string.button_search_for_lyric_searching)
+                binding.root.context.getString(R.string.button_match_network_data_searching)
             binding.searchForLyricRefreshAndTipsButton.visibility = View.VISIBLE
         }
         flow {
@@ -43,7 +47,7 @@ class SearchForLyricViewModel @Inject constructor(
             withContext(Dispatchers.Main) {
                 if (it.isEmpty()) {
                     binding.searchForLyricRefreshAndTipsButton.text =
-                        binding.root.context.getString(R.string.button_search_for_lyric_no_result)
+                        binding.root.context.getString(R.string.button_match_network_data_no_result)
                 } else {
                     binding.searchForLyricRefreshAndTipsButton.text = ""
                     binding.searchForLyricRefreshAndTipsButton.visibility = View.GONE
@@ -59,8 +63,37 @@ class SearchForLyricViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun saveSongLyric(
+    fun saveMatchNetworkData(
+        mediaId: String,
         songId: Long?,
+        title: String?,
+        toastTips: (String) -> Unit = {},
+        success: () -> Unit = {}
+    ) = launch(Dispatchers.IO) {
+        if (songId == null || title == null) {
+            toastTips("未选择匹配歌曲")
+            return@launch
+        }
+        try {
+            dataBase.networkDataDao().save(
+                MNetworkData(
+                    mediaId = mediaId,
+                    songId = songId.toString(),
+                    title = title
+                )
+            )
+            toastTips("保存匹配信息成功")
+            withContext(Dispatchers.Main) {
+                success()
+            }
+        } catch (e: Exception) {
+            toastTips("保存匹配信息失败")
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun saveLyricIntoNetworkData(
+        songId: String?,
         mediaId: String,
         toastTips: (String) -> Unit = {},
         success: () -> Unit = {}
@@ -80,8 +113,8 @@ class SearchForLyricViewModel @Inject constructor(
             Pair(lyric!!, it.translateLyric)
         }.onEach {
             it ?: return@onEach
-            dataBase.lyricDao().save(
-                MLyric(
+            dataBase.networkDataDao().updateLyric(
+                MNetworkDataUpdateForLyric(
                     mediaId = mediaId,
                     lyric = it.first,
                     tlyric = it.second

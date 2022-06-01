@@ -21,10 +21,10 @@ import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.bean.sort
-import com.lalilu.lmusic.screen.component.LazyListSortToggleButton
+import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
-import com.lalilu.lmusic.screen.component.SongCard
-import com.lalilu.lmusic.screen.component.SortToggleButton
+import com.lalilu.lmusic.screen.component.card.SongCard
+import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
