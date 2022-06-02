@@ -60,7 +60,14 @@ fun NetworkDataCard(
                         text = "封面",
                         shape = RoundedCornerShape(20.dp),
                         iconPainter = painterResource(id = R.drawable.ic_download_cloud_2_line),
-                        showIcon = networkData.value!!.cover == null
+                        showIcon = networkData.value!!.cover == null,
+                        onClick = {
+                            networkDataViewModel.saveCoverUrlIntoNetworkData(
+                                mediaId = mediaId,
+                                songId = networkData.value!!.songId,
+                                toastTips = ToastUtils::showShort
+                            )
+                        }
                     )
                 }
             }

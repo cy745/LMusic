@@ -29,3 +29,10 @@ data class MNetworkDataUpdateForLyric(
     @ColumnInfo(name = "network_data_tlyric")
     val tlyric: String? = null
 )
+
+data class MNetworkDataUpdateForCoverUrl(
+    @ColumnInfo(name = "network_data_media_id")
+    val mediaId: String,
+    @ColumnInfo(name = "network_data_cover")
+    val cover: String
+)
