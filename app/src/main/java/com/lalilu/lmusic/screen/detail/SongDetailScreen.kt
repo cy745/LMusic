@@ -18,14 +18,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
-import coil.compose.rememberImagePainter
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
-import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
+import com.lalilu.lmusic.utils.rememberCoverWithFlow
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
@@ -35,10 +34,9 @@ fun SongDetailScreen(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val mediaBrowser = mainViewModel.mediaBrowser
-    val imagePainter = rememberImagePainter(
-        data = mediaItem.getCoverFromMediaItem()
-    ) {
+    val imagePainter = rememberCoverWithFlow(mediaItem = mediaItem) {
         size(SizeUtils.dp2px(128f))
+        crossfade(true)
     }
     val title = mediaItem.mediaMetadata.title?.toString()
         ?: stringResource(id = MainScreenData.SongsDetail.title)

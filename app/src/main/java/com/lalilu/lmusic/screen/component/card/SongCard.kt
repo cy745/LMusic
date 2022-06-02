@@ -28,7 +28,7 @@ import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
+import com.lalilu.lmusic.utils.rememberCoverForOnce
 
 @Composable
 @OptIn(
@@ -42,9 +42,7 @@ fun SongCard(
     onSongSelected: (index: Int) -> Unit = { },
     onSongShowDetail: (mediaId: String) -> Unit = { }
 ) {
-    val imagePainter = rememberImagePainter(
-        data = mediaItem.getCoverFromMediaItem()
-    ) {
+    val imagePainter = rememberCoverForOnce(mediaItem = mediaItem) {
         crossfade(true)
         size(SizeUtils.dp2px(64f))
     }

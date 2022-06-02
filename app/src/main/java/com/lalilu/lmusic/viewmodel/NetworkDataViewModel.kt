@@ -29,6 +29,11 @@ class NetworkDataViewModel @Inject constructor(
     fun getNetworkDataFlowByMediaId(mediaId: String) =
         dataBase.networkDataDao().getFlowById(mediaId)
 
+    suspend fun getNetworkDataByMediaId(mediaId: String): MNetworkData? =
+        withContext(Dispatchers.IO) {
+            return@withContext dataBase.networkDataDao().getById(mediaId)
+        }
+
     fun getSongResult(
         binding: FragmentSearchForLyricHeaderBinding,
         keyword: String,
