@@ -2,6 +2,7 @@ package com.lalilu.lmusic.datasource.dao
 
 import androidx.room.*
 import com.lalilu.lmusic.datasource.entity.MNetworkData
+import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
 import kotlinx.coroutines.flow.Flow
 
@@ -15,6 +16,9 @@ interface MNetworkDataDao {
 
     @Update(entity = MNetworkData::class)
     fun updateLyric(vararg mNetworkDataUpdateForLyric: MNetworkDataUpdateForLyric)
+
+    @Update(entity = MNetworkData::class)
+    fun updateCoverUrl(vararg mNetworkDataUpdateForCoverUrl: MNetworkDataUpdateForCoverUrl)
 
     @Query("SELECT * FROM network_data WHERE network_data_media_id = :id;")
     fun getById(id: String): MNetworkData?

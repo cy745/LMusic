@@ -10,6 +10,7 @@ import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MNetworkData
+import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
 import com.lalilu.lmusic.service.GlobalData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -88,6 +89,32 @@ class NetworkDataViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             toastTips("保存匹配信息失败")
+        }
+    }
+
+    fun saveCoverUrlIntoNetworkData(
+        songId: String?,
+        mediaId: String,
+        toastTips: (String) -> Unit = {}
+    ) = launch(Dispatchers.IO) {
+        if (songId == null) {
+            toastTips("未选择匹配歌曲")
+            return@launch
+        }
+        try {
+            neteaseDataSource.searchForDetail(songId)?.let {
+                dataBase.networkDataDao().updateCoverUrl(
+                    MNetworkDataUpdateForCoverUrl(
+                        mediaId = mediaId,
+                        cover = it.songs[0].al.picUrl
+                    )
+                )
+                GlobalData.updateCurrentMediaItem(mediaId)
+                toastTips("保存封面地址成功")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            toastTips("保存封面地址失败")
         }
     }
 
