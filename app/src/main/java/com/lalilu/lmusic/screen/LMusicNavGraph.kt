@@ -146,6 +146,7 @@ fun LMusicNavGraph(
                 mediaSource.getItemById(ITEM_PREFIX + id)?.also {
                     SongDetailScreen(
                         mediaItem = it,
+                        currentWindowSize = currentWindowSize,
                         navigateTo = navController::navigate
                     )
                 }

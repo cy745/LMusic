@@ -27,7 +27,8 @@ import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.adapter.PlayingAdapter
+import com.lalilu.lmusic.adapter.ComposeAdapter
+import com.lalilu.lmusic.adapter.setDiffNewData
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.service.GlobalData
@@ -100,19 +101,17 @@ fun PlayingScreen(
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
 
-            adapter = PlayingAdapter().apply {
-                onItemClick = { item, _ -> scope.launch { onSongSelected(item) } }
-                onItemLongClick = { item, _ -> scope.launch { onSongShowDetail(item) } }
-                onItemDragOrSwipedListener = object : PlayingAdapter.OnItemDragOrSwipedListener {
-                    override fun onDelete(mediaItem: MediaItem): Boolean {
-                        return onSongRemoved(mediaItem)
-                    }
-
-                    override fun onAddToNext(mediaItem: MediaItem): Boolean {
-                        return onSongMoveToNext(mediaItem)
+            adapter = ComposeAdapter(
+                onSwipeToLeft = onSongMoveToNext,
+                onSwipeToRight = onSongRemoved,
+                onItemClick = { scope.launch { onSongSelected(it) } },
+                onItemLongClick = {
+                    scope.launch {
+                        onSongShowDetail(it)
+                        haptic()
                     }
                 }
-            }
+            )
 
             behavior.addOnStateChangeListener(object :
                 StateHelper.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {

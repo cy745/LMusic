@@ -2,6 +2,8 @@ package com.lalilu.lmusic.screen.detail
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -24,12 +26,14 @@ import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
+import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.utils.rememberCoverWithFlow
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 fun SongDetailScreen(
     mediaItem: MediaItem,
+    currentWindowSize: WindowSize,
     navigateTo: (destination: String) -> Unit = {},
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
@@ -47,6 +51,7 @@ fun SongDetailScreen(
         subTitle = subTitle,
         mediaId = mediaItem.mediaId,
         imagePainter = imagePainter,
+        currentWindowSize = currentWindowSize,
         onMatchNetworkData = {
             navigateTo("${MainScreenData.SongsMatchNetworkData.name}/${mediaItem.mediaId}")
         },
@@ -65,6 +70,7 @@ fun SongDetailScreen(
     title: String,
     subTitle: String,
     mediaId: String,
+    currentWindowSize: WindowSize,
     imagePainter: ImagePainter,
     onSetSongToNext: () -> Unit = {},
     onAddSongToPlaylist: () -> Unit = {},
@@ -103,29 +109,40 @@ fun SongDetailScreen(
                 }
             }
         }
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+
+        LazyVerticalGrid(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            columns = GridCells.Fixed(
+                if (currentWindowSize != WindowSize.Compact) 2 else 1
+            ),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                TextWithIconButton(
-                    textRes = R.string.button_set_song_to_next,
-                    color = Color(0xFF006E7C),
-                    onClick = onSetSongToNext
-                )
-                TextWithIconButton(
-                    textRes = R.string.button_add_song_to_playlist,
-                    color = Color(0xFF006E7C),
-                    onClick = onAddSongToPlaylist
+            item {
+                NetworkDataCard(
+                    onClick = onMatchNetworkData,
+                    mediaId = mediaId
                 )
             }
-            NetworkDataCard(
-                onClick = onMatchNetworkData,
-                mediaId = mediaId
-            )
+            item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    TextWithIconButton(
+                        textRes = R.string.button_set_song_to_next,
+                        color = Color(0xFF006E7C),
+                        onClick = onSetSongToNext
+                    )
+                    TextWithIconButton(
+                        textRes = R.string.button_add_song_to_playlist,
+                        color = Color(0xFF006E7C),
+                        onClick = onAddSongToPlaylist
+                    )
+                }
+            }
         }
     }
 }

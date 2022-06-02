@@ -11,7 +11,7 @@
 
         <variable
             name="adapter"
-            type="com.lalilu.lmusic.adapter.PlayingAdapter" />
+            type="com.lalilu.lmusic.adapter.ComposeAdapter" />
 
         <variable
             name="song"
