@@ -33,6 +33,7 @@ import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.viewmodel.MainViewModel
+import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper
@@ -68,7 +69,8 @@ fun PlayingScreen(
     onPlayPrevious: suspend () -> Unit = {},
     onPlayPause: suspend () -> Unit = {},
     onSeekToPosition: suspend (Float) -> Unit = {},
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    networkDataViewModel: NetworkDataViewModel = hiltViewModel()
 ) {
     fun playHandle(@ClickPart clickPart: Int) {
         when (clickPart) {
@@ -101,6 +103,7 @@ fun PlayingScreen(
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
 
+            vm = networkDataViewModel
             adapter = ComposeAdapter(
                 onSwipeToLeft = onSongMoveToNext,
                 onSwipeToRight = onSongRemoved,

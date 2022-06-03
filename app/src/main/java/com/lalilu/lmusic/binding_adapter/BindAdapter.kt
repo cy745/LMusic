@@ -15,9 +15,13 @@ import com.lalilu.common.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.ui.BlurImageView
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
+import com.lalilu.lmusic.utils.requireCoverImageData
+import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.ui.NewProgressBar
 import com.lalilu.ui.appbar.AppbarLayout
 import com.lalilu.ui.appbar.CollapsingLayout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @BindingAdapter("iconRec")
 fun setIcon(imageView: ImageView, string: String?) {
@@ -46,23 +50,26 @@ fun setLyricSource(imageView: ImageView, mediaItem: MediaItem?) {
     }
 }
 
-@BindingAdapter(value = ["loadCover", "samplingValue"], requireAll = false)
-fun loadCover(imageView: BlurImageView, mediaItem: MediaItem?, samplingValue: Int = -1) {
+@BindingAdapter(value = ["loadCover", "viewModel"], requireAll = true)
+fun loadCover(imageView: BlurImageView, mediaItem: MediaItem?, viewModel: NetworkDataViewModel) {
     mediaItem ?: run {
         imageView.clearImage()
         return
     }
-    val samplingTo = if (samplingValue <= 0)
-        imageView.width else samplingValue
+    val samplingTo = imageView.width
 
-    imageView.loadAny(mediaItem.getCoverFromMediaItem()) {
-        if (samplingTo > 0) size(samplingTo)
-        allowHardware(false)
-        target(onSuccess = {
-            imageView.loadImageFromDrawable(it)
-        }, onError = {
-            imageView.clearImage()
-        }).build()
+    imageView.launch(Dispatchers.IO) {
+        requireCoverImageData(mediaItem, viewModel) { data ->
+            imageView.loadAny(data) {
+                if (samplingTo > 0) size(samplingTo)
+                allowHardware(false)
+                target(onSuccess = {
+                    imageView.loadImageFromDrawable(it)
+                }, onError = {
+                    imageView.clearImage()
+                }).build()
+            }
+        }
     }
 }
 

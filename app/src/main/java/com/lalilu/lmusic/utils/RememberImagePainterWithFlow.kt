@@ -6,9 +6,11 @@ import androidx.media3.common.MediaItem
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
-import com.lalilu.lmusic.datasource.extensions.toUri
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.withContext
 
 /**
  * 监听Flow进行更新
@@ -20,9 +22,8 @@ fun rememberCoverWithFlow(
     builder: ImageRequest.Builder.() -> Unit = {}
 ): ImagePainter {
     val data: Any = networkDataViewModel.getNetworkDataFlowByMediaId(mediaItem.mediaId)
-        .collectAsState(initial = null).value?.cover?.toUri()?.takeIf {
-            it.scheme == "http" || it.scheme == "https"
-        } ?: mediaItem.getCoverFromMediaItem()
+        .collectAsState(initial = null).value?.requireCoverUri()
+        ?: mediaItem.getCoverFromMediaItem()
 
     return rememberImagePainter(
         data = data,
@@ -43,13 +44,25 @@ fun rememberCoverForOnce(
 
     LaunchedEffect(mediaItem) {
         data = networkDataViewModel.getNetworkDataByMediaId(mediaItem.mediaId)
-            ?.cover?.toUri()?.takeIf {
-                it.scheme == "http" || it.scheme == "https"
-            } ?: mediaItem.getCoverFromMediaItem()
+            ?.requireCoverUri() ?: mediaItem.getCoverFromMediaItem()
     }
 
     return rememberImagePainter(
         data = data,
         builder = builder
     )
+}
+
+suspend fun requireCoverImageData(
+    mediaItem: MediaItem,
+    viewModel: NetworkDataViewModel,
+    callback: suspend (data: Any?) -> Unit
+) = withContext(Dispatchers.IO) {
+    viewModel.getNetworkDataFlowByMediaId(mediaItem.mediaId)
+        .collectLatest { networkData ->
+            callback(
+                networkData?.requireCoverUri()
+                    ?: mediaItem.getCoverFromMediaItem()
+            )
+        }
 }
