@@ -28,6 +28,7 @@ class NetworkDataViewModel @Inject constructor(
 
     fun getNetworkDataFlowByMediaId(mediaId: String) =
         dataBase.networkDataDao().getFlowById(mediaId)
+            .distinctUntilChanged()
 
     suspend fun getNetworkDataByMediaId(mediaId: String): MNetworkData? =
         withContext(Dispatchers.IO) {
@@ -114,7 +115,6 @@ class NetworkDataViewModel @Inject constructor(
                         cover = it.songs[0].al.picUrl
                     )
                 )
-                GlobalData.updateCurrentMediaItem(mediaId)
                 toastTips("保存封面地址成功")
             }
         } catch (e: Exception) {

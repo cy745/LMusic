@@ -1,5 +1,7 @@
 package com.lalilu.lmusic.datasource.entity
 
+import android.net.Uri
+import androidx.core.net.toUri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -19,7 +21,11 @@ data class MNetworkData(
     var lyric: String? = null,
     @ColumnInfo(name = "network_data_tlyric")
     var tlyric: String? = null
-)
+) {
+    fun requireCoverUri(): Uri? {
+        return cover?.toUri()?.takeIf { it.scheme == "http" || it.scheme == "https" }
+    }
+}
 
 data class MNetworkDataUpdateForLyric(
     @ColumnInfo(name = "network_data_media_id")
