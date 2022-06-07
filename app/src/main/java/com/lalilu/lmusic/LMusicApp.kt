@@ -5,6 +5,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.lalilu.R
 import com.lalilu.lmusic.manager.KanjiToHiraTransformer
+import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.fetcher.EmbeddedCoverFetcher
 import com.lalilu.lmusic.utils.fetcher.EmbeddedLyricFetchers
@@ -33,5 +34,6 @@ class LMusicApp : Application(), ImageLoaderFactory {
         SpiderMan.setTheme(R.style.SpiderManTheme_Dark)
         SpManager.init(this)
         KanjiToHiraTransformer.init(this)
+        LyricManager.lyricSourceFactory = lyricFetchers.lyricSourceFactory
     }
 }

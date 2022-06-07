@@ -9,69 +9,45 @@ import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
-import javax.inject.Inject
-import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapLatest
 import kotlin.coroutines.CoroutineContext
 
 /**
  * 专门负责歌词解析处理的全局单例
  */
-@Singleton
-class LyricManager @Inject constructor(
-    private val pusher: LyricPusher,
-    private val lyricSourceFactory: LyricSourceFactory
-) : Player.Listener, CoroutineScope {
+@OptIn(ExperimentalCoroutinesApi::class)
+object LyricManager : Player.Listener, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-    private var lastLyric: String? = ""
-    private var lastIndex: Int = -1
+    var lyricSourceFactory: LyricSourceFactory? = null
 
-    interface LyricPusher {
-        fun clearLyric()
-        fun pushLyric(sentence: String?)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val _songLyric: Flow<Pair<String, String?>?> =
+    private val currentLyric: Flow<Pair<String, String?>?> =
         GlobalData.currentMediaItem.mapLatest {
             it ?: return@mapLatest null
-            lyricSourceFactory.getLyric(it)
+            lyricSourceFactory?.getLyric(it)
         }
 
-    val songLyric = _songLyric.asLiveData()
-
-    init {
-        _songLyric.combine(GlobalData.currentIsPlaying) { pair, isPlaying ->
-            if (!isPlaying || pair == null) {
-                pusher.clearLyric()
-                return@combine null
-            } else {
-                if (!lastLyric.isNullOrEmpty())
-                    pusher.pushLyric(lastLyric)
-            }
+    val currentSentence: Flow<String?> =
+        currentLyric.mapLatest { pair ->
+            pair ?: return@mapLatest null
             LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
         }.combine(GlobalData.currentPosition) { list, time ->
-            list ?: return@combine null
-            if (time == 0L) {
-                return@combine null
-            }
+            if (list == null || time == 0L) return@combine null
 
             val index = findShowLine(list, time + 200)
-            val lyricEntry = list.let {
-                if (it.isEmpty()) null else it[index]
-            }
+            val lyricEntry = list.getOrNull(index)
             val nowLyric = lyricEntry?.text ?: lyricEntry?.secondText
-            if (nowLyric == lastLyric && index == lastIndex)
-                return@combine null
 
-            lastIndex = index
-            lastLyric = nowLyric
-            nowLyric
-        }.onEach {
-            it ?: return@onEach
-            pusher.pushLyric(it)
-        }.launchIn(this)
-    }
+            return@combine nowLyric to index
+        }.distinctUntilChanged()
+            .combine(GlobalData.currentIsPlaying) { pair, isPlaying ->
+                if (pair == null || !isPlaying) return@combine null
+                return@combine pair.first
+            }
+
+    val currentLyricLiveData = currentLyric.asLiveData()
 
     private fun findShowLine(list: List<LyricEntry>?, time: Long): Int {
         if (list == null || list.isEmpty()) return 0

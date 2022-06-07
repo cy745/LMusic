@@ -3,6 +3,7 @@ package com.lalilu.lmusic.service
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
@@ -10,6 +11,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.media.app.NotificationCompat.MediaStyle
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
@@ -20,22 +22,18 @@ import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.manager.SpManager
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
-@Singleton
 @UnstableApi
-class LMusicNotificationProvider @Inject constructor(
-    @ApplicationContext private val mContext: Context
-) : MediaNotification.Provider, LyricManager.LyricPusher, CoroutineScope {
+class LMusicNotificationProvider constructor(
+    private val mContext: Context
+) : MediaNotification.Provider, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val notificationManager: NotificationManager = ContextCompat.getSystemService(
@@ -46,6 +44,12 @@ class LMusicNotificationProvider @Inject constructor(
         val appIcon = mContext.applicationInfo.icon
         if (appIcon != 0) appIcon else R.drawable.ic_launcher_foreground
     }
+
+    private var notificationBgColor = 0
+    private var mediaNotification: MediaNotification? = null
+    private var callback: MediaNotification.Provider.Callback? = null
+    private var lastBitmap: Pair<MediaMetadata, Bitmap>? = null
+    private var lyricPusherEnable = MutableStateFlow(false)
 
     companion object {
         const val NOTIFICATION_ID_PLAYER = 7
@@ -69,20 +73,13 @@ class LMusicNotificationProvider @Inject constructor(
         mContext.resources, R.drawable.cover_placeholder
     )
 
-    private var notificationBgColor = 0
-
-    private var mediaNotification: MediaNotification? = null
-    private var callback: MediaNotification.Provider.Callback? = null
-
-    private var sentenceFlow: MutableStateFlow<String?> =
-        MutableStateFlow(null)
 
     override fun createNotification(
         mediaController: MediaController,
         actionFactory: MediaNotification.ActionFactory,
-        onNotificationChangedCallback: MediaNotification.Provider.Callback
+        callback: MediaNotification.Provider.Callback
     ): MediaNotification {
-        callback = onNotificationChangedCallback
+        this.callback = callback
         ensureNotificationChannel()
 
         val builder = NotificationCompat.Builder(
@@ -166,7 +163,7 @@ class LMusicNotificationProvider @Inject constructor(
         val mediaStyle = MediaStyle()
             .setCancelButtonIntent(stopIntent)
             .setShowCancelButton(true)
-            .setShowActionsInCompactView(2)
+            .setShowActionsInCompactView(0, 1, 2)
 
         val metadata = mediaController.mediaMetadata
 
@@ -191,11 +188,18 @@ class LMusicNotificationProvider @Inject constructor(
         )
 
         metadata.artworkData?.let {
-            launch(Dispatchers.IO) {
-                val bitmap = BitmapFactory.decodeByteArray(it, 0, it.size)
-                    ?: return@launch
-                val palette = Palette.from(bitmap).generate()
-                notificationBgColor = palette.getAutomaticColor()
+            var bitmap: Bitmap? = null
+            lastBitmap?.takeIf { it.first == metadata }?.let {
+                bitmap = it.second
+            }
+
+            launch {
+                bitmap = bitmap ?: BitmapFactory.decodeByteArray(it, 0, it.size)?.also {
+                    lastBitmap = metadata to it
+                    notificationBgColor = Palette.from(it)
+                        .generate()
+                        .getAutomaticColor()
+                } ?: return@launch
 
                 builder.setLargeIcon(bitmap)
                 builder.color = notificationBgColor
@@ -204,7 +208,7 @@ class LMusicNotificationProvider @Inject constructor(
                     NOTIFICATION_ID_PLAYER,
                     builder.build()
                 )
-                onNotificationChangedCallback.onNotificationChanged(mediaNotification!!)
+                callback.onNotificationChanged(mediaNotification!!)
             }
         }
         mediaNotification = MediaNotification(
@@ -235,10 +239,7 @@ class LMusicNotificationProvider @Inject constructor(
     private fun ensureNotificationChannel() {
         if (Build.VERSION.SDK_INT < 26) return
 
-        if (notificationManager.getNotificationChannel(
-                NOTIFICATION_CHANNEL_ID_PLAYER
-            ) == null
-        ) {
+        if (notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID_PLAYER) == null) {
             notificationManager.createNotificationChannel(
                 NotificationChannel(
                     NOTIFICATION_CHANNEL_ID_PLAYER,
@@ -247,10 +248,7 @@ class LMusicNotificationProvider @Inject constructor(
                 )
             )
         }
-        if (notificationManager.getNotificationChannel(
-                NOTIFICATION_CHANNEL_ID_LOGGER
-            ) == null
-        ) {
+        if (notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID_LOGGER) == null) {
             notificationManager.createNotificationChannel(
                 NotificationChannel(
                     NOTIFICATION_CHANNEL_ID_LOGGER,
@@ -261,33 +259,25 @@ class LMusicNotificationProvider @Inject constructor(
         }
     }
 
-    override fun clearLyric() {
-        pushLyric(null)
-    }
-
-    private var lyricPusherEnable = false
-    private var sentenceToPush: String? = null
-    override fun pushLyric(sentence: String?) {
-        sentenceToPush = sentence
-        sentenceFlow.tryEmit(if (lyricPusherEnable) sentenceToPush else null)
-    }
-
     init {
-        sentenceFlow.onEach { sentence ->
-            mediaNotification ?: return@onEach
-            mediaNotification!!.notification.apply {
-                tickerText = sentence
-                flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
-                flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+        launch {
+            LyricManager.currentSentence.combine(lyricPusherEnable) { text, enable ->
+                if (enable) text else null
+            }.collectLatest { text ->
+                mediaNotification ?: return@collectLatest
+                mediaNotification!!.notification.apply {
+                    tickerText = text
+                    flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+                    flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+                }
+                ensureNotificationChannel()
+                callback?.onNotificationChanged(mediaNotification!!)
             }
-            ensureNotificationChannel()
-            callback?.onNotificationChanged(mediaNotification!!)
-        }.launchIn(this)
+        }
 
         SpManager.listen(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE,
             SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_STATUS_LYRIC_ENABLE) {
-                lyricPusherEnable = it
-                pushLyric(sentenceToPush)
+                lyricPusherEnable.tryEmit(it)
             })
     }
 }

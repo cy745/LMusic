@@ -71,11 +71,6 @@ fun MainScreen(
             navController = navController,
             scaffoldState = scaffoldState,
             bottomSheetContent = {
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                )
                 if (currentWindowSize == WindowSize.Compact) {
                     NavigateLibrary(
                         currentWindowSize = currentWindowSize,
@@ -85,6 +80,11 @@ fun MainScreen(
                         onClose = onClose
                     )
                 }
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                )
             }
         )
     }

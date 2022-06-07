@@ -32,9 +32,6 @@ class MSongService : MediaLibraryService() {
     @Inject
     lateinit var mediaSource: MMediaSource
 
-    @Inject
-    lateinit var notificationProvider: LMusicNotificationProvider
-
     private val audioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
@@ -45,7 +42,6 @@ class MSongService : MediaLibraryService() {
         exoPlayer = ExoPlayer.Builder(this)
             .setUseLazyPreparation(false)
             .setHandleAudioBecomingNoisy(true)
-            .setUseLazyPreparation(false)
             .build()
         player = object : ForwardingPlayer(exoPlayer) {
             override fun getMaxSeekToPreviousPosition(): Long = Long.MAX_VALUE
@@ -96,7 +92,7 @@ class MSongService : MediaLibraryService() {
             GlobalData.getPositionFromPlayer = mediaController::getCurrentPosition
         }, MoreExecutors.directExecutor())
 
-        setMediaNotificationProvider(notificationProvider)
+        setMediaNotificationProvider(LMusicNotificationProvider(this))
     }
 
     private inner class LastPlayedListener : Player.Listener {

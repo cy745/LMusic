@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
@@ -113,8 +112,7 @@
                 android:paddingBottom="128dp"
                 app:adapter="@{adapter}"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:layout_behavior="com.lalilu.ui.appbar.MyScrollingViewBehavior"
-                tools:listitem="@layout/item_playing" />
+                app:layout_behavior="com.lalilu.ui.appbar.MyScrollingViewBehavior" />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         <com.lalilu.ui.NewSeekBar

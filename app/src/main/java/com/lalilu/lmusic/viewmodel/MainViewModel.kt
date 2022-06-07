@@ -14,12 +14,11 @@ import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    lyricManager: LyricManager,
     val mediaBrowser: MSongBrowser,
     val mediaSource: MMediaSource
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-    val songLyric = lyricManager.songLyric
+    val songLyric = LyricManager.currentLyricLiveData
 
     fun playSongWithPlaylist(items: List<MediaItem>, index: Int) =
         launch(Dispatchers.Main) {

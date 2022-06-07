@@ -21,7 +21,7 @@ import javax.inject.Singleton
 @SuppressLint("UseCompatLoadingForDrawables")
 class EmbeddedLyricFetchers @Inject constructor(
     @ApplicationContext private val mContext: Context,
-    private val lyricSourceFactory: LyricSourceFactory
+    val lyricSourceFactory: LyricSourceFactory
 ) : Fetcher<MediaItem> {
     private val lrcIcon = mContext.resources.getDrawable(R.drawable.ic_lrc_fill, mContext.theme)
 
