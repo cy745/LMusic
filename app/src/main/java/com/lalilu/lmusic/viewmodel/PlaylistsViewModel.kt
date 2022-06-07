@@ -6,7 +6,7 @@ import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.datasource.entity.SongInPlaylist
-import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.manager.HistoryManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +17,6 @@ import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor(
-    private val mediaBrowser: MSongBrowser,
     private val mediaSource: MMediaSource
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -49,11 +48,11 @@ class PlaylistsViewModel @Inject constructor(
     }
 
     fun copyCurrentPlayingPlaylist() = launch {
-        val playlistTitle = "复制歌单: (${mediaBrowser.originPlaylistIds.size})"
+        val playlistTitle = "复制歌单: (${HistoryManager.currentPlayingIds.size})"
         val playlist = MPlaylist(playlistTitle = playlistTitle)
         dataBase.playlistDao().save(playlist)
         dataBase.songInPlaylistDao().save(
-            mediaBrowser.originPlaylistIds.map {
+            HistoryManager.currentPlayingIds.map {
                 SongInPlaylist(
                     playlistId = playlist.playlistId,
                     mediaId = it

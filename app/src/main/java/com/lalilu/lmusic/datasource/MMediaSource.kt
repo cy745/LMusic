@@ -39,11 +39,11 @@ class MMediaSource @Inject constructor(
             getItemById(ITEM_PREFIX + it)
         } ?: getChildren(ALL_ID) ?: emptyList()
 
-        val lastPlayedId = HistoryManager.lastPlayedId?.let {
+        val lastPlayedItem = HistoryManager.lastPlayedId?.let {
             getItemById(ITEM_PREFIX + it)
         } ?: lastPlaylist.getOrNull(0)
 
-        GlobalDataManager.currentMediaItem.emit(lastPlayedId)
+        GlobalDataManager.currentMediaItem.emit(lastPlayedItem)
         GlobalDataManager.currentPlaylist.emit(lastPlaylist)
     }
 
