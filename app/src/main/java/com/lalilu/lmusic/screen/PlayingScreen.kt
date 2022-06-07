@@ -30,9 +30,9 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.ComposeAdapter
 import com.lalilu.lmusic.adapter.setDiffNewData
 import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.manager.GlobalDataManager
-import com.lalilu.lmusic.viewmodel.MainViewModel
+import com.lalilu.lmusic.manager.LyricManager
+import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
@@ -69,7 +69,6 @@ fun PlayingScreen(
     onPlayPrevious: suspend () -> Unit = {},
     onPlayPause: suspend () -> Unit = {},
     onSeekToPosition: suspend (Float) -> Unit = {},
-    mainViewModel: MainViewModel = hiltViewModel(),
     networkDataViewModel: NetworkDataViewModel = hiltViewModel()
 ) {
     fun playHandle(@ClickPart clickPart: Int) {
@@ -224,7 +223,7 @@ fun PlayingScreen(
                 maSeekBar.updateValue(it.toFloat())
                 fmLyricViewX.updateTime(it)
             }
-            mainViewModel.songLyric.observe(activity) {
+            LyricManager.currentLyricLiveData.observe(activity) {
                 fmLyricViewX.setLyricEntryList(emptyList())
                 fmLyricViewX.loadLyric(it?.first, it?.second)
             }

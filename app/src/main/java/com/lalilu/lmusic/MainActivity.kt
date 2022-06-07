@@ -15,14 +15,11 @@ import com.funny.data_saver.core.LocalDataSaver
 import com.lalilu.R
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
-import com.lalilu.lmusic.datasource.ALL_ID
-import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
-import com.lalilu.lmusic.manager.HistoryManager
+import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.screen.AgreementDialog
 import com.lalilu.lmusic.screen.MainScreen
 import com.lalilu.lmusic.screen.ShowScreen
-import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,19 +46,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
-            mediaSource.whenReady(true) {
-                val lastPlaylist = HistoryManager.lastPlayedListIds?.mapNotNull {
-                    mediaSource.getItemById(ITEM_PREFIX + it)
-                } ?: mediaSource.getChildren(ALL_ID) ?: emptyList()
-
-                GlobalDataManager.currentMediaItem.emit(
-                    HistoryManager.lastPlayedId?.let {
-                        mediaSource.getItemById(ITEM_PREFIX + it)
-                    } ?: lastPlaylist.getOrNull(0)
-                )
-                GlobalDataManager.currentPlaylist.emit(lastPlaylist)
-            }
-            mediaSource.startSync()
+            mediaSource.start()
         }, onFailed = {
             ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
         })
@@ -69,8 +54,8 @@ class MainActivity : AppCompatActivity() {
         volumeControlStream = AudioManager.STREAM_MUSIC
         lifecycle.addObserver(mSongBrowser)
         setContent {
-            CompositionLocalProvider(LocalDataSaver provides dataSaverPreferences) {
-                LMusicTheme {
+            LMusicTheme {
+                CompositionLocalProvider(LocalDataSaver provides dataSaverPreferences) {
                     MainScreen()
                     ShowScreen()
                     AgreementDialog()
