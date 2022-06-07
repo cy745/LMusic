@@ -23,7 +23,8 @@
             app:layout_constraintBottom_toBottomOf="@+id/search_for_lyric_tips"
             app:layout_constraintStart_toEndOf="@+id/search_for_lyric_tips"
             app:layout_constraintTop_toTopOf="@+id/search_for_lyric_tips"
-            app:rippleColor="#7785DD" />
+            app:rippleColor="#7785DD"
+            tools:ignore="TouchTargetSizeCheck" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/search_for_lyric_tips"
@@ -40,7 +41,7 @@
             android:id="@+id/search_for_lyric_keyword"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="15dp"
             android:layout_marginEnd="20dp"
             android:background="@drawable/edittext_radius_bg"
             android:drawableEnd="@drawable/ic_edit_line"

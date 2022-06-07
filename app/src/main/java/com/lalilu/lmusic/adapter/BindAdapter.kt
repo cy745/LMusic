@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.binding_adapter
+package com.lalilu.lmusic.adapter
 
 import android.view.View
 import android.widget.ImageView

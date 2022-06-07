@@ -60,6 +60,9 @@ fun SongDetailScreen(
         },
         onSetSongToNext = {
             mediaBrowser.addToNext(mediaItem.mediaId)
+        },
+        onPlaySong = {
+            mediaBrowser.playById(mediaId = mediaItem.mediaId, playWhenReady = true)
         }
     )
 }
@@ -72,6 +75,7 @@ fun SongDetailScreen(
     mediaId: String,
     currentWindowSize: WindowSize,
     imagePainter: ImagePainter,
+    onPlaySong: () -> Unit = {},
     onSetSongToNext: () -> Unit = {},
     onAddSongToPlaylist: () -> Unit = {},
     onMatchNetworkData: () -> Unit = {}
@@ -132,12 +136,18 @@ fun SongDetailScreen(
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     TextWithIconButton(
+                        textRes = R.string.text_button_play,
+                        color = Color(0xFF006E7C),
+                        onClick = onPlaySong
+                    )
+                    TextWithIconButton(
                         textRes = R.string.button_set_song_to_next,
                         color = Color(0xFF006E7C),
                         onClick = onSetSongToNext
                     )
                     TextWithIconButton(
                         textRes = R.string.button_add_song_to_playlist,
+                        iconRes = R.drawable.ic_play_list_add_line,
                         color = Color(0xFF006E7C),
                         onClick = onAddSongToPlaylist
                     )

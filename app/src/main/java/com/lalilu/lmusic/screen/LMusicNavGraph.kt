@@ -4,6 +4,9 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -69,7 +72,14 @@ fun LMusicNavGraph(
         navController = navController,
         startDestination = MainScreenData.Library.name,
         modifier = modifier,
-        exitTransition = { ExitTransition.None }
+        exitTransition = { ExitTransition.None },
+        enterTransition = {
+            fadeIn(
+                animationSpec = tween(
+                    durationMillis = 700,
+                )
+            ) + slideInVertically { 100 }
+        }
     ) {
         composable(
             route = MainScreenData.Library.name

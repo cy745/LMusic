@@ -4,9 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.datasource.MDataBase
-import com.lalilu.lmusic.manager.LyricManager
-import com.lalilu.lmusic.service.LMusicNotificationProvider
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,12 +44,4 @@ object LMusicHiltModule {
     fun provideNetWorkLyricService(retrofit: Retrofit): NeteaseDataSource {
         return retrofit.create(NeteaseDataSource::class.java)
     }
-}
-
-@Module
-@ExperimentalCoroutinesApi
-@InstallIn(SingletonComponent::class)
-abstract class LMusicAbstractHiltModule {
-    @Binds
-    abstract fun bindLyricPush(pusher: LMusicNotificationProvider): LyricManager.LyricPusher
 }
