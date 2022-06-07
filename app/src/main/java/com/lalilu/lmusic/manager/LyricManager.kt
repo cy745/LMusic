@@ -4,7 +4,6 @@ import androidx.lifecycle.asLiveData
 import androidx.media3.common.Player
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
-import com.lalilu.lmusic.service.GlobalData
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +23,7 @@ object LyricManager : Player.Listener, CoroutineScope {
     var lyricSourceFactory: LyricSourceFactory? = null
 
     private val currentLyric: Flow<Pair<String, String?>?> =
-        GlobalData.currentMediaItem.mapLatest {
+        GlobalDataManager.currentMediaItem.mapLatest {
             it ?: return@mapLatest null
             lyricSourceFactory?.getLyric(it)
         }
@@ -33,7 +32,7 @@ object LyricManager : Player.Listener, CoroutineScope {
         currentLyric.mapLatest { pair ->
             pair ?: return@mapLatest null
             LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
-        }.combine(GlobalData.currentPosition) { list, time ->
+        }.combine(GlobalDataManager.currentPosition) { list, time ->
             if (list == null || time == 0L) return@combine null
 
             val index = findShowLine(list, time + 200)
@@ -42,7 +41,7 @@ object LyricManager : Player.Listener, CoroutineScope {
 
             return@combine nowLyric to index
         }.distinctUntilChanged()
-            .combine(GlobalData.currentIsPlaying) { pair, isPlaying ->
+            .combine(GlobalDataManager.currentIsPlaying) { pair, isPlaying ->
                 if (pair == null || !isPlaying) return@combine null
                 return@combine pair.first
             }

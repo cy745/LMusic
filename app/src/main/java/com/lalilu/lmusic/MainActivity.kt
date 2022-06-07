@@ -22,7 +22,7 @@ import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.screen.AgreementDialog
 import com.lalilu.lmusic.screen.MainScreen
 import com.lalilu.lmusic.screen.ShowScreen
-import com.lalilu.lmusic.service.GlobalData
+import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,12 +54,12 @@ class MainActivity : AppCompatActivity() {
                     mediaSource.getItemById(ITEM_PREFIX + it)
                 } ?: mediaSource.getChildren(ALL_ID) ?: emptyList()
 
-                GlobalData.currentMediaItem.emit(
+                GlobalDataManager.currentMediaItem.emit(
                     HistoryManager.lastPlayedId?.let {
                         mediaSource.getItemById(ITEM_PREFIX + it)
                     } ?: lastPlaylist.getOrNull(0)
                 )
-                GlobalData.currentPlaylist.emit(lastPlaylist)
+                GlobalDataManager.currentPlaylist.emit(lastPlaylist)
             }
             mediaSource.startSync()
         }, onFailed = {
@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_appbar, menu)
         val searchView = menu.findItem(R.id.appbar_search)
             .actionView as MySearchView
-        searchView.bind(GlobalData::searchFor)
+        searchView.bind(GlobalDataManager::searchFor)
         return super.onCreateOptionsMenu(menu)
     }
 }

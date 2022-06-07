@@ -15,6 +15,7 @@ import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
+import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.manager.SpManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -86,10 +87,10 @@ class MSongService : MediaLibraryService() {
 
         controllerFuture.addListener({
             mediaController = controllerFuture.get()
-            mediaController.addListener(GlobalData.playerListener)
+            mediaController.addListener(GlobalDataManager.playerListener)
             mediaController.addListener(LastPlayedListener())
-            GlobalData.getIsPlayingFromPlayer = mediaController::isPlaying
-            GlobalData.getPositionFromPlayer = mediaController::getCurrentPosition
+            GlobalDataManager.getIsPlayingFromPlayer = mediaController::isPlaying
+            GlobalDataManager.getPositionFromPlayer = mediaController::getCurrentPosition
         }, MoreExecutors.directExecutor())
 
         setMediaNotificationProvider(LMusicNotificationProvider(this))
