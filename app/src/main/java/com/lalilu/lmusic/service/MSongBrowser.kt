@@ -7,14 +7,12 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
@@ -34,10 +32,11 @@ class MSongBrowser @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
 
+    private val originPlaylistIds: List<String>
+        get() = HistoryManager.currentPlayingIds
+
     val browser: MediaBrowser?
         get() = if (browserFuture.isDone) browserFuture.get() else null
-
-    var originPlaylistIds: List<String> = emptyList()
 
     @UnstableApi
     override fun onStart(owner: LifecycleOwner) {
@@ -69,30 +68,14 @@ class MSongBrowser @Inject constructor(
         if (browser.mediaItemCount == 0 || browser.currentMediaItem == null) {
             recoverLastPlayedData()
         }
-
-        browser.addListener(object : Player.Listener {
-            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                originPlaylistIds = MutableList(browser.mediaItemCount) {
-                    return@MutableList browser.getMediaItemAt(it).mediaId
-                }
-
-                launch(Dispatchers.Main) {
-                    GlobalDataManager.currentPlaylist.emit(originPlaylistIds.mapNotNull {
-                        mediaSource.getItemById(ITEM_PREFIX + it)
-                    })
-                }
-            }
-        })
     }
 
     private fun recoverLastPlayedData() = launch(Dispatchers.IO) {
-        val items = HistoryManager.lastPlayedListIds?.mapNotNull {
-            mediaSource.getItemById(ITEM_PREFIX + it)
-        } ?: mediaSource.getChildren(ALL_ID) ?: emptyList()
-        val index = HistoryManager.lastPlayedId?.let { id ->
+        val position = HistoryManager.lastPlayedPosition
+        val items = GlobalDataManager.currentPlaylist.value
+        val index = GlobalDataManager.currentMediaItem.value?.mediaId?.let { id ->
             items.indexOfFirst { it.mediaId == id }
         }?.coerceAtLeast(0) ?: 0
-        val position = HistoryManager.lastPlayedPosition
 
         delay(200)
         withContext(Dispatchers.Main) {

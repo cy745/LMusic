@@ -19,11 +19,16 @@ import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.manager.SpManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 @UnstableApi
 @AndroidEntryPoint
-class MSongService : MediaLibraryService() {
+class MSongService : MediaLibraryService(), CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var player: Player
     private lateinit var exoPlayer: ExoPlayer
 
@@ -102,8 +107,16 @@ class MSongService : MediaLibraryService() {
         }
 
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-            HistoryManager.lastPlayedListIds = List(mediaController.mediaItemCount) {
+            HistoryManager.currentPlayingIds = List(mediaController.mediaItemCount) {
                 mediaController.getMediaItemAt(it).mediaId
+            }
+
+            launch {
+                GlobalDataManager.currentPlaylist.emit(
+                    HistoryManager.currentPlayingIds.mapNotNull {
+                        mediaSource.getItemById(ITEM_PREFIX + it)
+                    }
+                )
             }
         }
     }

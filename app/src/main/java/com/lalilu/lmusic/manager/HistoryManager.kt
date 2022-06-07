@@ -24,9 +24,15 @@ object HistoryManager : CoroutineScope {
         get() = lastPlayedSp.getString(Config.LAST_PLAYED_ID)
 
     var lastPlayedListIds: List<String>?
-        set(value) = lastPlayedSp.put(Config.LAST_PLAYED_LIST, GsonUtils.toJson(value))
+        private set(value) = lastPlayedSp.put(Config.LAST_PLAYED_LIST, GsonUtils.toJson(value))
         get() {
             val json = lastPlayedSp.getString(Config.LAST_PLAYED_LIST, null) ?: return null
             return GsonUtils.fromJson<List<String>>(json, typeToken)
+        }
+
+    var currentPlayingIds: List<String> = emptyList()
+        set(value) {
+            lastPlayedListIds = value
+            field = value
         }
 }
