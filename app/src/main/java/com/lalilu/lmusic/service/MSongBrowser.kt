@@ -17,6 +17,7 @@ import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
+import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
@@ -76,7 +77,7 @@ class MSongBrowser @Inject constructor(
                 }
 
                 launch(Dispatchers.Main) {
-                    GlobalData.currentPlaylist.emit(originPlaylistIds.mapNotNull {
+                    GlobalDataManager.currentPlaylist.emit(originPlaylistIds.mapNotNull {
                         mediaSource.getItemById(ITEM_PREFIX + it)
                     })
                 }
@@ -165,7 +166,7 @@ class MSongBrowser @Inject constructor(
         return try {
             lastRemovedIndex = originPlaylistIds.indexOf(mediaId)
             if (lastRemovedIndex == browser!!.currentMediaItemIndex) {
-                GlobalData.currentMediaItem.tryEmit(
+                GlobalDataManager.currentMediaItem.tryEmit(
                     browser!!.getMediaItemAt(browser!!.nextMediaItemIndex)
                 )
             }

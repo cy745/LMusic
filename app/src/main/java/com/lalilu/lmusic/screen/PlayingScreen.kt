@@ -31,7 +31,7 @@ import com.lalilu.lmusic.adapter.ComposeAdapter
 import com.lalilu.lmusic.adapter.setDiffNewData
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.manager.SpManager
-import com.lalilu.lmusic.service.GlobalData
+import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.ui.*
@@ -212,15 +212,15 @@ fun PlayingScreen(
                 scope.launch { onSeekToPosition(value) }
             })
             maSeekBar.cancelListeners.add(OnSeekBarCancelListener { haptic() })
-            GlobalData.currentPlaylistLiveData.observe(activity) {
+            GlobalDataManager.currentPlaylistLiveData.observe(activity) {
                 adapter?.setDiffNewData(it.toMutableList())
             }
-            GlobalData.currentMediaItemLiveData.observe(activity) {
+            GlobalDataManager.currentMediaItemLiveData.observe(activity) {
                 maSeekBar.maxValue = (it?.mediaMetadata?.getDuration()
                     ?.coerceAtLeast(0) ?: 0f).toFloat()
                 song = it
             }
-            GlobalData.currentPositionLiveData.observe(activity) {
+            GlobalDataManager.currentPositionLiveData.observe(activity) {
                 maSeekBar.updateValue(it.toFloat())
                 fmLyricViewX.updateTime(it)
             }

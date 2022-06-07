@@ -12,7 +12,7 @@ import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
-import com.lalilu.lmusic.service.GlobalData
+import com.lalilu.lmusic.manager.GlobalDataManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -152,7 +152,7 @@ class NetworkDataViewModel @Inject constructor(
                     tlyric = it.second
                 )
             )
-            GlobalData.updateCurrentMediaItem(mediaId)
+            GlobalDataManager.updateCurrentMediaItem(mediaId)
             toastTips("保存匹配歌词成功")
             withContext(Dispatchers.Main) {
                 success()

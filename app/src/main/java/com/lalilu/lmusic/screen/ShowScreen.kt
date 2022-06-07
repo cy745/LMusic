@@ -32,7 +32,7 @@ import com.blankj.utilcode.util.SizeUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.service.GlobalData
+import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.utils.DeviceType
 import com.lalilu.lmusic.utils.WindowSize
@@ -55,7 +55,7 @@ fun ShowScreen(
     }
 
     if (visible) {
-        val mediaItem by GlobalData.currentMediaItem.collectAsState()
+        val mediaItem by GlobalDataManager.currentMediaItem.collectAsState()
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -195,7 +195,7 @@ fun SongDetailPanel(
 fun ControlPanel(
     mediaBrowser: MSongBrowser
 ) {
-    val isPlaying = GlobalData.currentIsPlaying.collectAsState()
+    val isPlaying = GlobalDataManager.currentIsPlaying.collectAsState()
     var repeatMode by rememberDataSaverState(
         Config.KEY_SETTINGS_REPEAT_MODE, Config.DEFAULT_SETTINGS_REPEAT_MODE
     )

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.service
+package com.lalilu.lmusic.manager
 
 import android.os.Handler
 import android.os.Looper
@@ -6,8 +6,6 @@ import androidx.lifecycle.asLiveData
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.lalilu.lmusic.datasource.extensions.partCopy
-import com.lalilu.lmusic.manager.HistoryManager
-import com.lalilu.lmusic.manager.SearchTextManager
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
-object GlobalData : CoroutineScope {
+object GlobalDataManager : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val handler = Handler(Looper.getMainLooper())
