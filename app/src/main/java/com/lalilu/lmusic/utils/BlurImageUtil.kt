@@ -32,6 +32,7 @@ object BlurImageUtil : CoroutineScope {
         private lateinit var samplingBitmap: Bitmap
         private var blurBitmap: Bitmap? = null
         private var bitmapPainter: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            .apply { alpha = 0 }
         private var sourceRect = Rect()
         private var destRectF = RectF()
         private var blurRect = Rect()
