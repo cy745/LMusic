@@ -24,7 +24,7 @@ interface MNetworkDataDao {
     fun getById(id: String): MNetworkData?
 
     @Query("SELECT * FROM network_data WHERE network_data_media_id = :id;")
-    fun getFlowById(id: String): Flow<MNetworkData?>
+    fun getFlowById(id: String?): Flow<MNetworkData?>
 
     @Delete(entity = MNetworkData::class)
     fun delete(vararg networkData: MNetworkData)

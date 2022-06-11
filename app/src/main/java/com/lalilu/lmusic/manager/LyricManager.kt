@@ -12,27 +12,32 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapLatest
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 /**
  * 专门负责歌词解析处理的全局单例
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-object LyricManager : Player.Listener, CoroutineScope {
+@Singleton
+class LyricManager @Inject constructor(
+    globalDataManager: GlobalDataManager,
+    lyricSourceFactory: LyricSourceFactory
+) : Player.Listener, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-    var lyricSourceFactory: LyricSourceFactory? = null
 
     private val currentLyric: Flow<Pair<String, String?>?> =
-        GlobalDataManager.currentMediaItem.mapLatest {
+        globalDataManager.currentMediaItem.mapLatest {
             it ?: return@mapLatest null
-            lyricSourceFactory?.getLyric(it)
+            lyricSourceFactory.getLyric(it)
         }
 
     val currentSentence: Flow<String?> =
         currentLyric.mapLatest { pair ->
             pair ?: return@mapLatest null
             LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
-        }.combine(GlobalDataManager.currentPosition) { list, time ->
+        }.combine(globalDataManager.currentPosition) { list, time ->
             if (list == null || time == 0L) return@combine null
 
             val index = findShowLine(list, time + 200)
@@ -41,7 +46,7 @@ object LyricManager : Player.Listener, CoroutineScope {
 
             return@combine nowLyric to index
         }.distinctUntilChanged()
-            .combine(GlobalDataManager.currentIsPlaying) { pair, isPlaying ->
+            .combine(globalDataManager.currentIsPlaying) { pair, isPlaying ->
                 if (pair == null || !isPlaying) return@combine null
                 return@combine pair.first
             }

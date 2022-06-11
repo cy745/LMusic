@@ -36,6 +36,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var mediaSource: MMediaSource
 
+    @Inject
+    lateinit var globalDataManager: GlobalDataManager
+
     private val dataSaverPreferences by lazy {
         DataSaverPreferences().apply {
             setContext(context = applicationContext)
@@ -68,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_appbar, menu)
         val searchView = menu.findItem(R.id.appbar_search)
             .actionView as MySearchView
-        searchView.bind(GlobalDataManager::searchFor)
+        searchView.bind(globalDataManager::searchFor)
         return super.onCreateOptionsMenu(menu)
     }
 }

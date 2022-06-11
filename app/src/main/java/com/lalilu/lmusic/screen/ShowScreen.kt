@@ -39,12 +39,14 @@ import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.utils.WindowSizeClass
 import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.lmusic.utils.rememberWindowSizeClass
+import com.lalilu.lmusic.viewmodel.GlobalViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 fun ShowScreen(
     currentWindowSizeClass: WindowSizeClass = rememberWindowSizeClass(),
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    globalViewModel: GlobalViewModel = hiltViewModel()
 ) {
     val visible = remember(
         currentWindowSizeClass.deviceType,
@@ -55,7 +57,7 @@ fun ShowScreen(
     }
 
     if (visible) {
-        val mediaItem by GlobalDataManager.currentMediaItem.collectAsState()
+        val mediaItem by globalViewModel.globalDataManager.currentMediaItem.collectAsState()
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -80,7 +82,10 @@ fun ShowScreen(
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     SongDetailPanel(mediaItem = mediaItem)
-                    ControlPanel(mediaBrowser = mainViewModel.mediaBrowser)
+                    ControlPanel(
+                        mediaBrowser = mainViewModel.mediaBrowser,
+                        globalViewModel.globalDataManager
+                    )
                 }
             }
         }
@@ -193,9 +198,10 @@ fun SongDetailPanel(
 
 @Composable
 fun ControlPanel(
-    mediaBrowser: MSongBrowser
+    mediaBrowser: MSongBrowser,
+    globalDataManager: GlobalDataManager
 ) {
-    val isPlaying = GlobalDataManager.currentIsPlaying.collectAsState()
+    val isPlaying = globalDataManager.currentIsPlaying.collectAsState()
     var repeatMode by rememberDataSaverState(
         Config.KEY_SETTINGS_REPEAT_MODE, Config.DEFAULT_SETTINGS_REPEAT_MODE
     )

@@ -5,17 +5,22 @@ import android.os.Looper
 import androidx.lifecycle.asLiveData
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.extensions.partCopy
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.lalilu.lmusic.utils.updateArtworkUri
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
-object GlobalDataManager : CoroutineScope {
+@Singleton
+@OptIn(ExperimentalCoroutinesApi::class)
+class GlobalDataManager @Inject constructor(
+    private val dataBase: MDataBase,
+    private val searchTextManager: SearchTextManager
+) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val handler = Handler(Looper.getMainLooper())
@@ -80,12 +85,17 @@ object GlobalDataManager : CoroutineScope {
             listItem.mediaId == id
         }
     }.combine(currentSearchKeyword) { items, keyword ->
-        SearchTextManager.filter(keyword, items) {
+        searchTextManager.filter(keyword, items) {
             "${it.mediaMetadata.title} ${it.mediaMetadata.artist}"
         }
     }.asLiveData()
 
-    val currentMediaItemLiveData = currentMediaItem.asLiveData()
+    val currentMediaItemLiveData = currentMediaItem.flatMapLatest { mediaItem ->
+        dataBase.networkDataDao().getFlowById(mediaItem?.mediaId).mapLatest {
+            return@mapLatest mediaItem?.updateArtworkUri(it?.requireCoverUri())
+        }
+    }.flowOn(Dispatchers.IO)
+        .asLiveData()
     val currentPositionLiveData = currentPosition.asLiveData()
 
     val playerListener = object : Player.Listener {

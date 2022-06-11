@@ -38,6 +38,12 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     @Inject
     lateinit var mediaSource: MMediaSource
 
+    @Inject
+    lateinit var globalDataManager: GlobalDataManager
+
+    @Inject
+    lateinit var notificationProvider: LMusicNotificationProvider
+
     private val audioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
@@ -92,13 +98,13 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
         controllerFuture.addListener({
             mediaController = controllerFuture.get()
-            mediaController.addListener(GlobalDataManager.playerListener)
+            mediaController.addListener(globalDataManager.playerListener)
             mediaController.addListener(LastPlayedListener())
-            GlobalDataManager.getIsPlayingFromPlayer = mediaController::isPlaying
-            GlobalDataManager.getPositionFromPlayer = mediaController::getCurrentPosition
+            globalDataManager.getIsPlayingFromPlayer = mediaController::isPlaying
+            globalDataManager.getPositionFromPlayer = mediaController::getCurrentPosition
         }, MoreExecutors.directExecutor())
 
-        setMediaNotificationProvider(LMusicNotificationProvider(this))
+        setMediaNotificationProvider(notificationProvider)
     }
 
     private inner class LastPlayedListener : Player.Listener {
@@ -112,7 +118,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             }
 
             launch {
-                GlobalDataManager.currentPlaylist.emit(
+                globalDataManager.currentPlaylist.emit(
                     HistoryManager.currentPlayingIds.mapNotNull {
                         mediaSource.getItemById(ITEM_PREFIX + it)
                     }

@@ -13,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
+import androidx.media3.common.MediaItem
 import kotlin.math.roundToInt
 
 fun Drawable.toBitmap(): Bitmap {
@@ -138,4 +139,13 @@ fun Cursor.getMediaUri(): Uri {
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
         getSongId().toString()
     )
+}
+
+fun MediaItem.updateArtworkUri(uri: Uri?): MediaItem {
+    uri ?: return this
+    return buildUpon().setMediaMetadata(
+        mediaMetadata.buildUpon()
+            .setArtworkUri(uri)
+            .build()
+    ).build()
 }

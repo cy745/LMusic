@@ -9,20 +9,25 @@ import com.lalilu.R
 import com.lalilu.common.KanaToRomaji
 import com.lalilu.common.PinyinUtils
 import com.lalilu.lmusic.Config
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 import java.util.regex.Pattern
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 /**
  * 用于实现搜索过滤功能的工具类
  */
-object SearchTextManager {
+@Singleton
+class SearchTextManager @Inject constructor(
+    private val kanjiToHiraTransformer: KanjiToHiraTransformer
+) {
     private val chineseToPinyinTransformer = ChineseToPinyinTransformer()
     private val hiraToRomajiTransformer = HiraToRomajiTransformer()
-    private val kanjiToHiraTransformer = KanjiToHiraTransformer
 
     interface TextTransformer {
         fun containTargetText(str: String): Boolean
@@ -114,7 +119,10 @@ class HiraToRomajiTransformer : SearchTextManager.TextTransformer {
 }
 
 
-object KanjiToHiraTransformer : CoroutineScope, SearchTextManager.TextTransformer {
+@Singleton
+class KanjiToHiraTransformer @Inject constructor(
+    @ApplicationContext context: Context
+) : CoroutineScope, SearchTextManager.TextTransformer {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private var mKanhira: Kanhira? = null
 
@@ -129,24 +137,24 @@ object KanjiToHiraTransformer : CoroutineScope, SearchTextManager.TextTransforme
         return result
     }
 
-    fun init(context: Context) {
-        if (Build.VERSION.SDK_INT <= 23) return
+    init {
+        if (Build.VERSION.SDK_INT > 23) {
+            SpManager.listen(Config.KEY_SETTINGS_KANHIRA_ENABLE,
+                SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_KANHIRA_ENABLE) {
+                    if (!it) {
+                        mKanhira = null
+                        return@SpBoolListener
+                    }
 
-        SpManager.listen(Config.KEY_SETTINGS_KANHIRA_ENABLE,
-            SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_KANHIRA_ENABLE) {
-                if (!it) {
-                    mKanhira = null
-                    return@SpBoolListener
-                }
-
-                launch {
-                    mKanhira = Kanhira(
-                        KakasiDictReader.load(
-                            context.resources.openRawResource(R.raw.kakasidict_utf_8),
-                            Charsets.UTF_8.name()
+                    launch {
+                        mKanhira = Kanhira(
+                            KakasiDictReader.load(
+                                context.resources.openRawResource(R.raw.kakasidict_utf_8),
+                                Charsets.UTF_8.name()
+                            )
                         )
-                    )
-                }
-            })
+                    }
+                })
+        }
     }
 }
