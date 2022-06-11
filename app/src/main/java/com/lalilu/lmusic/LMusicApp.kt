@@ -5,26 +5,31 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.lalilu.R
 import com.lalilu.lmusic.manager.SpManager
-import com.lalilu.lmusic.utils.fetcher.EmbeddedCoverFetcher
-import com.lalilu.lmusic.utils.fetcher.EmbeddedLyricFetchers
+import com.lalilu.lmusic.utils.fetcher.EmbeddedLyricFetcher
+import com.lalilu.lmusic.utils.fetcher.MSongCoverFetcher
 import com.simple.spiderman.SpiderMan
 import dagger.hilt.android.HiltAndroidApp
+import okhttp3.Call
 import javax.inject.Inject
 
 @HiltAndroidApp
 class LMusicApp : Application(), ImageLoaderFactory {
 
     @Inject
-    lateinit var lyricFetchers: EmbeddedLyricFetchers
+    lateinit var coverFetcher: MSongCoverFetcher
 
     @Inject
-    lateinit var coverFetcher: EmbeddedCoverFetcher
+    lateinit var lyricFetcher: EmbeddedLyricFetcher
+
+    @Inject
+    lateinit var callFactory: Call.Factory
 
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)
+            .callFactory(callFactory)
             .componentRegistry {
                 add(coverFetcher)
-                add(lyricFetchers)
+                add(lyricFetcher)
             }.build()
 
     override fun onCreate() {

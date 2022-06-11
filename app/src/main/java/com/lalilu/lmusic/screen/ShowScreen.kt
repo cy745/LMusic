@@ -37,7 +37,6 @@ import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.utils.DeviceType
 import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.utils.WindowSizeClass
-import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.lmusic.utils.rememberWindowSizeClass
 import com.lalilu.lmusic.viewmodel.GlobalViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
@@ -96,7 +95,7 @@ fun ShowScreen(
 @OptIn(ExperimentalCoilApi::class)
 fun RowScope.ImageCover(mediaItem: MediaItem?) {
     val imagePainter = rememberImagePainter(
-        data = mediaItem?.getCoverFromMediaItem()
+        data = mediaItem
     ) {
         size(SizeUtils.dp2px(256f))
         crossfade(true)
@@ -140,7 +139,7 @@ fun RowScope.ImageCover(mediaItem: MediaItem?) {
 @Composable
 fun BoxScope.BlurImageBg(mediaItem: MediaItem?) {
     val blurImagePainter = rememberImagePainter(
-        data = mediaItem?.getCoverFromMediaItem()
+        data = mediaItem
     ) {
         size(SizeUtils.dp2px(128f))
         transformations(BlurTransformation(LocalContext.current, 25f, 4f))

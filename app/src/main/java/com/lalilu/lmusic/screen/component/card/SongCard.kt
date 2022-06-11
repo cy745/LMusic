@@ -28,6 +28,7 @@ import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.lmusic.datasource.extensions.getDuration
+import com.lalilu.lmusic.utils.fetcher.getLyric
 import com.lalilu.lmusic.utils.rememberCoverForOnce
 
 @Composable
@@ -47,7 +48,7 @@ fun SongCard(
         size(SizeUtils.dp2px(64f))
     }
     val lrcIconPainter = rememberImagePainter(
-        data = mediaItem
+        data = mediaItem.getLyric()
     )
     val mediaTypeIconPainter = painterResource(
         id = getMusicTypeIcon(mediaItem)
