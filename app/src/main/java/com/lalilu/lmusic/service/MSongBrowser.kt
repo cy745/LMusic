@@ -6,7 +6,6 @@ import android.net.Uri
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaLibraryService
@@ -18,7 +17,10 @@ import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -77,10 +79,8 @@ class MSongBrowser @Inject constructor(
             items.indexOfFirst { it.mediaId == id }
         }?.coerceAtLeast(0) ?: 0
 
-        delay(200)
         withContext(Dispatchers.Main) {
             browser?.setMediaItems(items, index, position)
-            browser?.repeatMode = Player.REPEAT_MODE_ALL
             browser?.prepare()
         }
     }
