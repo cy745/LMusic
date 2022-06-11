@@ -22,7 +22,6 @@ import com.lalilu.lmusic.utils.addShadow
 import com.lalilu.lmusic.utils.toBitmap
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.internal.synchronized
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 
@@ -139,9 +138,7 @@ class BlurImageView @JvmOverloads constructor(
             if (sourceBitmap == null) clearImage()
 
             flow {
-                sourceBitmap?.addShadow()?.let {
-                    emit(it)
-                }
+                sourceBitmap?.addShadow()?.let { emit(it) }
             }
         }.mapLatest {
             BlurImageUtil.BlurImageLayer(it, blurRadius) { samplingBitmap ->
