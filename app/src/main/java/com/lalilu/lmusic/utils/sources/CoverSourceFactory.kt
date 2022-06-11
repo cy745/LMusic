@@ -3,8 +3,8 @@ package com.lalilu.lmusic.utils.sources
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.os.Build
+import androidx.core.net.toFile
 import androidx.media3.common.MediaItem
-import com.lalilu.lmusic.datasource.extensions.getSongData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,7 +13,6 @@ import okio.buffer
 import okio.source
 import org.jaudiotagger.audio.AudioFileIO
 import java.io.ByteArrayInputStream
-import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -23,6 +22,15 @@ import javax.inject.Singleton
 interface CoverSource {
     suspend fun loadCoverBytes(mediaItem: MediaItem): ByteArray?
     suspend fun loadCover(mediaItem: MediaItem): BufferedSource?
+}
+
+abstract class BaseCoverSource : CoverSource {
+    override suspend fun loadCover(mediaItem: MediaItem): BufferedSource? {
+        val bytes = loadCoverBytes(mediaItem) ?: return null
+        val source = ByteArrayInputStream(bytes).source()
+        source.timeout().timeout(50, TimeUnit.MILLISECONDS)
+        return source.buffer()
+    }
 }
 
 @Singleton
@@ -68,7 +76,7 @@ class CoverSourceFactory @Inject constructor(
 
 class RetrieverCoverSource @Inject constructor(
     @ApplicationContext private val mContext: Context
-) : CoverSource {
+) : BaseCoverSource() {
     override suspend fun loadCoverBytes(mediaItem: MediaItem): ByteArray? {
         val mediaUri = mediaItem.mediaMetadata.mediaUri ?: return null
         var retriever: MediaMetadataRetriever? = null
@@ -83,19 +91,12 @@ class RetrieverCoverSource @Inject constructor(
             retriever?.release()
         }
     }
-
-    override suspend fun loadCover(mediaItem: MediaItem): BufferedSource? {
-        val bytes = loadCoverBytes(mediaItem) ?: return null
-        val source = ByteArrayInputStream(bytes).source()
-        source.timeout().timeout(50, TimeUnit.MILLISECONDS)
-        return source.buffer()
-    }
 }
 
-class AudioTagCoverSource @Inject constructor() : CoverSource {
+class AudioTagCoverSource @Inject constructor() : BaseCoverSource() {
     override suspend fun loadCoverBytes(mediaItem: MediaItem): ByteArray? {
-        val songData = mediaItem.mediaMetadata.getSongData() ?: return null
-        val file = File(songData)
+        val songData = mediaItem.mediaMetadata.mediaUri ?: return null
+        val file = songData.toFile()
         if (!file.exists()) return null
 
         kotlin.runCatching {
@@ -103,12 +104,5 @@ class AudioTagCoverSource @Inject constructor() : CoverSource {
             return AudioFileIO.read(file)?.tag?.firstArtwork?.binaryData
         }
         return null
-    }
-
-    override suspend fun loadCover(mediaItem: MediaItem): BufferedSource? {
-        val bytes = loadCoverBytes(mediaItem) ?: return null
-        val source = ByteArrayInputStream(bytes).source()
-        source.timeout().timeout(50, TimeUnit.MILLISECONDS)
-        return source.buffer()
     }
 }

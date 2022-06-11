@@ -149,7 +149,7 @@ class BlurImageView @JvmOverloads constructor(
             crossFade(layer) {
                 synchronized(imageLayer) {
                     if (imageLayer.size >= 2) {
-                        imageLayer.removeFirst()
+                        imageLayer.removeFirstOrNull()?.recycle()
                     }
                 }
             }

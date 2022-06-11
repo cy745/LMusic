@@ -7,7 +7,6 @@ import coil.loadAny
 import com.lalilu.R
 import com.lalilu.common.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmusic.ui.BlurImageView
-import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.ui.NewProgressBar
 import com.lalilu.ui.appbar.AppbarLayout
@@ -21,7 +20,7 @@ fun loadCover(imageView: BlurImageView, mediaItem: MediaItem?, viewModel: Networ
     }
     val samplingTo = imageView.width
 
-    imageView.loadAny(mediaItem.mediaMetadata.artworkUri ?: mediaItem.getCoverFromMediaItem()) {
+    imageView.loadAny(mediaItem) {
         if (samplingTo > 0) size(samplingTo)
         allowHardware(false)
         target(onSuccess = {

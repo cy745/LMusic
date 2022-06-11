@@ -17,21 +17,24 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+fun MediaItem.getLyric() = LyricRequest(this)
+class LyricRequest(val mediaItem: MediaItem)
+
 @Singleton
 @SuppressLint("UseCompatLoadingForDrawables")
-class EmbeddedLyricFetchers @Inject constructor(
+class EmbeddedLyricFetcher @Inject constructor(
     @ApplicationContext private val mContext: Context,
-    val lyricSourceFactory: LyricSourceFactory
-) : Fetcher<MediaItem> {
+    private val lyricSourceFactory: LyricSourceFactory
+) : Fetcher<LyricRequest> {
     private val lrcIcon = mContext.resources.getDrawable(R.drawable.ic_lrc_fill, mContext.theme)
 
     override suspend fun fetch(
         pool: BitmapPool,
-        data: MediaItem,
+        data: LyricRequest,
         size: Size,
         options: Options
     ): FetchResult {
-        val pair = lyricSourceFactory.getLyric(data)
+        val pair = lyricSourceFactory.getLyric(data.mediaItem)
         if (TextUtils.isEmpty(pair?.first)) throw NullPointerException()
 
         return DrawableResult(
@@ -41,7 +44,7 @@ class EmbeddedLyricFetchers @Inject constructor(
         )
     }
 
-    override fun key(data: MediaItem): String {
-        return "embedded_lyric_${data.mediaId}"
+    override fun key(data: LyricRequest): String {
+        return "embedded_lyric_${data.mediaItem.mediaId}"
     }
 }

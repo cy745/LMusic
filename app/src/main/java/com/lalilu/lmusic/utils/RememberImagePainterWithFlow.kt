@@ -6,7 +6,6 @@ import androidx.media3.common.MediaItem
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
-import com.lalilu.lmusic.utils.fetcher.getCoverFromMediaItem
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 /**
@@ -20,7 +19,7 @@ fun rememberCoverWithFlow(
 ): ImagePainter {
     val data: Any = networkDataViewModel.getNetworkDataFlowByMediaId(mediaItem.mediaId)
         .collectAsState(initial = null).value?.requireCoverUri()
-        ?: mediaItem.getCoverFromMediaItem()
+        ?: mediaItem
 
     return rememberImagePainter(
         data = data,
@@ -41,7 +40,7 @@ fun rememberCoverForOnce(
 
     LaunchedEffect(mediaItem) {
         data = networkDataViewModel.getNetworkDataByMediaId(mediaItem.mediaId)
-            ?.requireCoverUri() ?: mediaItem.getCoverFromMediaItem()
+            ?.requireCoverUri() ?: mediaItem
     }
 
     return rememberImagePainter(
