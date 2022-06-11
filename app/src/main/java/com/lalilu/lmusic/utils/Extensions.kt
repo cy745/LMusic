@@ -4,6 +4,7 @@ import android.content.ContentUris
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -27,8 +28,10 @@ fun Drawable.toBitmap(): Bitmap {
 }
 
 fun Bitmap.addShadow(
-    fromColor: Int, toColor: Int, percent: Float,
-    vararg orientation: GradientDrawable.Orientation
+    fromColor: Int = Color.argb(55, 0, 0, 0),
+    toColor: Int = Color.TRANSPARENT,
+    percent: Float = 0.25f,
+    orientation: List<GradientDrawable.Orientation> = listOf(TOP_BOTTOM, BOTTOM_TOP)
 ): Bitmap {
     orientation.forEach {
         val mBackShadowColors = intArrayOf(fromColor, toColor)
