@@ -22,6 +22,7 @@ import kotlin.coroutines.CoroutineContext
 @HiltViewModel
 class NetworkDataViewModel @Inject constructor(
     private val neteaseDataSource: NeteaseDataSource,
+    private val globalDataManager: GlobalDataManager,
     private val dataBase: MDataBase
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -152,7 +153,7 @@ class NetworkDataViewModel @Inject constructor(
                     tlyric = it.second
                 )
             )
-            GlobalDataManager.updateCurrentMediaItem(mediaId)
+            globalDataManager.updateCurrentMediaItem(mediaId)
             toastTips("保存匹配歌词成功")
             withContext(Dispatchers.Main) {
                 success()

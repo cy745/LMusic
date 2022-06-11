@@ -15,8 +15,9 @@ import kotlin.coroutines.CoroutineContext
 
 @Singleton
 class MMediaSource @Inject constructor(
-    val mDataBase: MDataBase,
-    private val mediaStoreHelper: MediaStoreHelper
+    private val globalDataManager: GlobalDataManager,
+    private val mediaStoreHelper: MediaStoreHelper,
+    private val dataBase: MDataBase
 ) : BaseMediaSource(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -43,8 +44,8 @@ class MMediaSource @Inject constructor(
             getItemById(ITEM_PREFIX + it)
         } ?: lastPlaylist.getOrNull(0)
 
-        GlobalDataManager.currentMediaItem.emit(lastPlayedItem)
-        GlobalDataManager.currentPlaylist.emit(lastPlaylist)
+        globalDataManager.currentMediaItem.emit(lastPlayedItem)
+        globalDataManager.currentPlaylist.emit(lastPlaylist)
     }
 
     private suspend fun updateArtistFromMediaSource() = withContext(Dispatchers.IO) {
@@ -53,7 +54,7 @@ class MMediaSource @Inject constructor(
             val artistId = mediaItem.mediaMetadata.getArtistId().toString()
 
             artistText.split('/', '、').forEach { artist ->
-                mDataBase.artistDao().saveArtist(artist, artistId)
+                dataBase.artistDao().saveArtist(artist, artistId)
             }
         }
     }

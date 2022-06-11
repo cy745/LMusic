@@ -22,17 +22,22 @@ import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.manager.SpManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 @UnstableApi
-class LMusicNotificationProvider constructor(
-    private val mContext: Context
+@Singleton
+class LMusicNotificationProvider @Inject constructor(
+    @ApplicationContext private val mContext: Context,
+    private val lyricManager: LyricManager
 ) : MediaNotification.Provider, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -261,7 +266,7 @@ class LMusicNotificationProvider constructor(
 
     init {
         launch {
-            LyricManager.currentSentence.combine(lyricPusherEnable) { text, enable ->
+            lyricManager.currentSentence.combine(lyricPusherEnable) { text, enable ->
                 if (enable) text else null
             }.collectLatest { text ->
                 mediaNotification ?: return@collectLatest

@@ -26,7 +26,8 @@ object BlurImageUtil : CoroutineScope {
     class BlurImageLayer(
         private val sourceBitmap: Bitmap,
         blurRadius: Int = 0,
-        private val samplingValue: Int = 400
+        private val samplingValue: Int = 400,
+        onCreate: suspend (Bitmap) -> Unit = {}
     ) {
         private lateinit var samplingBitmap: Bitmap
         private var blurBitmap: Bitmap? = null
@@ -78,6 +79,7 @@ object BlurImageUtil : CoroutineScope {
             launch {
                 samplingBitmap = createSamplingBitmap(sourceBitmap, samplingValue)
                 blurBitmap = createBlurBitmap(samplingBitmap, radius)
+                onCreate(samplingBitmap)
             }
         }
     }

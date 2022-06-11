@@ -30,9 +30,8 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.ComposeAdapter
 import com.lalilu.lmusic.adapter.setDiffNewData
 import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.manager.GlobalDataManager
-import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.viewmodel.GlobalViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
@@ -69,7 +68,8 @@ fun PlayingScreen(
     onPlayPrevious: suspend () -> Unit = {},
     onPlayPause: suspend () -> Unit = {},
     onSeekToPosition: suspend (Float) -> Unit = {},
-    networkDataViewModel: NetworkDataViewModel = hiltViewModel()
+    networkDataViewModel: NetworkDataViewModel = hiltViewModel(),
+    globalViewModel: GlobalViewModel = hiltViewModel()
 ) {
     fun playHandle(@ClickPart clickPart: Int) {
         when (clickPart) {
@@ -211,19 +211,19 @@ fun PlayingScreen(
                 scope.launch { onSeekToPosition(value) }
             })
             maSeekBar.cancelListeners.add(OnSeekBarCancelListener { haptic() })
-            GlobalDataManager.currentPlaylistLiveData.observe(activity) {
+            globalViewModel.globalDataManager.currentPlaylistLiveData.observe(activity) {
                 adapter?.setDiffNewData(it.toMutableList())
             }
-            GlobalDataManager.currentMediaItemLiveData.observe(activity) {
+            globalViewModel.globalDataManager.currentMediaItemLiveData.observe(activity) {
                 maSeekBar.maxValue = (it?.mediaMetadata?.getDuration()
                     ?.coerceAtLeast(0) ?: 0f).toFloat()
                 song = it
             }
-            GlobalDataManager.currentPositionLiveData.observe(activity) {
+            globalViewModel.globalDataManager.currentPositionLiveData.observe(activity) {
                 maSeekBar.updateValue(it.toFloat())
                 fmLyricViewX.updateTime(it)
             }
-            LyricManager.currentLyricLiveData.observe(activity) {
+            globalViewModel.lyricManager.currentLyricLiveData.observe(activity) {
                 fmLyricViewX.setLyricEntryList(emptyList())
                 fmLyricViewX.loadLyric(it?.first, it?.second)
             }

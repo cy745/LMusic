@@ -29,7 +29,8 @@ import kotlin.coroutines.CoroutineContext
 class MSongBrowser @Inject constructor(
     @ApplicationContext
     private val mContext: Context,
-    private val mediaSource: MMediaSource
+    private val mediaSource: MMediaSource,
+    private val globalDataManager: GlobalDataManager
 ) : DefaultLifecycleObserver, CoroutineScope, EnhanceBrowser {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
@@ -74,8 +75,8 @@ class MSongBrowser @Inject constructor(
 
     private fun recoverLastPlayedData() = launch(Dispatchers.IO) {
         val position = HistoryManager.lastPlayedPosition
-        val items = GlobalDataManager.currentPlaylist.value
-        val index = GlobalDataManager.currentMediaItem.value?.mediaId?.let { id ->
+        val items = globalDataManager.currentPlaylist.value
+        val index = globalDataManager.currentMediaItem.value?.mediaId?.let { id ->
             items.indexOfFirst { it.mediaId == id }
         }?.coerceAtLeast(0) ?: 0
 
@@ -149,7 +150,7 @@ class MSongBrowser @Inject constructor(
         return try {
             lastRemovedIndex = originPlaylistIds.indexOf(mediaId)
             if (lastRemovedIndex == browser!!.currentMediaItemIndex) {
-                GlobalDataManager.currentMediaItem.tryEmit(
+                globalDataManager.currentMediaItem.tryEmit(
                     browser!!.getMediaItemAt(browser!!.nextMediaItemIndex)
                 )
             }

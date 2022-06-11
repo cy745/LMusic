@@ -140,12 +140,13 @@ class BlurImageView @JvmOverloads constructor(
 
             flow {
                 sourceBitmap?.addShadow()?.let {
-                    updatePalette(it)
                     emit(it)
                 }
             }
         }.mapLatest {
-            BlurImageUtil.BlurImageLayer(it, blurRadius)
+            BlurImageUtil.BlurImageLayer(it, blurRadius) { samplingBitmap ->
+                updatePalette(samplingBitmap)
+            }
         }.onEach { layer ->
             imageLayer.add(layer)
             crossFade(layer) {
