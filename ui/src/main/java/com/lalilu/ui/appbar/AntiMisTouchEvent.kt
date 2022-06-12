@@ -13,7 +13,7 @@ interface AntiMisTouchEvent {
     /**
      * 接管需要屏蔽的组件的 onTouchEvent 方法即可使用
      */
-    fun checkTouchEvent(event: MotionEvent): Boolean {
+    fun ignoreTouchEvent(event: MotionEvent): Boolean {
         return isInPlaceToIntercept(event.rawY)
                 && isTimeToIntercept()
     }

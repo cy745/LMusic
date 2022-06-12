@@ -31,7 +31,7 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
 ) : ViewOffsetExpendBehavior<V>(mContext, attrs), AntiMisTouchEvent, StateHelper.Adapter {
     override var stateHelper: StateHelper = StateHelper()
 
-    open val interceptSize: Int = 200
+    open val interceptSize: Int = 64
     private var mScrollAnimation: SpringAnimation? = null
     private var scroller: OverScroller? = null
     private var velocityTracker: VelocityTracker? = null
@@ -165,7 +165,7 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
             activePointerId = INVALID_POINTER
             val x = ev.x.toInt()
             val y = ev.y.toInt()
-            isBeingDragged = parent.isPointInChildBounds(child, x, y)
+            isBeingDragged = parent.isPointInChildBounds(child, x, y) && !ignoreTouchEvent(ev)
             if (isBeingDragged) {
                 lastMotionY = y
                 activePointerId = ev.getPointerId(0)
@@ -184,7 +184,6 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
     override fun onTouchEvent(
         parent: CoordinatorLayout, child: V, ev: MotionEvent
     ): Boolean {
-        if (checkTouchEvent(ev)) return true
 
         var consumeUp = false
         when (ev.actionMasked) {
