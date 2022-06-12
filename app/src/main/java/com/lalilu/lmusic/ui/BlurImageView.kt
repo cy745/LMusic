@@ -11,6 +11,7 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
 import coil.load
+import com.lalilu.common.DeviceUtils
 import com.lalilu.lmusic.utils.BlurImageUtil
 import com.lalilu.lmusic.utils.BlurImageUtil.MAX_BLUR_RADIUS
 import com.lalilu.lmusic.utils.BlurImageUtil.centerCrop
@@ -70,6 +71,12 @@ class BlurImageView @JvmOverloads constructor(
             field = value
             invalidate()
         }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+        setMeasuredDimension(widthSize, DeviceUtils.getHeight(context))
+    }
 
     override fun onDraw(canvas: Canvas) {
         tempDstRect.set(0f, 0f, width.toFloat(), height.toFloat())
