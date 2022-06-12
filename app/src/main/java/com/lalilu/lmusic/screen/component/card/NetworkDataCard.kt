@@ -51,8 +51,7 @@ fun NetworkDataCard(
                         onClick = {
                             networkDataViewModel.saveLyricIntoNetworkData(
                                 mediaId = mediaId,
-                                songId = networkData.value!!.songId,
-                                toastTips = ToastUtils::showShort
+                                songId = networkData.value!!.songId
                             )
                         }
                     )
@@ -64,8 +63,7 @@ fun NetworkDataCard(
                         onClick = {
                             networkDataViewModel.saveCoverUrlIntoNetworkData(
                                 mediaId = mediaId,
-                                songId = networkData.value!!.songId,
-                                toastTips = ToastUtils::showShort
+                                songId = networkData.value!!.songId
                             )
                         }
                     )

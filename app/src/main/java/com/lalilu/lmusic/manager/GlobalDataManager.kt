@@ -6,11 +6,13 @@ import androidx.lifecycle.asLiveData
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.lalilu.lmusic.datasource.MDataBase
-import com.lalilu.lmusic.datasource.extensions.partCopy
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
 import com.lalilu.lmusic.utils.updateArtworkUri
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -64,22 +66,13 @@ class GlobalDataManager @Inject constructor(
         }
     }
 
-    suspend fun updateCurrentMediaItem(targetMediaItemId: String) = withContext(Dispatchers.IO) {
-        val mediaItem = currentMediaItem.value
-            ?: return@withContext
-
-        if (mediaItem.mediaId == targetMediaItemId) {
-            currentMediaItem.emit(mediaItem.partCopy())
-        }
-    }
-
     val currentIsPlaying: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val currentPosition: MutableStateFlow<Long> = MutableStateFlow(0L)
     val currentMediaItem: MutableStateFlow<MediaItem?> = MutableStateFlow(null)
     val currentPlaylist: MutableStateFlow<List<MediaItem>> = MutableStateFlow(emptyList())
     private val currentSearchKeyword: MutableStateFlow<String?> = MutableStateFlow(null)
 
-    val currentPlaylistLiveData = currentPlaylist.combine(currentMediaItem) { items, item ->
+    private val currentPlaylistFlow = currentPlaylist.combine(currentMediaItem) { items, item ->
         item ?: return@combine items
         items.moveHeadToTailWithSearch(item.mediaId) { listItem, id ->
             listItem.mediaId == id
@@ -88,15 +81,17 @@ class GlobalDataManager @Inject constructor(
         searchTextManager.filter(keyword, items) {
             "${it.mediaMetadata.title} ${it.mediaMetadata.artist}"
         }
-    }.asLiveData()
+    }
 
-    val currentMediaItemLiveData = currentMediaItem.flatMapLatest { mediaItem ->
+    val currentMediaItemFlow = currentMediaItem.flatMapLatest { mediaItem ->
         dataBase.networkDataDao().getFlowById(mediaItem?.mediaId).mapLatest {
             return@mapLatest mediaItem?.updateArtworkUri(it?.requireCoverUri())
         }
     }.flowOn(Dispatchers.IO)
-        .asLiveData()
+
+    val currentMediaItemLiveData = currentMediaItemFlow.asLiveData()
     val currentPositionLiveData = currentPosition.asLiveData()
+    val currentPlaylistLiveData = currentPlaylistFlow.asLiveData()
 
     val playerListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
