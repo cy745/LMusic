@@ -9,7 +9,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.dirror.lyricviewx.LyricViewX
 import com.lalilu.R
-import com.lalilu.common.DeviceUtils
 import com.lalilu.common.HapticUtils
 import com.lalilu.common.calculatePercentIn
 import com.lalilu.common.ifNaN
@@ -33,38 +32,12 @@ class SquareAppbarLayout @JvmOverloads constructor(
     private var interpolator = AccelerateDecelerateInterpolator()
     private var parabolaInterpolator = ParabolaInterpolator()
     private var behavior = MyAppbarBehavior(context, null)
-
     private var maxDragHeight = 200
-
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        super.onLayout(changed, l, t, r, b)
-
-        mToolbar = findViewById(R.id.fm_toolbar)
-        mDraweeView = findViewById(R.id.fm_top_pic)
-        mLyricViewX = findViewById(R.id.fm_lyric_view_x)
-        mEdgeTransparentView = findViewById(R.id.fm_edge_transparent_view)
-        mCollapsingToolbarLayout = findViewById(R.id.fm_collapse_layout)
-
-        val deviceHeight = DeviceUtils.getHeight(context)
-        setHeightToView(mDraweeView, deviceHeight)
-        setHeightToView(mLyricViewX, deviceHeight)
-        setHeightToView(mEdgeTransparentView, deviceHeight)
-    }
 
     override fun getBehavior(): CoordinatorLayout.Behavior<AppbarLayout> = behavior
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, widthMeasureSpec)
-    }
-
-    /**
-     * 修改View的高度，使用LayoutParams修改的方法时灵时不灵，故直接修改其top和bottom
-     */
-    private fun setHeightToView(view: View?, height: Number) {
-        view ?: return
-        if (view.height == height.toInt()) return
-        view.top = 0
-        view.bottom = height.toInt()
     }
 
     private fun getMutableDragOffset(): Float {
@@ -83,6 +56,11 @@ class SquareAppbarLayout @JvmOverloads constructor(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        mToolbar = findViewById(R.id.fm_toolbar)
+        mDraweeView = findViewById(R.id.fm_top_pic)
+        mLyricViewX = findViewById(R.id.fm_lyric_view_x)
+        mEdgeTransparentView = findViewById(R.id.fm_edge_transparent_view)
+        mCollapsingToolbarLayout = findViewById(R.id.fm_collapse_layout)
         this.clipChildren = false
 
         behavior.addOnOffsetExpendChangedListener { appbar, offset ->

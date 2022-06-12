@@ -68,7 +68,7 @@
                         app:loadCover="@{song}"
                         app:viewModel="@{vm}" />
 
-                    <me.qinc.lib.edgetranslucent.EdgeTransparentView
+                    <com.lalilu.lmusic.ui.MyEdgeTransparentView
                         android:id="@+id/fm_edge_transparent_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -76,7 +76,7 @@
                         app:edge_position="top|bottom"
                         app:edge_width="200dp">
 
-                        <com.dirror.lyricviewx.LyricViewX
+                        <com.lalilu.lmusic.ui.MyLyricViewX
                             android:id="@+id/fm_lyric_view_x"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
@@ -88,7 +88,7 @@
                             app:lrcTextGravity="center"
                             app:lrcTextSize="18dp"
                             app:lrcTranslateTextScaleValue="0.8" />
-                    </me.qinc.lib.edgetranslucent.EdgeTransparentView>
+                    </com.lalilu.lmusic.ui.MyEdgeTransparentView>
 
                     <androidx.appcompat.widget.Toolbar
                         android:id="@+id/fm_toolbar"
