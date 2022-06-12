@@ -15,10 +15,6 @@
         <variable
             name="song"
             type="androidx.media3.common.MediaItem" />
-
-        <variable
-            name="vm"
-            type="com.lalilu.lmusic.viewmodel.NetworkDataViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -65,8 +61,7 @@
                         android:fitsSystemWindows="true"
                         app:cp_layout_collapseMode="parallax"
                         app:cp_layout_collapseParallaxMultiplier="0.7"
-                        app:loadCover="@{song}"
-                        app:viewModel="@{vm}" />
+                        app:loadCover="@{song}" />
 
                     <com.lalilu.lmusic.ui.MyEdgeTransparentView
                         android:id="@+id/fm_edge_transparent_view"
