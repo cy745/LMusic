@@ -28,7 +28,7 @@ class LyricManager @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val currentLyric: Flow<Pair<String, String?>?> =
-        globalDataManager.currentMediaItem.mapLatest {
+        globalDataManager.currentMediaItemFlow.mapLatest {
             it ?: return@mapLatest null
             lyricSourceFactory.getLyric(it)
         }

@@ -4,6 +4,7 @@ import android.text.TextUtils
 import android.view.View
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
+import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.R
 import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
 import com.lalilu.lmusic.apis.NeteaseDataSource
@@ -12,7 +13,6 @@ import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
-import com.lalilu.lmusic.manager.GlobalDataManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -22,7 +22,6 @@ import kotlin.coroutines.CoroutineContext
 @HiltViewModel
 class NetworkDataViewModel @Inject constructor(
     private val neteaseDataSource: NeteaseDataSource,
-    private val globalDataManager: GlobalDataManager,
     private val dataBase: MDataBase
 ) : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -75,11 +74,10 @@ class NetworkDataViewModel @Inject constructor(
         mediaId: String,
         songId: Long?,
         title: String?,
-        toastTips: (String) -> Unit = {},
         success: () -> Unit = {}
     ) = launch(Dispatchers.IO) {
         if (songId == null || title == null) {
-            toastTips("未选择匹配歌曲")
+            ToastUtils.showShort("未选择匹配歌曲")
             return@launch
         }
         try {
@@ -90,22 +88,21 @@ class NetworkDataViewModel @Inject constructor(
                     title = title
                 )
             )
-            toastTips("保存匹配信息成功")
+            ToastUtils.showShort("保存匹配信息成功")
             withContext(Dispatchers.Main) {
                 success()
             }
         } catch (e: Exception) {
-            toastTips("保存匹配信息失败")
+            ToastUtils.showShort("保存匹配信息失败")
         }
     }
 
     fun saveCoverUrlIntoNetworkData(
         songId: String?,
         mediaId: String,
-        toastTips: (String) -> Unit = {}
     ) = launch(Dispatchers.IO) {
         if (songId == null) {
-            toastTips("未选择匹配歌曲")
+            ToastUtils.showShort("未选择匹配歌曲")
             return@launch
         }
         try {
@@ -116,11 +113,11 @@ class NetworkDataViewModel @Inject constructor(
                         cover = it.songs[0].al.picUrl
                     )
                 )
-                toastTips("保存封面地址成功")
+                ToastUtils.showShort("保存封面地址成功")
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            toastTips("保存封面地址失败")
+            ToastUtils.showShort("保存封面地址失败")
         }
     }
 
@@ -128,19 +125,18 @@ class NetworkDataViewModel @Inject constructor(
     fun saveLyricIntoNetworkData(
         songId: String?,
         mediaId: String,
-        toastTips: (String) -> Unit = {},
         success: () -> Unit = {}
     ) = launch(Dispatchers.IO) {
         flow {
             if (songId != null) emit(songId)
-            else toastTips("未选择匹配歌曲")
+            else ToastUtils.showShort("未选择匹配歌曲")
         }.mapLatest {
-            toastTips("开始获取歌词")
+            ToastUtils.showShort("开始获取歌词")
             neteaseDataSource.searchForLyric(it)
         }.mapLatest {
             val lyric = it?.mainLyric
             if (TextUtils.isEmpty(lyric)) {
-                toastTips("选中歌曲无歌词")
+                ToastUtils.showShort("选中歌曲无歌词")
                 return@mapLatest null
             }
             Pair(lyric!!, it.translateLyric)
@@ -153,13 +149,12 @@ class NetworkDataViewModel @Inject constructor(
                     tlyric = it.second
                 )
             )
-            globalDataManager.updateCurrentMediaItem(mediaId)
-            toastTips("保存匹配歌词成功")
+            ToastUtils.showShort("保存匹配歌词成功")
             withContext(Dispatchers.Main) {
                 success()
             }
         }.catch {
-            toastTips("保存失败")
+            ToastUtils.showShort("保存失败")
         }.launchIn(this)
     }
 }
