@@ -52,8 +52,8 @@ fun MatchNetworkDataScreen(
                 searchForLyricConfirm.setOnClickListener {
                     viewModel.saveMatchNetworkData(
                         mediaId = mediaItem.mediaId,
-                        songId = lyrics[selectedIndex].id,
-                        title = lyrics[selectedIndex].name,
+                        songId = lyrics.getOrNull(selectedIndex)?.id,
+                        title = lyrics.getOrNull(selectedIndex)?.name,
                         success = navigateUp
                     )
                 }
