@@ -4,6 +4,7 @@ import android.text.TextUtils
 import android.view.View
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.R
 import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
@@ -13,19 +14,19 @@ import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
+import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
 class NetworkDataViewModel @Inject constructor(
     private val neteaseDataSource: NeteaseDataSource,
     private val dataBase: MDataBase
-) : ViewModel(), CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.IO
-
+) : ViewModel() {
     fun getNetworkDataFlowByMediaId(mediaId: String) =
         dataBase.networkDataDao().getFlowById(mediaId)
             .distinctUntilChanged()
@@ -39,7 +40,7 @@ class NetworkDataViewModel @Inject constructor(
         binding: FragmentSearchForLyricHeaderBinding,
         keyword: String,
         items: SnapshotStateList<SongSearchSong>
-    ) = launch(Dispatchers.IO) {
+    ) = viewModelScope.safeLaunch(Dispatchers.IO) {
         withContext(Dispatchers.Main) {
             items.clear()
             binding.searchForLyricRefreshAndTipsButton.text =
@@ -75,10 +76,10 @@ class NetworkDataViewModel @Inject constructor(
         songId: Long?,
         title: String?,
         success: () -> Unit = {}
-    ) = launch(Dispatchers.IO) {
+    ) = viewModelScope.safeLaunch(Dispatchers.IO) {
         if (songId == null || title == null) {
             ToastUtils.showShort("未选择匹配歌曲")
-            return@launch
+            return@safeLaunch
         }
         try {
             dataBase.networkDataDao().save(
@@ -100,10 +101,10 @@ class NetworkDataViewModel @Inject constructor(
     fun saveCoverUrlIntoNetworkData(
         songId: String?,
         mediaId: String,
-    ) = launch(Dispatchers.IO) {
+    ) = viewModelScope.safeLaunch(Dispatchers.IO) {
         if (songId == null) {
             ToastUtils.showShort("未选择匹配歌曲")
-            return@launch
+            return@safeLaunch
         }
         try {
             neteaseDataSource.searchForDetail(songId)?.let {
@@ -126,7 +127,7 @@ class NetworkDataViewModel @Inject constructor(
         songId: String?,
         mediaId: String,
         success: () -> Unit = {}
-    ) = launch(Dispatchers.IO) {
+    ) = viewModelScope.safeLaunch(Dispatchers.IO) {
         flow {
             if (songId != null) emit(songId)
             else ToastUtils.showShort("未选择匹配歌曲")

@@ -24,9 +24,9 @@ import com.lalilu.lmusic.screen.component.NavigateLibrary
 import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.utils.WindowSizeClass
 import com.lalilu.lmusic.utils.rememberWindowSizeClass
+import com.lalilu.lmusic.utils.safeLaunch
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 @ExperimentalMaterialApi
@@ -41,18 +41,18 @@ fun MainScreen(
 
     val onPopUp: () -> Unit = {
         if (navController.previousBackStackEntry == null) {
-            scope.launch { scaffoldState.hide() }
+            scope.safeLaunch { scaffoldState.hide() }
         } else {
             navController.navigateUp()
         }
     }
 
     val onClose: () -> Unit = {
-        scope.launch { scaffoldState.hide() }
+        scope.safeLaunch { scaffoldState.hide() }
     }
 
     val onExpendModal: () -> Unit = {
-        scope.launch { scaffoldState.animateTo(ModalBottomSheetValue.Expanded) }
+        scope.safeLaunch { scaffoldState.animateTo(ModalBottomSheetValue.Expanded) }
     }
 
     Row {
@@ -119,7 +119,7 @@ fun MainScreenForCompat(
          * 故直接从单例中获取该值
          */
         if (WindowSizeClass.instance?.windowSize == WindowSize.Compact)
-            scope.launch { scaffoldState.show() }
+            scope.safeLaunch { scaffoldState.show() }
     }
     val scaffoldShow: suspend () -> Unit = {
         navController.navigate(
@@ -175,7 +175,7 @@ fun MainScreenForCompat(
         navController = navController,
         onBack = {
             if (isVisible() && isEnableBottomSheet) {
-                scope.launch { scaffoldState.hide() }
+                scope.safeLaunch { scaffoldState.hide() }
             } else {
                 context.getActivity()?.moveTaskToBack(false)
             }

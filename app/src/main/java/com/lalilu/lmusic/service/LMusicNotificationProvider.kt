@@ -22,13 +22,13 @@ import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -198,13 +198,13 @@ class LMusicNotificationProvider @Inject constructor(
                 bitmap = it.second
             }
 
-            launch {
+            safeLaunch {
                 bitmap = bitmap ?: BitmapFactory.decodeByteArray(it, 0, it.size)?.also {
                     lastBitmap = metadata to it
                     notificationBgColor = Palette.from(it)
                         .generate()
                         .getAutomaticColor()
-                } ?: return@launch
+                } ?: return@safeLaunch
 
                 builder.setLargeIcon(bitmap)
                 builder.color = notificationBgColor
@@ -265,7 +265,7 @@ class LMusicNotificationProvider @Inject constructor(
     }
 
     init {
-        launch {
+        safeLaunch {
             lyricManager.currentSentence.combine(lyricPusherEnable) { text, enable ->
                 if (enable) text else null
             }.collectLatest { text ->

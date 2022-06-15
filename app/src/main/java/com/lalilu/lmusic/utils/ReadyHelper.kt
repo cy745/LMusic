@@ -3,7 +3,6 @@ package com.lalilu.lmusic.utils
 import androidx.annotation.IntDef
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 const val STATE_CREATED = 1
@@ -51,7 +50,7 @@ abstract class BaseReadyHelper : ReadyHelper, CoroutineScope {
                 STATE_INITIALIZED,
                 STATE_ERROR -> {
                     synchronized(readyCallbacks) {
-                        launch {
+                        safeLaunch {
                             readyCallbacks.forEach {
                                 it.key.invoke(value != STATE_ERROR)
                                 if (it.value) readyCallbacks.remove(it.key)
@@ -69,7 +68,7 @@ abstract class BaseReadyHelper : ReadyHelper, CoroutineScope {
                 false
             }
             else -> {
-                launch { performAction(readyState != STATE_ERROR) }
+                safeLaunch { performAction(readyState != STATE_ERROR) }
                 true
             }
         }
@@ -86,6 +85,6 @@ abstract class BaseReadyHelper : ReadyHelper, CoroutineScope {
     }
 
     override fun startSync() {
-        launch { start() }
+        safeLaunch { start() }
     }
 }

@@ -16,10 +16,10 @@ import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
+import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -73,7 +73,7 @@ class MSongBrowser @Inject constructor(
         }
     }
 
-    private fun recoverLastPlayedData() = launch(Dispatchers.IO) {
+    private fun recoverLastPlayedData() = safeLaunch(Dispatchers.IO) {
         val position = HistoryManager.lastPlayedPosition
         val items = globalDataManager.currentPlaylist.value
         val index = globalDataManager.currentMediaItem.value?.mediaId?.let { id ->

@@ -9,10 +9,10 @@ import com.lalilu.R
 import com.lalilu.common.KanaToRomaji
 import com.lalilu.common.PinyinUtils
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.*
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -146,7 +146,7 @@ class KanjiToHiraTransformer @Inject constructor(
                         return@SpBoolListener
                     }
 
-                    launch {
+                    safeLaunch {
                         mKanhira = Kanhira(
                             KakasiDictReader.load(
                                 context.resources.openRawResource(R.raw.kakasidict_utf_8),

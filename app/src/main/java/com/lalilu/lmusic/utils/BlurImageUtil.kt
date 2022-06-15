@@ -9,7 +9,6 @@ import androidx.annotation.FloatRange
 import androidx.core.animation.addListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
@@ -47,7 +46,7 @@ object BlurImageUtil : CoroutineScope {
         var radius: Int = blurRadius
             set(value) {
                 field = value.coerceIn(0, 50)
-                launch(Dispatchers.IO) {
+                safeLaunch(Dispatchers.IO) {
                     blurBitmap = createBlurBitmap(samplingBitmap, value)
                 }
             }
@@ -77,7 +76,7 @@ object BlurImageUtil : CoroutineScope {
         }
 
         init {
-            launch {
+            safeLaunch {
                 samplingBitmap = createSamplingBitmap(sourceBitmap, samplingValue)
                 blurBitmap = createBlurBitmap(samplingBitmap, radius)
                 onCreate(samplingBitmap)
@@ -85,27 +84,28 @@ object BlurImageUtil : CoroutineScope {
         }
     }
 
-    fun View.updateBlur(layer: BlurImageLayer, radius: Int) = launch {
+    fun View.updateBlur(layer: BlurImageLayer, radius: Int) = safeLaunch {
         layer.radius = radius
         withContext(Dispatchers.Main) {
             invalidate()
         }
     }
 
-    fun View.crossFade(layer: BlurImageLayer?, onEnd: () -> Unit = {}) = launch(Dispatchers.Main) {
-        ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = CROSS_FADE_DURATION
-            addListener(onStart = {
-                layer?.alpha = 0f
-                invalidate()
-            }, onEnd = { onEnd() })
-            addUpdateListener { animator ->
-                val value = animator.animatedValue as Float
-                layer?.alpha = value
-                invalidate()
-            }
-        }.start()
-    }
+    fun View.crossFade(layer: BlurImageLayer?, onEnd: () -> Unit = {}) =
+        safeLaunch(Dispatchers.Main) {
+            ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = CROSS_FADE_DURATION
+                addListener(onStart = {
+                    layer?.alpha = 0f
+                    invalidate()
+                }, onEnd = { onEnd() })
+                addUpdateListener { animator ->
+                    val value = animator.animatedValue as Float
+                    layer?.alpha = value
+                    invalidate()
+                }
+            }.start()
+        }
 
     /**
      * 按照CenterCrop的规则，获取调整后的dest位置

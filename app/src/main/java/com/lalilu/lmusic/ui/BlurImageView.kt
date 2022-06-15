@@ -12,15 +12,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.palette.graphics.Palette
 import coil.load
 import com.lalilu.common.DeviceUtils
-import com.lalilu.lmusic.utils.BlurImageUtil
+import com.lalilu.lmusic.utils.*
 import com.lalilu.lmusic.utils.BlurImageUtil.MAX_BLUR_RADIUS
 import com.lalilu.lmusic.utils.BlurImageUtil.centerCrop
 import com.lalilu.lmusic.utils.BlurImageUtil.crossFade
 import com.lalilu.lmusic.utils.BlurImageUtil.scaleTransform
 import com.lalilu.lmusic.utils.BlurImageUtil.updateBlur
-import com.lalilu.lmusic.utils.StackBlurUtils
-import com.lalilu.lmusic.utils.addShadow
-import com.lalilu.lmusic.utils.toBitmap
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.CoroutineContext
@@ -134,7 +131,7 @@ class BlurImageView @JvmOverloads constructor(
     /**
      * 外部创建Coil的ImageRequest，传入onSucceed的Drawable
      */
-    fun loadImageFromDrawable(drawable: Drawable) = launch(Dispatchers.IO) {
+    fun loadImageFromDrawable(drawable: Drawable) = safeLaunch(Dispatchers.IO) {
         drawableToDraw.emit(drawable)
     }
 
@@ -167,7 +164,7 @@ class BlurImageView @JvmOverloads constructor(
     /**
      * 清除旧数据
      */
-    fun clearImage() = launch(Dispatchers.IO) {
+    fun clearImage() = safeLaunch(Dispatchers.IO) {
         imageLayer.forEach { it.recycle() }
         imageLayer.clear()
         palette.postValue(null)

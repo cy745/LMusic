@@ -18,10 +18,10 @@ import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -117,7 +117,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
                 mediaController.getMediaItemAt(it).mediaId
             }
 
-            launch {
+            safeLaunch {
                 globalDataManager.currentPlaylist.emit(
                     HistoryManager.currentPlayingIds.mapNotNull {
                         mediaSource.getItemById(ITEM_PREFIX + it)

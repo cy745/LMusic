@@ -2,9 +2,9 @@ package com.lalilu.lmusic.manager
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.lalilu.lmusic.utils.safeLaunch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.collections.set
 import kotlin.coroutines.CoroutineContext
 
@@ -16,7 +16,7 @@ object SpManager : CoroutineScope {
         private val async: Boolean
     ) {
         fun onUpdate(newValue: T) {
-            launch(
+            safeLaunch(
                 if (async) Dispatchers.IO else Dispatchers.Unconfined
             ) {
                 callback(newValue)

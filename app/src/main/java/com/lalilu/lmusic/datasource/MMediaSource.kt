@@ -5,9 +5,9 @@ import androidx.media3.common.MediaItem
 import com.lalilu.lmusic.datasource.extensions.getArtistId
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
+import com.lalilu.lmusic.utils.safeLaunch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,7 +22,7 @@ class MMediaSource @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     init {
-        launch {
+        safeLaunch {
             mediaStoreHelper.mediaItems.collect {
                 fillWithData(it)
                 updateArtistFromMediaSource()
@@ -30,7 +30,7 @@ class MMediaSource @Inject constructor(
         }
     }
 
-    fun start() = launch {
+    fun start() = safeLaunch {
         mediaStoreHelper.whenReady { recoverHistory() }
         mediaStoreHelper.start()
     }

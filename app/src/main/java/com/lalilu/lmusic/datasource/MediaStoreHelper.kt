@@ -22,7 +22,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -96,7 +95,7 @@ class MediaStoreHelper @Inject constructor(
 
     inner class MediaSourceObserver : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
-            launch(Dispatchers.IO) { start() }
+            safeLaunch(Dispatchers.IO) { start() }
         }
     }
 
