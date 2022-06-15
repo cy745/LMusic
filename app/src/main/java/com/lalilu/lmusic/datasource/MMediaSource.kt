@@ -36,13 +36,12 @@ class MMediaSource @Inject constructor(
     }
 
     private suspend fun recoverHistory() {
-        val lastPlaylist = HistoryManager.lastPlayedListIds?.mapNotNull {
-            getItemById(ITEM_PREFIX + it)
-        } ?: getChildren(ALL_ID) ?: emptyList()
+        val lastPlaylist = HistoryManager.lastPlayedListIds?.let { getItemsByIds(it) }
+            ?: getChildren(ALL_ID)
+            ?: emptyList()
 
-        val lastPlayedItem = HistoryManager.lastPlayedId?.let {
-            getItemById(ITEM_PREFIX + it)
-        } ?: lastPlaylist.getOrNull(0)
+        val lastPlayedItem = HistoryManager.lastPlayedId?.let { getItemById(ITEM_PREFIX + it) }
+            ?: lastPlaylist.getOrNull(0)
 
         globalDataManager.currentMediaItem.emit(lastPlayedItem)
         globalDataManager.currentPlaylist.emit(lastPlaylist)

@@ -50,12 +50,12 @@ class MainActivity : AppCompatActivity() {
         SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
             mediaSource.start()
+            lifecycle.addObserver(mSongBrowser)
         }, onFailed = {
             ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
         })
 
         volumeControlStream = AudioManager.STREAM_MUSIC
-        lifecycle.addObserver(mSongBrowser)
         setContent {
             LMusicTheme {
                 CompositionLocalProvider(LocalDataSaver provides dataSaverPreferences) {

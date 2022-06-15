@@ -26,6 +26,8 @@ const val ALL_PREFIX = "[all]"
 interface MediaSource {
     fun getRootItem(): MediaItem
     fun getItemById(key: String): MediaItem?
+    fun getItemsByIds(vararg key: String): List<MediaItem>
+    fun getItemsByIds(key: List<String>): List<MediaItem>
     fun getChildren(key: String): List<MediaItem>?
 
     //    fun fillCustomData(item: MediaItem): MediaItem
@@ -42,6 +44,14 @@ abstract class BaseMediaSource : MediaSource, CoroutineScope {
 
     override fun getItemById(key: String): MediaItem? {
         return treeNodes[key]?.item
+    }
+
+    override fun getItemsByIds(vararg key: String): List<MediaItem> {
+        return getItemsByIds(key.toList())
+    }
+
+    override fun getItemsByIds(key: List<String>): List<MediaItem> {
+        return key.mapNotNull { getItemById(ITEM_PREFIX + it) }
     }
 
     override fun getChildren(key: String): List<MediaItem>? {

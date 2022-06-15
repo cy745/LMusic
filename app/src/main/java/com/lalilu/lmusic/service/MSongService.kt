@@ -119,8 +119,8 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
             safeLaunch {
                 globalDataManager.currentPlaylist.emit(
-                    HistoryManager.currentPlayingIds.mapNotNull {
-                        mediaSource.getItemById(ITEM_PREFIX + it)
+                    HistoryManager.currentPlayingIds.let {
+                        mediaSource.getItemsByIds(it)
                     }
                 )
             }
