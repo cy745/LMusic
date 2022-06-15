@@ -25,10 +25,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.lalilu.lmusic.utils.safeLaunch
 import com.lalilu.ui.internal.AnimationUtils.lerp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 val SliderToTickAnimation = SpringSpec<Float>(stiffness = 800f)
@@ -101,7 +101,7 @@ fun SliderContainer(
             val current = rawOffset.value
             val target = snapValueToTick(current, tickFractions, minPx, maxPx)
             if (current != target) {
-                scope.launch {
+                scope.safeLaunch {
                     animateToTarget(draggableState, current, target, velocity)
                     onValueChangeFinished?.invoke()
                 }
@@ -237,7 +237,7 @@ private fun Modifier.sliderPressModifier(
             }
             Modifier.pointerInput(interactionSource) {
                 detectTapGestures { offset ->
-                    scope.launch { animateTo.value.invoke(offset.x) }
+                    scope.safeLaunch { animateTo.value.invoke(offset.x) }
                 }
             }
         } else {

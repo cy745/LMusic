@@ -31,6 +31,7 @@ import com.lalilu.lmusic.adapter.ComposeAdapter
 import com.lalilu.lmusic.adapter.setDiffNewData
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.utils.safeLaunch
 import com.lalilu.lmusic.viewmodel.GlobalViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
@@ -39,7 +40,6 @@ import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_EXPENDED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_NORMAL
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 const val CLICK_HANDLE_MODE_CLICK = 0
 const val CLICK_HANDLE_MODE_DOUBLE_CLICK = 1
@@ -76,7 +76,7 @@ fun PlayingScreen(
             CLICK_PART_RIGHT -> onPlayNext
             else -> null
         }?.let {
-            scope.launch { it() }
+            scope.safeLaunch { it() }
         }
     }
 
@@ -103,9 +103,9 @@ fun PlayingScreen(
             adapter = ComposeAdapter(
                 onSwipeToLeft = onSongMoveToNext,
                 onSwipeToRight = onSongRemoved,
-                onItemClick = { scope.launch { onSongSelected(it) } },
+                onItemClick = { scope.safeLaunch { onSongSelected(it) } },
                 onItemLongClick = {
-                    scope.launch {
+                    scope.safeLaunch {
                         onSongShowDetail(it)
                         haptic()
                     }
@@ -168,12 +168,12 @@ fun PlayingScreen(
 
             maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {
                 override fun onScrollToThreshold() {
-                    scope.launch { onExpendBottomSheet() }
+                    scope.safeLaunch { onExpendBottomSheet() }
                     haptic()
                 }
 
                 override fun onScrollRecover() {
-                    scope.launch { onCollapseBottomSheet() }
+                    scope.safeLaunch { onCollapseBottomSheet() }
                     haptic()
                 }
             })
@@ -181,7 +181,7 @@ fun PlayingScreen(
                 override fun onClick(@ClickPart clickPart: Int, action: Int) {
                     haptic()
                     if (clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
-                        scope.launch { onPlayPause() }
+                        scope.safeLaunch { onPlayPause() }
                         return
                     }
                     playHandle(clickPart)
@@ -205,7 +205,7 @@ fun PlayingScreen(
                 }
             })
             maSeekBar.seekToListeners.add(OnSeekBarSeekToListener { value ->
-                scope.launch { onSeekToPosition(value) }
+                scope.safeLaunch { onSeekToPosition(value) }
             })
             maSeekBar.cancelListeners.add(OnSeekBarCancelListener { haptic() })
             globalViewModel.globalDataManager.currentPlaylistLiveData.observe(activity) {

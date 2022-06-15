@@ -7,12 +7,12 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
+import com.lalilu.lmusic.utils.safeLaunch
 import com.lalilu.lmusic.utils.updateArtworkUri
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -34,7 +34,7 @@ class GlobalDataManager @Inject constructor(
             updatePositionLoop()
         }
 
-    fun searchFor(keyword: String?) = launch {
+    fun searchFor(keyword: String?) = safeLaunch {
         currentSearchKeyword.emit(keyword)
     }
 
@@ -59,7 +59,7 @@ class GlobalDataManager @Inject constructor(
         isPlaying: Boolean = getIsPlayingFromPlayer(),
         position: Long = getPositionFromPlayer()
     ) {
-        launch {
+        safeLaunch {
             HistoryManager.lastPlayedPosition = position
             currentIsPlaying.emit(isPlaying)
             currentPosition.emit(position)
@@ -95,7 +95,7 @@ class GlobalDataManager @Inject constructor(
 
     val playerListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            launch { currentMediaItem.emit(mediaItem) }
+            safeLaunch { currentMediaItem.emit(mediaItem) }
             updatePosition()
         }
 
