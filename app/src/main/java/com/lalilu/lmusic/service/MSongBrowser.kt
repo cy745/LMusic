@@ -12,6 +12,7 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
@@ -75,8 +76,10 @@ class MSongBrowser @Inject constructor(
 
     private fun recoverLastPlayedData() = safeLaunch(Dispatchers.IO) {
         val position = HistoryManager.lastPlayedPosition
-        val items = globalDataManager.currentPlaylist.value
-        val index = globalDataManager.currentMediaItem.value?.mediaId?.let { id ->
+        val items = HistoryManager.lastPlayedListIds?.let { mediaSource.getItemsByIds(it) }
+            ?: mediaSource.getChildren(ALL_ID)
+            ?: emptyList()
+        val index = HistoryManager.lastPlayedId?.let { id ->
             items.indexOfFirst { it.mediaId == id }
         }?.coerceAtLeast(0) ?: 0
 
