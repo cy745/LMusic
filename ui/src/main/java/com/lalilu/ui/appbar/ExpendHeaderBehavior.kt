@@ -88,10 +88,9 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
             val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val bound = windowManager.currentWindowMetrics.bounds
-                return bound.height() - bound.width()
+                return bound.height() - (child?.measuredWidth ?: bound.width())
             }
-            val point = Point()
-            windowManager.defaultDisplay.getSize(point)
+            val point = Point().apply { windowManager.defaultDisplay.getSize(this) }
             return point.y - (child?.measuredWidth ?: point.x)
         }
         return 0
