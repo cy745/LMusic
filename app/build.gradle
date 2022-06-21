@@ -189,6 +189,5 @@ dependencies {
 
     kapt 'androidx.hilt:hilt-compiler:1.0.0'
     kapt "androidx.room:room-compiler:$room_version"
-    kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 }

@@ -1,30 +1,35 @@
 package com.lalilu.lmusic.screen
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.RomUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.settings.*
 import com.lalilu.lmusic.utils.WindowSize
+import com.lalilu.lmusic.utils.getActivity
 
 @Composable
 fun SettingsScreen(
     currentWindowSize: WindowSize,
     contentPaddingForFooter: Dp = 0.dp
 ) {
+    val context = LocalContext.current
     val ignoreAudioFocus = rememberDataSaverState(
         Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
         Config.DEFAULT_SETTINGS_IGNORE_AUDIO_FOCUS
@@ -142,6 +147,23 @@ fun SettingsScreen(
                         initialed = true,
                         title = "罗马字匹配功能"
                     )
+                }
+            }
+
+            item {
+                SettingCategory(
+                    icon = painterResource(id = R.drawable.ic_loader_line),
+                    title = "其他"
+                ) {
+                    Column(Modifier.padding(horizontal = 20.dp)) {
+                        TextButton(onClick = {
+                            context.getActivity()?.apply {
+                                ActivityUtils.startActivity(GuidingActivity::class.java)
+                            }
+                        }) {
+                            Text(text = "新手引导")
+                        }
+                    }
                 }
             }
         }

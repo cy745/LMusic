@@ -1,6 +1,8 @@
 package com.lalilu.lmusic.utils
 
 import android.content.ContentUris
+import android.content.Context
+import android.content.ContextWrapper
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -13,6 +15,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.MediaItem
 import kotlin.math.roundToInt
 
@@ -148,4 +151,15 @@ fun MediaItem.updateArtworkUri(uri: Uri?): MediaItem {
             .setArtworkUri(uri)
             .build()
     ).build()
+}
+
+fun Context.getActivity(): AppCompatActivity? {
+    var currentContext = this
+    while (currentContext is ContextWrapper) {
+        if (currentContext is AppCompatActivity) {
+            return currentContext
+        }
+        currentContext = currentContext.baseContext
+    }
+    return null
 }

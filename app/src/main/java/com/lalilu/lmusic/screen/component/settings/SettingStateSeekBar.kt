@@ -3,10 +3,7 @@ package com.lalilu.lmusic.screen.component.settings
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
@@ -28,12 +25,14 @@ fun SettingStateSeekBar(
     state: DataSaverMutableState<Int>,
     selection: List<String>,
     @StringRes titleRes: Int,
-    @StringRes subTitleRes: Int? = null
+    @StringRes subTitleRes: Int? = null,
+    paddingValues: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
 ) = SettingStateSeekBar(
     state = state,
     selection = selection,
     title = stringResource(id = titleRes),
-    subTitle = subTitleRes?.let { stringResource(id = it) }
+    subTitle = subTitleRes?.let { stringResource(id = it) },
+    paddingValues = paddingValues
 )
 
 @Composable
@@ -41,7 +40,8 @@ fun SettingStateSeekBar(
     state: DataSaverMutableState<Int>,
     selection: List<String>,
     title: String,
-    subTitle: String? = null
+    subTitle: String? = null,
+    paddingValues: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
 ) {
     var value by state
     val tempValue = remember(value) { mutableStateOf(value.toFloat()) }
@@ -56,7 +56,7 @@ fun SettingStateSeekBar(
                 indication = rememberRipple(),
                 onClick = { }
             )
-            .padding(horizontal = 20.dp, vertical = 10.dp),
+            .padding(paddingValues),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {

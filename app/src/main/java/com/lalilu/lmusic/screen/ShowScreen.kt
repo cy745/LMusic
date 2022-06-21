@@ -38,14 +38,14 @@ import com.lalilu.lmusic.utils.DeviceType
 import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.utils.WindowSizeClass
 import com.lalilu.lmusic.utils.rememberWindowSizeClass
-import com.lalilu.lmusic.viewmodel.GlobalViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 fun ShowScreen(
     currentWindowSizeClass: WindowSizeClass = rememberWindowSizeClass(),
     mainViewModel: MainViewModel = hiltViewModel(),
-    globalViewModel: GlobalViewModel = hiltViewModel()
+    playingViewModel: PlayingViewModel = hiltViewModel()
 ) {
     val visible = remember(
         currentWindowSizeClass.deviceType,
@@ -56,7 +56,7 @@ fun ShowScreen(
     }
 
     if (visible) {
-        val mediaItem by globalViewModel.globalDataManager.currentMediaItem.collectAsState()
+        val mediaItem by playingViewModel.globalDataManager.currentMediaItem.collectAsState()
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -83,7 +83,7 @@ fun ShowScreen(
                     SongDetailPanel(mediaItem = mediaItem)
                     ControlPanel(
                         mediaBrowser = mainViewModel.mediaBrowser,
-                        globalViewModel.globalDataManager
+                        playingViewModel.globalDataManager
                     )
                 }
             }

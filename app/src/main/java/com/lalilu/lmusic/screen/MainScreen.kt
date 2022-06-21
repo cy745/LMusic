@@ -14,23 +14,17 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.lmusic.screen.component.NavigateLibrary
-import com.lalilu.lmusic.utils.WindowSize
-import com.lalilu.lmusic.utils.WindowSizeClass
-import com.lalilu.lmusic.utils.rememberWindowSizeClass
-import com.lalilu.lmusic.utils.safeLaunch
-import com.lalilu.lmusic.viewmodel.MainViewModel
+import com.lalilu.lmusic.utils.*
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
-@ExperimentalMaterialApi
-@ExperimentalAnimationApi
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 fun MainScreen(
     currentWindowSizeClass: WindowSizeClass = rememberWindowSizeClass(),
     navController: NavHostController = rememberAnimatedNavController(),
@@ -91,16 +85,14 @@ fun MainScreen(
 }
 
 @Composable
-@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 fun MainScreenForCompat(
     currentWindowSizeClass: WindowSizeClass,
     navController: NavHostController,
     scaffoldState: ModalBottomSheetState,
     scope: CoroutineScope = rememberCoroutineScope(),
-    viewModel: MainViewModel = hiltViewModel(),
     bottomSheetContent: @Composable () -> Unit = {},
 ) {
-    val mSongBrowser = viewModel.mediaBrowser
     val isEnableBottomSheet = currentWindowSizeClass.windowSize == WindowSize.Compact
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp +
             WindowInsets.statusBars.asPaddingValues().calculateTopPadding() +
@@ -159,13 +151,6 @@ fun MainScreenForCompat(
                 onSongShowDetail = onSongShowDetail,
                 onExpendBottomSheet = scaffoldShow,
                 onCollapseBottomSheet = scaffoldState::hide,
-                onSongSelected = { mSongBrowser.playById(it.mediaId, true) },
-                onPlayPause = { mSongBrowser.togglePlay() },
-                onPlayNext = { mSongBrowser.browser?.seekToNext() },
-                onPlayPrevious = { mSongBrowser.browser?.seekToPrevious() },
-                onSongMoveToNext = { mSongBrowser.addToNext(it.mediaId) },
-                onSongRemoved = { mSongBrowser.removeById(it.mediaId) },
-                onSeekToPosition = { mSongBrowser.browser?.seekTo(it.toLong()) }
             )
         }
     }
