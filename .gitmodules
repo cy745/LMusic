@@ -1,3 +1,7 @@
 [submodule "jaudiotagger-android"]
 	path = jaudiotagger-android
 	url = https://gitee.com/lalilu/jaudiotagger-android.git
+
+[submodule "lmedia"]
+	path = lmedia
+	url = https://gitee.com/lalilu/lmedia.git
