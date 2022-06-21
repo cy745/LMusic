@@ -60,13 +60,6 @@ android {
     }
 }
 
-android.sourceSets.all {
-    // http://www.jthink.net/jaudiotagger/
-    // https://github.com/hexise/jaudiotagger-android
-    // LGPL-3.0 License
-    java.srcDirs += "src/third-party/jaudiotagger-android/src"
-}
-
 dependencies {
     // https://github.com/FunnySaltyFish/ComposeDataSaver
     // Apache-2.0 License
@@ -187,6 +180,10 @@ dependencies {
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
     implementation "com.google.dagger:hilt-android:$hilt_version"
 
+    // http://www.jthink.net/jaudiotagger/
+    // https://github.com/hexise/jaudiotagger-android
+    // LGPL-3.0 License
+    implementation project(":jaudiotagger-android")
     implementation project(":common")
     implementation project(":ui")
 
