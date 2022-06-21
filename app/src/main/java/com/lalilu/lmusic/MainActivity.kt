@@ -5,19 +5,17 @@ import android.os.Bundle
 import android.view.Menu
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.CompositionLocalProvider
+import com.blankj.utilcode.util.ActivityUtils
+import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.funny.data_saver.core.DataSaverPreferences
-import com.funny.data_saver.core.DataSaverPreferences.Companion.setContext
 import com.funny.data_saver.core.LocalDataSaver
 import com.lalilu.R
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
-import com.lalilu.lmusic.screen.AgreementDialog
 import com.lalilu.lmusic.screen.MainScreen
 import com.lalilu.lmusic.screen.ShowScreen
 import com.lalilu.lmusic.service.MSongBrowser
@@ -26,8 +24,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-@ExperimentalMaterialApi
-@ExperimentalAnimationApi
 class MainActivity : AppCompatActivity() {
 
     @Inject
@@ -39,14 +35,20 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var globalDataManager: GlobalDataManager
 
-    private val dataSaverPreferences by lazy {
-        DataSaverPreferences().apply {
-            setContext(context = applicationContext)
-        }
-    }
+    @Inject
+    lateinit var dataSaverPreferences: DataSaverPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val isGuidingOver = SPUtils.getInstance(this.packageName, MODE_PRIVATE)
+            .getBoolean(Config.KEY_REMEMBER_IS_GUIDING_OVER)
+
+        if (!isGuidingOver) {
+            ActivityUtils.startActivity(GuidingActivity::class.java)
+            finish()
+            return
+        }
         SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
             mediaSource.start()
@@ -55,16 +57,15 @@ class MainActivity : AppCompatActivity() {
             ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
         })
 
-        volumeControlStream = AudioManager.STREAM_MUSIC
         setContent {
             LMusicTheme {
                 CompositionLocalProvider(LocalDataSaver provides dataSaverPreferences) {
                     MainScreen()
                     ShowScreen()
-                    AgreementDialog()
                 }
             }
         }
+        volumeControlStream = AudioManager.STREAM_MUSIC
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

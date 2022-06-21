@@ -57,5 +57,13 @@
                 <data android:mimeType="application/itunes" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".lmusic.GuidingActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="true"
+            android:launchMode="singleTop">
+
+        </activity>
     </application>
 </manifest>

@@ -1,9 +1,5 @@
 package com.lalilu.lmusic.screen
 
-import android.content.Context
-import android.content.ContextWrapper
-import androidx.annotation.IntDef
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.ExperimentalMaterialApi
@@ -31,8 +27,12 @@ import com.lalilu.lmusic.adapter.ComposeAdapter
 import com.lalilu.lmusic.adapter.setDiffNewData
 import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
+import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
+import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
+import com.lalilu.lmusic.utils.getActivity
 import com.lalilu.lmusic.utils.safeLaunch
-import com.lalilu.lmusic.viewmodel.GlobalViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper
@@ -41,45 +41,15 @@ import com.lalilu.ui.internal.StateHelper.Companion.STATE_EXPENDED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_NORMAL
 import kotlinx.coroutines.CoroutineScope
 
-const val CLICK_HANDLE_MODE_CLICK = 0
-const val CLICK_HANDLE_MODE_DOUBLE_CLICK = 1
-const val CLICK_HANDLE_MODE_LONG_CLICK = 2
-
-@IntDef(
-    CLICK_HANDLE_MODE_CLICK,
-    CLICK_HANDLE_MODE_DOUBLE_CLICK,
-    CLICK_HANDLE_MODE_LONG_CLICK
-)
-@Retention(AnnotationRetention.SOURCE)
-annotation class ClickHandleMode
-
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
     scope: CoroutineScope = rememberCoroutineScope(),
     onExpendBottomSheet: suspend () -> Unit = {},
     onCollapseBottomSheet: suspend () -> Unit = {},
-    onSongSelected: suspend (MediaItem) -> Unit = {},
-    onSongMoveToNext: (MediaItem) -> Boolean = { false },
-    onSongRemoved: (MediaItem) -> Boolean = { false },
     onSongShowDetail: suspend (MediaItem) -> Unit = {},
-    onPlayNext: suspend () -> Unit = {},
-    onPlayPrevious: suspend () -> Unit = {},
-    onPlayPause: suspend () -> Unit = {},
-    onSeekToPosition: suspend (Float) -> Unit = {},
-    globalViewModel: GlobalViewModel = hiltViewModel()
+    playingViewModel: PlayingViewModel = hiltViewModel()
 ) {
-    fun playHandle(@ClickPart clickPart: Int) {
-        when (clickPart) {
-            CLICK_PART_LEFT -> onPlayPrevious
-            CLICK_PART_MIDDLE -> onPlayPause
-            CLICK_PART_RIGHT -> onPlayNext
-            else -> null
-        }?.let {
-            scope.safeLaunch { it() }
-        }
-    }
-
     val density = LocalDensity.current
     val windowInsetsCompat = WindowInsets.statusBars.let {
         WindowInsetsCompat.Builder()
@@ -92,22 +62,19 @@ fun PlayingScreen(
     val context = LocalContext.current
     AndroidViewBinding(factory = { inflater, parent, attachToParent ->
         FragmentPlayingBinding.inflate(inflater, parent, attachToParent).apply {
-            @ClickHandleMode
-            var clickHandleMode = CLICK_HANDLE_MODE_CLICK
             val activity = context.getActivity()!!
-            val haptic = { HapticUtils.haptic(this.root) }
-            val doubleHaptic = { HapticUtils.doubleHaptic(this.root) }
+            val seekBarHandler = playingViewModel.seekBarHandler
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
 
             adapter = ComposeAdapter(
-                onSwipeToLeft = onSongMoveToNext,
-                onSwipeToRight = onSongRemoved,
-                onItemClick = { scope.safeLaunch { onSongSelected(it) } },
+                onSwipeToLeft = { playingViewModel.onSongMoveToNext(it.mediaId) },
+                onSwipeToRight = { playingViewModel.onSongRemoved(it.mediaId) },
+                onItemClick = { playingViewModel.onSongSelected(it.mediaId) },
                 onItemLongClick = {
                     scope.safeLaunch {
                         onSongShowDetail(it)
-                        haptic()
+                        HapticUtils.haptic(this@apply.root)
                     }
                 }
             )
@@ -136,14 +103,73 @@ fun PlayingScreen(
 
             fmRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    if (dy > 0 && fmToolbar.hasExpandedActionView() &&
-                        KeyboardUtils.isSoftInputVisible(activity)
-                    ) {
-                        KeyboardUtils.hideSoftInput(activity)
-                    }
+                    if (dy < 0) return
+                    if (!fmToolbar.hasExpandedActionView()) return
+                    if (!KeyboardUtils.isSoftInputVisible(activity)) return
+                    KeyboardUtils.hideSoftInput(activity)
                 }
             })
 
+            fmTopPic.palette.observe(activity, this::setPalette)
+
+            maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {
+                override fun onScrollToThreshold() {
+                    scope.safeLaunch { onExpendBottomSheet() }
+                    HapticUtils.haptic(this@apply.root)
+                }
+
+                override fun onScrollRecover() {
+                    scope.safeLaunch { onCollapseBottomSheet() }
+                    HapticUtils.haptic(this@apply.root)
+                }
+            })
+            maSeekBar.clickListeners.add(object : OnSeekBarClickListener {
+                override fun onClick(@ClickPart clickPart: Int, action: Int) {
+                    HapticUtils.haptic(this@apply.root)
+                    if (seekBarHandler.clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
+                        playingViewModel.onPlayPause()
+                        return
+                    }
+                    seekBarHandler.handle(clickPart)
+                }
+
+                override fun onLongClick(@ClickPart clickPart: Int, action: Int) {
+                    HapticUtils.haptic(this@apply.root)
+                    if (seekBarHandler.clickHandleMode != CLICK_HANDLE_MODE_LONG_CLICK || clickPart == CLICK_PART_MIDDLE) {
+                        fmAppbarLayout.autoToggleExpand()
+                        return
+                    }
+                    seekBarHandler.handle(clickPart)
+                }
+
+                override fun onDoubleClick(@ClickPart clickPart: Int, action: Int) {
+                    HapticUtils.doubleHaptic(this@apply.root)
+                    if (seekBarHandler.clickHandleMode != CLICK_HANDLE_MODE_DOUBLE_CLICK) return
+                    seekBarHandler.handle(clickPart)
+                }
+            })
+            maSeekBar.seekToListeners.add(OnSeekBarSeekToListener { value ->
+                playingViewModel.onSeekToPosition(value)
+            })
+            maSeekBar.cancelListeners.add(OnSeekBarCancelListener {
+                HapticUtils.haptic(this@apply.root)
+            })
+            playingViewModel.globalDataManager.currentPlaylistLiveData.observe(activity) {
+                adapter?.setDiffNewData(it.toMutableList())
+            }
+            playingViewModel.globalDataManager.currentMediaItemLiveData.observe(activity) {
+                maSeekBar.maxValue = (it?.mediaMetadata?.getDuration()
+                    ?.coerceAtLeast(0) ?: 0f).toFloat()
+                song = it
+            }
+            playingViewModel.globalDataManager.currentPositionLiveData.observe(activity) {
+                maSeekBar.updateValue(it.toFloat())
+                fmLyricViewX.updateTime(it)
+            }
+            playingViewModel.lyricManager.currentLyricLiveData.observe(activity) {
+                fmLyricViewX.setLyricEntryList(emptyList())
+                fmLyricViewX.loadLyric(it?.first, it?.second)
+            }
             SpManager.listen(Config.KEY_SETTINGS_LYRIC_GRAVITY,
                 SpManager.SpIntListener(Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
                     when (it) {
@@ -152,10 +178,6 @@ fun PlayingScreen(
                         2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
                     }
                 })
-            SpManager.listen(Config.KEY_SETTINGS_SEEKBAR_HANDLER,
-                SpManager.SpIntListener(Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER) {
-                    clickHandleMode = it
-                })
 
             SpManager.listen(Config.KEY_SETTINGS_LYRIC_TEXT_SIZE,
                 SpManager.SpIntListener(Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE) {
@@ -163,80 +185,13 @@ fun PlayingScreen(
                     fmLyricViewX.setNormalTextSize(textSize)
                     fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
                 })
-
-            fmTopPic.palette.observe(activity, this::setPalette)
-
-            maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {
-                override fun onScrollToThreshold() {
-                    scope.safeLaunch { onExpendBottomSheet() }
-                    haptic()
-                }
-
-                override fun onScrollRecover() {
-                    scope.safeLaunch { onCollapseBottomSheet() }
-                    haptic()
-                }
-            })
-            maSeekBar.clickListeners.add(object : OnSeekBarClickListener {
-                override fun onClick(@ClickPart clickPart: Int, action: Int) {
-                    haptic()
-                    if (clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
-                        scope.safeLaunch { onPlayPause() }
-                        return
-                    }
-                    playHandle(clickPart)
-                }
-
-                override fun onLongClick(@ClickPart clickPart: Int, action: Int) {
-                    haptic()
-                    if (clickHandleMode != CLICK_HANDLE_MODE_LONG_CLICK ||
-                        clickPart == CLICK_PART_MIDDLE
-                    ) {
-                        fmAppbarLayout.autoToggleExpand()
-                        return
-                    }
-                    playHandle(clickPart)
-                }
-
-                override fun onDoubleClick(@ClickPart clickPart: Int, action: Int) {
-                    doubleHaptic()
-                    if (clickHandleMode != CLICK_HANDLE_MODE_DOUBLE_CLICK) return
-                    playHandle(clickPart)
-                }
-            })
-            maSeekBar.seekToListeners.add(OnSeekBarSeekToListener { value ->
-                scope.safeLaunch { onSeekToPosition(value) }
-            })
-            maSeekBar.cancelListeners.add(OnSeekBarCancelListener { haptic() })
-            globalViewModel.globalDataManager.currentPlaylistLiveData.observe(activity) {
-                adapter?.setDiffNewData(it.toMutableList())
-            }
-            globalViewModel.globalDataManager.currentMediaItemLiveData.observe(activity) {
-                maSeekBar.maxValue = (it?.mediaMetadata?.getDuration()
-                    ?.coerceAtLeast(0) ?: 0f).toFloat()
-                song = it
-            }
-            globalViewModel.globalDataManager.currentPositionLiveData.observe(activity) {
-                maSeekBar.updateValue(it.toFloat())
-                fmLyricViewX.updateTime(it)
-            }
-            globalViewModel.lyricManager.currentLyricLiveData.observe(activity) {
-                fmLyricViewX.setLyricEntryList(emptyList())
-                fmLyricViewX.loadLyric(it?.first, it?.second)
-            }
+            SpManager.listen(
+                Config.KEY_SETTINGS_SEEKBAR_HANDLER,
+                SpManager.SpIntListener(Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER) {
+                    seekBarHandler.clickHandleMode = it
+                })
         }
     }) {
         ViewCompat.dispatchApplyWindowInsets(root, windowInsetsCompat)
     }
-}
-
-fun Context.getActivity(): AppCompatActivity? {
-    var currentContext = this
-    while (currentContext is ContextWrapper) {
-        if (currentContext is AppCompatActivity) {
-            return currentContext
-        }
-        currentContext = currentContext.baseContext
-    }
-    return null
 }

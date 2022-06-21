@@ -27,6 +27,7 @@ import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
 import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
+import com.lalilu.lmusic.utils.getActivity
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 @Composable

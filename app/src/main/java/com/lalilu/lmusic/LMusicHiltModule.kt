@@ -3,6 +3,7 @@ package com.lalilu.lmusic
 import android.content.Context
 import androidx.room.Room
 import coil.util.CoilUtils
+import com.funny.data_saver.core.DataSaverPreferences
 import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.datasource.MDataBase
 import dagger.Module
@@ -54,5 +55,13 @@ object LMusicHiltModule {
         return OkHttpClient.Builder()
             .cache(CoilUtils.createDefaultCache(context))
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun providesDataSaver(@ApplicationContext context: Context): DataSaverPreferences {
+        return DataSaverPreferences().apply {
+            DataSaverPreferences.setContext(context = context)
+        }
     }
 }
