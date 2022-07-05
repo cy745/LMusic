@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.IconCompat
@@ -14,15 +15,23 @@ import androidx.media.app.NotificationCompat.MediaStyle
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.session.MediaController
+import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaNotification
+import androidx.media3.session.MediaSession
 import androidx.palette.graphics.Palette
+import coil.imageLoader
+import coil.request.ImageRequest
+import com.blankj.utilcode.util.SPUtils
+import com.google.common.collect.ImmutableList
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.utils.RepeatMode
+import com.lalilu.lmusic.utils.RepeatMode.*
 import com.lalilu.lmusic.utils.safeLaunch
+import com.lalilu.lmusic.utils.toBitmap
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +45,8 @@ import kotlin.coroutines.CoroutineContext
 @UnstableApi
 @Singleton
 class LMusicNotificationProvider @Inject constructor(
-    @ApplicationContext private val mContext: Context,
+    @ApplicationContext
+    private val mContext: Context,
     private val lyricManager: LyricManager
 ) : MediaNotification.Provider, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -52,9 +62,12 @@ class LMusicNotificationProvider @Inject constructor(
 
     private var notificationBgColor = 0
     private var mediaNotification: MediaNotification? = null
-    private var callback: MediaNotification.Provider.Callback? = null
     private var lastBitmap: Pair<MediaMetadata, Bitmap>? = null
+    private var callback: MediaNotification.Provider.Callback? = null
     private var lyricPusherEnable = MutableStateFlow(false)
+    private val localSp: SPUtils by lazy {
+        SPUtils.getInstance(mContext.packageName, AppCompatActivity.MODE_PRIVATE)
+    }
 
     companion object {
         const val NOTIFICATION_ID_PLAYER = 7
@@ -69,9 +82,7 @@ class LMusicNotificationProvider @Inject constructor(
         const val FLAG_ALWAYS_SHOW_TICKER = 0x1000000
         const val FLAG_ONLY_UPDATE_TICKER = 0x2000000
 
-        const val CUSTOM_ACTION = "custom_action"
         const val CUSTOM_ACTION_TOGGLE_REPEAT_MODE = "custom_action_toggle_repeat_mode"
-        const val CUSTOM_ACTION_CLOSE_APPLICATION = "custom_action_close_application"
     }
 
     private val placeHolder = BitmapFactory.decodeResource(
@@ -80,7 +91,8 @@ class LMusicNotificationProvider @Inject constructor(
 
 
     override fun createNotification(
-        mediaController: MediaController,
+        session: MediaSession,
+        customLayout: ImmutableList<CommandButton>,
         actionFactory: MediaNotification.ActionFactory,
         callback: MediaNotification.Provider.Callback
     ): MediaNotification {
@@ -91,78 +103,86 @@ class LMusicNotificationProvider @Inject constructor(
             mContext, NOTIFICATION_CHANNEL_ID_PLAYER
         )
 
-        val icon = if (mediaController.shuffleModeEnabled) {
-            R.drawable.ic_shuffle_line
-        } else {
-            when (mediaController.repeatMode) {
-                Player.REPEAT_MODE_ONE -> R.drawable.ic_repeat_one_line
-                Player.REPEAT_MODE_ALL -> R.drawable.ic_order_play_line
-                else -> R.drawable.ic_order_play_line
+        val icon = RepeatMode.of(
+            session.player.repeatMode,
+            session.player.shuffleModeEnabled
+        ).let {
+            when (it) {
+                RepeatOne -> R.drawable.ic_repeat_one_line
+                ListRecycle -> R.drawable.ic_order_play_line
+                Shuffle -> R.drawable.ic_shuffle_line
             }
         }
 
-        val text = if (mediaController.shuffleModeEnabled) {
+        val text = if (session.player.shuffleModeEnabled) {
             R.string.text_button_shuffle_on
         } else {
-            when (mediaController.repeatMode) {
+            when (session.player.repeatMode) {
                 Player.REPEAT_MODE_ONE -> R.string.text_button_repeat_one
                 Player.REPEAT_MODE_ALL -> R.string.text_button_repeat_all
                 else -> R.string.text_button_repeat_all
             }
         }
 
-//        builder.addAction(
-//            actionFactory.createCustomAction(
-//                IconCompat.createWithResource(mContext, icon),
-//                mContext.resources.getString(text),
-//                CUSTOM_ACTION_TOGGLE_REPEAT_MODE, Bundle.EMPTY
-//            )
-//        )
-
         builder.addAction(
-            actionFactory.createMediaAction(
-                IconCompat.createWithResource(mContext, R.drawable.ic_skip_back_line),
-                mContext.resources.getString(R.string.text_button_previous),
-                MediaNotification.ActionFactory.COMMAND_SKIP_TO_PREVIOUS
+            actionFactory.createCustomAction(
+                session,
+                IconCompat.createWithResource(mContext, icon),
+                mContext.resources.getString(text),
+                CUSTOM_ACTION_TOGGLE_REPEAT_MODE, Bundle.EMPTY
             )
         )
 
-        if (mediaController.playWhenReady) {
+        builder.addAction(
+            actionFactory.createMediaAction(
+                session,
+                IconCompat.createWithResource(mContext, R.drawable.ic_skip_back_line),
+                mContext.resources.getString(R.string.text_button_previous),
+                Player.COMMAND_SEEK_TO_PREVIOUS
+            )
+        )
+
+        if (session.player.playWhenReady) {
             builder.addAction(
                 actionFactory.createMediaAction(
+                    session,
                     IconCompat.createWithResource(mContext, R.drawable.ic_pause_line),
                     mContext.resources.getString(R.string.text_button_pause),
-                    MediaNotification.ActionFactory.COMMAND_PAUSE
+                    Player.COMMAND_PLAY_PAUSE
                 )
             )
         } else {
             builder.addAction(
                 actionFactory.createMediaAction(
+                    session,
                     IconCompat.createWithResource(mContext, R.drawable.ic_play_line),
                     mContext.resources.getString(R.string.text_button_play),
-                    MediaNotification.ActionFactory.COMMAND_PLAY
+                    Player.COMMAND_PLAY_PAUSE
                 )
             )
         }
 
         builder.addAction(
             actionFactory.createMediaAction(
+                session,
                 IconCompat.createWithResource(mContext, R.drawable.ic_skip_forward_line),
                 mContext.resources.getString(R.string.text_button_next),
-                MediaNotification.ActionFactory.COMMAND_SKIP_TO_NEXT
+                Player.COMMAND_SEEK_TO_NEXT
             )
         )
 
-//        builder.addAction(
-//            actionFactory.createCustomAction(
-//                IconCompat.createWithResource(mContext, R.drawable.ic_close_line),
-//                mContext.resources.getString(R.string.text_button_close),
-//                CUSTOM_ACTION_CLOSE_APPLICATION, Bundle.EMPTY
-//            )
-//        )
+        builder.addAction(
+            actionFactory.createMediaAction(
+                session,
+                IconCompat.createWithResource(mContext, R.drawable.ic_close_line),
+                mContext.resources.getString(R.string.text_button_close),
+                Player.COMMAND_STOP
+            )
+        )
 
         val stopIntent = actionFactory.createMediaActionPendingIntent(
-            MediaNotification.ActionFactory.COMMAND_STOP
+            session,
+            Player.COMMAND_STOP.toLong()
         )
 
         val mediaStyle = MediaStyle()
@@ -170,9 +190,9 @@ class LMusicNotificationProvider @Inject constructor(
             .setShowCancelButton(true)
             .setShowActionsInCompactView(0, 1, 2)
 
-        val metadata = mediaController.mediaMetadata
+        val metadata = session.player.mediaMetadata
 
-        builder.setContentIntent(mediaController.sessionActivity)
+        builder.setContentIntent(session.sessionActivity)
             .setDeleteIntent(stopIntent)
             .setOnlyAlertOnce(true)
             .setContentTitle(metadata.title)
@@ -192,29 +212,27 @@ class LMusicNotificationProvider @Inject constructor(
             }
         )
 
-        metadata.artworkData?.let {
+        safeLaunch {
             var bitmap: Bitmap? = null
-            lastBitmap?.takeIf { it.first == metadata }?.let {
-                bitmap = it.second
+            lastBitmap?.takeIf { it.first == metadata }
+                ?.let { bitmap = it.second }
+
+            if (bitmap == null) {
+                bitmap = mContext.imageLoader.execute(
+                    ImageRequest.Builder(mContext)
+                        .data(session.player.currentMediaItem)
+                        .allowHardware(false)
+                        .build()
+                ).drawable?.toBitmap() ?: return@safeLaunch
+
+                lastBitmap = metadata to bitmap!!
+                notificationBgColor = Palette.from(bitmap!!)
+                    .generate()
+                    .getAutomaticColor()
             }
-
-            safeLaunch {
-                bitmap = bitmap ?: BitmapFactory.decodeByteArray(it, 0, it.size)?.also {
-                    lastBitmap = metadata to it
-                    notificationBgColor = Palette.from(it)
-                        .generate()
-                        .getAutomaticColor()
-                } ?: return@safeLaunch
-
-                builder.setLargeIcon(bitmap)
-                builder.color = notificationBgColor
-
-                mediaNotification = MediaNotification(
-                    NOTIFICATION_ID_PLAYER,
-                    builder.build()
-                )
-                callback.onNotificationChanged(mediaNotification!!)
-            }
+            builder.setLargeIcon(bitmap)
+            builder.color = notificationBgColor
+            callback.onNotificationChanged(mediaNotification!!)
         }
         mediaNotification = MediaNotification(
             NOTIFICATION_ID_PLAYER,
@@ -223,22 +241,24 @@ class LMusicNotificationProvider @Inject constructor(
         return mediaNotification!!
     }
 
-    override fun handleCustomAction(
-        mediaController: MediaController,
+    override fun handleCustomCommand(
+        session: MediaSession,
         action: String,
         extras: Bundle
-    ) {
-        if (action == CUSTOM_ACTION_TOGGLE_REPEAT_MODE) {
-            if (mediaController.shuffleModeEnabled) {
-                mediaController.shuffleModeEnabled = false
-            } else {
-                mediaController.repeatMode = when (mediaController.repeatMode) {
-                    Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ALL
-                    Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
-                    else -> Player.REPEAT_MODE_ALL
-                }
+    ): Boolean {
+        when (action) {
+            CUSTOM_ACTION_TOGGLE_REPEAT_MODE -> {
+                localSp.put(
+                    Config.KEY_SETTINGS_REPEAT_MODE,
+                    RepeatMode.of(
+                        session.player.repeatMode,
+                        session.player.shuffleModeEnabled
+                    ).next().ordinal
+                )
+                return true
             }
         }
+        return false
     }
 
     private fun ensureNotificationChannel() {

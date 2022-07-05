@@ -17,6 +17,7 @@ import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.utils.RepeatMode
 import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -72,9 +73,10 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
         SpManager.listen(Config.KEY_SETTINGS_REPEAT_MODE,
             SpManager.SpIntListener(Config.DEFAULT_SETTINGS_REPEAT_MODE) {
-                exoPlayer.shuffleModeEnabled = it == 2
-                exoPlayer.repeatMode =
-                    if (it == 1) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_ALL
+                RepeatMode.values().getOrNull(it)?.let { repeatMode ->
+                    exoPlayer.shuffleModeEnabled = repeatMode.isShuffle
+                    exoPlayer.repeatMode = repeatMode.repeatMode
+                }
             })
 
         val pendingIntent: PendingIntent =
@@ -106,6 +108,14 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     }
 
     private inner class LastPlayedListener : Player.Listener {
+        override fun onRepeatModeChanged(repeatMode: Int) {
+            onUpdateNotification(mediaLibrarySession)
+        }
+
+        override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+            onUpdateNotification(mediaLibrarySession)
+        }
+
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             HistoryManager.lastPlayedId = mediaItem?.mediaId
         }

@@ -34,12 +34,9 @@ import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.service.MSongBrowser
-import com.lalilu.lmusic.utils.DeviceType
-import com.lalilu.lmusic.utils.WindowSize
-import com.lalilu.lmusic.utils.WindowSizeClass
-import com.lalilu.lmusic.utils.rememberWindowSizeClass
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lmusic.utils.*
 import com.lalilu.lmusic.viewmodel.MainViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
 fun ShowScreen(
@@ -237,10 +234,10 @@ fun ControlPanel(
         IconButton(onClick = { repeatMode = (repeatMode + 1) % 3 }) {
             Image(
                 painter = painterResource(
-                    when (repeatMode) {
-                        0 -> R.drawable.ic_play_list_line
-                        1 -> R.drawable.ic_repeat_one_line
-                        else -> R.drawable.ic_shuffle_line
+                    when (RepeatMode.values()[repeatMode]) {
+                        RepeatMode.ListRecycle -> R.drawable.ic_order_play_line
+                        RepeatMode.RepeatOne -> R.drawable.ic_repeat_one_line
+                        RepeatMode.Shuffle -> R.drawable.ic_shuffle_line
                     }
                 ),
                 contentDescription = "play_pause",
