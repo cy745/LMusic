@@ -20,7 +20,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.lmusic.screen.component.NavigateLibrary
-import com.lalilu.lmusic.utils.*
+import com.lalilu.lmusic.utils.DeviceType.Pad
+import com.lalilu.lmusic.utils.DeviceType.Phone
+import com.lalilu.lmusic.utils.WindowSize.*
+import com.lalilu.lmusic.utils.WindowSizeClass
+import com.lalilu.lmusic.utils.getActivity
+import com.lalilu.lmusic.utils.rememberWindowSizeClass
+import com.lalilu.lmusic.utils.safeLaunch
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -50,7 +56,7 @@ fun MainScreen(
     }
 
     Row {
-        if (currentWindowSize != WindowSize.Compact) {
+        if (currentWindowSize != Compact) {
             NavigateLibrary(
                 currentWindowSize = currentWindowSize,
                 navController = navController,
@@ -65,7 +71,7 @@ fun MainScreen(
             navController = navController,
             scaffoldState = scaffoldState,
             bottomSheetContent = {
-                if (currentWindowSize == WindowSize.Compact) {
+                if (currentWindowSize == Compact) {
                     NavigateLibrary(
                         currentWindowSize = currentWindowSize,
                         navController = navController,
@@ -93,7 +99,7 @@ fun MainScreenForCompat(
     scope: CoroutineScope = rememberCoroutineScope(),
     bottomSheetContent: @Composable () -> Unit = {},
 ) {
-    val isEnableBottomSheet = currentWindowSizeClass.windowSize == WindowSize.Compact
+    val isEnableBottomSheet = currentWindowSizeClass.windowSize == Compact
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp +
             WindowInsets.statusBars.asPaddingValues().calculateTopPadding() +
             WindowInsets.navigationBars.asPaddingValues().calculateTopPadding()
@@ -110,7 +116,7 @@ fun MainScreenForCompat(
          * 不知为何不能在此函数内获取[currentWindowSizeClass]的最新值，
          * 故直接从单例中获取该值
          */
-        if (WindowSizeClass.instance?.windowSize == WindowSize.Compact)
+        if (WindowSizeClass.instance?.windowSize == Compact)
             scope.safeLaunch { scaffoldState.show() }
     }
     val scaffoldShow: suspend () -> Unit = {
@@ -131,10 +137,17 @@ fun MainScreenForCompat(
     }
 
     ModalBottomSheetLayout(
-        modifier = when (currentWindowSizeClass.windowSize) {
-            WindowSize.Compact -> Modifier.fillMaxWidth()
-            WindowSize.Medium -> Modifier.fillMaxWidth(0.5f)
-            WindowSize.Expanded -> Modifier.width(screenHeightDp / 2f)
+        modifier = when (currentWindowSizeClass.deviceType) {
+            Phone -> when (currentWindowSizeClass.windowSize) {
+                Compact -> Modifier.fillMaxWidth()
+                Medium -> Modifier.fillMaxWidth(0.5f)
+                Expanded -> Modifier.fillMaxWidth(0.5f)
+            }
+            Pad -> when (currentWindowSizeClass.windowSize) {
+                Compact -> Modifier.fillMaxWidth(0.5f)
+                Medium -> Modifier.fillMaxWidth(0.5f)
+                Expanded -> Modifier.width(screenHeightDp / 2f)
+            }
         },
         sheetState = scaffoldState,
         sheetBackgroundColor = backgroundColor,
