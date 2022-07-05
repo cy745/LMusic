@@ -13,7 +13,6 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
@@ -45,7 +44,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
     lateinit var notificationProvider: LMusicNotificationProvider
 
     private val audioAttributes = AudioAttributes.Builder()
-        .setContentType(C.CONTENT_TYPE_MUSIC)
+        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
         .build()
 
@@ -88,7 +87,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
         mediaLibrarySession =
             MediaLibrarySession.Builder(this, player, CustomMediaLibrarySessionCallback())
-                .setMediaItemFiller(CustomMediaItemFiller())
                 .setSessionActivity(pendingIntent)
                 .build()
 
@@ -127,18 +125,17 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         }
     }
 
-    private inner class CustomMediaItemFiller : MediaSession.MediaItemFiller {
-        override fun fillInLocalConfiguration(
-            session: MediaSession,
+    private inner class CustomMediaLibrarySessionCallback : MediaLibrarySession.Callback {
+        override fun onAddMediaItems(
+            mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo,
-            mediaItem: MediaItem
-        ): MediaItem {
-            return mediaSource.getItemById(ITEM_PREFIX + mediaItem.mediaId) ?: mediaItem
+            mediaItems: MutableList<MediaItem>
+        ): ListenableFuture<MutableList<MediaItem>> {
+            val mediaIds = mediaItems.map { it.mediaId }
+            val items = mediaSource.getItemsByIds(mediaIds)
+            return Futures.immediateFuture(items.toMutableList())
         }
-    }
 
-    private inner class CustomMediaLibrarySessionCallback :
-        MediaLibrarySession.MediaLibrarySessionCallback {
         override fun onGetLibraryRoot(
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,

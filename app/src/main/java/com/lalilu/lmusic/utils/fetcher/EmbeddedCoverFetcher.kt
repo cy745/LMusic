@@ -8,6 +8,7 @@ import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.fetch.SourceResult
 import coil.size.Size
+import com.lalilu.lmusic.datasource.extensions.getSongData
 import com.lalilu.lmusic.utils.sources.CoverSourceFactory
 import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
@@ -17,6 +18,11 @@ import javax.inject.Singleton
 class EmbeddedCoverFetcher @Inject constructor(
     private val coverSourceFactory: CoverSourceFactory
 ) : Fetcher<MediaItem> {
+    override fun handles(data: MediaItem): Boolean {
+        return data.localConfiguration?.uri != null ||
+                data.mediaMetadata.getSongData() != null
+    }
+
     override suspend fun fetch(
         pool: BitmapPool,
         data: MediaItem,

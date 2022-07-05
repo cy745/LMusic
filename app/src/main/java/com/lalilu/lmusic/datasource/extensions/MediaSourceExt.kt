@@ -2,7 +2,6 @@ package com.lalilu.lmusic.datasource.extensions
 
 import android.os.Bundle
 import android.provider.MediaStore
-import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 
 fun Bundle.setAlbumId(albumId: Long): Bundle {
@@ -39,14 +38,4 @@ fun MediaMetadata.getAlbumId(): Long {
 
 fun MediaMetadata.getSongData(): String? {
     return this.extras?.getString(MediaStore.Audio.Media.DATA)
-}
-
-fun MediaItem.partCopy(): MediaItem {
-    return MediaItem.Builder()
-        .setUri(this.mediaMetadata.mediaUri)
-        .setMediaMetadata(this.mediaMetadata)
-        .setMimeType(this.localConfiguration?.mimeType)
-        .setMediaId(this.mediaId)
-        .setTag(System.currentTimeMillis())
-        .build()
 }

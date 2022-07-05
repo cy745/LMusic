@@ -6,7 +6,7 @@ buildscript {
     ext.hilt_version = "2.40.5"
     ext.lifecycle_version = "2.4.1"
     ext.navigation_version = "2.4.1"
-    ext.media3_version = "1.0.0-alpha03"
+    ext.media3_version = "1.0.0-beta01"
     ext.compose_version = '1.2.0-beta02'
     ext.coil_version = '1.4.0'
     ext.accompanist_version = '0.24.6-alpha'

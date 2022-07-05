@@ -55,7 +55,7 @@ object BlurImageUtil : CoroutineScope {
             canvas: Canvas,
             preProcessing: (Rect, RectF) -> Unit = { _, _ -> }
         ) {
-            sourceBitmap.let {
+            sourceBitmap.takeIf { !it.isRecycled }?.let {
                 sourceRect.set(0, 0, it.width, it.height)
                 preProcessing(sourceRect, destRectF)
                 canvas.drawBitmap(it, sourceRect, destRectF, bitmapPainter)
@@ -63,7 +63,7 @@ object BlurImageUtil : CoroutineScope {
         }
 
         fun drawBlurImage(canvas: Canvas) {
-            blurBitmap?.let {
+            blurBitmap?.takeIf { !it.isRecycled }?.let {
                 blurRect.set(0, 0, it.width, it.height)
                 canvas.drawBitmap(it, blurRect, destRectF, bitmapPainter)
             }

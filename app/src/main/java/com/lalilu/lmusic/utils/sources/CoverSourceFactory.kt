@@ -2,9 +2,11 @@ package com.lalilu.lmusic.utils.sources
 
 import android.content.Context
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Build
 import androidx.core.net.toFile
 import androidx.media3.common.MediaItem
+import com.lalilu.lmusic.datasource.extensions.getSongData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,6 +15,7 @@ import okio.buffer
 import okio.source
 import org.jaudiotagger.audio.AudioFileIO
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -78,7 +81,12 @@ class RetrieverCoverSource @Inject constructor(
     @ApplicationContext private val mContext: Context
 ) : BaseCoverSource() {
     override suspend fun loadCoverBytes(mediaItem: MediaItem): ByteArray? {
-        val mediaUri = mediaItem.mediaMetadata.mediaUri ?: return null
+        val mediaUri = mediaItem.localConfiguration?.uri
+            ?: mediaItem.mediaMetadata.getSongData()?.let {
+                File(it).takeIf(File::exists)
+                    ?.let(Uri::fromFile)
+            } ?: return null
+
         var retriever: MediaMetadataRetriever? = null
         return try {
             retriever = MediaMetadataRetriever()
@@ -95,9 +103,11 @@ class RetrieverCoverSource @Inject constructor(
 
 class AudioTagCoverSource @Inject constructor() : BaseCoverSource() {
     override suspend fun loadCoverBytes(mediaItem: MediaItem): ByteArray? {
-        val songData = mediaItem.mediaMetadata.mediaUri ?: return null
-        val file = songData.toFile()
-        if (!file.exists()) return null
+        var file = mediaItem.localConfiguration?.uri?.toFile()
+            ?: mediaItem.mediaMetadata.getSongData()?.let { File(it) }
+            ?: return null
+        file = file.takeIf { it.exists() }
+            ?: return null
 
         kotlin.runCatching {
             Logger.getLogger("org.jaudiotagger").level = Level.OFF
