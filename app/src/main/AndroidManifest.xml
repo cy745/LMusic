@@ -25,7 +25,8 @@
         <service
             android:name="com.lalilu.lmusic.service.MSongService"
             android:enabled="true"
-            android:exported="false">
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="android.media.browse.MediaBrowserService" />
@@ -61,7 +62,7 @@
         <activity
             android:name=".lmusic.GuidingActivity"
             android:configChanges="orientation|screenSize"
-            android:exported="true"
+            android:exported="false"
             android:launchMode="singleTop">
 
         </activity>

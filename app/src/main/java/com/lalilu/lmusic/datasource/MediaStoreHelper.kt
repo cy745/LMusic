@@ -126,7 +126,6 @@ class MediaStoreHelper @Inject constructor(
     fun MediaMetadata.Builder.from(cursor: Cursor): MediaMetadata.Builder {
         setArtist(cursor.getArtist())
         setTitle(cursor.getSongTitle())
-        setMediaUri(cursor.getMediaUri())
         setAlbumArtist(cursor.getArtist())
         setArtworkUri(cursor.getAlbumArt())
         setAlbumTitle(cursor.getAlbumTitle())

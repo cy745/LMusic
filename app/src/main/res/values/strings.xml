@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="app_name">LMusic</string>
+    <!--    <string name="app_name">LMusic</string>-->
+    <string name="app_name_debug">LMusic_debug</string>
+    <string name="app_name_release">LMusic</string>
 
     <string name="audio_type">音频格式</string>
     <string name="default_slogan">LMusic…</string>

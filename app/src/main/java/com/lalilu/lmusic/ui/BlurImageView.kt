@@ -18,15 +18,18 @@ import com.lalilu.lmusic.utils.BlurImageUtil.centerCrop
 import com.lalilu.lmusic.utils.BlurImageUtil.crossFade
 import com.lalilu.lmusic.utils.BlurImageUtil.scaleTransform
 import com.lalilu.lmusic.utils.BlurImageUtil.updateBlur
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 
 /**
  * 结合StackBlur的自定义ImageView
  */
-@OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class BlurImageView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : AppCompatImageView(context, attrs), CoroutineScope {
