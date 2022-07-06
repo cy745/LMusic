@@ -6,9 +6,9 @@ import com.lalilu.ui.CLICK_PART_RIGHT
 import com.lalilu.ui.ClickPart
 
 class SeekBarHandler(
-    private val onPlayNext: () -> Unit,
-    private val onPlayPrevious: () -> Unit,
-    private val onPlayPause: () -> Unit,
+    val onPlayNext: () -> Unit,
+    val onPlayPrevious: () -> Unit,
+    val onPlayPause: () -> Unit,
 ) {
 
     companion object {

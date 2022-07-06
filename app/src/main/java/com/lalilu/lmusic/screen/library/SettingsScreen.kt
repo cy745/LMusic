@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen
+package com.lalilu.lmusic.screen.library
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -19,6 +19,7 @@ import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.GuidingActivity
+import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.settings.*
 import com.lalilu.lmusic.utils.WindowSize

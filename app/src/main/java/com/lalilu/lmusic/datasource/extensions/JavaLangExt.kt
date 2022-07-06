@@ -19,7 +19,7 @@ package com.lalilu.lmusic.datasource.extensions
 import android.net.Uri
 import java.net.URLEncoder
 import java.nio.charset.Charset
-import java.util.Locale
+import java.util.*
 
 /**
  * This file contains extension methods for the java.lang package.
@@ -30,7 +30,7 @@ import java.util.Locale
  */
 fun String?.containsCaseInsensitive(other: String?) =
     if (this != null && other != null) {
-        toLowerCase(Locale.getDefault()).contains(other.toLowerCase(Locale.getDefault()))
+        lowercase(Locale.getDefault()).contains(other.lowercase(Locale.getDefault()))
     } else {
         this == other
     }

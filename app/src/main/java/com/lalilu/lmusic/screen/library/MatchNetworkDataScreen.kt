@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen
+package com.lalilu.lmusic.screen.library
 
 import android.content.Context
 import androidx.compose.animation.animateColorAsState
