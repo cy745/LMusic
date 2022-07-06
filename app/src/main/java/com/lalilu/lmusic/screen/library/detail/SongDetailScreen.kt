@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen.detail
+package com.lalilu.lmusic.screen.library.detail
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*

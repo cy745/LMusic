@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen
+package com.lalilu.lmusic.screen.library
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -12,7 +12,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -23,6 +22,7 @@ import com.blankj.utilcode.util.ToastUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmusic.datasource.entity.MPlaylist
+import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.bean.sort
@@ -33,10 +33,6 @@ import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @Composable
-@OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalComposeUiApi::class
-)
 fun PlaylistsScreen(
     navigateUp: () -> Unit = {},
     navigateTo: (destination: String) -> Unit = {},

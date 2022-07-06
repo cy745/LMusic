@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.*
 import kotlin.math.absoluteValue
+import kotlin.math.ceil
 
 /**
  * @author https://stackoverflow.com/users/1208270/embmicro
@@ -61,13 +62,13 @@ fun AutoSizeText(
             Paragraph(
                 text = text,
                 style = mergedStyle,
-                spanStyles = listOf(),
-                placeholders = listOf(),
-                maxLines = maxLines,
-                ellipsis = false,
-                width = LocalDensity.current.run { maxWidth.toPx() },
+                constraints = Constraints(maxWidth = ceil(LocalDensity.current.run { maxWidth.toPx() }).toInt()),
                 density = LocalDensity.current,
-                fontFamilyResolver = LocalFontFamilyResolver.current
+                fontFamilyResolver = LocalFontFamilyResolver.current,
+                spanStyles = listOf<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.SpanStyle>>(),
+                placeholders = listOf<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.Placeholder>>(),
+                maxLines = maxLines,
+                ellipsis = false
             )
         }
 

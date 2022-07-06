@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen
+package com.lalilu.lmusic.screen.library
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,13 +10,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
+import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.bean.sort
-import com.lalilu.lmusic.screen.component.card.ArtistCard
-import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
+import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
+import com.lalilu.lmusic.screen.component.card.ArtistCard
 import com.lalilu.lmusic.viewmodel.ArtistViewModel
 
 @Composable

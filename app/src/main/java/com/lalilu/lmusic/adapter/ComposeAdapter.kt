@@ -84,7 +84,7 @@ open class ComposeAdapter(
     @SuppressLint("NotifyDataSetChanged")
     fun setNewData(list: MutableList<MediaItem>?) {
         val temp = list ?: java.util.ArrayList()
-        val diffResult = DiffUtil.calculateDiff(Callback(this.data, temp, itemCallback!!))
+        val diffResult = DiffUtil.calculateDiff(Callback(this.data, temp, itemCallback))
         data = temp
         diffResult.dispatchUpdatesTo(this)
     }

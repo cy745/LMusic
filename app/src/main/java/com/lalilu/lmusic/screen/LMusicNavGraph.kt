@@ -24,7 +24,8 @@ import com.lalilu.lmusic.datasource.ALBUM_ID
 import com.lalilu.lmusic.datasource.ALBUM_PREFIX
 import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.screen.detail.*
+import com.lalilu.lmusic.screen.library.*
+import com.lalilu.lmusic.screen.library.detail.*
 import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 

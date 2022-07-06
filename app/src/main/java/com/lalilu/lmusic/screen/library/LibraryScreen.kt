@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen
+package com.lalilu.lmusic.screen.library
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,8 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.lalilu.lmusic.screen.component.card.DestinationCard
+import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
+import com.lalilu.lmusic.screen.component.card.DestinationCard
 import com.lalilu.lmusic.utils.WindowSize
 
 @Composable
