@@ -197,7 +197,7 @@ fun ControlPanel(
     mediaBrowser: MSongBrowser,
     globalDataManager: GlobalDataManager
 ) {
-    val isPlaying = globalDataManager.currentIsPlaying.collectAsState()
+    val isPlaying = globalDataManager.currentIsPlayingFlow.collectAsState()
     var repeatMode by rememberDataSaverState(
         Config.KEY_SETTINGS_REPEAT_MODE, Config.DEFAULT_SETTINGS_REPEAT_MODE
     )

@@ -19,6 +19,7 @@ import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.RepeatMode
 import com.lalilu.lmusic.utils.safeLaunch
+import com.lalilu.lmusic.utils.then
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -100,24 +101,21 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             mediaController = controllerFuture.get()
             mediaController.addListener(globalDataManager.playerListener)
             mediaController.addListener(LastPlayedListener())
-            globalDataManager.getIsPlayingFromPlayer = mediaController::isPlaying
-            globalDataManager.getPositionFromPlayer = mediaController::getCurrentPosition
+            globalDataManager.player = mediaController
         }, MoreExecutors.directExecutor())
 
         setMediaNotificationProvider(notificationProvider)
     }
 
     private inner class LastPlayedListener : Player.Listener {
-        override fun onRepeatModeChanged(repeatMode: Int) {
-            onUpdateNotification(mediaLibrarySession)
-        }
-
-        override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-            onUpdateNotification(mediaLibrarySession)
-        }
-
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            HistoryManager.lastPlayedId = mediaItem?.mediaId
+        override fun onEvents(player: Player, events: Player.Events) {
+            events.containsAny(
+                Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
+                Player.EVENT_REPEAT_MODE_CHANGED,
+                Player.EVENT_MEDIA_ITEM_TRANSITION
+            ).then {
+                onUpdateNotification(mediaLibrarySession)
+            }
         }
 
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {

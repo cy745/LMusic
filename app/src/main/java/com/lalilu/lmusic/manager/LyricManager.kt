@@ -37,16 +37,16 @@ class LyricManager @Inject constructor(
         currentLyric.mapLatest { pair ->
             pair ?: return@mapLatest null
             LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
-        }.combine(globalDataManager.currentPosition) { list, time ->
+        }.combine(globalDataManager.currentPositionFlow) { list, time ->
             if (list == null || time == 0L) return@combine null
 
-            val index = findShowLine(list, time + 200)
+            val index = findShowLine(list, time + 350)
             val lyricEntry = list.getOrNull(index)
             val nowLyric = lyricEntry?.text ?: lyricEntry?.secondText
 
             return@combine nowLyric to index
         }.distinctUntilChanged()
-            .combine(globalDataManager.currentIsPlaying) { pair, isPlaying ->
+            .combine(globalDataManager.currentIsPlayingFlow) { pair, isPlaying ->
                 if (pair == null || !isPlaying) return@combine null
                 return@combine pair.first
             }

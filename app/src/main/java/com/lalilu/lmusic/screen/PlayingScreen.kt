@@ -103,7 +103,7 @@ fun PlayingScreen(
 
             fmRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    if (dy < 0) return
+                    if (dy <= 10) return
                     if (!fmToolbar.hasExpandedActionView()) return
                     if (!KeyboardUtils.isSoftInputVisible(activity)) return
                     KeyboardUtils.hideSoftInput(activity)
