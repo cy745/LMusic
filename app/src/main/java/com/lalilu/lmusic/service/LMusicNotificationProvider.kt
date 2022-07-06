@@ -12,7 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.media.app.NotificationCompat.MediaStyle
-import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.CommandButton
@@ -38,6 +38,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -56,13 +57,13 @@ class LMusicNotificationProvider @Inject constructor(
     ) as NotificationManager
 
     private val defaultIconResId: Int by lazy {
-        val appIcon = mContext.applicationInfo.icon
-        if (appIcon != 0) appIcon else R.drawable.ic_launcher_foreground
+        mContext.applicationInfo.icon.takeIf { it != 0 }
+            ?: R.drawable.ic_launcher_foreground
     }
 
     private var notificationBgColor = 0
     private var mediaNotification: MediaNotification? = null
-    private var lastBitmap: Pair<MediaMetadata, Bitmap>? = null
+    private var lastBitmap: Pair<MediaItem, Bitmap>? = null
     private var callback: MediaNotification.Provider.Callback? = null
     private var lyricPusherEnable = MutableStateFlow(false)
     private val localSp: SPUtils by lazy {
@@ -89,6 +90,9 @@ class LMusicNotificationProvider @Inject constructor(
         mContext.resources, R.drawable.cover_placeholder
     )
 
+    private val builder = NotificationCompat.Builder(
+        mContext, NOTIFICATION_CHANNEL_ID_PLAYER
+    )
 
     override fun createNotification(
         session: MediaSession,
@@ -97,31 +101,24 @@ class LMusicNotificationProvider @Inject constructor(
         callback: MediaNotification.Provider.Callback
     ): MediaNotification {
         this.callback = callback
+        this.builder.clearActions()
         ensureNotificationChannel()
 
-        val builder = NotificationCompat.Builder(
-            mContext, NOTIFICATION_CHANNEL_ID_PLAYER
-        )
-
-        val icon = RepeatMode.of(
+        val repeatMode = RepeatMode.of(
             session.player.repeatMode,
             session.player.shuffleModeEnabled
-        ).let {
-            when (it) {
-                RepeatOne -> R.drawable.ic_repeat_one_line
-                ListRecycle -> R.drawable.ic_order_play_line
-                Shuffle -> R.drawable.ic_shuffle_line
-            }
+        )
+
+        val icon = when (repeatMode) {
+            RepeatOne -> R.drawable.ic_repeat_one_line
+            ListRecycle -> R.drawable.ic_order_play_line
+            Shuffle -> R.drawable.ic_shuffle_line
         }
 
-        val text = if (session.player.shuffleModeEnabled) {
-            R.string.text_button_shuffle_on
-        } else {
-            when (session.player.repeatMode) {
-                Player.REPEAT_MODE_ONE -> R.string.text_button_repeat_one
-                Player.REPEAT_MODE_ALL -> R.string.text_button_repeat_all
-                else -> R.string.text_button_repeat_all
-            }
+        val text = when (repeatMode) {
+            RepeatOne -> R.string.text_button_repeat_one
+            ListRecycle -> R.string.text_button_repeat_all
+            Shuffle -> R.string.text_button_shuffle_on
         }
 
         builder.addAction(
@@ -181,8 +178,7 @@ class LMusicNotificationProvider @Inject constructor(
         )
 
         val stopIntent = actionFactory.createMediaActionPendingIntent(
-            session,
-            Player.COMMAND_STOP.toLong()
+            session, Player.COMMAND_STOP.toLong()
         )
 
         val mediaStyle = MediaStyle()
@@ -201,6 +197,7 @@ class LMusicNotificationProvider @Inject constructor(
             .setColor(notificationBgColor)
             .setLargeIcon(placeHolder)
             .setStyle(mediaStyle)
+            .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOngoing(false)
 
@@ -212,33 +209,10 @@ class LMusicNotificationProvider @Inject constructor(
             }
         )
 
-        safeLaunch {
-            var bitmap: Bitmap? = null
-            lastBitmap?.takeIf { it.first == metadata }
-                ?.let { bitmap = it.second }
-
-            if (bitmap == null) {
-                bitmap = mContext.imageLoader.execute(
-                    ImageRequest.Builder(mContext)
-                        .data(session.player.currentMediaItem)
-                        .allowHardware(false)
-                        .build()
-                ).drawable?.toBitmap() ?: return@safeLaunch
-
-                lastBitmap = metadata to bitmap!!
-                notificationBgColor = Palette.from(bitmap!!)
-                    .generate()
-                    .getAutomaticColor()
-            }
-            builder.setLargeIcon(bitmap)
-            builder.color = notificationBgColor
-            callback.onNotificationChanged(mediaNotification!!)
-        }
-        mediaNotification = MediaNotification(
-            NOTIFICATION_ID_PLAYER,
-            builder.build()
-        )
-        return mediaNotification!!
+        loadCoverAndPalette(session)
+        return MediaNotification(NOTIFICATION_ID_PLAYER, builder.build().apply {
+            flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+        })
     }
 
     override fun handleCustomCommand(
@@ -259,6 +233,40 @@ class LMusicNotificationProvider @Inject constructor(
             }
         }
         return false
+    }
+
+    private fun loadCoverAndPalette(session: MediaSession) = safeLaunch {
+        var bitmap: Bitmap? = null
+        val mediaItem = withContext(Dispatchers.Main) {
+            session.player.currentMediaItem
+        } ?: return@safeLaunch
+        lastBitmap?.takeIf { it.first == mediaItem }
+            ?.let { bitmap = it.second }
+
+        if (bitmap == null) {
+            bitmap = mContext.imageLoader.execute(
+                ImageRequest.Builder(mContext)
+                    .data(mediaItem)
+                    .size(400)
+                    .allowHardware(false)
+                    .build()
+            ).drawable?.toBitmap() ?: return@safeLaunch
+
+            lastBitmap = mediaItem to bitmap!!
+            notificationBgColor = Palette.from(bitmap!!)
+                .generate()
+                .getAutomaticColor()
+        }
+
+        if (bitmap != null) {
+            builder.color = notificationBgColor
+            builder.setLargeIcon(bitmap)
+        }
+
+        mediaNotification = MediaNotification(NOTIFICATION_ID_PLAYER, builder.build().apply {
+            flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+        })
+        callback?.onNotificationChanged(mediaNotification!!)
     }
 
     private fun ensureNotificationChannel() {
@@ -292,6 +300,7 @@ class LMusicNotificationProvider @Inject constructor(
                 mediaNotification ?: return@collectLatest
                 mediaNotification!!.notification.apply {
                     tickerText = text
+                    builder.setTicker(text)
                     flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
                     flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
                 }
