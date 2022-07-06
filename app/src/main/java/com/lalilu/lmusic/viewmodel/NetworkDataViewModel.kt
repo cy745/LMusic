@@ -70,7 +70,6 @@ class NetworkDataViewModel @Inject constructor(
         }.launchIn(this)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     fun saveMatchNetworkData(
         mediaId: String,
         songId: Long?,

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.RepeatMode
@@ -48,6 +49,7 @@ import kotlin.coroutines.CoroutineContext
 class LMusicNotificationProvider @Inject constructor(
     @ApplicationContext
     private val mContext: Context,
+    private val database: MDataBase,
     private val lyricManager: LyricManager
 ) : MediaNotification.Provider, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -235,7 +237,7 @@ class LMusicNotificationProvider @Inject constructor(
         return false
     }
 
-    private fun loadCoverAndPalette(session: MediaSession) = safeLaunch {
+    private fun loadCoverAndPalette(session: MediaSession) = safeLaunch(Dispatchers.IO) {
         var bitmap: Bitmap? = null
         val mediaItem = withContext(Dispatchers.Main) {
             session.player.currentMediaItem
@@ -244,9 +246,13 @@ class LMusicNotificationProvider @Inject constructor(
             ?.let { bitmap = it.second }
 
         if (bitmap == null) {
+            val data = database.networkDataDao()
+                .getById(mediaItem.mediaId)
+                ?.requireCoverUri() ?: mediaItem
+
             bitmap = mContext.imageLoader.execute(
                 ImageRequest.Builder(mContext)
-                    .data(mediaItem)
+                    .data(data)
                     .size(400)
                     .allowHardware(false)
                     .build()
@@ -256,6 +262,8 @@ class LMusicNotificationProvider @Inject constructor(
             notificationBgColor = Palette.from(bitmap!!)
                 .generate()
                 .getAutomaticColor()
+
+//            builder.color = Color.TRANSPARENT
         }
 
         if (bitmap != null) {
