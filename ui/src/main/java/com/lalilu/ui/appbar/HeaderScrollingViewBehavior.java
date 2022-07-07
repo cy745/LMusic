@@ -28,7 +28,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior;
-import androidx.core.math.MathUtils;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -43,12 +42,6 @@ public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<Vie
 
     final Rect tempRect1 = new Rect();
     final Rect tempRect2 = new Rect();
-
-    private int verticalLayoutGap = 0;
-    private int overlayTop;
-
-    public HeaderScrollingViewBehavior() {
-    }
 
     public HeaderScrollingViewBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -91,11 +84,7 @@ public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<Vie
 
                 int height = availableHeight + getScrollRange(header);
                 int headerHeight = header.getMeasuredHeight();
-                if (shouldHeaderOverlapScrollingChild()) {
-                    child.setTranslationY(-headerHeight);
-                } else {
-                    height -= headerHeight;
-                }
+                height -= headerHeight;
                 final int heightMeasureSpec =
                         View.MeasureSpec.makeMeasureSpec(
                                 height,
@@ -151,29 +140,11 @@ public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<Vie
                     out,
                     layoutDirection);
 
-            final int overlap = getOverlapPixelsForOffset(header);
-
-            child.layout(out.left, out.top - overlap, out.right, out.bottom - overlap);
-            verticalLayoutGap = out.top - header.getBottom();
+            child.layout(out.left, out.top, out.right, out.bottom);
         } else {
             // If we don't have a dependency, let super handle it
             super.layoutChild(parent, child, layoutDirection);
-            verticalLayoutGap = 0;
         }
-    }
-
-    protected boolean shouldHeaderOverlapScrollingChild() {
-        return false;
-    }
-
-    float getOverlapRatioForOffset(final View header) {
-        return 1f;
-    }
-
-    final int getOverlapPixelsForOffset(final View header) {
-        return overlayTop == 0
-                ? 0
-                : MathUtils.clamp((int) (getOverlapRatioForOffset(header) * overlayTop), 0, overlayTop);
     }
 
     @Nullable
@@ -181,30 +152,5 @@ public abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<Vie
 
     int getScrollRange(@NonNull View v) {
         return v.getMeasuredHeight();
-    }
-
-    /**
-     * The gap between the top of the scrolling view and the bottom of the header layout in pixels.
-     */
-    final int getVerticalLayoutGap() {
-        return verticalLayoutGap;
-    }
-
-    /**
-     * Returns the distance that this view should overlap any {@link
-     * AppbarLayout}.
-     */
-    public final int getOverlayTop() {
-        return overlayTop;
-    }
-
-    /**
-     * Set the distance that this view should overlap any {@link
-     * AppbarLayout}.
-     *
-     * @param overlayTop the distance in px
-     */
-    public final void setOverlayTop(int overlayTop) {
-        this.overlayTop = overlayTop;
     }
 }

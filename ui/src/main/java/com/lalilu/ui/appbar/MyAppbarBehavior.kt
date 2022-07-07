@@ -18,7 +18,6 @@ import kotlin.math.abs
 class MyAppbarBehavior(
     context: Context? = null, attrs: AttributeSet? = null
 ) : ExpendHeaderBehavior<AppbarLayout>(context, attrs) {
-    val offsetDelta: Int = 0
 
     private var mOffsetChangedListeners = LinkedHashSet<AppbarLayout.OnOffsetChangedListener>()
     private val onDragCallback: BaseDragCallback<AppbarLayout>? = null
