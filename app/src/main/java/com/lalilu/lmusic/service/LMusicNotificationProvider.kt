@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -57,11 +58,6 @@ class LMusicNotificationProvider @Inject constructor(
     private val notificationManager: NotificationManager = ContextCompat.getSystemService(
         mContext, NotificationManager::class.java
     ) as NotificationManager
-
-    private val defaultIconResId: Int by lazy {
-        mContext.applicationInfo.icon.takeIf { it != 0 }
-            ?: R.drawable.ic_launcher_foreground
-    }
 
     private var notificationBgColor = 0
     private var mediaNotification: MediaNotification? = null
@@ -186,7 +182,7 @@ class LMusicNotificationProvider @Inject constructor(
         val mediaStyle = MediaStyle()
             .setCancelButtonIntent(stopIntent)
             .setShowCancelButton(true)
-            .setShowActionsInCompactView(0, 1, 2)
+            .setShowActionsInCompactView(0, 2, 3)
 
         val metadata = session.player.mediaMetadata
 
@@ -197,19 +193,12 @@ class LMusicNotificationProvider @Inject constructor(
             .setContentText(metadata.artist)
             .setSubText(metadata.albumTitle)
             .setColor(notificationBgColor)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setLargeIcon(placeHolder)
             .setStyle(mediaStyle)
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOngoing(false)
-
-        builder.setSmallIcon(
-            if (Build.VERSION.SDK_INT <= 25) {
-                R.drawable.media3_notification_small_icon
-            } else {
-                defaultIconResId
-            }
-        )
 
         loadCoverAndPalette(session)
         return MediaNotification(NOTIFICATION_ID_PLAYER, builder.build().apply {
@@ -263,7 +252,7 @@ class LMusicNotificationProvider @Inject constructor(
                 .generate()
                 .getAutomaticColor()
 
-//            builder.color = Color.TRANSPARENT
+            builder.color = Color.TRANSPARENT
         }
 
         if (bitmap != null) {
