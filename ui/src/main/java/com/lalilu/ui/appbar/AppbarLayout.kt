@@ -23,7 +23,6 @@ import com.lalilu.ui.internal.StateHelper.Companion.STATE_EXPENDED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_MIDDLE
 import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.min
 
 @SuppressLint("PrivateResource", "CustomViewStyleable")
 open class AppbarLayout @JvmOverloads constructor(
@@ -38,6 +37,9 @@ open class AppbarLayout @JvmOverloads constructor(
         fun onOffsetChanged(appbarLayout: AppbarLayout, verticalOffset: Int)
     }
 
+    /**
+     * 原AppbarLayout计算可用滚动距离，作为上半部的数据源
+     */
     var totalScrollRange = INVALID_SCROLL_RANGE
         get() {
             if (field != INVALID_SCROLL_RANGE) return field
@@ -63,77 +65,6 @@ open class AppbarLayout @JvmOverloads constructor(
                 }
             }
             return max(range, 0).also { field = it }
-        }
-
-    var downPreScrollRange = INVALID_SCROLL_RANGE
-        get() {
-            if (field != INVALID_SCROLL_RANGE) return field
-
-            var range = 0
-            for (i in childCount - 1 downTo 0) {
-                val child = getChildAt(i)
-                val lp = child.layoutParams as LayoutParams
-                val childHeight = child.measuredHeight
-                val flags = lp.scrollFlags
-                if (flags and LayoutParams.FLAG_QUICK_RETURN == LayoutParams.FLAG_QUICK_RETURN) {
-                    // First take the margin into account
-                    var childRange = lp.topMargin + lp.bottomMargin
-                    // The view has the quick return flag combination...
-                    childRange += when {
-                        flags and LayoutParams.SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED != 0 -> {
-                            ViewCompat.getMinimumHeight(child)
-                        }
-                        flags and LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED != 0 -> {
-                            childHeight - ViewCompat.getMinimumHeight(child)
-                        }
-                        else -> childHeight
-                    }
-                    if (i == 0 && ViewCompat.getFitsSystemWindows(child)) {
-                        // If this is the first child and it wants to handle system windows, we need to make
-                        // sure we don't scroll past the inset
-                        childRange = min(childRange, childHeight - topInset)
-                    }
-                    range += childRange
-                } else if (range > 0) {
-                    // If we've hit an non-quick return scrollable view, and we've already hit a
-                    // quick return view, return now
-                    break
-                }
-            }
-            return max(0, range).also { field = it }
-        }
-
-    var downScrollRange = INVALID_SCROLL_RANGE
-        get() {
-            if (field != INVALID_SCROLL_RANGE) return field
-
-            var range = 0
-            var i = 0
-            val z = childCount
-            while (i < z) {
-                val child = getChildAt(i)
-                val lp = child.layoutParams as LayoutParams
-                var childHeight = child.measuredHeight
-                childHeight += lp.topMargin + lp.bottomMargin
-                val flags = lp.scrollFlags
-                if (flags and LayoutParams.SCROLL_FLAG_SCROLL != 0) {
-                    // We're set to scroll so add the child's height
-                    range += childHeight
-                    if (flags and LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED != 0) {
-                        // For a collapsing exit scroll, we to take the collapsed height into account.
-                        // We also break the range straight away since later views can't scroll
-                        // beneath us
-                        range -= ViewCompat.getMinimumHeight(child)
-                        break
-                    }
-                } else {
-                    // As soon as a view doesn't have the scroll flag, we end the range calculation.
-                    // This is because views below can not scroll under a fixed view.
-                    break
-                }
-                i++
-            }
-            return max(0, range).also { field = it }
         }
 
     var haveChildWithInterpolator: Boolean = false
@@ -211,8 +142,6 @@ open class AppbarLayout @JvmOverloads constructor(
 
     private fun invalidateScrollRanges() {
         totalScrollRange = INVALID_SCROLL_RANGE
-        downPreScrollRange = INVALID_SCROLL_RANGE
-        downScrollRange = INVALID_SCROLL_RANGE
     }
 
     fun autoToggleExpand() {

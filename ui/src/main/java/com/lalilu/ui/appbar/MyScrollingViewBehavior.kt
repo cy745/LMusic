@@ -34,12 +34,10 @@ class MyScrollingViewBehavior(
     ) {
         if (dependency is AppbarLayout) {
             ViewCompat.removeAccessibilityAction(
-                parent,
-                AccessibilityActionCompat.ACTION_SCROLL_FORWARD.id
+                parent, AccessibilityActionCompat.ACTION_SCROLL_FORWARD.id
             )
             ViewCompat.removeAccessibilityAction(
-                parent,
-                AccessibilityActionCompat.ACTION_SCROLL_BACKWARD.id
+                parent, AccessibilityActionCompat.ACTION_SCROLL_BACKWARD.id
             )
         }
     }
@@ -65,25 +63,6 @@ class MyScrollingViewBehavior(
         return false
     }
 
-    override fun getOverlapRatioForOffset(header: View?): Float {
-        if (header is AppbarLayout) {
-            val totalScrollRange = header.totalScrollRange
-            val preScrollDown = header.downPreScrollRange
-            val offset = getAppBarLayoutOffset(header)
-            if (preScrollDown != 0 && totalScrollRange + offset <= preScrollDown) {
-                // If we're in a pre-scroll down. Don't use the offset at all.
-                return 0f
-            } else {
-                val availScrollRange = totalScrollRange - preScrollDown
-                if (availScrollRange != 0) {
-                    // Else we'll use a interpolated ratio of the overlap, depending on offset
-                    return 1f + offset / availScrollRange.toFloat()
-                }
-            }
-        }
-        return 0f
-    }
-
     override fun findFirstDependency(views: MutableList<View>?): AppbarLayout? {
         return views?.first { it is AppbarLayout } as AppbarLayout?
     }
@@ -95,19 +74,8 @@ class MyScrollingViewBehavior(
     private fun offsetChildAsNeeded(child: View, dependency: View) {
         val behavior = (dependency.layoutParams as CoordinatorLayout.LayoutParams).behavior
         if (behavior is MyAppbarBehavior) {
-            // Offset the child, pinning it to the bottom the header-dependency, maintaining
-            // any vertical gap and overlap
-            ViewCompat.offsetTopAndBottom(
-                child, (dependency.bottom - child.top
-                        + behavior.offsetDelta
-                        + verticalLayoutGap)
-                        - getOverlapPixelsForOffset(dependency)
-            )
+            // Offset the child, pinning it to the bottom the header-dependency
+            ViewCompat.offsetTopAndBottom(child, dependency.bottom - child.top)
         }
-    }
-
-    private fun getAppBarLayoutOffset(abl: AppbarLayout): Int {
-        val behavior = (abl.layoutParams as CoordinatorLayout.LayoutParams).behavior
-        return if (behavior is MyAppbarBehavior) behavior.topAndBottomOffset else 0
     }
 }
