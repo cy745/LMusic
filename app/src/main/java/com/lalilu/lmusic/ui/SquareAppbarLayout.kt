@@ -37,6 +37,8 @@ class SquareAppbarLayout @JvmOverloads constructor(
     override fun getBehavior(): CoordinatorLayout.Behavior<AppbarLayout> = behavior
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        mLyricViewX?.requestLayout()
+        mDraweeView?.requestLayout()
         super.onMeasure(widthMeasureSpec, widthMeasureSpec)
     }
 
