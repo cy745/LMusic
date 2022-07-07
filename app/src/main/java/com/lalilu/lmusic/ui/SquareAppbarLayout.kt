@@ -19,7 +19,6 @@ import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper
 import me.qinc.lib.edgetranslucent.EdgeTransparentView
 import kotlin.math.max
-import kotlin.math.roundToInt
 
 class SquareAppbarLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -47,7 +46,9 @@ class SquareAppbarLayout @JvmOverloads constructor(
     }
 
     private fun getMutableDragPercent(offset: Float): Float {
-        return (offset / getMutableDragOffset()).coerceIn(0F, 1F).ifNaN(0f)
+        val dragOffset = getMutableDragOffset()
+        if (dragOffset == 0f || offset == 0f) return 0f
+        return (offset / dragOffset).coerceIn(0F, 1F)
     }
 
     private fun getMutableScalePercent(offset: Float, fullyExpendedOffset: Number): Float {
@@ -69,7 +70,11 @@ class SquareAppbarLayout @JvmOverloads constructor(
             val expendedOffset = offset.coerceAtLeast(0).toFloat()
             val minCollapsedOffset = behavior.getCollapsedOffset(parent as View, appbar)
             val maxExpendedOffset = behavior.getFullyExpendOffset(parent as View, appbar)
-            val expendedPercent = (expendedOffset / maxExpendedOffset.toFloat()).coerceIn(0F, 1F)
+            if (minCollapsedOffset >= 0 || maxExpendedOffset <= 0)
+                return@addOnOffsetExpendChangedListener
+
+            val expendedPercent = (expendedOffset / maxExpendedOffset.toFloat())
+                .coerceIn(0F, 1F)
             val alphaPercent = calculatePercentIn(
                 start = minCollapsedOffset,
                 end = if (shouldSkipExpanded()) maxExpendedOffset else 0,
@@ -96,7 +101,7 @@ class SquareAppbarLayout @JvmOverloads constructor(
             mCollapsingToolbarLayout?.let {
                 it.translationY = topOffset
                 it.expendedTitleColor =
-                    Color.argb((alphaPercentDecrease * 255).roundToInt(), 255, 255, 255)
+                    Color.argb((alphaPercentDecrease * 255).toInt(), 255, 255, 255)
             }
 
             mToolbar?.let {
