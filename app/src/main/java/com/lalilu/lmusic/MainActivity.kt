@@ -14,6 +14,7 @@ import com.funny.data_saver.core.LocalDataSaver
 import com.lalilu.R
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
+import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.screen.MainScreen
@@ -21,10 +22,16 @@ import com.lalilu.lmusic.screen.ShowScreen
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CoroutineScope {
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO
 
     @Inject
     lateinit var mSongBrowser: MSongBrowser
@@ -53,6 +60,9 @@ class MainActivity : AppCompatActivity() {
         PermissionUtils.requestPermission(this, onSuccess = {
             mediaSource.start()
             lifecycle.addObserver(mSongBrowser)
+            launch {
+                Indexer.index(this@MainActivity)
+            }
         }, onFailed = {
             ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
         })
