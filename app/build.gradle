@@ -193,6 +193,7 @@ dependencies {
     implementation project(":jaudiotagger-android")
     implementation project(":common")
     implementation project(":ui")
+    implementation project(":lmedia")
 
     kapt 'androidx.hilt:hilt-compiler:1.0.0'
     kapt "androidx.room:room-compiler:$room_version"
