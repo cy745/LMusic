@@ -3,11 +3,8 @@ package com.lalilu.lmusic
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
-import com.lalilu.R
-import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.fetcher.EmbeddedLyricFetcher
 import com.lalilu.lmusic.utils.fetcher.MSongCoverFetcher
-import com.simple.spiderman.SpiderMan
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.Call
 import javax.inject.Inject
@@ -34,7 +31,7 @@ class LMusicApp : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
-        SpiderMan.setTheme(R.style.SpiderManTheme_Dark)
-        SpManager.init(this)
+//        SpiderMan.setTheme(R.style.SpiderManTheme_Dark)
+//        SpManager.init(this)
     }
 }

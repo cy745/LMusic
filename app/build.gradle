@@ -126,7 +126,7 @@ dependencies {
     // https://gitee.com/simplepeng/SpiderMan
     // Apache-2.0 License
     // 闪退崩溃日志捕获库
-    implementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
+//    implementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
 
     // https://github.com/Blankj/AndroidUtilCode/
     // Apache-2.0 License
