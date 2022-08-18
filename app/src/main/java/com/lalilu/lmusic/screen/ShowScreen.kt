@@ -9,6 +9,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.IconToggleButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,24 +33,22 @@ import com.blankj.utilcode.util.SizeUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.LocalWindowSize
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.service.MSongBrowser
-import com.lalilu.lmusic.utils.*
+import com.lalilu.lmusic.utils.RepeatMode
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
 fun ShowScreen(
-    currentWindowSizeClass: WindowSizeClass = rememberWindowSizeClass(),
     mainViewModel: MainViewModel = hiltViewModel(),
     playingViewModel: PlayingViewModel = hiltViewModel()
 ) {
-    val visible = remember(
-        currentWindowSizeClass.deviceType,
-        currentWindowSizeClass.windowSize
-    ) {
-        currentWindowSizeClass.deviceType == DeviceType.Phone &&
-                currentWindowSizeClass.windowSize != WindowSize.Compact
+    val windowSize = LocalWindowSize.current
+    val visible = remember(windowSize.widthSizeClass) {
+        println("currentWindowSize: ${windowSize.widthSizeClass} ${windowSize.heightSizeClass}")
+        windowSize.widthSizeClass == WindowWidthSizeClass.Expanded
     }
 
     if (visible) {
