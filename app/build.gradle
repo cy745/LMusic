@@ -8,8 +8,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 32
-    buildToolsVersion "32.0.0"
+    compileSdkVersion 33
 
     buildFeatures {
         viewBinding true
@@ -20,9 +19,9 @@ android {
     defaultConfig {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 37
-        versionName "1.4.15_1"
+        versionName "1.4.16"
         vectorDrawables {
             useSupportLibrary true
         }
@@ -33,7 +32,6 @@ android {
 
     kotlinOptions {
         jvmTarget = "1.8"
-        useIR = true
     }
 
     buildTypes {
@@ -46,6 +44,7 @@ android {
         }
 
         debug {
+            versionNameSuffix = "-DEBUG"
             applicationIdSuffix ".debug"
             resValue "string", "app_name", "@string/app_name_debug"
         }
@@ -74,6 +73,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.google.accompanist/accompanist-navigation-animation
     implementation 'com.google.accompanist:accompanist-navigation-animation:0.24.9-beta'
+
+    // https://mvnrepository.com/artifact/androidx.compose.material3/material3-window-size-class
+    implementation 'androidx.compose.material3:material3-window-size-class:1.0.0-alpha16'
 
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"

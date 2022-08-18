@@ -5,7 +5,11 @@ import android.os.Bundle
 import android.view.Menu
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.ToastUtils
@@ -69,7 +73,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
 
         setContent {
             LMusicTheme {
-                CompositionLocalProvider(LocalDataSaver provides dataSaverPreferences) {
+                @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+                CompositionLocalProvider(
+                    LocalDataSaver provides dataSaverPreferences,
+                    LocalWindowSize provides calculateWindowSizeClass(activity = this)
+                ) {
                     MainScreen()
                     ShowScreen()
                 }
@@ -85,4 +93,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
         searchView.bind(globalDataManager::searchFor)
         return super.onCreateOptionsMenu(menu)
     }
+}
+
+val LocalWindowSize = compositionLocalOf<WindowSizeClass> {
+    error("WindowSizeClass hasn't been initialized")
 }
