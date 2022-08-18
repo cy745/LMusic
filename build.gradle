@@ -12,8 +12,6 @@ buildscript {
     ext.accompanist_version = '0.24.6-alpha'
 
     repositories {
-        google()
-        mavenCentral()
         maven { url 'https://jitpack.io' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/google' }
@@ -32,8 +30,6 @@ plugins {
 
 allprojects {
     repositories {
-        google()
-        mavenCentral()
         maven { url 'https://jitpack.io' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/google' }
