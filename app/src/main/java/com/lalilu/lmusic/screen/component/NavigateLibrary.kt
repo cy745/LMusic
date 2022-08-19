@@ -5,26 +5,27 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.lalilu.lmusic.screen.LMusicNavGraph
-import com.lalilu.lmusic.utils.WindowSize
+import com.lalilu.lmusic.utils.LocalNavigatorHost
+import com.lalilu.lmusic.utils.LocalWindowSize
 
 @Composable
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
-fun RowScope.NavigateLibrary(
-    currentWindowSize: WindowSize,
-    navController: NavHostController,
+fun NavigateLibrary(
     onExpendModal: () -> Unit,
     onPopUp: () -> Unit,
     onClose: () -> Unit
 ) {
+    val navController = LocalNavigatorHost.current
     val configuration = LocalConfiguration.current
     val navBarHeightDp = WindowInsets.navigationBars
         .asPaddingValues()
@@ -32,35 +33,61 @@ fun RowScope.NavigateLibrary(
     val maxHeightDp = navBarHeightDp + configuration.screenHeightDp.dp
 
     Box(
-        modifier = if (currentWindowSize != WindowSize.Compact) {
-            Modifier
-                .fillMaxSize()
-                .weight(1f)
-        } else {
-            Modifier
-                .fillMaxWidth()
-                .height(maxHeightDp)
-        }
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(maxHeightDp)
     ) {
-        StatusBarShadow(currentWindowSize = currentWindowSize)
-        Row(modifier = Modifier.fillMaxSize()) {
-            if (currentWindowSize == WindowSize.Expanded) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            LMusicNavGraph(
+                onExpendModal = onExpendModal,
+                contentPaddingForFooter = navBarHeightDp + 64.dp,
+                modifier = Modifier.fillMaxSize()
+            )
+//            NavigatorFooter(
+//                modifier = Modifier.align(Alignment.BottomCenter),
+//                navController = navController,
+//                popUp = onPopUp,
+//                close = onClose
+//            )
+        }
+    }
+}
+
+@Composable
+fun RowScope.NavigateLibraryForPad(
+    onExpendModal: () -> Unit,
+    onPopUp: () -> Unit,
+    onClose: () -> Unit
+) {
+    val navController = LocalNavigatorHost.current
+    val windowSize = LocalWindowSize.current
+    val currentWindowSize = remember(windowSize.widthSizeClass) {
+        windowSize.widthSizeClass
+    }
+    val navBarHeightDp = WindowInsets.navigationBars
+        .asPaddingValues()
+        .calculateBottomPadding()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .weight(1f)
+    ) {
+        StatusBarShadow(enable = currentWindowSize == WindowWidthSizeClass.Expanded)
+
+        Row {
+            if (currentWindowSize == WindowWidthSizeClass.Expanded) {
                 NavigatorRailBar(navController)
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
+                @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
                 LMusicNavGraph(
-                    navController = navController,
                     onExpendModal = onExpendModal,
-                    currentWindowSize = currentWindowSize,
                     contentPaddingForFooter = navBarHeightDp + 64.dp,
-                    modifier = if (currentWindowSize != WindowSize.Compact) {
-                        Modifier
-                            .fillMaxSize()
-                            .statusBarsPadding()
-                    } else {
-                        Modifier.fillMaxSize()
-                    }
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
                 )
                 NavigatorFooter(
                     modifier = Modifier.align(Alignment.BottomCenter),
@@ -74,8 +101,8 @@ fun RowScope.NavigateLibrary(
 }
 
 @Composable
-fun BoxScope.StatusBarShadow(currentWindowSize: WindowSize) {
-    if (currentWindowSize != WindowSize.Compact && MaterialTheme.colors.isLight) {
+fun BoxScope.StatusBarShadow(enable: Boolean) {
+    if (enable && MaterialTheme.colors.isLight) {
         Spacer(
             modifier = Modifier
                 .align(Alignment.TopCenter)

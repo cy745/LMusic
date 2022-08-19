@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -26,7 +25,8 @@ import com.lalilu.lmusic.datasource.ALL_ID
 import com.lalilu.lmusic.datasource.ITEM_PREFIX
 import com.lalilu.lmusic.screen.library.*
 import com.lalilu.lmusic.screen.library.detail.*
-import com.lalilu.lmusic.utils.WindowSize
+import com.lalilu.lmusic.utils.LocalNavigatorHost
+import com.lalilu.lmusic.utils.rememberWindowSizeClass
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 
@@ -61,12 +61,13 @@ fun NavController.navigate(
 @ExperimentalMaterialApi
 fun LMusicNavGraph(
     modifier: Modifier = Modifier,
-    currentWindowSize: WindowSize,
-    navController: NavHostController,
     contentPaddingForFooter: Dp = 0.dp,
     mainViewModel: MainViewModel = hiltViewModel(),
     onExpendModal: () -> Unit = {},
 ) {
+    val navController = LocalNavigatorHost.current
+    val currentWindowSizeClass = rememberWindowSizeClass()
+    val currentWindowSize = currentWindowSizeClass.windowSize
     val mediaSource = mainViewModel.mediaSource
 
     AnimatedNavHost(

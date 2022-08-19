@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.screen
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -18,26 +17,29 @@ import androidx.media3.common.MediaItem
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.lmusic.screen.component.NavigateLibrary
 import com.lalilu.lmusic.utils.DeviceType.Pad
 import com.lalilu.lmusic.utils.DeviceType.Phone
+import com.lalilu.lmusic.utils.LocalNavigatorHost
 import com.lalilu.lmusic.utils.WindowSize.*
 import com.lalilu.lmusic.utils.WindowSizeClass
 import com.lalilu.lmusic.utils.getActivity
-import com.lalilu.lmusic.utils.rememberWindowSizeClass
 import com.lalilu.lmusic.utils.safeLaunch
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 fun MainScreen(
-    currentWindowSizeClass: WindowSizeClass = rememberWindowSizeClass(),
-    navController: NavHostController = rememberAnimatedNavController(),
     scope: CoroutineScope = rememberCoroutineScope(),
 ) {
+    val navController = LocalNavigatorHost.current
     val scaffoldState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-    val currentWindowSize = currentWindowSizeClass.windowSize
+    val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp +
+            WindowInsets.statusBars.asPaddingValues().calculateTopPadding() +
+            WindowInsets.navigationBars.asPaddingValues().calculateTopPadding()
+    val screenHeight = LocalDensity.current.run { screenHeightDp.toPx() }
+    val backgroundColor = MaterialTheme.colors.background
+    val isVisible = { scaffoldState.offset.value < screenHeight }
 
     val onPopUp: () -> Unit = {
         if (navController.previousBackStackEntry == null) {
@@ -55,39 +57,63 @@ fun MainScreen(
         scope.safeLaunch { scaffoldState.animateTo(ModalBottomSheetValue.Expanded) }
     }
 
-    Row {
-        if (currentWindowSize != Compact) {
-            NavigateLibrary(
-                currentWindowSize = currentWindowSize,
-                navController = navController,
-                onExpendModal = onExpendModal,
-                onPopUp = onPopUp,
-                onClose = onClose
-            )
-        }
-        MainScreenForCompat(
-            scope = scope,
-            currentWindowSizeClass = currentWindowSizeClass,
-            navController = navController,
-            scaffoldState = scaffoldState,
-            bottomSheetContent = {
-                if (currentWindowSize == Compact) {
-                    NavigateLibrary(
-                        currentWindowSize = currentWindowSize,
-                        navController = navController,
-                        onExpendModal = onExpendModal,
-                        onPopUp = onPopUp,
-                        onClose = onClose
-                    )
-                }
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
+    val showScaffold: suspend () -> Unit = {
+        scaffoldState.show()
+    }
+
+    val scaffoldShow: suspend () -> Unit = {
+        navController.navigate(
+            from = MainScreenData.Library.name,
+            to = MainScreenData.Library.name,
+            clearAllBefore = true
+        )
+        showScaffold()
+    }
+
+    val onSongShowDetail: suspend (MediaItem) -> Unit = {
+        navController.navigate(
+            from = "${MainScreenData.SongsDetail.name}/${it.mediaId}",
+            to = "${MainScreenData.SongsDetail.name}/${it.mediaId}",
+            clearAllBefore = true
+        )
+        showScaffold()
+    }
+
+    ModalBottomSheetLayout(
+        sheetState = scaffoldState,
+        modifier = Modifier.fillMaxWidth(),
+        sheetBackgroundColor = backgroundColor,
+        scrimColor = Color.Black.copy(alpha = 0.5f),
+        sheetShape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp),
+        sheetContent = {
+            Row {
+                NavigateLibrary(
+                    onExpendModal = onExpendModal,
+                    onPopUp = onPopUp,
+                    onClose = onClose
                 )
             }
+        }
+    ) {
+        PlayingScreen(
+            scope = scope,
+            onSongShowDetail = onSongShowDetail,
+            onExpendBottomSheet = scaffoldShow,
+            onCollapseBottomSheet = scaffoldState::hide,
         )
     }
+
+    val context = LocalContext.current
+    BackHandlerWithNavigator(
+        navController = navController,
+        onBack = {
+            if (isVisible()) {
+                scope.safeLaunch { scaffoldState.hide() }
+            } else {
+                context.getActivity()?.moveTaskToBack(false)
+            }
+        }
+    )
 }
 
 @Composable

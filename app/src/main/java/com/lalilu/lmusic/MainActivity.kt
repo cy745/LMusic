@@ -5,16 +5,16 @@ import android.os.Bundle
 import android.view.Menu
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.funny.data_saver.core.DataSaverPreferences
 import com.funny.data_saver.core.LocalDataSaver
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.R
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
@@ -25,6 +25,8 @@ import com.lalilu.lmusic.screen.MainScreen
 import com.lalilu.lmusic.screen.ShowScreen
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
+import com.lalilu.lmusic.utils.LocalNavigatorHost
+import com.lalilu.lmusic.utils.LocalWindowSize
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,10 +75,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
 
         setContent {
             LMusicTheme {
-                @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+                @OptIn(
+                    ExperimentalMaterial3WindowSizeClassApi::class,
+                    ExperimentalAnimationApi::class
+                )
+
                 CompositionLocalProvider(
                     LocalDataSaver provides dataSaverPreferences,
-                    LocalWindowSize provides calculateWindowSizeClass(activity = this)
+                    LocalWindowSize provides calculateWindowSizeClass(activity = this),
+                    LocalNavigatorHost provides rememberAnimatedNavController()
                 ) {
                     MainScreen()
                     ShowScreen()
@@ -95,6 +102,3 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
     }
 }
 
-val LocalWindowSize = compositionLocalOf<WindowSizeClass> {
-    error("WindowSizeClass hasn't been initialized")
-}
