@@ -33,9 +33,9 @@ import com.blankj.utilcode.util.SizeUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.LocalWindowSize
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.utils.LocalWindowSize
 import com.lalilu.lmusic.utils.RepeatMode
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -47,7 +47,6 @@ fun ShowScreen(
 ) {
     val windowSize = LocalWindowSize.current
     val visible = remember(windowSize.widthSizeClass) {
-        println("currentWindowSize: ${windowSize.widthSizeClass} ${windowSize.heightSizeClass}")
         windowSize.widthSizeClass == WindowWidthSizeClass.Expanded
     }
 
