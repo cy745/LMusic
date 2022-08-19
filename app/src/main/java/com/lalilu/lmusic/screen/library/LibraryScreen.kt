@@ -17,22 +17,30 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
 import com.lalilu.lmedia.indexer.Indexer
-import com.lalilu.lmusic.utils.WindowSize
+import com.lalilu.lmusic.screen.component.SmartBar
 
 @Composable
 fun LibraryScreen(
-    currentWindowSize: WindowSize,
-    navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp
 ) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(top = 20.dp, bottom = contentPaddingForFooter)
     ) {
         item {
-            RecommendTitle("每日推荐")
+            RecommendTitle("每日推荐set", onClick = {
+                SmartBar.setBarItem(toggle = true) {
+                    Text(
+                        text = "每日推荐set", modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    )
+                }
+            })
+        }
+        item {
             RecommendRow(
                 items = Indexer.library.songs
                     .sortedByDescending { it.id.toLongOrNull() ?: 0 }
@@ -49,7 +57,17 @@ fun LibraryScreen(
 
         item {
             // 最近添加
-            RecommendTitle("最近添加")
+            RecommendTitle("最近添加add toggle", onClick = {
+                SmartBar.addBarItem(toggle = true) {
+                    Text(
+                        text = "最近添加add toggle", modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    )
+                }
+            })
+        }
+        item {
             RecommendRow(
                 items = Indexer.library.songs
                     .sortedByDescending { it.id.toLongOrNull() ?: 0 }
@@ -64,6 +82,8 @@ fun LibraryScreen(
 
         item {
             RecommendTitle("最近播放")
+        }
+        item {
             RecommendRow(
                 items = Indexer.library.songs
                     .sortedByDescending { it.id.toLongOrNull() ?: 0 }
@@ -77,6 +97,33 @@ fun LibraryScreen(
                 )
             }
         }
+
+        item {
+            RecommendTitle("每日推荐add", onClick = {
+                SmartBar.addBarItem {
+                    Text(
+                        text = "每日推荐add", modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    )
+                }
+            })
+        }
+        item {
+            RecommendRow(
+                items = Indexer.library.songs
+                    .sortedByDescending { it.id.toLongOrNull() ?: 0 }
+                    .take(10)
+            ) {
+                RecommendCard(
+                    title = it.name,
+                    subTitle = it._artist,
+                    width = 250.dp,
+                    height = 250.dp
+                )
+            }
+        }
+
 
 //        LazyVerticalGrid(
 //            columns = GridCells.Fixed(if (currentWindowSize == WindowSize.Expanded) 3 else 2),

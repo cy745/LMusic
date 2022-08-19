@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmusic.screen.LMusicNavGraph
+import com.lalilu.lmusic.screen.component.SmartBar.SmartBarContent
 import com.lalilu.lmusic.utils.LocalNavigatorHost
 import com.lalilu.lmusic.utils.LocalWindowSize
 
@@ -25,7 +26,6 @@ fun NavigateLibrary(
     onPopUp: () -> Unit,
     onClose: () -> Unit
 ) {
-    val navController = LocalNavigatorHost.current
     val configuration = LocalConfiguration.current
     val navBarHeightDp = WindowInsets.navigationBars
         .asPaddingValues()
@@ -43,6 +43,7 @@ fun NavigateLibrary(
                 contentPaddingForFooter = navBarHeightDp + 64.dp,
                 modifier = Modifier.fillMaxSize()
             )
+            SmartBarContent()
 //            NavigatorFooter(
 //                modifier = Modifier.align(Alignment.BottomCenter),
 //                navController = navController,
@@ -89,12 +90,7 @@ fun RowScope.NavigateLibraryForPad(
                         .fillMaxSize()
                         .statusBarsPadding()
                 )
-                NavigatorFooter(
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    navController = navController,
-                    popUp = onPopUp,
-                    close = onClose
-                )
+                SmartBarContent()
             }
         }
     }

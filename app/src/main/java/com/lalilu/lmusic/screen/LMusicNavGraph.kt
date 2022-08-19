@@ -87,8 +87,6 @@ fun LMusicNavGraph(
             route = MainScreenData.Library.name
         ) {
             LibraryScreen(
-                currentWindowSize = currentWindowSize,
-                navigateTo = navController::navigate,
                 contentPaddingForFooter = contentPaddingForFooter
             )
         }
