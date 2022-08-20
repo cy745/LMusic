@@ -19,7 +19,6 @@ import com.lalilu.R
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmedia.indexer.Indexer
-import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.screen.MainScreen
 import com.lalilu.lmusic.screen.ShowScreen
@@ -43,9 +42,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
     lateinit var mSongBrowser: MSongBrowser
 
     @Inject
-    lateinit var mediaSource: MMediaSource
-
-    @Inject
     lateinit var globalDataManager: GlobalDataManager
 
     @Inject
@@ -64,7 +60,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
         }
         SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
-            mediaSource.start()
             lifecycle.addObserver(mSongBrowser)
             launch {
                 Indexer.index(this@MainActivity)
@@ -79,7 +74,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                     ExperimentalMaterial3WindowSizeClassApi::class,
                     ExperimentalAnimationApi::class
                 )
-
                 CompositionLocalProvider(
                     LocalDataSaver provides dataSaverPreferences,
                     LocalWindowSize provides calculateWindowSizeClass(activity = this),

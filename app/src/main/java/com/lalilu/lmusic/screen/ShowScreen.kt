@@ -26,15 +26,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
-import coil.transform.BlurTransformation
+import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
+import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
+import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.utils.BlurTransformation
 import com.lalilu.lmusic.utils.LocalWindowSize
 import com.lalilu.lmusic.utils.RepeatMode
 import com.lalilu.lmusic.viewmodel.MainViewModel
@@ -87,45 +91,45 @@ fun ShowScreen(
 }
 
 @Composable
-@OptIn(ExperimentalCoilApi::class)
 fun RowScope.ImageCover(mediaItem: MediaItem?) {
-    val imagePainter = rememberImagePainter(
-        data = mediaItem
-    ) {
-        size(SizeUtils.dp2px(256f))
-        crossfade(true)
-    }
+    val songs = Indexer.library.songs.find { it.id == mediaItem?.mediaId }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .weight(1f)
     ) {
-        val loaded = imagePainter.state.painter != null
         Surface(
             modifier = Modifier.align(Alignment.Center),
             shape = RoundedCornerShape(10.dp),
             color = Color(0x55000000),
-            elevation = if (loaded) 5.dp else 0.dp
+            elevation = 0.dp
         ) {
-            if (loaded) {
-                Image(
-                    painter = imagePainter,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .fillMaxHeight(),
-                    contentScale = ContentScale.FillHeight
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_music_line),
-                    contentDescription = "",
-                    contentScale = FixedScale(1f),
-                    colorFilter = ColorFilter.tint(color = Color.LightGray),
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                )
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(context = LocalContext.current)
+                    .data(songs)
+                    .size(SizeUtils.dp2px(256f))
+                    .crossfade(true)
+                    .build(),
+                contentDescription = ""
+            ) {
+                val state = painter.state
+                if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_music_line),
+                        contentDescription = "",
+                        contentScale = FixedScale(1f),
+                        colorFilter = ColorFilter.tint(color = Color.LightGray),
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                    )
+                } else {
+                    SubcomposeAsyncImageContent(
+                        modifier = Modifier.fillMaxHeight(),
+                        contentScale = ContentScale.FillHeight
+                    )
+                }
             }
         }
     }
@@ -133,21 +137,20 @@ fun RowScope.ImageCover(mediaItem: MediaItem?) {
 
 @Composable
 fun BoxScope.BlurImageBg(mediaItem: MediaItem?) {
-    val blurImagePainter = rememberImagePainter(
-        data = mediaItem
-    ) {
-        size(SizeUtils.dp2px(128f))
-        transformations(BlurTransformation(LocalContext.current, 25f, 4f))
-        crossfade(true)
-    }
+    val songs = Indexer.library.songs.find { it.id == mediaItem?.mediaId }
 
-    Image(
+    AsyncImage(
         modifier = Modifier
             .fillMaxSize()
             .align(Alignment.Center),
-        painter = blurImagePainter,
-        contentScale = ContentScale.Crop,
-        contentDescription = ""
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(songs)
+            .size(SizeUtils.dp2px(128f))
+            .transformations(BlurTransformation(LocalContext.current, 25f, 4f))
+            .crossfade(true)
+            .build(),
+        contentDescription = "",
+        contentScale = ContentScale.Crop
     )
     Spacer(
         modifier = Modifier

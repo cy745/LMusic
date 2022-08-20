@@ -12,22 +12,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
-import com.lalilu.lmusic.datasource.ALBUM_ID
-import com.lalilu.lmusic.datasource.ALBUM_PREFIX
-import com.lalilu.lmusic.datasource.ALL_ID
-import com.lalilu.lmusic.datasource.ITEM_PREFIX
+import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.screen.library.*
 import com.lalilu.lmusic.screen.library.detail.*
 import com.lalilu.lmusic.utils.LocalNavigatorHost
 import com.lalilu.lmusic.utils.rememberWindowSizeClass
-import com.lalilu.lmusic.viewmodel.MainViewModel
 
 
 /**
@@ -62,13 +57,11 @@ fun NavController.navigate(
 fun LMusicNavGraph(
     modifier: Modifier = Modifier,
     contentPaddingForFooter: Dp = 0.dp,
-    mainViewModel: MainViewModel = hiltViewModel(),
     onExpendModal: () -> Unit = {},
 ) {
     val navController = LocalNavigatorHost.current
     val currentWindowSizeClass = rememberWindowSizeClass()
     val currentWindowSize = currentWindowSizeClass.windowSize
-    val mediaSource = mainViewModel.mediaSource
 
     AnimatedNavHost(
         navController = navController,
@@ -94,9 +87,7 @@ fun LMusicNavGraph(
         composable(
             route = MainScreenData.Songs.name
         ) {
-            val songs = mediaSource.getChildren(ALL_ID) ?: emptyList()
             SongsScreen(
-                songs = songs,
                 currentWindowSize = currentWindowSize,
                 navigateTo = navController::navigate,
                 contentPaddingForFooter = contentPaddingForFooter
@@ -115,9 +106,7 @@ fun LMusicNavGraph(
         composable(
             route = MainScreenData.Albums.name
         ) {
-            val albums = mediaSource.getChildren(ALBUM_ID) ?: emptyList()
             AlbumsScreen(
-                albums = albums,
                 currentWindowSize = currentWindowSize,
                 navigateTo = navController::navigate,
                 contentPaddingForFooter = contentPaddingForFooter
@@ -151,15 +140,12 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
-
-            mediaId?.let { id ->
-                mediaSource.getItemById(ITEM_PREFIX + id)?.also {
-                    SongDetailScreen(
-                        mediaItem = it,
-                        currentWindowSize = currentWindowSize,
-                        navigateTo = navController::navigate
-                    )
-                }
+            Indexer.library.songs.find { it.id == mediaId }?.let {
+                SongDetailScreen(
+                    song = it,
+                    currentWindowSize = currentWindowSize,
+                    navigateTo = navController::navigate
+                )
             } ?: EmptySongDetailScreen()
         }
 
@@ -184,19 +170,13 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("albumId") { type = NavType.StringType })
         ) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId")
-
-            albumId?.let { id ->
-                mediaSource.getItemById(ALBUM_PREFIX + id)?.let { album ->
-                    mediaSource.getChildren(ALBUM_PREFIX + id)?.also { songs ->
-                        AlbumDetailScreen(
-                            album = album,
-                            songs = songs,
-                            currentWindowSize = currentWindowSize,
-                            navigateTo = navController::navigate,
-                            contentPaddingForFooter = contentPaddingForFooter
-                        )
-                    }
-                }
+            Indexer.library.albums.find { it.id == albumId }?.let {
+                AlbumDetailScreen(
+                    album = it,
+                    currentWindowSize = currentWindowSize,
+                    navigateTo = navController::navigate,
+                    contentPaddingForFooter = contentPaddingForFooter
+                )
             } ?: EmptyAlbumDetailScreen()
         }
         composable(
@@ -234,16 +214,13 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
-
-            mediaId?.let { id ->
-                mediaSource.getItemById(ITEM_PREFIX + id)?.also {
-                    MatchNetworkDataScreen(
-                        mediaItem = it,
-                        navigateUp = navController::navigateUp,
-                        expendScaffold = onExpendModal,
-                        contentPaddingForFooter = contentPaddingForFooter
-                    )
-                }
+            Indexer.library.songs.find { it.id == mediaId }?.let {
+                MatchNetworkDataScreen(
+                    song = it,
+                    navigateUp = navController::navigateUp,
+                    expendScaffold = onExpendModal,
+                    contentPaddingForFooter = contentPaddingForFooter
+                )
             } ?: EmptySearchForLyricScreen()
         }
         composable(

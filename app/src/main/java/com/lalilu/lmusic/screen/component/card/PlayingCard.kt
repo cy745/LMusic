@@ -20,19 +20,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
 import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.utils.fetcher.getLyric
 import com.lalilu.lmusic.utils.rememberCoverWithFlow
 
 @Composable
 @OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalCoilApi::class
+    ExperimentalFoundationApi::class
 )
 fun PlayingCard(
     modifier: Modifier = Modifier,
@@ -44,9 +40,9 @@ fun PlayingCard(
         crossfade(true)
         size(SizeUtils.dp2px(64f))
     }
-    val lrcIconPainter = rememberImagePainter(
-        data = mediaItem.getLyric()
-    )
+//    val lrcIconPainter = rememberImagePainter(
+//        data = mediaItem.getLyric()
+//    )
     val mediaTypeIconPainter = painterResource(
         id = getMusicTypeIcon(mediaItem)
     )
@@ -107,14 +103,14 @@ fun PlayingCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    Image(
-                        painter = lrcIconPainter,
-                        contentDescription = "lrcIconPainter",
-                        colorFilter = colorFilter,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .aspectRatio(1f)
-                    )
+//                    Image(
+//                        painter = lrcIconPainter,
+//                        contentDescription = "lrcIconPainter",
+//                        colorFilter = colorFilter,
+//                        modifier = Modifier
+//                            .size(20.dp)
+//                            .aspectRatio(1f)
+//                    )
                     Image(
                         painter = mediaTypeIconPainter,
                         contentDescription = "mediaTypeIconPainter",

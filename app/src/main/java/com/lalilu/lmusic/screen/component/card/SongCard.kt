@@ -17,45 +17,43 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
+import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
-import com.lalilu.lmusic.datasource.extensions.getDuration
-import com.lalilu.lmusic.utils.fetcher.getLyric
-import com.lalilu.lmusic.utils.rememberCoverForOnce
+import com.lalilu.lmedia.entity.LSong
 
 @Composable
-@OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalCoilApi::class
-)
+@OptIn(ExperimentalFoundationApi::class)
 fun SongCard(
     modifier: Modifier = Modifier,
     index: Int,
-    mediaItem: MediaItem,
+    song: LSong,
     onSongSelected: (index: Int) -> Unit = { },
     onSongShowDetail: (mediaId: String) -> Unit = { }
 ) {
-    val imagePainter = rememberCoverForOnce(mediaItem = mediaItem) {
-        crossfade(true)
-        size(SizeUtils.dp2px(64f))
-    }
-    val lrcIconPainter = rememberImagePainter(
-        data = mediaItem.getLyric()
-    )
+//    val imagePainter = rememberCoverForOnce(mediaItem = mediaItem) {
+//        crossfade(true)
+//        size(SizeUtils.dp2px(64f))
+//    }
+//    val lrcIconPainter = rememberImagePainter(
+//        data = mediaItem.getLyric()
+//    )
     val mediaTypeIconPainter = painterResource(
-        id = getMusicTypeIcon(mediaItem)
+        id = R.drawable.ic_flac_line
     )
-    val titleText = mediaItem.mediaMetadata.title.toString()
-    val artistText = "#${index + 1} ${mediaItem.mediaMetadata.artist}"
-    val durationText = TimeUtils.millis2String(mediaItem.mediaMetadata.getDuration(), "mm:ss")
+    val titleText = song.name
+    val artistText = "#${index + 1} ${song._artist}"
+    val durationText = TimeUtils.millis2String(song.durationMs, "mm:ss")
     val color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
     val colorFilter = ColorFilter.tint(color = color.copy(alpha = 0.9f))
 
@@ -64,7 +62,7 @@ fun SongCard(
             .fillMaxWidth()
             .combinedClickable(
                 onClick = { onSongSelected(index) },
-                onLongClick = { onSongShowDetail(mediaItem.mediaId) })
+                onLongClick = { onSongShowDetail(song.id) })
             .padding(
                 horizontal = 20.dp,
                 vertical = 10.dp
@@ -93,14 +91,14 @@ fun SongCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    Image(
-                        painter = lrcIconPainter,
-                        contentDescription = "lrcIconPainter",
-                        colorFilter = colorFilter,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .aspectRatio(1f)
-                    )
+//                    Image(
+//                        painter = lrcIconPainter,
+//                        contentDescription = "lrcIconPainter",
+//                        colorFilter = colorFilter,
+//                        modifier = Modifier
+//                            .size(20.dp)
+//                            .aspectRatio(1f)
+//                    )
                     Image(
                         painter = mediaTypeIconPainter,
                         contentDescription = "mediaTypeIconPainter",
@@ -135,27 +133,35 @@ fun SongCard(
             elevation = 2.dp,
             shape = RoundedCornerShape(1.dp)
         ) {
-            if (imagePainter.state.painter != null) {
-                Image(
-                    painter = imagePainter,
-                    contentDescription = "SongCardImage",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .aspectRatio(1f)
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_music_line),
-                    contentDescription = "",
-                    contentScale = FixedScale(1f),
-                    colorFilter = ColorFilter.tint(color = Color.LightGray),
-                    modifier = Modifier
-                        .size(64.dp)
-                        .aspectRatio(1f)
-                )
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(song)
+                    .crossfade(true)
+                    .size(SizeUtils.dp2px(64f))
+                    .build(),
+                contentDescription = ""
+            ) {
+                val state = painter.state
+                if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_music_line),
+                        contentDescription = "",
+                        contentScale = FixedScale(1f),
+                        colorFilter = ColorFilter.tint(color = Color.LightGray),
+                        modifier = Modifier
+                            .size(64.dp)
+                            .aspectRatio(1f)
+                    )
+                } else {
+                    SubcomposeAsyncImageContent(
+                        contentDescription = "SongCardImage",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(64.dp)
+                            .aspectRatio(1f)
+                    )
+                }
             }
-
         }
     }
 }

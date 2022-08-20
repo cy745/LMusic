@@ -23,9 +23,9 @@ import java.io.InputStream
 abstract class BaseFetcher : Fetcher {
 
     open suspend fun fetchForSong(context: Context, song: LSong): InputStream? {
-        return fetchMediaStoreCovers(context, song)
-            ?: fetchAospMetadataCovers(context, song)
+        return fetchAospMetadataCovers(context, song)
             ?: fetchExoplayerCover(context, song)
+            ?: fetchMediaStoreCovers(context, song)
     }
 
     open suspend fun fetchForAlbum(context: Context, album: LAlbum): InputStream? {

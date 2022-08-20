@@ -4,9 +4,10 @@ import android.text.TextUtils
 import androidx.databinding.BindingAdapter
 import androidx.media3.common.MediaItem
 import androidx.palette.graphics.Palette
-import coil.loadAny
+import coil.load
 import com.lalilu.R
 import com.lalilu.common.ColorAnimator.setBgColorFromPalette
+import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.ui.BlurImageView
 import com.lalilu.ui.NewProgressBar
 import com.lalilu.ui.appbar.AppbarLayout
@@ -18,9 +19,13 @@ fun loadCover(imageView: BlurImageView, mediaItem: MediaItem?) {
         imageView.clearImage()
         return
     }
+    val data = Indexer.library.songs.find { it.id == mediaItem.mediaId } ?: run {
+        imageView.clearImage()
+        return
+    }
     val samplingTo = imageView.width
 
-    imageView.loadAny(mediaItem) {
+    imageView.load(data) {
         if (samplingTo > 0) size(samplingTo)
         allowHardware(false)
         target(onSuccess = {
