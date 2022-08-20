@@ -17,17 +17,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.MediaItem
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
+import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
+import com.lalilu.lmedia.entity.LAlbum
+import com.lalilu.lmedia.entity.items
+import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.card.SongCard
@@ -35,35 +40,25 @@ import com.lalilu.lmusic.utils.WindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
-@OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalCoilApi::class
-)
+@OptIn(ExperimentalFoundationApi::class)
 fun AlbumDetailScreen(
-    album: MediaItem,
-    songs: List<MediaItem>,
+    album: LAlbum,
     currentWindowSize: WindowSize,
     contentPaddingForFooter: Dp = 0.dp,
     navigateTo: (destination: String) -> Unit = {},
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
+    val songs = Indexer.library.albums.find { it.id == album.id }?.songs ?: emptyList()
     val haptic = LocalHapticFeedback.current
     val sortedItems = remember { songs.toMutableStateList() }
-    val title = album.mediaMetadata.albumTitle?.toString()
-        ?: stringResource(id = MainScreenData.AlbumsDetail.title)
-    val subTitle = album.mediaMetadata.albumArtist?.toString()
+    val title = album.name
+    val subTitle = album.name // todo AlbumArtist 补足
         ?: stringResource(id = MainScreenData.AlbumsDetail.subTitle)
-
-    val imagePainter = rememberImagePainter(
-        data = album.mediaMetadata.artworkUri
-    ) {
-        size(SizeUtils.dp2px(128f))
-    }
 
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
             mainViewModel.playSongWithPlaylist(
-                items = songs,
+                items = songs.items(),
                 index = index
             )
         }
@@ -84,28 +79,37 @@ fun AlbumDetailScreen(
                 elevation = 4.dp,
                 shape = RoundedCornerShape(2.dp)
             ) {
-                if (imagePainter.state.painter != null) {
-                    Image(
-                        painter = imagePainter, contentDescription = "CoverImage",
-                        modifier = Modifier
-                            .sizeIn(
-                                minHeight = 64.dp,
-                                maxHeight = 128.dp,
-                                minWidth = 64.dp,
-                                maxWidth = 144.dp
-                            )
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_music_2_line),
-                        contentDescription = "",
-                        contentScale = FixedScale(2.5f),
-                        colorFilter = ColorFilter.tint(color = Color.LightGray),
-                        modifier = Modifier
-                            .size(128.dp)
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                    )
+                SubcomposeAsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(album)
+                        .size(SizeUtils.dp2px(128f))
+                        .build(),
+                    contentDescription = ""
+                ) {
+                    val state = painter.state
+                    if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_music_2_line),
+                            contentDescription = "",
+                            contentScale = FixedScale(2.5f),
+                            colorFilter = ColorFilter.tint(color = Color.LightGray),
+                            modifier = Modifier
+                                .size(128.dp)
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                        )
+                    } else {
+                        SubcomposeAsyncImageContent(
+                            modifier = Modifier
+                                .sizeIn(
+                                    minHeight = 64.dp,
+                                    maxHeight = 128.dp,
+                                    minWidth = 64.dp,
+                                    maxWidth = 144.dp
+                                ),
+                            contentDescription = "CoverImage"
+                        )
+                    }
                 }
             }
         }
@@ -119,7 +123,7 @@ fun AlbumDetailScreen(
                 SongCard(
                     modifier = Modifier.animateItemPlacement(),
                     index = index,
-                    mediaItem = item,
+                    song = item,
                     onSongSelected = onSongSelected,
                     onSongShowDetail = onSongShowDetail
                 )

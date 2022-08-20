@@ -22,24 +22,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.MediaItem
 import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
 import com.lalilu.lmusic.utils.getActivity
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 @Composable
 fun MatchNetworkDataScreen(
-    mediaItem: MediaItem,
+    song: LSong,
     navigateUp: () -> Unit = {},
     expendScaffold: () -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp,
     context: Context = LocalContext.current,
     viewModel: NetworkDataViewModel = hiltViewModel()
 ) {
-    val keyword = "${mediaItem.mediaMetadata.title} ${mediaItem.mediaMetadata.artist}"
+    val keyword = "${song.name} ${song._artist}"
     val lyrics = remember { mutableStateListOf<SongSearchSong>() }
     var selectedIndex by remember { mutableStateOf(-1) }
 
@@ -52,7 +52,7 @@ fun MatchNetworkDataScreen(
                 searchForLyricCancel.setOnClickListener { navigateUp() }
                 searchForLyricConfirm.setOnClickListener {
                     viewModel.saveMatchNetworkData(
-                        mediaId = mediaItem.mediaId,
+                        mediaId = song.id,
                         songId = lyrics.getOrNull(selectedIndex)?.id,
                         title = lyrics.getOrNull(selectedIndex)?.name,
                         success = navigateUp
