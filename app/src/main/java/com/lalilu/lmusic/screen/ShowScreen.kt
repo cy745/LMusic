@@ -35,6 +35,7 @@ import com.blankj.utilcode.util.SizeUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.service.MSongBrowser
@@ -92,7 +93,7 @@ fun ShowScreen(
 
 @Composable
 fun RowScope.ImageCover(mediaItem: MediaItem?) {
-    val songs = Indexer.library.songs.find { it.id == mediaItem?.mediaId }
+    val songs = Library.getSongOrNull(mediaItem?.mediaId)
 
     Box(
         modifier = Modifier
@@ -137,7 +138,7 @@ fun RowScope.ImageCover(mediaItem: MediaItem?) {
 
 @Composable
 fun BoxScope.BlurImageBg(mediaItem: MediaItem?) {
-    val songs = Indexer.library.songs.find { it.id == mediaItem?.mediaId }
+    val songs = Library.getSongOrNull(mediaItem?.mediaId)
 
     AsyncImage(
         modifier = Modifier

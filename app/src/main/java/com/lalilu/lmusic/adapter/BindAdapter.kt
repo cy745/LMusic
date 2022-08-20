@@ -7,7 +7,7 @@ import androidx.palette.graphics.Palette
 import coil.load
 import com.lalilu.R
 import com.lalilu.common.ColorAnimator.setBgColorFromPalette
-import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.ui.BlurImageView
 import com.lalilu.ui.NewProgressBar
 import com.lalilu.ui.appbar.AppbarLayout
@@ -19,7 +19,7 @@ fun loadCover(imageView: BlurImageView, mediaItem: MediaItem?) {
         imageView.clearImage()
         return
     }
-    val data = Indexer.library.songs.find { it.id == mediaItem.mediaId } ?: run {
+    val data = Library.getSongOrNull(mediaItem.mediaId) ?: run {
         imageView.clearImage()
         return
     }

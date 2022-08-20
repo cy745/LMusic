@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.items
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
@@ -40,7 +41,7 @@ fun ArtistDetailScreen(
     val haptic = LocalHapticFeedback.current
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistDetailScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistDetailScreen", true)
-    val songs = Indexer.library.artists.find { it.name.contains(artistName) }?.songs ?: emptyList()
+    val songs = Library.getArtistOrNull(artistName)?.songs ?: emptyList()
 
 //    LaunchedEffect(artistName) {
 //        songs.clear()

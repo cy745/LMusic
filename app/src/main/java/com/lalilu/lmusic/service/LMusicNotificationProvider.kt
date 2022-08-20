@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.manager.LyricManager
@@ -239,9 +240,7 @@ class LMusicNotificationProvider @Inject constructor(
             val data = database.networkDataDao()
                 .getById(mediaItem.mediaId)
                 ?.requireCoverUri()
-                ?: Indexer.library.songs.find {
-                    it.id == mediaItem.mediaId
-                }
+                ?: Library.getSongOrNull(mediaItem.mediaId)
 
             bitmap = mContext.imageLoader.execute(
                 ImageRequest.Builder(mContext)

@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
@@ -31,7 +32,7 @@ fun AlbumsScreen(
     navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp
 ) {
-    val albums = Indexer.library.albums
+    val albums = Library.getAlbums()
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
     var sortByState by rememberDataSaverState("KEY_SORT_BY_AlbumsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)
@@ -74,13 +75,15 @@ fun AlbumsScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(albums) { item ->
-                AlbumCard(
-                    modifier = Modifier.animateItemPlacement(),
-                    album = item,
-                    drawText = textVisible,
-                    onAlbumSelected = onAlbumSelected
-                )
+            albums.forEach {
+                item {
+                    AlbumCard(
+                        modifier = Modifier.animateItemPlacement(),
+                        album = it,
+                        drawText = textVisible,
+                        onAlbumSelected = onAlbumSelected
+                    )
+                }
             }
         }
     }

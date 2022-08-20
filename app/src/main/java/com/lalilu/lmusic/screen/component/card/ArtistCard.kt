@@ -14,7 +14,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
-import com.lalilu.lmusic.datasource.extensions.getArtistId
+import com.lalilu.lmedia.extension.getArtistId
 
 @Composable
 fun ArtistCard(

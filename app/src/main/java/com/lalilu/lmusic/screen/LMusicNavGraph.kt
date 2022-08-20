@@ -19,6 +19,7 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.library.*
 import com.lalilu.lmusic.screen.library.detail.*
 import com.lalilu.lmusic.utils.LocalNavigatorHost
@@ -140,7 +141,7 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
-            Indexer.library.songs.find { it.id == mediaId }?.let {
+            Library.getSongOrNull(mediaId)?.let {
                 SongDetailScreen(
                     song = it,
                     currentWindowSize = currentWindowSize,
@@ -170,7 +171,7 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("albumId") { type = NavType.StringType })
         ) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId")
-            Indexer.library.albums.find { it.id == albumId }?.let {
+            Library.getAlbumOrNull(albumId)?.let {
                 AlbumDetailScreen(
                     album = it,
                     currentWindowSize = currentWindowSize,
@@ -214,7 +215,7 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
-            Indexer.library.songs.find { it.id == mediaId }?.let {
+            Library.getSongOrNull(mediaId)?.let {
                 MatchNetworkDataScreen(
                     song = it,
                     navigateUp = navController::navigateUp,
