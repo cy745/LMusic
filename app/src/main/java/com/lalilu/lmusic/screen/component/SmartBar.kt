@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.screen.component
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -12,7 +13,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 object SmartBar {
@@ -20,7 +20,6 @@ object SmartBar {
     private val items = mutableStateListOf<@Composable () -> Unit>()
     val contentPaddingForSmartBar = mutableStateOf(0.dp)
 
-    @OptIn(ExperimentalAnimationApi::class)
     @Composable
     fun BoxScope.SmartBarContent() {
         Column(
@@ -32,23 +31,15 @@ object SmartBar {
                 .align(Alignment.BottomCenter)
                 .animateContentSize()
         ) {
-            AnimatedContent(targetState = items) {
-                if (it.size > 0) {
-                    Spacer(
-                        modifier = Modifier
-                            .height(1.dp)
-                            .fillMaxWidth()
-                            .background(Color.LightGray)
-                    )
-                }
+            AnimatedVisibility(visible = items.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(5.dp))
             }
             items.forEach { item ->
+                @OptIn(ExperimentalAnimationApi::class)
                 AnimatedContent(targetState = item) { it.invoke() }
             }
-            AnimatedContent(targetState = items) {
-                if (it.size > 0) {
-                    Spacer(modifier = Modifier.navigationBarsPadding())
-                }
+            AnimatedVisibility(visible = items.isNotEmpty()) {
+                Spacer(modifier = Modifier.navigationBarsPadding())
             }
         }
     }

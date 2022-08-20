@@ -266,7 +266,8 @@ enum class MainScreenData(
     Library(
         icon = R.drawable.ic_loader_line,
         title = R.string.destination_label_library,
-        subTitle = R.string.destination_subtitle_library
+        subTitle = R.string.destination_subtitle_library,
+        showNavigateButton = true
     ),
     Songs(
         icon = R.drawable.ic_music_2_line,
