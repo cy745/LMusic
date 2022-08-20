@@ -20,53 +20,28 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.MediaItem
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.ImagePainter
-import coil.compose.rememberImagePainter
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
+import coil.request.ImageRequest
 import com.lalilu.R
-import com.lalilu.lmusic.datasource.extensions.getAlbumId
+import com.lalilu.lmedia.entity.LAlbum
 
 @Composable
 fun AlbumCard(
     modifier: Modifier = Modifier,
-    mediaItem: MediaItem,
+    album: LAlbum,
     drawText: Boolean = true,
     onAlbumSelected: (String) -> Unit = {}
 ) {
-    val albumTitle = mediaItem.mediaMetadata.albumTitle.toString()
-    val albumCoverUri = mediaItem.mediaMetadata.artworkUri
     val screenWidth = LocalDensity.current.run {
         (LocalConfiguration.current.screenWidthDp.dp.toPx() / 2).toInt()
     }
-    val painter = rememberImagePainter(data = albumCoverUri) {
-        crossfade(true)
-        size(screenWidth)
-    }
-    AlbumCard(
-        modifier = modifier,
-        text = albumTitle,
-        painter = painter,
-        drawText = drawText,
-        onClick = {
-            onAlbumSelected(mediaItem.mediaMetadata.getAlbumId().toString())
-        }
-    )
-}
-
-@Composable
-@OptIn(ExperimentalCoilApi::class)
-fun AlbumCard(
-    modifier: Modifier = Modifier,
-    painter: ImagePainter,
-    text: String? = null,
-    drawText: Boolean = true,
-    onClick: () -> Unit = {}
-) {
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(
@@ -77,45 +52,58 @@ fun AlbumCard(
             shape = RoundedCornerShape(5.dp),
             elevation = 1.dp
         ) {
-            if (painter.state.painter != null) {
-                Image(
-                    painter = painter,
-                    contentDescription = "albumCover",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(5.dp))
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = rememberRipple(),
-                            onClick = onClick
-                        ),
-                    contentScale = ContentScale.FillWidth
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(5.dp))
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = rememberRipple(),
-                            onClick = onClick
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(album)
+                    .crossfade(true)
+                    .size(screenWidth)
+                    .build(),
+                contentDescription = "albumCover"
+            ) {
+                val state = painter.state
+                if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = rememberRipple(),
+                                onClick = {
+                                    onAlbumSelected(album.id)
+                                }
+                            )
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_music_2_line),
+                            contentDescription = "",
+                            contentScale = FixedScale(3.0f),
+                            colorFilter = ColorFilter.tint(color = Color.LightGray),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
                         )
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_music_2_line),
-                        contentDescription = "",
-                        contentScale = FixedScale(3.0f),
-                        colorFilter = ColorFilter.tint(color = Color.LightGray),
+                    }
+                } else {
+                    SubcomposeAsyncImageContent(
+                        contentDescription = "albumCover",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(5.dp))
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = rememberRipple(),
+                                onClick = {
+                                    onAlbumSelected(album.id)
+                                }
+                            ),
+                        contentScale = ContentScale.FillWidth
                     )
                 }
             }
         }
-        AnimatedVisibility(visible = drawText && text != null) {
+        AnimatedVisibility(visible = drawText) {
             Text(
-                text = text!!,
+                text = album.name,
                 color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
                     .copy(alpha = 0.8f),
                 fontSize = 14.sp,
@@ -123,7 +111,9 @@ fun AlbumCard(
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
-                        onClick = onClick
+                        onClick = {
+                            onAlbumSelected(album.id)
+                        }
                     )
                     .padding(10.dp)
             )

@@ -8,27 +8,25 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.MediaItem
 import com.funny.data_saver.core.rememberDataSaverState
+import com.lalilu.lmedia.entity.items
+import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
-import com.lalilu.lmusic.screen.bean.sort
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.card.SongCard
 import com.lalilu.lmusic.utils.WindowSize
-import com.lalilu.lmusic.viewmodel.ArtistViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -38,34 +36,33 @@ fun ArtistDetailScreen(
     currentWindowSize: WindowSize,
     navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp,
-    mainViewModel: MainViewModel = hiltViewModel(),
-    artistViewModel: ArtistViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val haptic = LocalHapticFeedback.current
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistDetailScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistDetailScreen", true)
-    val songs = remember { emptyList<MediaItem>().toMutableStateList() }
+    val songs = Library.getArtistOrNull(artistName)?.songs ?: emptyList()
 
-    LaunchedEffect(artistName) {
-        songs.clear()
-        songs.addAll(
-            artistViewModel
-                .getSongsByName(artistName)
-                .toMutableStateList()
-        )
-    }
+//    LaunchedEffect(artistName) {
+//        songs.clear()
+//        songs.addAll(
+//            artistViewModel
+//                .getSongsByName(artistName)
+//                .toMutableStateList()
+//        )
+//    }
 
-    val sortedItems = remember(sortByState, sortDesc, songs) {
-        sort(sortByState, sortDesc, songs,
-            getTextField = { it.mediaMetadata.title.toString() },
-            getTimeField = { it.mediaId.toLong() }
-        )
-    }
+//    val sortedItems = remember(sortByState, sortDesc, songs) {
+//        sort(sortByState, sortDesc, songs,
+//            getTextField = { it.mediaMetadata.title.toString() },
+//            getTimeField = { it.mediaId.toLong() }
+//        )
+//    }
 
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
             mainViewModel.playSongWithPlaylist(
-                items = songs,
+                items = songs.items(),
                 index = index
             )
         }
@@ -95,11 +92,11 @@ fun ArtistDetailScreen(
                 bottom = contentPaddingForFooter
             )
         ) {
-            itemsIndexed(items = sortedItems) { index, item ->
+            itemsIndexed(items = songs) { index, item ->
                 SongCard(
                     modifier = Modifier.animateItemPlacement(),
                     index = index,
-                    mediaItem = item,
+                    song = item,
                     onSongSelected = onSongSelected,
                     onSongShowDetail = onSongShowDetail
                 )

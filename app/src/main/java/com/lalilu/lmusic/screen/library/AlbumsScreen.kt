@@ -9,16 +9,15 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
 import com.funny.data_saver.core.rememberDataSaverState
+import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
-import com.lalilu.lmusic.screen.bean.sort
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
@@ -29,20 +28,20 @@ import com.lalilu.lmusic.utils.WindowSize
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun AlbumsScreen(
-    albums: List<MediaItem>,
     currentWindowSize: WindowSize,
     navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp
 ) {
+    val albums = Library.getAlbums()
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
     var sortByState by rememberDataSaverState("KEY_SORT_BY_AlbumsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)
-    val sortedItems = remember(sortByState, sortDesc, albums) {
-        sort(sortByState, sortDesc, albums.toMutableStateList(),
-            getTextField = { it.mediaMetadata.albumTitle.toString() },
-            getTimeField = { it.mediaId.toLong() }
-        )
-    }
+//    val sortedItems = remember(sortByState, sortDesc, albums) {
+//        sort(sortByState, sortDesc, albums.toMutableStateList(),
+//            getTextField = { it.mediaMetadata.albumTitle.toString() },
+//            getTimeField = { it.mediaId.toLong() }
+//        )
+//    }
 
     val onAlbumSelected = remember {
         { albumId: String ->
@@ -76,13 +75,15 @@ fun AlbumsScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(sortedItems) { item ->
-                AlbumCard(
-                    modifier = Modifier.animateItemPlacement(),
-                    mediaItem = item,
-                    drawText = textVisible,
-                    onAlbumSelected = onAlbumSelected
-                )
+            albums.forEach {
+                item {
+                    AlbumCard(
+                        modifier = Modifier.animateItemPlacement(),
+                        album = it,
+                        drawText = textVisible,
+                        onAlbumSelected = onAlbumSelected
+                    )
+                }
             }
         }
     }

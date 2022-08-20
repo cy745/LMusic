@@ -12,8 +12,10 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import com.lalilu.lmedia.entity.items
+import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.datasource.MMediaSource
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.manager.SpManager
@@ -35,9 +37,6 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
     private lateinit var mediaLibrarySession: MediaLibrarySession
     private lateinit var mediaController: MediaController
-
-    @Inject
-    lateinit var mediaSource: MMediaSource
 
     @Inject
     lateinit var globalDataManager: GlobalDataManager
@@ -125,8 +124,8 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
             safeLaunch {
                 globalDataManager.currentPlaylist.emit(
-                    HistoryManager.currentPlayingIds.let {
-                        mediaSource.getItemsByIds(it)
+                    HistoryManager.currentPlayingIds.let { list ->
+                        list.mapNotNull { id -> Library.getSongOrNull(id)?.item }
                     }
                 )
             }
@@ -140,7 +139,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             mediaItems: MutableList<MediaItem>
         ): ListenableFuture<MutableList<MediaItem>> {
             val mediaIds = mediaItems.map { it.mediaId }
-            val items = mediaSource.getItemsByIds(mediaIds)
+            val items = mediaIds.mapNotNull { id -> Library.getSongOrNull(id)?.item }
             return Futures.immediateFuture(items.toMutableList())
         }
 
@@ -149,7 +148,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            return Futures.immediateFuture(LibraryResult.ofItem(mediaSource.getRootItem(), params))
+            return Futures.immediateFuture(LibraryResult.ofItem(MediaItem.EMPTY, params))
         }
 
         override fun onGetItem(
@@ -157,9 +156,10 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             browser: MediaSession.ControllerInfo,
             mediaId: String
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            val item = mediaSource.getItemById(mediaId) ?: return Futures.immediateFuture(
-                LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
-            )
+            val item = Library.getSongOrNull(mediaId)?.item
+                ?: return Futures.immediateFuture(
+                    LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+                )
             return Futures.immediateFuture(LibraryResult.ofItem(item, null))
         }
 
@@ -171,9 +171,11 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             pageSize: Int,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-            val children = mediaSource.getChildren(parentId) ?: return Futures.immediateFuture(
-                LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
-            )
+            val children = Library.getAlbumOrNull(parentId)?.songs?.items()
+                ?: Library.getArtistOrNull(parentId)?.songs?.items()
+                ?: return Futures.immediateFuture(
+                    LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+                )
             return Futures.immediateFuture(LibraryResult.ofItemList(children, params))
         }
     }
