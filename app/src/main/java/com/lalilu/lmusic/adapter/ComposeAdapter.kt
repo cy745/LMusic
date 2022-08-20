@@ -8,8 +8,8 @@ import androidx.media3.common.MediaItem
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.lalilu.lmedia.extension.getDuration
 import com.lalilu.lmusic.LMusicTheme
-import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.screen.component.card.PlayingCard
 import com.lalilu.lmusic.utils.moveHeadToTail
 import java.lang.ref.WeakReference

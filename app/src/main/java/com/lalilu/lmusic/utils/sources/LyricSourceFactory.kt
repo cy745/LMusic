@@ -1,9 +1,8 @@
 package com.lalilu.lmusic.utils.sources
 
 import android.text.TextUtils
-import androidx.media3.common.MediaItem
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datasource.MDataBase
-import com.lalilu.lmusic.datasource.extensions.getSongData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jaudiotagger.audio.AudioFileIO
@@ -21,7 +20,7 @@ class LyricSourceFactory @Inject constructor(
     localLyricSource: LocalLyricSource
 ) {
     interface LyricSource {
-        suspend fun loadLyric(mediaItem: MediaItem): Pair<String, String?>?
+        suspend fun loadLyric(song: LSong): Pair<String, String?>?
     }
 
     private val sources: MutableList<LyricSource> = ArrayList()
@@ -33,11 +32,11 @@ class LyricSourceFactory @Inject constructor(
     }
 
     suspend fun getLyric(
-        mediaItem: MediaItem,
+        song: LSong,
         callback: (String?, String?) -> Unit = { _, _ -> }
     ): Pair<String, String?>? = withContext(Dispatchers.IO) {
         sources.forEach { source ->
-            val pair = source.loadLyric(mediaItem)
+            val pair = source.loadLyric(song)
             if (pair != null) {
                 callback(pair.first, pair.second)
                 return@withContext pair
@@ -49,9 +48,9 @@ class LyricSourceFactory @Inject constructor(
 }
 
 class EmbeddedLyricSource @Inject constructor() : LyricSourceFactory.LyricSource {
-    override suspend fun loadLyric(mediaItem: MediaItem): Pair<String, String?>? =
+    override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
-            val songData = mediaItem.mediaMetadata.getSongData() ?: return@withContext null
+            val songData = song.pathStr ?: return@withContext null
             val file = File(songData)
             if (!file.exists()) return@withContext null
             kotlin.runCatching {
@@ -68,9 +67,9 @@ class EmbeddedLyricSource @Inject constructor() : LyricSourceFactory.LyricSource
 }
 
 class LocalLyricSource @Inject constructor() : LyricSourceFactory.LyricSource {
-    override suspend fun loadLyric(mediaItem: MediaItem): Pair<String, String?>? =
+    override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
-            val songData = mediaItem.mediaMetadata.getSongData() ?: return@withContext null
+            val songData = song.pathStr ?: return@withContext null
             val path = songData.substring(0, songData.lastIndexOf('.')) + ".lrc"
             val lrcFile = File(path)
 
@@ -85,9 +84,9 @@ class LocalLyricSource @Inject constructor() : LyricSourceFactory.LyricSource {
 class DataBaseLyricSource @Inject constructor(
     val dataBase: MDataBase
 ) : LyricSourceFactory.LyricSource {
-    override suspend fun loadLyric(mediaItem: MediaItem): Pair<String, String?>? =
+    override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
-            val pair = dataBase.networkDataDao().getById(mediaItem.mediaId)
+            val pair = dataBase.networkDataDao().getById(song.id)
             pair?.lyric?.let { Pair(it, pair.tlyric) }
         }
 }

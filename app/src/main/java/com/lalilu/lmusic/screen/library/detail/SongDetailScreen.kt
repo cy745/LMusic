@@ -13,68 +13,67 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.MediaItem
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.ImagePainter
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
+import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
 import com.lalilu.lmusic.utils.WindowSize
-import com.lalilu.lmusic.utils.rememberCoverWithFlow
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 fun SongDetailScreen(
-    mediaItem: MediaItem,
+    song: LSong,
     currentWindowSize: WindowSize,
     navigateTo: (destination: String) -> Unit = {},
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val mediaBrowser = mainViewModel.mediaBrowser
-    val imagePainter = rememberCoverWithFlow(mediaItem = mediaItem) {
-        size(SizeUtils.dp2px(128f))
-        crossfade(true)
-    }
-    val title = mediaItem.mediaMetadata.title?.toString()
-        ?: stringResource(id = MainScreenData.SongsDetail.title)
-    val subTitle = "${mediaItem.mediaMetadata.artist}\n\n${mediaItem.mediaMetadata.albumTitle}"
+    val title = song.name
+    val subTitle = "${song._artist}\n\n${song._albumTitle}"
 
     SongDetailScreen(
         title = title,
         subTitle = subTitle,
-        mediaId = mediaItem.mediaId,
-        imagePainter = imagePainter,
+        mediaId = song.id,
+        imageRequest = ImageRequest.Builder(LocalContext.current)
+            .data(song)
+            .size(SizeUtils.dp2px(128f))
+            .crossfade(true)
+            .build(),
         currentWindowSize = currentWindowSize,
         onMatchNetworkData = {
-            navigateTo("${MainScreenData.SongsMatchNetworkData.name}/${mediaItem.mediaId}")
+            navigateTo("${MainScreenData.SongsMatchNetworkData.name}/${song.id}")
         },
         onAddSongToPlaylist = {
-            navigateTo("${MainScreenData.SongsAddToPlaylist.name}/${mediaItem.mediaId}")
+            navigateTo("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
         },
         onSetSongToNext = {
-            mediaBrowser.addToNext(mediaItem.mediaId)
+            mediaBrowser.addToNext(song.id)
         },
         onPlaySong = {
-            mediaBrowser.playById(mediaId = mediaItem.mediaId, playWhenReady = true)
+            mediaBrowser.playById(mediaId = song.id, playWhenReady = true)
         }
     )
 }
 
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun SongDetailScreen(
     title: String,
     subTitle: String,
     mediaId: String,
     currentWindowSize: WindowSize,
-    imagePainter: ImagePainter,
+    imageRequest: ImageRequest,
     onPlaySong: () -> Unit = {},
     onSetSongToNext: () -> Unit = {},
     onAddSongToPlaylist: () -> Unit = {},
@@ -88,28 +87,30 @@ fun SongDetailScreen(
                 elevation = 4.dp,
                 shape = RoundedCornerShape(2.dp)
             ) {
-                if (imagePainter.state.painter != null) {
-                    Image(
-                        painter = imagePainter, contentDescription = "CoverImage",
-                        modifier = Modifier
-                            .sizeIn(
-                                minHeight = 64.dp,
-                                maxHeight = 128.dp,
-                                minWidth = 64.dp,
-                                maxWidth = 144.dp
-                            )
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_music_line),
-                        contentDescription = "",
-                        contentScale = FixedScale(2.5f),
-                        colorFilter = ColorFilter.tint(color = Color.LightGray),
-                        modifier = Modifier
-                            .size(128.dp)
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                    )
+                SubcomposeAsyncImage(model = imageRequest, contentDescription = "") {
+                    val state = painter.state
+                    if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_music_line),
+                            contentDescription = "",
+                            contentScale = FixedScale(2.5f),
+                            colorFilter = ColorFilter.tint(color = Color.LightGray),
+                            modifier = Modifier
+                                .size(128.dp)
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                        )
+                    } else {
+                        SubcomposeAsyncImageContent(
+                            modifier = Modifier
+                                .sizeIn(
+                                    minHeight = 64.dp,
+                                    maxHeight = 128.dp,
+                                    minWidth = 64.dp,
+                                    maxWidth = 144.dp
+                                )
+                        )
+                    }
                 }
             }
         }

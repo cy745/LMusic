@@ -4,6 +4,8 @@ import androidx.lifecycle.asLiveData
 import androidx.media3.common.Player
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
+import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,9 +30,10 @@ class LyricManager @Inject constructor(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     private val currentLyric: Flow<Pair<String, String?>?> =
-        globalDataManager.currentMediaItemFlow.mapLatest {
-            it ?: return@mapLatest null
-            lyricSourceFactory.getLyric(it)
+        globalDataManager.currentMediaItemFlow.mapLatest { mediaItem ->
+            mediaItem ?: return@mapLatest null
+            val song = Library.getSongOrNull(mediaItem.mediaId) ?: return@mapLatest null
+            lyricSourceFactory.getLyric(song)
         }
 
     val currentSentence: Flow<String?> =

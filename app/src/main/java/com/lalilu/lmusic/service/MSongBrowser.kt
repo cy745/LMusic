@@ -12,9 +12,9 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import com.lalilu.lmusic.datasource.ALL_ID
-import com.lalilu.lmusic.datasource.ITEM_PREFIX
-import com.lalilu.lmusic.datasource.MMediaSource
+import com.lalilu.lmedia.entity.items
+import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.utils.safeLaunch
@@ -30,7 +30,6 @@ import kotlin.coroutines.CoroutineContext
 class MSongBrowser @Inject constructor(
     @ApplicationContext
     private val mContext: Context,
-    private val mediaSource: MMediaSource,
     private val globalDataManager: GlobalDataManager
 ) : DefaultLifecycleObserver, CoroutineScope, EnhanceBrowser {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -76,9 +75,10 @@ class MSongBrowser @Inject constructor(
 
     private fun recoverLastPlayedData() = safeLaunch(Dispatchers.IO) {
         val position = HistoryManager.lastPlayedPosition
-        val items = HistoryManager.lastPlayedListIds?.let { mediaSource.getItemsByIds(it) }
-            ?: mediaSource.getChildren(ALL_ID)
-            ?: emptyList()
+        val items = HistoryManager.lastPlayedListIds?.let { list ->
+            list.mapNotNull { id -> Library.getSongOrNull(id)?.item }
+        } ?: Library.getSongs().items()
+        ?: emptyList()
         val index = HistoryManager.lastPlayedId?.let { id ->
             items.indexOfFirst { it.mediaId == id }
         }?.coerceAtLeast(0) ?: 0
@@ -138,7 +138,7 @@ class MSongBrowser @Inject constructor(
             val targetIndex = if (nowIndex < currentIndex) currentIndex else currentIndex + 1
             browser?.moveMediaItem(nowIndex, targetIndex)
         } else {
-            val item = mediaSource.getItemById(ITEM_PREFIX + mediaId) ?: return false
+            val item = Library.getSongOrNull(mediaId)?.item ?: return false
             browser?.addMediaItem(currentIndex + 1, item)
         }
         return true
