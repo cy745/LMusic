@@ -48,7 +48,7 @@ fun AlbumDetailScreen(
     navigateTo: (destination: String) -> Unit = {},
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
-    val songs = Indexer.library.albums.find { it.id == album.id }?.songs ?: emptyList()
+    val songs = album.songs
     val haptic = LocalHapticFeedback.current
     val sortedItems = remember { songs.toMutableStateList() }
     val title = album.name

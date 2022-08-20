@@ -22,10 +22,10 @@ import com.dirror.lyricviewx.GRAVITY_RIGHT
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
+import com.lalilu.lmedia.extension.getDuration
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.ComposeAdapter
 import com.lalilu.lmusic.adapter.setDiffNewData
-import com.lalilu.lmusic.datasource.extensions.getDuration
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK

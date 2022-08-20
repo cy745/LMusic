@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
@@ -24,7 +25,7 @@ fun ArtistScreen(
     navigateTo: (destination: String) -> Unit = {},
     contentPaddingForFooter: Dp = 0.dp,
 ) {
-    val artists = Indexer.library.artists
+    val artists = Library.getArtists()
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistScreen", true)
 
@@ -49,12 +50,14 @@ fun ArtistScreen(
                 bottom = contentPaddingForFooter
             )
         ) {
-            itemsIndexed(artists) { index, item ->
-                ArtistCard(
-                    index = index,
-                    artistTitle = item.name,
-                    onClick = { onArtistSelected(item.name) }
-                )
+            artists.forEachIndexed { index, item ->
+                item {
+                    ArtistCard(
+                        index = index,
+                        artistTitle = item.name,
+                        onClick = { onArtistSelected(item.name) }
+                    )
+                }
             }
         }
     }

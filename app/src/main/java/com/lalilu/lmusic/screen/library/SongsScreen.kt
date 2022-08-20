@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.items
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
@@ -34,7 +35,7 @@ fun SongsScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     contentPaddingForFooter: Dp = 0.dp
 ) {
-    val songs = Indexer.library.songs
+    val songs = Library.getSongs()
     val haptic = LocalHapticFeedback.current
     var sortByState by rememberDataSaverState("KEY_SORT_BY_AllSongsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AllSongsScreen", true)
@@ -68,15 +69,17 @@ fun SongsScreen(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(bottom = contentPaddingForFooter)
         ) {
-            itemsIndexed(songs) { index, item ->
-                @OptIn(ExperimentalFoundationApi::class)
-                SongCard(
-                    modifier = Modifier.animateItemPlacement(),
-                    index = index,
-                    song = item,
-                    onSongSelected = onSongSelected,
-                    onSongShowDetail = onSongShowDetail
-                )
+            songs.forEachIndexed { index, item ->
+                item {
+                    @OptIn(ExperimentalFoundationApi::class)
+                    SongCard(
+                        modifier = Modifier.animateItemPlacement(),
+                        index = index,
+                        song = item,
+                        onSongSelected = onSongSelected,
+                        onSongShowDetail = onSongShowDetail
+                    )
+                }
             }
         }
     }

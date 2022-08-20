@@ -14,6 +14,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmedia.entity.items
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.utils.safeLaunch
@@ -75,8 +76,8 @@ class MSongBrowser @Inject constructor(
     private fun recoverLastPlayedData() = safeLaunch(Dispatchers.IO) {
         val position = HistoryManager.lastPlayedPosition
         val items = HistoryManager.lastPlayedListIds?.let { list ->
-            list.mapNotNull { id -> Indexer.library.songs.find { it.id == id }?.item }
-        } ?: Indexer.library.songs.items()
+            list.mapNotNull { id -> Library.getSongOrNull(id)?.item }
+        } ?: Library.getSongs().items()
         ?: emptyList()
         val index = HistoryManager.lastPlayedId?.let { id ->
             items.indexOfFirst { it.mediaId == id }
@@ -137,7 +138,7 @@ class MSongBrowser @Inject constructor(
             val targetIndex = if (nowIndex < currentIndex) currentIndex else currentIndex + 1
             browser?.moveMediaItem(nowIndex, targetIndex)
         } else {
-            val item = Indexer.library.songs.find { it.id == mediaId }?.item ?: return false
+            val item = Library.getSongOrNull(mediaId)?.item ?: return false
             browser?.addMediaItem(currentIndex + 1, item)
         }
         return true

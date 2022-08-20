@@ -29,6 +29,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lalilu.R
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.navigate
@@ -62,9 +63,7 @@ fun LibraryScreen(
         }
         item {
             RecommendRow(
-                items = Indexer.library.songs
-                    .sortedByDescending { it.id.toLongOrNull() ?: 0 }
-                    .take(10)
+                items = Library.getSongs(10)
             ) {
                 RecommendCard(
                     title = it.name,
@@ -89,9 +88,7 @@ fun LibraryScreen(
         }
         item {
             RecommendRow(
-                items = Indexer.library.songs
-                    .sortedByDescending { it.id.toLongOrNull() ?: 0 }
-                    .take(10)
+                items = Library.getSongs(10)
             ) {
                 RecommendCard(
                     title = it.name,
@@ -105,9 +102,7 @@ fun LibraryScreen(
         }
         item {
             RecommendRow(
-                items = Indexer.library.songs
-                    .sortedByDescending { it.id.toLongOrNull() ?: 0 }
-                    .take(10)
+                items = Library.getSongs(10)
             ) {
                 RecommendCard(
                     title = it.name,
@@ -131,9 +126,7 @@ fun LibraryScreen(
         }
         item {
             RecommendRow(
-                items = Indexer.library.songs
-                    .sortedByDescending { it.id.toLongOrNull() ?: 0 }
-                    .take(10)
+                items = Library.getSongs(10)
             ) {
                 RecommendCard(
                     title = it.name,
@@ -264,12 +257,17 @@ fun RecommendTitle(title: String, onClick: () -> Unit = {}) {
 }
 
 @Composable
-fun <I> RecommendRow(items: List<I>, itemContent: @Composable LazyItemScope.(item: I) -> Unit) {
+fun <I> RecommendRow(
+    items: Collection<I>,
+    itemContent: @Composable LazyItemScope.(item: I) -> Unit
+) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(15.dp),
         contentPadding = PaddingValues(horizontal = 20.dp)
     ) {
-        items(items = items, itemContent = itemContent)
+        items.forEach {
+            item { itemContent(it) }
+        }
     }
 }
 

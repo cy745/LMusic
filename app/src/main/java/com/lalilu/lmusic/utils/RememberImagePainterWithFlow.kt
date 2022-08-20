@@ -6,7 +6,7 @@ import androidx.media3.common.MediaItem
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
-import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 /**
@@ -20,7 +20,7 @@ fun rememberCoverWithFlow(
 ): ImagePainter {
     val data = networkDataViewModel.getNetworkDataFlowByMediaId(mediaItem.mediaId)
         .collectAsState(initial = null).value?.requireCoverUri()
-        ?: Indexer.library.songs.find { it.id == mediaItem.mediaId }
+        ?: Library.getSongOrNull(mediaItem.mediaId)
 
     return rememberImagePainter(
         data = data,
@@ -41,7 +41,7 @@ fun rememberCoverForOnce(
 
     LaunchedEffect(mediaItem) {
         data = networkDataViewModel.getNetworkDataByMediaId(mediaItem.mediaId)
-            ?.requireCoverUri() ?: Indexer.library.songs.find { it.id == mediaItem.mediaId }
+            ?.requireCoverUri() ?: Library.getSongOrNull(mediaItem.mediaId)
     }
 
     return rememberImagePainter(

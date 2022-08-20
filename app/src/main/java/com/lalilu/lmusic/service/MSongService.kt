@@ -14,6 +14,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmedia.entity.items
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.HistoryManager
@@ -124,7 +125,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             safeLaunch {
                 globalDataManager.currentPlaylist.emit(
                     HistoryManager.currentPlayingIds.let { list ->
-                        list.mapNotNull { id -> Indexer.library.songs.find { it.id == id }?.item }
+                        list.mapNotNull { id -> Library.getSongOrNull(id)?.item }
                     }
                 )
             }
@@ -138,8 +139,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             mediaItems: MutableList<MediaItem>
         ): ListenableFuture<MutableList<MediaItem>> {
             val mediaIds = mediaItems.map { it.mediaId }
-            val items =
-                mediaIds.mapNotNull { id -> Indexer.library.songs.find { it.id == id }?.item }
+            val items = mediaIds.mapNotNull { id -> Library.getSongOrNull(id)?.item }
             return Futures.immediateFuture(items.toMutableList())
         }
 
@@ -156,7 +156,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             browser: MediaSession.ControllerInfo,
             mediaId: String
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            val item = Indexer.library.songs.find { it.id == mediaId }?.item
+            val item = Library.getSongOrNull(mediaId)?.item
                 ?: return Futures.immediateFuture(
                     LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
                 )
@@ -171,8 +171,8 @@ class MSongService : MediaLibraryService(), CoroutineScope {
             pageSize: Int,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-            val children = Indexer.library.albums.find { it.id == parentId }?.songs?.items()
-                ?: Indexer.library.artists.find { it.id == parentId }?.songs?.items()
+            val children = Library.getAlbumOrNull(parentId)?.songs?.items()
+                ?: Library.getArtistOrNull(parentId)?.songs?.items()
                 ?: return Futures.immediateFuture(
                     LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
                 )
