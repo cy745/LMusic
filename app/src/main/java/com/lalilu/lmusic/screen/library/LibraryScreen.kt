@@ -6,7 +6,10 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -28,17 +31,16 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lalilu.R
-import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.SmartBar
-import com.lalilu.lmusic.screen.navigate
-import com.lalilu.lmusic.utils.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.navigate
 
 @Composable
-fun LibraryScreen(
-    contentPaddingForFooter: Dp = 0.dp
-) {
+fun LibraryScreen() {
+    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
+
     LaunchedEffect(Unit) {
         SmartBar.setBarItem {
             NavigateBar()
@@ -168,6 +170,7 @@ fun NavigateBar() {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NavigateItem(
     navController: NavController,
@@ -186,7 +189,6 @@ fun NavigateItem(
         if (selected) baseColor.copy(alpha = 0.12f) else Color.Transparent
     )
 
-    @OptIn(ExperimentalMaterialApi::class)
     Surface(
         color = backgroundColor,
         onClick = {

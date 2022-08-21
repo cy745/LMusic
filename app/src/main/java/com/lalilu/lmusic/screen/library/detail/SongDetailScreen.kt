@@ -7,7 +7,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,19 +29,22 @@ import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
-import com.lalilu.lmusic.utils.WindowSize
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 fun SongDetailScreen(
     song: LSong,
-    currentWindowSize: WindowSize,
-    navigateTo: (destination: String) -> Unit = {},
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
+    val windowSize = LocalWindowSize.current
+    val navController = LocalNavigatorHost.current
     val mediaBrowser = mainViewModel.mediaBrowser
+    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     val title = song.name
     val subTitle = "${song._artist}\n\n${song._albumTitle}"
 
@@ -51,12 +57,12 @@ fun SongDetailScreen(
             .size(SizeUtils.dp2px(128f))
             .crossfade(true)
             .build(),
-        currentWindowSize = currentWindowSize,
+        windowSize = windowSize,
         onMatchNetworkData = {
-            navigateTo("${MainScreenData.SongsMatchNetworkData.name}/${song.id}")
+            navController.navigate("${MainScreenData.SongsMatchNetworkData.name}/${song.id}")
         },
         onAddSongToPlaylist = {
-            navigateTo("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
+            navController.navigate("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
         },
         onSetSongToNext = {
             mediaBrowser.addToNext(song.id)
@@ -72,7 +78,7 @@ fun SongDetailScreen(
     title: String,
     subTitle: String,
     mediaId: String,
-    currentWindowSize: WindowSize,
+    windowSize: WindowSizeClass,
     imageRequest: ImageRequest,
     onPlaySong: () -> Unit = {},
     onSetSongToNext: () -> Unit = {},
@@ -120,7 +126,7 @@ fun SongDetailScreen(
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),
             columns = GridCells.Fixed(
-                if (currentWindowSize != WindowSize.Compact) 2 else 1
+                if (windowSize.widthSizeClass != WindowWidthSizeClass.Compact) 2 else 1
             ),
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalArrangement = Arrangement.spacedBy(20.dp)

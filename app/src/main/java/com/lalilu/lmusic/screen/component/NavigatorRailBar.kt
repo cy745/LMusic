@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lalilu.lmusic.screen.MainScreenData
-import com.lalilu.lmusic.screen.navigate
+import com.lalilu.lmusic.utils.extension.navigate
 
 @Composable
 fun NavigatorRailBar(

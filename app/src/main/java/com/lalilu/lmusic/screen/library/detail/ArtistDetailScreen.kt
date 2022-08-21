@@ -7,41 +7,42 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
+import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.items
-import com.lalilu.lmedia.indexer.Indexer
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.card.SongCard
-import com.lalilu.lmusic.utils.WindowSize
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ArtistDetailScreen(
-    artistName: String,
-    currentWindowSize: WindowSize,
-    navigateTo: (destination: String) -> Unit = {},
-    contentPaddingForFooter: Dp = 0.dp,
+    artist: LArtist,
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
+    val songs = artist.songs
     val haptic = LocalHapticFeedback.current
+    val windowSize = LocalWindowSize.current
+    val navController = LocalNavigatorHost.current
+    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistDetailScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistDetailScreen", true)
-    val songs = Library.getArtistOrNull(artistName)?.songs ?: emptyList()
 
 //    LaunchedEffect(artistName) {
 //        songs.clear()
@@ -71,14 +72,14 @@ fun ArtistDetailScreen(
     val onSongShowDetail: (String) -> Unit = remember {
         { mediaId ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navigateTo("${MainScreenData.SongsDetail.name}/$mediaId")
+            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId")
         }
     }
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        NavigatorHeaderWithButtons(title = artistName, subTitle = "关联：") {
+        NavigatorHeaderWithButtons(title = artist.name, subTitle = "关联：") {
             LazyListSortToggleButton(sortByState = sortByState) {
                 sortByState = next(sortByState)
             }
@@ -87,7 +88,7 @@ fun ArtistDetailScreen(
             }
         }
         LazyVerticalGrid(
-            columns = GridCells.Fixed(if (currentWindowSize == WindowSize.Expanded) 2 else 1),
+            columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
             contentPadding = PaddingValues(
                 bottom = contentPaddingForFooter
             )

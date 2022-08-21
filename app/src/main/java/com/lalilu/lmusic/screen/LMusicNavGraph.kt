@@ -7,133 +7,71 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
-import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.library.*
 import com.lalilu.lmusic.screen.library.detail.*
-import com.lalilu.lmusic.utils.LocalNavigatorHost
-import com.lalilu.lmusic.utils.rememberWindowSizeClass
-
-
-/**
- * 递归清除返回栈
- */
-fun NavController.clearBackStack() {
-    if (popBackStack()) clearBackStack()
-}
-
-/**
- * @param from  所设起点导航位置
- * @param to    目标导航位置
- *
- * 指定导航起点位置和目标位置
- */
-fun NavController.navigate(
-    to: String,
-    from: String = MainScreenData.Library.name,
-    clearAllBefore: Boolean = false,
-    singleTop: Boolean = true
-) {
-    if (clearAllBefore) clearBackStack()
-    navigate(to) {
-        launchSingleTop = singleTop
-        popUpTo(from) { inclusive = from == to }
-    }
-}
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 
 @ExperimentalAnimationApi
 @Composable
 @ExperimentalMaterialApi
-fun LMusicNavGraph(
-    modifier: Modifier = Modifier,
-    contentPaddingForFooter: Dp = 0.dp,
-    onExpendModal: () -> Unit = {},
-) {
-    val navController = LocalNavigatorHost.current
-    val currentWindowSizeClass = rememberWindowSizeClass()
-    val currentWindowSize = currentWindowSizeClass.windowSize
-
+fun LMusicNavGraph() {
     AnimatedNavHost(
-        navController = navController,
+        navController = LocalNavigatorHost.current,
         startDestination = MainScreenData.Library.name,
-        modifier = modifier,
+        modifier = Modifier.fillMaxSize(),
         exitTransition = { ExitTransition.None },
         enterTransition = {
-            fadeIn(
-                animationSpec = tween(
-                    durationMillis = 700,
-                )
-            ) + slideInVertically { 100 }
+            fadeIn(animationSpec = tween(durationMillis = 300)) +
+                    slideInVertically { 100 }
         }
     ) {
         composable(
             route = MainScreenData.Library.name
         ) {
-            LibraryScreen(
-                contentPaddingForFooter = contentPaddingForFooter
-            )
+            LibraryScreen()
         }
 
         composable(
             route = MainScreenData.Songs.name
         ) {
-            SongsScreen(
-                currentWindowSize = currentWindowSize,
-                navigateTo = navController::navigate,
-                contentPaddingForFooter = contentPaddingForFooter
-            )
+            SongsScreen()
         }
 
         composable(
             route = MainScreenData.Artists.name
         ) {
-            ArtistScreen(
-                navigateTo = navController::navigate,
-                contentPaddingForFooter = contentPaddingForFooter
-            )
+            ArtistScreen()
         }
 
         composable(
             route = MainScreenData.Albums.name
         ) {
-            AlbumsScreen(
-                currentWindowSize = currentWindowSize,
-                navigateTo = navController::navigate,
-                contentPaddingForFooter = contentPaddingForFooter
-            )
+            AlbumsScreen()
         }
         composable(
             route = MainScreenData.Playlists.name
         ) {
-            PlaylistsScreen(
-                navigateTo = navController::navigate,
-                contentPaddingForFooter = contentPaddingForFooter
-            )
+            PlaylistsScreen()
         }
         composable(
             route = "${MainScreenData.PlaylistsDetail.name}/{playlistId}",
             arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
         ) { backStackEntry ->
+            // todo playlist 逻辑未完善
             val playlistId = backStackEntry.arguments?.getString("playlistId")?.toLong()
 
             playlistId?.let {
-                PlaylistDetailScreen(
-                    playlistId = it,
-                    currentWindowSize = currentWindowSize,
-                    navigateTo = navController::navigate,
-                    contentPaddingForFooter = contentPaddingForFooter
-                )
+                PlaylistDetailScreen(playlistId = it)
             }
         }
         composable(
@@ -141,13 +79,9 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
-            Library.getSongOrNull(mediaId)?.let {
-                SongDetailScreen(
-                    song = it,
-                    currentWindowSize = currentWindowSize,
-                    navigateTo = navController::navigate
-                )
-            } ?: EmptySongDetailScreen()
+            Library.getSongOrNull(mediaId)
+                ?.let { SongDetailScreen(song = it) }
+                ?: EmptySongDetailScreen()
         }
 
         composable(
@@ -155,15 +89,9 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("artistName") { type = NavType.StringType })
         ) { backStackEntry ->
             val artistName = backStackEntry.arguments?.getString("artistName")
-
-            artistName?.let { name ->
-                ArtistDetailScreen(
-                    artistName = name,
-                    currentWindowSize = currentWindowSize,
-                    navigateTo = navController::navigate,
-                    contentPaddingForFooter = contentPaddingForFooter
-                )
-            } ?: EmptyArtistDetailScreen()
+            Library.getArtistOrNull(artistName)
+                ?.let { ArtistDetailScreen(artist = it) }
+                ?: EmptyArtistDetailScreen()
         }
 
         composable(
@@ -171,14 +99,9 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("albumId") { type = NavType.StringType })
         ) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId")
-            Library.getAlbumOrNull(albumId)?.let {
-                AlbumDetailScreen(
-                    album = it,
-                    currentWindowSize = currentWindowSize,
-                    navigateTo = navController::navigate,
-                    contentPaddingForFooter = contentPaddingForFooter
-                )
-            } ?: EmptyAlbumDetailScreen()
+            Library.getAlbumOrNull(albumId)
+                ?.let { AlbumDetailScreen(album = it) }
+                ?: EmptyAlbumDetailScreen()
         }
         composable(
             route = MainScreenData.SongsAddToPlaylist.name,
@@ -188,8 +111,6 @@ fun LMusicNavGraph(
 
             mediaIds?.takeIf { it.isNotEmpty() }?.let {
                 PlaylistsScreen(
-                    navigateUp = navController::navigateUp,
-                    contentPaddingForFooter = contentPaddingForFooter,
                     isAddingSongToPlaylist = true,
                     mediaIds = it
                 )
@@ -203,8 +124,6 @@ fun LMusicNavGraph(
 
             mediaId?.let {
                 PlaylistsScreen(
-                    navigateUp = navController::navigateUp,
-                    contentPaddingForFooter = contentPaddingForFooter,
                     isAddingSongToPlaylist = true,
                     mediaIds = listOf(it)
                 )
@@ -215,22 +134,14 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
-            Library.getSongOrNull(mediaId)?.let {
-                MatchNetworkDataScreen(
-                    song = it,
-                    navigateUp = navController::navigateUp,
-                    expendScaffold = onExpendModal,
-                    contentPaddingForFooter = contentPaddingForFooter
-                )
-            } ?: EmptySearchForLyricScreen()
+            Library.getSongOrNull(mediaId)
+                ?.let { MatchNetworkDataScreen(song = it) }
+                ?: EmptySearchForLyricScreen()
         }
         composable(
             route = MainScreenData.Settings.name
         ) {
-            SettingsScreen(
-                currentWindowSize = currentWindowSize,
-                contentPaddingForFooter = contentPaddingForFooter
-            )
+            SettingsScreen()
         }
     }
 }

@@ -24,8 +24,8 @@ import com.lalilu.lmusic.screen.MainScreen
 import com.lalilu.lmusic.screen.ShowScreen
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
-import com.lalilu.lmusic.utils.LocalNavigatorHost
-import com.lalilu.lmusic.utils.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

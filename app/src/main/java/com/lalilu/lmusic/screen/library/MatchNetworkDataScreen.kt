@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.screen.library
 
-import android.content.Context
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
@@ -27,21 +25,23 @@ import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
+import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.getActivity
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 @Composable
 fun MatchNetworkDataScreen(
     song: LSong,
-    navigateUp: () -> Unit = {},
-    expendScaffold: () -> Unit = {},
-    contentPaddingForFooter: Dp = 0.dp,
-    context: Context = LocalContext.current,
     viewModel: NetworkDataViewModel = hiltViewModel()
 ) {
     val keyword = "${song.name} ${song._artist}"
     val lyrics = remember { mutableStateListOf<SongSearchSong>() }
     var selectedIndex by remember { mutableStateOf(-1) }
+    val context = LocalContext.current
+    val navController = LocalNavigatorHost.current
+    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -49,13 +49,13 @@ fun MatchNetworkDataScreen(
         AndroidViewBinding(factory = { inflater, parent, attachToParent ->
             FragmentSearchForLyricHeaderBinding.inflate(inflater, parent, attachToParent).apply {
                 val activity = context.getActivity()!!
-                searchForLyricCancel.setOnClickListener { navigateUp() }
+                searchForLyricCancel.setOnClickListener { navController.navigateUp() }
                 searchForLyricConfirm.setOnClickListener {
                     viewModel.saveMatchNetworkData(
                         mediaId = song.id,
                         songId = lyrics.getOrNull(selectedIndex)?.id,
                         title = lyrics.getOrNull(selectedIndex)?.name,
-                        success = navigateUp
+                        success = { navController.navigateUp() }
                     )
                 }
                 searchForLyricKeyword.setOnEditorActionListener { textView, _, _ ->
@@ -70,7 +70,7 @@ fun MatchNetworkDataScreen(
                 }
                 KeyboardUtils.registerSoftInputChangedListener(activity) {
                     if (searchForLyricKeyword.isFocused && it > 0) {
-                        expendScaffold()
+                        SmartModalBottomSheet.expend()
                         return@registerSoftInputChangedListener
                     }
                     if (searchForLyricKeyword.isFocused) {
