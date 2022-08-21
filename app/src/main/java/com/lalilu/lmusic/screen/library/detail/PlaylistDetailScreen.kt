@@ -7,12 +7,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LSong
@@ -22,10 +22,12 @@ import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.card.SongCard
-import com.lalilu.lmusic.utils.WindowSize
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
@@ -33,13 +35,13 @@ import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 @OptIn(ExperimentalFoundationApi::class)
 fun PlaylistDetailScreen(
     playlistId: Long,
-    currentWindowSize: WindowSize,
-    navigateTo: (destination: String) -> Unit = {},
-    contentPaddingForFooter: Dp = 0.dp,
     viewModel: PlaylistsViewModel = hiltViewModel(),
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val haptic = LocalHapticFeedback.current
+    val navController = LocalNavigatorHost.current
+    val windowSize = LocalWindowSize.current
+    val contentPaddingForFooter: Dp by SmartBar.contentPaddingForSmartBarDp
     var playlist by remember { mutableStateOf(MPlaylist(playlistId)) }
 //    val playlistItems = remember { emptyList<MediaItem>().toMutableStateList() }
     val songs = emptyList<LSong>()
@@ -75,7 +77,7 @@ fun PlaylistDetailScreen(
     val onSongShowDetail: (String) -> Unit = remember {
         { mediaId ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navigateTo("${MainScreenData.SongsDetail.name}/$mediaId")
+            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId")
         }
     }
 
@@ -94,7 +96,7 @@ fun PlaylistDetailScreen(
             }
         }
         LazyVerticalGrid(
-            columns = GridCells.Fixed(if (currentWindowSize == WindowSize.Expanded) 2 else 1),
+            columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
             contentPadding = PaddingValues(
                 bottom = contentPaddingForFooter
             )

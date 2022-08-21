@@ -5,13 +5,14 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.RomUtils
@@ -21,15 +22,15 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.settings.*
-import com.lalilu.lmusic.utils.WindowSize
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.getActivity
 
 @Composable
-fun SettingsScreen(
-    currentWindowSize: WindowSize,
-    contentPaddingForFooter: Dp = 0.dp
-) {
+fun SettingsScreen() {
+    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
+    val windowSize = LocalWindowSize.current
     val context = LocalContext.current
     val ignoreAudioFocus = rememberDataSaverState(
         Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
@@ -72,7 +73,7 @@ fun SettingsScreen(
         NavigatorHeader(route = MainScreenData.Settings)
 
         LazyVerticalGrid(
-            columns = GridCells.Fixed(if (currentWindowSize == WindowSize.Expanded) 2 else 1),
+            columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = contentPaddingForFooter)
         ) {

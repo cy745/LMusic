@@ -6,33 +6,33 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.funny.data_saver.core.rememberDataSaverState
-import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.button.TextVisibleToggleButton
 import com.lalilu.lmusic.screen.component.card.AlbumCard
-import com.lalilu.lmusic.utils.WindowSize
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
-fun AlbumsScreen(
-    currentWindowSize: WindowSize,
-    navigateTo: (destination: String) -> Unit = {},
-    contentPaddingForFooter: Dp = 0.dp
-) {
+fun AlbumsScreen() {
     val albums = Library.getAlbums()
+    val windowSize = LocalWindowSize.current
+    val navController = LocalNavigatorHost.current
+    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
     var sortByState by rememberDataSaverState("KEY_SORT_BY_AlbumsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)
@@ -45,7 +45,7 @@ fun AlbumsScreen(
 
     val onAlbumSelected = remember {
         { albumId: String ->
-            navigateTo("${MainScreenData.AlbumsDetail.name}/$albumId")
+            navController.navigate("${MainScreenData.AlbumsDetail.name}/$albumId")
         }
     }
 
@@ -64,7 +64,7 @@ fun AlbumsScreen(
         LazyVerticalGrid(
             modifier = Modifier.weight(1f),
             columns = GridCells.Fixed(
-                if (currentWindowSize == WindowSize.Expanded) 3 else 2
+                if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 3 else 2
             ),
             contentPadding = PaddingValues(
                 start = 10.dp,

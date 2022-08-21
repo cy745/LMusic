@@ -9,7 +9,9 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
@@ -21,7 +23,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImagePainter
@@ -32,24 +33,25 @@ import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.items
-import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.card.SongCard
-import com.lalilu.lmusic.utils.WindowSize
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun AlbumDetailScreen(
     album: LAlbum,
-    currentWindowSize: WindowSize,
-    contentPaddingForFooter: Dp = 0.dp,
-    navigateTo: (destination: String) -> Unit = {},
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val songs = album.songs
     val haptic = LocalHapticFeedback.current
+    val windowSize = LocalWindowSize.current
+    val navController = LocalNavigatorHost.current
+    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     val sortedItems = remember { songs.toMutableStateList() }
     val title = album.name
     val subTitle = album.name // todo AlbumArtist 补足
@@ -67,7 +69,7 @@ fun AlbumDetailScreen(
     val onSongShowDetail: (String) -> Unit = remember {
         { mediaId ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navigateTo("${MainScreenData.SongsDetail.name}/$mediaId")
+            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId")
         }
     }
 
@@ -114,7 +116,7 @@ fun AlbumDetailScreen(
             }
         }
         LazyVerticalGrid(
-            columns = GridCells.Fixed(if (currentWindowSize == WindowSize.Expanded) 2 else 1),
+            columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
             contentPadding = PaddingValues(
                 bottom = contentPaddingForFooter
             )

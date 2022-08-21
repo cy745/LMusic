@@ -3,35 +3,33 @@ package com.lalilu.lmusic.screen.library
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.funny.data_saver.core.rememberDataSaverState
-import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.card.ArtistCard
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 
 @Composable
-fun ArtistScreen(
-    navigateTo: (destination: String) -> Unit = {},
-    contentPaddingForFooter: Dp = 0.dp,
-) {
+fun ArtistScreen() {
     val artists = Library.getArtists()
+    val navController = LocalNavigatorHost.current
+    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistScreen", true)
 
     val onArtistSelected = remember {
         { artistId: String ->
-            navigateTo("${MainScreenData.ArtistsDetail.name}/$artistId")
+            navController.navigate("${MainScreenData.ArtistsDetail.name}/$artistId")
         }
     }
 

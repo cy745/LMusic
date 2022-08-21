@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidViewBinding
@@ -12,7 +12,6 @@ import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.MediaItem
 import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.KeyboardUtils
@@ -27,11 +26,13 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.ComposeAdapter
 import com.lalilu.lmusic.adapter.setDiffNewData
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
+import com.lalilu.lmusic.utils.extension.navigate
 import com.lalilu.lmusic.utils.getActivity
-import com.lalilu.lmusic.utils.safeLaunch
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
@@ -39,27 +40,23 @@ import com.lalilu.ui.internal.StateHelper
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_EXPENDED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_NORMAL
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
-    scope: CoroutineScope = rememberCoroutineScope(),
-    onExpendBottomSheet: suspend () -> Unit = {},
-    onCollapseBottomSheet: suspend () -> Unit = {},
-    onSongShowDetail: suspend (MediaItem) -> Unit = {},
     playingViewModel: PlayingViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val density = LocalDensity.current
-    val windowInsetsCompat = WindowInsets.statusBars.let {
-        WindowInsetsCompat.Builder()
-            .setInsets(
-                WindowInsetsCompat.Type.statusBars(),
-                Insets.of(0, it.getTop(density), 0, it.getBottom(density))
-            ).build()
+    val navController = LocalNavigatorHost.current
+    val statusBarsInsets = WindowInsets.statusBars
+    val windowInsetsCompat = remember(statusBarsInsets) {
+        WindowInsetsCompat.Builder().setInsets(
+            WindowInsetsCompat.Type.statusBars(),
+            Insets.of(0, statusBarsInsets.getTop(density), 0, statusBarsInsets.getBottom(density))
+        ).build()
     }
 
-    val context = LocalContext.current
     AndroidViewBinding(factory = { inflater, parent, attachToParent ->
         FragmentPlayingBinding.inflate(inflater, parent, attachToParent).apply {
             val activity = context.getActivity()!!
@@ -72,10 +69,13 @@ fun PlayingScreen(
                 onSwipeToRight = { playingViewModel.onSongRemoved(it.mediaId) },
                 onItemClick = { playingViewModel.onSongSelected(it.mediaId) },
                 onItemLongClick = {
-                    scope.safeLaunch {
-                        onSongShowDetail(it)
-                        HapticUtils.haptic(this@apply.root)
-                    }
+                    HapticUtils.haptic(this@apply.root)
+                    navController.navigate(
+                        from = "${MainScreenData.SongsDetail.name}/${it.mediaId}",
+                        to = "${MainScreenData.SongsDetail.name}/${it.mediaId}",
+                        clearAllBefore = true
+                    )
+                    SmartModalBottomSheet.show()
                 }
             )
 
@@ -114,13 +114,18 @@ fun PlayingScreen(
 
             maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {
                 override fun onScrollToThreshold() {
-                    scope.safeLaunch { onExpendBottomSheet() }
                     HapticUtils.haptic(this@apply.root)
+                    navController.navigate(
+                        from = MainScreenData.Library.name,
+                        to = MainScreenData.Library.name,
+                        clearAllBefore = true
+                    )
+                    SmartModalBottomSheet.show()
                 }
 
                 override fun onScrollRecover() {
-                    scope.safeLaunch { onCollapseBottomSheet() }
                     HapticUtils.haptic(this@apply.root)
+                    SmartModalBottomSheet.hide()
                 }
             })
             maSeekBar.clickListeners.add(object : OnSeekBarClickListener {

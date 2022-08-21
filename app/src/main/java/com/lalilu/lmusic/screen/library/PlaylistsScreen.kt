@@ -27,16 +27,15 @@ import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.bean.sort
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.button.IconResButton
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @Composable
 fun PlaylistsScreen(
-    navigateUp: () -> Unit = {},
-    navigateTo: (destination: String) -> Unit = {},
-    contentPaddingForFooter: Dp = 0.dp,
     viewModel: PlaylistsViewModel = hiltViewModel(),
     isAddingSongToPlaylist: Boolean = false,
     mediaIds: List<String> = emptyList()
@@ -44,6 +43,8 @@ fun PlaylistsScreen(
     val showDialog = remember { mutableStateOf(false) }
     val playlists by viewModel.playlists.observeAsState(initial = emptyList())
 
+    val navController = LocalNavigatorHost.current
+    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     var sortByState by rememberDataSaverState("KEY_SORT_BY_PlaylistsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_PlaylistsScreen", true)
     val selectedItems = remember { emptyList<MPlaylist>().toMutableStateList() }
@@ -88,7 +89,7 @@ fun PlaylistsScreen(
                             mediaIds,
                             selectedItems.map { it.playlistId })
                         ToastUtils.showShort("添加到歌单成功")
-                        navigateUp()
+                        navController.navigateUp()
                     }
                 )
             }
@@ -109,7 +110,7 @@ fun PlaylistsScreen(
                         selectedItems.remove(it)
                     else selectedItems.add(it)
                 } else {
-                    navigateTo("${MainScreenData.PlaylistsDetail.name}/${it.playlistId}")
+                    navController.navigate("${MainScreenData.PlaylistsDetail.name}/${it.playlistId}")
                 }
             }
         )
