@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +49,22 @@ fun SongDetailScreen(
     val title = song.name
     val subTitle = "${song._artist}\n\n${song._albumTitle}"
 
+    LaunchedEffect(Unit) {
+        SmartBar.addBarItem {
+            SongDetailActionsBar(
+                onAddSongToPlaylist = {
+                    navController.navigate("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
+                },
+                onSetSongToNext = {
+                    mediaBrowser.addToNext(song.id)
+                },
+                onPlaySong = {
+                    mediaBrowser.playById(mediaId = song.id, playWhenReady = true)
+                }
+            )
+        }
+    }
+
     SongDetailScreen(
         title = title,
         subTitle = subTitle,
@@ -60,15 +77,6 @@ fun SongDetailScreen(
         windowSize = windowSize,
         onMatchNetworkData = {
             navController.navigate("${MainScreenData.SongsMatchNetworkData.name}/${song.id}")
-        },
-        onAddSongToPlaylist = {
-            navController.navigate("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
-        },
-        onSetSongToNext = {
-            mediaBrowser.addToNext(song.id)
-        },
-        onPlaySong = {
-            mediaBrowser.playById(mediaId = song.id, playWhenReady = true)
         }
     )
 }
@@ -80,9 +88,6 @@ fun SongDetailScreen(
     mediaId: String,
     windowSize: WindowSizeClass,
     imageRequest: ImageRequest,
-    onPlaySong: () -> Unit = {},
-    onSetSongToNext: () -> Unit = {},
-    onAddSongToPlaylist: () -> Unit = {},
     onMatchNetworkData: () -> Unit = {}
 ) {
     Column(
@@ -137,30 +142,39 @@ fun SongDetailScreen(
                     mediaId = mediaId
                 )
             }
-            item {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    TextWithIconButton(
-                        textRes = R.string.text_button_play,
-                        color = Color(0xFF006E7C),
-                        onClick = onPlaySong
-                    )
-                    TextWithIconButton(
-                        textRes = R.string.button_set_song_to_next,
-                        color = Color(0xFF006E7C),
-                        onClick = onSetSongToNext
-                    )
-                    TextWithIconButton(
-                        textRes = R.string.button_add_song_to_playlist,
-                        iconRes = R.drawable.ic_play_list_add_line,
-                        color = Color(0xFF006E7C),
-                        onClick = onAddSongToPlaylist
-                    )
-                }
-            }
         }
+    }
+}
+
+@Composable
+fun SongDetailActionsBar(
+    onPlaySong: () -> Unit = {},
+    onSetSongToNext: () -> Unit = {},
+    onAddSongToPlaylist: () -> Unit = {}
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        TextWithIconButton(
+            textRes = R.string.text_button_play,
+            color = Color(0xFF006E7C),
+            onClick = onPlaySong
+        )
+        TextWithIconButton(
+            textRes = R.string.button_set_song_to_next,
+            color = Color(0xFF006E7C),
+            onClick = onSetSongToNext
+        )
+        TextWithIconButton(
+            textRes = R.string.button_add_song_to_playlist,
+            iconRes = R.drawable.ic_play_list_add_line,
+            color = Color(0xFF006E7C),
+            onClick = onAddSongToPlaylist
+        )
     }
 }
 

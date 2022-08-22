@@ -1,6 +1,9 @@
 package com.lalilu.lmusic.utils.extension
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.SwipeProgress
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavController
@@ -48,3 +51,14 @@ fun BackHandlerWithNavigator(navController: NavController, onBack: () -> Unit) {
         onBack = onBack
     )
 }
+
+@OptIn(ExperimentalMaterialApi::class)
+fun SwipeProgress<ModalBottomSheetValue>.watchForOffset(
+    betweenFirst: ModalBottomSheetValue,
+    betweenSecond: ModalBottomSheetValue,
+    elseValue: Float = 1f
+): Float = when {
+    from == betweenFirst && to == betweenSecond -> 1f - (fraction * 3)
+    from == betweenSecond && to == betweenFirst -> fraction * 3
+    else -> elseValue
+}.coerceIn(0f, 1f)
