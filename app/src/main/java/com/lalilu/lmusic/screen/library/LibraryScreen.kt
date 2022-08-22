@@ -42,7 +42,7 @@ fun LibraryScreen() {
     val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
 
     LaunchedEffect(Unit) {
-        SmartBar.setBarItem {
+        SmartBar.setMainBar {
             NavigateBar()
         }
     }
@@ -54,7 +54,7 @@ fun LibraryScreen() {
     ) {
         item {
             RecommendTitle("每日推荐set", onClick = {
-                SmartBar.setBarItem(toggle = true) {
+                SmartBar.setMainBar(toggle = true) {
                     Text(
                         text = "每日推荐set", modifier = Modifier
                             .fillMaxWidth()
@@ -79,7 +79,7 @@ fun LibraryScreen() {
         item {
             // 最近添加
             RecommendTitle("最近添加add toggle", onClick = {
-                SmartBar.addBarItem(toggle = true) {
+                SmartBar.setExtraBar(toggle = true) {
                     Text(
                         text = "最近添加add toggle", modifier = Modifier
                             .fillMaxWidth()
@@ -117,7 +117,7 @@ fun LibraryScreen() {
 
         item {
             RecommendTitle("每日推荐add", onClick = {
-                SmartBar.addBarItem {
+                SmartBar.setExtraBar {
                     Text(
                         text = "每日推荐add", modifier = Modifier
                             .fillMaxWidth()

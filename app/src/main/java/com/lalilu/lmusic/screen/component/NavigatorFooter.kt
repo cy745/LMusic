@@ -15,17 +15,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lalilu.R
 import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.popUpElse
 
 @Composable
 fun NavigatorFooter(
-    modifier: Modifier = Modifier,
-    navController: NavHostController,
-    popUp: () -> Unit = {},
-    close: () -> Unit = {}
+    navController: NavController = LocalNavigatorHost.current
 ) {
     val currentBackStackEntry = navController.currentBackStackEntryAsState().value
     val previousScreenTitle = remember(currentBackStackEntry) {
@@ -35,10 +34,9 @@ fun NavigatorFooter(
     }.let { stringResource(id = it) }
 
     Row(
-        modifier = modifier
+        modifier = Modifier
             .clickable(enabled = false) {}
             .background(color = MaterialTheme.colors.background.copy(alpha = 0.9f))
-            .navigationBarsPadding()
             .height(52.dp)
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
@@ -51,7 +49,11 @@ fun NavigatorFooter(
             colors = ButtonDefaults.textButtonColors(
                 contentColor = contentColor
             ),
-            onClick = popUp
+            onClick = {
+                navController.popUpElse {
+                    SmartModalBottomSheet.hide()
+                }
+            }
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_arrow_left_s_line),
@@ -69,7 +71,7 @@ fun NavigatorFooter(
                 backgroundColor = Color(0x25FE4141),
                 contentColor = Color(0xFFFE4141)
             ),
-            onClick = close
+            onClick = { SmartModalBottomSheet.hide() }
         ) {
             Text(
                 text = stringResource(id = R.string.dialog_bottom_sheet_navigator_close),

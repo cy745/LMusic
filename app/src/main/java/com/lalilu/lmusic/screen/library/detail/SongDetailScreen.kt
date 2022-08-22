@@ -29,6 +29,7 @@ import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.component.NavigatorFooter
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
@@ -49,20 +50,23 @@ fun SongDetailScreen(
     val title = song.name
     val subTitle = "${song._artist}\n\n${song._albumTitle}"
 
+    SmartBar.RestoreOnDispose()
+
     LaunchedEffect(Unit) {
-        SmartBar.addBarItem {
-            SongDetailActionsBar(
-                onAddSongToPlaylist = {
-                    navController.navigate("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
-                },
-                onSetSongToNext = {
-                    mediaBrowser.addToNext(song.id)
-                },
-                onPlaySong = {
-                    mediaBrowser.playById(mediaId = song.id, playWhenReady = true)
-                }
-            )
-        }
+        SmartBar.setMainBar { NavigatorFooter(navController) }
+            .setExtraBar {
+                SongDetailActionsBar(
+                    onAddSongToPlaylist = {
+                        navController.navigate("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
+                    },
+                    onSetSongToNext = {
+                        mediaBrowser.addToNext(song.id)
+                    },
+                    onPlaySong = {
+                        mediaBrowser.playById(mediaId = song.id, playWhenReady = true)
+                    }
+                )
+            }
     }
 
     SongDetailScreen(
