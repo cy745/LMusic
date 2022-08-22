@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -25,10 +24,12 @@ object SmartBar {
 
     @Composable
     @OptIn(ExperimentalAnimationApi::class)
-    fun BoxScope.SmartBarContent() {
+    fun BoxScope.SmartBarContent(modifier: Modifier = Modifier) {
         val density = LocalDensity.current
+        val hasContent = mainBar.value != null || extraBar.value != null
+
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .clickable(enabled = false) { }
                 .align(Alignment.BottomCenter)
                 .background(color = MaterialTheme.colors.background.copy(alpha = 0.95f))
@@ -38,13 +39,22 @@ object SmartBar {
                     density.run { contentPaddingForSmartBarDp.value = height.toDp() + 20.dp }
                 }
         ) {
-            AnimatedVisibility(visible = mainBar.value != null) {
-                Spacer(modifier = Modifier.height(5.dp))
-                Text(text = "${contentPaddingForSmartBar.value}")
+            AnimatedVisibility(visible = hasContent) {
+                Spacer(modifier = Modifier.height(10.dp))
             }
-            AnimatedContent(targetState = extraBar.value) { it?.invoke() }
-            AnimatedContent(targetState = mainBar.value) { it?.invoke() }
+            AnimatedContent(targetState = extraBar.value) {
+                it?.invoke()
+            }
+            AnimatedVisibility(visible = extraBar.value != null) {
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+            AnimatedContent(targetState = mainBar.value) {
+                it?.invoke()
+            }
             AnimatedVisibility(visible = mainBar.value != null) {
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+            AnimatedVisibility(visible = hasContent) {
                 Spacer(modifier = Modifier.navigationBarsPadding())
             }
         }

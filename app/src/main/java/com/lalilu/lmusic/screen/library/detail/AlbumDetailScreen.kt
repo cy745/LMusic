@@ -1,23 +1,22 @@
 package com.lalilu.lmusic.screen.library.detail
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -29,7 +28,6 @@ import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
-import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.items
@@ -42,7 +40,6 @@ import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 fun AlbumDetailScreen(
     album: LAlbum,
     mainViewModel: MainViewModel = hiltViewModel()
@@ -73,63 +70,63 @@ fun AlbumDetailScreen(
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = contentPaddingForFooter),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        NavigatorHeader(title = title, subTitle = subTitle) {
-            Surface(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(2.dp)
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 40.dp, start = 20.dp, end = 20.dp, bottom = 10.dp),
+                contentAlignment = Alignment.Center
             ) {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(album)
-                        .size(SizeUtils.dp2px(128f))
-                        .build(),
-                    contentDescription = ""
+                Surface(
+                    elevation = 2.dp,
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    val state = painter.state
-                    if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_music_2_line),
-                            contentDescription = "",
-                            contentScale = FixedScale(2.5f),
-                            colorFilter = ColorFilter.tint(color = Color.LightGray),
-                            modifier = Modifier
-                                .size(128.dp)
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
-                        )
-                    } else {
-                        SubcomposeAsyncImageContent(
-                            modifier = Modifier
-                                .sizeIn(
-                                    minHeight = 64.dp,
-                                    maxHeight = 128.dp,
-                                    minWidth = 64.dp,
-                                    maxWidth = 144.dp
-                                ),
-                            contentDescription = "CoverImage"
-                        )
+                    SubcomposeAsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .crossfade(true)
+                            .data(album)
+                            .build(),
+                        contentDescription = ""
+                    ) {
+                        val state = painter.state
+                        if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_music_2_line),
+                                contentDescription = "",
+                                contentScale = FixedScale(2.5f),
+                                colorFilter = ColorFilter.tint(color = Color.LightGray),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f)
+                            )
+                        } else {
+                            SubcomposeAsyncImageContent(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentScale = ContentScale.FillWidth,
+                                contentDescription = "CoverImage"
+                            )
+                        }
                     }
                 }
             }
         }
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
-            contentPadding = PaddingValues(
-                bottom = contentPaddingForFooter
+
+        item {
+            NavigatorHeader(title = title, subTitle = subTitle)
+        }
+
+        itemsIndexed(sortedItems) { index, item ->
+            SongCard(
+                index = index,
+                song = item,
+                onSongSelected = onSongSelected,
+                onSongShowDetail = onSongShowDetail
             )
-        ) {
-            itemsIndexed(items = sortedItems) { index, item ->
-                SongCard(
-                    modifier = Modifier.animateItemPlacement(),
-                    index = index,
-                    song = item,
-                    onSongSelected = onSongSelected,
-                    onSongShowDetail = onSongShowDetail
-                )
-            }
         }
     }
 }
