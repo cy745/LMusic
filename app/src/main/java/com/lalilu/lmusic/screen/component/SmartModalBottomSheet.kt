@@ -26,7 +26,7 @@ object SmartModalBottomSheet {
     private val scaffoldState = ModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val offset: State<Float>
         get() = scaffoldState.offset
-    val offsetPercent: Float
+    val offsetBottomHalfPercent: Float
         get() = scaffoldState.progress.watchForOffset(
             ModalBottomSheetValue.HalfExpanded,
             ModalBottomSheetValue.Hidden

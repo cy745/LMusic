@@ -11,7 +11,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lalilu.lmusic.screen.MainScreenData
 
 fun NavController.canPopUp(): Boolean {
-    return previousBackStackEntry == null
+    return previousBackStackEntry != null
+}
+
+fun NavController.popUpElse(elseDo: () -> Unit) {
+    if (canPopUp()) this.navigateUp() else elseDo()
 }
 
 /**
@@ -42,8 +46,9 @@ fun NavController.navigate(
 
 @Composable
 fun BackHandlerWithNavigator(navController: NavController, onBack: () -> Unit) {
+    // 当无上一级可导航时，启用此返回事件拦截器
     val enable = remember(navController.currentBackStackEntryAsState().value) {
-        navController.canPopUp()
+        !navController.canPopUp()
     }
 
     BackHandler(
