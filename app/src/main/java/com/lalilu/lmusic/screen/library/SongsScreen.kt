@@ -18,11 +18,7 @@ import com.lalilu.lmedia.entity.items
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
-import com.lalilu.lmusic.screen.bean.next
-import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SmartBar
-import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
-import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.card.SongCard
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
@@ -56,14 +52,14 @@ fun SongsScreen(
     }
 
     Column {
-        NavigatorHeaderWithButtons(route = MainScreenData.Songs) {
-            LazyListSortToggleButton(sortByState = sortByState) {
-                sortByState = next(sortByState)
-            }
-            SortToggleButton(sortDesc = sortDesc) {
-                sortDesc = !sortDesc
-            }
-        }
+//        NavigatorHeaderWithButtons(route = MainScreenData.Songs) {
+//            LazyListSortToggleButton(sortByState = sortByState) {
+//                sortByState = next(sortByState)
+//            }
+//            SortToggleButton(sortDesc = sortDesc) {
+//                sortDesc = !sortDesc
+//            }
+//        }
         LazyVerticalGrid(
             columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
             modifier = Modifier.weight(1f),

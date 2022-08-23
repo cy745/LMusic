@@ -9,14 +9,19 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmusic.screen.component.NavigateBar
+import com.lalilu.lmusic.screen.component.NavigateDetailBar
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.library.*
 import com.lalilu.lmusic.screen.library.detail.*
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
@@ -24,9 +29,31 @@ import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 @ExperimentalAnimationApi
 @Composable
 @ExperimentalMaterialApi
-fun LMusicNavGraph() {
+fun LMusicNavGraph(
+    navHostController: NavHostController = LocalNavigatorHost.current
+) {
+    val currentRoute = navHostController.currentBackStackEntryAsState().value
+    var last by remember { mutableStateOf<MainScreenData?>(null) }
+
+    LaunchedEffect(currentRoute) {
+        val current = MainScreenData.fromRoute(currentRoute?.destination?.route)
+
+        if (MainScreenData.categoryFirst.contains(current)
+            && !MainScreenData.categoryFirst.contains(last)
+        ) {
+            SmartBar.setMainBar { NavigateBar() }
+        }
+        if (MainScreenData.detailLevel.contains(current)
+            && !MainScreenData.detailLevel.contains(last)
+        ) {
+            SmartBar.setMainBar { NavigateDetailBar() }
+        }
+
+        last = current
+    }
+
     AnimatedNavHost(
-        navController = LocalNavigatorHost.current,
+        navController = navHostController,
         startDestination = MainScreenData.Library.name,
         modifier = Modifier.fillMaxSize(),
         exitTransition = { ExitTransition.None },
@@ -219,10 +246,18 @@ enum class MainScreenData(
         subTitle = R.string.destination_label_match_network_data
     );
 
+
     companion object {
         fun fromRoute(route: String?): MainScreenData? {
             val target = route?.substringBefore("/")
             return values().find { it.name == target }
+        }
+
+        val categoryFirst by lazy {
+            listOf(Library, Songs, Playlists, Artists, Albums, Settings)
+        }
+        val detailLevel by lazy {
+            listOf(PlaylistsDetail, ArtistsDetail, AlbumsDetail, SongsDetail)
         }
     }
 }

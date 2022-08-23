@@ -25,7 +25,7 @@
 
     <string name="destination_label_library">曲库</string>
     <string name="destination_label_albums">专辑</string>
-    <string name="destination_label_artist">歌手</string>
+    <string name="destination_label_artist">艺术家</string>
     <string name="destination_label_playlists">歌单</string>
     <string name="destination_label_all_song">歌曲</string>
     <string name="destination_label_settings">设置</string>
@@ -39,7 +39,7 @@
     <string name="destination_label_genres">流派</string>
 
     <string name="destination_subtitle_library">各种各样的选项</string>
-    <string name="destination_subtitle_artist">所有歌手</string>
+    <string name="destination_subtitle_artist">所有艺术家</string>
     <string name="destination_subtitle_albums">所有专辑</string>
     <string name="destination_subtitle_playlists">所有歌单</string>
     <string name="destination_subtitle_all_song">所有歌曲</string>
