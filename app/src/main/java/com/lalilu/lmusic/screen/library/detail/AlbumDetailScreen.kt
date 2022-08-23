@@ -7,7 +7,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,7 +32,6 @@ import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.items
 import com.lalilu.lmusic.screen.MainScreenData
-import com.lalilu.lmusic.screen.component.NavigatorFooter
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.card.SongCard
@@ -66,13 +68,6 @@ fun AlbumDetailScreen(
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId")
         }
-    }
-
-    SmartBar.RestoreOnDispose()
-
-    LaunchedEffect(Unit) {
-        SmartBar.setMainBar { NavigatorFooter(navController) }
-            .setExtraBar(item = null)
     }
 
     LazyColumn(

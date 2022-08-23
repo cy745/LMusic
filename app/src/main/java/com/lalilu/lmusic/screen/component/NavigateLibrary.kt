@@ -35,13 +35,11 @@ fun NavigateLibrary() {
             .fillMaxWidth()
             .heightWithNavigateBar()
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            LMusicNavGraph()
-            SmartBarContent(modifier = Modifier.graphicsLayer {
-                translationY = statusBarHeight - smartBarOffset
-                alpha = smartBarOffsetPercent
-            })
-        }
+        LMusicNavGraph()
+        SmartBarContent(modifier = Modifier.graphicsLayer {
+            translationY = statusBarHeight - smartBarOffset
+            alpha = smartBarOffsetPercent
+        })
     }
 }
 

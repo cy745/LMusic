@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,7 +30,6 @@ import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.screen.MainScreenData
-import com.lalilu.lmusic.screen.component.NavigatorFooter
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
@@ -50,23 +50,26 @@ fun SongDetailScreen(
     val title = song.name
     val subTitle = "${song._artist}\n\n${song._albumTitle}"
 
-    SmartBar.RestoreOnDispose()
+    DisposableEffect(Unit) {
+        onDispose {
+            SmartBar.setExtraBar(item = null)
+        }
+    }
 
     LaunchedEffect(Unit) {
-        SmartBar.setMainBar { NavigatorFooter(navController) }
-            .setExtraBar {
-                SongDetailActionsBar(
-                    onAddSongToPlaylist = {
-                        navController.navigate("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
-                    },
-                    onSetSongToNext = {
-                        mediaBrowser.addToNext(song.id)
-                    },
-                    onPlaySong = {
-                        mediaBrowser.playById(mediaId = song.id, playWhenReady = true)
-                    }
-                )
-            }
+        SmartBar.setExtraBar {
+            SongDetailActionsBar(
+                onAddSongToPlaylist = {
+                    navController.navigate("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
+                },
+                onSetSongToNext = {
+                    mediaBrowser.addToNext(song.id)
+                },
+                onPlaySong = {
+                    mediaBrowser.playById(mediaId = song.id, playWhenReady = true)
+                }
+            )
+        }
     }
 
     SongDetailScreen(

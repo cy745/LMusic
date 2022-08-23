@@ -11,11 +11,7 @@ import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
-import com.lalilu.lmusic.screen.bean.next
-import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SmartBar
-import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
-import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.card.ArtistCard
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 
@@ -34,14 +30,14 @@ fun ArtistScreen() {
     }
 
     Column {
-        NavigatorHeaderWithButtons(route = MainScreenData.Artists) {
-            LazyListSortToggleButton(sortByState = sortByState) {
-                sortByState = next(sortByState)
-            }
-            SortToggleButton(sortDesc = sortDesc) {
-                sortDesc = !sortDesc
-            }
-        }
+//        NavigatorHeaderWithButtons(route = MainScreenData.Artists) {
+//            LazyListSortToggleButton(sortByState = sortByState) {
+//                sortByState = next(sortByState)
+//            }
+//            SortToggleButton(sortDesc = sortDesc) {
+//                sortDesc = !sortDesc
+//            }
+//        }
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(

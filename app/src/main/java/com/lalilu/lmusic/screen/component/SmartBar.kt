@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -18,8 +17,6 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.lmusic.utils.extension.measure
 
 object SmartBar {
-    private val lastMainBar: MutableState<(@Composable () -> Unit)?> = mutableStateOf(null)
-    private val lastExtraBar: MutableState<(@Composable () -> Unit)?> = mutableStateOf(null)
     private val mainBar: MutableState<(@Composable () -> Unit)?> = mutableStateOf(null)
     private val extraBar: MutableState<(@Composable () -> Unit)?> = mutableStateOf(null)
     val contentPaddingForSmartBar = mutableStateOf(0)
@@ -63,33 +60,19 @@ object SmartBar {
         }
     }
 
-    @Composable
-    fun RestoreOnDispose() {
-        DisposableEffect(Unit) {
-            onDispose { restoreLastState() }
-        }
-    }
-
-    fun restoreLastState() {
-        mainBar.value = lastMainBar.value
-        extraBar.value = lastExtraBar.value
-    }
-
     fun setMainBar(
         toggle: Boolean = false,
         only: Boolean = true,
         item: (@Composable () -> Unit)?
     ): SmartBar {
         if (toggle && mainBar.value === item) {
-            lastMainBar.value = mainBar.value
             mainBar.value = null
             return this
         }
         if (only) {
-            lastExtraBar.value = extraBar.value
             extraBar.value = null
         }
-        lastMainBar.value = mainBar.value
+        if (mainBar.value === item) return this
         mainBar.value = item
         return this
     }
@@ -100,15 +83,13 @@ object SmartBar {
         item: (@Composable () -> Unit)?
     ): SmartBar {
         if (toggle && extraBar.value === item) {
-            lastExtraBar.value = extraBar.value
             extraBar.value = null
             return this
         }
         if (only) {
-            lastMainBar.value = mainBar.value
             mainBar.value = null
         }
-        lastExtraBar.value = extraBar.value
+        if (extraBar.value === item) return this
         extraBar.value = item
         return this
     }

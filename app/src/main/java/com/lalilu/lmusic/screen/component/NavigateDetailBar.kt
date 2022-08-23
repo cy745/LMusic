@@ -23,7 +23,7 @@ import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.popUpElse
 
 @Composable
-fun NavigatorFooter(
+fun NavigateDetailBar(
     navController: NavController = LocalNavigatorHost.current
 ) {
     val currentBackStackEntry = navController.currentBackStackEntryAsState().value
