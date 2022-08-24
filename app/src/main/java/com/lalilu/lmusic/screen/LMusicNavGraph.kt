@@ -38,15 +38,29 @@ fun LMusicNavGraph(
     LaunchedEffect(currentRoute) {
         val current = MainScreenData.fromRoute(currentRoute?.destination?.route)
 
+        /**
+         * 当从非目录级页进入目录级页时设置 MainBar 为 [NavigateBar]
+         * 并清除 ExtraBar
+         */
         if (MainScreenData.categoryFirst.contains(current)
             && !MainScreenData.categoryFirst.contains(last)
         ) {
             SmartBar.setMainBar { NavigateBar() }
+            SmartBar.setExtraBar(item = null)
         }
-        if (MainScreenData.detailLevel.contains(current)
-            && !MainScreenData.detailLevel.contains(last)
-        ) {
+
+        /**
+         * 当进入详情页时设置 MainBar 为 [NavigateDetailBar]
+         */
+        if (MainScreenData.detailLevel.contains(current)) {
             SmartBar.setMainBar { NavigateDetailBar() }
+        }
+
+        /**
+         * 当离开 [MainScreenData.SongsDetail] 页时清除 ExtraBar
+         */
+        if (MainScreenData.SongsDetail == last) {
+            SmartBar.setExtraBar(item = null)
         }
 
         last = current

@@ -10,7 +10,6 @@ import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -49,12 +48,6 @@ fun SongDetailScreen(
     val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     val title = song.name
     val subTitle = "${song._artist}\n\n${song._albumTitle}"
-
-    DisposableEffect(Unit) {
-        onDispose {
-            SmartBar.setExtraBar(item = null)
-        }
-    }
 
     LaunchedEffect(Unit) {
         SmartBar.setExtraBar {
