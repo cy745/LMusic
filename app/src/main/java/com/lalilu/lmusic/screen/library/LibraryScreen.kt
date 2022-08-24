@@ -16,12 +16,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.lalilu.R
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.utils.FadeEdgeTransformation
 
 @Composable
 fun LibraryScreen() {
@@ -35,22 +41,16 @@ fun LibraryScreen() {
     ) {
         item {
             RecommendTitle("每日推荐set", onClick = {
-                SmartBar.setMainBar(toggle = true) {
-                    Text(
-                        text = "每日推荐set", modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                    )
-                }
+
             })
         }
         item {
             RecommendRow(
-                items = Library.getSongs(10)
+                items = Library.getSongs(10, random = true)
             ) {
+
                 RecommendCard(
-                    title = it.name,
-                    subTitle = it._artist,
+                    song = it,
                     width = 250.dp,
                     height = 250.dp
                 )
@@ -61,11 +61,7 @@ fun LibraryScreen() {
             // 最近添加
             RecommendTitle("最近添加add toggle", onClick = {
                 SmartBar.setExtraBar(toggle = true) {
-                    Text(
-                        text = "最近添加add toggle", modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                    )
+
                 }
             })
         }
@@ -73,10 +69,7 @@ fun LibraryScreen() {
             RecommendRow(
                 items = Library.getSongs(10)
             ) {
-                RecommendCard(
-                    title = it.name,
-                    subTitle = it._artist
-                )
+                RecommendCard(song = it)
             }
         }
 
@@ -88,8 +81,7 @@ fun LibraryScreen() {
                 items = Library.getSongs(10)
             ) {
                 RecommendCard(
-                    title = it.name,
-                    subTitle = it._artist,
+                    song = it,
                     width = 125.dp,
                     height = 125.dp
                 )
@@ -98,13 +90,7 @@ fun LibraryScreen() {
 
         item {
             RecommendTitle("每日推荐add", onClick = {
-                SmartBar.setExtraBar {
-                    Text(
-                        text = "每日推荐add", modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                    )
-                }
+
             })
         }
         item {
@@ -112,8 +98,7 @@ fun LibraryScreen() {
                 items = Library.getSongs(10)
             ) {
                 RecommendCard(
-                    title = it.name,
-                    subTitle = it._artist,
+                    song = it,
                     width = 250.dp,
                     height = 250.dp
                 )
@@ -167,6 +152,42 @@ fun RecommendRow(content: LazyListScope.() -> Unit) {
         contentPadding = PaddingValues(horizontal = 20.dp),
         content = content,
     )
+}
+
+@Composable
+fun RecommendCard(song: LSong, width: Dp = 200.dp, height: Dp = 125.dp) {
+    val context = LocalContext.current
+    Surface(
+        elevation = 1.dp,
+        color = Color.LightGray,
+        shape = RoundedCornerShape(10.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .width(width)
+                .height(height)
+        ) {
+            AsyncImage(
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                model = ImageRequest.Builder(context)
+                    .data(song)
+                    .transformations(FadeEdgeTransformation())
+                    .build(),
+                contentDescription = ""
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(text = song.name, style = MaterialTheme.typography.subtitle1)
+                Text(text = song._artist, style = MaterialTheme.typography.subtitle2)
+            }
+        }
+    }
 }
 
 @Composable
