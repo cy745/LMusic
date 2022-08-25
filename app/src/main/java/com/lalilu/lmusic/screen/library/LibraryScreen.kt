@@ -12,7 +12,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,20 +26,17 @@ import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.component.SmartBar
-import com.lalilu.lmusic.utils.FadeEdgeTransformation
 
 @Composable
 fun LibraryScreen() {
-    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(10.dp),
-        contentPadding = PaddingValues(top = 20.dp, bottom = contentPaddingForFooter)
+        contentPadding = SmartBar.rememberContentPadding()
     ) {
         item {
-            RecommendTitle("每日推荐set", onClick = {
+            RecommendTitle("每日推荐", onClick = {
 
             })
         }
@@ -48,7 +44,6 @@ fun LibraryScreen() {
             RecommendRow(
                 items = Library.getSongs(10, random = true)
             ) {
-
                 RecommendCard(
                     song = it,
                     width = 250.dp,
@@ -59,10 +54,8 @@ fun LibraryScreen() {
 
         item {
             // 最近添加
-            RecommendTitle("最近添加add toggle", onClick = {
-                SmartBar.setExtraBar(toggle = true) {
+            RecommendTitle("最近添加", onClick = {
 
-                }
             })
         }
         item {
@@ -89,7 +82,7 @@ fun LibraryScreen() {
         }
 
         item {
-            RecommendTitle("每日推荐add", onClick = {
+            RecommendTitle("每日推荐", onClick = {
 
             })
         }
@@ -172,11 +165,9 @@ fun RecommendCard(song: LSong, width: Dp = 200.dp, height: Dp = 125.dp) {
                 contentScale = ContentScale.Crop,
                 model = ImageRequest.Builder(context)
                     .data(song)
-                    .transformations(FadeEdgeTransformation())
                     .build(),
                 contentDescription = ""
             )
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()

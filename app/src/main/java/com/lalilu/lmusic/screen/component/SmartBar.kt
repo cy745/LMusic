@@ -10,9 +10,11 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmusic.utils.extension.measure
 
@@ -21,6 +23,19 @@ object SmartBar {
     private val extraBar: MutableState<(@Composable () -> Unit)?> = mutableStateOf(null)
     val contentPaddingForSmartBar = mutableStateOf(0)
     val contentPaddingForSmartBarDp = mutableStateOf(0.dp)
+
+    @Composable
+    fun rememberContentPadding(horizontal: Dp = 0.dp): PaddingValues {
+        val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        return remember(horizontal, statusBarHeight, contentPaddingForSmartBarDp.value) {
+            PaddingValues(
+                top = statusBarHeight,
+                bottom = contentPaddingForSmartBarDp.value,
+                start = horizontal,
+                end = horizontal
+            )
+        }
+    }
 
     @Composable
     @OptIn(ExperimentalAnimationApi::class)

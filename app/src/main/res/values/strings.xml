@@ -31,6 +31,7 @@
     <string name="destination_label_settings">设置</string>
     <string name="destination_label_share_center">分享中心</string>
     <string name="destination_label_album_detail">专辑详情</string>
+    <string name="destination_label_artist_detail">艺术家详情</string>
     <string name="destination_label_playlist_detail">歌单详情</string>
     <string name="destination_label_song_detail">歌曲详情</string>
     <string name="destination_label_add_song_to_playlist">添加至歌单</string>

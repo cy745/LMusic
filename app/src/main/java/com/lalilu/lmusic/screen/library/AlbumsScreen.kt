@@ -2,7 +2,6 @@ package com.lalilu.lmusic.screen.library
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -20,7 +19,6 @@ import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.card.AlbumCard
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.edgeTransparent
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
@@ -41,17 +39,11 @@ fun AlbumsScreen() {
 
     LazyVerticalGrid(
         modifier = Modifier
-            .fillMaxSize()
-            .edgeTransparent(50.dp),
+            .fillMaxSize(),
         columns = GridCells.Fixed(
             if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 3 else 2
         ),
-        contentPadding = PaddingValues(
-            start = 10.dp,
-            end = 10.dp,
-            top = 40.dp,
-            bottom = contentPaddingForFooter
-        ),
+        contentPadding = SmartBar.rememberContentPadding(horizontal = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {

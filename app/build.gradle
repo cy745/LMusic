@@ -71,8 +71,9 @@ dependencies {
     // Apache-2.0 License
     implementation 'com.github.FunnySaltyFish.ComposeDataSaver:data-saver:v1.0.2'
 
-    // https://mvnrepository.com/artifact/com.google.accompanist/accompanist-navigation-animation
-    implementation 'com.google.accompanist:accompanist-navigation-animation:0.24.9-beta'
+    // https://google.github.io/accompanist
+    implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
 
     // https://mvnrepository.com/artifact/androidx.compose.material3/material3-window-size-class
     implementation 'androidx.compose.material3:material3-window-size-class:1.0.0-alpha16'

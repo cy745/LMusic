@@ -1,10 +1,8 @@
 package com.lalilu.lmusic.screen.library
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.funny.data_saver.core.rememberDataSaverState
@@ -19,7 +17,6 @@ import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 fun ArtistScreen() {
     val artists = Library.getArtists()
     val navController = LocalNavigatorHost.current
-    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistScreen", true)
 
@@ -40,9 +37,7 @@ fun ArtistScreen() {
 //        }
         LazyColumn(
             modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(
-                bottom = contentPaddingForFooter
-            )
+            contentPadding = SmartBar.rememberContentPadding()
         ) {
             artists.forEachIndexed { index, item ->
                 item {

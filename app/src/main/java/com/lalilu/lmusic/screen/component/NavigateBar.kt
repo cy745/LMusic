@@ -28,7 +28,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.extension.navigate
+import com.lalilu.lmusic.utils.extension.navigateSingleTop
 
 
 @Composable
@@ -81,11 +81,7 @@ fun NavigateItem(
     Surface(
         color = backgroundColor,
         onClick = {
-            navController.navigate(
-                from = MainScreenData.Library.name,
-                to = routeData.name,
-                clearAllBefore = true
-            )
+            navController.navigateSingleTop(routeData.name)
         },
         shape = CircleShape,
         modifier = Modifier

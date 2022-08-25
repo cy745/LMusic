@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="20dp"
-        android:paddingTop="40dp">
+        android:paddingTop="0dp">
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/search_for_lyric_refresh_and_tips_button"

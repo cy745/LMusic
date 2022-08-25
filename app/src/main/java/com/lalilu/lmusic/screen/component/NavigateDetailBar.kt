@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.screen.component
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -36,7 +35,6 @@ fun NavigateDetailBar(
     Row(
         modifier = Modifier
             .clickable(enabled = false) {}
-            .background(color = MaterialTheme.colors.background.copy(alpha = 0.9f))
             .height(52.dp)
             .fillMaxWidth()
             .padding(horizontal = 20.dp),

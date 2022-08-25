@@ -26,6 +26,7 @@ fun NetworkDataCard(
         .collectAsState(null)
 
     Surface(
+        modifier = Modifier.padding(horizontal = 20.dp),
         elevation = 0.dp,
         shape = RoundedCornerShape(10.dp),
         onClick = onClick
