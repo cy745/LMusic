@@ -26,6 +26,7 @@ abstract class BaseFetcher : Fetcher {
         return fetchAospMetadataCovers(context, song)
             ?: fetchExoplayerCover(context, song)
             ?: fetchMediaStoreCovers(context, song)
+            ?: song.album?.let { fetchForAlbum(context, it) }
     }
 
     open suspend fun fetchForAlbum(context: Context, album: LAlbum): InputStream? {
@@ -35,8 +36,21 @@ abstract class BaseFetcher : Fetcher {
     }
 
     private fun fetchAospMetadataCovers(context: Context, album: LAlbum): InputStream? {
-        val song = album.songs.getOrNull(0) ?: return null
-        return fetchAospMetadataCovers(context, song)
+        var result: InputStream? = null
+        for (song in album.songs) {
+            result = fetchAospMetadataCovers(context, song)
+            if (result != null) break
+        }
+        return result
+    }
+
+    private suspend fun fetchExoplayerCover(context: Context, album: LAlbum): InputStream? {
+        var result: InputStream? = null
+        for (song in album.songs) {
+            result = fetchExoplayerCover(context, song)
+            if (result != null) break
+        }
+        return result
     }
 
     private fun fetchAospMetadataCovers(context: Context, song: LSong): InputStream? {
@@ -52,14 +66,8 @@ abstract class BaseFetcher : Fetcher {
         }
     }
 
-    private suspend fun fetchExoplayerCover(context: Context, album: LAlbum): InputStream? {
-        val song = album.songs.getOrNull(0) ?: return null
-        return fetchExoplayerCover(context, song)
-    }
-
     private suspend fun fetchExoplayerCover(context: Context, song: LSong): InputStream? {
-        val uri = song.uri ?: return null
-        val future = MetadataRetriever.retrieveMetadata(context, MediaItem.fromUri(uri))
+        val future = MetadataRetriever.retrieveMetadata(context, MediaItem.fromUri(song.uri))
 
         // future.get is a blocking call that makes us spin until the future is done.
         // This is bad for a co-routine, as it prevents cancellation and by extension
@@ -144,6 +152,10 @@ abstract class BaseFetcher : Fetcher {
 
         // Eliminate any chance that this blocking call might mess up the loading process
         @Suppress("BlockingMethodInNonBlockingContext")
-        return withContext(Dispatchers.IO) { context.contentResolver.openInputStream(uri) }
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                context.contentResolver.openInputStream(uri)
+            }.getOrNull()
+        }
     }
 }

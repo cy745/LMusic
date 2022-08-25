@@ -6,7 +6,7 @@ buildscript {
         work_version = "2.7.1"
         room_version = "2.4.2"
         hilt_version = "2.40.5"
-        lifecycle_version = "2.4.1"
+        lifecycle_version = "2.5.1"
         navigation_version = "2.4.1"
         media3_version = "1.0.0-beta01"
         compose_version = '1.2.0-beta02'
@@ -19,7 +19,7 @@ buildscript {
         maven { url 'https://maven.aliyun.com/repository/google' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.1'
+        classpath 'com.android.tools.build:gradle:7.2.2'
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigation_version"

@@ -20,7 +20,7 @@ class LMusicApp : Application(), ImageLoaderFactory {
         ImageLoader.Builder(this)
             .callFactory(callFactory)
             .components {
-                add(AlbumCoverFetcher.AlbumFactory(callFactory))
+                add(AlbumCoverFetcher.AlbumFactory())
                 add(SongCoverFetcher.SongFactory(callFactory))
             }.build()
 
