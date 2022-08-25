@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lalilu.lmusic.screen.MainScreenData
-import com.lalilu.lmusic.utils.extension.navigate
+import com.lalilu.lmusic.utils.extension.navigateSingleTop
 
 @Composable
 fun NavigatorRailBar(
@@ -35,7 +35,7 @@ fun NavigatorRailBar(
 
     NavigatorRailBar(
         currentRoute = currentRoute,
-        navigateTo = { navController.navigate(from = MainScreenData.Library.name, to = it) },
+        navigateTo = { navController.navigateSingleTop(it) },
         topExtraContent, bottomExtraContent
     )
 }

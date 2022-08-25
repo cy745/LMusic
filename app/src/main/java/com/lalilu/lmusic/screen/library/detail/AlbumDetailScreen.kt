@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -48,7 +47,6 @@ fun AlbumDetailScreen(
     val haptic = LocalHapticFeedback.current
     val windowSize = LocalWindowSize.current
     val navController = LocalNavigatorHost.current
-    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     val sortedItems = remember { songs.toMutableStateList() }
     val title = album.name
     val subTitle = album.name // todo AlbumArtist 补足
@@ -72,14 +70,14 @@ fun AlbumDetailScreen(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = contentPaddingForFooter),
+        contentPadding = SmartBar.rememberContentPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 40.dp, start = 20.dp, end = 20.dp, bottom = 10.dp),
+                    .padding(horizontal = 20.dp, vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Surface(

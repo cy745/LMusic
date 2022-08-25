@@ -3,12 +3,16 @@ package com.lalilu.lmusic
 import android.media.AudioManager
 import android.os.Bundle
 import android.view.Menu
+import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.ToastUtils
@@ -20,8 +24,11 @@ import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.manager.GlobalDataManager
-import com.lalilu.lmusic.screen.MainScreen
+import com.lalilu.lmusic.screen.LMusicNavGraph
+import com.lalilu.lmusic.screen.PlayingScreen
 import com.lalilu.lmusic.screen.ShowScreen
+import com.lalilu.lmusic.screen.component.SmartBar.SmartBarContent
+import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.ui.MySearchView
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
@@ -68,18 +75,35 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
             ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
         })
 
+        onBackPressedDispatcher.addCallback {
+            this@MainActivity.moveTaskToBack(false)
+        }
+
+        @OptIn(
+            ExperimentalMaterial3WindowSizeClassApi::class,
+            ExperimentalAnimationApi::class,
+            ExperimentalMaterialApi::class
+        )
         setContent {
             LMusicTheme {
-                @OptIn(
-                    ExperimentalMaterial3WindowSizeClassApi::class,
-                    ExperimentalAnimationApi::class
-                )
+                val navHostController = rememberAnimatedNavController()
+
                 CompositionLocalProvider(
                     LocalDataSaver provides dataSaverPreferences,
                     LocalWindowSize provides calculateWindowSizeClass(activity = this),
-                    LocalNavigatorHost provides rememberAnimatedNavController()
+                    LocalNavigatorHost provides navHostController
                 ) {
-                    MainScreen()
+                    SmartModalBottomSheet.SmartModalBottomSheetContent(
+                        navController = navHostController,
+                        sheetContent = {
+                            LMusicNavGraph()
+                            SmartBarContent(modifier = Modifier.graphicsLayer {
+                                translationY = -SmartModalBottomSheet.offset
+                                alpha = SmartModalBottomSheet.offsetHalfPercent
+                            })
+                        },
+                        content = { PlayingScreen() }
+                    )
                     ShowScreen()
                 }
             }

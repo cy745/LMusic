@@ -1,15 +1,17 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext.kotlin_version = "1.6.21"
-    ext.work_version = "2.7.1"
-    ext.room_version = "2.4.2"
-    ext.hilt_version = "2.40.5"
-    ext.lifecycle_version = "2.4.1"
-    ext.navigation_version = "2.4.1"
-    ext.media3_version = "1.0.0-beta01"
-    ext.compose_version = '1.2.0-beta02'
-    ext.coil_version = '2.2.0'
-    ext.accompanist_version = '0.24.6-alpha'
+    ext {
+        coil_version = '2.2.0'
+        kotlin_version = "1.6.21"
+        work_version = "2.7.1"
+        room_version = "2.4.2"
+        hilt_version = "2.40.5"
+        lifecycle_version = "2.4.1"
+        navigation_version = "2.4.1"
+        media3_version = "1.0.0-beta01"
+        compose_version = '1.2.0-beta02'
+        accompanist_version = '0.25.1'
+    }
 
     repositories {
         maven { url 'https://jitpack.io' }

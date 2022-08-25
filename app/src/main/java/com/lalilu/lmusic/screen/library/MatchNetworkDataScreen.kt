@@ -41,10 +41,11 @@ fun MatchNetworkDataScreen(
     var selectedIndex by remember { mutableStateOf(-1) }
     val context = LocalContext.current
     val navController = LocalNavigatorHost.current
-    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
     ) {
         AndroidViewBinding(factory = { inflater, parent, attachToParent ->
             FragmentSearchForLyricHeaderBinding.inflate(inflater, parent, attachToParent).apply {
@@ -87,8 +88,7 @@ fun MatchNetworkDataScreen(
         }) {
             searchForLyricKeyword.setText(keyword)
         }
-//        Divider()
-        LazyColumn(contentPadding = PaddingValues(bottom = contentPaddingForFooter)) {
+        LazyColumn(contentPadding = PaddingValues(bottom = SmartBar.contentPaddingForSmartBarDp.value)) {
             itemsIndexed(lyrics) { index, item ->
                 LyricCard(
                     songSearchSong = item,

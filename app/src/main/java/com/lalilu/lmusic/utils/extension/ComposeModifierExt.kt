@@ -2,10 +2,7 @@ package com.lalilu.lmusic.utils.extension
 
 import android.graphics.*
 import android.view.animation.AccelerateDecelerateInterpolator
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -44,6 +41,10 @@ fun Modifier.navigateBarHeight(multiple: Float = 1f): Modifier = composed {
             .asPaddingValues()
             .calculateBottomPadding() * multiple
     )
+}
+
+fun Modifier.edgeTransparentForStatusBar() = composed {
+    edgeTransparent(WindowInsets.statusBars.getTop(LocalDensity.current).toFloat())
 }
 
 fun Modifier.edgeTransparent(top: Dp) = composed {

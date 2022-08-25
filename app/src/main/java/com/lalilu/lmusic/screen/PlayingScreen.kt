@@ -27,11 +27,10 @@ import com.lalilu.lmusic.adapter.ComposeAdapter
 import com.lalilu.lmusic.adapter.setDiffNewData
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
-import com.lalilu.lmusic.utils.extension.navigate
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.ui.*
@@ -70,11 +69,9 @@ fun PlayingScreen(
                 onItemClick = { playingViewModel.onSongSelected(it.mediaId) },
                 onItemLongClick = {
                     HapticUtils.haptic(this@apply.root)
-                    navController.navigate(
-                        from = "${MainScreenData.SongsDetail.name}/${it.mediaId}",
-                        to = "${MainScreenData.SongsDetail.name}/${it.mediaId}",
-                        clearAllBefore = true
-                    )
+                    navController.navigate("${MainScreenData.SongsDetail.name}/${it.mediaId}") {
+                        launchSingleTop = true
+                    }
                     SmartModalBottomSheet.show()
                 }
             )
@@ -115,11 +112,6 @@ fun PlayingScreen(
             maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {
                 override fun onScrollToThreshold() {
                     HapticUtils.haptic(this@apply.root)
-                    navController.navigate(
-                        from = MainScreenData.Library.name,
-                        to = MainScreenData.Library.name,
-                        clearAllBefore = true
-                    )
                     SmartModalBottomSheet.show()
                 }
 

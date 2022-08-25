@@ -2,12 +2,10 @@ package com.lalilu.lmusic.screen.library
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -32,7 +30,6 @@ fun SongsScreen(
     val windowSize = LocalWindowSize.current
     val haptic = LocalHapticFeedback.current
     val navController = LocalNavigatorHost.current
-    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     var sortByState by rememberDataSaverState("KEY_SORT_BY_AllSongsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AllSongsScreen", true)
 
@@ -63,7 +60,7 @@ fun SongsScreen(
         LazyVerticalGrid(
             columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
             modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(bottom = contentPaddingForFooter)
+            contentPadding = SmartBar.rememberContentPadding()
         ) {
             songs.forEachIndexed { index, item ->
                 item {
