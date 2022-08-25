@@ -59,7 +59,7 @@ fun LMusicNavGraph(
         /**
          * 当离开 [MainScreenData.SongsDetail] 页时清除 ExtraBar
          */
-        if (MainScreenData.SongsDetail == last) {
+        if (MainScreenData.SongsDetail == last && MainScreenData.SongsDetail != current) {
             SmartBar.setExtraBar(item = null)
         }
 
@@ -99,11 +99,13 @@ fun LMusicNavGraph(
         ) {
             AlbumsScreen()
         }
+
         composable(
             route = MainScreenData.Playlists.name
         ) {
             PlaylistsScreen()
         }
+
         composable(
             route = "${MainScreenData.PlaylistsDetail.name}/{playlistId}",
             arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
@@ -115,6 +117,7 @@ fun LMusicNavGraph(
                 PlaylistDetailScreen(playlistId = it)
             }
         }
+
         composable(
             route = "${MainScreenData.SongsDetail.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
@@ -144,6 +147,7 @@ fun LMusicNavGraph(
                 ?.let { AlbumDetailScreen(album = it) }
                 ?: EmptyAlbumDetailScreen()
         }
+
         composable(
             route = MainScreenData.SongsAddToPlaylist.name,
             arguments = listOf(navArgument("mediaIds") { type = NavType.StringArrayType })
@@ -157,6 +161,7 @@ fun LMusicNavGraph(
                 )
             }
         }
+
         composable(
             route = "${MainScreenData.SongsAddToPlaylist.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
@@ -170,6 +175,7 @@ fun LMusicNavGraph(
                 )
             }
         }
+
         composable(
             route = "${MainScreenData.SongsMatchNetworkData.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
@@ -179,6 +185,7 @@ fun LMusicNavGraph(
                 ?.let { MatchNetworkDataScreen(song = it) }
                 ?: EmptySearchForLyricScreen()
         }
+
         composable(
             route = MainScreenData.Settings.name
         ) {

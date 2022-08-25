@@ -57,8 +57,10 @@ fun Modifier.edgeTransparent(top: Dp) = composed {
  *
  * @param top 希望在元素的顶边进行模糊化的边缘宽度
  */
-fun Modifier.edgeTransparent(top: Float): Modifier = composed {
-    val interpolator = AccelerateDecelerateInterpolator()
+fun Modifier.edgeTransparent(
+    top: Float,
+    interpolator: (x: Float) -> Float = AccelerateDecelerateInterpolator()::getInterpolation
+): Modifier = composed {
     val xValue = (0..100 step 10).map { if (it == 0) 0f else it / 100f }
     val mPaint = remember(top) {
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -66,11 +68,9 @@ fun Modifier.edgeTransparent(top: Float): Modifier = composed {
             xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
             shader = LinearGradient(
                 0f, 0f, 0f, top,
-                xValue.map {
-                    Color.White.copy(alpha = 1f - interpolator.getInterpolation(it)).toArgb()
-                }.toIntArray(),
-                xValue.toFloatArray(),
-                Shader.TileMode.CLAMP
+                xValue.map { Color.White.copy(alpha = 1f - interpolator(it)).toArgb() }
+                    .toIntArray(),
+                xValue.toFloatArray(), Shader.TileMode.CLAMP
             )
         }
     }
