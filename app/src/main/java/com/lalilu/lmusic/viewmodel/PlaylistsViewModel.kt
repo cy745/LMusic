@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.datasource.entity.SongInPlaylist
-import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -44,17 +43,17 @@ class PlaylistsViewModel @Inject constructor(
     }
 
     fun copyCurrentPlayingPlaylist() = viewModelScope.safeLaunch(Dispatchers.IO) {
-        val playlistTitle = "复制歌单: (${HistoryManager.currentPlayingIds.size})"
-        val playlist = MPlaylist(playlistTitle = playlistTitle)
-        dataBase.playlistDao().save(playlist)
-        dataBase.songInPlaylistDao().save(
-            HistoryManager.currentPlayingIds.map {
-                SongInPlaylist(
-                    playlistId = playlist.playlistId,
-                    mediaId = it
-                )
-            }
-        )
+//        val playlistTitle = "复制歌单: (${HistoryManager.currentPlayingIds.size})"
+//        val playlist = MPlaylist(playlistTitle = playlistTitle)
+//        dataBase.playlistDao().save(playlist)
+//        dataBase.songInPlaylistDao().save(
+//            HistoryManager.currentPlayingIds.map {
+//                SongInPlaylist(
+//                    playlistId = playlist.playlistId,
+//                    mediaId = it
+//                )
+//            }
+//        )
     }
 
     fun addSongsIntoPlaylists(mediaIds: List<String>, playlistIds: List<Long>) =

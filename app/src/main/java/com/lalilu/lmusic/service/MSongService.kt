@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.service
 
 import android.app.PendingIntent
+import android.content.Intent
 import androidx.media3.common.*
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -16,14 +17,14 @@ import com.lalilu.lmedia.entity.items
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.manager.GlobalDataManager
-import com.lalilu.lmusic.manager.HistoryManager
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.utils.RepeatMode
-import com.lalilu.lmusic.utils.safeLaunch
 import com.lalilu.lmusic.utils.then
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -36,6 +37,9 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
     private lateinit var mediaLibrarySession: MediaLibrarySession
     private lateinit var mediaController: MediaController
+
+    @Inject
+    lateinit var historyDataStore: HistoryDataStore
 
     @Inject
     lateinit var globalDataManager: GlobalDataManager
@@ -57,7 +61,7 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         player = object : ForwardingPlayer(exoPlayer) {
             override fun getMaxSeekToPreviousPosition(): Long = Long.MAX_VALUE
             override fun seekToPrevious() {
-                if (player.hasPreviousMediaItem() && player.currentPosition <= maxSeekToPreviousPosition) {
+                if (this.hasPreviousMediaItem() && this.currentPosition <= maxSeekToPreviousPosition) {
                     seekToPreviousMediaItem()
                     return
                 }
@@ -117,16 +121,19 @@ class MSongService : MediaLibraryService(), CoroutineScope {
         }
 
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-            HistoryManager.currentPlayingIds = List(mediaController.mediaItemCount) {
+            /**
+             * 在播放列表数据发生变更时，将最新的列表内容存入DataStore中，确保重新启动时能拿到相应的数据
+             */
+            val idList = List(mediaController.mediaItemCount) {
                 mediaController.getMediaItemAt(it).mediaId
             }
-
-            safeLaunch {
+            launch {
                 globalDataManager.currentPlaylist.emit(
-                    HistoryManager.currentPlayingIds.let { list ->
-                        list.mapNotNull { id -> Library.getSongOrNull(id)?.item }
-                    }
+                    idList.mapNotNull { Library.getSongOrNull(it)?.item }
                 )
+            }
+            historyDataStore.apply {
+                lastPlayedListIdsKey.set(idList)
             }
         }
     }
@@ -187,5 +194,10 @@ class MSongService : MediaLibraryService(), CoroutineScope {
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession {
         return mediaLibrarySession
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        println("onTaskRemoved: 应用被关闭")
+        super.onTaskRemoved(rootIntent)
     }
 }

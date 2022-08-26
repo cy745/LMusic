@@ -6,8 +6,8 @@ import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.service.MSongBrowser
 import com.lalilu.lmusic.utils.SeekBarHandler
-import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,23 +22,23 @@ class PlayingViewModel @Inject constructor(
         this::onPlayPause
     )
 
-    fun onPlayPrevious() = viewModelScope.safeLaunch {
+    fun onPlayPrevious() = viewModelScope.launch {
         mSongBrowser.browser?.seekToPrevious()
     }
 
-    fun onPlayNext() = viewModelScope.safeLaunch {
+    fun onPlayNext() = viewModelScope.launch {
         mSongBrowser.browser?.seekToNext()
     }
 
-    fun onPlayPause() = viewModelScope.safeLaunch {
+    fun onPlayPause() = viewModelScope.launch {
         mSongBrowser.togglePlay()
     }
 
-    fun onSongSelected(mediaId: String) = viewModelScope.safeLaunch {
+    fun onSongSelected(mediaId: String) = viewModelScope.launch {
         mSongBrowser.playById(mediaId, true)
     }
 
-    fun onSeekToPosition(position: Number) = viewModelScope.safeLaunch {
+    fun onSeekToPosition(position: Number) = viewModelScope.launch {
         mSongBrowser.browser?.seekTo(position.toLong())
     }
 
