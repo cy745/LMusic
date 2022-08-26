@@ -8,15 +8,13 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
-import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.lalilu.lmedia.entity.items
-import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.manager.GlobalDataManager
-import com.lalilu.lmusic.manager.HistoryManager
+import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -30,13 +28,14 @@ import kotlin.coroutines.CoroutineContext
 class MSongBrowser @Inject constructor(
     @ApplicationContext
     private val mContext: Context,
+    private val historyDataStore: HistoryDataStore,
     private val globalDataManager: GlobalDataManager
 ) : DefaultLifecycleObserver, CoroutineScope, EnhanceBrowser {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
 
     private val originPlaylistIds: List<String>
-        get() = HistoryManager.currentPlayingIds
+        get() = historyDataStore.run { lastPlayedListIdsKey.get() }
 
     val browser: MediaBrowser?
         get() = if (browserFuture.isDone) browserFuture.get() else null
@@ -45,7 +44,7 @@ class MSongBrowser @Inject constructor(
     override fun onStart(owner: LifecycleOwner) {
         browserFuture = MediaBrowser.Builder(
             mContext, SessionToken(mContext, ComponentName(mContext, MSongService::class.java))
-        ).setListener(MyBrowserListener()).buildAsync()
+        ).buildAsync()
         browserFuture.addListener({ onConnected() }, MoreExecutors.directExecutor())
     }
 
@@ -53,35 +52,32 @@ class MSongBrowser @Inject constructor(
         MediaBrowser.releaseFuture(browserFuture)
     }
 
-    private inner class MyBrowserListener : MediaBrowser.Listener {
-        override fun onChildrenChanged(
-            browser: MediaBrowser,
-            parentId: String,
-            itemCount: Int,
-            params: MediaLibraryService.LibraryParams?
-        ) {
-            println("[MSongBrowser]#onChildrenChanged")
-        }
-    }
-
     private fun onConnected() {
         println("[MSongBrowser]#onConnected")
         val browser = browserFuture.get() ?: return
-
         if (browser.mediaItemCount == 0 || browser.currentMediaItem == null) {
             recoverLastPlayedData()
         }
     }
 
     private fun recoverLastPlayedData() = safeLaunch(Dispatchers.IO) {
-        val position = HistoryManager.lastPlayedPosition
-        val items = HistoryManager.lastPlayedListIds?.let { list ->
-            list.mapNotNull { id -> Library.getSongOrNull(id)?.item }
-        } ?: Library.getSongs().items()
-        ?: emptyList()
-        val index = HistoryManager.lastPlayedId?.let { id ->
-            items.indexOfFirst { it.mediaId == id }
-        }?.coerceAtLeast(0) ?: 0
+        var position: Long
+        var lastPlayedId: String?
+        var lastPlayedList: List<String>
+
+        historyDataStore.run {
+            lastPlayedId = lastPlayedIdKey.get()
+            position = lastPlayedPositionKey.get() ?: 0L
+            lastPlayedList = lastPlayedListIdsKey.get()
+        }
+
+        val items = lastPlayedList.mapNotNull { id -> Library.getSongOrNull(id)?.item }
+            .takeIf { it.isNotEmpty() }
+            ?: Library.getSongs().items()
+
+        val index = lastPlayedId?.let { id -> items.indexOfFirst { it.mediaId == id } }
+            ?.coerceAtLeast(0)
+            ?: 0
 
         withContext(Dispatchers.Main) {
             browser?.setMediaItems(items, index, position)

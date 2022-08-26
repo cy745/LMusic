@@ -8,6 +8,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.Player.*
 import androidx.media3.common.util.Util
 import com.lalilu.lmusic.datasource.MDataBase
+import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
 import com.lalilu.lmusic.utils.safeLaunch
 import com.lalilu.lmusic.utils.then
@@ -16,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -24,6 +26,7 @@ import kotlin.coroutines.CoroutineContext
 @OptIn(ExperimentalCoroutinesApi::class)
 class GlobalDataManager @Inject constructor(
     private val dataBase: MDataBase,
+    private val historyDataStore: HistoryDataStore,
     private val searchTextManager: SearchTextManager
 ) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -75,10 +78,22 @@ class GlobalDataManager @Inject constructor(
         isPlaying: Boolean,
         position: Long
     ) {
-        safeLaunch {
-            HistoryManager.lastPlayedPosition = position
+        launch {
+            historyDataStore.apply {
+                lastPlayedPositionKey.set(position)
+            }
             currentIsPlayingFlow.emit(isPlaying)
             currentPositionFlow.emit(position)
+        }
+    }
+
+    private fun updateCurrentMediaItem(player: Player) {
+        val mediaItem = player.currentMediaItem
+        historyDataStore.apply {
+            lastPlayedIdKey.set(mediaItem?.mediaId)
+        }
+        launch {
+            currentMediaItem.emit(mediaItem)
         }
     }
 
@@ -114,11 +129,6 @@ class GlobalDataManager @Inject constructor(
     val currentPlaylistLiveData = currentPlaylistFlow.asLiveData()
 
     val playerListener = object : Listener {
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            HistoryManager.lastPlayedId = mediaItem?.mediaId
-            safeLaunch { currentMediaItem.emit(mediaItem) }
-        }
-
         override fun onEvents(player: Player, events: Events) {
             events.containsAny(
                 EVENT_PLAYBACK_STATE_CHANGED,
@@ -126,6 +136,14 @@ class GlobalDataManager @Inject constructor(
                 EVENT_IS_PLAYING_CHANGED
             ).then {
                 updatePositionLoop()
+            }
+
+            events.containsAny(
+                EVENT_MEDIA_METADATA_CHANGED,
+                EVENT_MEDIA_ITEM_TRANSITION,
+                EVENT_PLAY_WHEN_READY_CHANGED
+            ).then {
+                updateCurrentMediaItem(player)
             }
         }
     }

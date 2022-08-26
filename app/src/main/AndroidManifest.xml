@@ -66,5 +66,9 @@
             android:launchMode="singleTop">
 
         </activity>
+
+        <activity
+            android:name="com.github.moduth.blockcanary.ui.DisplayActivity"
+            android:exported="true" />
     </application>
 </manifest>
