@@ -4,21 +4,20 @@ import android.annotation.SuppressLint
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.media3.common.MediaItem
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.lalilu.lmedia.extension.getDuration
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.LMusicTheme
 import com.lalilu.lmusic.screen.component.card.PlayingCard
 import com.lalilu.lmusic.utils.moveHeadToTail
 import java.lang.ref.WeakReference
 
 open class ComposeAdapter(
-    private val onItemClick: (MediaItem) -> Unit = {},
-    private val onItemLongClick: (MediaItem) -> Unit = {},
-    private val onSwipeToLeft: onItemSwipedListener<MediaItem>,
-    private val onSwipeToRight: onItemSwipedListener<MediaItem>
+    private val onItemClick: (LSong) -> Unit = {},
+    private val onItemLongClick: (LSong) -> Unit = {},
+    private val onSwipeToLeft: onItemSwipedListener<LSong>,
+    private val onSwipeToRight: onItemSwipedListener<LSong>
 ) : RecyclerView.Adapter<ComposeAdapter.ComposeViewHolder>() {
     inner class ComposeViewHolder(
         private val composeView: ComposeView
@@ -30,16 +29,16 @@ open class ComposeAdapter(
         }
 
         fun bind(
-            mediaItem: MediaItem,
-            onItemClick: (MediaItem) -> Unit,
-            onItemLongClick: (MediaItem) -> Unit
+            item: LSong,
+            onItemClick: (LSong) -> Unit,
+            onItemLongClick: (LSong) -> Unit
         ) {
             composeView.setContent {
                 LMusicTheme {
                     PlayingCard(
-                        mediaItem = mediaItem,
-                        onClick = { onItemClick(mediaItem) },
-                        onLongClick = { onItemLongClick(mediaItem) }
+                        song = item,
+                        onClick = { onItemClick(item) },
+                        onLongClick = { onItemLongClick(item) }
                     )
                 }
             }
@@ -50,7 +49,7 @@ open class ComposeAdapter(
         fun onSwiped(item: I): Boolean
     }
 
-    var data: MutableList<MediaItem> = ArrayList()
+    var data: MutableList<LSong> = ArrayList()
     open var mRecyclerView: WeakReference<RecyclerView>? = null
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -75,14 +74,14 @@ open class ComposeAdapter(
 
     override fun onBindViewHolder(holder: ComposeViewHolder, position: Int) {
         holder.bind(
-            mediaItem = data[position],
+            item = data[position],
             onItemClick = onItemClick,
             onItemLongClick = onItemLongClick
         )
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setNewData(list: MutableList<MediaItem>?) {
+    fun setNewData(list: MutableList<LSong>?) {
         val temp = list ?: java.util.ArrayList()
         val diffResult = DiffUtil.calculateDiff(Callback(this.data, temp, itemCallback))
         data = temp
@@ -94,23 +93,24 @@ open class ComposeAdapter(
         onSwipeToRight = onSwipeToRight
     )
 
-    open val itemCallback: DiffUtil.ItemCallback<MediaItem> =
-        object : DiffUtil.ItemCallback<MediaItem>() {
-            override fun areItemsTheSame(oldItem: MediaItem, newItem: MediaItem): Boolean {
-                return oldItem.mediaId == newItem.mediaId
+    open val itemCallback: DiffUtil.ItemCallback<LSong> =
+        object : DiffUtil.ItemCallback<LSong>() {
+            override fun areItemsTheSame(oldItem: LSong, newItem: LSong): Boolean {
+                return oldItem.id == newItem.id
             }
 
-            override fun areContentsTheSame(oldItem: MediaItem, newItem: MediaItem): Boolean {
-                return oldItem.mediaId == newItem.mediaId &&
-                        oldItem.mediaMetadata.title == newItem.mediaMetadata.title &&
-                        oldItem.mediaMetadata.getDuration() == newItem.mediaMetadata.getDuration()
+            override fun areContentsTheSame(oldItem: LSong, newItem: LSong): Boolean {
+                return oldItem.id == newItem.id &&
+                        oldItem.name == newItem.name &&
+                        oldItem._artist == newItem._artist &&
+                        oldItem.durationMs == newItem.durationMs
             }
         }
 
     inner class Callback(
-        private val oldList: List<MediaItem>,
-        private val newList: List<MediaItem>,
-        private val itemCallback: DiffUtil.ItemCallback<MediaItem>
+        private val oldList: List<LSong>,
+        private val newList: List<LSong>,
+        private val itemCallback: DiffUtil.ItemCallback<LSong>
     ) : DiffUtil.Callback() {
         override fun getOldListSize(): Int = oldList.size
         override fun getNewListSize(): Int = newList.size
@@ -131,8 +131,8 @@ open class ComposeAdapter(
     }
 
     open inner class OnItemSwipeHandler(
-        private val onSwipeToLeft: onItemSwipedListener<MediaItem>,
-        private val onSwipeToRight: onItemSwipedListener<MediaItem>
+        private val onSwipeToLeft: onItemSwipedListener<LSong>,
+        private val onSwipeToRight: onItemSwipedListener<LSong>
     ) : ItemTouchHelper.Callback() {
         open val swipeFlags: Int = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
 
@@ -177,20 +177,20 @@ open class ComposeAdapter(
 }
 
 
-fun ComposeAdapter.setDiffNewData(list: MutableList<MediaItem>?) {
+fun ComposeAdapter.setDiffNewData(list: MutableList<LSong>?) {
     val recyclerView = mRecyclerView?.get() ?: run {
         this.setNewData(list)
         return
     }
 
-    var oldList = data.toMutableList()
-    val newList = list?.toMutableList() ?: ArrayList()
+    var oldList = data
+    val newList = list ?: ArrayList()
     val oldScrollOffset = recyclerView.computeVerticalScrollOffset()
     val oldScrollRange = recyclerView.computeVerticalScrollRange()
 
     if (newList.isNotEmpty()) {
         // 预先将头部部分差异进行转移
-        val size = oldList.indexOfFirst { it.mediaId == newList[0].mediaId }
+        val size = oldList.indexOfFirst { it.id == newList[0].id }
         if (size > 0 && size >= oldList.size / 2 && oldScrollOffset > oldScrollRange / 2) {
             oldList = oldList.moveHeadToTail(size)
 

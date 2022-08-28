@@ -6,8 +6,10 @@ import coil.ImageLoaderFactory
 import com.github.moduth.blockcanary.BlockCanary
 import com.github.moduth.blockcanary.BlockCanaryContext
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.fetcher.SongCoverFetcher
+import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.Call
 import javax.inject.Inject
@@ -17,6 +19,9 @@ class LMusicApp : Application(), ImageLoaderFactory {
 
     @Inject
     lateinit var callFactory: Call.Factory
+
+    @Inject
+    lateinit var lyricSourceFactory: LyricSourceFactory
 
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)
@@ -36,6 +41,7 @@ class LMusicApp : Application(), ImageLoaderFactory {
                 return "/data/com.lalilu.lmusic.debug/files/logs/"
             }
         }).start()
+        LMusicBrowser.init(this)
         SpManager.init(this)
     }
 }

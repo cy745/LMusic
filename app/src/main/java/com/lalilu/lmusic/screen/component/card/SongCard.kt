@@ -11,6 +11,9 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.MediaItem
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
@@ -31,6 +33,7 @@ import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
@@ -41,21 +44,17 @@ fun SongCard(
     onSongSelected: (index: Int) -> Unit = { },
     onSongShowDetail: (mediaId: String) -> Unit = { }
 ) {
-//    val imagePainter = rememberCoverForOnce(mediaItem = mediaItem) {
-//        crossfade(true)
-//        size(SizeUtils.dp2px(64f))
-//    }
-//    val lrcIconPainter = rememberImagePainter(
-//        data = mediaItem.getLyric()
-//    )
-    val mediaTypeIconPainter = painterResource(
-        id = R.drawable.ic_flac_line
-    )
     val titleText = song.name
     val artistText = "#${index + 1} ${song._artist}"
     val durationText = TimeUtils.millis2String(song.durationMs, "mm:ss")
     val color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
     val colorFilter = ColorFilter.tint(color = color.copy(alpha = 0.9f))
+    val hasLrc = remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val lyric = LyricSourceFactory.instance?.getLyric(song)
+        hasLrc.value = lyric != null && lyric.first.isNotEmpty()
+    }
 
     Row(
         modifier = modifier
@@ -91,16 +90,18 @@ fun SongCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-//                    Image(
-//                        painter = lrcIconPainter,
-//                        contentDescription = "lrcIconPainter",
-//                        colorFilter = colorFilter,
-//                        modifier = Modifier
-//                            .size(20.dp)
-//                            .aspectRatio(1f)
-//                    )
+                    if (hasLrc.value) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_lrc_fill),
+                            contentDescription = "lrcIconPainter",
+                            colorFilter = colorFilter,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .aspectRatio(1f)
+                        )
+                    }
                     Image(
-                        painter = mediaTypeIconPainter,
+                        painter = painterResource(id = getMusicTypeIcon(song.mimeType)),
                         contentDescription = "mediaTypeIconPainter",
                         colorFilter = colorFilter,
                         modifier = Modifier
@@ -141,21 +142,20 @@ fun SongCard(
                     .build(),
                 contentDescription = ""
             ) {
-                val state = painter.state
-                if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_music_line),
-                        contentDescription = "",
-                        contentScale = FixedScale(1f),
-                        colorFilter = ColorFilter.tint(color = Color.LightGray),
+                if (painter.state is AsyncImagePainter.State.Success) {
+                    SubcomposeAsyncImageContent(
+                        contentDescription = "SongCardImage",
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(64.dp)
                             .aspectRatio(1f)
                     )
                 } else {
-                    SubcomposeAsyncImageContent(
-                        contentDescription = "SongCardImage",
-                        contentScale = ContentScale.Crop,
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_music_line),
+                        contentDescription = "",
+                        contentScale = FixedScale(1f),
+                        colorFilter = ColorFilter.tint(color = Color.LightGray),
                         modifier = Modifier
                             .size(64.dp)
                             .aspectRatio(1f)
@@ -167,9 +167,7 @@ fun SongCard(
 }
 
 @DrawableRes
-fun getMusicTypeIcon(mediaItem: MediaItem?): Int {
-    mediaItem ?: return R.drawable.ic_mp3_line
-    val mimeType = mediaItem.localConfiguration?.mimeType ?: return R.drawable.ic_mp3_line
+fun getMusicTypeIcon(mimeType: String): Int {
     val strings = mimeType.split("/").toTypedArray()
 
     return when (strings[strings.size - 1].uppercase()) {
