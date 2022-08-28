@@ -5,13 +5,11 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.KeyboardUtils
@@ -21,18 +19,19 @@ import com.dirror.lyricviewx.GRAVITY_RIGHT
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
-import com.lalilu.lmedia.extension.getDuration
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.ComposeAdapter
 import com.lalilu.lmusic.adapter.setDiffNewData
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
+import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.service.LMusicRuntime
+import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.getActivity
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper
@@ -43,9 +42,8 @@ import com.lalilu.ui.internal.StateHelper.Companion.STATE_NORMAL
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
-    playingViewModel: PlayingViewModel = hiltViewModel()
+//    playingViewModel: PlayingViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val density = LocalDensity.current
     val navController = LocalNavigatorHost.current
     val statusBarsInsets = WindowInsets.statusBars
@@ -58,18 +56,31 @@ fun PlayingScreen(
 
     AndroidViewBinding(factory = { inflater, parent, attachToParent ->
         FragmentPlayingBinding.inflate(inflater, parent, attachToParent).apply {
-            val activity = context.getActivity()!!
-            val seekBarHandler = playingViewModel.seekBarHandler
+            val activity = parent.context.getActivity()!!
+//            val seekBarHandler = playingViewModel.seekBarHandler
+            val seekBarHandler = SeekBarHandler(
+                onPlayNext = {},
+                onPlayPause = {},
+                onPlayPrevious = {}
+            )
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
 
             adapter = ComposeAdapter(
-                onSwipeToLeft = { playingViewModel.onSongMoveToNext(it.mediaId) },
-                onSwipeToRight = { playingViewModel.onSongRemoved(it.mediaId) },
-                onItemClick = { playingViewModel.onSongSelected(it.mediaId) },
+                onSwipeToLeft = {
+//                    playingViewModel.onSongMoveToNext(it.mediaId)
+                    false
+                },
+                onSwipeToRight = {
+//                    playingViewModel.onSongRemoved(it.mediaId)
+                    false
+                },
+                onItemClick = {
+//                    playingViewModel.onSongSelected(it.mediaId)
+                },
                 onItemLongClick = {
                     HapticUtils.haptic(this@apply.root)
-                    navController.navigate("${MainScreenData.SongsDetail.name}/${it.mediaId}") {
+                    navController.navigate("${MainScreenData.SongsDetail.name}/${it.id}") {
                         launchSingleTop = true
                     }
                     SmartModalBottomSheet.show()
@@ -124,7 +135,7 @@ fun PlayingScreen(
                 override fun onClick(@ClickPart clickPart: Int, action: Int) {
                     HapticUtils.haptic(this@apply.root)
                     if (seekBarHandler.clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
-                        playingViewModel.onPlayPause()
+//                        playingViewModel.onPlayPause()
                         return
                     }
                     seekBarHandler.handle(clickPart)
@@ -146,27 +157,31 @@ fun PlayingScreen(
                 }
             })
             maSeekBar.seekToListeners.add(OnSeekBarSeekToListener { value ->
-                playingViewModel.onSeekToPosition(value)
+                LMusicBrowser.seekTo(value)
             })
             maSeekBar.cancelListeners.add(OnSeekBarCancelListener {
                 HapticUtils.haptic(this@apply.root)
             })
-            playingViewModel.globalDataManager.currentPlaylistLiveData.observe(activity) {
+            LMusicRuntime.currentPlaylistLiveData.observe(activity) {
                 adapter?.setDiffNewData(it.toMutableList())
             }
-            playingViewModel.globalDataManager.currentMediaItemLiveData.observe(activity) {
-                maSeekBar.maxValue = (it?.mediaMetadata?.getDuration()
-                    ?.coerceAtLeast(0) ?: 0f).toFloat()
-                song = it
-            }
-            playingViewModel.globalDataManager.currentPositionLiveData.observe(activity) {
-                maSeekBar.updateValue(it.toFloat())
-                fmLyricViewX.updateTime(it)
-            }
-            playingViewModel.lyricManager.currentLyricLiveData.observe(activity) {
-                fmLyricViewX.setLyricEntryList(emptyList())
-                fmLyricViewX.loadLyric(it?.first, it?.second)
-            }
+
+//            playingViewModel.globalDataManager.currentPlaylistLiveData.observe(activity) {
+//                adapter?.setDiffNewData(it.toMutableList())
+//            }
+//            playingViewModel.globalDataManager.currentMediaItemLiveData.observe(activity) {
+//                maSeekBar.maxValue = (it?.mediaMetadata?.getDuration()
+//                    ?.coerceAtLeast(0) ?: 0f).toFloat()
+//                song = it
+//            }
+//            playingViewModel.globalDataManager.currentPositionLiveData.observe(activity) {
+//                maSeekBar.updateValue(it.toFloat())
+//                fmLyricViewX.updateTime(it)
+//            }
+//            playingViewModel.lyricManager.currentLyricLiveData.observe(activity) {
+//                fmLyricViewX.setLyricEntryList(emptyList())
+//                fmLyricViewX.loadLyric(it?.first, it?.second)
+//            }
             SpManager.listen(Config.KEY_SETTINGS_LYRIC_GRAVITY,
                 SpManager.SpIntListener(Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
                     when (it) {
@@ -182,11 +197,11 @@ fun PlayingScreen(
                     fmLyricViewX.setNormalTextSize(textSize)
                     fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
                 })
-            SpManager.listen(
-                Config.KEY_SETTINGS_SEEKBAR_HANDLER,
-                SpManager.SpIntListener(Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER) {
-                    seekBarHandler.clickHandleMode = it
-                })
+//            SpManager.listen(
+//                Config.KEY_SETTINGS_SEEKBAR_HANDLER,
+//                SpManager.SpIntListener(Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER) {
+//                    seekBarHandler.clickHandleMode = it
+//                })
         }
     }) {
         ViewCompat.dispatchApplyWindowInsets(root, windowInsetsCompat)

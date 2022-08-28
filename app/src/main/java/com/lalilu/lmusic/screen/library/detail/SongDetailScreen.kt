@@ -18,7 +18,6 @@ import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
@@ -33,16 +32,13 @@ import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 fun SongDetailScreen(
     song: LSong,
-    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val windowSize = LocalWindowSize.current
     val navController = LocalNavigatorHost.current
-    val mediaBrowser = mainViewModel.mediaBrowser
     val title = song.name
     val subTitle = "${song._artist}\n\n${song._albumTitle}"
 
@@ -53,10 +49,10 @@ fun SongDetailScreen(
                     navController.navigate("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
                 },
                 onSetSongToNext = {
-                    mediaBrowser.addToNext(song.id)
+//                    mediaBrowser.addToNext(song.id)
                 },
                 onPlaySong = {
-                    mediaBrowser.playById(mediaId = song.id, playWhenReady = true)
+//                    mediaBrowser.playById(mediaId = song.id, playWhenReady = true)
                 }
             )
         }

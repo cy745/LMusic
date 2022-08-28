@@ -29,7 +29,6 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
-import com.lalilu.lmedia.entity.items
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
@@ -55,7 +54,7 @@ fun AlbumDetailScreen(
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
             mainViewModel.playSongWithPlaylist(
-                items = songs.items(),
+                items = songs.toMutableList(),
                 index = index
             )
         }

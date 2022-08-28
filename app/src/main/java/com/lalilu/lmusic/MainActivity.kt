@@ -29,7 +29,7 @@ import com.lalilu.lmusic.screen.PlayingScreen
 import com.lalilu.lmusic.screen.ShowScreen
 import com.lalilu.lmusic.screen.component.SmartBar.SmartBarContent
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
-import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.ui.MySearchView
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
@@ -44,9 +44,6 @@ import kotlin.coroutines.CoroutineContext
 class MainActivity : AppCompatActivity(), CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO
-
-    @Inject
-    lateinit var mSongBrowser: MSongBrowser
 
     @Inject
     lateinit var globalDataManager: GlobalDataManager
@@ -67,10 +64,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
         }
         SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
-            lifecycle.addObserver(mSongBrowser)
             launch {
                 Indexer.index(this@MainActivity)
             }
+            lifecycle.addObserver(LMusicBrowser)
         }, onFailed = {
             ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
         })

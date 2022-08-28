@@ -11,7 +11,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -24,8 +23,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.MediaItem
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
@@ -34,34 +31,30 @@ import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
-import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.manager.GlobalDataManager
-import com.lalilu.lmusic.service.MSongBrowser
+import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.BlurTransformation
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.RepeatMode
-import com.lalilu.lmusic.viewmodel.MainViewModel
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
 
 @Composable
-fun ShowScreen(
-    mainViewModel: MainViewModel = hiltViewModel(),
-    playingViewModel: PlayingViewModel = hiltViewModel()
-) {
+fun ShowScreen() {
     val windowSize = LocalWindowSize.current
     val visible = remember(windowSize.widthSizeClass) {
         windowSize.widthSizeClass == WindowWidthSizeClass.Expanded
     }
 
     if (visible) {
-        val mediaItem by playingViewModel.globalDataManager.currentMediaItem.collectAsState()
+        val song by LMusicRuntime.currentPlayingState
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = Color.DarkGray)
         ) {
-            BlurImageBg(mediaItem = mediaItem)
+            BlurImageBg(song = song)
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -70,7 +63,7 @@ fun ShowScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                ImageCover(mediaItem = mediaItem)
+                ImageCover(song = song)
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -79,11 +72,8 @@ fun ShowScreen(
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    SongDetailPanel(mediaItem = mediaItem)
-                    ControlPanel(
-                        mediaBrowser = mainViewModel.mediaBrowser,
-                        playingViewModel.globalDataManager
-                    )
+                    SongDetailPanel(song = song)
+                    ControlPanel()
                 }
             }
         }
@@ -91,9 +81,7 @@ fun ShowScreen(
 }
 
 @Composable
-fun RowScope.ImageCover(mediaItem: MediaItem?) {
-    val songs = Library.getSongOrNull(mediaItem?.mediaId)
-
+fun RowScope.ImageCover(song: LSong?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -107,7 +95,7 @@ fun RowScope.ImageCover(mediaItem: MediaItem?) {
         ) {
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(context = LocalContext.current)
-                    .data(songs)
+                    .data(song)
                     .size(SizeUtils.dp2px(256f))
                     .crossfade(true)
                     .build(),
@@ -136,15 +124,14 @@ fun RowScope.ImageCover(mediaItem: MediaItem?) {
 }
 
 @Composable
-fun BoxScope.BlurImageBg(mediaItem: MediaItem?) {
-    val songs = Library.getSongOrNull(mediaItem?.mediaId)
+fun BoxScope.BlurImageBg(song: LSong?) {
 
     AsyncImage(
         modifier = Modifier
             .fillMaxSize()
             .align(Alignment.Center),
         model = ImageRequest.Builder(LocalContext.current)
-            .data(songs)
+            .data(song)
             .size(SizeUtils.dp2px(128f))
             .transformations(BlurTransformation(LocalContext.current, 25f, 4f))
             .crossfade(true)
@@ -161,9 +148,9 @@ fun BoxScope.BlurImageBg(mediaItem: MediaItem?) {
 
 @Composable
 fun SongDetailPanel(
-    mediaItem: MediaItem?
+    song: LSong?
 ) {
-    if (mediaItem == null) {
+    if (song == null) {
         Text(
             text = "歌曲读取失败",
             color = Color.White,
@@ -176,17 +163,17 @@ fun SongDetailPanel(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(
-            text = mediaItem.mediaMetadata.title.toString(),
+            text = song.name,
             color = Color.White,
             fontSize = 24.sp
         )
         Text(
-            text = mediaItem.mediaMetadata.artist.toString(),
+            text = song._artist,
             color = Color.White,
             fontSize = 16.sp
         )
         Text(
-            text = mediaItem.mediaMetadata.albumTitle.toString(),
+            text = song._albumTitle,
             color = Color.White,
             fontSize = 12.sp
         )
@@ -194,11 +181,8 @@ fun SongDetailPanel(
 }
 
 @Composable
-fun ControlPanel(
-    mediaBrowser: MSongBrowser,
-    globalDataManager: GlobalDataManager
-) {
-    val isPlaying = globalDataManager.currentIsPlayingFlow.collectAsState()
+fun ControlPanel() {
+    val isPlaying = LMusicRuntime.currentIsPLayingState
     var repeatMode by rememberDataSaverState(
         Config.KEY_SETTINGS_REPEAT_MODE, Config.DEFAULT_SETTINGS_REPEAT_MODE
     )
@@ -207,16 +191,17 @@ fun ControlPanel(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        IconButton(onClick = { mediaBrowser.browser?.seekToPrevious() }) {
+        IconButton(onClick = { LMusicBrowser.play() }) {
             Image(
                 painter = painterResource(id = R.drawable.ic_skip_back_line),
                 contentDescription = "skip_back",
                 modifier = Modifier.size(28.dp)
             )
         }
-        IconToggleButton(checked = isPlaying.value, onCheckedChange = {
-            mediaBrowser.togglePlay()
-        }) {
+        IconToggleButton(
+            checked = isPlaying.value,
+            onCheckedChange = { LMusicBrowser.playPause() }
+        ) {
             Image(
                 painter = painterResource(
                     if (isPlaying.value) R.drawable.ic_pause_line else R.drawable.ic_play_line
@@ -225,7 +210,7 @@ fun ControlPanel(
                 modifier = Modifier.size(28.dp)
             )
         }
-        IconButton(onClick = { mediaBrowser.browser?.seekToNext() }) {
+        IconButton(onClick = { LMusicBrowser.skipToNext() }) {
             Image(
                 painter = painterResource(id = R.drawable.ic_skip_forward_line),
                 contentDescription = "skip_forward",

@@ -68,7 +68,7 @@ fun PlaylistDetailScreen(
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
             mainViewModel.playSongWithPlaylist(
-                items = songs.items(),
+                items = songs.toMutableList(),
                 index = index
             )
         }

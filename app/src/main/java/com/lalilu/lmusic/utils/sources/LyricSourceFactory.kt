@@ -29,21 +29,22 @@ class LyricSourceFactory @Inject constructor(
         sources.add(dataBaseLyricSource)
         sources.add(embeddedLyricSource)
         sources.add(localLyricSource)
+        instance = this
     }
 
     suspend fun getLyric(
-        song: LSong,
-        callback: (String?, String?) -> Unit = { _, _ -> }
+        song: LSong
     ): Pair<String, String?>? = withContext(Dispatchers.IO) {
-        sources.forEach { source ->
+        for (source in sources) {
             val pair = source.loadLyric(song)
-            if (pair != null) {
-                callback(pair.first, pair.second)
-                return@withContext pair
-            }
+            if (pair != null) return@withContext pair
         }
-        callback(null, null)
         return@withContext null
+    }
+
+    companion object {
+        var instance: LyricSourceFactory? = null
+            private set
     }
 }
 

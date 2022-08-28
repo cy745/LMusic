@@ -22,13 +22,24 @@
             android:name="ScopedStorage"
             android:value="true" />
 
+<!--        <service-->
+<!--            android:name="com.lalilu.lmusic.service.MSongService"-->
+<!--            android:enabled="true"-->
+<!--            android:exported="false"-->
+<!--            android:foregroundServiceType="mediaPlayback">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="androidx.media3.session.MediaLibraryService" />-->
+<!--                <action android:name="android.media.browse.MediaBrowserService" />-->
+<!--            </intent-filter>-->
+<!--        </service>-->
+
         <service
-            android:name="com.lalilu.lmusic.service.MSongService"
+            android:name="com.lalilu.lmusic.service.LMusicService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback">
+
             <intent-filter>
-                <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>

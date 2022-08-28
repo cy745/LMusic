@@ -4,27 +4,36 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.MediaItem
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
+import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
-import com.lalilu.lmedia.extension.getDuration
-import com.lalilu.lmusic.utils.rememberCoverWithFlow
+import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 
 @Composable
 @OptIn(
@@ -32,25 +41,19 @@ import com.lalilu.lmusic.utils.rememberCoverWithFlow
 )
 fun PlayingCard(
     modifier: Modifier = Modifier,
-    mediaItem: MediaItem,
+    song: LSong,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {}
 ) {
-    val imagePainter = rememberCoverWithFlow(mediaItem = mediaItem) {
-        crossfade(true)
-        size(SizeUtils.dp2px(64f))
-    }
-//    val lrcIconPainter = rememberImagePainter(
-//        data = mediaItem.getLyric()
-//    )
-    val mediaTypeIconPainter = painterResource(
-        id = getMusicTypeIcon(mediaItem)
-    )
-    val titleText = mediaItem.mediaMetadata.title.toString()
-    val artistText = mediaItem.mediaMetadata.artist.toString()
-    val durationText = TimeUtils.millis2String(mediaItem.mediaMetadata.getDuration(), "mm:ss")
+    val durationText = TimeUtils.millis2String(song.durationMs, "mm:ss")
     val color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
     val colorFilter = ColorFilter.tint(color = color.copy(alpha = 0.9f))
+    val hasLrc = remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val lyric = LyricSourceFactory.instance?.getLyric(song)
+        hasLrc.value = lyric != null && lyric.first.isNotEmpty()
+    }
 
     Row(
         modifier = modifier
@@ -67,20 +70,37 @@ fun PlayingCard(
         horizontalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Surface(
-            elevation = 0.dp
+            elevation = 2.dp,
+            shape = RoundedCornerShape(1.dp)
         ) {
-            val loaded = imagePainter.state.painter != null
-            val painter = if (loaded) imagePainter else
-                painterResource(id = R.drawable.ic_music_line)
-
-            Image(
-                painter = painter,
-                contentDescription = "SongCardImage",
-                contentScale = if (loaded) ContentScale.Crop else FixedScale(1f),
-                modifier = Modifier
-                    .size(64.dp)
-                    .aspectRatio(1f)
-            )
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(song)
+                    .crossfade(true)
+                    .size(SizeUtils.dp2px(64f))
+                    .build(),
+                contentDescription = ""
+            ) {
+                if (painter.state is AsyncImagePainter.State.Success) {
+                    SubcomposeAsyncImageContent(
+                        contentDescription = "SongCardImage",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(64.dp)
+                            .aspectRatio(1f)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_music_line),
+                        contentDescription = "",
+                        contentScale = FixedScale(1f),
+                        colorFilter = ColorFilter.tint(color = Color.LightGray),
+                        modifier = Modifier
+                            .size(64.dp)
+                            .aspectRatio(1f)
+                    )
+                }
+            }
         }
         Column(
             modifier = Modifier
@@ -93,7 +113,7 @@ fun PlayingCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = titleText,
+                    text = song.name,
                     fontSize = 16.sp,
                     letterSpacing = 0.05.em,
                     color = color,
@@ -103,16 +123,18 @@ fun PlayingCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-//                    Image(
-//                        painter = lrcIconPainter,
-//                        contentDescription = "lrcIconPainter",
-//                        colorFilter = colorFilter,
-//                        modifier = Modifier
-//                            .size(20.dp)
-//                            .aspectRatio(1f)
-//                    )
+                    if (hasLrc.value) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_lrc_fill),
+                            contentDescription = "lrcIconPainter",
+                            colorFilter = colorFilter,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .aspectRatio(1f)
+                        )
+                    }
                     Image(
-                        painter = mediaTypeIconPainter,
+                        painter = painterResource(id = getMusicTypeIcon(song.mimeType)),
                         contentDescription = "mediaTypeIconPainter",
                         colorFilter = colorFilter,
                         modifier = Modifier
@@ -127,7 +149,7 @@ fun PlayingCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = artistText,
+                    text = song._artist,
                     color = color.copy(alpha = 0.6f),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Black,

@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LArtist
-import com.lalilu.lmedia.entity.items
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
@@ -63,7 +62,7 @@ fun ArtistDetailScreen(
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
             mainViewModel.playSongWithPlaylist(
-                items = songs.items(),
+                items = songs.toMutableList(),
                 index = index
             )
         }
