@@ -24,13 +24,15 @@ object LMusicBrowser : DefaultLifecycleObserver {
     }
 
     fun setSongs(songs: List<LSong>, song: LSong? = null) {
-        LMusicRuntime.currentPlaylist.clear()
-        LMusicRuntime.currentPlaylist.addAll(songs)
         if (song != null && songs.contains(song)) {
             LMusicRuntime.currentPlaying = song
-            LMusicRuntime.updatePlaying()
         }
-        LMusicRuntime.updatePlaylist()
+        LMusicRuntime.currentPlaylist = songs
+    }
+
+    fun playSong(song: LSong?) {
+        LMusicRuntime.currentPlaying = song
+        reloadAndPlay()
     }
 
     override fun onStart(owner: LifecycleOwner) {

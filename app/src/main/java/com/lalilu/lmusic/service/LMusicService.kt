@@ -83,6 +83,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == PlaybackStateCompat.STATE_STOPPED) {
                 try {
+                    LMusicRuntime.updatePosition(0, false)
                     stopForeground(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
                     mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
                     mediaSession.isActive = false
@@ -102,6 +103,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             launch {
                 when (playbackState) {
                     PlaybackStateCompat.STATE_PLAYING -> {
+                        LMusicRuntime.updatePosition(getPosition(), true)
 //                        this@MSongService.registerReceiver(noisyReceiver, Config.FILTER_BECOMING_NOISY)
                         val intent = Intent(this@LMusicService, LMusicService::class.java)
                         ContextCompat.startForegroundService(this@LMusicService, intent)
@@ -113,6 +115,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                         }
                     }
                     PlaybackStateCompat.STATE_PAUSED -> {
+                        LMusicRuntime.updatePosition(getPosition(), false)
                         stopForeground(NotificationCompat.FOREGROUND_SERVICE_DEFERRED)
                         mNotificationManager.updateNotification(
                             mediaSession = mediaSession,
