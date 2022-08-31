@@ -41,9 +41,7 @@ import com.lalilu.ui.internal.StateHelper.Companion.STATE_NORMAL
 
 @Composable
 @ExperimentalMaterialApi
-fun PlayingScreen(
-//    playingViewModel: PlayingViewModel = hiltViewModel()
-) {
+fun PlayingScreen() {
     val density = LocalDensity.current
     val navController = LocalNavigatorHost.current
     val statusBarsInsets = WindowInsets.statusBars
@@ -166,11 +164,10 @@ fun PlayingScreen(
                 maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
                 song = it
             }
-
-//            playingViewModel.globalDataManager.currentPositionLiveData.observe(activity) {
-//                maSeekBar.updateValue(it.toFloat())
-//                fmLyricViewX.updateTime(it)
-//            }
+            LMusicRuntime.currentPositionLiveData.observe(activity) {
+                maSeekBar.updateValue(it.toFloat())
+                fmLyricViewX.updateTime(it)
+            }
 //            playingViewModel.lyricManager.currentLyricLiveData.observe(activity) {
 //                fmLyricViewX.setLyricEntryList(emptyList())
 //                fmLyricViewX.loadLyric(it?.first, it?.second)
