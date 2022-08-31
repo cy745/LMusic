@@ -31,7 +31,7 @@ import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.getActivity
+import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper
@@ -57,11 +57,10 @@ fun PlayingScreen(
     AndroidViewBinding(factory = { inflater, parent, attachToParent ->
         FragmentPlayingBinding.inflate(inflater, parent, attachToParent).apply {
             val activity = parent.context.getActivity()!!
-//            val seekBarHandler = playingViewModel.seekBarHandler
             val seekBarHandler = SeekBarHandler(
-                onPlayNext = {},
-                onPlayPause = {},
-                onPlayPrevious = {}
+                onPlayNext = { LMusicBrowser.skipToNext() },
+                onPlayPause = { LMusicBrowser.playPause() },
+                onPlayPrevious = { LMusicBrowser.skipToPrevious() }
             )
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
@@ -75,9 +74,7 @@ fun PlayingScreen(
 //                    playingViewModel.onSongRemoved(it.mediaId)
                     false
                 },
-                onItemClick = {
-//                    playingViewModel.onSongSelected(it.mediaId)
-                },
+                onItemClick = { LMusicBrowser.playById(it.id) },
                 onItemLongClick = {
                     HapticUtils.haptic(this@apply.root)
                     navController.navigate("${MainScreenData.SongsDetail.name}/${it.id}") {
@@ -165,15 +162,11 @@ fun PlayingScreen(
             LMusicRuntime.currentPlaylistLiveData.observe(activity) {
                 adapter?.setDiffNewData(it.toMutableList())
             }
+            LMusicRuntime.currentPlayingLiveData.observe(activity) {
+                maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
+                song = it
+            }
 
-//            playingViewModel.globalDataManager.currentPlaylistLiveData.observe(activity) {
-//                adapter?.setDiffNewData(it.toMutableList())
-//            }
-//            playingViewModel.globalDataManager.currentMediaItemLiveData.observe(activity) {
-//                maSeekBar.maxValue = (it?.mediaMetadata?.getDuration()
-//                    ?.coerceAtLeast(0) ?: 0f).toFloat()
-//                song = it
-//            }
 //            playingViewModel.globalDataManager.currentPositionLiveData.observe(activity) {
 //                maSeekBar.updateValue(it.toFloat())
 //                fmLyricViewX.updateTime(it)
@@ -182,7 +175,8 @@ fun PlayingScreen(
 //                fmLyricViewX.setLyricEntryList(emptyList())
 //                fmLyricViewX.loadLyric(it?.first, it?.second)
 //            }
-            SpManager.listen(Config.KEY_SETTINGS_LYRIC_GRAVITY,
+            SpManager.listen(
+                Config.KEY_SETTINGS_LYRIC_GRAVITY,
                 SpManager.SpIntListener(Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
                     when (it) {
                         0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)

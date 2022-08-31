@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.utils.extension
 
 import android.content.ContentUris
 import android.content.Context
@@ -162,4 +162,18 @@ fun Context.getActivity(): AppCompatActivity? {
         currentContext = currentContext.baseContext
     }
     return null
+}
+
+fun <T> List<T>.getNextOf(item: T, cycle: Boolean = false): T? {
+    val nextIndex = indexOf(item) + 1
+    return getOrNull(if (cycle) nextIndex % size else nextIndex)
+}
+
+
+fun <T> List<T>.getPreviousOf(item: T, cycle: Boolean = false): T? {
+    var previousIndex = indexOf(item) - 1
+    if (previousIndex < 0 && cycle) {
+        previousIndex = size - 1
+    }
+    return getOrNull(previousIndex)
 }

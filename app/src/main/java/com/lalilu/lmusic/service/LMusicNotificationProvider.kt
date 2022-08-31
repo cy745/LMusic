@@ -26,7 +26,6 @@ import com.blankj.utilcode.util.SPUtils
 import com.google.common.collect.ImmutableList
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
-import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datasource.MDataBase
@@ -34,8 +33,8 @@ import com.lalilu.lmusic.manager.LyricManager
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.utils.RepeatMode
 import com.lalilu.lmusic.utils.RepeatMode.*
+import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.lmusic.utils.safeLaunch
-import com.lalilu.lmusic.utils.toBitmap
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

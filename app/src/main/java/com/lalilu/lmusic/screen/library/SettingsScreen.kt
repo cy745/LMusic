@@ -25,7 +25,7 @@ import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.settings.*
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.getActivity
+import com.lalilu.lmusic.utils.extension.getActivity
 
 @Composable
 fun SettingsScreen() {
