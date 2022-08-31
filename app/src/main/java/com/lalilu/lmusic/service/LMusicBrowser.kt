@@ -23,9 +23,13 @@ object LMusicBrowser : DefaultLifecycleObserver {
         )
     }
 
-    fun setSongs(songs: List<LSong>) {
+    fun setSongs(songs: List<LSong>, song: LSong? = null) {
         LMusicRuntime.currentPlaylist.clear()
         LMusicRuntime.currentPlaylist.addAll(songs)
+        if (song != null && songs.contains(song)) {
+            LMusicRuntime.currentPlaying = song
+            LMusicRuntime.updatePlaying()
+        }
         LMusicRuntime.updatePlaylist()
     }
 
@@ -40,8 +44,10 @@ object LMusicBrowser : DefaultLifecycleObserver {
     fun play() = controller?.transportControls?.play()
     fun pause() = controller?.transportControls?.pause()
     fun playPause() = controller?.transportControls?.sendCustomAction("PLAY_PAUSE", null)
-    fun skipToPrevious() = controller?.transportControls?.skipToPrevious()
+    fun reloadAndPlay() = controller?.transportControls?.sendCustomAction("RELOAD_AND_PLAY", null)
     fun skipToNext() = controller?.transportControls?.skipToNext()
+    fun skipToPrevious() = controller?.transportControls?.skipToPrevious()
+    fun playById(id: String) = controller?.transportControls?.playFromMediaId(id, null)
     fun seekTo(position: Number) = controller?.transportControls?.seekTo(position.toLong())
 
     private class ConnectionCallback(

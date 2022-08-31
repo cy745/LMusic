@@ -12,12 +12,12 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor() : ViewModel() {
 
     fun playSongWithPlaylist(items: List<LSong>, index: Int) = viewModelScope.launch {
-        LMusicBrowser.setSongs(items)
-//        mediaBrowser.browser?.apply {
-//            setMediaItems(items)
-//            seekToDefaultPosition(index)
-//            prepare()
-//            play()
-//        }
+        LMusicBrowser.setSongs(items, items.getOrNull(index))
+        LMusicBrowser.reloadAndPlay()
+    }
+
+    fun playSongWithPlaylist(items: List<LSong>, item: LSong) = viewModelScope.launch {
+        LMusicBrowser.setSongs(items, item)
+        LMusicBrowser.reloadAndPlay()
     }
 }

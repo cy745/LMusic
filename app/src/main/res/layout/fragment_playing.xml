@@ -14,7 +14,7 @@
 
         <variable
             name="song"
-            type="androidx.media3.common.MediaItem" />
+            type="com.lalilu.lmedia.entity.LSong" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

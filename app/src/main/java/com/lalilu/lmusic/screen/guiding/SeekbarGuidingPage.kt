@@ -25,7 +25,7 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.MainActivity
 import com.lalilu.lmusic.screen.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.utils.SeekBarHandler
-import com.lalilu.lmusic.utils.getActivity
+import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.utils.safeLaunch
 import com.lalilu.ui.*
 import kotlinx.coroutines.CoroutineScope

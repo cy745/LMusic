@@ -28,7 +28,7 @@ import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.getActivity
+import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 @Composable

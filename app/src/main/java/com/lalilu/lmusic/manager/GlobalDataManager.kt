@@ -9,10 +9,10 @@ import androidx.media3.common.Player.*
 import androidx.media3.common.util.Util
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.HistoryDataStore
-import com.lalilu.lmusic.utils.moveHeadToTailWithSearch
+import com.lalilu.lmusic.utils.extension.moveHeadToTailWithSearch
+import com.lalilu.lmusic.utils.extension.updateArtworkUri
 import com.lalilu.lmusic.utils.safeLaunch
 import com.lalilu.lmusic.utils.then
-import com.lalilu.lmusic.utils.updateArtworkUri
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

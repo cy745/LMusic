@@ -1,31 +1,25 @@
 package com.lalilu.lmusic.adapter
 
-import android.text.TextUtils
 import androidx.databinding.BindingAdapter
-import androidx.media3.common.MediaItem
 import androidx.palette.graphics.Palette
 import coil.load
 import com.lalilu.R
 import com.lalilu.common.ColorAnimator.setBgColorFromPalette
-import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.ui.BlurImageView
 import com.lalilu.ui.NewProgressBar
 import com.lalilu.ui.appbar.AppbarLayout
 import com.lalilu.ui.appbar.CollapsingLayout
 
-@BindingAdapter(value = ["loadCover"], requireAll = true)
-fun loadCover(imageView: BlurImageView, mediaItem: MediaItem?) {
-    mediaItem ?: run {
-        imageView.clearImage()
-        return
-    }
-    val data = Library.getSongOrNull(mediaItem.mediaId) ?: run {
+@BindingAdapter("loadCover")
+fun loadCover(imageView: BlurImageView, song: LSong?) {
+    song ?: run {
         imageView.clearImage()
         return
     }
     val samplingTo = imageView.width
 
-    imageView.load(data) {
+    imageView.load(song) {
         if (samplingTo > 0) size(samplingTo)
         allowHardware(false)
         target(onSuccess = {
@@ -37,13 +31,9 @@ fun loadCover(imageView: BlurImageView, mediaItem: MediaItem?) {
 }
 
 @BindingAdapter("setSongTitle")
-fun setSongTitle(collapsingLayout: CollapsingLayout, mediaItem: MediaItem?) {
-    collapsingLayout.title =
-        if (mediaItem == null || TextUtils.isEmpty(mediaItem.mediaMetadata.title)) {
-            collapsingLayout.context.getString(R.string.default_slogan)
-        } else {
-            mediaItem.mediaMetadata.title.toString()
-        }
+fun setSongTitle(collapsingLayout: CollapsingLayout, song: LSong?) {
+    collapsingLayout.title = song?.name?.takeIf { it.isNotEmpty() }
+        ?: collapsingLayout.context.getString(R.string.default_slogan)
 }
 
 @BindingAdapter("bgPalette")
