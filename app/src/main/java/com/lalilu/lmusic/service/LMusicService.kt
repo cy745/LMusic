@@ -2,6 +2,7 @@ package com.lalilu.lmusic.service
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
@@ -43,11 +44,20 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     private lateinit var mediaSession: MediaSessionCompat
     private val playBack: LMusicPlayBack<LSong> = object : LMusicPlayBack<LSong>(this) {
         private val noisyReceiver = LMusicNoisyReceiver(this::onPause)
+        private val audioFocusHelper = LMusicAudioFocusHelper(this@LMusicService) {
+            when (it) {
+                AudioManager.AUDIOFOCUS_LOSS,
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> onPause()
+            }
+        }
 
-        override fun requestAudioFocus(): Boolean = true
         override fun getUriFromItem(item: LSong): Uri = item.uri
         override fun getCurrent(): LSong? = LMusicRuntime.currentPlaying
         override fun getMetaDataFromItem(item: LSong?): MediaMetadataCompat? = item?.metadataCompat
+
+        override fun requestAudioFocus(): Boolean {
+            return audioFocusHelper.requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        }
 
         override fun skipToItemByID(id: String) {
             LMusicRuntime.currentPlaying = LMusicRuntime.currentPlaylist.find { it.id == id }
@@ -88,6 +98,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             if (playbackState == PlaybackStateCompat.STATE_STOPPED) {
                 LMusicRuntime.updatePosition(0, false)
                 noisyReceiver.unRegisterFrom(this@LMusicService)
+                audioFocusHelper.abandonAudioFocus()
                 stopForeground()
                 mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
                 mediaSession.isActive = false
@@ -118,6 +129,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                     PlaybackStateCompat.STATE_PAUSED -> {
                         LMusicRuntime.updatePosition(getPosition(), false)
                         noisyReceiver.unRegisterFrom(this@LMusicService)
+                        audioFocusHelper.abandonAudioFocus()
                         this@LMusicService.stopForeground()
                         mNotificationManager.updateNotification(
                             mediaSession = mediaSession,
