@@ -137,9 +137,9 @@ class LMusicNotification @Inject constructor(
     ) {
         val controller = mediaSession.controller
         val token = mediaSession.sessionToken
-        val metadata = controller.metadata
         val state = controller.playbackState
-        val description = metadata.description
+        val metadata = controller.metadata ?: return
+        val description = metadata.description ?: return
         val repeatMode = mediaSession.controller.repeatMode
         val isPlaying = state.state == PlaybackStateCompat.STATE_PLAYING
 

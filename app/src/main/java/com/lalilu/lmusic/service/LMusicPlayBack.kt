@@ -9,8 +9,8 @@ import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.utils.FadeVolumeProxy
 import java.io.IOException
 
@@ -77,7 +77,7 @@ abstract class LMusicPlayBack<T>(
     }
 
     override fun onPrepare() {
-        LogUtils.d("onPrepare")
+        println("onPrepare")
     }
 
     override fun onPlayFromMediaId(mediaId: String, extras: Bundle?) {
@@ -92,7 +92,7 @@ abstract class LMusicPlayBack<T>(
             player?.setDataSource(mContext, uri!!)
             player?.prepareAsync()
         } catch (e: IOException) {
-            LogUtils.w(e.message)
+            println("IOException: ${e.message}")
             onPlaybackStateChanged(PlaybackState.STATE_STOPPED)
             ToastUtils.showLong("播放失败：歌曲文件不存在")
         } catch (e: Exception) {
@@ -138,21 +138,30 @@ abstract class LMusicPlayBack<T>(
     }
 
     override fun onCustomAction(action: String?, extras: Bundle?) {
-        LogUtils.d("onCustomAction", action)
+        when (action) {
+            Config.ACTION_PLAY_AND_PAUSE -> {
+                if (player?.isPlaying == true) onPause() else onPlay()
+            }
+            Config.ACTION_RELOAD_AND_PLAY -> {
+                isPrepared = false
+                onPlay()
+            }
+        }
+        println("onCustomAction: $action")
     }
 
     override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
-        LogUtils.d("onMediaButtonEvent", mediaButtonEvent)
+        println("onMediaButtonEvent: $mediaButtonEvent")
         return super.onMediaButtonEvent(mediaButtonEvent)
     }
 
     override fun onSetRepeatMode(repeatMode: Int) {
-        LogUtils.d("onSetRepeatMode", repeatMode)
+        println("onSetRepeatMode: $repeatMode")
         setRepeatMode(repeatMode)
     }
 
     override fun onSetShuffleMode(shuffleMode: Int) {
-        LogUtils.d("onSetShuffleMode", shuffleMode)
+        println("onSetShuffleMode: $shuffleMode")
         setShuffleMode(shuffleMode)
     }
 
