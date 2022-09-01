@@ -1,5 +1,7 @@
 package com.lalilu.lmusic
 
+import android.support.v4.media.session.PlaybackStateCompat
+
 object Config {
     const val BASE_URL = "https://apis.lalilu.cn/"
 
@@ -30,4 +32,18 @@ object Config {
     const val DEFAULT_SETTINGS_STATUS_LYRIC_ENABLE = false
     const val DEFAULT_SETTINGS_IGNORE_AUDIO_FOCUS = false
     const val DEFAULT_SETTINGS_REPEAT_MODE = 0
+
+    const val MEDIA_DEFAULT_ACTION = PlaybackStateCompat.ACTION_PLAY or
+            PlaybackStateCompat.ACTION_PLAY_PAUSE or
+            PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
+            PlaybackStateCompat.ACTION_PAUSE or
+            PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+            PlaybackStateCompat.ACTION_STOP or
+            PlaybackStateCompat.ACTION_SEEK_TO or
+            PlaybackStateCompat.ACTION_SET_REPEAT_MODE
+
+    val MEDIA_STOPPED_STATE: PlaybackStateCompat = PlaybackStateCompat.Builder()
+        .setState(PlaybackStateCompat.STATE_STOPPED, 0, 1f)
+        .build()
 }

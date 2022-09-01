@@ -29,16 +29,13 @@
             android:name="ScopedStorage"
             android:value="true" />
 
-        <!--        <service-->
-        <!--            android:name="com.lalilu.lmusic.service.MSongService"-->
-        <!--            android:enabled="true"-->
-        <!--            android:exported="false"-->
-        <!--            android:foregroundServiceType="mediaPlayback">-->
-        <!--            <intent-filter>-->
-        <!--                <action android:name="androidx.media3.session.MediaLibraryService" />-->
-        <!--                <action android:name="android.media.browse.MediaBrowserService" />-->
-        <!--            </intent-filter>-->
-        <!--        </service>-->
+        <receiver
+            android:name="com.lalilu.lmusic.service.LMusicNoisyReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.media.AUDIO_BECOMING_NOISY" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name="androidx.media.session.MediaButtonReceiver"
@@ -93,9 +90,5 @@
             android:launchMode="singleTop">
 
         </activity>
-
-        <!--        <activity-->
-        <!--            android:name="com.github.moduth.blockcanary.ui.DisplayActivity"-->
-        <!--            android:exported="true" />-->
     </application>
 </manifest>
