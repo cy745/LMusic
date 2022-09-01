@@ -9,6 +9,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.Config
 
 object LMusicBrowser : DefaultLifecycleObserver {
     private var controller: MediaControllerCompat? = null
@@ -45,12 +46,15 @@ object LMusicBrowser : DefaultLifecycleObserver {
 
     fun play() = controller?.transportControls?.play()
     fun pause() = controller?.transportControls?.pause()
-    fun playPause() = controller?.transportControls?.sendCustomAction("PLAY_PAUSE", null)
-    fun reloadAndPlay() = controller?.transportControls?.sendCustomAction("RELOAD_AND_PLAY", null)
     fun skipToNext() = controller?.transportControls?.skipToNext()
     fun skipToPrevious() = controller?.transportControls?.skipToPrevious()
     fun playById(id: String) = controller?.transportControls?.playFromMediaId(id, null)
     fun seekTo(position: Number) = controller?.transportControls?.seekTo(position.toLong())
+    fun playPause() = controller?.transportControls
+        ?.sendCustomAction(Config.ACTION_PLAY_AND_PAUSE, null)
+
+    fun reloadAndPlay() = controller?.transportControls
+        ?.sendCustomAction(Config.ACTION_RELOAD_AND_PLAY, null)
 
     private class ConnectionCallback(
         val context: Context
