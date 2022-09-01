@@ -9,19 +9,23 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.repository.HistoryDataStore
 
 object LMusicBrowser : DefaultLifecycleObserver {
     private var controller: MediaControllerCompat? = null
+    private var historyStore: HistoryDataStore? = null
     private lateinit var browser: MediaBrowserCompat
 
-    fun init(application: Application) {
+    fun init(application: Application, historyDataStore: HistoryDataStore) {
         browser = MediaBrowserCompat(
             application,
             ComponentName(application, LMusicService::class.java),
             ConnectionCallback(application),
             null
         )
+        historyStore = historyDataStore
     }
 
     fun setSongs(songs: List<LSong>, song: LSong? = null) {
@@ -61,8 +65,19 @@ object LMusicBrowser : DefaultLifecycleObserver {
     ) : MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
             controller = MediaControllerCompat(context, browser.sessionToken)
+
+            // 若当前播放列表为空，则尝试提取历史数据填充
+            if (LMusicRuntime.currentPlaylist.isEmpty()) {
+                historyStore?.apply {
+                    val songs = lastPlayedListIdsKey.get().mapNotNull {
+                        Library.getSongOrNull(it)
+                    }
+                    val song = lastPlayedIdKey.get()?.let { Library.getSongOrNull(it) }
+                    setSongs(songs, song)
+                }
+            }
+            // 取消subscribe，可以解决Service和Activity通过Parcelable传递数据导致闪退的问题
             // browser.subscribe("ROOT", MusicSubscriptionCallback())
-            // todo 取消subscribe，可以解决Service和Activity通过Parcelable传递数据导致闪退的问题
         }
     }
 

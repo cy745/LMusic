@@ -4,7 +4,9 @@ import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.lalilu.lmusic.manager.SpManager
+import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.fetcher.SongCoverFetcher
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
@@ -20,6 +22,9 @@ class LMusicApp : Application(), ImageLoaderFactory {
 
     @Inject
     lateinit var lyricSourceFactory: LyricSourceFactory
+
+    @Inject
+    lateinit var historyDataStore: HistoryDataStore
 
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)
@@ -39,7 +44,8 @@ class LMusicApp : Application(), ImageLoaderFactory {
 //                return "/data/com.lalilu.lmusic.debug/files/logs/"
 //            }
 //        }).start()
-        LMusicBrowser.init(this)
+        LMusicRuntime.init(historyDataStore)
+        LMusicBrowser.init(this, historyDataStore)
         SpManager.init(this)
     }
 }

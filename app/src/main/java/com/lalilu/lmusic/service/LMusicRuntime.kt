@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.asLiveData
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.utils.extension.moveHeadToTailWithSearch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,21 +20,35 @@ import kotlin.coroutines.CoroutineContext
  */
 object LMusicRuntime : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
+    private var historyStore: HistoryDataStore? = null
+
+    fun init(historyDataStore: HistoryDataStore) {
+        historyStore = historyDataStore
+    }
 
     var currentPlaylist: List<LSong> = emptyList()
         set(value) {
             field = value
-            launch { currentPlaylistFlow.emit(currentPlaylist) }
+            launch {
+                currentPlaylistFlow.emit(value)
+                historyStore?.apply { lastPlayedListIdsKey.set(value.map { it.id }) }
+            }
         }
     var currentPlaying: LSong? = null
         set(value) {
             field = value
-            launch { currentPlayingFlow.emit(currentPlaying) }
+            launch {
+                currentPlayingFlow.emit(currentPlaying)
+                historyStore?.apply { lastPlayedIdKey.set(value?.id) }
+            }
         }
     private var currentPosition: Long = 0
         set(value) {
             field = value
-            launch { currentPositionFlow.emit(currentPosition) }
+            launch {
+                currentPositionFlow.emit(currentPosition)
+                historyStore?.apply { lastPlayedPositionKey.set(value) }
+            }
         }
 
     private val currentPlaylistFlow: MutableStateFlow<List<LSong>> = MutableStateFlow(emptyList())
