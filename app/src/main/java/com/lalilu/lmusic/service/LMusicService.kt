@@ -13,6 +13,8 @@ import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
+import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
 import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.repository.SettingsDataStore
 import com.lalilu.lmusic.service.LMusicNotification.Companion.NOTIFICATION_PLAYER_ID
@@ -40,6 +42,8 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
     private lateinit var mediaSession: MediaSessionCompat
     private val playBack: LMusicPlayBack<LSong> = object : LMusicPlayBack<LSong>(this) {
+        private val noisyReceiver = LMusicNoisyReceiver(this::onPause)
+
         override fun requestAudioFocus(): Boolean = true
         override fun getUriFromItem(item: LSong): Uri = item.uri
         override fun getCurrent(): LSong? = LMusicRuntime.currentPlaying
@@ -82,15 +86,13 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == PlaybackStateCompat.STATE_STOPPED) {
-                try {
-                    LMusicRuntime.updatePosition(0, false)
-                    stopForeground(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-                    mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
-                    mediaSession.isActive = false
-                    stopSelf()
-//                    unregisterReceiver(noisyReceiver)
-                } catch (ignored: Exception) {
-                }
+                LMusicRuntime.updatePosition(0, false)
+                noisyReceiver.unRegisterFrom(this@LMusicService)
+                stopForeground()
+                mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
+                mediaSession.isActive = false
+                stopSelf()
+                return
             }
 
             mediaSession.setPlaybackState(
@@ -104,9 +106,8 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                 when (playbackState) {
                     PlaybackStateCompat.STATE_PLAYING -> {
                         LMusicRuntime.updatePosition(getPosition(), true)
-//                        this@MSongService.registerReceiver(noisyReceiver, Config.FILTER_BECOMING_NOISY)
-                        val intent = Intent(this@LMusicService, LMusicService::class.java)
-                        ContextCompat.startForegroundService(this@LMusicService, intent)
+                        noisyReceiver.registerTo(this@LMusicService)
+                        this@LMusicService.startForeground()
                         mNotificationManager.updateNotification(
                             mediaSession = mediaSession,
                             data = LMusicRuntime.currentPlaying
@@ -116,7 +117,8 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                     }
                     PlaybackStateCompat.STATE_PAUSED -> {
                         LMusicRuntime.updatePosition(getPosition(), false)
-                        stopForeground(NotificationCompat.FOREGROUND_SERVICE_DEFERRED)
+                        noisyReceiver.unRegisterFrom(this@LMusicService)
+                        this@LMusicService.stopForeground()
                         mNotificationManager.updateNotification(
                             mediaSession = mediaSession,
                             data = LMusicRuntime.currentPlaying
@@ -134,6 +136,15 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         override fun setShuffleMode(shuffleMode: Int) {
 
         }
+    }
+
+    fun startForeground() {
+        val intent = Intent(this, LMusicService::class.java)
+        ContextCompat.startForegroundService(this@LMusicService, intent)
+    }
+
+    fun stopForeground() {
+        stopForeground(NotificationCompat.FOREGROUND_SERVICE_DEFERRED)
     }
 
     override fun onCreate() {
@@ -181,18 +192,4 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     ) {
         result.sendResult(mutableListOf())
     }
-
-    private val MEDIA_DEFAULT_ACTION = PlaybackStateCompat.ACTION_PLAY or
-            PlaybackStateCompat.ACTION_PLAY_PAUSE or
-            PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
-            PlaybackStateCompat.ACTION_PAUSE or
-            PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-            PlaybackStateCompat.ACTION_STOP or
-            PlaybackStateCompat.ACTION_SEEK_TO or
-            PlaybackStateCompat.ACTION_SET_REPEAT_MODE
-
-    private val MEDIA_STOPPED_STATE = PlaybackStateCompat.Builder()
-        .setState(PlaybackStateCompat.STATE_STOPPED, 0, 1f)
-        .build()
 }
