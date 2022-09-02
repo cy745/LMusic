@@ -12,6 +12,8 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.repository.HistoryDataStore
+import com.lalilu.lmusic.utils.extension.getNextOf
+import com.lalilu.lmusic.utils.extension.move
 
 object LMusicBrowser : DefaultLifecycleObserver {
     private var controller: MediaControllerCompat? = null
@@ -59,6 +61,47 @@ object LMusicBrowser : DefaultLifecycleObserver {
 
     fun reloadAndPlay() = controller?.transportControls
         ?.sendCustomAction(Config.ACTION_RELOAD_AND_PLAY, null)
+
+    fun addToNext(mediaId: String): Boolean {
+        val nowIndex = LMusicRuntime.currentPlaylist.indexOfFirst { it.id == mediaId }
+        val currentIndex = LMusicRuntime.currentPlaylist.indexOf(LMusicRuntime.currentPlaying)
+        if (currentIndex == nowIndex || (currentIndex + 1) == nowIndex) return false
+
+        if (nowIndex >= 0) {
+            LMusicRuntime.currentPlaylist = LMusicRuntime.currentPlaylist
+                .move(nowIndex, currentIndex)
+        } else {
+            val item = Library.getSongOrNull(mediaId) ?: return false
+            LMusicRuntime.currentPlaylist = LMusicRuntime.currentPlaylist
+                .toMutableList()
+                .apply {
+                    add(currentIndex + 1, item)
+                }
+        }
+        return true
+    }
+
+    private var lastRemovedIndex: Int = -1
+    private var lastRemovedItem: LSong? = null
+
+    fun removeById(mediaId: String): Boolean {
+        return try {
+            lastRemovedIndex = LMusicRuntime.currentPlaylist.indexOfFirst { it.id == mediaId }
+            if (mediaId == LMusicRuntime.currentPlaying?.id) {
+                LMusicRuntime.currentPlaying = LMusicRuntime.currentPlaylist
+                    .getNextOf(LMusicRuntime.currentPlaying, true)
+                reloadAndPlay()
+            }
+            LMusicRuntime.currentPlaylist = LMusicRuntime.currentPlaylist
+                .toMutableList()
+                .apply {
+                    lastRemovedItem = removeAt(lastRemovedIndex)
+                }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
 
     private class ConnectionCallback(
         val context: Context

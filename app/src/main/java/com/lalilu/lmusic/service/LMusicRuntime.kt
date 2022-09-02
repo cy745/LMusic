@@ -38,7 +38,7 @@ object LMusicRuntime : CoroutineScope {
         set(value) {
             field = value
             launch {
-                currentPlayingFlow.emit(currentPlaying)
+                currentPlayingFlow.emit(value)
                 historyStore?.apply { lastPlayedIdKey.set(value?.id) }
             }
         }
@@ -46,14 +46,22 @@ object LMusicRuntime : CoroutineScope {
         set(value) {
             field = value
             launch {
-                currentPositionFlow.emit(currentPosition)
+                currentPositionFlow.emit(value)
                 historyStore?.apply { lastPlayedPositionKey.set(value) }
             }
         }
+    var currentIsPlaying: Boolean = false
+        set(value) {
+            field = value
+            launch {
+                currentIsPlayingFlow.emit(value)
+            }
+        }
 
-    private val currentPlaylistFlow: MutableStateFlow<List<LSong>> = MutableStateFlow(emptyList())
-    private val currentPlayingFlow: MutableStateFlow<LSong?> = MutableStateFlow(null)
-    private val currentPositionFlow: MutableStateFlow<Long> = MutableStateFlow(0L)
+    val currentPlaylistFlow: MutableStateFlow<List<LSong>> = MutableStateFlow(currentPlaylist)
+    val currentPlayingFlow: MutableStateFlow<LSong?> = MutableStateFlow(currentPlaying)
+    val currentPositionFlow: MutableStateFlow<Long> = MutableStateFlow(currentPosition)
+    val currentIsPlayingFlow: MutableStateFlow<Boolean> = MutableStateFlow(currentIsPlaying)
 
     val currentPlayingLiveData = currentPlayingFlow.asLiveData()
     val currentPositionLiveData = currentPositionFlow.asLiveData()
@@ -81,7 +89,6 @@ object LMusicRuntime : CoroutineScope {
 
     var currentIsPLayingState: MutableState<Boolean> = mutableStateOf(false)
     var currentPlayingState: MutableState<LSong?> = mutableStateOf(null)
-    var currentIsPlaying: Boolean = false
     var currentRepeatMode: Int = 0
     var currentShuffleMode: Int = 0
 }

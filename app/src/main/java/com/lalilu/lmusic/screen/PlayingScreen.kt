@@ -25,6 +25,7 @@ import com.lalilu.lmusic.adapter.setDiffNewData
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.service.LMusicLyricManager
 import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
@@ -64,14 +65,8 @@ fun PlayingScreen() {
             activity.setSupportActionBar(fmToolbar)
 
             adapter = ComposeAdapter(
-                onSwipeToLeft = {
-//                    playingViewModel.onSongMoveToNext(it.mediaId)
-                    false
-                },
-                onSwipeToRight = {
-//                    playingViewModel.onSongRemoved(it.mediaId)
-                    false
-                },
+                onSwipeToLeft = { LMusicBrowser.addToNext(it.id) },
+                onSwipeToRight = { LMusicBrowser.removeById(it.id) },
                 onItemClick = { LMusicBrowser.playById(it.id) },
                 onItemLongClick = {
                     HapticUtils.haptic(this@apply.root)
@@ -130,7 +125,7 @@ fun PlayingScreen() {
                 override fun onClick(@ClickPart clickPart: Int, action: Int) {
                     HapticUtils.haptic(this@apply.root)
                     if (seekBarHandler.clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
-//                        playingViewModel.onPlayPause()
+                        LMusicBrowser.playPause()
                         return
                     }
                     seekBarHandler.handle(clickPart)
@@ -168,10 +163,10 @@ fun PlayingScreen() {
                 maSeekBar.updateValue(it.toFloat())
                 fmLyricViewX.updateTime(it)
             }
-//            playingViewModel.lyricManager.currentLyricLiveData.observe(activity) {
-//                fmLyricViewX.setLyricEntryList(emptyList())
-//                fmLyricViewX.loadLyric(it?.first, it?.second)
-//            }
+            LMusicLyricManager.currentLyricLiveData.observe(activity) {
+                fmLyricViewX.setLyricEntryList(emptyList())
+                fmLyricViewX.loadLyric(it?.first, it?.second)
+            }
             SpManager.listen(
                 Config.KEY_SETTINGS_LYRIC_GRAVITY,
                 SpManager.SpIntListener(Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {

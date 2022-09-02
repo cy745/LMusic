@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.service
 
 import android.content.Context
-import android.content.Intent
 import android.media.MediaPlayer
 import android.media.session.PlaybackState
 import android.net.Uri
@@ -92,11 +91,10 @@ abstract class LMusicPlayBack<T>(
             player?.setDataSource(mContext, uri!!)
             player?.prepareAsync()
         } catch (e: IOException) {
-            println("IOException: ${e.message}")
-            onPlaybackStateChanged(PlaybackState.STATE_STOPPED)
+            onStop()
             ToastUtils.showLong("播放失败：歌曲文件不存在")
         } catch (e: Exception) {
-            onPlaybackStateChanged(PlaybackState.STATE_STOPPED)
+            onStop()
         }
     }
 
@@ -129,7 +127,8 @@ abstract class LMusicPlayBack<T>(
 
     override fun onStop() {
         isPrepared = false
-        player?.stop()
+        if (player?.isPlaying == true) player?.stop()
+        player?.reset()
         player?.release()
         player = null
 
@@ -148,11 +147,6 @@ abstract class LMusicPlayBack<T>(
             }
         }
         println("onCustomAction: $action")
-    }
-
-    override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
-        println("onMediaButtonEvent: $mediaButtonEvent")
-        return super.onMediaButtonEvent(mediaButtonEvent)
     }
 
     override fun onSetRepeatMode(repeatMode: Int) {
