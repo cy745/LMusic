@@ -9,7 +9,6 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmedia.entity.LSong
@@ -94,9 +93,6 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == PlaybackStateCompat.STATE_STOPPED) {
                 mNotificationManager.stop()
-                LMusicRuntime.updatePosition(0, false)
-                LMusicRuntime.currentIsPlaying = false
-
                 noisyReceiver.unRegisterFrom(this@LMusicService)
                 audioFocusHelper.abandonAudioFocus()
 
@@ -104,7 +100,10 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                 mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
 
                 stopSelf()
-                stopForeground()
+                this@LMusicService.stopForeground(true)
+
+                LMusicRuntime.updatePosition(0, false)
+                LMusicRuntime.currentIsPlaying = false
                 return
             }
 
@@ -118,37 +117,33 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             launch {
                 if (playbackState == PlaybackStateCompat.STATE_PLAYING) {
                     // todo 暂停时seekTo会导致进度错误开始增加
-                    LMusicRuntime.updatePosition(getPosition(), true)
-                    LMusicRuntime.currentIsPlaying = true
+                    mediaSession.isActive = true
+                    startService(Intent(this@LMusicService, LMusicService::class.java))
+                    mNotificationManager.updateNotification(
+                        data = LMusicRuntime.currentPlaying,
+                        mediaSession = mediaSession,
+                        service = this@LMusicService
+                    )
 
                     noisyReceiver.registerTo(this@LMusicService)
-                    if (!mediaSession.isActive) {
-                        mediaSession.isActive = true
-                        this@LMusicService.startForeground()
-                        mNotificationManager.updateNotification(
-                            mediaSession = mediaSession,
-                            data = LMusicRuntime.currentPlaying,
-                            service = this@LMusicService
-                        )
-                    } else {
-                        mNotificationManager.updateNotification(
-                            mediaSession = mediaSession,
-                            data = LMusicRuntime.currentPlaying
-                        )
-                    }
+
+                    LMusicRuntime.updatePosition(getPosition(), true)
+                    LMusicRuntime.currentIsPlaying = true
                     return@launch
                 }
                 if (playbackState == PlaybackStateCompat.STATE_PAUSED) {
-                    LMusicRuntime.updatePosition(getPosition(), false)
-                    LMusicRuntime.currentIsPlaying = false
+                    mediaSession.isActive = false
+                    mNotificationManager.updateNotification(
+                        data = LMusicRuntime.currentPlaying,
+                        mediaSession = mediaSession,
+                        service = this@LMusicService
+                    )
                     noisyReceiver.unRegisterFrom(this@LMusicService)
                     audioFocusHelper.abandonAudioFocus()
-                    mediaSession.isActive = false
-                    this@LMusicService.stopForeground()
-                    mNotificationManager.updateNotification(
-                        mediaSession = mediaSession,
-                        data = LMusicRuntime.currentPlaying
-                    )
+                    this@LMusicService.stopForeground(false)
+
+                    LMusicRuntime.updatePosition(getPosition(), false)
+                    LMusicRuntime.currentIsPlaying = false
                 }
             }
         }
@@ -162,14 +157,6 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         }
     }
 
-    fun startForeground() {
-        val intent = Intent(this, LMusicService::class.java)
-        ContextCompat.startForegroundService(this, intent)
-    }
-
-    fun stopForeground() {
-        stopForeground(STOP_FOREGROUND_REMOVE)
-    }
 
     override fun onCreate() {
         super.onCreate()

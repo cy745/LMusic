@@ -22,6 +22,10 @@ class LMusicNoisyReceiver(val onBecomingNoisy: () -> Unit = {}) : BroadcastRecei
     }
 
     fun unRegisterFrom(service: Service) {
-        service.unregisterReceiver(this@LMusicNoisyReceiver)
+        try {
+            service.unregisterReceiver(this@LMusicNoisyReceiver)
+        } catch (e: Exception) {
+            println("unRegisterFrom: ${e.message}")
+        }
     }
 }

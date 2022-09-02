@@ -21,6 +21,7 @@ abstract class LMusicPlayBack<T>(
     private var player: MediaPlayer? = null
     private var isPrepared: Boolean = false
     private var volumeProxy: FadeVolumeProxy? = null
+    private var isPlaying: Boolean = false
 
     abstract fun requestAudioFocus(): Boolean
     abstract fun getCurrent(): T?
@@ -35,6 +36,7 @@ abstract class LMusicPlayBack<T>(
     abstract fun setRepeatMode(repeatMode: Int)
     abstract fun setShuffleMode(shuffleMode: Int)
 
+    fun getIsPlaying(): Boolean = isPlaying
     fun getPosition(): Long {
         return player?.currentPosition?.toLong() ?: 0L
     }
@@ -58,6 +60,7 @@ abstract class LMusicPlayBack<T>(
 
             onPlaybackStateChanged(PlaybackState.STATE_PLAYING)
             if (player?.isPlaying == false) {
+                isPlaying = true
                 volumeProxy!!.fadeStart()
             }
         } else {
@@ -72,6 +75,7 @@ abstract class LMusicPlayBack<T>(
 
     override fun onPause() {
         onPlaybackStateChanged(PlaybackState.STATE_PAUSED)
+        isPlaying = false
         volumeProxy?.fadePause()
     }
 
@@ -87,6 +91,7 @@ abstract class LMusicPlayBack<T>(
 
     override fun onPlayFromUri(uri: Uri?, extras: Bundle?) {
         try {
+            isPlaying = false
             player?.reset()
             player?.setDataSource(mContext, uri!!)
             player?.prepareAsync()
@@ -126,6 +131,7 @@ abstract class LMusicPlayBack<T>(
     }
 
     override fun onStop() {
+        isPlaying = false
         isPrepared = false
         if (player?.isPlaying == true) player?.stop()
         player?.reset()
