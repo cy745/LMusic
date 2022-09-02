@@ -1,9 +1,6 @@
 package com.lalilu.lmusic.service
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
@@ -20,10 +17,14 @@ import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
 
 /**
  *
@@ -31,7 +32,9 @@ import javax.inject.Singleton
 @Singleton
 class LMusicNotification @Inject constructor(
     @ApplicationContext private val mContext: Context
-) {
+) : CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.Default
+
     companion object {
         const val NOTIFICATION_PLAYER_ID = 7
         const val NOTIFICATION_LOGGER_ID = 8
@@ -119,6 +122,10 @@ class LMusicNotification @Inject constructor(
         mContext, NotificationManager::class.java
     ) as NotificationManager
 
+    private var currentIsStop: Boolean = true
+    private var lastNotification: Notification? = null
+    private var currentLyricTemp: String? = null
+
 
     /**
      *  API 26 以上需要注册Channel，否则不显示通知。
@@ -128,12 +135,18 @@ class LMusicNotification @Inject constructor(
             createNotificationChannel()
         }
         notificationManager.cancelAll()
+        launch {
+            LMusicLyricManager.currentSentence.collectLatest {
+                updateLyric(it)
+                currentLyricTemp = it
+            }
+        }
     }
 
     suspend fun updateNotification(
         mediaSession: MediaSessionCompat,
         data: Any? = null,
-        startForeground: ((Notification) -> Unit)? = null
+        service: Service? = null
     ) {
         val controller = mediaSession.controller
         val token = mediaSession.sessionToken
@@ -158,7 +171,7 @@ class LMusicNotification @Inject constructor(
             .setSubText(description.description)
             .setShowWhen(false)
             .setAutoCancel(false)
-            .setOngoing(true)
+            .setOngoing(isPlaying)
             .setOnlyAlertOnce(true)
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -188,13 +201,37 @@ class LMusicNotification @Inject constructor(
                     builder.color = palette.getAutomaticColor()
                     builder.setLargeIcon(it)
                 }
-                if (startForeground != null) {
-                    startForeground(builder.build())
+                lastNotification = builder.build().apply {
+                    tickerText = currentLyricTemp
+                    flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+                    flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+                }
+                if (service != null) {
+                    println("startForeground: notify")
+                    service.startForeground(NOTIFICATION_PLAYER_ID, lastNotification!!)
+                    currentIsStop = false
                     return@withContext
                 }
-                notificationManager.notify(NOTIFICATION_PLAYER_ID, builder.build())
+                println("notify")
+                notificationManager.notify(NOTIFICATION_PLAYER_ID, lastNotification)
+                currentIsStop = false
             }
         }
+    }
+
+    private fun updateLyric(text: String?) {
+        println("updateLyric: $text")
+        if (currentIsStop) return
+        lastNotification?.apply {
+            tickerText = text
+            flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+            flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+            notificationManager.notify(NOTIFICATION_PLAYER_ID, this)
+        }
+    }
+
+    fun stop() {
+        currentIsStop = true
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

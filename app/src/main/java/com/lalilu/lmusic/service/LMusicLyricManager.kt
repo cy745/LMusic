@@ -1,30 +1,28 @@
-package com.lalilu.lmusic.manager
+package com.lalilu.lmusic.service
 
+import androidx.lifecycle.asLiveData
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmedia.indexer.Library
-import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapLatest
-import javax.inject.Inject
-import javax.inject.Singleton
 
-/**
- * 专门负责歌词解析处理的全局单例
- */
 @OptIn(ExperimentalCoroutinesApi::class)
-@Singleton
-class LyricManager @Inject constructor(
-    lyricSourceFactory: LyricSourceFactory
-) {
+object LMusicLyricManager {
+    private var lyricSource: LyricSourceFactory? = null
+
+    fun init(lyricSourceFactory: LyricSourceFactory) {
+        lyricSource = lyricSourceFactory
+    }
+
     private val currentLyric: Flow<Pair<String, String?>?> =
         LMusicRuntime.currentPlayingFlow.mapLatest { item ->
             val song = item?.let { Library.getSongOrNull(it.id) } ?: return@mapLatest null
-            lyricSourceFactory.getLyric(song)
+            lyricSource?.getLyric(song)
         }
 
     val currentSentence: Flow<String?> = currentLyric.mapLatest { pair ->
@@ -43,6 +41,8 @@ class LyricManager @Inject constructor(
             if (pair == null || !isPlaying) return@combine null
             return@combine pair.first
         }
+
+    val currentLyricLiveData = currentLyric.asLiveData()
 
     private fun findShowLine(list: List<LyricEntry>?, time: Long): Int {
         if (list == null || list.isEmpty()) return 0

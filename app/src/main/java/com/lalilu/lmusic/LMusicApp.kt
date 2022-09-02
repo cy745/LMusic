@@ -6,6 +6,7 @@ import coil.ImageLoaderFactory
 import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.service.LMusicLyricManager
 import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.fetcher.SongCoverFetcher
@@ -45,6 +46,7 @@ class LMusicApp : Application(), ImageLoaderFactory {
 //            }
 //        }).start()
         LMusicRuntime.init(historyDataStore)
+        LMusicLyricManager.init(lyricSourceFactory)
         LMusicBrowser.init(this, historyDataStore)
         SpManager.init(this)
     }
