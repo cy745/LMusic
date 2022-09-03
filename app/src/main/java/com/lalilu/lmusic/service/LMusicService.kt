@@ -14,6 +14,7 @@ import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
 import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
+import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.repository.SettingsDataStore
 import com.lalilu.lmusic.utils.extension.getNextOf
@@ -36,9 +37,12 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var settingsDataStore: SettingsDataStore
 
     @Inject
-    lateinit var mNotificationManager: LMusicNotification
+    lateinit var database: MDataBase
 
     private lateinit var mediaSession: MediaSessionCompat
+    private val mNotificationManager: LMusicNotificationImpl by lazy {
+        LMusicNotificationImpl(this, database, playBack)
+    }
     private val playBack: LMusicPlayBack<LSong> = object : LMusicPlayBack<LSong>(this) {
         private val noisyReceiver = LMusicNoisyReceiver(this::onPause)
         private val audioFocusHelper = LMusicAudioFocusHelper(this@LMusicService) {
@@ -92,7 +96,9 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == PlaybackStateCompat.STATE_STOPPED) {
-                mNotificationManager.stop()
+                LMusicRuntime.updatePosition(0, false)
+                LMusicRuntime.currentIsPlaying = false
+
                 noisyReceiver.unRegisterFrom(this@LMusicService)
                 audioFocusHelper.abandonAudioFocus()
 
@@ -100,10 +106,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                 mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
 
                 stopSelf()
-                this@LMusicService.stopForeground(true)
-
-                LMusicRuntime.updatePosition(0, false)
-                LMusicRuntime.currentIsPlaying = false
+                mNotificationManager.cancelNotification()
                 return
             }
 
@@ -116,34 +119,32 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
             launch {
                 if (playbackState == PlaybackStateCompat.STATE_PLAYING) {
+                    LMusicRuntime.updatePosition(getPosition(), true)
+                    LMusicRuntime.currentIsPlaying = true
+
                     // todo 暂停时seekTo会导致进度错误开始增加
                     mediaSession.isActive = true
                     startService(Intent(this@LMusicService, LMusicService::class.java))
                     mNotificationManager.updateNotification(
                         data = LMusicRuntime.currentPlaying,
-                        mediaSession = mediaSession,
-                        service = this@LMusicService
+                        mediaSession = mediaSession
                     )
 
                     noisyReceiver.registerTo(this@LMusicService)
-
-                    LMusicRuntime.updatePosition(getPosition(), true)
-                    LMusicRuntime.currentIsPlaying = true
                     return@launch
                 }
                 if (playbackState == PlaybackStateCompat.STATE_PAUSED) {
+                    LMusicRuntime.updatePosition(getPosition(), false)
+                    LMusicRuntime.currentIsPlaying = false
+
                     mediaSession.isActive = false
                     mNotificationManager.updateNotification(
                         data = LMusicRuntime.currentPlaying,
-                        mediaSession = mediaSession,
-                        service = this@LMusicService
+                        mediaSession = mediaSession
                     )
                     noisyReceiver.unRegisterFrom(this@LMusicService)
                     audioFocusHelper.abandonAudioFocus()
                     this@LMusicService.stopForeground(false)
-
-                    LMusicRuntime.updatePosition(getPosition(), false)
-                    LMusicRuntime.currentIsPlaying = false
                 }
             }
         }
@@ -178,7 +179,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return super.onStartCommand(intent, flags, startId)
+        return START_NOT_STICKY
     }
 
     /**

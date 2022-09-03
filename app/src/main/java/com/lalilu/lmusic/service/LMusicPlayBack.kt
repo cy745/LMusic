@@ -22,6 +22,7 @@ abstract class LMusicPlayBack<T>(
     private var isPrepared: Boolean = false
     private var volumeProxy: FadeVolumeProxy? = null
     private var isPlaying: Boolean = false
+    private var isStopped: Boolean = true
 
     abstract fun requestAudioFocus(): Boolean
     abstract fun getCurrent(): T?
@@ -36,17 +37,17 @@ abstract class LMusicPlayBack<T>(
     abstract fun setRepeatMode(repeatMode: Int)
     abstract fun setShuffleMode(shuffleMode: Int)
 
+    fun getIsStopped(): Boolean = isStopped
     fun getIsPlaying(): Boolean = isPlaying
-    fun getPosition(): Long {
-        return player?.currentPosition?.toLong() ?: 0L
-    }
+    fun getPosition(): Long = player?.currentPosition?.toLong() ?: 0L
 
     private fun checkPlayer() {
         player = player ?: MediaPlayer().apply {
             setOnPreparedListener(this@LMusicPlayBack)
             setOnCompletionListener(this@LMusicPlayBack)
+            volumeProxy = FadeVolumeProxy(this)
+            isStopped = false
         }
-        volumeProxy = FadeVolumeProxy(player!!)
         assert(player != null)
         assert(volumeProxy != null)
     }
@@ -58,8 +59,9 @@ abstract class LMusicPlayBack<T>(
             // 请求音频焦点，失败则取消播放
             if (!requestAudioFocus()) return
 
-            onPlaybackStateChanged(PlaybackState.STATE_PLAYING)
             if (player?.isPlaying == false) {
+                println("onPlay")
+                onPlaybackStateChanged(PlaybackState.STATE_PLAYING)
                 isPlaying = true
                 volumeProxy!!.fadeStart()
             }
@@ -74,13 +76,11 @@ abstract class LMusicPlayBack<T>(
     }
 
     override fun onPause() {
+        println("onPause")
+
         onPlaybackStateChanged(PlaybackState.STATE_PAUSED)
         isPlaying = false
         volumeProxy?.fadePause()
-    }
-
-    override fun onPrepare() {
-        println("onPrepare")
     }
 
     override fun onPlayFromMediaId(mediaId: String, extras: Bundle?) {
@@ -104,6 +104,8 @@ abstract class LMusicPlayBack<T>(
     }
 
     override fun onSkipToNext() {
+        println("onSkipToNext")
+
         // 首先让数据源将游标指向下一个item
         skipToNext()
         val current = getCurrent()
@@ -115,6 +117,9 @@ abstract class LMusicPlayBack<T>(
     }
 
     override fun onSkipToPrevious() {
+        println("onSkipToPrevious")
+
+
         // 首先让数据源将游标指向上一个item
         skipToPrevious()
         val current = getCurrent()
@@ -126,13 +131,18 @@ abstract class LMusicPlayBack<T>(
     }
 
     override fun onSeekTo(pos: Long) {
+        println("onSeekTo")
+
         player?.seekTo(pos.toInt())
         onPlaybackStateChanged(PlaybackStateCompat.STATE_PLAYING)
     }
 
     override fun onStop() {
+        println("onStop")
+
         isPlaying = false
         isPrepared = false
+        isStopped = true
         if (player?.isPlaying == true) player?.stop()
         player?.reset()
         player?.release()
@@ -143,6 +153,7 @@ abstract class LMusicPlayBack<T>(
     }
 
     override fun onCustomAction(action: String?, extras: Bundle?) {
+        println("onCustomAction: $action")
         when (action) {
             Config.ACTION_PLAY_AND_PAUSE -> {
                 if (player?.isPlaying == true) onPause() else onPlay()
@@ -152,7 +163,6 @@ abstract class LMusicPlayBack<T>(
                 onPlay()
             }
         }
-        println("onCustomAction: $action")
     }
 
     override fun onSetRepeatMode(repeatMode: Int) {
