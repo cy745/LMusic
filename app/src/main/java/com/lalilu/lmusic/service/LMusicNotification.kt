@@ -39,6 +39,9 @@ abstract class LMusicNotification(
         ) as NotificationManager
     }
 
+    /**
+     * 加载歌曲封面和提取配色，若已有缓存则直接取用，若无则阻塞获取，需确保调用方不阻塞主要动作
+     */
     protected fun NotificationCompat.Builder.loadCoverAndPalette(data: Any?) {
         var bitmap: Bitmap? = null
         var color: Int = Color.TRANSPARENT
@@ -76,6 +79,9 @@ abstract class LMusicNotification(
         }
     }
 
+    /**
+     * 通过mediaSession创建Notification
+     */
     protected fun buildNotification(mediaSession: MediaSessionCompat): NotificationCompat.Builder? {
         val style = androidx.media.app.NotificationCompat.MediaStyle()
             .setMediaSession(mediaSession.sessionToken)
@@ -88,6 +94,7 @@ abstract class LMusicNotification(
         val description = metadata.description ?: return null
         val isPlaying = state.state == PlaybackStateCompat.STATE_PLAYING
         val repeatMode = mediaSession.controller.repeatMode
+        println(isPlaying)
 
         return NotificationCompat.Builder(
             mContext, LMusicNotificationImpl.playerChannelName + "_ID"
@@ -116,6 +123,7 @@ abstract class LMusicNotification(
             .addAction(if (isPlaying) mPauseAction else mPlayAction)
             .addAction(mNextAction)
             .addAction(mStopAction)
+
     }
 
     protected fun pushNotification(notification: Notification) {
