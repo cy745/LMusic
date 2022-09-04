@@ -20,15 +20,10 @@ import com.lalilu.lmusic.repository.SettingsDataStore
 import com.lalilu.lmusic.utils.extension.getNextOf
 import com.lalilu.lmusic.utils.extension.getPreviousOf
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
-class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default
+class LMusicService : MediaBrowserServiceCompat() {
 
     @Inject
     lateinit var historyDataStore: HistoryDataStore
@@ -39,7 +34,8 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     @Inject
     lateinit var database: MDataBase
 
-    private lateinit var mediaSession: MediaSessionCompat
+    lateinit var mediaSession: MediaSessionCompat
+
     private val mNotificationManager: LMusicNotificationImpl by lazy {
         LMusicNotificationImpl(this, database, playBack)
     }
@@ -55,19 +51,17 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         override fun getUriFromItem(item: LSong): Uri = item.uri
         override fun getCurrent(): LSong? = LMusicRuntime.currentPlaying
         override fun getMetaDataFromItem(item: LSong?): MediaMetadataCompat? = item?.metadataCompat
+        override fun getById(id: String): LSong? =
+            LMusicRuntime.currentPlaylist.find { it.id == id }
 
         override fun requestAudioFocus(): Boolean {
             return audioFocusHelper.requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         }
 
-        override fun skipToItemByID(id: String) {
-            LMusicRuntime.currentPlaying = LMusicRuntime.currentPlaylist.find { it.id == id }
-        }
-
-        override fun skipToNext(random: Boolean) {
+        override fun getNext(random: Boolean): LSong? {
             settingsDataStore.apply {
-                val current = LMusicRuntime.currentPlaying
-                LMusicRuntime.currentPlaying = when (repeatModeKey.get()) {
+                val current = getCurrent()
+                return when (repeatModeKey.get()) {
                     PlaybackStateCompat.REPEAT_MODE_INVALID,
                     PlaybackStateCompat.REPEAT_MODE_NONE ->
                         LMusicRuntime.currentPlaylist.getNextOf(current, false)
@@ -77,10 +71,10 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             }
         }
 
-        override fun skipToPrevious(random: Boolean) {
+        override fun getPrevious(): LSong? {
             settingsDataStore.apply {
-                val current = LMusicRuntime.currentPlaying
-                LMusicRuntime.currentPlaying = when (repeatModeKey.get()) {
+                val current = getCurrent()
+                return when (repeatModeKey.get()) {
                     PlaybackStateCompat.REPEAT_MODE_INVALID,
                     PlaybackStateCompat.REPEAT_MODE_NONE ->
                         LMusicRuntime.currentPlaylist.getPreviousOf(current, false)
@@ -90,61 +84,76 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             }
         }
 
+        override fun onPlayingItemUpdate(item: LSong?) {
+            LMusicRuntime.currentPlaying = item
+        }
+
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             mediaSession.setMetadata(metadata)
         }
 
-        override fun onPlaybackStateChanged(playbackState: Int) {
-            if (playbackState == PlaybackStateCompat.STATE_STOPPED) {
-                LMusicRuntime.updatePosition(0, false)
-                LMusicRuntime.currentIsPlaying = false
-
-                noisyReceiver.unRegisterFrom(this@LMusicService)
-                audioFocusHelper.abandonAudioFocus()
-
-                mediaSession.isActive = false
-                mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
-
-                stopSelf()
-                mNotificationManager.cancelNotification()
-                return
-            }
-
-            mediaSession.setPlaybackState(
-                PlaybackStateCompat.Builder()
-                    .setActions(MEDIA_DEFAULT_ACTION)
-                    .setState(playbackState, getPosition(), 1f)
-                    .build()
-            )
-
-            launch {
-                if (playbackState == PlaybackStateCompat.STATE_PLAYING) {
-                    LMusicRuntime.updatePosition(getPosition(), true)
-                    LMusicRuntime.currentIsPlaying = true
-
-                    // todo 暂停时seekTo会导致进度错误开始增加
-                    mediaSession.isActive = true
-                    startService(Intent(this@LMusicService, LMusicService::class.java))
-                    mNotificationManager.updateNotification(
-                        data = LMusicRuntime.currentPlaying,
-                        mediaSession = mediaSession
-                    )
-
-                    noisyReceiver.registerTo(this@LMusicService)
-                    return@launch
-                }
-                if (playbackState == PlaybackStateCompat.STATE_PAUSED) {
-                    LMusicRuntime.updatePosition(getPosition(), false)
+        override fun onPlaybackStateChanged(@PlaybackStateCompat.State playbackState: Int) {
+            when (playbackState) {
+                PlaybackStateCompat.STATE_STOPPED -> {
+                    LMusicRuntime.updatePosition(0, false)
                     LMusicRuntime.currentIsPlaying = false
 
+                    noisyReceiver.unRegisterFrom(this@LMusicService)
+                    audioFocusHelper.abandonAudioFocus()
+
                     mediaSession.isActive = false
-                    mNotificationManager.updateNotification(
-                        data = LMusicRuntime.currentPlaying,
-                        mediaSession = mediaSession
+                    mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
+
+                    stopSelf()
+                    mNotificationManager.cancelNotification()
+                }
+                PlaybackStateCompat.STATE_BUFFERING,
+                PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS,
+                PlaybackStateCompat.STATE_SKIPPING_TO_NEXT -> {
+                    // 更新进度，进度置0
+                    mediaSession.setPlaybackState(
+                        PlaybackStateCompat.Builder()
+                            .setActions(MEDIA_DEFAULT_ACTION)
+                            .setState(playbackState, 0, 1f)
+                            .build()
                     )
+                }
+                PlaybackStateCompat.STATE_PAUSED -> {
+                    // 更新进度
+                    mediaSession.setPlaybackState(
+                        PlaybackStateCompat.Builder()
+                            .setActions(MEDIA_DEFAULT_ACTION)
+                            .setState(playbackState, getPosition(), 1f)
+                            .build()
+                    )
+
+                    mediaSession.isActive = false
+                    mNotificationManager.updateNotification(data = LMusicRuntime.currentPlaying)
                     noisyReceiver.unRegisterFrom(this@LMusicService)
                     audioFocusHelper.abandonAudioFocus()
                     this@LMusicService.stopForeground(false)
+
+                    LMusicRuntime.updatePosition(getPosition(), false)
+                    LMusicRuntime.currentIsPlaying = false
+                }
+                PlaybackStateCompat.STATE_PLAYING -> {
+                    // 更新进度
+                    mediaSession.setPlaybackState(
+                        PlaybackStateCompat.Builder()
+                            .setActions(MEDIA_DEFAULT_ACTION)
+                            .setState(playbackState, getPosition(), 1f)
+                            .build()
+                    )
+
+                    mediaSession.isActive = true
+                    startService(Intent(this@LMusicService, LMusicService::class.java))
+                    mNotificationManager.updateNotification(data = LMusicRuntime.currentPlaying)
+
+                    noisyReceiver.registerTo(this@LMusicService)
+
+                    // todo 暂停时seekTo会导致进度错误开始增加
+                    LMusicRuntime.updatePosition(getPosition(), true)
+                    LMusicRuntime.currentIsPlaying = true
                 }
             }
         }

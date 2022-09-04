@@ -26,11 +26,13 @@ abstract class LMusicPlayBack<T>(
 
     abstract fun requestAudioFocus(): Boolean
     abstract fun getCurrent(): T?
-    abstract fun skipToNext(random: Boolean = false)
-    abstract fun skipToPrevious(random: Boolean = false)
-    abstract fun skipToItemByID(id: String)
+    abstract fun getPrevious(): T?
+    abstract fun getNext(random: Boolean): T?
+    abstract fun getById(id: String): T?
     abstract fun getUriFromItem(item: T): Uri
     abstract fun getMetaDataFromItem(item: T?): MediaMetadataCompat?
+
+    abstract fun onPlayingItemUpdate(item: T?)
     abstract fun onMetadataChanged(metadata: MediaMetadataCompat?)
     abstract fun onPlaybackStateChanged(playbackState: Int)
 
@@ -66,12 +68,14 @@ abstract class LMusicPlayBack<T>(
                 volumeProxy!!.fadeStart()
             }
         } else {
+            // 若未缓冲完成则获取当前歌曲的信息
             val current = getCurrent()
 
             // 首先更新当前歌曲信息
             onMetadataChanged(getMetaDataFromItem(current))
-//            onPlaybackStateChanged(PlaybackState.STATE_BUFFERING)
+            onPlaybackStateChanged(PlaybackState.STATE_BUFFERING)
             onPlayFromUri(current?.let { getUriFromItem(it) }, null)
+            onPlayingItemUpdate(current)
         }
     }
 
@@ -83,14 +87,9 @@ abstract class LMusicPlayBack<T>(
         volumeProxy?.fadePause()
     }
 
-    override fun onPlayFromMediaId(mediaId: String, extras: Bundle?) {
-        skipToItemByID(mediaId)
-        isPrepared = false
-        onPlay()
-    }
-
     override fun onPlayFromUri(uri: Uri?, extras: Bundle?) {
         try {
+            checkPlayer()
             isPlaying = false
             player?.reset()
             player?.setDataSource(mContext, uri!!)
@@ -103,31 +102,43 @@ abstract class LMusicPlayBack<T>(
         }
     }
 
+    override fun onPlayFromMediaId(mediaId: String, extras: Bundle?) {
+        println("onPlayFromMediaId: $mediaId")
+
+        // 首先通过ID获取到对应的歌曲
+        val item = getById(mediaId)
+
+        // 更新当前歌曲信息
+        onPlayingItemUpdate(item)
+        onMetadataChanged(getMetaDataFromItem(item))
+        onPlaybackStateChanged(PlaybackState.STATE_BUFFERING)
+        onPlayFromUri(item?.let { getUriFromItem(it) }, null)
+    }
+
     override fun onSkipToNext() {
         println("onSkipToNext")
 
-        // 首先让数据源将游标指向下一个item
-        skipToNext()
-        val current = getCurrent()
+        // 首先获取下一首歌曲
+        val next = getNext(random = false)
 
-        // 首先更新当前歌曲信息
-        onMetadataChanged(getMetaDataFromItem(current))
+        // 更新当前歌曲信息
+        onPlayingItemUpdate(next)
+        onMetadataChanged(getMetaDataFromItem(next))
         onPlaybackStateChanged(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT)
-        onPlayFromUri(current?.let { getUriFromItem(it) }, null)
+        onPlayFromUri(next?.let { getUriFromItem(it) }, null)
     }
 
     override fun onSkipToPrevious() {
         println("onSkipToPrevious")
 
+        // 首先获取上一首歌曲
+        val previous = getPrevious()
 
-        // 首先让数据源将游标指向上一个item
-        skipToPrevious()
-        val current = getCurrent()
-
-        // 首先更新当前歌曲信息
-        onMetadataChanged(getMetaDataFromItem(current))
+        // 更新当前歌曲信息
+        onPlayingItemUpdate(previous)
+        onMetadataChanged(getMetaDataFromItem(previous))
         onPlaybackStateChanged(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS)
-        onPlayFromUri(current?.let { getUriFromItem(it) }, null)
+        onPlayFromUri(previous?.let { getUriFromItem(it) }, null)
     }
 
     override fun onSeekTo(pos: Long) {
@@ -148,6 +159,7 @@ abstract class LMusicPlayBack<T>(
         player?.release()
         player = null
 
+        onPlayingItemUpdate(null)
         onMetadataChanged(null)
         onPlaybackStateChanged(PlaybackStateCompat.STATE_STOPPED)
     }

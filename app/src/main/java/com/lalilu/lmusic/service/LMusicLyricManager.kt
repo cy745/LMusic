@@ -40,7 +40,7 @@ object LMusicLyricManager {
         .combine(LMusicRuntime.currentIsPlayingFlow) { pair, isPlaying ->
             if (pair == null || !isPlaying) return@combine null
             return@combine pair.first
-        }
+        }.distinctUntilChanged()
 
     val currentLyricLiveData = currentLyric.asLiveData()
 

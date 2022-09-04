@@ -5,7 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.os.Build
-import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.lalilu.lmedia.entity.LSong
@@ -40,15 +39,8 @@ class LMusicNotificationImpl constructor(
         const val FLAG_ONLY_UPDATE_TICKER = 0x2000000
     }
 
-    private var channels = listOf(
-        playerChannelName,
-        loggerChannelName
-    )
-
+    private val channels = listOf(playerChannelName, loggerChannelName)
     private var currentLyricTemp: String? = null
-
-    @Volatile
-    private var lastNotificationBuilder: NotificationCompat.Builder? = null
 
     /**
      *  API 26 以上需要注册Channel，否则不显示通知。
@@ -60,8 +52,10 @@ class LMusicNotificationImpl constructor(
         notificationManager.cancelAll()
         launch {
             LMusicLyricManager.currentSentence.collectLatest {
+                println("collectLatest: $it")
+
                 currentLyricTemp = it
-                updateLyric(it)
+                updateNotification()
             }
         }
     }
@@ -74,37 +68,38 @@ class LMusicNotificationImpl constructor(
             ?: data
     }
 
-    override fun getIsPlaying(): Boolean {
-        return playBack.getIsPlaying()
-    }
+    override fun getIsPlaying(): Boolean = playBack.getIsPlaying()
+    override fun getIsStop(): Boolean = playBack.getIsStopped()
+    override fun getService(): Service = mContext
 
-    override fun getIsStop(): Boolean {
-        return playBack.getIsStopped()
-    }
+    private var dataTemp: Any? = null
+    private var lastBuilder: NotificationCompat.Builder? = null
 
-    override fun getService(): Service {
-        return mContext
-    }
-
-    suspend fun updateNotification(
-        data: Any?,
-        mediaSession: MediaSessionCompat,
-    ) {
-        lastNotificationBuilder = buildNotification(mediaSession) ?: return
+    /**
+     * 更新Notification
+     *
+     * @param data 传入给coil获取封面的对象，若为null则表示只需更新歌词
+     */
+    fun updateNotification(data: Any? = null) = launch {
+        if (data != null) dataTemp = data
 
         withContext(Dispatchers.IO) {
-            lastNotificationBuilder!!.loadCoverAndPalette(data)
+            val builder = lastBuilder?.takeIf { data == null }
+                ?: buildNotification(mContext.mediaSession)?.apply { lastBuilder = this }
+                ?: return@withContext
 
-            pushNotification(lastNotificationBuilder!!.build())
-        }
-    }
+            builder.loadCoverAndPalette(dataTemp)
+            builder.setTicker(currentLyricTemp)
 
-    private fun updateLyric(text: String?) {
-        println("updateLyric: $text")
-        lastNotificationBuilder?.build()?.apply {
-            tickerText = text
-            flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
-            notificationManager.notify(NOTIFICATION_PLAYER_ID, this)
+            println("[pushNotification]: updateNotification ${data == null}")
+            pushNotification(builder.build().apply {
+                flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+
+                // TODO 设置FLAG_ONLY_UPDATE_TICKER可能会导致notification不更新，不设置则会使状态栏歌词更新时出现两次歌词
+                if (data == null) {
+                    flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+                }
+            })
         }
     }
 
