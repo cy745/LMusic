@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -13,8 +14,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.blankj.utilcode.util.KeyboardUtils
@@ -56,7 +60,7 @@ object SmartModalBottomSheet : KeyboardUtils.OnSoftInputChangedListener {
         navController: NavController,
         scope: CoroutineScope = rememberCoroutineScope(),
         sheetContent: @Composable BoxScope.() -> Unit,
-        content: @Composable () -> Unit
+        content: @Composable BoxScope.() -> Unit
     ) {
         this.scope = scope
         val context = LocalContext.current
@@ -105,6 +109,7 @@ object SmartModalBottomSheet : KeyboardUtils.OnSoftInputChangedListener {
 //                }
 //            }
 //        }
+        val offsetRoundedCorner = LocalDensity.current.run { 15.dp.toPx() }
 
         ModalBottomSheetLayout(
             sheetState = scaffoldState,
@@ -121,7 +126,18 @@ object SmartModalBottomSheet : KeyboardUtils.OnSoftInputChangedListener {
                     content = sheetContent
                 )
             },
-            content = content
+            content = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(
+                            GenericShape { size, _ ->
+                                addRect(Rect(0f, 0f, size.width, offset + offsetRoundedCorner))
+                            }
+                        ),
+                    content = content
+                )
+            }
         )
 
         /**
