@@ -17,6 +17,7 @@ import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.MediaItem
+import com.dirror.lyricviewx.LyricEntry
 import kotlin.math.roundToInt
 
 fun Drawable.toBitmap(): Bitmap {
@@ -184,4 +185,26 @@ fun <T> List<T>.move(from: Int, to: Int): List<T> {
         val temp = removeAt(from)
         add(targetIndex, temp)
     }
+}
+
+/**
+ * 根据当前时间使用二分查找，查找最接近的歌词
+ */
+fun findShowLine(list: List<LyricEntry>?, time: Long): Int {
+    if (list == null || list.isEmpty()) return 0
+    var left = 0
+    var right = list.size
+    while (left <= right) {
+        val middle = (left + right) / 2
+        val middleTime = list[middle].time
+        if (time < middleTime) {
+            right = middle - 1
+        } else {
+            if (middle + 1 >= list.size || time < list[middle + 1].time) {
+                return middle
+            }
+            left = middle + 1
+        }
+    }
+    return 0
 }

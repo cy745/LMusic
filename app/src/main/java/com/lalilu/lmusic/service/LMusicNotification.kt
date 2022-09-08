@@ -31,6 +31,7 @@ abstract class LMusicNotification(
     abstract fun fillData(data: Any?): Any?
     abstract fun getIsPlaying(): Boolean
     abstract fun getIsStop(): Boolean
+    abstract fun getPosition(): Long
     abstract fun getService(): Service
 
     protected val notificationManager: NotificationManager by lazy {
@@ -42,7 +43,7 @@ abstract class LMusicNotification(
     /**
      * 加载歌曲封面和提取配色，若已有缓存则直接取用，若无则阻塞获取，需确保调用方不阻塞主要动作
      */
-    protected fun NotificationCompat.Builder.loadCoverAndPalette(data: Any?) {
+    protected fun NotificationCompat.Builder.loadCoverAndPalette(data: Any?): NotificationCompat.Builder {
         var bitmap: Bitmap? = null
         var color: Int = Color.TRANSPARENT
         lastBitmap?.takeIf { it.first == data }?.let { bitmap = it.second }
@@ -77,6 +78,8 @@ abstract class LMusicNotification(
             this@loadCoverAndPalette.setLargeIcon(bitmap)
             this@loadCoverAndPalette.color = color
         }
+
+        return this
     }
 
     /**
@@ -85,16 +88,14 @@ abstract class LMusicNotification(
     protected fun buildNotification(mediaSession: MediaSessionCompat): NotificationCompat.Builder? {
         val style = androidx.media.app.NotificationCompat.MediaStyle()
             .setMediaSession(mediaSession.sessionToken)
-            .setShowActionsInCompactView(0, 1, 2)
+            .setShowActionsInCompactView(0, 2, 3)
             .setShowCancelButton(true)
             .setCancelButtonIntent(mStopAction.actionIntent)
         val controller = mediaSession.controller
-        val state = controller.playbackState
         val metadata = controller.metadata ?: return null
         val description = metadata.description ?: return null
-        val isPlaying = state.state == PlaybackStateCompat.STATE_PLAYING
         val repeatMode = mediaSession.controller.repeatMode
-        println(isPlaying)
+        val isPlaying = getIsPlaying()
 
         return NotificationCompat.Builder(
             mContext, LMusicNotificationImpl.playerChannelName + "_ID"

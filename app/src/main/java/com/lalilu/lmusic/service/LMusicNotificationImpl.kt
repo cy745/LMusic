@@ -6,15 +6,16 @@ import android.app.NotificationManager
 import android.app.Service
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datasource.MDataBase
+import com.lalilu.lmusic.utils.extension.findShowLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Singleton
+import kotlin.concurrent.timerTask
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -40,7 +41,6 @@ class LMusicNotificationImpl constructor(
     }
 
     private val channels = listOf(playerChannelName, loggerChannelName)
-    private var currentLyricTemp: String? = null
 
     /**
      *  API 26 以上需要注册Channel，否则不显示通知。
@@ -50,14 +50,7 @@ class LMusicNotificationImpl constructor(
             createNotificationChannel()
         }
         notificationManager.cancelAll()
-        launch {
-            LMusicLyricManager.currentSentence.collectLatest {
-                println("collectLatest: $it")
-
-                currentLyricTemp = it
-                updateNotification()
-            }
-        }
+        LMusicLyricManager.currentLyricEntry.launchIn(this)
     }
 
     override fun fillData(data: Any?): Any? {
@@ -70,36 +63,55 @@ class LMusicNotificationImpl constructor(
 
     override fun getIsPlaying(): Boolean = playBack.getIsPlaying()
     override fun getIsStop(): Boolean = playBack.getIsStopped()
+    override fun getPosition(): Long = playBack.getPosition()
     override fun getService(): Service = mContext
 
-    private var dataTemp: Any? = null
-    private var lastBuilder: NotificationCompat.Builder? = null
+    private var lyricUpdateTimer: Timer? = null
 
     /**
      * 更新Notification
      *
      * @param data 传入给coil获取封面的对象，若为null则表示只需更新歌词
      */
-    fun updateNotification(data: Any? = null) = launch {
-        if (data != null) dataTemp = data
+    fun updateNotification(data: Any?) = launch(Dispatchers.IO) {
+        // 无论任何操作都先将定时器取消
+        lyricUpdateTimer?.cancel()
+        lyricUpdateTimer = null
 
-        withContext(Dispatchers.IO) {
-            val builder = lastBuilder?.takeIf { data == null }
-                ?: buildNotification(mContext.mediaSession)?.apply { lastBuilder = this }
-                ?: return@withContext
+        val builder = buildNotification(mContext.mediaSession)
+            ?.loadCoverAndPalette(data)
+            ?: return@launch
+        val notification = builder.build().apply {
+            flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+            pushNotification(this)
+        }
 
-            builder.loadCoverAndPalette(dataTemp)
-            builder.setTicker(currentLyricTemp)
+        // 只有处于播放中的状态时才推送状态栏歌词
+        if (getIsPlaying()) {
+            var lastLyricIndex = 0
 
-            println("[pushNotification]: updateNotification ${data == null}")
-            pushNotification(builder.build().apply {
-                flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+            lyricUpdateTimer = Timer()
+            lyricUpdateTimer?.schedule(timerTask {
+                if (!getIsPlaying()) return@timerTask
+                val lyricList = LMusicLyricManager.currentLyricEntry.get() ?: return@timerTask
+                val time = getPosition().takeIf { it >= 0L } ?: return@timerTask
+                val index = findShowLine(lyricList, time + 500)
 
-                // TODO 设置FLAG_ONLY_UPDATE_TICKER可能会导致notification不更新，不设置则会使状态栏歌词更新时出现两次歌词
-                if (data == null) {
-                    flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+                if (lastLyricIndex != index) {
+                    val lyricEntry = lyricList.getOrNull(index)
+                    val nowLyric = lyricEntry?.text ?: lyricEntry?.secondText
+
+                    notification.apply {
+                        if (nowLyric != null) {
+                            tickerText = nowLyric
+                            flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+                            flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+                        }
+                    }
+                    pushNotification(notification)
+                    lastLyricIndex = index
                 }
-            })
+            }, 200, 200)
         }
     }
 
