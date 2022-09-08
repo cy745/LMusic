@@ -1,13 +1,11 @@
 package com.lalilu.lmusic.viewmodel
 
 import android.text.TextUtils
-import android.view.View
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
-import com.lalilu.R
-import com.lalilu.databinding.FragmentSearchForLyricHeaderBinding
 import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
 import com.lalilu.lmusic.datasource.MDataBase
@@ -38,15 +36,13 @@ class NetworkDataViewModel @Inject constructor(
         }
 
     fun getSongResult(
-        binding: FragmentSearchForLyricHeaderBinding,
         keyword: String,
-        items: SnapshotStateList<SongSearchSong>
+        items: SnapshotStateList<SongSearchSong>,
+        msg: MutableState<String>
     ) = viewModelScope.safeLaunch(Dispatchers.IO) {
         withContext(Dispatchers.Main) {
             items.clear()
-            binding.searchForLyricRefreshAndTipsButton.text =
-                binding.root.context.getString(R.string.button_match_network_data_searching)
-            binding.searchForLyricRefreshAndTipsButton.visibility = View.VISIBLE
+            msg.value = "搜索中..."
         }
         flow {
             val response = neteaseDataSource.searchForSong(keyword)
@@ -54,18 +50,12 @@ class NetworkDataViewModel @Inject constructor(
             emit(results)
         }.onEach {
             withContext(Dispatchers.Main) {
-                if (it.isEmpty()) {
-                    binding.searchForLyricRefreshAndTipsButton.text =
-                        binding.root.context.getString(R.string.button_match_network_data_no_result)
-                } else {
-                    binding.searchForLyricRefreshAndTipsButton.text = ""
-                    binding.searchForLyricRefreshAndTipsButton.visibility = View.GONE
-                }
+                msg.value = if (it.isEmpty()) "无结果" else ""
                 items.addAll(it)
             }
         }.catch {
             withContext(Dispatchers.Main) {
-                binding.searchForLyricRefreshAndTipsButton.text = "搜索失败"
+                msg.value = "搜索失败"
                 items.clear()
             }
         }.launchIn(this)

@@ -14,17 +14,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.blankj.utilcode.util.KeyboardUtils
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.lmusic.utils.extension.edgeTransparentForStatusBar
+import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.utils.extension.rememberStatusBarHeight
 import com.lalilu.lmusic.utils.extension.watchForOffset
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
-object SmartModalBottomSheet {
+object SmartModalBottomSheet : KeyboardUtils.OnSoftInputChangedListener {
     private var scope: CoroutineScope? = null
     private val scaffoldState = ModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
@@ -41,6 +44,13 @@ object SmartModalBottomSheet {
     fun expend() = scope?.launch { scaffoldState.animateTo(ModalBottomSheetValue.Expanded) }
     fun collapse() = scope?.launch { scaffoldState.animateTo(ModalBottomSheetValue.HalfExpanded) }
 
+    override fun onSoftInputChanged(height: Int) {
+//        if (height > 100 && scaffoldState.currentValue != ModalBottomSheetValue.Expanded) {
+//            expend()
+//        }
+        println("onSoftInputChanged: $height")
+    }
+
     @Composable
     fun SmartModalBottomSheetContent(
         navController: NavController,
@@ -49,6 +59,7 @@ object SmartModalBottomSheet {
         content: @Composable () -> Unit
     ) {
         this.scope = scope
+        val context = LocalContext.current
         val offset = scaffoldState.offset.value
         val isDarkModeNow = isSystemInDarkTheme()
         val statusBarHeight = rememberStatusBarHeight()
@@ -69,6 +80,31 @@ object SmartModalBottomSheet {
                 darkIcons = isExpended && !isDarkModeNow
             )
         }
+
+        // TODO 待完善，响应速度比预期慢一大截
+        LaunchedEffect(scaffoldState.currentValue) {
+            if (scaffoldState.currentValue != ModalBottomSheetValue.Expanded) {
+                context.getActivity()?.let {
+                    if (KeyboardUtils.isSoftInputVisible(it)) {
+                        KeyboardUtils.hideSoftInput(it)
+                    }
+                }
+            }
+        }
+
+//        LaunchedEffect(Unit) {
+//            context.getActivity()?.let {
+//                KeyboardUtils.registerSoftInputChangedListener(it, this@SmartModalBottomSheet)
+//            }
+//        }
+//
+//        DisposableEffect(Unit) {
+//            onDispose {
+//                context.getActivity()?.let {
+//                    KeyboardUtils.unregisterSoftInputChangedListener(it.window)
+//                }
+//            }
+//        }
 
         ModalBottomSheetLayout(
             sheetState = scaffoldState,

@@ -92,7 +92,6 @@
                         android:fitsSystemWindows="false"
                         android:minHeight="?attr/actionBarSize"
                         app:cp_layout_collapseMode="pin"
-                        app:menu="@menu/menu_appbar"
                         app:title="@string/default_slogan" />
                 </com.lalilu.ui.appbar.CollapsingLayout>
             </com.lalilu.lmusic.ui.SquareAppbarLayout>

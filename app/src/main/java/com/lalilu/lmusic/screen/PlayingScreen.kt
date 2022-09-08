@@ -16,7 +16,6 @@ import com.blankj.utilcode.util.KeyboardUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
-import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.Config
@@ -92,12 +91,12 @@ fun PlayingScreen() {
                 }
             })
 
-            fmToolbar.setOnMenuItemClickListener {
-                if (it.itemId == R.id.appbar_search) {
-                    fmAppbarLayout.setExpanded(expanded = false, animate = true)
-                }
-                true
-            }
+//            fmToolbar.setOnMenuItemClickListener {
+//                if (it.itemId == R.id.appbar_search) {
+//                    fmAppbarLayout.setExpanded(expanded = false, animate = true)
+//                }
+//                true
+//            }
 
             fmRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
