@@ -63,6 +63,13 @@ fun LMusicNavGraph(
             SmartBar.setExtraBar(item = null)
         }
 
+        /**
+         * 当离开 [MainScreenData.SongsMatchNetworkData] 页时清除 ExtraBar
+         */
+        if (MainScreenData.SongsMatchNetworkData == last && MainScreenData.SongsMatchNetworkData != current) {
+            SmartBar.setExtraBar(item = null)
+        }
+
         last = current
     }
 

@@ -2,7 +2,6 @@ package com.lalilu.lmusic
 
 import android.media.AudioManager
 import android.os.Bundle
-import android.view.Menu
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -19,18 +18,15 @@ import com.blankj.utilcode.util.ToastUtils
 import com.funny.data_saver.core.DataSaverPreferences
 import com.funny.data_saver.core.LocalDataSaver
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.lalilu.R
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmedia.indexer.Indexer
-import com.lalilu.lmusic.manager.GlobalDataManager
 import com.lalilu.lmusic.screen.LMusicNavGraph
 import com.lalilu.lmusic.screen.PlayingScreen
 import com.lalilu.lmusic.screen.ShowScreen
 import com.lalilu.lmusic.screen.component.SmartBar.SmartBarContent
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.ui.MySearchView
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,9 +40,6 @@ import kotlin.coroutines.CoroutineContext
 class MainActivity : AppCompatActivity(), CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO
-
-    @Inject
-    lateinit var globalDataManager: GlobalDataManager
 
     @Inject
     lateinit var dataSaverPreferences: DataSaverPreferences
@@ -106,14 +99,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
             }
         }
         volumeControlStream = AudioManager.STREAM_MUSIC
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_appbar, menu)
-        val searchView = menu.findItem(R.id.appbar_search)
-            .actionView as MySearchView
-        searchView.bind(globalDataManager::searchFor)
-        return super.onCreateOptionsMenu(menu)
     }
 }
 
