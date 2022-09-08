@@ -43,44 +43,91 @@ fun Modifier.navigateBarHeight(multiple: Float = 1f): Modifier = composed {
     )
 }
 
-fun Modifier.edgeTransparentForStatusBar() = composed {
-    edgeTransparent(WindowInsets.statusBars.getTop(LocalDensity.current).toFloat())
+fun Modifier.edgeTransparentForStatusBar(enable: Boolean = true) = composed {
+    if (enable) {
+        edgeTransparent(
+            position = EDGE_TOP,
+            edgeWidth = WindowInsets.statusBars.getTop(LocalDensity.current).toFloat()
+        )
+    } else {
+        Modifier
+    }
 }
 
-fun Modifier.edgeTransparent(top: Dp) = composed {
-    edgeTransparent(LocalDensity.current.run { top.toPx() })
+fun Modifier.edgeTransparent(
+    position: Int = EDGE_TOP,
+    edgeWidth: Dp = 0.dp,
+    percent: Float = 0f
+) = composed {
+    LocalDensity.current.run { edgeTransparent(position, edgeWidth.toPx(), percent) }
 }
+
+const val EDGE_TOP = 0x01
+const val EDGE_BOTTOM = EDGE_TOP shl 1
+const val EDGE_LEFT = EDGE_TOP shl 2
+const val EDGE_RIGHT = EDGE_TOP shl 3
 
 /**
  * 学习了 https://github.com/qinci/EdgeTranslucent 的边缘模糊化过渡实现
  * 将其转为Compose适用的方法
  *
- * @param top 希望在元素的顶边进行模糊化的边缘宽度
+ * @param position 所要透明过渡的边缘
+ * @param edgeWidth 希望在元素的顶边进行模糊化的边缘宽度
  */
 fun Modifier.edgeTransparent(
-    top: Float,
+    position: Int,
+    edgeWidth: Float,
+    percent: Float = 0f,
     interpolator: (x: Float) -> Float = AccelerateDecelerateInterpolator()::getInterpolation
 ): Modifier = composed {
     val xValue = (0..100 step 10).map { if (it == 0) 0f else it / 100f }
-    val mPaint = remember(top) {
+    val mPaint: Paint = remember {
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.FILL
             xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
-            shader = LinearGradient(
-                0f, 0f, 0f, top,
+            if (edgeWidth > 0f) {
+                shader = LinearGradient(
+                    0f, 0f, 0f, edgeWidth,
+                    xValue.map { Color.White.copy(alpha = 1f - interpolator(it)).toArgb() }
+                        .toIntArray(),
+                    xValue.toFloatArray(), Shader.TileMode.CLAMP
+                )
+            }
+        }
+    }
+
+    var actualWidth: Float
+    var layerSaveTemp: Int
+    var layerSave: Int
+    var canvas: Canvas
+
+    this.drawWithContent {
+        canvas = drawContext.canvas.nativeCanvas
+        layerSave = canvas.saveLayer(0f, 0f, size.width, size.height, null)
+        drawContent()
+
+        actualWidth = if (percent > 0f) size.height * percent else edgeWidth
+
+        if (mPaint.shader == null || edgeWidth <= 0f) {
+            mPaint.shader = LinearGradient(
+                0f, 0f, 0f, actualWidth,
                 xValue.map { Color.White.copy(alpha = 1f - interpolator(it)).toArgb() }
                     .toIntArray(),
                 xValue.toFloatArray(), Shader.TileMode.CLAMP
             )
         }
-    }
-    var layerSave: Int
-    var canvas: Canvas
-    this.drawWithContent {
-        canvas = drawContext.canvas.nativeCanvas
-        layerSave = canvas.saveLayer(0f, 0f, size.width, size.height, null)
-        drawContent()
-        canvas.drawRect(0f, 0f, size.width, top, mPaint)
+
+        if (position == 0 || (position and EDGE_TOP) != 0) {
+            canvas.drawRect(0f, 0f, size.width, actualWidth, mPaint!!)
+        }
+
+        if (position == 0 || (position and EDGE_BOTTOM) != 0) {
+            layerSaveTemp = canvas.save()
+            canvas.rotate(180f, size.width / 2f, size.height / 2f)
+            canvas.drawRect(0f, 0f, size.width, actualWidth, mPaint!!)
+            canvas.restoreToCount(layerSaveTemp)
+        }
+
         canvas.restoreToCount(layerSave)
     }
 }

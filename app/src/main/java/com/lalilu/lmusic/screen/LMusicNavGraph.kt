@@ -22,6 +22,7 @@ import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.component.NavigateBar
 import com.lalilu.lmusic.screen.component.NavigateDetailBar
 import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.screen.library.*
 import com.lalilu.lmusic.screen.library.detail.*
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
@@ -61,6 +62,7 @@ fun LMusicNavGraph(
          */
         if (MainScreenData.SongsDetail == last && MainScreenData.SongsDetail != current) {
             SmartBar.setExtraBar(item = null)
+            SmartModalBottomSheet.enableFadeEdge()
         }
 
         /**
