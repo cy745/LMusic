@@ -62,6 +62,11 @@ object LMusicBrowser : DefaultLifecycleObserver {
     fun reloadAndPlay() = controller?.transportControls
         ?.sendCustomAction(Config.ACTION_RELOAD_AND_PLAY, null)
 
+    fun addAndPlay(id: String) {
+        addToNext(id)
+        playById(id)
+    }
+
     fun addToNext(mediaId: String): Boolean {
         val nowIndex = LMusicRuntime.currentPlaylist.indexOfFirst { it.id == mediaId }
         val currentIndex = LMusicRuntime.currentPlaylist.indexOf(LMusicRuntime.currentPlaying)

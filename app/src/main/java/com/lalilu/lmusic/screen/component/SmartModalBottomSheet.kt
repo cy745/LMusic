@@ -9,10 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
@@ -34,6 +31,7 @@ import kotlinx.coroutines.launch
 object SmartModalBottomSheet : KeyboardUtils.OnSoftInputChangedListener {
     private var scope: CoroutineScope? = null
     private val scaffoldState = ModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    private val enableFadeEdgeForStatusBar = mutableStateOf(true)
 
     val offset: Float
         get() = scaffoldState.offset.value
@@ -47,6 +45,8 @@ object SmartModalBottomSheet : KeyboardUtils.OnSoftInputChangedListener {
     fun show() = scope?.launch { scaffoldState.show() }
     fun expend() = scope?.launch { scaffoldState.animateTo(ModalBottomSheetValue.Expanded) }
     fun collapse() = scope?.launch { scaffoldState.animateTo(ModalBottomSheetValue.HalfExpanded) }
+    fun enableFadeEdge() = scope?.launch { enableFadeEdgeForStatusBar.value = true }
+    fun disableFadeEdge() = scope?.launch { enableFadeEdgeForStatusBar.value = false }
 
     override fun onSoftInputChanged(height: Int) {
 //        if (height > 100 && scaffoldState.currentValue != ModalBottomSheetValue.Expanded) {
@@ -122,7 +122,7 @@ object SmartModalBottomSheet : KeyboardUtils.OnSoftInputChangedListener {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .edgeTransparentForStatusBar(),
+                        .edgeTransparentForStatusBar(enableFadeEdgeForStatusBar.value),
                     content = sheetContent
                 )
             },
@@ -132,7 +132,12 @@ object SmartModalBottomSheet : KeyboardUtils.OnSoftInputChangedListener {
                         .fillMaxSize()
                         .clip(
                             GenericShape { size, _ ->
-                                addRect(Rect(0f, 0f, size.width, offset + offsetRoundedCorner))
+                                addRect(
+                                    Rect(
+                                        0f, 0f, size.width,
+                                        if (scaffoldState.isVisible) offset + offsetRoundedCorner else size.height
+                                    )
+                                )
                             }
                         ),
                     content = content

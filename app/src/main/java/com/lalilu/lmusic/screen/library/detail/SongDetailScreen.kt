@@ -1,11 +1,10 @@
 package com.lalilu.lmusic.screen.library.detail
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -13,25 +12,25 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImagePainter
-import coil.compose.SubcomposeAsyncImage
-import coil.compose.SubcomposeAsyncImageContent
+import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
+import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.edgeTransparent
 
 @Composable
 fun SongDetailScreen(
@@ -43,70 +42,58 @@ fun SongDetailScreen(
     val subTitle = "${song._artist}\n\n${song._albumTitle}"
 
     LaunchedEffect(song) {
+        SmartModalBottomSheet.disableFadeEdge()
         SmartBar.setExtraBar {
             SongDetailActionsBar(
                 onAddSongToPlaylist = {
                     navController.navigate("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
                 },
                 onSetSongToNext = {
-//                    mediaBrowser.addToNext(song.id)
+                    LMusicBrowser.addToNext(song.id)
                 },
                 onPlaySong = {
-//                    mediaBrowser.playById(mediaId = song.id, playWhenReady = true)
+                    LMusicBrowser.addAndPlay(song.id)
                 }
             )
         }
     }
 
-    LazyVerticalGrid(
-        modifier = Modifier.fillMaxSize(),
-        columns = GridCells.Fixed(
-            if (windowSize.widthSizeClass != WindowWidthSizeClass.Compact) 2 else 1
-        ),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
-        contentPadding = SmartBar.rememberContentPadding()
+    Box(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
     ) {
-        item {
-            Column(modifier = Modifier.fillMaxWidth()) {
+        AsyncImage(
+            modifier = Modifier
+                .fillMaxWidth()
+                .edgeTransparent(position = EDGE_BOTTOM, percent = 1.5f),
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(song)
+                .crossfade(true)
+                .build(),
+            contentScale = ContentScale.FillWidth,
+            contentDescription = ""
+        )
+        LazyVerticalGrid(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 100.dp),
+            columns = GridCells.Fixed(
+                if (windowSize.widthSizeClass != WindowWidthSizeClass.Compact) 2 else 1
+            ),
+            contentPadding = SmartBar.rememberContentPadding()
+        ) {
+            item {
                 NavigatorHeader(title = title, subTitle = subTitle) {
-                    Surface(
-                        elevation = 4.dp,
-                        shape = RoundedCornerShape(2.dp)
-                    ) {
-                        SubcomposeAsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(song)
-                                .size(SizeUtils.dp2px(128f))
-                                .crossfade(true)
-                                .build(), contentDescription = ""
-                        ) {
-                            val state = painter.state
-                            if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.ic_music_line),
-                                    contentDescription = "",
-                                    contentScale = FixedScale(2.5f),
-                                    colorFilter = ColorFilter.tint(color = Color.LightGray),
-                                    modifier = Modifier
-                                        .size(128.dp)
-                                        .fillMaxWidth()
-                                        .aspectRatio(1f)
-                                )
-                            } else {
-                                SubcomposeAsyncImageContent(
-                                    modifier = Modifier
-                                        .sizeIn(
-                                            minHeight = 64.dp,
-                                            maxHeight = 128.dp,
-                                            minWidth = 64.dp,
-                                            maxWidth = 144.dp
-                                        )
-                                )
-                            }
-                        }
+                    IconButton(onClick = { }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_fullscreen_line),
+                            contentDescription = "查看图片"
+                        )
                     }
                 }
+            }
+            item {
                 NetworkDataCard(
                     onClick = {
                         navController.navigate("${MainScreenData.SongsMatchNetworkData.name}/${song.id}")
