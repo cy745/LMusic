@@ -69,14 +69,14 @@
                         android:layout_height="match_parent"
                         android:fitsSystemWindows="true"
                         app:edge_position="top|bottom"
-                        app:edge_width="200dp">
+                        app:edge_width="300dp">
 
                         <com.lalilu.lmusic.ui.MyLyricViewX
                             android:id="@+id/fm_lyric_view_x"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:alpha="0"
-                            app:lrcHorizontalOffset="-10dp"
+                            app:lrcHorizontalOffset="-60dp"
                             app:lrcLabel="暂无歌词"
                             app:lrcNormalTextColor="#B3B3B3"
                             app:lrcPadding="32dp"

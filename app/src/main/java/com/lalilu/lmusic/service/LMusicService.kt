@@ -173,7 +173,10 @@ class LMusicService : MediaBrowserServiceCompat() {
 
         val sessionActivityPendingIntent =
             packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
-                PendingIntent.getActivity(this, 0, sessionIntent, 0)
+                PendingIntent.getActivity(
+                    this, 0, sessionIntent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
             }
 
         mediaSession = MediaSessionCompat(this, "LMusicService")

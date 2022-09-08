@@ -112,6 +112,10 @@ class SquareAppbarLayout @JvmOverloads constructor(
             mLyricViewX?.let {
                 it.alpha = alphaPercentIncrease
             }
+
+            mEdgeTransparentView?.let {
+                it.alpha = alphaPercentIncrease
+            }
         }
         behavior.addOnStateChangeListener(StateHelper.OnScrollToThresholdListener {
             HapticUtils.haptic(
