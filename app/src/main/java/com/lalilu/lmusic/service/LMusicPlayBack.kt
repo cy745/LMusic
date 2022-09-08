@@ -62,10 +62,10 @@ abstract class LMusicPlayBack<T>(
             if (!requestAudioFocus()) return
 
             if (player?.isPlaying == false) {
-                println("onPlay")
-                onPlaybackStateChanged(PlaybackState.STATE_PLAYING)
                 isPlaying = true
                 volumeProxy!!.fadeStart()
+                println("onPlay")
+                onPlaybackStateChanged(PlaybackState.STATE_PLAYING)
             }
         } else {
             // 若未缓冲完成则获取当前歌曲的信息
@@ -80,11 +80,10 @@ abstract class LMusicPlayBack<T>(
     }
 
     override fun onPause() {
-        println("onPause")
-
-        onPlaybackStateChanged(PlaybackState.STATE_PAUSED)
         isPlaying = false
         volumeProxy?.fadePause()
+        println("onPause")
+        onPlaybackStateChanged(PlaybackState.STATE_PAUSED)
     }
 
     override fun onPlayFromUri(uri: Uri?, extras: Bundle?) {

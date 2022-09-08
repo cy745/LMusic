@@ -14,6 +14,7 @@ import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
+import com.lalilu.lmusic.service.LMusicLyricManager
 import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -150,6 +151,7 @@ class NetworkDataViewModel @Inject constructor(
                 )
             )
             ToastUtils.showShort("保存匹配歌词成功")
+            LMusicLyricManager.currentLyric.requireUpdate()
             withContext(Dispatchers.Main) {
                 success()
             }
