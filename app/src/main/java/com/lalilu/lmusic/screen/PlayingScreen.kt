@@ -10,6 +10,7 @@ import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.KeyboardUtils
@@ -21,7 +22,6 @@ import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.ComposeAdapter
 import com.lalilu.lmusic.adapter.setDiffNewData
-import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
@@ -32,6 +32,7 @@ import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.lmusic.viewmodel.SettingsViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper
@@ -41,7 +42,9 @@ import com.lalilu.ui.internal.StateHelper.Companion.STATE_NORMAL
 
 @Composable
 @ExperimentalMaterialApi
-fun PlayingScreen() {
+fun PlayingScreen(
+    settingsViewModel: SettingsViewModel = hiltViewModel()
+) {
     val density = LocalDensity.current
     val navController = LocalNavigatorHost.current
     val statusBarsInsets = WindowInsets.statusBars
@@ -90,13 +93,6 @@ fun PlayingScreen() {
                         fmToolbar.collapseActionView()
                 }
             })
-
-//            fmToolbar.setOnMenuItemClickListener {
-//                if (it.itemId == R.id.appbar_search) {
-//                    fmAppbarLayout.setExpanded(expanded = false, animate = true)
-//                }
-//                true
-//            }
 
             fmRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -166,27 +162,26 @@ fun PlayingScreen() {
                 fmLyricViewX.setLyricEntryList(emptyList())
                 fmLyricViewX.loadLyric(it?.first, it?.second)
             }
-            SpManager.listen(
-                Config.KEY_SETTINGS_LYRIC_GRAVITY,
-                SpManager.SpIntListener(Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
-                    when (it) {
+            settingsViewModel.settingsDataStore.apply {
+                lyricGravity.liveData().observe(activity) {
+                    when (it ?: Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
                         0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
                         1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
                         2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
                     }
-                })
+                }
 
-            SpManager.listen(Config.KEY_SETTINGS_LYRIC_TEXT_SIZE,
-                SpManager.SpIntListener(Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE) {
-                    val textSize = ConvertUtils.sp2px(it.toFloat()).toFloat()
+                lyricTextSize.liveData().observe(activity) {
+                    val sp = it ?: Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
+                    val textSize = ConvertUtils.sp2px(sp.toFloat()).toFloat()
                     fmLyricViewX.setNormalTextSize(textSize)
                     fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
-                })
-//            SpManager.listen(
-//                Config.KEY_SETTINGS_SEEKBAR_HANDLER,
-//                SpManager.SpIntListener(Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER) {
-//                    seekBarHandler.clickHandleMode = it
-//                })
+                }
+
+                this.seekBarHandler.liveData().observe(activity) {
+                    seekBarHandler.clickHandleMode = it ?: Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
+                }
+            }
         }
     }) {
         ViewCompat.dispatchApplyWindowInsets(root, windowInsetsCompat)

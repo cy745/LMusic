@@ -12,6 +12,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,15 +21,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
 @Composable
-fun LibraryScreen() {
+fun LibraryScreen(
+    viewModel: LibraryViewModel = hiltViewModel()
+) {
+    val dailyRecommends = remember {
+        viewModel.requireDailyRecommends()
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(),

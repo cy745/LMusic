@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,7 +25,6 @@ fun AlbumsScreen() {
     val albums = Library.getAlbums()
     val windowSize = LocalWindowSize.current
     val navController = LocalNavigatorHost.current
-    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
     var sortByState by rememberDataSaverState("KEY_SORT_BY_AlbumsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)

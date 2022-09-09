@@ -44,8 +44,24 @@ class LMusicService : MediaBrowserServiceCompat() {
         private val audioFocusHelper = LMusicAudioFocusHelper(this@LMusicService) {
             when (it) {
                 AudioManager.AUDIOFOCUS_LOSS,
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> onPause()
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                    settingsDataStore.apply {
+                        if (ignoreAudioFocus.get() != true) {
+                            onPause()
+                        }
+                    }
+                }
             }
+        }
+
+        /**
+         * 请求获取音频焦点，若用户设置了忽略音频焦点，则直接返回true
+         */
+        override fun requestAudioFocus(): Boolean {
+            settingsDataStore.apply {
+                if (ignoreAudioFocus.get() == true) return true
+            }
+            return audioFocusHelper.requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         }
 
         override fun getUriFromItem(item: LSong): Uri = item.uri
@@ -54,14 +70,10 @@ class LMusicService : MediaBrowserServiceCompat() {
         override fun getById(id: String): LSong? =
             LMusicRuntime.currentPlaylist.find { it.id == id }
 
-        override fun requestAudioFocus(): Boolean {
-            return audioFocusHelper.requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-        }
-
         override fun getNext(random: Boolean): LSong? {
             settingsDataStore.apply {
                 val current = getCurrent()
-                return when (repeatModeKey.get()) {
+                return when (repeatMode.get()) {
                     PlaybackStateCompat.REPEAT_MODE_INVALID,
                     PlaybackStateCompat.REPEAT_MODE_NONE ->
                         LMusicRuntime.currentPlaylist.getNextOf(current, false)
@@ -74,7 +86,7 @@ class LMusicService : MediaBrowserServiceCompat() {
         override fun getPrevious(): LSong? {
             settingsDataStore.apply {
                 val current = getCurrent()
-                return when (repeatModeKey.get()) {
+                return when (repeatMode.get()) {
                     PlaybackStateCompat.REPEAT_MODE_INVALID,
                     PlaybackStateCompat.REPEAT_MODE_NONE ->
                         LMusicRuntime.currentPlaylist.getPreviousOf(current, false)

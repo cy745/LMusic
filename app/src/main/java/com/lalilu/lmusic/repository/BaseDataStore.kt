@@ -5,6 +5,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
 import com.blankj.utilcode.util.GsonUtils
 import com.google.common.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
@@ -21,9 +23,14 @@ abstract class BaseDataStore : CoroutineScope {
     protected abstract val dataStore: DataStore<Preferences>
     protected abstract val Context.dataStore: DataStore<Preferences>
 
+    @JvmName("getDataStore1")
+    fun getDataStore(): DataStore<Preferences> = dataStore
+
     fun <T : Any> ListPreferenceKey<T>.set(value: List<T>?) = launch { dataStore.set(value) }
     fun <T : Any> ListPreferenceKey<T>.get(): List<T> = dataStore.get()
-    fun <T : Any> ListPreferenceKey<T>.listen(): Flow<List<T>> = dataStore.listen()
+    fun <T : Any> ListPreferenceKey<T>.flow(): Flow<List<T>> = dataStore.flow()
+    fun <T : Any> ListPreferenceKey<T>.liveData(): LiveData<List<T>> =
+        dataStore.flow().asLiveData()
 
     fun <T : Any> Preferences.Key<T>.set(value: T?) = launch {
         dataStore.edit {
@@ -36,12 +43,16 @@ abstract class BaseDataStore : CoroutineScope {
     }
 
     fun <T : Any> Preferences.Key<T>.get(): T? = runBlocking {
-        listen().first()
+        flow().first()
     }
 
-    fun <T : Any> Preferences.Key<T>.listen(): Flow<T?> = dataStore.data.map { preferences ->
+    fun <T : Any> Preferences.Key<T>.flow(): Flow<T?> = dataStore.data.map { preferences ->
         preferences[this]
     }
+
+    fun <T : Any> Preferences.Key<T>.liveData(): LiveData<T?> = dataStore.data.map { preferences ->
+        preferences[this]
+    }.asLiveData()
 
     fun intListPreferencesKey(name: String, temp: Boolean = false): ListPreferenceKey<Int> =
         ListPreferenceKey(name, temp)
@@ -75,10 +86,10 @@ abstract class BaseDataStore : CoroutineScope {
             if (temp && tempList != null && tempList!!.isNotEmpty()) {
                 return tempList as List<I>
             }
-            return runBlocking { listen().first() }
+            return runBlocking { flow().first() }
         }
 
-        fun DataStore<Preferences>.listen(): Flow<List<I>> =
+        fun DataStore<Preferences>.flow(): Flow<List<I>> =
             this.data.map { preferences ->
                 GsonUtils.fromJson(preferences[preferencesKey], typeToken) ?: emptyList()
             }

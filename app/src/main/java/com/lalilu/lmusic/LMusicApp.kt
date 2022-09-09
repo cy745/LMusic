@@ -3,7 +3,6 @@ package com.lalilu.lmusic
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
-import com.lalilu.lmusic.manager.SpManager
 import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
@@ -37,17 +36,8 @@ class LMusicApp : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
-//        BlockCanary.install(this, object : BlockCanaryContext() {
-//            override fun provideQualifier(): String = "BlockCanary"
-//            override fun provideUid(): String = "uid_block_canary"
-//            override fun provideBlockThreshold(): Int = 50
-//            override fun providePath(): String {
-//                return "/data/com.lalilu.lmusic.debug/files/logs/"
-//            }
-//        }).start()
         LMusicRuntime.init(historyDataStore)
         LMusicLyricManager.init(lyricSourceFactory)
         LMusicBrowser.init(this, historyDataStore)
-        SpManager.init(this)
     }
 }

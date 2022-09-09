@@ -1,15 +1,12 @@
 package com.lalilu.lmusic.screen.library.detail
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -39,25 +36,8 @@ fun ArtistDetailScreen(
     val haptic = LocalHapticFeedback.current
     val windowSize = LocalWindowSize.current
     val navController = LocalNavigatorHost.current
-    val contentPaddingForFooter by SmartBar.contentPaddingForSmartBarDp
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistDetailScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistDetailScreen", true)
-
-//    LaunchedEffect(artistName) {
-//        songs.clear()
-//        songs.addAll(
-//            artistViewModel
-//                .getSongsByName(artistName)
-//                .toMutableStateList()
-//        )
-//    }
-
-//    val sortedItems = remember(sortByState, sortDesc, songs) {
-//        sort(sortByState, sortDesc, songs,
-//            getTextField = { it.mediaMetadata.title.toString() },
-//            getTimeField = { it.mediaId.toLong() }
-//        )
-//    }
 
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
@@ -75,32 +55,33 @@ fun ArtistDetailScreen(
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
+    LazyVerticalGrid(
+        modifier = Modifier.fillMaxSize(),
+        columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
+        contentPadding = SmartBar.rememberContentPadding()
     ) {
-        NavigatorHeaderWithButtons(title = artist.name, subTitle = "关联：") {
-            LazyListSortToggleButton(sortByState = sortByState) {
-                sortByState = next(sortByState)
-            }
-            SortToggleButton(sortDesc = sortDesc) {
-                sortDesc = !sortDesc
+        item {
+            NavigatorHeaderWithButtons(
+                title = artist.name,
+                subTitle = "${artist.getSongCount()} 首歌曲"
+            ) {
+                LazyListSortToggleButton(sortByState = sortByState) {
+                    sortByState = next(sortByState)
+                }
+                SortToggleButton(sortDesc = sortDesc) {
+                    sortDesc = !sortDesc
+                }
             }
         }
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
-            contentPadding = PaddingValues(
-                bottom = contentPaddingForFooter
+
+        itemsIndexed(items = songs) { index, item ->
+            SongCard(
+                modifier = Modifier.animateItemPlacement(),
+                index = index,
+                song = item,
+                onSongSelected = onSongSelected,
+                onSongShowDetail = onSongShowDetail
             )
-        ) {
-            itemsIndexed(items = songs) { index, item ->
-                SongCard(
-                    modifier = Modifier.animateItemPlacement(),
-                    index = index,
-                    song = item,
-                    onSongSelected = onSongSelected,
-                    onSongShowDetail = onSongShowDetail
-                )
-            }
         }
     }
 }

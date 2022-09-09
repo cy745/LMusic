@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.screen.guiding
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,7 +16,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.blankj.utilcode.util.ActivityUtils
-import com.blankj.utilcode.util.SPUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
@@ -26,10 +24,10 @@ import com.lalilu.lmusic.MainActivity
 import com.lalilu.lmusic.screen.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.lmusic.utils.safeLaunch
 import com.lalilu.ui.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -47,6 +45,11 @@ fun SeekbarGuidingPage(navController: NavController) {
     val seekbarHandlerData = rememberDataSaverState(
         Config.KEY_SETTINGS_SEEKBAR_HANDLER,
         Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
+    )
+
+    var isGuidingOver by rememberDataSaverState(
+        key = Config.KEY_REMEMBER_IS_GUIDING_OVER,
+        default = false
     )
 
     val reUpdateDelay = 200L
@@ -79,8 +82,7 @@ fun SeekbarGuidingPage(navController: NavController) {
 
     val complete: () -> Unit = {
         context.getActivity()?.apply {
-            SPUtils.getInstance(this.packageName, AppCompatActivity.MODE_PRIVATE)
-                .put(Config.KEY_REMEMBER_IS_GUIDING_OVER, true)
+            isGuidingOver = true
 
             if (!ActivityUtils.isActivityExistsInStack(MainActivity::class.java)) {
                 ActivityUtils.startActivity(MainActivity::class.java)
@@ -262,7 +264,7 @@ fun SeekbarGuidingPage(navController: NavController) {
 }
 
 fun delayReUpdate(scope: CoroutineScope, updateValue: MutableState<Boolean>, delay: Long) =
-    scope.safeLaunch {
+    scope.launch {
         if (updateValue.value) {
             updateValue.value = false
             delay(delay)
