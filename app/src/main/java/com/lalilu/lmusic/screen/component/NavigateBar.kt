@@ -5,7 +5,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -32,27 +31,50 @@ import com.lalilu.lmusic.utils.extension.navigateSingleTop
 
 
 @Composable
-fun NavigateBar() {
+fun NavigateBar(horizontal: Boolean = true) {
     val navController = LocalNavigatorHost.current
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStack?.destination?.route
 
-    LazyRow(
-        modifier = Modifier
-            .height(52.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        MainScreenData.values().forEach {
-            if (it.showNavigateButton) {
-                item {
+    if (horizontal) {
+        Row(
+            modifier = Modifier
+                .height(52.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            MainScreenData.values().forEach {
+                if (it.showNavigateButton) {
                     NavigateItem(
                         navController = navController,
                         currentRoute = currentRoute,
                         routeData = it
                     )
+                }
+            }
+        }
+    } else {
+        Box(
+            Modifier
+                .wrapContentWidth()
+                .fillMaxHeight()
+                .padding(start = 15.dp, end = 10.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                MainScreenData.values().forEach {
+                    if (it.showNavigateButton) {
+                        NavigateItem(
+                            navController = navController,
+                            currentRoute = currentRoute,
+                            routeData = it
+                        )
+                    }
                 }
             }
         }
@@ -85,7 +107,7 @@ fun NavigateItem(
         },
         shape = CircleShape,
         modifier = Modifier
-            .fillMaxHeight()
+            .size(48.dp)
             .aspectRatio(1f)
     ) {
         Box(
