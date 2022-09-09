@@ -2,6 +2,8 @@ package com.lalilu.lmusic.service
 
 import androidx.lifecycle.asLiveData
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.datasource.MDataBase
+import com.lalilu.lmusic.datasource.entity.PlayHistory
 import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.utils.extension.moveHeadToTailWithSearch
 import kotlinx.coroutines.CoroutineScope
@@ -19,9 +21,14 @@ import kotlin.coroutines.CoroutineContext
 object LMusicRuntime : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     private var historyStore: HistoryDataStore? = null
+    private var mDataBase: MDataBase? = null
 
-    fun init(historyDataStore: HistoryDataStore) {
+    fun init(
+        historyDataStore: HistoryDataStore,
+        mDataBase: MDataBase
+    ) {
         historyStore = historyDataStore
+        this.mDataBase = mDataBase
     }
 
     var currentPlaylist: List<LSong> = emptyList()
@@ -38,6 +45,13 @@ object LMusicRuntime : CoroutineScope {
             launch {
                 currentPlayingFlow.emit(value)
                 historyStore?.apply { lastPlayedIdKey.set(value?.id) }
+                if (value?.id == null) return@launch
+                mDataBase?.playHistoryDao()?.save(
+                    PlayHistory(
+                        mediaId = value.id,
+                        startTime = System.currentTimeMillis()
+                    )
+                )
             }
         }
     private var currentPosition: Long = 0

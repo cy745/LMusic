@@ -5,21 +5,23 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.lalilu.lmusic.datasource.converter.DateConverter
 import com.lalilu.lmusic.datasource.converter.UriConverter
-import com.lalilu.lmusic.datasource.dao.MArtistDao
 import com.lalilu.lmusic.datasource.dao.MNetworkDataDao
 import com.lalilu.lmusic.datasource.dao.MPlaylistDao
+import com.lalilu.lmusic.datasource.dao.PlayHistoryDao
 import com.lalilu.lmusic.datasource.dao.SongInPlaylistDao
-import com.lalilu.lmusic.datasource.entity.*
+import com.lalilu.lmusic.datasource.entity.MNetworkData
+import com.lalilu.lmusic.datasource.entity.MPlaylist
+import com.lalilu.lmusic.datasource.entity.PlayHistory
+import com.lalilu.lmusic.datasource.entity.SongInPlaylist
 
 @Database(
     entities = [
         MNetworkData::class,
-        MArtist::class,
         MPlaylist::class,
         SongInPlaylist::class,
-        MArtistMapId::class
+        PlayHistory::class
     ],
-    version = 10,
+    version = 12,
     exportSchema = false
 )
 @TypeConverters(
@@ -27,8 +29,8 @@ import com.lalilu.lmusic.datasource.entity.*
     DateConverter::class
 )
 abstract class MDataBase : RoomDatabase() {
+    abstract fun playHistoryDao(): PlayHistoryDao
     abstract fun networkDataDao(): MNetworkDataDao
-    abstract fun artistDao(): MArtistDao
     abstract fun playlistDao(): MPlaylistDao
     abstract fun songInPlaylistDao(): SongInPlaylistDao
 }

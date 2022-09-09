@@ -12,6 +12,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,9 +36,8 @@ import com.lalilu.lmusic.viewmodel.LibraryViewModel
 fun LibraryScreen(
     viewModel: LibraryViewModel = hiltViewModel()
 ) {
-    val dailyRecommends = remember {
-        viewModel.requireDailyRecommends()
-    }
+    val dailyRecommends = remember { viewModel.requireDailyRecommends() }
+    val lastPlayedStack by viewModel.requirePlayHistory().collectAsState(emptyList())
 
     LazyColumn(
         modifier = Modifier
@@ -44,64 +45,62 @@ fun LibraryScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = SmartBar.rememberContentPadding()
     ) {
-        item {
-            RecommendTitle("每日推荐", onClick = {
-
-            })
-        }
-        item {
-            RecommendRow(
-                items = Library.getSongs(10, random = true)
-            ) {
-                RecommendCard(
-                    song = it,
-                    width = 250.dp,
-                    height = 250.dp
-                )
+        dailyRecommends.takeIf { it.isNotEmpty() }?.let {
+            item {
+                RecommendTitle("每日推荐", onClick = { })
+            }
+            item {
+                RecommendRow(
+                    items = it
+                ) {
+                    RecommendCard(
+                        song = it,
+                        width = 250.dp,
+                        height = 250.dp
+                    )
+                }
             }
         }
 
         item {
             // 最近添加
-            RecommendTitle("最近添加", onClick = {
-
-            })
+            RecommendTitle("最近添加", onClick = { })
         }
         item {
             RecommendRow(
-                items = Library.getSongs(10)
+                items = Library.getSongs(15)
             ) {
                 RecommendCard(song = it)
             }
         }
 
-        item {
-            RecommendTitle("最近播放")
-        }
-        item {
-            RecommendRow(
-                items = Library.getSongs(10)
-            ) {
-                RecommendCard(
-                    song = it,
-                    width = 125.dp,
-                    height = 125.dp
-                )
+        lastPlayedStack.takeIf { it.isNotEmpty() }?.let {
+            item {
+                RecommendTitle("最近播放")
+            }
+            item {
+                RecommendRow(
+                    items = it
+                ) {
+                    RecommendCard(
+                        song = it,
+                        width = 125.dp,
+                        height = 125.dp
+                    )
+                }
             }
         }
 
         item {
-            RecommendTitle("每日推荐", onClick = {
-
-            })
+            RecommendTitle("随机推荐", onClick = { })
         }
         item {
             RecommendRow(
-                items = Library.getSongs(10)
+                items = Library.getSongs(15, true)
             ) {
                 RecommendCard(
                     song = it,
-                    width = 250.dp,
+                    width = 125.dp,
                     height = 250.dp
                 )
             }

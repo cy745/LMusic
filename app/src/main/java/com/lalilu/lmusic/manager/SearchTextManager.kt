@@ -1,29 +1,19 @@
 package com.lalilu.lmusic.manager
 
-import android.content.Context
-import android.os.Build
 import android.text.TextUtils
 import com.cm55.kanhira.Kanhira
 import com.lalilu.common.KanaToRomaji
 import com.lalilu.common.PinyinUtils
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import java.util.*
 import java.util.regex.Pattern
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 /**
  * 用于实现搜索过滤功能的工具类
  */
-@Singleton
-class SearchTextManager @Inject constructor(
-    private val kanjiToHiraTransformer: KanjiToHiraTransformer
-) {
-    private val chineseToPinyinTransformer = ChineseToPinyinTransformer()
-    private val hiraToRomajiTransformer = HiraToRomajiTransformer()
+object SearchTextManager {
 
     interface TextTransformer {
         fun containTargetText(str: String): Boolean
@@ -47,21 +37,25 @@ class SearchTextManager @Inject constructor(
 
         return list.filter { item ->
             val originStr = getString(item)
-            var resultStr = originStr
-
-            chineseToPinyinTransformer.transform(originStr)?.let {
-                resultStr += " $it"
-            }
-            var temp = originStr
-            kanjiToHiraTransformer.transform(originStr)?.let {
-                resultStr += " $it"
-                temp = it
-            }
-            hiraToRomajiTransformer.transform(temp)?.let {
-                resultStr += " $it"
-            }
+            val resultStr = createPatternString(originStr)
             checkKeywords(resultStr, keywords)
         }
+    }
+
+    private fun createPatternString(source: String): String {
+        var resultStr = source
+        ChineseToPinyinTransformer.transform(source)?.let {
+            resultStr += " $it"
+        }
+        var temp = source
+        KanjiToHiraTransformer.transform(source)?.let {
+            resultStr += " $it"
+            temp = it
+        }
+        HiraToRomajiTransformer.transform(temp)?.let {
+            resultStr += " $it"
+        }
+        return resultStr
     }
 
     /**
@@ -85,7 +79,7 @@ class SearchTextManager @Inject constructor(
     }
 }
 
-class ChineseToPinyinTransformer : SearchTextManager.TextTransformer {
+object ChineseToPinyinTransformer : SearchTextManager.TextTransformer {
     override fun containTargetText(str: String): Boolean {
         return Pattern.compile("[\u4e00-\u9fa5]").matcher(str).find()
     }
@@ -98,7 +92,7 @@ class ChineseToPinyinTransformer : SearchTextManager.TextTransformer {
     }
 }
 
-class HiraToRomajiTransformer : SearchTextManager.TextTransformer {
+object HiraToRomajiTransformer : SearchTextManager.TextTransformer {
     private val kanaToRomaji = KanaToRomaji()
 
     override fun containTargetText(str: String): Boolean {
@@ -114,11 +108,7 @@ class HiraToRomajiTransformer : SearchTextManager.TextTransformer {
     }
 }
 
-
-@Singleton
-class KanjiToHiraTransformer @Inject constructor(
-    @ApplicationContext context: Context
-) : CoroutineScope, SearchTextManager.TextTransformer {
+object KanjiToHiraTransformer : CoroutineScope, SearchTextManager.TextTransformer {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private var mKanhira: Kanhira? = null
 
@@ -131,26 +121,5 @@ class KanjiToHiraTransformer @Inject constructor(
         val result = mKanhira?.convert(str)
         if (result == str) return null
         return result
-    }
-
-    init {
-        if (Build.VERSION.SDK_INT > 23) {
-//            SpManager.listen(Config.KEY_SETTINGS_KANHIRA_ENABLE,
-//                SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_KANHIRA_ENABLE) {
-//                    if (!it) {
-//                        mKanhira = null
-//                        return@SpBoolListener
-//                    }
-//
-//                    safeLaunch {
-//                        mKanhira = Kanhira(
-//                            KakasiDictReader.load(
-//                                context.resources.openRawResource(R.raw.kakasidict_utf_8),
-//                                Charsets.UTF_8.name()
-//                            )
-//                        )
-//                    }
-//                })
-        }
     }
 }
