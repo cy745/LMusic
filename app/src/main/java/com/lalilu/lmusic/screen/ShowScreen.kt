@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.screen
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,8 +10,8 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.IconToggleButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -38,16 +40,20 @@ import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.BlurTransformation
 import com.lalilu.lmusic.utils.RepeatMode
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.isPad
 
 @Composable
 fun ShowScreen() {
     val windowSize = LocalWindowSize.current
-    val visible = remember(windowSize.widthSizeClass) {
-        windowSize.widthSizeClass == WindowWidthSizeClass.Expanded
+    val configuration = LocalConfiguration.current
+    val isPad = windowSize.isPad()
+
+    val visible = remember(isPad, configuration.orientation) {
+        !isPad && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     }
 
     if (visible) {
-        val song by LMusicRuntime.currentPlayingState
+        val song by LMusicRuntime.currentPlayingFlow.collectAsState()
 
         Box(
             modifier = Modifier
@@ -182,7 +188,7 @@ fun SongDetailPanel(
 
 @Composable
 fun ControlPanel() {
-    val isPlaying = LMusicRuntime.currentIsPLayingState
+    val isPlaying = LMusicRuntime.currentIsPlayingFlow.collectAsState()
     var repeatMode by rememberDataSaverState(
         Config.KEY_SETTINGS_REPEAT_MODE, Config.DEFAULT_SETTINGS_REPEAT_MODE
     )
