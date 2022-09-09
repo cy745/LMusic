@@ -10,8 +10,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.funny.data_saver.core.DataSaverInterface
@@ -89,10 +87,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                         navController = navHostController,
                         sheetContent = {
                             LMusicNavGraph()
-                            SmartBarContent(modifier = Modifier.graphicsLayer {
-                                translationY = -SmartModalBottomSheet.offset
+                            SmartBarContent(
+                                translationY = -SmartModalBottomSheet.offset,
                                 alpha = SmartModalBottomSheet.offsetHalfPercent
-                            })
+                            )
                         },
                         content = { PlayingScreen() }
                     )

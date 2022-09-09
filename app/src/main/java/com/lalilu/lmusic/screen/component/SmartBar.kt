@@ -12,9 +12,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.isPad
 import com.lalilu.lmusic.utils.extension.measure
 
 object SmartBar {
@@ -38,12 +41,19 @@ object SmartBar {
 
     @Composable
     @OptIn(ExperimentalAnimationApi::class)
-    fun BoxScope.SmartBarContent(modifier: Modifier = Modifier) {
+    fun BoxScope.SmartBarContent(translationY: Float, alpha: Float) {
         val density = LocalDensity.current
+        val windowSize = LocalWindowSize.current
         val hasContent = mainBar.value != null || extraBar.value != null
+        val isPad = windowSize.isPad()
+
 
         Surface(
-            modifier = modifier
+            modifier = Modifier
+                .graphicsLayer {
+                    this.translationY = if (isPad) 0f else translationY
+                    this.alpha = if (isPad) 1f else alpha
+                }
                 .align(Alignment.BottomCenter)
                 .imePadding()
                 .fillMaxWidth(),
