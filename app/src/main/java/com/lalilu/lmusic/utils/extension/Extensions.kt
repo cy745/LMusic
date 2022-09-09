@@ -16,7 +16,6 @@ import android.os.Build
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.media3.common.MediaItem
 import com.dirror.lyricviewx.LyricEntry
 import kotlin.math.roundToInt
 
@@ -143,15 +142,6 @@ fun Cursor.getMediaUri(): Uri {
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
         getSongId().toString()
     )
-}
-
-fun MediaItem.updateArtworkUri(uri: Uri?): MediaItem {
-    uri ?: return this
-    return buildUpon().setMediaMetadata(
-        mediaMetadata.buildUpon()
-            .setArtworkUri(uri)
-            .build()
-    ).build()
 }
 
 fun Context.getActivity(): AppCompatActivity? {

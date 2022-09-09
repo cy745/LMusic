@@ -121,10 +121,10 @@ dependencies {
     // https://github.com/androidx/media
     // Apache-2.0 License
     // 媒体组件库
-    implementation "androidx.media3:media3-common:$media3_version"
-    implementation "androidx.media3:media3-session:$media3_version"
-    implementation "androidx.media3:media3-exoplayer:$media3_version"
-    implementation project(':decoder_flac')
+    // implementation "androidx.media3:media3-common:$media3_version"
+    // implementation "androidx.media3:media3-session:$media3_version"
+    // implementation "androidx.media3:media3-exoplayer:$media3_version"
+    // implementation project(':decoder_flac')
 
     // https://gitee.com/simplepeng/SpiderMan
     // Apache-2.0 License

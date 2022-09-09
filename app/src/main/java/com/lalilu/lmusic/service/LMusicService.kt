@@ -145,7 +145,7 @@ class LMusicService : MediaBrowserServiceCompat() {
                     audioFocusHelper.abandonAudioFocus()
                     this@LMusicService.stopForeground(false)
 
-                    LMusicRuntime.updatePosition(getPosition(), false)
+                    LMusicRuntime.updatePosition(getPosition(), getIsPlaying())
                     LMusicRuntime.currentIsPlaying = false
                 }
                 PlaybackStateCompat.STATE_PLAYING -> {
@@ -163,8 +163,7 @@ class LMusicService : MediaBrowserServiceCompat() {
 
                     noisyReceiver.registerTo(this@LMusicService)
 
-                    // todo 暂停时seekTo会导致进度错误开始增加
-                    LMusicRuntime.updatePosition(getPosition(), true)
+                    LMusicRuntime.updatePosition(getPosition(), getIsPlaying())
                     LMusicRuntime.currentIsPlaying = true
                 }
             }
