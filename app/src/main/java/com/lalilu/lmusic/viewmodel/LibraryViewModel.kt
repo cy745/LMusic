@@ -25,14 +25,17 @@ class LibraryViewModel @Inject constructor(
         val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
         libraryDataStore.apply {
             if (today == this.today.get()) {
-                return dailyRecommends.get().mapNotNull {
-                    Library.getSongOrNull(it)
-                }
+                dailyRecommends.get()
+                    .takeIf { it.isNotEmpty() }
+                    ?.mapNotNull { Library.getSongOrNull(it) }
+                    ?.let { return it }
             }
 
-            this.today.set(today)
             return Library.getSongs(num = 10, random = true).toList().also { list ->
-                dailyRecommends.set(value = list.map { it.id })
+                if (list.isNotEmpty()) {
+                    this.today.set(today)
+                    this.dailyRecommends.set(value = list.map { it.id })
+                }
             }
         }
     }
