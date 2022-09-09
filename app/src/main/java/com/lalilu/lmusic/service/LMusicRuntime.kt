@@ -1,7 +1,5 @@
 package com.lalilu.lmusic.service
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.asLiveData
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.repository.HistoryDataStore
@@ -87,8 +85,6 @@ object LMusicRuntime : CoroutineScope {
         }
     }
 
-    var currentIsPLayingState: MutableState<Boolean> = mutableStateOf(false)
-    var currentPlayingState: MutableState<LSong?> = mutableStateOf(null)
     var currentRepeatMode: Int = 0
     var currentShuffleMode: Int = 0
 }

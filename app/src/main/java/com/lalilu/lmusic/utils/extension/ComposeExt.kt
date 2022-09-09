@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.SwipeProgress
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
@@ -91,3 +94,15 @@ fun SwipeProgress<ModalBottomSheetValue>.watchForOffset(
     from == betweenSecond && to == betweenFirst -> fraction * 3
     else -> elseValue
 }.coerceIn(0f, 1f)
+
+/**
+ * 根据屏幕的长宽类型来判断设备是否平板
+ * 依据是：平板没有一条边会是Compact的
+ */
+@Composable
+fun WindowSizeClass.isPad(): Boolean {
+    return remember(widthSizeClass, heightSizeClass) {
+        widthSizeClass != WindowWidthSizeClass.Compact
+                && heightSizeClass != WindowHeightSizeClass.Compact
+    }
+}
