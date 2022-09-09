@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.roundToInt
 
 @Composable
@@ -88,7 +89,7 @@ fun ProgressSliderImpl(
     val thumbColor = contentColorFor(backgroundColor = backgroundColor).copy(0.7f)
 
     LaunchedEffect(interactionSource) {
-        interactionSource.interactions.collect { interaction ->
+        interactionSource.interactions.collectLatest { interaction ->
             when (interaction) {
                 is PressInteraction.Press -> interactions.add(interaction)
                 is PressInteraction.Release -> interactions.remove(interaction.press)

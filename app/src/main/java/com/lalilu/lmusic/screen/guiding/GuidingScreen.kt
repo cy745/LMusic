@@ -94,11 +94,8 @@ fun GuidingScreen(
                     startDestination = GuidingNavGraph.Agreement.name,
                     exitTransition = { ExitTransition.None },
                     enterTransition = {
-                        fadeIn(
-                            animationSpec = tween(
-                                durationMillis = 700,
-                            )
-                        ) + slideInVertically { 100 }
+                        fadeIn(animationSpec = tween(durationMillis = 300)) +
+                                slideInVertically { 100 }
                     }
                 ) {
                     composable(

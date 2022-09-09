@@ -3,13 +3,9 @@ package com.lalilu.lmusic.manager
 import android.content.Context
 import android.os.Build
 import android.text.TextUtils
-import com.cm55.kanhira.KakasiDictReader
 import com.cm55.kanhira.Kanhira
-import com.lalilu.R
 import com.lalilu.common.KanaToRomaji
 import com.lalilu.common.PinyinUtils
-import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -139,22 +135,22 @@ class KanjiToHiraTransformer @Inject constructor(
 
     init {
         if (Build.VERSION.SDK_INT > 23) {
-            SpManager.listen(Config.KEY_SETTINGS_KANHIRA_ENABLE,
-                SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_KANHIRA_ENABLE) {
-                    if (!it) {
-                        mKanhira = null
-                        return@SpBoolListener
-                    }
-
-                    safeLaunch {
-                        mKanhira = Kanhira(
-                            KakasiDictReader.load(
-                                context.resources.openRawResource(R.raw.kakasidict_utf_8),
-                                Charsets.UTF_8.name()
-                            )
-                        )
-                    }
-                })
+//            SpManager.listen(Config.KEY_SETTINGS_KANHIRA_ENABLE,
+//                SpManager.SpBoolListener(Config.DEFAULT_SETTINGS_KANHIRA_ENABLE) {
+//                    if (!it) {
+//                        mKanhira = null
+//                        return@SpBoolListener
+//                    }
+//
+//                    safeLaunch {
+//                        mKanhira = Kanhira(
+//                            KakasiDictReader.load(
+//                                context.resources.openRawResource(R.raw.kakasidict_utf_8),
+//                                Charsets.UTF_8.name()
+//                            )
+//                        )
+//                    }
+//                })
         }
     }
 }
