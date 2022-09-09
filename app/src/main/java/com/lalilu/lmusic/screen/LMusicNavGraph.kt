@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.screen
 
+import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExitTransition
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -26,6 +28,8 @@ import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.screen.library.*
 import com.lalilu.lmusic.screen.library.detail.*
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.isPad
 
 @ExperimentalAnimationApi
 @Composable
@@ -33,20 +37,45 @@ import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 fun LMusicNavGraph(
     navHostController: NavHostController = LocalNavigatorHost.current
 ) {
+    val windowSize = LocalWindowSize.current
+    val configuration = LocalConfiguration.current
     val currentRoute = navHostController.currentBackStackEntryAsState().value
     var last by remember { mutableStateOf<MainScreenData?>(null) }
+
+    val isPad = windowSize.isPad()
+    val isLandscape = remember(configuration.orientation) {
+        configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    }
+
+    // 监听屏幕旋转方向的变化
+    LaunchedEffect(isLandscape) {
+        // 针对平板所作的处理，若非平板则不处理
+        if (!isPad) return@LaunchedEffect
+        val current = MainScreenData.fromRoute(currentRoute?.destination?.route)
+
+        // 若当前所处为目录级页，且处于横屏状态则因此MainBar，否则显示 [NavigateBar]
+        if (MainScreenData.categoryFirst.contains(current) && isLandscape) {
+            SmartBar.setMainBar(item = null)
+        } else {
+            SmartBar.setMainBar { NavigateBar() }
+        }
+    }
 
     LaunchedEffect(currentRoute) {
         val current = MainScreenData.fromRoute(currentRoute?.destination?.route)
 
         /**
-         * 当从非目录级页进入目录级页时设置 MainBar 为 [NavigateBar]
-         * 并清除 ExtraBar
+         * 当从非目录级页进入目录级页时设置 MainBar 为 [NavigateBar]，并清除 ExtraBar
          */
         if (MainScreenData.categoryFirst.contains(current)
             && !MainScreenData.categoryFirst.contains(last)
         ) {
-            SmartBar.setMainBar { NavigateBar() }
+            // 只有平板的横屏状态需要隐藏 MainBar，其余情况均显示 [NavigateBar]
+            if (!isPad || !isLandscape) {
+                SmartBar.setMainBar { NavigateBar() }
+            } else {
+                SmartBar.setMainBar(item = null)
+            }
             SmartBar.setExtraBar(item = null)
         }
 
