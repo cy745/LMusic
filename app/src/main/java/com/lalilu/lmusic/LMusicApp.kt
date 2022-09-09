@@ -3,6 +3,7 @@ package com.lalilu.lmusic
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
+import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
@@ -26,6 +27,9 @@ class LMusicApp : Application(), ImageLoaderFactory {
     @Inject
     lateinit var historyDataStore: HistoryDataStore
 
+    @Inject
+    lateinit var mDataBase: MDataBase
+
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)
             .callFactory(callFactory)
@@ -36,7 +40,7 @@ class LMusicApp : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
-        LMusicRuntime.init(historyDataStore)
+        LMusicRuntime.init(historyDataStore, mDataBase)
         LMusicLyricManager.init(lyricSourceFactory)
         LMusicBrowser.init(this, historyDataStore)
     }

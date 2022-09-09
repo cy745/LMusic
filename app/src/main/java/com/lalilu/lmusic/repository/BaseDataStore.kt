@@ -75,7 +75,7 @@ abstract class BaseDataStore : CoroutineScope {
     ) {
         private val typeToken = object : TypeToken<List<I>>() {}.type
         private val preferencesKey = stringPreferencesKey(name)
-        private var tempList: List<I>? = emptyList()
+        private var tempList: List<I>? = null
 
         suspend fun DataStore<Preferences>.set(value: List<I>?) {
             if (temp) tempList = value
