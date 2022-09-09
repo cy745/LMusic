@@ -1,14 +1,15 @@
 package com.lalilu.lmusic.utils
 
-import androidx.media3.common.Player
+import android.support.v4.media.session.PlaybackStateCompat.REPEAT_MODE_ALL
+import android.support.v4.media.session.PlaybackStateCompat.REPEAT_MODE_ONE
 
 enum class RepeatMode(
     val repeatMode: Int,
     val isShuffle: Boolean
 ) {
-    ListRecycle(repeatMode = Player.REPEAT_MODE_ALL, isShuffle = false),
-    RepeatOne(repeatMode = Player.REPEAT_MODE_ONE, isShuffle = false),
-    Shuffle(repeatMode = Player.REPEAT_MODE_ALL, isShuffle = true);
+    ListRecycle(repeatMode = REPEAT_MODE_ALL, isShuffle = false),
+    RepeatOne(repeatMode = REPEAT_MODE_ONE, isShuffle = false),
+    Shuffle(repeatMode = REPEAT_MODE_ALL, isShuffle = true);
 
     fun next(): RepeatMode {
         return when (this) {
@@ -21,7 +22,7 @@ enum class RepeatMode(
     companion object {
         fun of(repeatMode: Int, isShuffle: Boolean): RepeatMode {
             if (isShuffle) return Shuffle
-            if (repeatMode == Player.REPEAT_MODE_ONE) return RepeatOne
+            if (repeatMode == REPEAT_MODE_ONE) return RepeatOne
             return ListRecycle
         }
     }
