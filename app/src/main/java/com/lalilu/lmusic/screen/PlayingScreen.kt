@@ -178,6 +178,14 @@ fun PlayingScreen(
                     fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
                 }
 
+                lyricTypefaceUri.liveData().observe(activity) {
+                    if (it != null) {
+                        fmLyricViewX.setLyricTypeface(path = it)
+                    } else {
+                        fmLyricViewX.setLyricTypeface(typeface = null)
+                    }
+                }
+
                 this.seekBarHandler.liveData().observe(activity) {
                     seekBarHandler.clickHandleMode = it ?: Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
                 }

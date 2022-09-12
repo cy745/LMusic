@@ -12,6 +12,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
 import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
 import com.lalilu.lmusic.datasource.MDataBase
@@ -20,10 +21,17 @@ import com.lalilu.lmusic.repository.SettingsDataStore
 import com.lalilu.lmusic.utils.extension.getNextOf
 import com.lalilu.lmusic.utils.extension.getPreviousOf
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
-class LMusicService : MediaBrowserServiceCompat() {
+class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
 
     @Inject
     lateinit var historyDataStore: HistoryDataStore
@@ -94,6 +102,10 @@ class LMusicService : MediaBrowserServiceCompat() {
                     else -> LMusicRuntime.currentPlaylist.getPreviousOf(current, true)
                 }
             }
+        }
+
+        override fun getMaxVolume(): Int = settingsDataStore.run {
+            volumeControl.get() ?: Config.DEFAULT_SETTINGS_VOLUME_CONTROL
         }
 
         override fun onPlayingItemUpdate(item: LSong?) {
@@ -198,6 +210,14 @@ class LMusicService : MediaBrowserServiceCompat() {
             }
 
         sessionToken = mediaSession.sessionToken
+
+        settingsDataStore.apply {
+            launch {
+                volumeControl.flow().collectLatest {
+                    it?.let(playBack::setMaxVolume)
+                }
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

@@ -63,6 +63,14 @@ fun SettingsScreen() {
         Config.KEY_SETTINGS_REPEAT_MODE,
         Config.DEFAULT_SETTINGS_REPEAT_MODE
     )
+    val volumeControl = rememberDataSaverState(
+        Config.KEY_SETTINGS_VOLUME_CONTROL,
+        Config.DEFAULT_SETTINGS_VOLUME_CONTROL
+    )
+    val lyricTypefaceUri = rememberDataSaverState(
+        Config.KEY_SETTINGS_LYRIC_TYPEFACE_URI,
+        Config.DEFAULT_SETTINGS_LYRIC_TYPEFACE_URI
+    )
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
@@ -81,6 +89,11 @@ fun SettingsScreen() {
                 SettingSwitcher(
                     titleRes = R.string.preference_player_settings_ignore_audio_focus,
                     state = ignoreAudioFocus
+                )
+                SettingProgressSeekBar(
+                    state = volumeControl,
+                    title = "独立音量控制",
+                    valueRange = 0..100
                 )
                 SettingStateSeekBar(
                     state = repeatMode,
@@ -106,6 +119,12 @@ fun SettingsScreen() {
                         state = statusBarLyric
                     )
                 }
+                SettingFilePicker(
+                    state = lyricTypefaceUri,
+                    title = "自定义字体",
+                    subTitle = "请选择TTF格式的字体文件",
+                    mimeType = "application/octet-stream"
+                )
                 SettingStateSeekBar(
                     state = lyricGravity,
                     selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),

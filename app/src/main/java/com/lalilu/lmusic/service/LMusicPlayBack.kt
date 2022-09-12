@@ -19,8 +19,8 @@ abstract class LMusicPlayBack<T>(
     MediaPlayer.OnPreparedListener,
     MediaPlayer.OnCompletionListener {
     private var player: MediaPlayer? = null
-    private var isPrepared: Boolean = false
     private var volumeProxy: FadeVolumeProxy? = null
+    private var isPrepared: Boolean = false
     private var isPlaying: Boolean = false
     private var isStopped: Boolean = true
 
@@ -31,6 +31,7 @@ abstract class LMusicPlayBack<T>(
     abstract fun getById(id: String): T?
     abstract fun getUriFromItem(item: T): Uri
     abstract fun getMetaDataFromItem(item: T?): MediaMetadataCompat?
+    abstract fun getMaxVolume(): Int
 
     abstract fun onPlayingItemUpdate(item: T?)
     abstract fun onMetadataChanged(metadata: MediaMetadataCompat?)
@@ -42,6 +43,9 @@ abstract class LMusicPlayBack<T>(
     fun getIsStopped(): Boolean = isStopped
     fun getIsPlaying(): Boolean = isPlaying
     fun getPosition(): Long = player?.currentPosition?.toLong() ?: 0L
+    fun setMaxVolume(volume: Int) {
+        volumeProxy?.setMaxVolume(volume)
+    }
 
     private fun checkPlayer() {
         player = player ?: MediaPlayer().apply {
@@ -63,7 +67,7 @@ abstract class LMusicPlayBack<T>(
 
             if (player?.isPlaying == false) {
                 isPlaying = true
-                volumeProxy!!.fadeStart()
+                volumeProxy!!.fadeStart(getMaxVolume())
                 println("onPlay")
                 onPlaybackStateChanged(PlaybackState.STATE_PLAYING)
             }

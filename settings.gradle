@@ -1,7 +1,9 @@
 rootProject.name = "lmusic"
 include ':app'
-include ':decoder_flac'
 include ':ui'
 include ':common'
 include ':jaudiotagger-android'
 include ':lmedia'
+
+include ':lyricviewx'
+project(':lyricviewx').projectDir = new File('D:\\ProjectFile\\Android\\LyricViewX\\lyricviewx')
