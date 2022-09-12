@@ -8,6 +8,7 @@ import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.utils.extension.moveHeadToTailWithSearch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -19,7 +20,7 @@ import kotlin.coroutines.CoroutineContext
  * 全局单例，专门用于解决Service和Activity之间复杂的数据交互问题
  */
 object LMusicRuntime : CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default
+    override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
     private var historyStore: HistoryDataStore? = null
     private var mDataBase: MDataBase? = null
 

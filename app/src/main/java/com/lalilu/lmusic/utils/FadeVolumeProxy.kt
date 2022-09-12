@@ -4,15 +4,26 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.media.MediaPlayer
+import androidx.annotation.IntRange
 import androidx.dynamicanimation.animation.FloatPropertyCompat
 
 class FadeVolumeProxy(
     private val player: MediaPlayer
 ) {
+    private var maxVolume = 1f
     private var nowVolume = 0f
     private var valueAnimator: ValueAnimator? = null
 
-    fun fadeStart() {
+    fun setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
+        maxVolume = (volume / 100f).coerceIn(0f, 1f)
+        if (valueAnimator?.isRunning == true || !player.isPlaying) return
+
+        player.setVolume(maxVolume, maxVolume)
+        nowVolume = maxVolume
+    }
+
+    fun fadeStart(@IntRange(from = 0, to = 100) volume: Int = 100) {
+        maxVolume = (volume / 100f).coerceIn(0f, 1f)
         if (valueAnimator == null) reCreateAnimation()
         valueAnimator?.cancel()
         if (!player.isPlaying) player.start()
@@ -45,9 +56,16 @@ class FadeVolumeProxy(
             this.addUpdateListener {
                 var value = it.animatedValue as Float
 
-                value =
-                    if (isReversed) startValue * value else startValue + (1 - startValue) * value
-                volumePropertyCompat.setValue(player, value)
+                // 暂停 1f -> 0f
+                if (isReversed) {
+                    value *= startValue
+                    volumePropertyCompat.setValue(player, value)
+                    return@addUpdateListener
+                }
+
+                // 播放 0f -> 1f
+                value = startValue + (1 - startValue) * value
+                volumePropertyCompat.setValue(player, value * maxVolume)
             }
         }
     }

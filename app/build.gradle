@@ -164,7 +164,9 @@ dependencies {
     // https://github.com/cy745/LyricViewX
     // GPL-3.0 License
     // 歌词组件
-    implementation 'com.github.cy745:LyricViewX:b07ae54a45'
+    implementation 'com.github.cy745:LyricViewX:lib_only-SNAPSHOT'
+//    implementation 'com.github.cy745:LyricViewX:b07ae54a45'
+//    implementation project(":lyricviewx")
 
     // https://github.com/qinci/EdgeTranslucent
     // https://github.com/cy745/EdgeTranslucent

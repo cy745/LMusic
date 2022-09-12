@@ -6,6 +6,7 @@ import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.lalilu.lmusic.Config
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -28,6 +29,8 @@ class SettingsDataStore @Inject constructor(
     val lyricGravity = intPreferencesKey(Config.KEY_SETTINGS_LYRIC_GRAVITY)
     val seekBarHandler = intPreferencesKey(Config.KEY_SETTINGS_SEEKBAR_HANDLER)
     val ignoreAudioFocus = booleanPreferencesKey(Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS)
+    val volumeControl = intPreferencesKey(Config.KEY_SETTINGS_VOLUME_CONTROL)
+    val lyricTypefaceUri = stringPreferencesKey(Config.KEY_SETTINGS_LYRIC_TYPEFACE_URI)
 
     val isGuidingOver = booleanPreferencesKey(Config.KEY_REMEMBER_IS_GUIDING_OVER)
 }

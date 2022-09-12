@@ -2,6 +2,7 @@ package com.lalilu.lmusic.screen.component
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.GenericShape
@@ -26,14 +27,18 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 object SmartModalBottomSheet {
     private var scope: CoroutineScope? = null
-    private val scaffoldState = ModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     private val enableFadeEdgeForStatusBar = mutableStateOf(true)
+    private val scaffoldState = ModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        animationSpec = SpringSpec(stiffness = 1000f),
+        isSkipHalfExpanded = true
+    )
 
     val offset: Float
         get() = scaffoldState.offset.value
     val offsetHalfPercent: Float
         get() = scaffoldState.progress.watchForOffset(
-            ModalBottomSheetValue.HalfExpanded,
+            ModalBottomSheetValue.Expanded,
             ModalBottomSheetValue.Hidden
         )
 
