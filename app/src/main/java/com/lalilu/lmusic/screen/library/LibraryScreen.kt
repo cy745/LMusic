@@ -1,26 +1,32 @@
 package com.lalilu.lmusic.screen.library
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,6 +36,8 @@ import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.service.LMusicRuntime
+import com.lalilu.lmusic.utils.PaletteTransformation
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
 @Composable
@@ -38,6 +46,7 @@ fun LibraryScreen(
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
     val lastPlayedStack by viewModel.requirePlayHistory().collectAsState(emptyList())
+    val currentPlaying by LMusicRuntime.currentPlayingFlow.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -70,7 +79,7 @@ fun LibraryScreen(
             RecommendRow(
                 items = Library.getSongs(15)
             ) {
-                RecommendCard(song = it)
+                RecommendCardWithOutSideText(song = it)
             }
         }
 
@@ -82,7 +91,7 @@ fun LibraryScreen(
                 RecommendRow(
                     items = it
                 ) {
-                    RecommendCard(
+                    RecommendCardWithOutSideText(
                         song = it,
                         width = 125.dp,
                         height = 125.dp
@@ -137,6 +146,9 @@ fun <I> RecommendRow(
     itemContent: @Composable LazyItemScope.(item: I) -> Unit
 ) {
     LazyRow(
+        modifier = Modifier.animateContentSize(
+            animationSpec = SpringSpec(stiffness = Spring.StiffnessLow)
+        ),
         horizontalArrangement = Arrangement.spacedBy(15.dp),
         contentPadding = PaddingValues(horizontal = 20.dp)
     ) {
@@ -189,22 +201,84 @@ fun RecommendCard(song: LSong, width: Dp = 200.dp, height: Dp = 125.dp) {
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun RecommendCard(title: String, subTitle: String, width: Dp = 200.dp, height: Dp = 125.dp) {
-    Surface(
-        elevation = 1.dp,
-        color = Color.LightGray,
-        shape = RoundedCornerShape(10.dp)
+fun RecommendCardWithOutSideText(
+    song: LSong,
+    width: Dp = 200.dp,
+    height: Dp = 125.dp
+) {
+    val context = LocalContext.current
+    var showFullInfo by remember { mutableStateOf(false) }
+    var cardMainColor by remember { mutableStateOf(Color.Gray) }
+    val transformation = remember {
+        PaletteTransformation {
+            cardMainColor = Color(it.getLightMutedColor(android.graphics.Color.GRAY))
+        }
+    }
+
+    Column(
+        modifier = Modifier.width(IntrinsicSize.Min),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .width(width)
-                .height(height)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+        Surface(
+            elevation = 1.dp,
+            color = Color.LightGray,
+            shape = RoundedCornerShape(10.dp)
         ) {
-            Text(text = title, style = MaterialTheme.typography.subtitle1)
-            Text(text = subTitle, style = MaterialTheme.typography.subtitle2)
+            Box(
+                modifier = Modifier
+                    .width(width)
+                    .height(height)
+            ) {
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    model = ImageRequest.Builder(context)
+                        .data(song)
+                        .transformations(transformation)
+                        .build(),
+                    contentDescription = ""
+                )
+                Surface(
+                    elevation = 0.dp,
+                    color = cardMainColor,
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 10.dp, bottom = 10.dp)
+                ) {
+                    Icon(
+                        modifier = Modifier.size(28.dp),
+                        painter = painterResource(id = R.drawable.ic_play_line),
+                        contentDescription = ""
+                    )
+                }
+            }
+        }
+        AnimatedContent(targetState = showFullInfo) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(MutableInteractionSource(), indication = null) {
+                        showFullInfo = !it
+                    }
+            ) {
+                Text(
+                    maxLines = if (it) Int.MAX_VALUE else 1,
+                    softWrap = it,
+                    overflow = if (it) TextOverflow.Visible else TextOverflow.Ellipsis,
+                    text = song.name, style = MaterialTheme.typography.subtitle1
+                )
+                Text(
+                    modifier = Modifier.alpha(0.5f),
+                    maxLines = if (it) Int.MAX_VALUE else 1,
+                    softWrap = it,
+                    overflow = if (it) TextOverflow.Visible else TextOverflow.Ellipsis,
+                    text = song._artist,
+                    style = MaterialTheme.typography.subtitle2
+                )
+            }
         }
     }
 }
