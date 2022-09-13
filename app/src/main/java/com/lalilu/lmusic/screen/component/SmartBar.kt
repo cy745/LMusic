@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -28,8 +29,9 @@ object SmartBar {
 
     @Composable
     fun rememberContentPadding(horizontal: Dp = 0.dp): PaddingValues {
+        val configuration = LocalConfiguration.current
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        return remember(horizontal, statusBarHeight, contentPaddingForSmartBarDp.value) {
+        return remember(horizontal, configuration.orientation, contentPaddingForSmartBarDp.value) {
             PaddingValues(
                 top = statusBarHeight,
                 bottom = contentPaddingForSmartBarDp.value,
