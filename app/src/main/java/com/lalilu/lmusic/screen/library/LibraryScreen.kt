@@ -5,6 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -14,17 +15,17 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -32,21 +33,42 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.airbnb.lottie.compose.*
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.PaletteTransformation
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
 @Composable
 fun LibraryScreen(
     viewModel: LibraryViewModel = hiltViewModel()
 ) {
+    val navController = LocalNavigatorHost.current
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
     val lastPlayedStack by viewModel.requirePlayHistory().collectAsState(emptyList())
+    val randomRecommends = remember { Library.getSongs(15, true) }
     val currentPlaying by LMusicRuntime.currentPlayingFlow.collectAsState()
+    val currentIsPlaying by LMusicRuntime.currentIsPlayingFlow.collectAsState()
+
+    val playSong = remember {
+        { mediaId: String ->
+            LMusicBrowser.addAndPlay(mediaId)
+        }
+    }
+
+    val showDetail = remember {
+        { mediaId: String ->
+            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId") {
+                launchSingleTop = true
+            }
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -65,7 +87,8 @@ fun LibraryScreen(
                     RecommendCard(
                         song = it,
                         width = 250.dp,
-                        height = 250.dp
+                        height = 250.dp,
+                        onShowDetail = showDetail
                     )
                 }
             }
@@ -79,7 +102,12 @@ fun LibraryScreen(
             RecommendRow(
                 items = Library.getSongs(15)
             ) {
-                RecommendCardWithOutSideText(song = it)
+                RecommendCardWithOutSideText(
+                    song = it,
+                    isPlaying = (currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id),
+                    onPlaySong = playSong,
+                    onShowDetail = showDetail
+                )
             }
         }
 
@@ -94,7 +122,10 @@ fun LibraryScreen(
                     RecommendCardWithOutSideText(
                         song = it,
                         width = 125.dp,
-                        height = 125.dp
+                        height = 125.dp,
+                        isPlaying = (currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id),
+                        onPlaySong = playSong,
+                        onShowDetail = showDetail
                     )
                 }
             }
@@ -105,12 +136,13 @@ fun LibraryScreen(
         }
         item {
             RecommendRow(
-                items = Library.getSongs(15, true)
+                items = randomRecommends
             ) {
                 RecommendCard(
                     song = it,
                     width = 125.dp,
-                    height = 250.dp
+                    height = 250.dp,
+                    onShowDetail = showDetail
                 )
             }
         }
@@ -168,8 +200,22 @@ fun RecommendRow(content: LazyListScope.() -> Unit) {
 }
 
 @Composable
-fun RecommendCard(song: LSong, width: Dp = 200.dp, height: Dp = 125.dp) {
+fun RecommendCard(
+    song: LSong,
+    width: Dp = 200.dp,
+    height: Dp = 125.dp,
+    onShowDetail: (String) -> Unit = {}
+) {
     val context = LocalContext.current
+    val density = LocalDensity.current
+    var cardMainColor by remember { mutableStateOf(Color.Gray) }
+    val gradientStartOffsetY = remember(density) { density.run { height.toPx() } / 2f }
+    val transformation = remember {
+        PaletteTransformation {
+            cardMainColor = Color(it.getDarkVibrantColor(android.graphics.Color.GRAY))
+        }
+    }
+
     Surface(
         elevation = 1.dp,
         color = Color.LightGray,
@@ -179,23 +225,44 @@ fun RecommendCard(song: LSong, width: Dp = 200.dp, height: Dp = 125.dp) {
             modifier = Modifier
                 .width(width)
                 .height(height)
+                .clickable { onShowDetail(song.id) }
         ) {
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
                 model = ImageRequest.Builder(context)
+                    .transformations(transformation)
                     .data(song)
                     .build(),
                 contentDescription = ""
             )
             Column(
                 modifier = Modifier
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                cardMainColor
+                            ),
+                            start = Offset(0f, gradientStartOffsetY),
+                            end = Offset(0f, Float.POSITIVE_INFINITY)
+                        )
+                    )
                     .fillMaxSize()
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                    .padding(20.dp)
+                    .align(Alignment.BottomStart),
+                verticalArrangement = Arrangement.spacedBy(5.dp, alignment = Alignment.Bottom)
             ) {
-                Text(text = song.name, style = MaterialTheme.typography.subtitle1)
-                Text(text = song._artist, style = MaterialTheme.typography.subtitle2)
+                Text(
+                    text = song.name,
+                    style = MaterialTheme.typography.subtitle1,
+                    color = Color.White
+                )
+                Text(
+                    text = song._artist,
+                    style = MaterialTheme.typography.subtitle2,
+                    color = Color.White.copy(0.8f)
+                )
             }
         }
     }
@@ -206,7 +273,10 @@ fun RecommendCard(song: LSong, width: Dp = 200.dp, height: Dp = 125.dp) {
 fun RecommendCardWithOutSideText(
     song: LSong,
     width: Dp = 200.dp,
-    height: Dp = 125.dp
+    height: Dp = 125.dp,
+    isPlaying: Boolean = false,
+    onShowDetail: (String) -> Unit = {},
+    onPlaySong: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     var showFullInfo by remember { mutableStateOf(false) }
@@ -232,27 +302,62 @@ fun RecommendCardWithOutSideText(
                     .height(height)
             ) {
                 AsyncImage(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { onShowDetail(song.id) },
                     contentScale = ContentScale.Crop,
                     model = ImageRequest.Builder(context)
-                        .data(song)
                         .transformations(transformation)
+                        .data(song)
                         .build(),
                     contentDescription = ""
                 )
-                Surface(
-                    elevation = 0.dp,
-                    color = cardMainColor,
-                    shape = CircleShape,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 10.dp, bottom = 10.dp)
-                ) {
-                    Icon(
-                        modifier = Modifier.size(28.dp),
-                        painter = painterResource(id = R.drawable.ic_play_line),
-                        contentDescription = ""
-                    )
+
+                if (isPlaying) {
+                    val composition by rememberLottieComposition(LottieCompositionSpec.Asset("anim/90463-wave.json"))
+//                    val dynamicProperties = rememberLottieDynamicProperties(
+//                        rememberLottieDynamicProperty(
+//                            property = LottieProperty.COLOR,
+//                            value = Color.White.toArgb(),
+//                            keyPath = arrayOf(
+//                                "**",
+//                                "Group 1",
+//                                "Stroke 1"
+//                            )
+//                        ),
+//                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = cardMainColor.copy(alpha = 0.6f))
+                            .align(Alignment.Center),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LottieAnimation(
+                            composition,
+                            iterations = LottieConstants.IterateForever,
+//                            dynamicProperties = dynamicProperties,
+                            clipSpec = LottieClipSpec.Progress(0.06f, 0.9f)
+                        )
+                    }
+                } else {
+                    Surface(
+                        elevation = 1.dp,
+                        color = cardMainColor,
+                        shape = CircleShape,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 10.dp, bottom = 10.dp)
+                    ) {
+                        IconButton(
+                            modifier = Modifier.size(32.dp),
+                            onClick = { onPlaySong(song.id) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_play_line),
+                                contentDescription = ""
+                            )
+                        }
+                    }
                 }
             }
         }
