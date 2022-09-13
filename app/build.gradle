@@ -67,6 +67,9 @@ android {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/com.airbnb.android/lottie-compose
+    implementation 'com.airbnb.android:lottie-compose:5.2.0'
+
     // https://github.com/FunnySaltyFish/ComposeDataSaver
     // Apache-2.0 License
     implementation 'com.github.FunnySaltyFish.ComposeDataSaver:data-saver:v1.0.2'
