@@ -3,8 +3,10 @@ package com.lalilu.lmusic.screen.library.detail
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -26,6 +28,7 @@ import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
+import com.lalilu.lmusic.screen.component.card.RecommendCard
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
@@ -100,6 +103,26 @@ fun SongDetailScreen(
                     },
                     mediaId = song.id
                 )
+            }
+            song.album?.let {
+                item {
+                    Surface(
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                        ) {
+                            RecommendCard(
+                                width = 125.dp,
+                                height = 125.dp,
+                                data = { it },
+                                getId = { it.id })
+                        }
+                    }
+                }
             }
         }
     }

@@ -13,9 +13,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.airbnb.lottie.compose.*
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
@@ -58,7 +59,9 @@ fun LibraryScreen(
 
     val playSong = remember {
         { mediaId: String ->
-            LMusicBrowser.addAndPlay(mediaId)
+            currentPlaying.takeIf { it != null && it.id == mediaId && currentIsPlaying }
+                ?.let { LMusicBrowser.pause() }
+                ?: LMusicBrowser.addAndPlay(mediaId)
         }
     }
 
@@ -278,89 +281,21 @@ fun RecommendCardWithOutSideText(
     onShowDetail: (String) -> Unit = {},
     onPlaySong: (String) -> Unit = {}
 ) {
-    val context = LocalContext.current
     var showFullInfo by remember { mutableStateOf(false) }
-    var cardMainColor by remember { mutableStateOf(Color.Gray) }
-    val transformation = remember {
-        PaletteTransformation {
-            cardMainColor = Color(it.getLightMutedColor(android.graphics.Color.GRAY))
-        }
-    }
 
     Column(
         modifier = Modifier.width(IntrinsicSize.Min),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Surface(
-            elevation = 1.dp,
-            color = Color.LightGray,
-            shape = RoundedCornerShape(10.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(width)
-                    .height(height)
-            ) {
-                AsyncImage(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable { onShowDetail(song.id) },
-                    contentScale = ContentScale.Crop,
-                    model = ImageRequest.Builder(context)
-                        .transformations(transformation)
-                        .data(song)
-                        .build(),
-                    contentDescription = ""
-                )
-
-                if (isPlaying) {
-                    val composition by rememberLottieComposition(LottieCompositionSpec.Asset("anim/90463-wave.json"))
-//                    val dynamicProperties = rememberLottieDynamicProperties(
-//                        rememberLottieDynamicProperty(
-//                            property = LottieProperty.COLOR,
-//                            value = Color.White.toArgb(),
-//                            keyPath = arrayOf(
-//                                "**",
-//                                "Group 1",
-//                                "Stroke 1"
-//                            )
-//                        ),
-//                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(color = cardMainColor.copy(alpha = 0.6f))
-                            .align(Alignment.Center),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        LottieAnimation(
-                            composition,
-                            iterations = LottieConstants.IterateForever,
-//                            dynamicProperties = dynamicProperties,
-                            clipSpec = LottieClipSpec.Progress(0.06f, 0.9f)
-                        )
-                    }
-                } else {
-                    Surface(
-                        elevation = 1.dp,
-                        color = cardMainColor,
-                        shape = CircleShape,
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(end = 10.dp, bottom = 10.dp)
-                    ) {
-                        IconButton(
-                            modifier = Modifier.size(32.dp),
-                            onClick = { onPlaySong(song.id) }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_play_line),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        com.lalilu.lmusic.screen.component.card.RecommendCard(
+            data = { song },
+            getId = { song.id },
+            isPlaying = isPlaying,
+            width = width,
+            height = height,
+            onPlay = onPlaySong,
+            onShowDetail = onShowDetail
+        )
         AnimatedContent(targetState = showFullInfo) {
             Column(
                 modifier = Modifier

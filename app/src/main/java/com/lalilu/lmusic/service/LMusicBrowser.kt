@@ -70,7 +70,7 @@ object LMusicBrowser : DefaultLifecycleObserver {
     fun addToNext(mediaId: String): Boolean {
         val nowIndex = LMusicRuntime.currentPlaylist.indexOfFirst { it.id == mediaId }
         val currentIndex = LMusicRuntime.currentPlaylist.indexOf(LMusicRuntime.currentPlaying)
-        if (currentIndex == nowIndex || (currentIndex + 1) == nowIndex) return false
+        if (currentIndex >= 0 && (currentIndex == nowIndex || (currentIndex + 1) == nowIndex)) return false
 
         if (nowIndex >= 0) {
             LMusicRuntime.currentPlaylist = LMusicRuntime.currentPlaylist
