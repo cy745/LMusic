@@ -49,3 +49,5 @@
 # androidx
 -keep public class * extends androidx.annotation.** { *; }
 -keep public class * extends androidx.core.content.FileProvider
+
+-printmapping mapping.txt
