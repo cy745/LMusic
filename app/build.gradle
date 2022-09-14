@@ -1,10 +1,9 @@
 plugins {
-    id "com.android.application"
-    id "kotlin-android"
-    id "kotlin-parcelize"
-    id "kotlin-kapt"
-    id 'dagger.hilt.android.plugin'
-    id 'androidx.navigation.safeargs.kotlin'
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'com.google.dagger.hilt.android'
+    id 'com.google.devtools.ksp' version '1.7.10-1.0.6'
 }
 
 android {
@@ -49,12 +48,17 @@ android {
             resValue "string", "app_name", "@string/app_name_debug"
         }
     }
+    android.applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "LMusic_${variant.buildType.name}_${defaultConfig.versionName}_${defaultConfig.versionCode}_${releaseTime()}.apk"
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     composeOptions {
-        kotlinCompilerExtensionVersion compose_version
+        kotlinCompilerExtensionVersion compose_compiler_version
     }
     packagingOptions {
         resources {
@@ -64,6 +68,10 @@ android {
     lint {
         checkDependencies true
     }
+}
+
+static def releaseTime() {
+    return new Date().format("yyyyMMdd_HHmmssZ", TimeZone.getTimeZone("GMT+08:00"))
 }
 
 dependencies {
@@ -81,12 +89,13 @@ dependencies {
     // https://mvnrepository.com/artifact/androidx.compose.material3/material3-window-size-class
     implementation 'androidx.compose.material3:material3-window-size-class:1.0.0-alpha16'
 
+    implementation "androidx.compose.compiler:compiler:$compose_compiler_version"
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation "androidx.compose.ui:ui-viewbinding:$compose_version"
+    implementation "androidx.compose.ui:ui-viewbinding:1.2.1"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
 
     // https://github.com/ably/ably-java
     // Apache-2.0 License
@@ -190,8 +199,6 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     implementation 'androidx.dynamicanimation:dynamicanimation:1.1.0-alpha03'
-//    implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
-//    implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
     implementation "androidx.navigation:navigation-compose:$navigation_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
@@ -208,7 +215,6 @@ dependencies {
     implementation project(":ui")
     implementation project(":lmedia")
 
-    kapt 'androidx.hilt:hilt-compiler:1.0.0'
-    kapt "androidx.room:room-compiler:$room_version"
-    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    ksp "androidx.room:room-compiler:$room_version"
+    ksp "com.google.dagger:hilt-compiler:$hilt_version"
 }

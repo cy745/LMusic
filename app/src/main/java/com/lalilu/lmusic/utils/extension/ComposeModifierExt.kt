@@ -118,13 +118,13 @@ fun Modifier.edgeTransparent(
         }
 
         if (position == 0 || (position and EDGE_TOP) != 0) {
-            canvas.drawRect(0f, 0f, size.width, actualWidth, mPaint!!)
+            canvas.drawRect(0f, 0f, size.width, actualWidth, mPaint)
         }
 
         if (position == 0 || (position and EDGE_BOTTOM) != 0) {
             layerSaveTemp = canvas.save()
             canvas.rotate(180f, size.width / 2f, size.height / 2f)
-            canvas.drawRect(0f, 0f, size.width, actualWidth, mPaint!!)
+            canvas.drawRect(0f, 0f, size.width, actualWidth, mPaint)
             canvas.restoreToCount(layerSaveTemp)
         }
 
