@@ -18,6 +18,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.palette.graphics.Palette
+import coil.request.ImageRequest
+import com.lalilu.lmusic.utils.PaletteTransformation
 import kotlin.math.roundToInt
 
 fun NavController.canPopUp(): Boolean {
@@ -105,4 +108,9 @@ fun WindowSizeClass.isPad(): Boolean {
         widthSizeClass != WindowWidthSizeClass.Compact
                 && heightSizeClass != WindowHeightSizeClass.Compact
     }
+}
+
+@Composable
+fun ImageRequest.Builder.requirePalette(callback: (Palette) -> Unit): ImageRequest.Builder {
+    return transformations(remember { PaletteTransformation(callback = callback) })
 }

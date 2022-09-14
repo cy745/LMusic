@@ -216,5 +216,5 @@ dependencies {
     implementation project(":lmedia")
 
     ksp "androidx.room:room-compiler:$room_version"
-    ksp "com.google.dagger:hilt-compiler:$hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_version"
 }
