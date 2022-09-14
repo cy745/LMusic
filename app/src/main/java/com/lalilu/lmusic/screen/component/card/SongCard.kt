@@ -140,25 +140,22 @@ fun SongCard(
                     .crossfade(true)
                     .size(SizeUtils.dp2px(64f))
                     .build(),
-                contentDescription = ""
+                contentDescription = "",
+                modifier = Modifier
+                    .size(64.dp)
+                    .aspectRatio(1f)
             ) {
                 if (painter.state is AsyncImagePainter.State.Success) {
                     SubcomposeAsyncImageContent(
                         contentDescription = "SongCardImage",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(64.dp)
-                            .aspectRatio(1f)
+                        contentScale = ContentScale.Crop
                     )
                 } else {
                     Image(
                         painter = painterResource(id = R.drawable.ic_music_line),
                         contentDescription = "",
                         contentScale = FixedScale(1f),
-                        colorFilter = ColorFilter.tint(color = Color.LightGray),
-                        modifier = Modifier
-                            .size(64.dp)
-                            .aspectRatio(1f)
+                        colorFilter = ColorFilter.tint(color = Color.LightGray)
                     )
                 }
             }

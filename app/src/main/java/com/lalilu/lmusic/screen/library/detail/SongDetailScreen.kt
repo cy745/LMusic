@@ -4,13 +4,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,15 +33,19 @@ import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.edgeTransparent
+import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 @Composable
 fun SongDetailScreen(
     song: LSong,
+    networkDataViewModel: NetworkDataViewModel
 ) {
     val windowSize = LocalWindowSize.current
     val navController = LocalNavigatorHost.current
     val title = song.name
-    val subTitle = "${song._artist}\n\n${song._albumTitle}"
+    val subTitle = song._artist
+    val networkData by networkDataViewModel.getNetworkDataFlowByMediaId(song.id)
+        .collectAsState(null)
 
     LaunchedEffect(song) {
         SmartModalBottomSheet.disableFadeEdge()
@@ -71,7 +74,7 @@ fun SongDetailScreen(
                 .fillMaxWidth()
                 .edgeTransparent(position = EDGE_BOTTOM, percent = 1.5f),
             model = ImageRequest.Builder(LocalContext.current)
-                .data(song)
+                .data(networkData?.requireCoverUri() ?: song)
                 .crossfade(true)
                 .build(),
             contentScale = ContentScale.FillWidth,
@@ -96,6 +99,40 @@ fun SongDetailScreen(
                     }
                 }
             }
+
+            song.album?.let {
+                item {
+                    Surface(
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp, vertical = 20.dp)
+                            .width(intrinsicSize = IntrinsicSize.Min),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            RecommendCard(
+                                width = 125.dp,
+                                height = 125.dp,
+                                data = { it },
+                                getId = { it.id })
+
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                            ) {
+                                Text(text = it.name, style = MaterialTheme.typography.subtitle1)
+                                Text(text = it.name, style = MaterialTheme.typography.subtitle2)
+                            }
+                        }
+                    }
+                }
+            }
+
             item {
                 NetworkDataCard(
                     onClick = {
@@ -103,26 +140,6 @@ fun SongDetailScreen(
                     },
                     mediaId = song.id
                 )
-            }
-            song.album?.let {
-                item {
-                    Surface(
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp)
-                        ) {
-                            RecommendCard(
-                                width = 125.dp,
-                                height = 125.dp,
-                                data = { it },
-                                getId = { it.id })
-                        }
-                    }
-                }
             }
         }
     }

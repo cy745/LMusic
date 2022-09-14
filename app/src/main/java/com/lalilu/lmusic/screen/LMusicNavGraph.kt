@@ -13,6 +13,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -30,12 +31,14 @@ import com.lalilu.lmusic.screen.library.detail.*
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.isPad
+import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 @ExperimentalAnimationApi
 @Composable
 @ExperimentalMaterialApi
 fun LMusicNavGraph(
-    navHostController: NavHostController = LocalNavigatorHost.current
+    navHostController: NavHostController = LocalNavigatorHost.current,
+    networkDataViewModel: NetworkDataViewModel = hiltViewModel()
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
@@ -162,7 +165,7 @@ fun LMusicNavGraph(
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
             Library.getSongOrNull(mediaId)
-                ?.let { SongDetailScreen(song = it) }
+                ?.let { SongDetailScreen(song = it, networkDataViewModel = networkDataViewModel) }
                 ?: EmptySongDetailScreen()
         }
 
