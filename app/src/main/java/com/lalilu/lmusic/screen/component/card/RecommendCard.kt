@@ -52,13 +52,14 @@ fun RecommendCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable { onShowDetail(getId()) },
-                contentScale = ContentScale.Crop,
                 model = ImageRequest.Builder(context)
+                    .crossfade(true)
+                    .data(data())
                     .requirePalette {
                         cardMainColor = Color(it.getLightMutedColor(android.graphics.Color.GRAY))
                     }
-                    .data(data())
                     .build(),
+                contentScale = ContentScale.Crop,
                 contentDescription = ""
             )
 

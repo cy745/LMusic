@@ -27,6 +27,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.navigateSingleTop
 
 
@@ -134,7 +135,8 @@ fun NavigateItem(
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Medium,
                         fontSize = 12.sp,
-                        letterSpacing = 0.1.sp
+                        letterSpacing = 0.1.sp,
+                        color = dayNightTextColor()
                     )
                 }
             }

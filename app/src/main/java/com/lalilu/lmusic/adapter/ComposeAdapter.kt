@@ -3,7 +3,6 @@ package com.lalilu.lmusic.adapter
 import android.annotation.SuppressLint
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -16,23 +15,16 @@ import java.lang.ref.WeakReference
 open class ComposeAdapter(
     private val onItemClick: (LSong) -> Unit = {},
     private val onItemLongClick: (LSong) -> Unit = {},
-    private val onSwipeToLeft: onItemSwipedListener<LSong>,
-    private val onSwipeToRight: onItemSwipedListener<LSong>
+    onSwipeToLeft: onItemSwipedListener<LSong>,
+    onSwipeToRight: onItemSwipedListener<LSong>
 ) : RecyclerView.Adapter<ComposeAdapter.ComposeViewHolder>() {
-//    private val heights = LruCache<Int, Int>(100)
 
     inner class ComposeViewHolder(
         private val composeView: ComposeView
     ) : RecyclerView.ViewHolder(composeView) {
-        init {
-            composeView.setViewCompositionStrategy(
-                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
-            )
-        }
 
         fun bind(
             item: LSong,
-//            position: Int,
             onItemClick: (LSong) -> Unit,
             onItemLongClick: (LSong) -> Unit
         ) {
@@ -44,12 +36,6 @@ open class ComposeAdapter(
                         onLongClick = { onItemLongClick(item) }
                     )
                 }
-//                DisposableEffect(Unit) {
-//                    onDispose {
-//                        heights.put(position, composeView.height)
-//                        println(composeView.height)
-//                    }
-//                }
             }
         }
     }
@@ -82,16 +68,9 @@ open class ComposeAdapter(
     }
 
     override fun onBindViewHolder(holder: ComposeViewHolder, position: Int) {
-//        holder.itemView.layoutParams.apply {
-//            heights.get(position)?.let {
-//                this.height = it
-//            }
-//        }?.let {
-//            holder.itemView.layoutParams = it
-//        }
+
         holder.bind(
             item = data[position],
-//            position = position,
             onItemClick = onItemClick,
             onItemLongClick = onItemLongClick
         )
