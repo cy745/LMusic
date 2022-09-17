@@ -31,6 +31,7 @@ class SettingsDataStore @Inject constructor(
     val ignoreAudioFocus = booleanPreferencesKey(Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS)
     val volumeControl = intPreferencesKey(Config.KEY_SETTINGS_VOLUME_CONTROL)
     val lyricTypefaceUri = stringPreferencesKey(Config.KEY_SETTINGS_LYRIC_TYPEFACE_URI)
+    val enableStatusLyric = booleanPreferencesKey(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE)
 
     val isGuidingOver = booleanPreferencesKey(Config.KEY_REMEMBER_IS_GUIDING_OVER)
 }

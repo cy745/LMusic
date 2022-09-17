@@ -24,7 +24,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -213,9 +214,13 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
         settingsDataStore.apply {
             launch {
-                volumeControl.flow().collectLatest {
-                    it?.let(playBack::setMaxVolume)
-                }
+                volumeControl.flow()
+                    .onEach { it?.let(playBack::setMaxVolume) }
+                    .launchIn(this)
+
+                enableStatusLyric.flow()
+                    .onEach { mNotificationManager.statusLyricEnable = it == true }
+                    .launchIn(this)
             }
         }
     }
