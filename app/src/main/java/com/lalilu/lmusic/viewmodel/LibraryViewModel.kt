@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.datasource.MDataBase
@@ -17,6 +18,13 @@ class LibraryViewModel @Inject constructor(
     private val libraryDataStore: LibraryDataStore,
     private val mDataBase: MDataBase
 ) : ViewModel() {
+    /**
+     * 获取最近的播放记录
+     *
+     * 之前在 Composable 里用 CollectAsState 直接通过Flow获取了，
+     * 但是那样每次Recompose的时候就会重新调用生成一个Flow，间接导致每次都会重新查询数据库
+     */
+    val lastPlayedStack = requirePlayHistory().asLiveData()
 
     /**
      * 请求获取每日推荐歌曲

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -18,7 +19,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.lalilu.lmusic.utils.PaletteTransformation
+import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.utils.extension.requirePalette
 
 @Composable
 fun RecommendCard2(
@@ -35,15 +37,9 @@ fun RecommendCard2(
     val density = LocalDensity.current
     var cardMainColor by remember { mutableStateOf(Color.Gray) }
     val gradientStartOffsetY = remember(density) { density.run { height.toPx() } / 2f }
-    val transformation = remember {
-        PaletteTransformation {
-            cardMainColor = Color(it.getDarkVibrantColor(android.graphics.Color.GRAY))
-        }
-    }
 
     Surface(
         elevation = 1.dp,
-        color = Color.LightGray,
         shape = RoundedCornerShape(10.dp)
     ) {
         Box(
@@ -56,10 +52,14 @@ fun RecommendCard2(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
                 model = ImageRequest.Builder(context)
-                    .transformations(transformation)
+                    .requirePalette {
+                        cardMainColor = Color(it.getDarkVibrantColor(android.graphics.Color.GRAY))
+                    }
                     .data(data())
                     .build(),
-                contentDescription = ""
+                contentDescription = "",
+                placeholder = ColorPainter(dayNightTextColor(0.15f)),
+                error = ColorPainter(dayNightTextColor(0.15f))
             )
             Column(
                 modifier = Modifier
