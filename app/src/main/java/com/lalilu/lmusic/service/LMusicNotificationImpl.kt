@@ -41,6 +41,15 @@ class LMusicNotificationImpl constructor(
     }
 
     private val channels = listOf(playerChannelName, loggerChannelName)
+    var statusLyricEnable = true
+        set(value) {
+            field = value
+            if (value) {
+                startLyricNotification()
+            } else {
+                cancelLyricNotification()
+            }
+        }
 
     /**
      *  API 26 以上需要注册Channel，否则不显示通知。
@@ -67,6 +76,7 @@ class LMusicNotificationImpl constructor(
     override fun getService(): Service = mContext
 
     private var lyricUpdateTimer: Timer? = null
+    private var lastData: Any? = null
 
     /**
      * 更新Notification
@@ -78,6 +88,8 @@ class LMusicNotificationImpl constructor(
         lyricUpdateTimer?.cancel()
         lyricUpdateTimer = null
 
+        if (data != null) lastData = data
+
         val builder = buildNotification(mContext.mediaSession)
             ?.loadCoverAndPalette(data)
             ?: return@launch
@@ -86,8 +98,20 @@ class LMusicNotificationImpl constructor(
             pushNotification(this)
         }
 
+        startLyricPushTimer(notification)
+    }
+
+    /**
+     * 启动推送状态栏歌词的Timer
+     *
+     * @param notification 状态栏歌词所需依附的通知
+     */
+    private fun startLyricPushTimer(notification: Notification) {
+        lyricUpdateTimer?.cancel()
+        lyricUpdateTimer = null
+
         // 只有处于播放中的状态时才推送状态栏歌词
-        if (getIsPlaying()) {
+        if (getIsPlaying() && statusLyricEnable) {
             var lastLyricIndex = 0
 
             lyricUpdateTimer = Timer()
@@ -112,6 +136,43 @@ class LMusicNotificationImpl constructor(
                     lastLyricIndex = index
                 }
             }, 200, 200)
+        }
+    }
+
+    /**
+     * 开始推送显示状态栏歌词，不影响媒体控制器
+     */
+    private fun startLyricNotification() {
+        lyricUpdateTimer?.cancel()
+        lyricUpdateTimer = null
+
+        val builder = buildNotification(mContext.mediaSession)
+            ?.loadCoverAndPalette(lastData)
+            ?: return
+
+        val notification = builder.build().apply {
+            flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+            pushNotification(this)
+        }
+
+        startLyricPushTimer(notification)
+    }
+
+    /**
+     * 取消状态栏歌词，不影响媒体控制器
+     */
+    private fun cancelLyricNotification() {
+        lyricUpdateTimer?.cancel()
+        lyricUpdateTimer = null
+
+        val builder = buildNotification(mContext.mediaSession)
+            ?.loadCoverAndPalette(lastData)
+            ?: return
+        builder.build().apply {
+            tickerText = null
+            flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+            flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+            pushNotification(this)
         }
     }
 
