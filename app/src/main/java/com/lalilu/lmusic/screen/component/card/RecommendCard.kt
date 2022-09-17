@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -22,6 +23,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.airbnb.lottie.compose.*
 import com.lalilu.R
+import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.requirePalette
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -40,7 +42,6 @@ fun RecommendCard(
 
     Surface(
         elevation = 1.dp,
-        color = Color.LightGray,
         shape = RoundedCornerShape(10.dp)
     ) {
         Box(
@@ -53,14 +54,15 @@ fun RecommendCard(
                     .fillMaxSize()
                     .clickable { onShowDetail(getId()) },
                 model = ImageRequest.Builder(context)
-                    .crossfade(true)
                     .data(data())
                     .requirePalette {
                         cardMainColor = Color(it.getLightMutedColor(android.graphics.Color.GRAY))
                     }
                     .build(),
                 contentScale = ContentScale.Crop,
-                contentDescription = ""
+                contentDescription = "",
+                placeholder = ColorPainter(dayNightTextColor(0.15f)),
+                error = ColorPainter(dayNightTextColor(0.15f))
             )
 
             AnimatedVisibility(

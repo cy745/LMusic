@@ -14,6 +14,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
@@ -38,12 +38,14 @@ import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
 @Composable
 fun LibraryScreen(
-    viewModel: LibraryViewModel = hiltViewModel()
+    viewModel: LibraryViewModel
 ) {
     val navController = LocalNavigatorHost.current
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
-    val lastPlayedStack by viewModel.requirePlayHistory().collectAsState(emptyList())
+    val recentlyAdded = remember { Library.getSongs(15) }
     val randomRecommends = remember { Library.getSongs(15, true) }
+    val lastPlayedStack by viewModel.lastPlayedStack.observeAsState()
+
     val currentPlaying by LMusicRuntime.currentPlayingFlow.collectAsState()
     val currentIsPlaying by LMusicRuntime.currentIsPlayingFlow.collectAsState()
 
@@ -96,24 +98,27 @@ fun LibraryScreen(
             }
         }
 
-        item {
-            // 最近添加
-            RecommendTitle("最近添加", onClick = { })
-        }
-        item {
-            RecommendRow(
-                items = Library.getSongs(15)
-            ) {
-                RecommendCardWithOutSideText(
-                    song = it,
-                    isPlaying = (currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id),
-                    onPlaySong = playSong,
-                    onShowDetail = showDetail
-                )
+        recentlyAdded.takeIf { it.isNotEmpty() }?.let {
+            item {
+                // 最近添加
+                RecommendTitle("最近添加", onClick = { })
+            }
+            item {
+                RecommendRow(
+                    items = it
+                ) {
+                    RecommendCardWithOutSideText(
+                        song = it,
+                        isPlaying = (currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id),
+                        onPlaySong = playSong,
+                        onShowDetail = showDetail
+                    )
+                }
             }
         }
 
-        lastPlayedStack.takeIf { it.isNotEmpty() }?.let {
+
+        lastPlayedStack?.takeIf { it.isNotEmpty() }?.let {
             item {
                 RecommendTitle("最近播放")
             }
@@ -133,26 +138,28 @@ fun LibraryScreen(
             }
         }
 
-        item {
-            RecommendTitle("随机推荐", onClick = { })
-        }
-        item {
-            RecommendRow(
-                items = randomRecommends
-            ) {
-                RecommendCard2(
-                    data = { it },
-                    getId = { it.id },
-                    width = 125.dp,
-                    height = 250.dp,
-                    onShowDetail = showDetail
+        randomRecommends.takeIf { it.isNotEmpty() }?.let {
+            item {
+                RecommendTitle("随机推荐", onClick = { })
+            }
+            item {
+                RecommendRow(
+                    items = it
                 ) {
-                    ExpendableTextCard(
-                        title = it.name,
-                        subTitle = it._artist,
-                        titleColor = Color.White,
-                        subTitleColor = Color.White.copy(alpha = 0.8f)
-                    )
+                    RecommendCard2(
+                        data = { it },
+                        getId = { it.id },
+                        width = 125.dp,
+                        height = 250.dp,
+                        onShowDetail = showDetail
+                    ) {
+                        ExpendableTextCard(
+                            title = it.name,
+                            subTitle = it._artist,
+                            titleColor = Color.White,
+                            subTitleColor = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
                 }
             }
         }
@@ -204,6 +211,7 @@ fun <I> RecommendRow(
 
 @Composable
 fun RecommendCardWithOutSideText(
+    modifier: Modifier = Modifier,
     song: LSong,
     width: Dp = 200.dp,
     height: Dp = 125.dp,
@@ -212,7 +220,7 @@ fun RecommendCardWithOutSideText(
     onPlaySong: (String) -> Unit = {}
 ) {
     Column(
-        modifier = Modifier.width(IntrinsicSize.Min),
+        modifier = modifier.width(IntrinsicSize.Min),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         RecommendCard(
