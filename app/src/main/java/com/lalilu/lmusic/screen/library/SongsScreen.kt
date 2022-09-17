@@ -1,5 +1,8 @@
 package com.lalilu.lmusic.screen.library
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -28,6 +31,7 @@ import com.lalilu.lmusic.screen.component.card.SongCard
 import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.average
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
@@ -41,7 +45,6 @@ fun SongsScreen(
     val haptic = LocalHapticFeedback.current
     val navController = LocalNavigatorHost.current
     val currentPlaying by LMusicRuntime.currentPlayingFlow.collectAsState()
-    val currentIsPlaying by LMusicRuntime.currentIsPlayingFlow.collectAsState()
     val gridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
 
@@ -67,7 +70,36 @@ fun SongsScreen(
 
                 val index = songs.indexOfFirst { it.id == currentPlaying!!.id }
                 if (index >= 0) {
-                    gridState.animateScrollToItem(index)
+//                    gridState.animateScrollToItem(index)
+
+                    // 获取当前可见元素的平均高度
+                    fun getHeightAverage() = gridState.layoutInfo.visibleItemsInfo
+                        .average { it.size.height }
+
+                    // 获取精确的位移量（只能对可见元素获取）
+                    fun getTargetOffset() = gridState.layoutInfo.visibleItemsInfo
+                        .find { it.index == index }
+                        ?.offset?.y
+
+                    // 获取粗略的位移量（通过对可见元素的高度求平均再通过index的差，计算出粗略值）
+                    fun getRoughTargetOffset() =
+                        getHeightAverage() * (index - gridState.firstVisibleItemIndex - 1)
+
+                    // 若获取不到精确的位移量，则计算粗略位移量并开始scroll
+                    if (getTargetOffset() == null) {
+                        gridState.animateScrollBy(
+                            getRoughTargetOffset(),
+                            SpringSpec(stiffness = Spring.StiffnessVeryLow)
+                        )
+                    }
+
+                    // 若可以获取到精确的位移量，则直接滚动到目标歌曲位置
+                    getTargetOffset()?.let {
+                        gridState.animateScrollBy(
+                            it.toFloat(),
+                            SpringSpec(stiffness = Spring.StiffnessVeryLow)
+                        )
+                    }
                 }
             }
         }
@@ -84,7 +116,7 @@ fun SongsScreen(
                 item(key = item.id, contentType = item::class) {
                     SongCard(
                         index = index,
-                        song = item,
+                        getSong = { item },
                         onSongSelected = onSongSelected,
                         onSongShowDetail = onSongShowDetail
                     )

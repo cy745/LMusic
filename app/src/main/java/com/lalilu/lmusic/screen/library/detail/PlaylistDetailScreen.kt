@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.entity.items
 import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
@@ -105,7 +104,7 @@ fun PlaylistDetailScreen(
                 SongCard(
                     modifier = Modifier.animateItemPlacement(),
                     index = index,
-                    song = item,
+                    getSong = { item },
                     onSongSelected = onSongSelected,
                     onSongShowDetail = onSongShowDetail
                 )

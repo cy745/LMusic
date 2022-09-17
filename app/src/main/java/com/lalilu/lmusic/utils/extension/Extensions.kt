@@ -198,3 +198,9 @@ fun findShowLine(list: List<LyricEntry>?, time: Long): Int {
     }
     return 0
 }
+
+fun <T> List<T>.average(numToCalc: (T) -> Number): Float {
+    return this.fold(0f) { acc, t ->
+        acc + numToCalc(t).toFloat()
+    } / this.size
+}

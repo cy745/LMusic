@@ -15,21 +15,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImagePainter
-import coil.compose.SubcomposeAsyncImage
-import coil.compose.SubcomposeAsyncImageContent
+import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
@@ -73,34 +67,18 @@ fun PlayingCard(
             elevation = 2.dp,
             shape = RoundedCornerShape(1.dp)
         ) {
-            SubcomposeAsyncImage(
+            AsyncImage(
+                modifier = Modifier
+                    .size(64.dp)
+                    .aspectRatio(1f),
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(song)
+                    .placeholder(R.drawable.ic_music_line_bg_64dp)
+                    .error(R.drawable.ic_music_line_bg_64dp)
                     .crossfade(true)
-                    .size(SizeUtils.dp2px(64f))
                     .build(),
-                contentDescription = ""
-            ) {
-                if (painter.state is AsyncImagePainter.State.Success) {
-                    SubcomposeAsyncImageContent(
-                        contentDescription = "SongCardImage",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(64.dp)
-                            .aspectRatio(1f)
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_music_line),
-                        contentDescription = "",
-                        contentScale = FixedScale(1f),
-                        colorFilter = ColorFilter.tint(color = Color.LightGray),
-                        modifier = Modifier
-                            .size(64.dp)
-                            .aspectRatio(1f)
-                    )
-                }
-            }
+                contentDescription = "SongCardImage"
+            )
         }
         Column(
             modifier = Modifier
