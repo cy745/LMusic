@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // 判断是否已完成初次启动时的用户引导
         val isGuidingOver = settingsDataStore.run { isGuidingOver.get() }
         if (isGuidingOver != true) {
             ActivityUtils.startActivity(GuidingActivity::class.java)
@@ -57,14 +58,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
 
         SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
-            launch {
-                Indexer.index(this@MainActivity)
-            }
+            launch { Indexer.index(this@MainActivity) }
             lifecycle.addObserver(LMusicBrowser)
         }, onFailed = {
             ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
         })
 
+        // 注册返回键事件回调
         onBackPressedDispatcher.addCallback {
             this@MainActivity.moveTaskToBack(false)
         }

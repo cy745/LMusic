@@ -120,7 +120,7 @@ fun AlbumDetailScreen(
         itemsIndexed(sortedItems) { index, item ->
             SongCard(
                 index = index,
-                song = item,
+                getSong = { item },
                 onSongSelected = onSongSelected,
                 onSongShowDetail = onSongShowDetail
             )

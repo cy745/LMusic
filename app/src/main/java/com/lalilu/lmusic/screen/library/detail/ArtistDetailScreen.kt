@@ -78,7 +78,7 @@ fun ArtistDetailScreen(
             SongCard(
                 modifier = Modifier.animateItemPlacement(),
                 index = index,
-                song = item,
+                getSong = { item },
                 onSongSelected = onSongSelected,
                 onSongShowDetail = onSongShowDetail
             )
