@@ -16,6 +16,8 @@ import android.os.Build
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.dirror.lyricviewx.LyricEntry
 import kotlin.math.roundToInt
 
@@ -203,4 +205,16 @@ fun <T> List<T>.average(numToCalc: (T) -> Number): Float {
     return this.fold(0f) { acc, t ->
         acc + numToCalc(t).toFloat()
     } / this.size
+}
+
+fun calculateExtraLayoutSpace(context: Context, size: Int): LinearLayoutManager {
+    return object : LinearLayoutManager(context) {
+        override fun calculateExtraLayoutSpace(
+            state: RecyclerView.State,
+            extraLayoutSpace: IntArray
+        ) {
+            extraLayoutSpace[0] = size
+            extraLayoutSpace[1] = size
+        }
+    }
 }

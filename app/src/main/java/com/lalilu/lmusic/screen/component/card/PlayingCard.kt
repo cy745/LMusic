@@ -5,17 +5,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.contentColorFor
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,7 +23,11 @@ import coil.request.ImageRequest
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.utils.extension.toColorFilter
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 @Composable
 @OptIn(
@@ -35,18 +35,30 @@ import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 )
 fun PlayingCard(
     modifier: Modifier = Modifier,
-    song: LSong,
+    getSong: () -> LSong,
+    loadDelay: () -> Long = { 0L },
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {}
 ) {
-    val durationText = TimeUtils.millis2String(song.durationMs, "mm:ss")
-    val color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
-    val colorFilter = ColorFilter.tint(color = color.copy(alpha = 0.9f))
-    val hasLrc = remember { mutableStateOf(false) }
+    var hasLrc by remember { mutableStateOf(false) }
+    var imageData by remember { mutableStateOf<Any?>(null) }
+
+    val song = remember { getSong() }
+    val titleText = remember(song) { song.name }
+    val artistText = remember(song) { song._artist }
+    val durationText = remember(song) { TimeUtils.millis2String(song.durationMs, "mm:ss") }
 
     LaunchedEffect(Unit) {
-        val lyric = LyricSourceFactory.instance?.getLyric(song)
-        hasLrc.value = lyric != null && lyric.first.isNotEmpty()
+        delay(loadDelay())
+
+        if (isActive) {
+            println("PlayingCard: isActive $isActive")
+
+            val lyric = LyricSourceFactory.instance?.getLyric(song)
+            hasLrc = lyric != null && lyric.first.isNotEmpty()
+
+            imageData = song
+        }
     }
 
     Row(
@@ -72,11 +84,12 @@ fun PlayingCard(
                     .size(64.dp)
                     .aspectRatio(1f),
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(song)
+                    .data(imageData)
                     .placeholder(R.drawable.ic_music_line_bg_64dp)
                     .error(R.drawable.ic_music_line_bg_64dp)
                     .crossfade(true)
                     .build(),
+                contentScale = ContentScale.Crop,
                 contentDescription = "SongCardImage"
             )
         }
@@ -91,30 +104,30 @@ fun PlayingCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = song.name,
+                    text = titleText,
                     fontSize = 16.sp,
                     letterSpacing = 0.05.em,
-                    color = color,
+                    color = dayNightTextColor(),
                     modifier = Modifier.weight(1f)
                 )
                 Row(
+                    modifier = Modifier.padding(start = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    if (hasLrc.value) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_lrc_fill),
-                            contentDescription = "lrcIconPainter",
-                            colorFilter = colorFilter,
-                            modifier = Modifier
-                                .size(20.dp)
-                                .aspectRatio(1f)
-                        )
-                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_lrc_fill),
+                        contentDescription = "lrcIconPainter",
+                        colorFilter = dayNightTextColor(0.9f).toColorFilter(),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .aspectRatio(1f)
+                            .alpha(if (hasLrc) 1f else 0f)
+                    )
                     Image(
                         painter = painterResource(id = getMusicTypeIcon(song.mimeType)),
                         contentDescription = "mediaTypeIconPainter",
-                        colorFilter = colorFilter,
+                        colorFilter = dayNightTextColor(0.9f).toColorFilter(),
                         modifier = Modifier
                             .size(20.dp)
                             .aspectRatio(1f)
@@ -127,8 +140,8 @@ fun PlayingCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = song._artist,
-                    color = color.copy(alpha = 0.6f),
+                    text = artistText,
+                    color = dayNightTextColor(0.6f),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 0.05.em,
@@ -138,7 +151,7 @@ fun PlayingCard(
                     text = durationText,
                     fontSize = 14.sp,
                     letterSpacing = 0.05.em,
-                    color = color.copy(alpha = 0.7f)
+                    color = dayNightTextColor(0.7f)
                 )
             }
         }

@@ -25,6 +25,7 @@ import com.airbnb.lottie.compose.*
 import com.lalilu.R
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.requirePalette
+import com.lalilu.lmusic.utils.recomposeHighlighter
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -41,6 +42,7 @@ fun RecommendCard(
     var cardMainColor by remember { mutableStateOf(Color.Gray) }
 
     Surface(
+        modifier = Modifier.recomposeHighlighter(),
         elevation = 1.dp,
         shape = RoundedCornerShape(10.dp)
     ) {

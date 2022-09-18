@@ -31,7 +31,8 @@ open class ComposeAdapter(
             composeView.setContent {
                 LMusicTheme {
                     PlayingCard(
-                        song = item,
+                        getSong = { item },
+                        loadDelay = { 50L },
                         onClick = { onItemClick(item) },
                         onLongClick = { onItemLongClick(item) }
                     )
