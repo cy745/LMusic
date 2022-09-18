@@ -9,10 +9,6 @@
             type="androidx.palette.graphics.Palette" />
 
         <variable
-            name="adapter"
-            type="com.lalilu.lmusic.adapter.ComposeAdapter" />
-
-        <variable
             name="song"
             type="com.lalilu.lmedia.entity.LSong" />
     </data>
@@ -105,7 +101,6 @@
                 android:fillViewport="true"
                 android:overScrollMode="never"
                 android:paddingBottom="128dp"
-                app:adapter="@{adapter}"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_behavior="com.lalilu.ui.appbar.MyScrollingViewBehavior" />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>

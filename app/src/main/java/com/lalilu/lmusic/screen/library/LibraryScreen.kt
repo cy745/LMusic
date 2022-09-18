@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
@@ -34,6 +36,7 @@ import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
 @Composable
@@ -60,22 +63,29 @@ fun LibraryScreen(
     val showDetail = remember {
         { mediaId: String ->
             navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId") {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    //出栈的 BackStack 保存状态
+                    saveState = true
+                }
+                // 避免点击同一个 Item 时反复入栈
                 launchSingleTop = true
+
+                // 如果之前出栈时保存状态了，那么重新入栈时恢复状态
+                restoreState = true
             }
         }
     }
 
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .recomposeHighlighter(),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = SmartBar.rememberContentPadding()
     ) {
         dailyRecommends.takeIf { it.isNotEmpty() }?.let {
             item {
                 RecommendTitle("每日推荐", onClick = { })
-            }
-            item {
                 RecommendRow(
                     items = it
                 ) {
@@ -102,8 +112,6 @@ fun LibraryScreen(
             item {
                 // 最近添加
                 RecommendTitle("最近添加", onClick = { })
-            }
-            item {
                 RecommendRow(
                     items = it
                 ) {
@@ -121,8 +129,6 @@ fun LibraryScreen(
         lastPlayedStack?.takeIf { it.isNotEmpty() }?.let {
             item {
                 RecommendTitle("最近播放")
-            }
-            item {
                 RecommendRow(
                     items = it
                 ) {
@@ -141,8 +147,6 @@ fun LibraryScreen(
         randomRecommends.takeIf { it.isNotEmpty() }?.let {
             item {
                 RecommendTitle("随机推荐", onClick = { })
-            }
-            item {
                 RecommendRow(
                     items = it
                 ) {
@@ -172,7 +176,8 @@ fun RecommendTitle(title: String, onClick: () -> Unit = {}) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(15.dp),
+            .padding(15.dp)
+            .recomposeHighlighter(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -203,8 +208,8 @@ fun <I> RecommendRow(
         horizontalArrangement = Arrangement.spacedBy(15.dp),
         contentPadding = PaddingValues(horizontal = 20.dp)
     ) {
-        items.forEach {
-            item { itemContent(it) }
+        items(items.toList()) {
+            itemContent(it)
         }
     }
 }
@@ -220,7 +225,9 @@ fun RecommendCardWithOutSideText(
     onPlaySong: (String) -> Unit = {}
 ) {
     Column(
-        modifier = modifier.width(IntrinsicSize.Min),
+        modifier = modifier
+            .width(IntrinsicSize.Min)
+            .recomposeHighlighter(),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         RecommendCard(

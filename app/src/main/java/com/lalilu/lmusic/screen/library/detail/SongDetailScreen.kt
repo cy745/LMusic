@@ -42,8 +42,6 @@ fun SongDetailScreen(
 ) {
     val windowSize = LocalWindowSize.current
     val navController = LocalNavigatorHost.current
-    val title = song.name
-    val subTitle = song._artist
     val networkData by networkDataViewModel.getNetworkDataFlowByMediaId(song.id)
         .collectAsState(null)
 
@@ -90,7 +88,7 @@ fun SongDetailScreen(
             contentPadding = SmartBar.rememberContentPadding()
         ) {
             item {
-                NavigatorHeader(title = title, subTitle = subTitle) {
+                NavigatorHeader(title = song.name, subTitle = song._artist) {
                     IconButton(onClick = { }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_fullscreen_line),

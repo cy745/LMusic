@@ -11,17 +11,15 @@ import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.ConvertUtils
-import com.blankj.utilcode.util.KeyboardUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
 import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.adapter.ComposeAdapter
-import com.lalilu.lmusic.adapter.setDiffNewData
+import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
@@ -31,14 +29,11 @@ import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
-import com.lalilu.ui.internal.StateHelper
-import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
-import com.lalilu.ui.internal.StateHelper.Companion.STATE_EXPENDED
-import com.lalilu.ui.internal.StateHelper.Companion.STATE_NORMAL
 
 @Composable
 @ExperimentalMaterialApi
@@ -66,42 +61,67 @@ fun PlayingScreen(
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
 
-            adapter = ComposeAdapter(
-                onSwipeToLeft = { LMusicBrowser.addToNext(it.id) },
-                onSwipeToRight = { LMusicBrowser.removeById(it.id) },
-                onItemClick = { LMusicBrowser.playById(it.id) },
-                onItemLongClick = {
-                    HapticUtils.haptic(this@apply.root)
-                    navController.navigate("${MainScreenData.SongsDetail.name}/${it.id}") {
+            val adapter = PlayingAdapter().apply {
+                onItemDragOrSwipedListener =
+                    object : PlayingAdapter.OnItemDragOrSwipedListener {
+                        override fun onDelete(song: LSong): Boolean {
+                            return LMusicBrowser.removeById(song.id)
+                        }
+
+                        override fun onAddToNext(song: LSong): Boolean {
+                            return LMusicBrowser.addToNext(song.id)
+                        }
+                    }
+                onItemClick = { id, _ ->
+                    LMusicBrowser.playById(id)
+                }
+                onItemLongClick = { id, _ ->
+                    navController.navigate("${MainScreenData.SongsDetail.name}/$id") {
                         launchSingleTop = true
                     }
                     SmartModalBottomSheet.show()
                 }
-            )
+            }
 
-            behavior.addOnStateChangeListener(object :
-                StateHelper.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {
-                override fun onScrollToStateListener() {
-                    if (fmToolbar.hasExpandedActionView())
-                        fmToolbar.collapseActionView()
-                }
-            })
-            behavior.addOnStateChangeListener(object :
-                StateHelper.OnScrollToStateListener(STATE_NORMAL, STATE_EXPENDED) {
-                override fun onScrollToStateListener() {
-                    if (fmToolbar.hasExpandedActionView())
-                        fmToolbar.collapseActionView()
-                }
-            })
+//            val adapter = ComposeAdapter(
+//                onSwipeToLeft = { LMusicBrowser.addToNext(it.id) },
+//                onSwipeToRight = { LMusicBrowser.removeById(it.id) },
+//                onItemClick = { LMusicBrowser.playById(it.id) },
+//                onItemLongClick = {
+//                    HapticUtils.haptic(this@apply.root)
+//                    navController.navigate("${MainScreenData.SongsDetail.name}/${it.id}") {
+//                        launchSingleTop = true
+//                    }
+//                    SmartModalBottomSheet.show()
+//                }
+//            )
 
-            fmRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    if (dy <= 10) return
-                    if (!fmToolbar.hasExpandedActionView()) return
-                    if (!KeyboardUtils.isSoftInputVisible(activity)) return
-                    KeyboardUtils.hideSoftInput(activity)
-                }
-            })
+//            behavior.addOnStateChangeListener(object :
+//                StateHelper.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {
+//                override fun onScrollToStateListener() {
+//                    if (fmToolbar.hasExpandedActionView())
+//                        fmToolbar.collapseActionView()
+//                }
+//            })
+//            behavior.addOnStateChangeListener(object :
+//                StateHelper.OnScrollToStateListener(STATE_NORMAL, STATE_EXPENDED) {
+//                override fun onScrollToStateListener() {
+//                    if (fmToolbar.hasExpandedActionView())
+//                        fmToolbar.collapseActionView()
+//                }
+//            })
+
+//            fmRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+//                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+//                    if (dy <= 10) return
+//                    if (!fmToolbar.hasExpandedActionView()) return
+//                    if (!KeyboardUtils.isSoftInputVisible(activity)) return
+//                    KeyboardUtils.hideSoftInput(activity)
+//                }
+//            })
+            fmRecyclerView.adapter = adapter
+            fmRecyclerView.layoutManager = calculateExtraLayoutSpace(this.root.context, 500)
+            fmRecyclerView.setItemViewCacheSize(5)
 
             fmTopPic.palette.observe(activity, this::setPalette)
 
@@ -148,7 +168,7 @@ fun PlayingScreen(
                 HapticUtils.haptic(this@apply.root)
             })
             LMusicRuntime.currentPlaylistLiveData.observe(activity) {
-                adapter?.setDiffNewData(it.toMutableList())
+                adapter.setDiffNewData(it.toMutableList())
             }
             LMusicRuntime.currentPlayingLiveData.observe(activity) {
                 maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f

@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 fun SongsScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
 ) {
-    val songs = Library.getSongs()
+    val songs = remember { Library.getSongs() }
     val windowSize = LocalWindowSize.current
     val haptic = LocalHapticFeedback.current
     val navController = LocalNavigatorHost.current
@@ -59,7 +59,17 @@ fun SongsScreen(
     val onSongShowDetail: (String) -> Unit = remember {
         { mediaId ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId")
+            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId") {
+                popUpTo(MainScreenData.Songs.name) {
+                    //出栈的 BackStack 保存状态
+                    saveState = true
+                }
+                // 避免点击同一个 Item 时反复入栈
+                launchSingleTop = true
+
+                // 如果之前出栈时保存状态了，那么重新入栈时恢复状态
+                restoreState = true
+            }
         }
     }
 
@@ -117,6 +127,7 @@ fun SongsScreen(
                     SongCard(
                         index = index,
                         getSong = { item },
+                        loadDelay = { 200L },
                         onSongSelected = onSongSelected,
                         onSongShowDetail = onSongShowDetail
                     )

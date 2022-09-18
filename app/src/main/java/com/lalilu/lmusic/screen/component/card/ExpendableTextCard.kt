@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.utils.recomposeHighlighter
 
 /**
  * 此组件的效果时在一定的宽度内保证文字单行显示，若无法在单行内显示完全则会省略显示对应溢出的部分
@@ -39,7 +40,10 @@ fun ExpendableTextCard(
     defaultState: Boolean = false,
     expendedState: MutableState<Boolean> = remember { mutableStateOf(defaultState) }
 ) {
-    AnimatedContent(targetState = expendedState.value) {
+    AnimatedContent(
+        modifier = Modifier.recomposeHighlighter(),
+        targetState = expendedState.value
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
