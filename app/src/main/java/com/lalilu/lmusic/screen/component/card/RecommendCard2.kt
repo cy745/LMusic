@@ -21,6 +21,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.requirePalette
+import com.lalilu.lmusic.utils.recomposeHighlighter
 
 @Composable
 fun RecommendCard2(
@@ -39,6 +40,7 @@ fun RecommendCard2(
     val gradientStartOffsetY = remember(density) { density.run { height.toPx() } / 2f }
 
     Surface(
+        modifier = Modifier.recomposeHighlighter(),
         elevation = 1.dp,
         shape = RoundedCornerShape(10.dp)
     ) {

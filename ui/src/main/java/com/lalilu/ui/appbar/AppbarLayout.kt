@@ -419,8 +419,8 @@ open class AppbarLayout @JvmOverloads constructor(
             }
         }
         a.recycle()
-        ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat? ->
-            onWindowInsetChanged(insets)
+        ViewCompat.setOnApplyWindowInsetsListener(this.rootView) { _, insets ->
+            onWindowInsetChanged(insets) ?: insets
         }
     }
 }
