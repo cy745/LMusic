@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LSong
@@ -21,7 +22,6 @@ import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
-import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.card.SongCard
@@ -40,7 +40,7 @@ fun PlaylistDetailScreen(
     val haptic = LocalHapticFeedback.current
     val navController = LocalNavigatorHost.current
     val windowSize = LocalWindowSize.current
-    val contentPaddingForFooter: Dp by SmartBar.contentPaddingForSmartBarDp
+    val contentPaddingForFooter: Dp = 0.dp
     var playlist by remember { mutableStateOf(MPlaylist(playlistId)) }
 //    val playlistItems = remember { emptyList<MediaItem>().toMutableStateList() }
     val songs = emptyList<LSong>()
