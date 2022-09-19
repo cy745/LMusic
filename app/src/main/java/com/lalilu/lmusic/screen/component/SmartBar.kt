@@ -6,37 +6,47 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.isPad
 import com.lalilu.lmusic.utils.extension.measure
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
 
+@OptIn(FlowPreview::class)
 object SmartBar {
     private val mainBar: MutableState<(@Composable () -> Unit)?> = mutableStateOf(null)
     private val extraBar: MutableState<(@Composable () -> Unit)?> = mutableStateOf(null)
-    val contentPaddingForSmartBar = mutableStateOf(0)
-    val contentPaddingForSmartBarDp = mutableStateOf(0.dp)
+
+    private val smartBarHeightDp = MutableStateFlow(0.dp)
+    private val statusBarHeightDp = MutableStateFlow(0.dp)
+    private val statusBarHeight = statusBarHeightDp.debounce(50L)
+
+//    private val contentPadding = smartBarHeightDp
+//        .combine(statusBarHeightDp) { bottom, top ->
+//            PaddingValues(
+//                top = top,
+//                bottom = if (bottom > 100.dp) bottom else 100.dp
+//            )
+//        }.debounce(50L)
+//        .asLiveData()
 
     @Composable
     fun rememberContentPadding(horizontal: Dp = 0.dp): PaddingValues {
-        val configuration = LocalConfiguration.current
-        val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+//        val contentPadding by contentPadding.observeAsState(PaddingValues())
+        val statusBarHeight by statusBarHeight.collectAsState(0.dp)
 
-        // TODO contentPaddingForSmartBarDp 该State的更新 会使Composable组件不断Recompose，导致页面卡顿
-        return remember(horizontal, configuration.orientation, contentPaddingForSmartBarDp.value) {
+        return remember(statusBarHeight) {
             PaddingValues(
                 top = statusBarHeight,
-                bottom = contentPaddingForSmartBarDp.value,
+                bottom = 200.dp,
                 start = horizontal,
                 end = horizontal
             )
@@ -50,7 +60,11 @@ object SmartBar {
         val windowSize = LocalWindowSize.current
         val hasContent = mainBar.value != null || extraBar.value != null
         val isPad = windowSize.isPad()
+        val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
+        LaunchedEffect(statusBarHeight) {
+            statusBarHeightDp.emit(statusBarHeight)
+        }
 
         Surface(
             modifier = Modifier
@@ -67,8 +81,7 @@ object SmartBar {
                 modifier = Modifier
                     .fillMaxWidth()
                     .measure { _, height ->
-                        contentPaddingForSmartBar.value = height
-                        density.run { contentPaddingForSmartBarDp.value = height.toDp() + 20.dp }
+                        density.run { smartBarHeightDp.value = height.toDp() + 20.dp }
                     }
             ) {
                 AnimatedVisibility(visible = hasContent) {

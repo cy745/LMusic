@@ -25,6 +25,7 @@ import com.lalilu.lmusic.utils.recomposeHighlighter
 
 @Composable
 fun RecommendCard2(
+    modifier: Modifier = Modifier,
     data: () -> Any?,
     getId: () -> String,
     width: Dp = 200.dp,
@@ -40,7 +41,7 @@ fun RecommendCard2(
     val gradientStartOffsetY = remember(density) { density.run { height.toPx() } / 2f }
 
     Surface(
-        modifier = Modifier.recomposeHighlighter(),
+        modifier = modifier.recomposeHighlighter(),
         elevation = 1.dp,
         shape = RoundedCornerShape(10.dp)
     ) {
