@@ -31,6 +31,8 @@ object SmartBar {
     fun rememberContentPadding(horizontal: Dp = 0.dp): PaddingValues {
         val configuration = LocalConfiguration.current
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
+        // TODO contentPaddingForSmartBarDp 该State的更新 会使Composable组件不断Recompose，导致页面卡顿
         return remember(horizontal, configuration.orientation, contentPaddingForSmartBarDp.value) {
             PaddingValues(
                 top = statusBarHeight,

@@ -14,7 +14,7 @@ object PermissionUtils {
         onFailed: () -> Unit = {}
     ) {
         XXPermissions.with(context)
-            .permission(Permission.READ_EXTERNAL_STORAGE)
+            .permission(Permission.READ_MEDIA_AUDIO)
             .request(object : OnPermissionCallback {
                 override fun onGranted(permissions: List<String>, all: Boolean) {
                     if (all) {
