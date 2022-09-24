@@ -6,7 +6,10 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -23,7 +26,7 @@ import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
-import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.ExpendableTextCard
 import com.lalilu.lmusic.screen.component.card.RecommendCard
 import com.lalilu.lmusic.screen.component.card.RecommendCard2
@@ -42,9 +45,9 @@ fun LibraryScreen(
 ) {
     val navController = LocalNavigatorHost.current
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
-    val recentlyAdded = remember { Library.getSongs(15) }
-    val randomRecommends = remember { Library.getSongs(15, true) }
     val lastPlayedStack by viewModel.lastPlayedStack.observeAsState(emptyList())
+    val recentlyAdded by viewModel.recentlyAdded.observeAsState(emptyList())
+    val randomRecommends = remember { Library.getSongs(10, true) }
 
     val currentPlaying by LMusicRuntime.currentPlayingFlow.collectAsState()
     val currentIsPlaying by LMusicRuntime.currentIsPlayingFlow.collectAsState()
@@ -73,16 +76,12 @@ fun LibraryScreen(
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .recomposeHighlighter(),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        contentPadding = SmartBar.rememberContentPadding()
+    SmartContainer.LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         item {
             RecommendTitle("每日推荐", onClick = { })
-            RecommendRow(getItems = { dailyRecommends }, getId = { it.id }) {
+            RecommendRow(items = dailyRecommends, getId = { it.id }) {
                 RecommendCard2(
                     data = { it },
                     getId = { it.id },
@@ -104,7 +103,7 @@ fun LibraryScreen(
         item {
             // 最近添加
             RecommendTitle("最近添加", onClick = { })
-            RecommendRow(getItems = { recentlyAdded }, getId = { it.id }) {
+            RecommendRow(items = recentlyAdded.toList(), getId = { it.id }) {
                 RecommendCardWithOutSideText(
                     modifier = Modifier.animateItemPlacement(),
                     getSong = { it },
@@ -118,7 +117,11 @@ fun LibraryScreen(
 
         item {
             RecommendTitle("最近播放")
-            RecommendRow(getItems = { lastPlayedStack }, getId = { it.id }) {
+            RecommendRow(
+                scrollToStartWhenUpdate = true,
+                items = lastPlayedStack.toList(),
+                getId = { it.id }
+            ) {
                 RecommendCardWithOutSideText(
                     modifier = Modifier.animateItemPlacement(),
                     getSong = { it },
@@ -133,7 +136,7 @@ fun LibraryScreen(
 
         item {
             RecommendTitle("随机推荐", onClick = { })
-            RecommendRow(getItems = { randomRecommends }, getId = { it.id }) {
+            RecommendRow(items = randomRecommends.toList(), getId = { it.id }) {
                 RecommendCard2(
                     modifier = Modifier.animateItemPlacement(),
                     data = { it },
@@ -166,8 +169,7 @@ fun RecommendTitle(title: String, onClick: () -> Unit = {}) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            modifier = Modifier
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             text = title,
             style = MaterialTheme.typography.h6,
             color = dayNightTextColor()
@@ -182,29 +184,32 @@ fun RecommendTitle(title: String, onClick: () -> Unit = {}) {
 
 @Composable
 fun <I> RecommendRow(
-    getItems: () -> Collection<I>,
+    items: List<I>,
     getId: (I) -> Any,
+    scrollToStartWhenUpdate: Boolean = false,
     itemContent: @Composable LazyItemScope.(item: I) -> Unit
 ) {
     val rowState = rememberLazyListState()
-    val items = getItems().toList()
 
-    LaunchedEffect(items) {
-        delay(50L)
-        rowState.animateScrollToItem(0)
+    if (scrollToStartWhenUpdate) {
+        LaunchedEffect(items) {
+            delay(50L)
+            rowState.animateScrollToItem(0)
+        }
     }
 
     LazyRow(
         modifier = Modifier
+            .fillMaxWidth()
             .animateContentSize(
                 animationSpec = SpringSpec(stiffness = Spring.StiffnessLow)
             )
             .recomposeHighlighter(),
         state = rowState,
         horizontalArrangement = Arrangement.spacedBy(15.dp),
-        contentPadding = PaddingValues(horizontal = 20.dp)
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
     ) {
-        items(items, key = { getId(it) }, contentType = { true }) {
+        items(items = items, key = getId) {
             itemContent(it)
         }
     }

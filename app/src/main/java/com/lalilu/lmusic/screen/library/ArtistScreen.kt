@@ -2,7 +2,6 @@ package com.lalilu.lmusic.screen.library
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
@@ -19,7 +18,7 @@ import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
-import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 
 @Composable
@@ -35,10 +34,7 @@ fun ArtistScreen() {
         }
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = SmartBar.rememberContentPadding()
-    ) {
+    SmartContainer.LazyColumn {
         artists.forEachIndexed { index, item ->
             item {
                 ArtistCard(

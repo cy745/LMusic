@@ -1,8 +1,10 @@
 package com.lalilu.lmusic.screen.library.detail
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
@@ -31,7 +33,7 @@ import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
-import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.SongCard
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
@@ -67,9 +69,7 @@ fun AlbumDetailScreen(
         }
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = SmartBar.rememberContentPadding(),
+    SmartContainer.LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {

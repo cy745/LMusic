@@ -2,7 +2,6 @@ package com.lalilu.lmusic.screen.library.detail
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -24,6 +23,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
@@ -63,8 +63,7 @@ fun SongDetailScreen(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter
     ) {
         AsyncImage(
@@ -78,14 +77,11 @@ fun SongDetailScreen(
             contentScale = ContentScale.FillWidth,
             contentDescription = ""
         )
-        LazyVerticalGrid(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 100.dp),
+        SmartContainer.LazyVerticalGrid(
+            modifier = Modifier.padding(top = 100.dp),
             columns = GridCells.Fixed(
                 if (windowSize.widthSizeClass != WindowWidthSizeClass.Compact) 2 else 1
-            ),
-            contentPadding = SmartBar.rememberContentPadding()
+            )
         ) {
             item {
                 NavigatorHeader(title = song.name, subTitle = song._artist) {
@@ -116,7 +112,8 @@ fun SongDetailScreen(
                                 width = 125.dp,
                                 height = 125.dp,
                                 data = { it },
-                                getId = { it.id })
+                                getId = { it.id }
+                            )
 
                             Column(
                                 modifier = Modifier
