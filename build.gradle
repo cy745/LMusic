@@ -10,7 +10,7 @@ buildscript {
         media3_version = "1.0.0-beta01"
         compose_version = '1.3.0-beta01'
         compose_compiler_version = '1.3.0'
-        accompanist_version = '0.25.1'
+        accompanist_version = '0.26.4-beta'
     }
 
     repositories {
@@ -34,6 +34,7 @@ allprojects {
     repositories {
         maven { url 'https://jitpack.io' }
         google()
+        mavenCentral()
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/google' }
     }

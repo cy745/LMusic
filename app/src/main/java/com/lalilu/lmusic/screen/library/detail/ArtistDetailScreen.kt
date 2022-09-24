@@ -1,9 +1,7 @@
 package com.lalilu.lmusic.screen.library.detail
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -18,7 +16,7 @@ import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
-import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.card.SongCard
@@ -55,10 +53,8 @@ fun ArtistDetailScreen(
         }
     }
 
-    LazyVerticalGrid(
-        modifier = Modifier.fillMaxSize(),
+    SmartContainer.LazyVerticalGrid(
         columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
-        contentPadding = SmartBar.rememberContentPadding()
     ) {
         item {
             NavigatorHeaderWithButtons(

@@ -3,6 +3,7 @@ package com.lalilu.lmusic
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
+import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.service.LMusicBrowser
@@ -40,6 +41,7 @@ class LMusicApp : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
+        Indexer.init { this }
         LMusicRuntime.init(historyDataStore, mDataBase)
         LMusicLyricManager.init(lyricSourceFactory)
         LMusicBrowser.init(this, historyDataStore)

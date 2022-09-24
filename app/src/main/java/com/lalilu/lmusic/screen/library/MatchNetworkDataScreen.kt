@@ -4,7 +4,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -26,6 +25,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.getActivity
@@ -68,10 +68,7 @@ fun MatchNetworkDataScreen(
         )
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(), contentPadding = SmartBar.rememberContentPadding()
-    ) {
+    SmartContainer.LazyColumn {
         item {
             NavigatorHeader(
                 title = stringResource(id = R.string.destination_label_match_network_data),

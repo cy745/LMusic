@@ -5,10 +5,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -26,7 +24,7 @@ import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.sort
-import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
@@ -89,11 +87,7 @@ fun PlaylistsScreen(
 //            }
 //        }
     @OptIn(ExperimentalFoundationApi::class)
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentPadding = SmartBar.rememberContentPadding()
-    ) {
+    SmartContainer.LazyColumn {
         items(sortedItems) {
             PlaylistCard(
                 title = it.playlistTitle,

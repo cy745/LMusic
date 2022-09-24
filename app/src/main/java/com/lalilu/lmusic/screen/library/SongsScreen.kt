@@ -3,36 +3,21 @@ package com.lalilu.lmusic.screen.library
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Surface
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.lalilu.R
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
-import com.lalilu.lmusic.screen.component.SmartBar
+import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.SongCard
 import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.average
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
@@ -115,41 +100,39 @@ fun SongsScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyVerticalGrid(
-            modifier = Modifier.fillMaxSize(),
-            state = gridState,
-            columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
-            contentPadding = SmartBar.rememberContentPadding()
-        ) {
-            songs.forEachIndexed { index, item ->
-                item(key = item.id, contentType = item::class) {
-                    SongCard(
-                        index = index,
-                        getSong = { item },
-                        loadDelay = { 200L },
-                        onSongSelected = onSongSelected,
-                        onSongShowDetail = onSongShowDetail
-                    )
-                }
-            }
-        }
-
-        Surface(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(SmartBar.rememberContentPadding(horizontal = 20.dp)),
-            shape = CircleShape,
-            elevation = 5.dp,
-            color = Color.Gray.copy(alpha = 0.8f)
-        ) {
-            IconButton(onClick = { scrollToCurrentPlaying() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_focus_3_line),
-                    contentDescription = "",
-                    tint = dayNightTextColor()
+    SmartContainer.LazyVerticalGrid(
+        state = gridState,
+        columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1)
+    ) {
+        songs.forEachIndexed { index, item ->
+            item(key = item.id, contentType = item::class) {
+                SongCard(
+                    index = index,
+                    getSong = { item },
+                    loadDelay = { 200L },
+                    onSongSelected = onSongSelected,
+                    onSongShowDetail = onSongShowDetail
                 )
             }
         }
     }
+
+//    Box(modifier = Modifier.fillMaxSize()) {
+//        Surface(
+//            modifier = Modifier
+//                .align(Alignment.BottomEnd)
+//                .padding(SmartBar.rememberContentPadding(horizontal = 20.dp)),
+//            shape = CircleShape,
+//            elevation = 5.dp,
+//            color = Color.Gray.copy(alpha = 0.8f)
+//        ) {
+//            IconButton(onClick = { scrollToCurrentPlaying() }) {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.ic_focus_3_line),
+//                    contentDescription = "",
+//                    tint = dayNightTextColor()
+//                )
+//            }
+//        }
+//    }
 }
