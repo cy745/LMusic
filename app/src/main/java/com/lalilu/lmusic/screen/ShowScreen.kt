@@ -38,7 +38,7 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.BlurTransformation
-import com.lalilu.lmusic.utils.RepeatMode
+import com.lalilu.lmusic.utils.PlayMode
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.isPad
 
@@ -226,10 +226,10 @@ fun ControlPanel() {
         IconButton(onClick = { repeatMode = (repeatMode + 1) % 3 }) {
             Image(
                 painter = painterResource(
-                    when (RepeatMode.values()[repeatMode]) {
-                        RepeatMode.ListRecycle -> R.drawable.ic_order_play_line
-                        RepeatMode.RepeatOne -> R.drawable.ic_repeat_one_line
-                        RepeatMode.Shuffle -> R.drawable.ic_shuffle_line
+                    when (PlayMode.values()[repeatMode]) {
+                        PlayMode.ListRecycle -> R.drawable.ic_order_play_line
+                        PlayMode.RepeatOne -> R.drawable.ic_repeat_one_line
+                        PlayMode.Shuffle -> R.drawable.ic_shuffle_line
                     }
                 ),
                 contentDescription = "play_pause",

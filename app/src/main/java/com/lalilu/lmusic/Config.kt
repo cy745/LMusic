@@ -12,6 +12,7 @@ object Config {
 
     const val ACTION_PLAY_AND_PAUSE = "action_play_and_pause"
     const val ACTION_RELOAD_AND_PLAY = "action_reload_and_play"
+    const val ACTION_SET_REPEAT_MODE = "action_set_repeat_mode"
 
     const val KEY_SETTINGS_MEDIA_UNKNOWN_FILTER = "KEY_SETTINGS_MEDIA_UNKNOWN_FILTER"
     const val KEY_SETTINGS_KANHIRA_ENABLE = "KEY_SETTINGS_KANHIRA_ENABLE"
@@ -45,7 +46,8 @@ object Config {
             PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
             PlaybackStateCompat.ACTION_STOP or
             PlaybackStateCompat.ACTION_SEEK_TO or
-            PlaybackStateCompat.ACTION_SET_REPEAT_MODE
+            PlaybackStateCompat.ACTION_SET_REPEAT_MODE or
+            PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE
 
     val MEDIA_STOPPED_STATE: PlaybackStateCompat = PlaybackStateCompat.Builder()
         .setState(PlaybackStateCompat.STATE_STOPPED, 0, 1f)

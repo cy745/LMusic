@@ -48,7 +48,7 @@
         <service
             android:name="com.lalilu.lmusic.service.LMusicService"
             android:enabled="true"
-            android:exported="true"
+            android:exported="false"
             android:foregroundServiceType="mediaPlayback">
 
             <intent-filter>
