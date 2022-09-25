@@ -42,8 +42,8 @@ class LMusicApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
         Indexer.init { this }
-        LMusicRuntime.init(historyDataStore, mDataBase)
         LMusicLyricManager.init(lyricSourceFactory)
+        LMusicRuntime.init(historyDataStore, mDataBase)
         LMusicBrowser.init(this, historyDataStore)
     }
 }

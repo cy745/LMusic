@@ -22,7 +22,7 @@
             android:layout_marginStart="20dp"
             android:background="@color/daynight_1"
             android:elevation="2dp"
-            android:scaleType="center"
+            android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -99,7 +99,6 @@
             app:layout_constraintBottom_toTopOf="@+id/song_duration"
             app:layout_constraintEnd_toStartOf="@+id/song_type"
             app:layout_constraintTop_toTopOf="parent"
-            app:loadLyric="@{song}"
             app:srcCompat="@drawable/ic_lrc_fill" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

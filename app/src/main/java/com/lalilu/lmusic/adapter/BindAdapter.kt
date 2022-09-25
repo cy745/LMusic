@@ -84,14 +84,6 @@ fun iconRec(imageView: ImageView, mimeType: String) {
     )
 }
 
-@BindingAdapter("loadLyric")
-fun loadLyric(imageView: ImageView, song: LSong?) {
-    song ?: return
-
-    imageView.visibility = View.VISIBLE
-}
-
-
 @BindingAdapter("setDuration")
 fun setDuration(textView: AppCompatTextView, duration: Long) {
     textView.text = TimeUtils.millis2String(duration, "mm:ss")

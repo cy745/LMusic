@@ -13,15 +13,16 @@ import java.util.logging.Logger
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface LyricSource {
+    suspend fun loadLyric(song: LSong): Pair<String, String?>?
+}
+
 @Singleton
 class LyricSourceFactory @Inject constructor(
     dataBaseLyricSource: DataBaseLyricSource,
     embeddedLyricSource: EmbeddedLyricSource,
     localLyricSource: LocalLyricSource
-) {
-    interface LyricSource {
-        suspend fun loadLyric(song: LSong): Pair<String, String?>?
-    }
+) : LyricSource {
 
     private val sources: MutableList<LyricSource> = ArrayList()
 
@@ -32,15 +33,14 @@ class LyricSourceFactory @Inject constructor(
         instance = this
     }
 
-    suspend fun getLyric(
-        song: LSong
-    ): Pair<String, String?>? = withContext(Dispatchers.IO) {
-        for (source in sources) {
-            val pair = source.loadLyric(song)
-            if (pair != null) return@withContext pair
+    override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
+        withContext(Dispatchers.IO) {
+            for (source in sources) {
+                val pair = source.loadLyric(song)
+                if (pair != null) return@withContext pair
+            }
+            return@withContext null
         }
-        return@withContext null
-    }
 
     companion object {
         var instance: LyricSourceFactory? = null
@@ -48,7 +48,7 @@ class LyricSourceFactory @Inject constructor(
     }
 }
 
-class EmbeddedLyricSource @Inject constructor() : LyricSourceFactory.LyricSource {
+class EmbeddedLyricSource @Inject constructor() : LyricSource {
     override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
             val songData = song.pathStr ?: return@withContext null
@@ -67,7 +67,7 @@ class EmbeddedLyricSource @Inject constructor() : LyricSourceFactory.LyricSource
         }
 }
 
-class LocalLyricSource @Inject constructor() : LyricSourceFactory.LyricSource {
+class LocalLyricSource @Inject constructor() : LyricSource {
     override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
             val songData = song.pathStr ?: return@withContext null
@@ -84,7 +84,7 @@ class LocalLyricSource @Inject constructor() : LyricSourceFactory.LyricSource {
 
 class DataBaseLyricSource @Inject constructor(
     val dataBase: MDataBase
-) : LyricSourceFactory.LyricSource {
+) : LyricSource {
     override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
             val pair = dataBase.networkDataDao().getById(song.id)

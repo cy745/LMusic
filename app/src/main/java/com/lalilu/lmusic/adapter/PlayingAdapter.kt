@@ -1,15 +1,20 @@
 package com.lalilu.lmusic.adapter
 
+import android.view.View
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlayingBinding
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.service.LMusicLyricManager
 import com.lalilu.lmusic.utils.extension.moveHeadToTail
+import kotlinx.coroutines.*
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 class PlayingAdapter @Inject constructor() :
-    BaseAdapter<LSong, ItemPlayingBinding>(R.layout.item_playing) {
+    BaseAdapter<LSong, ItemPlayingBinding>(R.layout.item_playing), CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     interface OnItemDragOrSwipedListener {
         fun onDelete(song: LSong): Boolean
@@ -59,6 +64,15 @@ class PlayingAdapter @Inject constructor() :
 
     override fun onBind(binding: ItemPlayingBinding, item: LSong, position: Int) {
         binding.song = item
+        launch {
+            if (isActive) {
+                val hasLyric = LMusicLyricManager.hasLyric(item)
+                withContext(Dispatchers.Main) {
+                    binding.songLrc.visibility =
+                        if (hasLyric) View.VISIBLE else View.INVISIBLE
+                }
+            }
+        }
     }
 
     override fun setDiffNewData(list: MutableList<LSong>?) {

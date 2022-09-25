@@ -23,9 +23,9 @@ import coil.request.ImageRequest
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.service.LMusicLyricManager
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.toColorFilter
-import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
@@ -50,8 +50,7 @@ fun SongCard(
         delay(loadDelay())
 
         if (isActive) {
-            val lyric = LyricSourceFactory.instance?.getLyric(song)
-            hasLrc = lyric != null && lyric.first.isNotEmpty()
+            hasLrc = LMusicLyricManager.hasLyric(song)
         }
     }
 
