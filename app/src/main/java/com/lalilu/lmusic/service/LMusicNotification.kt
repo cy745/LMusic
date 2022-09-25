@@ -19,6 +19,8 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
+import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.utils.PlayMode
 import com.lalilu.lmusic.utils.extension.toBitmap
 import kotlinx.coroutines.runBlocking
 
@@ -95,6 +97,7 @@ abstract class LMusicNotification(
         val metadata = controller.metadata ?: return null
         val description = metadata.description ?: return null
         val repeatMode = mediaSession.controller.repeatMode
+        val shuffleMode = mediaSession.controller.shuffleMode
         val isPlaying = getIsPlaying()
 
         return NotificationCompat.Builder(
@@ -114,9 +117,9 @@ abstract class LMusicNotification(
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setDeleteIntent(mStopAction.actionIntent)
             .addAction(
-                when (repeatMode) {
-                    PlaybackStateCompat.REPEAT_MODE_ALL -> mOrderPlayAction
-                    PlaybackStateCompat.REPEAT_MODE_ONE -> mSingleRepeatAction
+                when (PlayMode.of(repeatMode = repeatMode, shuffleMode = shuffleMode)) {
+                    PlayMode.Shuffle -> mShufflePlayAction
+                    PlayMode.RepeatOne -> mSingleRepeatAction
                     else -> mOrderPlayAction
                 }
             )
@@ -137,25 +140,32 @@ abstract class LMusicNotification(
         }
     }
 
-    private val mSingleRepeatAction: NotificationCompat.Action = NotificationCompat.Action(
-        R.drawable.ic_repeat_one_line, "single_repeat",
-        buildServicePendingIntent(mContext, 1,
-            Intent(mContext, LMusicService::class.java).also {
-                it.putExtra(
-                    PlaybackStateCompat.ACTION_SET_REPEAT_MODE.toString(),
-                    PlaybackStateCompat.REPEAT_MODE_ALL
-                )
-            })
-    )
     private val mOrderPlayAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_order_play_line, "order_play",
-        buildServicePendingIntent(mContext, 2,
-            Intent(mContext, LMusicService::class.java).also {
-                it.putExtra(
-                    PlaybackStateCompat.ACTION_SET_REPEAT_MODE.toString(),
-                    PlaybackStateCompat.REPEAT_MODE_ONE
-                )
-            })
+        buildServicePendingIntent(
+            mContext, 1,
+            Intent(mContext, LMusicService::class.java)
+                .setAction(Config.ACTION_SET_REPEAT_MODE)
+                .putExtra(PlayMode.KEY, PlayMode.ListRecycle.next().value)
+        )
+    )
+    private val mSingleRepeatAction: NotificationCompat.Action = NotificationCompat.Action(
+        R.drawable.ic_repeat_one_line, "single_repeat",
+        buildServicePendingIntent(
+            mContext, 2,
+            Intent(mContext, LMusicService::class.java)
+                .setAction(Config.ACTION_SET_REPEAT_MODE)
+                .putExtra(PlayMode.KEY, PlayMode.RepeatOne.next().value)
+        )
+    )
+    private val mShufflePlayAction: NotificationCompat.Action = NotificationCompat.Action(
+        R.drawable.ic_shuffle_line, "shuffle_play",
+        buildServicePendingIntent(
+            mContext, 3,
+            Intent(mContext, LMusicService::class.java)
+                .setAction(Config.ACTION_SET_REPEAT_MODE)
+                .putExtra(PlayMode.KEY, PlayMode.Shuffle.next().value)
+        )
     )
     private val mPlayAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_play_line, "play",

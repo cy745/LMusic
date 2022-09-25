@@ -11,6 +11,8 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
@@ -18,8 +20,11 @@ import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.repository.SettingsDataStore
+import com.lalilu.lmusic.utils.CoroutineSynchronizer
+import com.lalilu.lmusic.utils.PlayMode
 import com.lalilu.lmusic.utils.extension.getNextOf
 import com.lalilu.lmusic.utils.extension.getPreviousOf
+import com.lalilu.lmusic.utils.extension.toBitmap
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -113,8 +118,28 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             LMusicRuntime.currentPlaying = item
         }
 
+        val synchronizer = CoroutineSynchronizer()
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-            mediaSession.setMetadata(metadata)
+            launch {
+                val count = synchronizer.getCount()
+                mediaSession.setMetadata(metadata)
+
+                synchronizer.checkCount(count)
+                val bitmap = this@LMusicService.imageLoader.execute(
+                    ImageRequest.Builder(this@LMusicService)
+                        .allowHardware(false)
+                        .data(LMusicRuntime.currentPlaying)
+                        .size(400)
+                        .build()
+                ).drawable?.toBitmap()
+
+                synchronizer.checkCount(count)
+                mediaSession.setMetadata(
+                    MediaMetadataCompat.Builder(metadata)
+                        .putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
+                        .build()
+                )
+            }
         }
 
         override fun onPlaybackStateChanged(@PlaybackStateCompat.State playbackState: Int) {
@@ -183,11 +208,13 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         }
 
         override fun setRepeatMode(repeatMode: Int) {
-
+            mediaSession.setRepeatMode(repeatMode)
+            mNotificationManager.updateNotification(data = LMusicRuntime.currentPlaying)
         }
 
         override fun setShuffleMode(shuffleMode: Int) {
-
+            mediaSession.setShuffleMode(shuffleMode)
+            mNotificationManager.updateNotification(data = LMusicRuntime.currentPlaying)
         }
     }
 
@@ -221,11 +248,30 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                 enableStatusLyric.flow()
                     .onEach { mNotificationManager.statusLyricEnable = it == true }
                     .launchIn(this)
+
+                repeatMode.flow()
+                    .onEach {
+                        it ?: return@onEach
+
+                        PlayMode.of(it).apply {
+                            playBack.setRepeatMode(repeatMode)
+                            playBack.setShuffleMode(shuffleMode)
+                        }
+                    }.launchIn(this)
             }
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        println("onStartCommand: ${intent?.action} ${intent?.extras?.getInt(PlayMode.KEY)}")
+
+        intent?.takeIf { it.action === Config.ACTION_SET_REPEAT_MODE }?.extras?.apply {
+            val playMode = getInt(PlayMode.KEY)
+                .takeIf { it in 0..2 }
+                ?: return@apply
+            settingsDataStore.apply { repeatMode.set(playMode) }
+        }
+
         MediaButtonReceiver.handleIntent(mediaSession, intent)
         return START_NOT_STICKY
     }

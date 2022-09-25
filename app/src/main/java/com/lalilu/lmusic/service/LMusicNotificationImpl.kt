@@ -8,14 +8,14 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datasource.MDataBase
+import com.lalilu.lmusic.utils.CoroutineSynchronizer
 import com.lalilu.lmusic.utils.extension.findShowLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Singleton
-import kotlin.concurrent.timerTask
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -75,8 +75,8 @@ class LMusicNotificationImpl constructor(
     override fun getPosition(): Long = playBack.getPosition()
     override fun getService(): Service = mContext
 
-    private var lyricUpdateTimer: Timer? = null
     private var lastData: Any? = null
+    private val synchronizer = CoroutineSynchronizer()
 
     /**
      * 更新Notification
@@ -84,68 +84,67 @@ class LMusicNotificationImpl constructor(
      * @param data 传入给coil获取封面的对象，若为null则表示只需更新歌词
      */
     fun updateNotification(data: Any?) = launch(Dispatchers.IO) {
-        // 无论任何操作都先将定时器取消
-        lyricUpdateTimer?.cancel()
-        lyricUpdateTimer = null
+        val count = synchronizer.getCount()
 
         if (data != null) lastData = data
 
+        synchronizer.checkCount(count)
         val builder = buildNotification(mContext.mediaSession)
             ?.loadCoverAndPalette(data)
             ?: return@launch
         val notification = builder.build().apply {
             flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+            synchronizer.checkCount(count)
             pushNotification(this)
         }
 
-        startLyricPushTimer(notification)
+        synchronizer.checkCount(count)
+        startLyricPushCycle(notification)
     }
 
     /**
-     * 启动推送状态栏歌词的Timer
+     * 启动推送状态栏歌词的循环
      *
      * @param notification 状态栏歌词所需依附的通知
      */
-    private fun startLyricPushTimer(notification: Notification) {
-        lyricUpdateTimer?.cancel()
-        lyricUpdateTimer = null
+    private fun startLyricPushCycle(notification: Notification) = launch {
+        val count = synchronizer.getCount()
+        var lastLyricIndex = 0
 
-        // 只有处于播放中的状态时才推送状态栏歌词
-        if (getIsPlaying() && statusLyricEnable) {
-            var lastLyricIndex = 0
+        repeat(Int.MAX_VALUE) {
+            if (!getIsPlaying() || !statusLyricEnable) return@launch
+            synchronizer.checkCount(count)
+            delay(200)
 
-            lyricUpdateTimer = Timer()
-            lyricUpdateTimer?.schedule(timerTask {
-                if (!getIsPlaying()) return@timerTask
-                val lyricList = LMusicLyricManager.currentLyricEntry.get() ?: return@timerTask
-                val time = getPosition().takeIf { it >= 0L } ?: return@timerTask
-                val index = findShowLine(lyricList, time + 500)
+            if (!getIsPlaying()) return@launch
+            val lyricList = LMusicLyricManager.currentLyricEntry.get() ?: return@launch
+            val time = getPosition().takeIf { it >= 0L } ?: return@launch
+            val index = findShowLine(lyricList, time + 500)
 
-                if (lastLyricIndex != index) {
-                    val lyricEntry = lyricList.getOrNull(index)
-                    val nowLyric = lyricEntry?.text ?: lyricEntry?.secondText
+            if (lastLyricIndex != index) {
+                val lyricEntry = lyricList.getOrNull(index)
+                val nowLyric = lyricEntry?.text
+                    ?.takeIf { it.isNotEmpty() }
+                    ?: lyricEntry?.secondText
 
-                    notification.apply {
-                        if (nowLyric != null) {
-                            tickerText = nowLyric
-                            flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
-                            flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
-                        }
+                notification.apply {
+                    if (nowLyric != null) {
+                        tickerText = nowLyric
+                        flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+                        flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
                     }
-                    pushNotification(notification)
-                    lastLyricIndex = index
                 }
-            }, 200, 200)
+                pushNotification(notification)
+                lastLyricIndex = index
+            }
         }
     }
+
 
     /**
      * 开始推送显示状态栏歌词，不影响媒体控制器
      */
     private fun startLyricNotification() {
-        lyricUpdateTimer?.cancel()
-        lyricUpdateTimer = null
-
         val builder = buildNotification(mContext.mediaSession)
             ?.loadCoverAndPalette(lastData)
             ?: return
@@ -155,19 +154,20 @@ class LMusicNotificationImpl constructor(
             pushNotification(this)
         }
 
-        startLyricPushTimer(notification)
+        startLyricPushCycle(notification)
     }
 
     /**
      * 取消状态栏歌词，不影响媒体控制器
      */
-    private fun cancelLyricNotification() {
-        lyricUpdateTimer?.cancel()
-        lyricUpdateTimer = null
+    private fun cancelLyricNotification() = launch {
+        val count = synchronizer.getCount()
 
         val builder = buildNotification(mContext.mediaSession)
             ?.loadCoverAndPalette(lastData)
-            ?: return
+            ?: return@launch
+
+        synchronizer.checkCount(count)
         builder.build().apply {
             tickerText = null
             flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)

@@ -21,17 +21,15 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.R
-import com.lalilu.lmusic.utils.DeviceType.Pad
-import com.lalilu.lmusic.utils.DeviceType.Phone
-import com.lalilu.lmusic.utils.WindowSizeClass
-import com.lalilu.lmusic.utils.rememberWindowSizeClass
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.isPad
 
 @Composable
 @OptIn(ExperimentalAnimationApi::class)
 fun GuidingScreen(
-    currentWindowSizeClass: WindowSizeClass = rememberWindowSizeClass(),
     navController: NavHostController = rememberAnimatedNavController()
 ) {
+    val windowSize = LocalWindowSize.current
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp +
             WindowInsets.statusBars.asPaddingValues().calculateTopPadding() +
             WindowInsets.navigationBars.asPaddingValues().calculateTopPadding()
@@ -47,11 +45,10 @@ fun GuidingScreen(
             contentAlignment = Alignment.Center
         ) {
             Column(
-                modifier = when (currentWindowSizeClass.deviceType) {
-                    Phone -> Modifier.fillMaxWidth()
-                    Pad -> {
-                        Modifier.width(screenHeightDp / 2f)
-                    }
+                modifier = if (windowSize.isPad()) {
+                    Modifier.fillMaxWidth()
+                } else {
+                    Modifier.width(screenHeightDp / 2f)
                 }
                     .fillMaxHeight()
                     .statusBarsPadding()
