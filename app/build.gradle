@@ -75,6 +75,11 @@ static def releaseTime() {
 }
 
 dependencies {
+
+    // 墨 · 状态栏歌词 API
+    // https://github.com/Block-Network/StatusBarApiExample
+    implementation 'com.github.577fkj:StatusBarApiExample:v2.0'
+
     // https://mvnrepository.com/artifact/com.airbnb.android/lottie-compose
     implementation 'com.airbnb.android:lottie-compose:5.2.0'
 

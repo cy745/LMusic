@@ -178,7 +178,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                     )
 
                     mediaSession.isActive = false
-                    mNotificationManager.updateNotification(data = LMusicRuntime.currentPlaying)
+                    mNotificationManager.update()
                     noisyReceiver.unRegisterFrom(this@LMusicService)
                     audioFocusHelper.abandonAudioFocus()
                     this@LMusicService.stopForeground(false)
@@ -197,7 +197,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
                     mediaSession.isActive = true
                     startService(Intent(this@LMusicService, LMusicService::class.java))
-                    mNotificationManager.updateNotification(data = LMusicRuntime.currentPlaying)
+                    mNotificationManager.update()
 
                     noisyReceiver.registerTo(this@LMusicService)
 
@@ -209,12 +209,12 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
         override fun setRepeatMode(repeatMode: Int) {
             mediaSession.setRepeatMode(repeatMode)
-            mNotificationManager.updateNotification(data = LMusicRuntime.currentPlaying)
+            mNotificationManager.update()
         }
 
         override fun setShuffleMode(shuffleMode: Int) {
             mediaSession.setShuffleMode(shuffleMode)
-            mNotificationManager.updateNotification(data = LMusicRuntime.currentPlaying)
+            mNotificationManager.update()
         }
     }
 
