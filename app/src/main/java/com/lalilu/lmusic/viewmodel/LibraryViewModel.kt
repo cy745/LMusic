@@ -6,6 +6,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.LibraryDataStore
+import com.lalilu.lmusic.utils.toUpdatableFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -25,9 +26,9 @@ class LibraryViewModel @Inject constructor(
      * 但是那样每次Recompose的时候就会重新调用生成一个Flow，间接导致每次都会重新查询数据库
      */
     val lastPlayedStack = requirePlayHistory().asLiveData()
-//    val recentlyAdded = Library.getSongsFlow(15).asLiveData()
-//    val randomRecommends = Library.getSongsFlow(15, true).toUpdatableFlow()
-//    val randomRecommendsLiveData = randomRecommends.asLiveData()
+    val recentlyAdded = Library.getSongsFlow(15).asLiveData()
+    val randomRecommends = Library.getSongsFlow(15, true).toUpdatableFlow()
+    val randomRecommendsLiveData = randomRecommends.asLiveData()
 
     /**
      * 请求获取每日推荐歌曲
