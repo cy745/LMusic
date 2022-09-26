@@ -34,7 +34,9 @@ class LMusicNotificationImpl constructor(
     var statusLyricEnable = true
         set(value) {
             field = value
-            if (value) startLyricPushCycle() else cancelLyricNotification()
+            buildNotification()?.let {
+                if (value) startLyricPushCycle(it) else cancelLyricNotification(it)
+            }
         }
 
     /**
@@ -62,34 +64,33 @@ class LMusicNotificationImpl constructor(
     override fun getPosition(): Long = playBack.getPosition()
     override fun getService(): Service = mContext
 
+    private fun buildNotification(): Notification? {
+        return buildNotification(mContext.mediaSession, PLAYER_CHANNEL_ID)
+            ?.loadCoverAndPalette()
+            ?.build()
+    }
+
     /**
      * 更新Notification
-     *
      */
     fun update() = launch(Dispatchers.IO) {
         val count = synchronizer.getCount()
 
         synchronizer.checkCount(count)
-        val builder = buildNotification(mContext.mediaSession, PLAYER_CHANNEL_ID)
-            ?.loadCoverAndPalette()
-            ?: return@launch
-        builder.build().apply {
+        val notification = buildNotification()?.apply {
             synchronizer.checkCount(count)
             flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
-            pushPlayingNotification(this)
-        }
+            pushNotification(this)
+        } ?: return@launch
 
         synchronizer.checkCount(count)
-        cancelLyricNotification()
-        if (getIsPlaying()) {
-            startLyricPushCycle()
-        }
+        startLyricPushCycle(notification)
     }
 
     /**
      * 启动推送状态栏歌词的循环
      */
-    private fun startLyricPushCycle() = launch {
+    private fun startLyricPushCycle(notification: Notification) = launch {
         val count = synchronizer.getCount()
         var lastLyricIndex = 0
 
@@ -110,14 +111,12 @@ class LMusicNotificationImpl constructor(
                     ?: lyricEntry?.secondText
 
                 StatusBarLyricExt.send(nowLyric)
-                buildLyricNotification(mContext.mediaSession, PLAYER_CHANNEL_ID)
-                    .setTicker(nowLyric)
-                    .build()
-                    .apply {
-                        flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
-                        flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
-                        pushPlayingNotification(this)
-                    }
+                notification.apply {
+                    tickerText = nowLyric
+                    flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+                    flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+                    pushNotification(this)
+                }
                 lastLyricIndex = index
             }
         }
@@ -126,21 +125,15 @@ class LMusicNotificationImpl constructor(
     /**
      * 取消状态栏歌词，不影响媒体控制器
      */
-    private fun cancelLyricNotification() = launch {
+    private fun cancelLyricNotification(notification: Notification) = launch {
         StatusBarLyricExt.stop()
 
-        val builder = buildNotification(
-            mediaSession = mContext.mediaSession, PLAYER_CHANNEL_ID
-        )?.loadCoverAndPalette()
-            ?: return@launch
-
-        builder.setTicker(null)
-            .build()
-            .apply {
-                flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
-                flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
-                pushPlayingNotification(this)
-            }
+        notification.apply {
+            tickerText = null
+            flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+            flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+            pushNotification(this)
+        }
     }
 
     fun cancelNotification() {
@@ -150,18 +143,19 @@ class LMusicNotificationImpl constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createNotificationChannel() {
-        val channel = NotificationChannel(
+        NotificationChannel(
             PLAYER_CHANNEL_ID,
             PLAYER_CHANNEL_NAME,
             NotificationManager.IMPORTANCE_LOW
-        )
-        channel.description = "【LMusic通知频道】：$PLAYER_CHANNEL_NAME"
-        channel.importance = NotificationManager.IMPORTANCE_LOW
-        channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        channel.setShowBadge(false)
-        channel.enableLights(false)
-        channel.enableVibration(false)
-        notificationManager.createNotificationChannel(channel)
+        ).apply {
+            description = "【LMusic通知频道】：$PLAYER_CHANNEL_NAME"
+            importance = NotificationManager.IMPORTANCE_LOW
+            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            setShowBadge(false)
+            enableLights(false)
+            enableVibration(false)
+            notificationManager.createNotificationChannel(this)
+        }
     }
 
     companion object {

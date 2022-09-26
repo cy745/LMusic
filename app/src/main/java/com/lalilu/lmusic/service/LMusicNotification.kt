@@ -134,18 +134,7 @@ abstract class LMusicNotification(
             .addAction(mStopAction)
     }
 
-    fun buildLyricNotification(
-        mediaSession: MediaSessionCompat,
-        channelId: String
-    ): NotificationCompat.Builder {
-
-        return NotificationCompat.Builder(mContext, channelId)
-            .setShowWhen(false)
-            .setOngoing(getIsPlaying())
-            .setSmallIcon(R.mipmap.ic_launcher)
-    }
-
-    protected fun pushPlayingNotification(notification: Notification) {
+    protected fun pushNotification(notification: Notification) {
         if (getIsStop()) return
         if (getIsPlaying()) {
             getService()
