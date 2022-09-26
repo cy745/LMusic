@@ -30,6 +30,7 @@ abstract class LMusicNotification(
     private var lastBitmap: Pair<Any, Bitmap>? = null
     private var lastColor: Pair<Any, Int>? = null
 
+    abstract fun getImageData(): Any?
     abstract fun fillData(data: Any?): Any?
     abstract fun getIsPlaying(): Boolean
     abstract fun getIsStop(): Boolean
@@ -45,9 +46,11 @@ abstract class LMusicNotification(
     /**
      * 加载歌曲封面和提取配色，若已有缓存则直接取用，若无则阻塞获取，需确保调用方不阻塞主要动作
      */
-    protected fun NotificationCompat.Builder.loadCoverAndPalette(data: Any?): NotificationCompat.Builder {
+    protected fun NotificationCompat.Builder.loadCoverAndPalette(): NotificationCompat.Builder {
         var bitmap: Bitmap? = null
         var color: Int = Color.TRANSPARENT
+        val data = getImageData()
+
         lastBitmap?.takeIf { it.first == data }?.let { bitmap = it.second }
         lastColor?.takeIf { it.first == data }?.let { color = it.second }
 
@@ -87,7 +90,10 @@ abstract class LMusicNotification(
     /**
      * 通过mediaSession创建Notification
      */
-    protected fun buildNotification(mediaSession: MediaSessionCompat): NotificationCompat.Builder? {
+    protected fun buildNotification(
+        mediaSession: MediaSessionCompat,
+        channelId: String
+    ): NotificationCompat.Builder? {
         val style = androidx.media.app.NotificationCompat.MediaStyle()
             .setMediaSession(mediaSession.sessionToken)
             .setShowActionsInCompactView(0, 2, 3)
@@ -100,9 +106,8 @@ abstract class LMusicNotification(
         val shuffleMode = mediaSession.controller.shuffleMode
         val isPlaying = getIsPlaying()
 
-        return NotificationCompat.Builder(
-            mContext, LMusicNotificationImpl.playerChannelName + "_ID"
-        ).setStyle(style)
+        return NotificationCompat.Builder(mContext, channelId)
+            .setStyle(style)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setDeleteIntent(mStopAction.actionIntent)
             .setContentIntent(controller.sessionActivity)
@@ -127,10 +132,20 @@ abstract class LMusicNotification(
             .addAction(if (isPlaying) mPauseAction else mPlayAction)
             .addAction(mNextAction)
             .addAction(mStopAction)
-
     }
 
-    protected fun pushNotification(notification: Notification) {
+    fun buildLyricNotification(
+        mediaSession: MediaSessionCompat,
+        channelId: String
+    ): NotificationCompat.Builder {
+
+        return NotificationCompat.Builder(mContext, channelId)
+            .setShowWhen(false)
+            .setOngoing(getIsPlaying())
+            .setSmallIcon(R.mipmap.ic_launcher)
+    }
+
+    protected fun pushPlayingNotification(notification: Notification) {
         if (getIsStop()) return
         if (getIsPlaying()) {
             getService()

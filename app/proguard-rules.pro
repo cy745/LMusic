@@ -50,4 +50,7 @@
 -keep public class * extends androidx.annotation.** { *; }
 -keep public class * extends androidx.core.content.FileProvider
 
+# 墨 · 状态栏歌词
+-keep class StatusBarLyric.API.StatusBarLyric { *; }
+
 -printmapping mapping.txt

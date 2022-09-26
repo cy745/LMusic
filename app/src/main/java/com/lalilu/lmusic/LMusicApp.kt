@@ -3,12 +3,12 @@ package com.lalilu.lmusic
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
-import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
 import com.lalilu.lmusic.service.LMusicRuntime
+import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.fetcher.SongCoverFetcher
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
@@ -41,7 +41,8 @@ class LMusicApp : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
-        Indexer.init { this }
+//        Indexer.init { this }
+        StatusBarLyricExt.init(this)
         LMusicLyricManager.init(lyricSourceFactory)
         LMusicRuntime.init(historyDataStore, mDataBase)
         LMusicBrowser.init(this, historyDataStore)
