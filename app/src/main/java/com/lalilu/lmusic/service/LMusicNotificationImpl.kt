@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.dirror.lyricviewx.LyricEntry
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.utils.CoroutineSynchronizer
@@ -93,32 +94,34 @@ class LMusicNotificationImpl constructor(
     private fun startLyricPushCycle(notification: Notification) = launch {
         val count = synchronizer.getCount()
         var lastLyricIndex = 0
+        var lyricList: List<LyricEntry>
+        var position: Long
+        var index: Int
 
-        repeat(Int.MAX_VALUE) {
-            if (!getIsPlaying() || !statusLyricEnable) return@launch
-            synchronizer.checkCount(count)
+        while (true) {
             delay(200)
 
-            if (!getIsPlaying()) return@launch
-            val lyricList = LMusicLyricManager.currentLyricEntry.get() ?: return@launch
-            val time = getPosition().takeIf { it >= 0L } ?: return@launch
-            val index = findShowLine(lyricList, time + 500)
+            if (!getIsPlaying() || !statusLyricEnable) return@launch
+            synchronizer.checkCount(count)
 
-            if (lastLyricIndex != index) {
-                val lyricEntry = lyricList.getOrNull(index)
-                val nowLyric = lyricEntry?.text
-                    ?.takeIf { it.isNotEmpty() }
-                    ?: lyricEntry?.secondText
+            position = getPosition().takeIf { it >= 0L } ?: continue
+            lyricList = LMusicLyricManager.currentLyricEntry.get() ?: continue
+            index = findShowLine(lyricList, position + 500)
+            if (lastLyricIndex == index) continue
 
-                StatusBarLyricExt.send(nowLyric)
-                notification.apply {
-                    tickerText = nowLyric
-                    flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
-                    flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
-                    pushNotification(this)
-                }
-                lastLyricIndex = index
+            val nowLyric = lyricList.getOrNull(index)?.let {
+                it.text.takeIf(String::isNotEmpty)
+                    ?: it.secondText?.takeIf(String::isNotEmpty)
             }
+
+            StatusBarLyricExt.send(nowLyric)
+            notification.apply {
+                tickerText = nowLyric
+                flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
+                flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+                pushNotification(this)
+            }
+            lastLyricIndex = index
         }
     }
 
