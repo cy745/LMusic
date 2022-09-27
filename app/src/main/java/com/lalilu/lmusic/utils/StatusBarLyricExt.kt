@@ -21,10 +21,18 @@ object StatusBarLyricExt {
     }
 
     fun send(lrc: String?) {
-        if (api?.hasEnable() == true) api?.updateLyric(lrc ?: "")
+        if (api?.hasEnable() == true) {
+            api?.updateLyric(lrc ?: "")
+        }
     }
 
     fun stop() {
-        if (api?.hasEnable() == true) api?.stopLyric()
+        if (api?.hasEnable() == true) {
+            api?.stopLyric()
+        }
+    }
+
+    fun hasEnable(): Boolean {
+        return api?.hasEnable() == true
     }
 }

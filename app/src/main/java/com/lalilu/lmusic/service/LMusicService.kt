@@ -155,7 +155,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                     mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
 
                     stopSelf()
-                    mNotificationManager.cancelNotification()
+                    mNotificationManager.cancel()
                 }
                 PlaybackStateCompat.STATE_BUFFERING,
                 PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS,

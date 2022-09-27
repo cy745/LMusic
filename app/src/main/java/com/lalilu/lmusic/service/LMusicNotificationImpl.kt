@@ -11,6 +11,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.utils.CoroutineSynchronizer
 import com.lalilu.lmusic.utils.StatusBarLyricExt
+import com.lalilu.lmusic.utils.extension.debounce
 import com.lalilu.lmusic.utils.extension.findShowLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -72,9 +73,23 @@ class LMusicNotificationImpl constructor(
     }
 
     /**
+     * 取消Notification,关闭前台服务
+     */
+    fun cancel() {
+        synchronizer.getCount()
+        mContext.stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        notificationManager.cancelAll()
+    }
+
+    /**
      * 更新Notification
      */
-    fun update() = launch(Dispatchers.IO) {
+    fun update() = updateDebounceHelper.invoke()
+
+    /**
+     * 创建防抖
+     */
+    private val updateDebounceHelper = debounce(50) {
         val count = synchronizer.getCount()
 
         synchronizer.checkCount(count)
@@ -82,7 +97,7 @@ class LMusicNotificationImpl constructor(
             synchronizer.checkCount(count)
             flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
             pushNotification(this)
-        } ?: return@launch
+        } ?: return@debounce
 
         synchronizer.checkCount(count)
         startLyricPushCycle(notification)
@@ -98,6 +113,7 @@ class LMusicNotificationImpl constructor(
         var position: Long
         var index: Int
 
+        StatusBarLyricExt.stop()
         while (true) {
             delay(200)
 
@@ -129,6 +145,7 @@ class LMusicNotificationImpl constructor(
      * 取消状态栏歌词，不影响媒体控制器
      */
     private fun cancelLyricNotification(notification: Notification) = launch {
+        synchronizer.getCount()
         StatusBarLyricExt.stop()
 
         notification.apply {
@@ -139,13 +156,8 @@ class LMusicNotificationImpl constructor(
         }
     }
 
-    fun cancelNotification() {
-        mContext.stopForeground(true)
-        notificationManager.cancelAll()
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createNotificationChannel() {
+    private fun createNotificationChannel() {
         NotificationChannel(
             PLAYER_CHANNEL_ID,
             PLAYER_CHANNEL_NAME,
