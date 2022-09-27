@@ -21,6 +21,7 @@ import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.settings.*
+import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.getActivity
 
@@ -103,7 +104,7 @@ fun SettingsScreen() {
             iconRes = R.drawable.ic_lrc_fill,
             titleRes = R.string.preference_lyric_settings
         ) {
-            if (RomUtils.isMeizu()) {
+            if (RomUtils.isMeizu() || StatusBarLyricExt.hasEnable()) {
                 SettingSwitcher(
                     titleRes = R.string.preference_lyric_settings_status_bar_lyric,
                     state = statusBarLyric

@@ -19,6 +19,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dirror.lyricviewx.LyricEntry
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 fun Drawable.toBitmap(): Bitmap {
@@ -217,4 +224,35 @@ fun calculateExtraLayoutSpace(context: Context, size: Int): LinearLayoutManager 
             extraLayoutSpace[1] = size
         }
     }
+}
+
+/**
+ * 简易的防抖实现
+ */
+@OptIn(FlowPreview::class)
+fun CoroutineScope.debounce(delay: Long, callback: suspend () -> Unit): () -> Unit {
+    val countFlow = MutableStateFlow(System.currentTimeMillis())
+
+    countFlow.debounce(delay)
+        .onEach { callback() }
+        .launchIn(this)
+
+    return { launch { countFlow.emit(System.currentTimeMillis()) } }
+}
+
+/**
+ * 简易的节流实现
+ */
+fun CoroutineScope.throttle(delay: Long, callback: suspend () -> Unit): () -> Unit {
+    var lastCount = System.currentTimeMillis()
+    val countFlow = MutableStateFlow(System.currentTimeMillis())
+
+    countFlow.onEach {
+        if (it - delay >= lastCount) {
+            callback()
+            lastCount = it
+        }
+    }.launchIn(this)
+
+    return { launch { countFlow.emit(System.currentTimeMillis()) } }
 }
