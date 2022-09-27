@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.service
+package com.lalilu.lmusic.service.playback
 
 import android.content.Context
 import android.media.AudioFocusRequest

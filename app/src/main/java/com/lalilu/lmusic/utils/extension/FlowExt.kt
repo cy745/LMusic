@@ -1,10 +1,7 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.utils.extension
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.*
 
 /**
  * 将[Flow]转为可手动更新并将更新下传至其他[Flow]的[UpdatableFlow]
@@ -25,4 +22,22 @@ class UpdatableFlow<T>(private val flow: Flow<T>) : Flow<T> {
 
 fun <T> Flow<T>.toUpdatableFlow(): UpdatableFlow<T> {
     return UpdatableFlow(this)
+}
+
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class CachedFlow<T>(flow: Flow<T>) : Flow<T> {
+    @Volatile
+    private var cache: T? = null
+    private val rootFlow = flow.mapLatest { it.also { cache = it } }
+
+    override suspend fun collect(collector: FlowCollector<T>) {
+        rootFlow.collect(collector)
+    }
+
+    fun get(): T? = cache
+}
+
+fun <T> Flow<T>.toCachedFlow(): CachedFlow<T> {
+    return CachedFlow(this)
 }

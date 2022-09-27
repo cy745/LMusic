@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.datasource.entity.SongInPlaylist
-import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -32,17 +32,17 @@ class PlaylistsViewModel @Inject constructor(
             return@withContext dataBase.playlistDao().getById(playlistId)
         }
 
-    fun createNewPlaylist(title: String? = null) = viewModelScope.safeLaunch(Dispatchers.IO) {
+    fun createNewPlaylist(title: String? = null) = viewModelScope.launch(Dispatchers.IO) {
         dataBase.playlistDao().save(
             MPlaylist(playlistTitle = title ?: "空歌单")
         )
     }
 
-    fun removePlaylist(playlist: MPlaylist) = viewModelScope.safeLaunch(Dispatchers.IO) {
+    fun removePlaylist(playlist: MPlaylist) = viewModelScope.launch(Dispatchers.IO) {
         dataBase.playlistDao().delete(playlist)
     }
 
-    fun copyCurrentPlayingPlaylist() = viewModelScope.safeLaunch(Dispatchers.IO) {
+    fun copyCurrentPlayingPlaylist() = viewModelScope.launch(Dispatchers.IO) {
 //        val playlistTitle = "复制歌单: (${HistoryManager.currentPlayingIds.size})"
 //        val playlist = MPlaylist(playlistTitle = playlistTitle)
 //        dataBase.playlistDao().save(playlist)
@@ -57,7 +57,7 @@ class PlaylistsViewModel @Inject constructor(
     }
 
     fun addSongsIntoPlaylists(mediaIds: List<String>, playlistIds: List<Long>) =
-        viewModelScope.safeLaunch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
             val songInPlaylist = playlistIds.flatMap { playlistId ->
                 mediaIds.map { mediaId ->
                     SongInPlaylist(playlistId = playlistId, mediaId = mediaId)
