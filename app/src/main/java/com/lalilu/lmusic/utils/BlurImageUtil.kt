@@ -29,7 +29,7 @@ object BlurImageUtil : CoroutineScope {
         private val samplingValue: Int = 400,
         onCreate: suspend (Bitmap) -> Unit = {}
     ) {
-        private lateinit var samplingBitmap: Bitmap
+        private var samplingBitmap: Bitmap? = null
         private var blurBitmap: Bitmap? = null
         private var bitmapPainter: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
             .apply { alpha = 0 }
@@ -72,7 +72,7 @@ object BlurImageUtil : CoroutineScope {
 
         fun recycle() {
             sourceBitmap.recycle()
-            samplingBitmap.recycle()
+            samplingBitmap?.recycle()
             blurBitmap?.recycle()
         }
 
@@ -80,7 +80,7 @@ object BlurImageUtil : CoroutineScope {
             launch {
                 samplingBitmap = createSamplingBitmap(sourceBitmap, samplingValue)
                 blurBitmap = createBlurBitmap(samplingBitmap, radius)
-                onCreate(samplingBitmap)
+                onCreate(samplingBitmap!!)
             }
         }
     }
