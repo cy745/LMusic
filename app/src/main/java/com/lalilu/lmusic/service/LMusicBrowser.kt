@@ -34,7 +34,7 @@ object LMusicBrowser : DefaultLifecycleObserver {
         if (song != null && songs.contains(song)) {
             LMusicRuntime.currentPlaying = song
         }
-        LMusicRuntime.currentPlaylist = songs
+        LMusicRuntime.originPlaylist = songs
     }
 
     fun playSong(song: LSong?) {
@@ -68,16 +68,16 @@ object LMusicBrowser : DefaultLifecycleObserver {
     }
 
     fun addToNext(mediaId: String): Boolean {
-        val nowIndex = LMusicRuntime.currentPlaylist.indexOfFirst { it.id == mediaId }
-        val currentIndex = LMusicRuntime.currentPlaylist.indexOf(LMusicRuntime.currentPlaying)
+        val nowIndex = LMusicRuntime.originPlaylist.indexOfFirst { it.id == mediaId }
+        val currentIndex = LMusicRuntime.originPlaylist.indexOf(LMusicRuntime.currentPlaying)
         if (currentIndex >= 0 && (currentIndex == nowIndex || (currentIndex + 1) == nowIndex)) return false
 
         if (nowIndex >= 0) {
-            LMusicRuntime.currentPlaylist = LMusicRuntime.currentPlaylist
+            LMusicRuntime.originPlaylist = LMusicRuntime.originPlaylist
                 .move(nowIndex, currentIndex)
         } else {
             val item = Library.getSongOrNull(mediaId) ?: return false
-            LMusicRuntime.currentPlaylist = LMusicRuntime.currentPlaylist
+            LMusicRuntime.originPlaylist = LMusicRuntime.originPlaylist
                 .toMutableList()
                 .apply {
                     add(currentIndex + 1, item)
@@ -91,13 +91,13 @@ object LMusicBrowser : DefaultLifecycleObserver {
 
     fun removeById(mediaId: String): Boolean {
         return try {
-            lastRemovedIndex = LMusicRuntime.currentPlaylist.indexOfFirst { it.id == mediaId }
+            lastRemovedIndex = LMusicRuntime.originPlaylist.indexOfFirst { it.id == mediaId }
             if (mediaId == LMusicRuntime.currentPlaying?.id) {
-                LMusicRuntime.currentPlaying = LMusicRuntime.currentPlaylist
+                LMusicRuntime.currentPlaying = LMusicRuntime.originPlaylist
                     .getNextOf(LMusicRuntime.currentPlaying, true)
                 reloadAndPlay()
             }
-            LMusicRuntime.currentPlaylist = LMusicRuntime.currentPlaylist
+            LMusicRuntime.originPlaylist = LMusicRuntime.originPlaylist
                 .toMutableList()
                 .apply {
                     lastRemovedItem = removeAt(lastRemovedIndex)
@@ -115,7 +115,7 @@ object LMusicBrowser : DefaultLifecycleObserver {
             controller = MediaControllerCompat(context, browser.sessionToken)
 
             // 若当前播放列表为空，则尝试提取历史数据填充
-            if (LMusicRuntime.currentPlaylist.isEmpty()) {
+            if (LMusicRuntime.originPlaylist.isEmpty()) {
                 historyStore?.apply {
                     val songs = lastPlayedListIdsKey.get().mapNotNull {
                         Library.getSongOrNull(it)

@@ -10,12 +10,12 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.utils.PlayMode
 import java.io.IOException
 
 abstract class LMusicPlayBack<T>(
     private val mContext: Context
-) : MediaSessionCompat.Callback(),
-    MediaPlayer.OnPreparedListener,
+) : MediaSessionCompat.Callback(), MediaPlayer.OnPreparedListener,
     MediaPlayer.OnCompletionListener {
     private var player: MediaPlayer? = null
     private var volumeProxy: FadeVolumeProxy? = null
@@ -25,12 +25,13 @@ abstract class LMusicPlayBack<T>(
 
     abstract fun requestAudioFocus(): Boolean
     abstract fun getCurrent(): T?
-    abstract fun getPrevious(): T?
+    abstract fun getPrevious(random: Boolean): T?
     abstract fun getNext(random: Boolean): T?
     abstract fun getById(id: String): T?
     abstract fun getUriFromItem(item: T): Uri
     abstract fun getMetaDataFromItem(item: T?): MediaMetadataCompat?
     abstract fun getMaxVolume(): Int
+    abstract fun getCurrentPlayMode(): PlayMode
 
     abstract fun onPlayingItemUpdate(item: T?)
     abstract fun onMetadataChanged(metadata: MediaMetadataCompat?)
@@ -121,7 +122,8 @@ abstract class LMusicPlayBack<T>(
         println("onSkipToNext")
 
         // 首先获取下一首歌曲
-        val next = getNext(random = false)
+        val random = getCurrentPlayMode() == PlayMode.Shuffle
+        val next = getNext(random = random)
 
         // 更新当前歌曲信息
         onPlayingItemUpdate(next)
@@ -134,7 +136,8 @@ abstract class LMusicPlayBack<T>(
         println("onSkipToPrevious")
 
         // 首先获取上一首歌曲
-        val previous = getPrevious()
+        val random = getCurrentPlayMode() == PlayMode.Shuffle
+        val previous = getPrevious(random = random)
 
         // 更新当前歌曲信息
         onPlayingItemUpdate(previous)
@@ -196,6 +199,10 @@ abstract class LMusicPlayBack<T>(
 
     override fun onCompletion(mp: MediaPlayer?) {
         isPrepared = false
-        onSkipToNext()
+
+        when (getCurrentPlayMode()) {
+            PlayMode.RepeatOne -> onPlay()
+            else -> onSkipToNext()
+        }
     }
 }

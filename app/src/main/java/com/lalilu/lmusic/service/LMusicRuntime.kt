@@ -28,15 +28,16 @@ object LMusicRuntime : CoroutineScope {
         historyDataStore: HistoryDataStore,
         mDataBase: MDataBase
     ) {
-        historyStore = historyDataStore
+        this.historyStore = historyDataStore
         this.mDataBase = mDataBase
     }
 
-    var currentPlaylist: List<LSong> = emptyList()
+    val shufflePlaylistHistory: LinkedList<LSong> = LinkedList()
+    var originPlaylist: List<LSong> = emptyList()
         set(value) {
             field = value
             launch {
-                currentPlaylistFlow.emit(value)
+                originListFlow.emit(value)
                 historyStore?.apply { lastPlayedListIdsKey.set(value.map { it.id }) }
             }
         }
@@ -71,18 +72,16 @@ object LMusicRuntime : CoroutineScope {
             }
         }
 
-    val currentPlaylistFlow: MutableStateFlow<List<LSong>> = MutableStateFlow(currentPlaylist)
+    val originListFlow: MutableStateFlow<List<LSong>> = MutableStateFlow(originPlaylist)
     val currentPlayingFlow: MutableStateFlow<LSong?> = MutableStateFlow(currentPlaying)
     val currentPositionFlow: MutableStateFlow<Long> = MutableStateFlow(currentPosition)
     val currentIsPlayingFlow: MutableStateFlow<Boolean> = MutableStateFlow(currentIsPlaying)
 
     val currentPlayingLiveData = currentPlayingFlow.asLiveData()
     val currentPositionLiveData = currentPositionFlow.asLiveData()
-    val currentPlaylistLiveData = currentPlaylistFlow.combine(currentPlayingFlow) { items, item ->
+    val currentPlaylistLiveData = originListFlow.combine(currentPlayingFlow) { items, item ->
         item ?: return@combine items
-        items.moveHeadToTailWithSearch(item.id) { listItem, id ->
-            listItem.id == id
-        }
+        items.moveHeadToTailWithSearch(item.id) { listItem, id -> listItem.id == id }
     }.asLiveData()
 
     private var positionUpdateTimer: Timer? = null
@@ -99,7 +98,4 @@ object LMusicRuntime : CoroutineScope {
             )
         }
     }
-
-    var currentRepeatMode: Int = 0
-    var currentShuffleMode: Int = 0
 }

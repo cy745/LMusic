@@ -57,9 +57,9 @@ fun SettingsScreen() {
         Config.KEY_SETTINGS_KANHIRA_ENABLE,
         Config.DEFAULT_SETTINGS_KANHIRA_ENABLE
     )
-    val repeatMode = rememberDataSaverState(
-        Config.KEY_SETTINGS_REPEAT_MODE,
-        Config.DEFAULT_SETTINGS_REPEAT_MODE
+    val playMode = rememberDataSaverState(
+        Config.KEY_SETTINGS_PLAY_MODE,
+        Config.DEFAULT_SETTINGS_PLAY_MODE
     )
     val volumeControl = rememberDataSaverState(
         Config.KEY_SETTINGS_VOLUME_CONTROL,
@@ -89,9 +89,9 @@ fun SettingsScreen() {
                 valueRange = 0..100
             )
             SettingStateSeekBar(
-                state = repeatMode,
+                state = playMode,
                 selection = listOf("列表循环", "单曲循环", "随机播放"),
-                title = "循环模式"
+                title = "播放模式"
             )
             SettingStateSeekBar(
                 state = seekbarHandler,

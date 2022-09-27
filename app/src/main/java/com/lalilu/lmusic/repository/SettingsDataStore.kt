@@ -24,7 +24,7 @@ class SettingsDataStore @Inject constructor(
         }
     )
 
-    val repeatMode = intPreferencesKey(Config.KEY_SETTINGS_REPEAT_MODE)
+    val playMode = intPreferencesKey(Config.KEY_SETTINGS_PLAY_MODE)
     val lyricTextSize = intPreferencesKey(Config.KEY_SETTINGS_LYRIC_TEXT_SIZE)
     val lyricGravity = intPreferencesKey(Config.KEY_SETTINGS_LYRIC_GRAVITY)
     val seekBarHandler = intPreferencesKey(Config.KEY_SETTINGS_SEEKBAR_HANDLER)

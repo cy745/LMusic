@@ -85,37 +85,44 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         override fun getUriFromItem(item: LSong): Uri = item.uri
         override fun getCurrent(): LSong? = LMusicRuntime.currentPlaying
         override fun getMetaDataFromItem(item: LSong?): MediaMetadataCompat? = item?.metadataCompat
-        override fun getById(id: String): LSong? =
-            LMusicRuntime.currentPlaylist.find { it.id == id }
 
-        override fun getNext(random: Boolean): LSong? {
-            settingsDataStore.apply {
-                val current = getCurrent()
-                return when (repeatMode.get()) {
-                    PlaybackStateCompat.REPEAT_MODE_INVALID,
-                    PlaybackStateCompat.REPEAT_MODE_NONE ->
-                        LMusicRuntime.currentPlaylist.getNextOf(current, false)
-                    PlaybackStateCompat.REPEAT_MODE_ONE -> current
-                    else -> LMusicRuntime.currentPlaylist.getNextOf(current, true)
-                }
-            }
+        override fun getById(id: String): LSong? {
+            return LMusicRuntime.originPlaylist.find { it.id == id }
         }
 
-        override fun getPrevious(): LSong? {
-            settingsDataStore.apply {
-                val current = getCurrent()
-                return when (repeatMode.get()) {
-                    PlaybackStateCompat.REPEAT_MODE_INVALID,
-                    PlaybackStateCompat.REPEAT_MODE_NONE ->
-                        LMusicRuntime.currentPlaylist.getPreviousOf(current, false)
-                    PlaybackStateCompat.REPEAT_MODE_ONE -> current
-                    else -> LMusicRuntime.currentPlaylist.getPreviousOf(current, true)
-                }
+        override fun getNext(random: Boolean): LSong? {
+            if (random) {
+                return LMusicRuntime.originPlaylist
+                    .subtract(LMusicRuntime.shufflePlaylistHistory)
+                    .randomOrNull()
+                    ?.also {
+                        LMusicRuntime.shufflePlaylistHistory.push(it)
+                    }
             }
+
+            val current = getCurrent()
+            return LMusicRuntime.originPlaylist.getNextOf(current, true)
+        }
+
+        override fun getPrevious(random: Boolean): LSong? {
+            if (random) {
+                LMusicRuntime.shufflePlaylistHistory
+                    .takeIf { it.isNotEmpty() }
+                    ?.pop()?.let { return it }
+            }
+
+            val current = getCurrent()
+            return LMusicRuntime.originPlaylist.getPreviousOf(current, true)
         }
 
         override fun getMaxVolume(): Int = settingsDataStore.run {
             volumeControl.get() ?: Config.DEFAULT_SETTINGS_VOLUME_CONTROL
+        }
+
+        override fun getCurrentPlayMode(): PlayMode {
+            return settingsDataStore.run {
+                PlayMode.of(playMode.get() ?: Config.DEFAULT_SETTINGS_PLAY_MODE)
+            }
         }
 
         override fun onPlayingItemUpdate(item: LSong?) {
@@ -244,25 +251,23 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         sessionToken = mediaSession.sessionToken
 
         settingsDataStore.apply {
-            launch {
-                volumeControl.flow()
-                    .onEach { it?.let(playBack::setMaxVolume) }
-                    .launchIn(this)
+            volumeControl.flow()
+                .onEach { it?.let(playBack::setMaxVolume) }
+                .launchIn(this@LMusicService)
 
-                enableStatusLyric.flow()
-                    .onEach { mNotificationManager.statusLyricEnable = it == true }
-                    .launchIn(this)
+            enableStatusLyric.flow()
+                .onEach { mNotificationManager.statusLyricEnable = it == true }
+                .launchIn(this@LMusicService)
 
-                repeatMode.flow()
-                    .onEach {
-                        it ?: return@onEach
+            playMode.flow()
+                .onEach {
+                    it ?: return@onEach
 
-                        PlayMode.of(it).apply {
-                            playBack.setRepeatMode(repeatMode)
-                            playBack.setShuffleMode(shuffleMode)
-                        }
-                    }.launchIn(this)
-            }
+                    PlayMode.of(it).apply {
+                        playBack.setRepeatMode(repeatMode)
+                        playBack.setShuffleMode(shuffleMode)
+                    }
+                }.launchIn(this@LMusicService)
         }
     }
 
@@ -273,7 +278,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             val playMode = getInt(PlayMode.KEY)
                 .takeIf { it in 0..2 }
                 ?: return@apply
-            settingsDataStore.apply { repeatMode.set(playMode) }
+            settingsDataStore.apply { this.playMode.set(playMode) }
         }
 
         MediaButtonReceiver.handleIntent(mediaSession, intent)

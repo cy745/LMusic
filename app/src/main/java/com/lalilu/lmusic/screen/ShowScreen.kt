@@ -189,8 +189,8 @@ fun SongDetailPanel(
 @Composable
 fun ControlPanel() {
     val isPlaying = LMusicRuntime.currentIsPlayingFlow.collectAsState()
-    var repeatMode by rememberDataSaverState(
-        Config.KEY_SETTINGS_REPEAT_MODE, Config.DEFAULT_SETTINGS_REPEAT_MODE
+    var playMode by rememberDataSaverState(
+        Config.KEY_SETTINGS_PLAY_MODE, Config.DEFAULT_SETTINGS_PLAY_MODE
     )
 
     Row(
@@ -223,10 +223,10 @@ fun ControlPanel() {
                 modifier = Modifier.size(28.dp)
             )
         }
-        IconButton(onClick = { repeatMode = (repeatMode + 1) % 3 }) {
+        IconButton(onClick = { playMode = (playMode + 1) % 3 }) {
             Image(
                 painter = painterResource(
-                    when (PlayMode.values()[repeatMode]) {
+                    when (PlayMode.values()[playMode]) {
                         PlayMode.ListRecycle -> R.drawable.ic_order_play_line
                         PlayMode.RepeatOne -> R.drawable.ic_repeat_one_line
                         PlayMode.Shuffle -> R.drawable.ic_shuffle_line
