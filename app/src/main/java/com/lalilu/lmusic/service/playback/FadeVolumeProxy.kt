@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.service.playback
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter

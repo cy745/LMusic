@@ -6,7 +6,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.LibraryDataStore
-import com.lalilu.lmusic.utils.toUpdatableFlow
+import com.lalilu.lmusic.utils.extension.toUpdatableFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow

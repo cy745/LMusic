@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.service
+package com.lalilu.lmusic.service.playback
 
 import android.app.Service
 import android.content.BroadcastReceiver

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.service
+package com.lalilu.lmusic.service.notification
 
 import android.app.Notification
 import android.app.NotificationManager
@@ -20,6 +20,7 @@ import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.service.LMusicService
 import com.lalilu.lmusic.utils.PlayMode
 import com.lalilu.lmusic.utils.extension.toBitmap
 import kotlinx.coroutines.runBlocking

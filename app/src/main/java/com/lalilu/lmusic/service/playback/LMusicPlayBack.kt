@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.service
+package com.lalilu.lmusic.service.playback
 
 import android.content.Context
 import android.media.MediaPlayer
@@ -10,7 +10,6 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.utils.FadeVolumeProxy
 import java.io.IOException
 
 abstract class LMusicPlayBack<T>(

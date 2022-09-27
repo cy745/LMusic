@@ -6,12 +6,12 @@ import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
-import com.lalilu.lmusic.utils.CachedFlow
-import com.lalilu.lmusic.utils.UpdatableFlow
+import com.lalilu.lmusic.utils.extension.CachedFlow
+import com.lalilu.lmusic.utils.extension.UpdatableFlow
+import com.lalilu.lmusic.utils.extension.toCachedFlow
+import com.lalilu.lmusic.utils.extension.toUpdatableFlow
 import com.lalilu.lmusic.utils.sources.LyricSource
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
-import com.lalilu.lmusic.utils.toCachedFlow
-import com.lalilu.lmusic.utils.toUpdatableFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

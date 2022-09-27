@@ -13,11 +13,11 @@ import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
 import com.lalilu.lmusic.service.LMusicLyricManager
-import com.lalilu.lmusic.utils.safeLaunch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -39,7 +39,7 @@ class NetworkDataViewModel @Inject constructor(
         keyword: String,
         items: SnapshotStateList<SongSearchSong>,
         msg: MutableState<String>
-    ) = viewModelScope.safeLaunch(Dispatchers.IO) {
+    ) = viewModelScope.launch(Dispatchers.IO) {
         withContext(Dispatchers.Main) {
             items.clear()
             msg.value = "搜索中..."
@@ -66,10 +66,10 @@ class NetworkDataViewModel @Inject constructor(
         songId: Long?,
         title: String?,
         success: () -> Unit = {}
-    ) = viewModelScope.safeLaunch(Dispatchers.IO) {
+    ) = viewModelScope.launch(Dispatchers.IO) {
         if (songId == null || title == null) {
             ToastUtils.showShort("未选择匹配歌曲")
-            return@safeLaunch
+            return@launch
         }
         try {
             dataBase.networkDataDao().save(
@@ -91,10 +91,10 @@ class NetworkDataViewModel @Inject constructor(
     fun saveCoverUrlIntoNetworkData(
         songId: String?,
         mediaId: String,
-    ) = viewModelScope.safeLaunch(Dispatchers.IO) {
+    ) = viewModelScope.launch(Dispatchers.IO) {
         if (songId == null) {
             ToastUtils.showShort("未选择匹配歌曲")
-            return@safeLaunch
+            return@launch
         }
         try {
             neteaseDataSource.searchForDetail(songId)?.let {
@@ -117,7 +117,7 @@ class NetworkDataViewModel @Inject constructor(
         songId: String?,
         mediaId: String,
         success: () -> Unit = {}
-    ) = viewModelScope.safeLaunch(Dispatchers.IO) {
+    ) = viewModelScope.launch(Dispatchers.IO) {
         flow {
             if (songId != null) emit(songId)
             else ToastUtils.showShort("未选择匹配歌曲")

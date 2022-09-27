@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.service
+package com.lalilu.lmusic.service.notification
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -9,6 +9,9 @@ import androidx.annotation.RequiresApi
 import com.dirror.lyricviewx.LyricEntry
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datasource.MDataBase
+import com.lalilu.lmusic.service.LMusicLyricManager
+import com.lalilu.lmusic.service.LMusicService
+import com.lalilu.lmusic.service.playback.LMusicPlayBack
 import com.lalilu.lmusic.utils.CoroutineSynchronizer
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.extension.debounce
