@@ -22,7 +22,7 @@ import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.databinding.FragmentInputerBinding
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
+import com.lalilu.lmusic.apis.NetworkSong
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
@@ -38,7 +38,7 @@ fun MatchNetworkDataScreen(
 ) {
     val keyword = "${song.name} ${song._artist}"
     val msg = remember { mutableStateOf("") }
-    val lyrics = remember { mutableStateListOf<SongSearchSong>() }
+    val songs = remember { mutableStateListOf<NetworkSong>() }
     var selectedIndex by remember { mutableStateOf(-1) }
     val navController = LocalNavigatorHost.current
 
@@ -48,22 +48,22 @@ fun MatchNetworkDataScreen(
                 if (it.isNotEmpty()) {
                     viewModel.getSongResult(
                         keyword = it,
-                        items = lyrics,
+                        items = songs,
                         msg = msg
                     )
                 }
             }, onChecked = {
                 viewModel.saveMatchNetworkData(
                     mediaId = song.id,
-                    songId = lyrics.getOrNull(selectedIndex)?.id,
-                    title = lyrics.getOrNull(selectedIndex)?.name,
+                    songId = songs.getOrNull(selectedIndex)?.songId,
+                    title = songs.getOrNull(selectedIndex)?.songTitle,
                     success = { navController.navigateUp() }
                 )
             })
         }
         viewModel.getSongResult(
             keyword = keyword,
-            items = lyrics,
+            items = songs,
             msg = msg
         )
     }
@@ -72,13 +72,13 @@ fun MatchNetworkDataScreen(
         item {
             NavigatorHeader(
                 title = stringResource(id = R.string.destination_label_match_network_data),
-                subTitle = lyrics.size.takeIf { it > 0 }?.let { "共搜索到 ${lyrics.size} 条结果" }
+                subTitle = songs.size.takeIf { it > 0 }?.let { "共搜索到 ${songs.size} 条结果" }
                     ?: msg.value,
             )
         }
-        itemsIndexed(lyrics) { index, item ->
+        itemsIndexed(songs) { index, item ->
             LyricCard(
-                songSearchSong = item,
+                song = item,
                 selected = index == selectedIndex,
                 onClick = { selectedIndex = index }
             )
@@ -146,14 +146,14 @@ fun SearchInputBar(
 
 @Composable
 fun LyricCard(
-    songSearchSong: SongSearchSong,
+    song: NetworkSong,
     selected: Boolean,
     onClick: () -> Unit
 ) = LyricCard(
-    title = songSearchSong.name,
-    artist = songSearchSong.artists.joinToString("/") { it.name },
-    albumTitle = songSearchSong.album?.name,
-    duration = TimeUtils.millis2String(songSearchSong.duration, "mm:ss"),
+    title = song.songTitle,
+    artist = song.songArtist,
+    albumTitle = song.songAlbum,
+    duration = TimeUtils.millis2String(song.songDuration, "mm:ss"),
     selected = selected,
     onClick = onClick
 )

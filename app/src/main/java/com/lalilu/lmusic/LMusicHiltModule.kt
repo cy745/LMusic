@@ -3,6 +3,7 @@ package com.lalilu.lmusic
 import android.content.Context
 import androidx.room.Room
 import com.funny.data_saver.core.DataSaverInterface
+import com.lalilu.lmusic.apis.KugouDataSource
 import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.SettingsDataStore
@@ -14,10 +15,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import okhttp3.Call
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
@@ -25,13 +26,55 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object LMusicHiltModule {
 
+    @Qualifier
+    @Retention(AnnotationRetention.BINARY)
+    annotation class NeteaseRetrofit
+
+    @Qualifier
+    @Retention(AnnotationRetention.BINARY)
+    annotation class KugouRetrofit
+
     @Provides
     @Singleton
-    fun provideRetrofit(): Retrofit {
+    @NeteaseRetrofit
+    fun provideNeteaseRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(Config.BASE_URL)
+            .baseUrl(Config.BASE_NETEASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+    }
+
+    @Provides
+    @Singleton
+    @KugouRetrofit
+    fun provideKugouRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(Config.BASE_KUGOU_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNeteaseService(@NeteaseRetrofit retrofit: Retrofit): NeteaseDataSource {
+        return retrofit.create(NeteaseDataSource::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideKugouService(@KugouRetrofit retrofit: Retrofit): KugouDataSource {
+        return retrofit.create(KugouDataSource::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providesOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .hostnameVerifier { _, _ -> true }
+            .build()
+        // TODO kugou的接口存在证书错误问题，暂时只能本机做忽略证书校验
     }
 
     @Provides
@@ -43,18 +86,6 @@ object LMusicHiltModule {
             "LMusic_database"
         ).fallbackToDestructiveMigration()
             .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideNetWorkLyricService(retrofit: Retrofit): NeteaseDataSource {
-        return retrofit.create(NeteaseDataSource::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun providesOkHttpClient(): Call.Factory {
-        return OkHttpClient.Builder().build()
     }
 
     @Provides

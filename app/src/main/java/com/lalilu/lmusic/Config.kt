@@ -3,7 +3,8 @@ package com.lalilu.lmusic
 import android.support.v4.media.session.PlaybackStateCompat
 
 object Config {
-    const val BASE_URL = "https://apis.lalilu.cn/"
+    const val BASE_NETEASE_URL = "https://apis.lalilu.cn/"
+    const val BASE_KUGOU_URL = "https://mobilecdn.kugou.com/"
 
     const val LAST_PLAYED_SP = "LAST_PLAYED_SP"
     const val LAST_PLAYED_ID = "LAST_PLAYED_ID"
