@@ -6,8 +6,9 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.lmusic.apis.KugouDataSource
 import com.lalilu.lmusic.apis.NeteaseDataSource
-import com.lalilu.lmusic.apis.bean.netease.SongSearchSong
+import com.lalilu.lmusic.apis.NetworkSong
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
@@ -24,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class NetworkDataViewModel @Inject constructor(
     private val neteaseDataSource: NeteaseDataSource,
+    private val kugouDataSource: KugouDataSource,
     private val dataBase: MDataBase
 ) : ViewModel() {
     fun getNetworkDataFlowByMediaId(mediaId: String) =
@@ -37,7 +39,7 @@ class NetworkDataViewModel @Inject constructor(
 
     fun getSongResult(
         keyword: String,
-        items: SnapshotStateList<SongSearchSong>,
+        items: SnapshotStateList<NetworkSong>,
         msg: MutableState<String>
     ) = viewModelScope.launch(Dispatchers.IO) {
         withContext(Dispatchers.Main) {
@@ -45,15 +47,17 @@ class NetworkDataViewModel @Inject constructor(
             msg.value = "搜索中..."
         }
         flow {
-            val response = neteaseDataSource.searchForSong(keyword)
-            val results = response?.result?.songs ?: emptyList()
-            emit(results)
+            val neteaseResult = neteaseDataSource.searchForSongs(keyword)?.songs ?: emptyList()
+            val kugouResult = kugouDataSource.searchForSongs(keyword)?.songs ?: emptyList()
+
+            emit(neteaseResult.union(kugouResult))
         }.onEach {
             withContext(Dispatchers.Main) {
                 msg.value = if (it.isEmpty()) "无结果" else ""
                 items.addAll(it)
             }
         }.catch {
+            println(it.message)
             withContext(Dispatchers.Main) {
                 msg.value = "搜索失败"
                 items.clear()
@@ -63,11 +67,11 @@ class NetworkDataViewModel @Inject constructor(
 
     fun saveMatchNetworkData(
         mediaId: String,
-        songId: Long?,
+        songId: String?,
         title: String?,
         success: () -> Unit = {}
     ) = viewModelScope.launch(Dispatchers.IO) {
-        if (songId == null || title == null) {
+        if (songId == null || songId.isEmpty() || title == null) {
             ToastUtils.showShort("未选择匹配歌曲")
             return@launch
         }
@@ -75,7 +79,7 @@ class NetworkDataViewModel @Inject constructor(
             dataBase.networkDataDao().save(
                 MNetworkData(
                     mediaId = mediaId,
-                    songId = songId.toString(),
+                    songId = songId,
                     title = title
                 )
             )

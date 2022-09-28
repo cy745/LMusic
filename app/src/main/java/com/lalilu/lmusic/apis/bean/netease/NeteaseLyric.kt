@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.apis.bean.netease
 
-import com.lalilu.lmusic.apis.bean.NetworkLyric
+import com.lalilu.lmusic.apis.NetworkLyric
+import com.lalilu.lmusic.apis.PLATFORM_NETEASE
 
 data class KLyricSearchLRC(
     val version: Int,
@@ -17,7 +18,7 @@ data class LyricSearchLRC(
     val lyric: String
 )
 
-data class LyricSearchResponse(
+data class NeteaseLyric(
     val lrc: LyricSearchLRC?,
     val klyric: KLyricSearchLRC?,
     val tlyric: TLyricSearchLRC?,
@@ -29,6 +30,6 @@ data class LyricSearchResponse(
     override val translateLyric: String?
         get() = tlyric?.lyric
     override val fromPlatform: Int
-        get() = NetworkLyric.PLATFORM_NETEASE
+        get() = PLATFORM_NETEASE
 
 }

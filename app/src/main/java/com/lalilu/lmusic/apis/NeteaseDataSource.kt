@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.apis
 
-import com.lalilu.lmusic.apis.bean.SearchForLyric
-import com.lalilu.lmusic.apis.bean.netease.LyricSearchResponse
+import com.lalilu.lmusic.apis.bean.netease.NeteaseLyric
 import com.lalilu.lmusic.apis.bean.netease.SongDetailSearchResponse
 import com.lalilu.lmusic.apis.bean.netease.SongSearchResponse
 import retrofit2.http.GET
@@ -16,7 +15,7 @@ interface NeteaseDataSource : SearchForLyric {
      * 查询歌曲
      */
     @GET("search")
-    override suspend fun searchForSong(
+    override suspend fun searchForSongs(
         @Query("keywords") keywords: String
     ): SongSearchResponse?
 
@@ -24,9 +23,14 @@ interface NeteaseDataSource : SearchForLyric {
      * 查询歌词
      */
     @GET("lyric")
-    override suspend fun searchForLyric(
+    suspend fun searchForLyric(
         @Query("id") id: String
-    ): LyricSearchResponse?
+    ): NeteaseLyric?
+
+    override suspend fun searchForLyric(id: String, platform: Int): NetworkLyric? {
+        if (platform != PLATFORM_NETEASE) return null
+        return searchForLyric(id)
+    }
 
     /**
      * 查询歌曲详细信息

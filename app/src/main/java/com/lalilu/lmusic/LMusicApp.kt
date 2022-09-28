@@ -14,14 +14,14 @@ import com.lalilu.lmusic.utils.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.fetcher.SongCoverFetcher
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import dagger.hilt.android.HiltAndroidApp
-import okhttp3.Call
+import okhttp3.OkHttpClient
 import javax.inject.Inject
 
 @HiltAndroidApp
 class LMusicApp : Application(), ImageLoaderFactory {
 
     @Inject
-    lateinit var callFactory: Call.Factory
+    lateinit var callFactory: OkHttpClient
 
     @Inject
     lateinit var lyricSourceFactory: LyricSourceFactory
