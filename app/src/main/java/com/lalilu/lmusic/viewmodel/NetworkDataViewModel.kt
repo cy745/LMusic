@@ -47,10 +47,13 @@ class NetworkDataViewModel @Inject constructor(
             msg.value = "搜索中..."
         }
         flow {
-            val neteaseResult = neteaseDataSource.searchForSongs(keyword)?.songs ?: emptyList()
-            val kugouResult = kugouDataSource.searchForSongs(keyword)?.songs ?: emptyList()
+            kotlin.runCatching { neteaseDataSource.searchForSongs(keyword)?.songs }
+                .getOrNull()
+                ?.let { emit(it) }
 
-            emit(neteaseResult.union(kugouResult))
+            kotlin.runCatching { kugouDataSource.searchForSongs(keyword)?.songs }
+                .getOrNull()
+                ?.let { emit(it) }
         }.onEach {
             withContext(Dispatchers.Main) {
                 msg.value = if (it.isEmpty()) "无结果" else ""
