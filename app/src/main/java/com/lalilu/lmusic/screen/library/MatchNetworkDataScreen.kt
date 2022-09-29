@@ -23,6 +23,7 @@ import com.lalilu.R
 import com.lalilu.databinding.FragmentInputerBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.apis.NetworkSong
+import com.lalilu.lmusic.apis.PLATFORM_TEXT
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
@@ -55,8 +56,7 @@ fun MatchNetworkDataScreen(
             }, onChecked = {
                 viewModel.saveMatchNetworkData(
                     mediaId = song.id,
-                    songId = songs.getOrNull(selectedIndex)?.songId,
-                    title = songs.getOrNull(selectedIndex)?.songTitle,
+                    networkSong = songs.getOrNull(selectedIndex),
                     success = { navController.navigateUp() }
                 )
             })
@@ -153,7 +153,10 @@ fun LyricCard(
     title = song.songTitle,
     artist = song.songArtist,
     albumTitle = song.songAlbum,
-    duration = TimeUtils.millis2String(song.songDuration, "mm:ss"),
+    duration = TimeUtils.millis2String(
+        song.songDuration,
+        "mm:ss"
+    ) + " " + PLATFORM_TEXT.getOrDefault(song.fromPlatform, ""),
     selected = selected,
     onClick = onClick
 )

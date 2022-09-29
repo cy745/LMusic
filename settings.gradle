@@ -1,3 +1,20 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+    }
+}
+
 rootProject.name = "lmusic"
 include ':app'
 include ':ui'
@@ -5,5 +22,5 @@ include ':common'
 include ':jaudiotagger-android'
 include ':lmedia'
 
-include ':lyricviewx'
-project(':lyricviewx').projectDir = new File('D:\\ProjectFile\\Android\\LyricViewX\\lyricviewx')
+//include ':lyricviewx'
+//project(':lyricviewx').projectDir = new File('D:\\ProjectFile\\Android\\LyricViewX\\lyricviewx')
