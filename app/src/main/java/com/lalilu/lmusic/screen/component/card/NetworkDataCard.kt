@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.screen.component.card
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -12,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.R
+import com.lalilu.lmusic.apis.PLATFORM_KUGOU
+import com.lalilu.lmusic.apis.PLATFORM_NETEASE
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
@@ -38,35 +41,39 @@ fun NetworkDataCard(
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             NetworkDataCardHeader()
-            if (networkData.value != null) {
+            networkData.value?.let { data ->
                 NetworkDataCardDetail(
-                    songId = networkData.value!!.songId,
-                    songTitle = networkData.value!!.title
+                    songId = data.songId,
+                    songTitle = data.title,
+                    platform = data.platform
                 ) {
                     TextWithIconButton(
                         text = "歌词",
                         shape = RoundedCornerShape(20.dp),
                         iconPainter = painterResource(id = R.drawable.ic_download_cloud_2_line),
-                        showIcon = networkData.value!!.lyric == null,
+                        showIcon = data.lyric == null,
                         onClick = {
                             networkDataViewModel.saveLyricIntoNetworkData(
                                 mediaId = mediaId,
-                                songId = networkData.value!!.songId
+                                songId = data.songId,
+                                platform = data.platform
                             )
                         }
                     )
-                    TextWithIconButton(
-                        text = "封面",
-                        shape = RoundedCornerShape(20.dp),
-                        iconPainter = painterResource(id = R.drawable.ic_download_cloud_2_line),
-                        showIcon = networkData.value!!.cover == null,
-                        onClick = {
-                            networkDataViewModel.saveCoverUrlIntoNetworkData(
-                                mediaId = mediaId,
-                                songId = networkData.value!!.songId
-                            )
-                        }
-                    )
+                    AnimatedVisibility(visible = data.platform == PLATFORM_NETEASE) {
+                        TextWithIconButton(
+                            text = "封面",
+                            shape = RoundedCornerShape(20.dp),
+                            iconPainter = painterResource(id = R.drawable.ic_download_cloud_2_line),
+                            showIcon = data.cover == null,
+                            onClick = {
+                                networkDataViewModel.saveCoverUrlIntoNetworkData(
+                                    mediaId = mediaId,
+                                    songId = data.songId
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -92,6 +99,7 @@ fun NetworkDataCardHeader() {
 fun NetworkDataCardDetail(
     songId: String,
     songTitle: String,
+    platform: Int = -1,
     buttonExtra: @Composable () -> Unit = {}
 ) {
     val contentColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
@@ -119,13 +127,21 @@ fun NetworkDataCardDetail(
             ) { buttonExtra() }
         }
 
-        Icon(
-            modifier = Modifier
-                .size(72.dp)
-                .align(Alignment.Bottom),
-            painter = painterResource(id = R.drawable.ic_netease_cloud_music_line),
-            tint = contentColor.copy(0.1f),
-            contentDescription = "netease"
-        )
+        platform.let {
+            when (it) {
+                PLATFORM_KUGOU -> R.drawable.kugou
+                PLATFORM_NETEASE -> R.drawable.ic_netease_cloud_music_line
+                else -> null
+            }
+        }?.let {
+            Icon(
+                modifier = Modifier
+                    .size(72.dp)
+                    .align(Alignment.Bottom),
+                painter = painterResource(id = it),
+                tint = contentColor.copy(0.1f),
+                contentDescription = "netease"
+            )
+        }
     }
 }

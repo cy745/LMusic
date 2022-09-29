@@ -6,9 +6,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
-import com.lalilu.lmusic.apis.KugouDataSource
-import com.lalilu.lmusic.apis.NeteaseDataSource
-import com.lalilu.lmusic.apis.NetworkSong
+import com.lalilu.lmusic.apis.*
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
@@ -70,11 +68,10 @@ class NetworkDataViewModel @Inject constructor(
 
     fun saveMatchNetworkData(
         mediaId: String,
-        songId: String?,
-        title: String?,
+        networkSong: NetworkSong?,
         success: () -> Unit = {}
     ) = viewModelScope.launch(Dispatchers.IO) {
-        if (songId == null || songId.isEmpty() || title == null) {
+        if (networkSong == null) {
             ToastUtils.showShort("未选择匹配歌曲")
             return@launch
         }
@@ -82,14 +79,13 @@ class NetworkDataViewModel @Inject constructor(
             dataBase.networkDataDao().save(
                 MNetworkData(
                     mediaId = mediaId,
-                    songId = songId,
-                    title = title
+                    songId = networkSong.songId,
+                    title = networkSong.songTitle,
+                    platform = networkSong.fromPlatform
                 )
             )
             ToastUtils.showShort("保存匹配信息成功")
-            withContext(Dispatchers.Main) {
-                success()
-            }
+            withContext(Dispatchers.Main) { success() }
         } catch (e: Exception) {
             ToastUtils.showShort("保存匹配信息失败")
         }
@@ -123,6 +119,7 @@ class NetworkDataViewModel @Inject constructor(
     fun saveLyricIntoNetworkData(
         songId: String?,
         mediaId: String,
+        platform: Int,
         success: () -> Unit = {}
     ) = viewModelScope.launch(Dispatchers.IO) {
         flow {
@@ -130,7 +127,11 @@ class NetworkDataViewModel @Inject constructor(
             else ToastUtils.showShort("未选择匹配歌曲")
         }.mapLatest {
             ToastUtils.showShort("开始获取歌词")
-            neteaseDataSource.searchForLyric(it)
+            when (platform) {
+                PLATFORM_NETEASE -> neteaseDataSource.searchForLyric(it)
+                PLATFORM_KUGOU -> kugouDataSource.searchForLyric(it)
+                else -> null
+            }
         }.mapLatest {
             val lyric = it?.mainLyric
             if (TextUtils.isEmpty(lyric)) {

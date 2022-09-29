@@ -13,12 +13,6 @@ buildscript {
         accompanist_version = '0.26.4-beta'
     }
 
-    repositories {
-//        maven { url 'https://jitpack.io' }
-        google()
-        maven { url 'https://maven.aliyun.com/repository/central' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
-    }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.2.2'
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
@@ -28,16 +22,6 @@ buildscript {
 
 plugins {
     id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
-}
-
-allprojects {
-    repositories {
-        maven { url 'https://jitpack.io' }
-        google()
-        mavenCentral()
-        maven { url 'https://maven.aliyun.com/repository/central' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
-    }
 }
 
 subprojects {

@@ -13,6 +13,8 @@ data class MNetworkData(
     val mediaId: String,
     @ColumnInfo(name = "network_data_song_id")
     val songId: String,
+    @ColumnInfo(name = "network_data_platform")
+    val platform: Int,
     @ColumnInfo(name = "network_data_title")
     val title: String,
     @ColumnInfo(name = "network_data_cover")
