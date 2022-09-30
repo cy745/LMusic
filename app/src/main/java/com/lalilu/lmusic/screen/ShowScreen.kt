@@ -37,8 +37,8 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicRuntime
-import com.lalilu.lmusic.utils.BlurTransformation
 import com.lalilu.lmusic.utils.PlayMode
+import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.isPad
 

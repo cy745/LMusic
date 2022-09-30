@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils.fetcher
+package com.lalilu.lmusic.utils.coil.fetcher
 
 import android.content.Context
 import coil.ImageLoader

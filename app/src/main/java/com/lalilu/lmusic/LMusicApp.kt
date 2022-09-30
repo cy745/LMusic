@@ -10,8 +10,10 @@ import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
 import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.StatusBarLyricExt
-import com.lalilu.lmusic.utils.fetcher.AlbumCoverFetcher
-import com.lalilu.lmusic.utils.fetcher.SongCoverFetcher
+import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
+import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
+import com.lalilu.lmusic.utils.coil.fetcher.SongCoverFetcher
+import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
@@ -38,7 +40,10 @@ class LMusicApp : Application(), ImageLoaderFactory {
             .components {
                 add(AlbumCoverFetcher.AlbumFactory())
                 add(SongCoverFetcher.SongFactory(callFactory))
-            }.build()
+                add(SongCoverKeyer())
+            }
+            .transitionFactory(CrossfadeTransitionFactory())
+            .build()
 
     override fun onCreate() {
         super.onCreate()

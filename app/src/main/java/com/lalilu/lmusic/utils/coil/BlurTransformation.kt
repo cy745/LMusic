@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.utils.coil
 
 import android.content.Context
 import android.graphics.Bitmap

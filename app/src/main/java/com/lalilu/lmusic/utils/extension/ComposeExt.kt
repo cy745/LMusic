@@ -20,7 +20,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.palette.graphics.Palette
 import coil.request.ImageRequest
-import com.lalilu.lmusic.utils.PaletteTransformation
+import com.lalilu.lmusic.utils.coil.PaletteTransformation
 import kotlin.math.roundToInt
 
 fun NavController.canPopUp(): Boolean {
