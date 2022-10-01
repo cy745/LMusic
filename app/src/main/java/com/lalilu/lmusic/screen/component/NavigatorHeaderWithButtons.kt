@@ -13,11 +13,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 
 @Composable
 fun NavigatorHeaderWithButtons(
-    route: MainScreenData,
+    route: ScreenData,
     buttonsContent: @Composable RowScope.() -> Unit = {}
 ) = NavigatorHeaderWithButtons(
     titleRes = route.title,

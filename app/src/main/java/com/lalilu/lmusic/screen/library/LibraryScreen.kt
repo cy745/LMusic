@@ -25,7 +25,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.ExpendableTextCard
 import com.lalilu.lmusic.screen.component.card.RecommendCard
@@ -62,7 +62,7 @@ fun LibraryScreen(
 
     val showDetail = remember {
         { mediaId: String ->
-            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId") {
+            navController.navigate("${ScreenData.SongsDetail.name}/$mediaId") {
                 popUpTo(navController.graph.findStartDestination().id) {
                     //出栈的 BackStack 保存状态
                     saveState = true

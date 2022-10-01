@@ -31,7 +31,7 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.SongCard
@@ -51,7 +51,7 @@ fun AlbumDetailScreen(
     val sortedItems = remember { songs.toMutableStateList() }
     val title = album.name
     val subTitle = album.name // todo AlbumArtist 补足
-        ?: stringResource(id = MainScreenData.AlbumsDetail.subTitle)
+        ?: stringResource(id = ScreenData.AlbumsDetail.subTitle)
 
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
@@ -65,7 +65,7 @@ fun AlbumDetailScreen(
     val onSongShowDetail: (String) -> Unit = remember {
         { mediaId ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId")
+            navController.navigate("${ScreenData.SongsDetail.name}/$mediaId")
         }
     }
 

@@ -1,8 +1,6 @@
 package com.lalilu.lmusic.screen
 
 import android.content.res.Configuration
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -10,7 +8,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -20,10 +20,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
-import com.lalilu.R
 import com.lalilu.lmedia.indexer.Library
-import com.lalilu.lmusic.screen.component.NavigateBar
-import com.lalilu.lmusic.screen.component.NavigateDetailBar
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.screen.library.*
@@ -47,7 +44,6 @@ fun LMusicNavGraph(
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
     val currentRoute = navHostController.currentBackStackEntryAsState().value
-    var last by remember { mutableStateOf<MainScreenData?>(null) }
 
     val isPad = windowSize.isPad()
     val isLandscape = remember(configuration.orientation) {
@@ -55,102 +51,64 @@ fun LMusicNavGraph(
     }
 
     // 监听屏幕旋转方向的变化
-    LaunchedEffect(isLandscape) {
+    LaunchedEffect(isPad, isLandscape) {
         // 针对平板所作的处理，若非平板则不处理
         if (!isPad) return@LaunchedEffect
-        val current = MainScreenData.fromRoute(currentRoute?.destination?.route)
+        val current = ScreenData.fromRoute(currentRoute?.destination?.route)
+            ?: return@LaunchedEffect
 
-        // 若当前所处为目录级页，且处于横屏状态则因此MainBar，否则显示 [NavigateBar]
-        if (MainScreenData.categoryFirst.contains(current) && isLandscape) {
-            SmartBar.setMainBar(item = null)
-        } else {
-            SmartBar.setMainBar { NavigateBar() }
-        }
+        SmartBar.setMainBar(item = if (isLandscape) null else current.mainBarContent)
     }
 
+    // 根据当前路径更新SmartBar的内容
     LaunchedEffect(currentRoute) {
-        val current = MainScreenData.fromRoute(currentRoute?.destination?.route)
+        val current = ScreenData.fromRoute(currentRoute?.destination?.route)
+            ?: return@LaunchedEffect
 
-        /**
-         * 当从非目录级页进入目录级页时设置 MainBar 为 [NavigateBar]，并清除 ExtraBar
-         */
-        if (MainScreenData.categoryFirst.contains(current) && !MainScreenData.categoryFirst.contains(
-                last
-            )
-        ) {
-            // 只有平板的横屏状态需要隐藏 MainBar，其余情况均显示 [NavigateBar]
-            if (!isPad || !isLandscape) {
-                SmartBar.setMainBar { NavigateBar() }
-            } else {
-                SmartBar.setMainBar(item = null)
-            }
-            SmartBar.setExtraBar(item = null)
-        }
-
-        /**
-         * 当进入详情页时设置 MainBar 为 [NavigateDetailBar]
-         */
-        if (MainScreenData.detailLevel.contains(current)) {
-            SmartBar.setMainBar { NavigateDetailBar() }
-        }
-
-        /**
-         * 当离开 [MainScreenData.SongsDetail] 页时清除 ExtraBar
-         */
-        if (MainScreenData.SongsDetail == last && MainScreenData.SongsDetail != current) {
-            SmartBar.setExtraBar(item = null)
-            SmartModalBottomSheet.enableFadeEdge()
-        }
-
-        /**
-         * 当离开 [MainScreenData.SongsMatchNetworkData] 页时清除 ExtraBar
-         */
-        if (MainScreenData.SongsMatchNetworkData == last && MainScreenData.SongsMatchNetworkData != current) {
-            SmartBar.setExtraBar(item = null)
-        }
-
-        last = current
+        SmartBar.setMainBar(item = if (isPad && isLandscape) null else current.mainBarContent)
+        SmartBar.setExtraBar(item = current.extraBarContent)
+        SmartModalBottomSheet.fadeEdge(current.fadeEdgeForStatusBar)
     }
 
     AnimatedNavHost(navController = navHostController,
-        startDestination = MainScreenData.Library.name,
+        startDestination = ScreenData.Library.name,
         modifier = Modifier.fillMaxSize(),
         exitTransition = { ExitTransition.None },
         enterTransition = {
             fadeIn(animationSpec = tween(durationMillis = 300)) + slideInVertically { 100 }
         }) {
         composable(
-            route = MainScreenData.Library.name
+            route = ScreenData.Library.name
         ) {
             LibraryScreen(libraryViewModel)
         }
 
         composable(
-            route = MainScreenData.Songs.name
+            route = ScreenData.Songs.name
         ) {
             SongsScreen(mainViewModel, libraryViewModel)
         }
 
         composable(
-            route = MainScreenData.Artists.name
+            route = ScreenData.Artists.name
         ) {
             ArtistScreen(libraryViewModel)
         }
 
         composable(
-            route = MainScreenData.Albums.name
+            route = ScreenData.Albums.name
         ) {
             AlbumsScreen(libraryViewModel)
         }
 
         composable(
-            route = MainScreenData.Playlists.name
+            route = ScreenData.Playlists.name
         ) {
             PlaylistsScreen()
         }
 
         composable(
-            route = "${MainScreenData.PlaylistsDetail.name}/{playlistId}",
+            route = "${ScreenData.PlaylistsDetail.name}/{playlistId}",
             arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
         ) { backStackEntry ->
             // todo playlist 逻辑未完善
@@ -162,7 +120,7 @@ fun LMusicNavGraph(
         }
 
         composable(
-            route = "${MainScreenData.SongsDetail.name}/{mediaId}",
+            route = "${ScreenData.SongsDetail.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
@@ -172,7 +130,7 @@ fun LMusicNavGraph(
         }
 
         composable(
-            route = "${MainScreenData.ArtistsDetail.name}/{artistName}",
+            route = "${ScreenData.ArtistsDetail.name}/{artistName}",
             arguments = listOf(navArgument("artistName") { type = NavType.StringType })
         ) { backStackEntry ->
             val artistName = backStackEntry.arguments?.getString("artistName")
@@ -181,7 +139,7 @@ fun LMusicNavGraph(
         }
 
         composable(
-            route = "${MainScreenData.AlbumsDetail.name}/{albumId}",
+            route = "${ScreenData.AlbumsDetail.name}/{albumId}",
             arguments = listOf(navArgument("albumId") { type = NavType.StringType })
         ) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId")
@@ -190,7 +148,7 @@ fun LMusicNavGraph(
         }
 
         composable(
-            route = MainScreenData.SongsAddToPlaylist.name,
+            route = ScreenData.SongsAddToPlaylist.name,
             arguments = listOf(navArgument("mediaIds") { type = NavType.StringArrayType })
         ) { backStackEntry ->
             val mediaIds = backStackEntry.arguments?.getStringArrayList("mediaIds")
@@ -203,7 +161,7 @@ fun LMusicNavGraph(
         }
 
         composable(
-            route = "${MainScreenData.SongsAddToPlaylist.name}/{mediaId}",
+            route = "${ScreenData.SongsAddToPlaylist.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
@@ -216,7 +174,7 @@ fun LMusicNavGraph(
         }
 
         composable(
-            route = "${MainScreenData.SongsMatchNetworkData.name}/{mediaId}",
+            route = "${ScreenData.SongsMatchNetworkData.name}/{mediaId}",
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
@@ -225,98 +183,9 @@ fun LMusicNavGraph(
         }
 
         composable(
-            route = MainScreenData.Settings.name
+            route = ScreenData.Settings.name
         ) {
             SettingsScreen()
-        }
-    }
-}
-
-enum class MainScreenData(
-    @DrawableRes val icon: Int,
-    @StringRes val title: Int,
-    @StringRes val subTitle: Int,
-    val showNavigateButton: Boolean = false
-) {
-    Library(
-        icon = R.drawable.ic_loader_line,
-        title = R.string.destination_label_library,
-        subTitle = R.string.destination_subtitle_library,
-        showNavigateButton = true
-    ),
-    Songs(
-        icon = R.drawable.ic_music_2_line,
-        title = R.string.destination_label_all_song,
-        subTitle = R.string.destination_subtitle_all_song,
-        showNavigateButton = true
-    ),
-    Playlists(
-        icon = R.drawable.ic_play_list_line,
-        title = R.string.destination_label_playlists,
-        subTitle = R.string.destination_subtitle_playlists,
-        showNavigateButton = false
-    ),
-    Artists(
-        icon = R.drawable.ic_user_line,
-        title = R.string.destination_label_artist,
-        subTitle = R.string.destination_subtitle_artist,
-        showNavigateButton = true
-    ),
-    Albums(
-        icon = R.drawable.ic_album_fill,
-        title = R.string.destination_label_albums,
-        subTitle = R.string.destination_subtitle_albums,
-        showNavigateButton = true
-    ),
-    Settings(
-        icon = R.drawable.ic_settings_4_line,
-        title = R.string.destination_label_settings,
-        subTitle = R.string.destination_subtitle_settings,
-        showNavigateButton = true
-    ),
-    PlaylistsDetail(
-        icon = R.drawable.ic_play_list_line,
-        title = R.string.destination_label_playlist_detail,
-        subTitle = R.string.destination_subtitle_playlist_detail
-    ),
-    ArtistsDetail(
-        icon = R.drawable.ic_user_line,
-        title = R.string.destination_label_artist_detail,
-        subTitle = R.string.destination_label_artist_detail
-    ),
-    AlbumsDetail(
-        icon = R.drawable.ic_album_fill,
-        title = R.string.destination_label_album_detail,
-        subTitle = R.string.destination_subtitle_album_detail
-    ),
-    SongsDetail(
-        icon = R.drawable.ic_music_2_line,
-        title = R.string.destination_label_song_detail,
-        subTitle = R.string.destination_subtitle_song_detail
-    ),
-    SongsAddToPlaylist(
-        icon = R.drawable.ic_play_list_line,
-        title = R.string.destination_label_add_song_to_playlist,
-        subTitle = R.string.destination_label_add_song_to_playlist
-    ),
-    SongsMatchNetworkData(
-        icon = R.drawable.ic_music_line,
-        title = R.string.destination_label_match_network_data,
-        subTitle = R.string.destination_label_match_network_data
-    );
-
-
-    companion object {
-        fun fromRoute(route: String?): MainScreenData? {
-            val target = route?.substringBefore("/")
-            return values().find { it.name == target }
-        }
-
-        val categoryFirst by lazy {
-            listOf(Library, Songs, Playlists, Artists, Albums, Settings)
-        }
-        val detailLevel by lazy {
-            listOf(PlaylistsDetail, ArtistsDetail, AlbumsDetail, SongsDetail)
         }
     }
 }

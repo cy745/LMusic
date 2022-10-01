@@ -19,12 +19,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 
 
 @Composable
 fun DestinationCard(
-    route: MainScreenData,
+    route: ScreenData,
     navigateTo: (String) -> Unit
 ) = DestinationCard(
     iconRes = route.icon,

@@ -21,7 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.ToastUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmusic.datasource.entity.MPlaylist
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.sort
 import com.lalilu.lmusic.screen.component.SmartContainer
@@ -98,7 +98,7 @@ fun PlaylistsScreen(
                             selectedItems.remove(it)
                         else selectedItems.add(it)
                     } else {
-                        navController.navigate("${MainScreenData.PlaylistsDetail.name}/${it.playlistId}")
+                        navController.navigate("${ScreenData.PlaylistsDetail.name}/${it.playlistId}")
                     }
                 },
                 onLongClick = {

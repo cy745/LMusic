@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.navigateSingleTop
@@ -46,7 +46,7 @@ fun NavigateBar(horizontal: Boolean = true) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            MainScreenData.values().forEach {
+            ScreenData.values().forEach {
                 if (it.showNavigateButton) {
                     NavigateItem(
                         navController = navController,
@@ -68,7 +68,7 @@ fun NavigateBar(horizontal: Boolean = true) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                MainScreenData.values().forEach {
+                ScreenData.values().forEach {
                     if (it.showNavigateButton) {
                         NavigateItem(
                             navController = navController,
@@ -86,7 +86,7 @@ fun NavigateBar(horizontal: Boolean = true) {
 @Composable
 fun NavigateItem(
     navController: NavController,
-    routeData: MainScreenData,
+    routeData: ScreenData,
     currentRoute: String?,
     baseColor: Color = MaterialTheme.colors.primary,
 ) {

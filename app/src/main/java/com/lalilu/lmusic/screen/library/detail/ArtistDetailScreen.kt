@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LArtist
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
@@ -49,7 +49,7 @@ fun ArtistDetailScreen(
     val onSongShowDetail: (String) -> Unit = remember {
         { mediaId ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId")
+            navController.navigate("${ScreenData.SongsDetail.name}/$mediaId")
         }
     }
 

@@ -46,8 +46,7 @@ object SmartModalBottomSheet {
     fun show() = scope?.launch { scaffoldState.show() }
     fun expend() = scope?.launch { scaffoldState.animateTo(ModalBottomSheetValue.Expanded) }
     fun collapse() = scope?.launch { scaffoldState.animateTo(ModalBottomSheetValue.HalfExpanded) }
-    fun enableFadeEdge() = scope?.launch { enableFadeEdgeForStatusBar.value = true }
-    fun disableFadeEdge() = scope?.launch { enableFadeEdgeForStatusBar.value = false }
+    fun fadeEdge(value: Boolean) = scope?.launch { enableFadeEdgeForStatusBar.value = value }
 
     @Composable
     fun SmartModalBottomSheetContent(

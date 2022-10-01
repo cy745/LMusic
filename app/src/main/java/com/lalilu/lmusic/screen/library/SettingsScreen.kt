@@ -17,7 +17,7 @@ import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.GuidingActivity
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.settings.*
@@ -73,7 +73,7 @@ fun SettingsScreen() {
     SmartContainer.StaggeredVerticalGrid(
         columns = if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1,
     ) {
-        NavigatorHeader(route = MainScreenData.Settings)
+        NavigatorHeader(route = ScreenData.Settings)
 
         SettingCategory(
             iconRes = R.drawable.ic_settings_4_line,

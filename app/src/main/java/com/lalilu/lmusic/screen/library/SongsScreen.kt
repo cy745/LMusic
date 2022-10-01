@@ -13,7 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.SongCard
 import com.lalilu.lmusic.service.LMusicRuntime
@@ -49,8 +49,8 @@ fun SongsScreen(
     val onSongShowDetail: (String) -> Unit = remember {
         { mediaId ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId") {
-                popUpTo(MainScreenData.Songs.name) {
+            navController.navigate("${ScreenData.SongsDetail.name}/$mediaId") {
+                popUpTo(ScreenData.Songs.name) {
                     //出栈的 BackStack 保存状态
                     saveState = true
                 }
