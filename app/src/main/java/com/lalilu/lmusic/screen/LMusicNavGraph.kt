@@ -32,6 +32,7 @@ import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.isPad
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 @ExperimentalAnimationApi
@@ -40,7 +41,8 @@ import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 fun LMusicNavGraph(
     navHostController: NavHostController = LocalNavigatorHost.current,
     networkDataViewModel: NetworkDataViewModel = hiltViewModel(),
-    libraryViewModel: LibraryViewModel = hiltViewModel()
+    libraryViewModel: LibraryViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
@@ -72,8 +74,9 @@ fun LMusicNavGraph(
         /**
          * 当从非目录级页进入目录级页时设置 MainBar 为 [NavigateBar]，并清除 ExtraBar
          */
-        if (MainScreenData.categoryFirst.contains(current)
-            && !MainScreenData.categoryFirst.contains(last)
+        if (MainScreenData.categoryFirst.contains(current) && !MainScreenData.categoryFirst.contains(
+                last
+            )
         ) {
             // 只有平板的横屏状态需要隐藏 MainBar，其余情况均显示 [NavigateBar]
             if (!isPad || !isLandscape) {
@@ -109,16 +112,13 @@ fun LMusicNavGraph(
         last = current
     }
 
-    AnimatedNavHost(
-        navController = navHostController,
+    AnimatedNavHost(navController = navHostController,
         startDestination = MainScreenData.Library.name,
         modifier = Modifier.fillMaxSize(),
         exitTransition = { ExitTransition.None },
         enterTransition = {
-            fadeIn(animationSpec = tween(durationMillis = 300)) +
-                    slideInVertically { 100 }
-        }
-    ) {
+            fadeIn(animationSpec = tween(durationMillis = 300)) + slideInVertically { 100 }
+        }) {
         composable(
             route = MainScreenData.Library.name
         ) {
@@ -128,19 +128,19 @@ fun LMusicNavGraph(
         composable(
             route = MainScreenData.Songs.name
         ) {
-            SongsScreen()
+            SongsScreen(mainViewModel, libraryViewModel)
         }
 
         composable(
             route = MainScreenData.Artists.name
         ) {
-            ArtistScreen()
+            ArtistScreen(libraryViewModel)
         }
 
         composable(
             route = MainScreenData.Albums.name
         ) {
-            AlbumsScreen()
+            AlbumsScreen(libraryViewModel)
         }
 
         composable(
@@ -176,8 +176,7 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("artistName") { type = NavType.StringType })
         ) { backStackEntry ->
             val artistName = backStackEntry.arguments?.getString("artistName")
-            Library.getArtistOrNull(artistName)
-                ?.let { ArtistDetailScreen(artist = it) }
+            Library.getArtistOrNull(artistName)?.let { ArtistDetailScreen(artist = it) }
                 ?: EmptyArtistDetailScreen()
         }
 
@@ -186,8 +185,7 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("albumId") { type = NavType.StringType })
         ) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId")
-            Library.getAlbumOrNull(albumId)
-                ?.let { AlbumDetailScreen(album = it) }
+            Library.getAlbumOrNull(albumId)?.let { AlbumDetailScreen(album = it) }
                 ?: EmptyAlbumDetailScreen()
         }
 
@@ -199,8 +197,7 @@ fun LMusicNavGraph(
 
             mediaIds?.takeIf { it.isNotEmpty() }?.let {
                 PlaylistsScreen(
-                    isAddingSongToPlaylist = true,
-                    mediaIds = it
+                    isAddingSongToPlaylist = true, mediaIds = it
                 )
             }
         }
@@ -213,8 +210,7 @@ fun LMusicNavGraph(
 
             mediaId?.let {
                 PlaylistsScreen(
-                    isAddingSongToPlaylist = true,
-                    mediaIds = listOf(it)
+                    isAddingSongToPlaylist = true, mediaIds = listOf(it)
                 )
             }
         }
@@ -224,8 +220,7 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
-            Library.getSongOrNull(mediaId)
-                ?.let { MatchNetworkDataScreen(song = it) }
+            Library.getSongOrNull(mediaId)?.let { MatchNetworkDataScreen(song = it) }
                 ?: EmptySearchForLyricScreen()
         }
 
