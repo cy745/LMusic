@@ -18,7 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datasource.entity.MPlaylist
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
@@ -76,7 +76,7 @@ fun PlaylistDetailScreen(
     val onSongShowDetail: (String) -> Unit = remember {
         { mediaId ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navController.navigate("${MainScreenData.SongsDetail.name}/$mediaId")
+            navController.navigate("${ScreenData.SongsDetail.name}/$mediaId")
         }
     }
 

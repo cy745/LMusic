@@ -21,7 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.utils.extension.navigateSingleTop
 
 @Composable
@@ -31,7 +31,7 @@ fun NavigatorRailBar(
     bottomExtraContent: LazyListScope.() -> Unit = {}
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route ?: MainScreenData.Library.name
+    val currentRoute = navBackStackEntry?.destination?.route ?: ScreenData.Library.name
 
     NavigatorRailBar(
         currentRoute = currentRoute,
@@ -67,12 +67,12 @@ fun NavigatorRailBar(
         ) {
             item {
                 NavigatorButton(
-                    isSelected = currentRoute == MainScreenData.Library.name,
-                    routeData = MainScreenData.Library,
+                    isSelected = currentRoute == ScreenData.Library.name,
+                    routeData = ScreenData.Library,
                     navigateTo = navigateTo
                 )
             }
-            MainScreenData.values().forEach {
+            ScreenData.values().forEach {
                 if (it.showNavigateButton) {
                     item {
                         NavigatorButton(
@@ -97,7 +97,7 @@ fun NavigatorRailBar(
 @OptIn(ExperimentalMaterialApi::class)
 fun NavigatorButton(
     modifier: Modifier = Modifier,
-    routeData: MainScreenData,
+    routeData: ScreenData,
     isSelected: Boolean = false,
     baseColor: Color = MaterialTheme.colors.primary,
     navigateTo: (destination: String) -> Unit = {}

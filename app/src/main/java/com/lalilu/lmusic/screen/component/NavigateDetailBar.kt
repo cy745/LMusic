@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lalilu.R
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.popUpElse
 
@@ -27,7 +27,7 @@ fun NavigateDetailBar(
 ) {
     val currentBackStackEntry = navController.currentBackStackEntryAsState().value
     val previousScreenTitle = remember(currentBackStackEntry) {
-        MainScreenData.fromRoute(
+        ScreenData.fromRoute(
             navController.previousBackStackEntry?.destination?.route
         )?.title ?: R.string.dialog_bottom_sheet_navigator_back
     }.let { stringResource(id = it) }

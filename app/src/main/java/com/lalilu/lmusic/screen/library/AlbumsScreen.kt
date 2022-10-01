@@ -12,7 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.funny.data_saver.core.rememberDataSaverState
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.AlbumCard
@@ -34,7 +34,7 @@ fun AlbumsScreen(
 
     val onAlbumSelected = remember {
         { albumId: String ->
-            navController.navigate("${MainScreenData.AlbumsDetail.name}/$albumId")
+            navController.navigate("${ScreenData.AlbumsDetail.name}/$albumId")
         }
     }
 

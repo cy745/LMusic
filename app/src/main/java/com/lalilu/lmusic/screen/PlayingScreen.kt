@@ -76,7 +76,7 @@ fun PlayingScreen(
                     LMusicBrowser.playById(id)
                 }
                 onItemLongClick = { id, _ ->
-                    navController.navigate("${MainScreenData.SongsDetail.name}/$id") {
+                    navController.navigate("${ScreenData.SongsDetail.name}/$id") {
                         launchSingleTop = true
                     }
                     SmartModalBottomSheet.show()

@@ -11,11 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 
 @Composable
 fun NavigatorHeader(
-    route: MainScreenData,
+    route: ScreenData,
     extraContent: @Composable RowScope.() -> Unit = {}
 ) = NavigatorHeader(
     titleRes = route.title,

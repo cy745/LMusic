@@ -17,7 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.funny.data_saver.core.rememberDataSaverState
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
@@ -34,7 +34,7 @@ fun ArtistScreen(
 
     val onArtistSelected = remember {
         { artistId: String ->
-            navController.navigate("${MainScreenData.ArtistsDetail.name}/$artistId")
+            navController.navigate("${ScreenData.ArtistsDetail.name}/$artistId")
         }
     }
 

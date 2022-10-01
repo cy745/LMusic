@@ -20,11 +20,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.screen.MainScreenData
+import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
-import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
 import com.lalilu.lmusic.screen.component.card.RecommendCard
@@ -46,11 +45,10 @@ fun SongDetailScreen(
         .collectAsState(null)
 
     LaunchedEffect(song) {
-        SmartModalBottomSheet.disableFadeEdge()
         SmartBar.setExtraBar {
             SongDetailActionsBar(
                 onAddSongToPlaylist = {
-                    navController.navigate("${MainScreenData.SongsAddToPlaylist.name}/${song.id}")
+                    navController.navigate("${ScreenData.SongsAddToPlaylist.name}/${song.id}")
                 },
                 onSetSongToNext = {
                     LMusicBrowser.addToNext(song.id)
@@ -131,7 +129,7 @@ fun SongDetailScreen(
             item {
                 NetworkDataCard(
                     onClick = {
-                        navController.navigate("${MainScreenData.SongsMatchNetworkData.name}/${song.id}")
+                        navController.navigate("${ScreenData.SongsMatchNetworkData.name}/${song.id}")
                     },
                     mediaId = song.id
                 )
