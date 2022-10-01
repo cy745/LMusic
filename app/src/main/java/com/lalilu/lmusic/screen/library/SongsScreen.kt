@@ -6,11 +6,13 @@ import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.MainScreenData
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.SongCard
@@ -18,18 +20,21 @@ import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.average
+import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun SongsScreen(
-    mainViewModel: MainViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel,
+    libraryViewModel: LibraryViewModel,
 ) {
-    val songs = remember { Library.getSongs() }
+    val songs by libraryViewModel.songs.observeAsState(emptyList())
+    val currentPlaying by LMusicRuntime.currentPlayingLiveData.observeAsState()
+
     val windowSize = LocalWindowSize.current
     val haptic = LocalHapticFeedback.current
     val navController = LocalNavigatorHost.current
-    val currentPlaying by LMusicRuntime.currentPlayingFlow.collectAsState()
     val gridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
 
@@ -116,23 +121,4 @@ fun SongsScreen(
             }
         }
     }
-
-//    Box(modifier = Modifier.fillMaxSize()) {
-//        Surface(
-//            modifier = Modifier
-//                .align(Alignment.BottomEnd)
-//                .padding(SmartBar.rememberContentPadding(horizontal = 20.dp)),
-//            shape = CircleShape,
-//            elevation = 5.dp,
-//            color = Color.Gray.copy(alpha = 0.8f)
-//        ) {
-//            IconButton(onClick = { scrollToCurrentPlaying() }) {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.ic_focus_3_line),
-//                    contentDescription = "",
-//                    tint = dayNightTextColor()
-//                )
-//            }
-//        }
-//    }
 }

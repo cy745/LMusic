@@ -2,6 +2,7 @@ package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.datasource.MDataBase
@@ -29,6 +30,11 @@ class LibraryViewModel @Inject constructor(
     val recentlyAdded = Library.getSongsFlow(15).asLiveData()
     val randomRecommends = Library.getSongsFlow(15, true).toUpdatableFlow()
     val randomRecommendsLiveData = randomRecommends.asLiveData()
+
+    val songs = Library.getSongsFlow().asLiveData(viewModelScope.coroutineContext)
+    val artists = Library.getArtistsFlow().asLiveData(viewModelScope.coroutineContext)
+    val albums = Library.getAlbumsFlow().asLiveData(viewModelScope.coroutineContext)
+    val genres = Library.getGenresFlow().asLiveData(viewModelScope.coroutineContext)
 
     /**
      * 请求获取每日推荐歌曲
