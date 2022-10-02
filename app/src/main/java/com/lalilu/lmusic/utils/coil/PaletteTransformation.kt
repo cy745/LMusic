@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.utils.coil
 
 import android.graphics.Bitmap
+import android.util.LruCache
 import androidx.palette.graphics.Palette
 import coil.size.Size
 import coil.transform.Transformation
@@ -22,5 +23,9 @@ class PaletteTransformation(
             callback(Palette.Builder(input).generate())
         }
         return input
+    }
+
+    companion object {
+        val resultCache = LruCache<String, Palette>(100)
     }
 }

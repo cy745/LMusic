@@ -78,7 +78,7 @@ fun SongDetailScreen(
         SmartContainer.LazyVerticalGrid(
             modifier = Modifier.padding(top = 100.dp),
             columns = GridCells.Fixed(
-                if (windowSize.widthSizeClass != WindowWidthSizeClass.Compact) 2 else 1
+                if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1
             )
         ) {
             item {

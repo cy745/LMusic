@@ -50,23 +50,34 @@ fun LMusicNavGraph(
         configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     }
 
-    // 监听屏幕旋转方向的变化
-    LaunchedEffect(isPad, isLandscape) {
-        // 针对平板所作的处理，若非平板则不处理
-        if (!isPad) return@LaunchedEffect
-        val current = ScreenData.fromRoute(currentRoute?.destination?.route)
-            ?: return@LaunchedEffect
-
-        SmartBar.setMainBar(item = if (isLandscape) null else current.mainBarContent)
-    }
-
     // 根据当前路径更新SmartBar的内容
-    LaunchedEffect(currentRoute) {
+    LaunchedEffect(currentRoute, isLandscape) {
         val current = ScreenData.fromRoute(currentRoute?.destination?.route)
             ?: return@LaunchedEffect
 
-        SmartBar.setMainBar(item = if (isPad && isLandscape) null else current.mainBarContent)
-        SmartBar.setExtraBar(item = current.extraBarContent)
+        if (isPad && isLandscape) {
+            when (current.mainBarForPad) {
+                ComponentStrategy.DoNothing -> Unit
+                ComponentStrategy.Clear -> SmartBar.setMainBar(item = null)
+                is ComponentStrategy.Replace -> SmartBar.setMainBar(item = current.mainBarForPad.content)
+            }
+            when (current.extraBarForPad) {
+                ComponentStrategy.DoNothing -> Unit
+                ComponentStrategy.Clear -> SmartBar.setExtraBar(item = null)
+                is ComponentStrategy.Replace -> SmartBar.setExtraBar(item = current.extraBarForPad.content)
+            }
+        } else {
+            when (current.mainBar) {
+                ComponentStrategy.DoNothing -> Unit
+                ComponentStrategy.Clear -> SmartBar.setMainBar(item = null)
+                is ComponentStrategy.Replace -> SmartBar.setMainBar(item = current.mainBar.content)
+            }
+            when (current.extraBar) {
+                ComponentStrategy.DoNothing -> Unit
+                ComponentStrategy.Clear -> SmartBar.setExtraBar(item = null)
+                is ComponentStrategy.Replace -> SmartBar.setExtraBar(item = current.extraBar.content)
+            }
+        }
         SmartModalBottomSheet.fadeEdge(current.fadeEdgeForStatusBar)
     }
 

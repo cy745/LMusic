@@ -77,6 +77,7 @@ object LMusicRuntime : CoroutineScope {
     val currentPositionFlow: MutableStateFlow<Long> = MutableStateFlow(currentPosition)
     val currentIsPlayingFlow: MutableStateFlow<Boolean> = MutableStateFlow(currentIsPlaying)
 
+    val currentIsPlayingLiveData = currentIsPlayingFlow.asLiveData()
     val currentPlayingLiveData = currentPlayingFlow.asLiveData()
     val currentPositionLiveData = currentPositionFlow.asLiveData()
     val currentPlaylistLiveData = originListFlow.combine(currentPlayingFlow) { items, item ->
