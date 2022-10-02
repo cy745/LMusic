@@ -104,6 +104,9 @@ fun NavigateItem(
     Surface(
         color = backgroundColor,
         onClick = {
+            if (currentRoute == routeData.name) {
+                routeData.isChecked?.let { it.value = !it.value }
+            }
             navController.navigateSingleTop(routeData.name)
         },
         shape = CircleShape,

@@ -46,9 +46,9 @@ fun GuidingScreen(
         ) {
             Column(
                 modifier = if (windowSize.isPad()) {
-                    Modifier.fillMaxWidth()
-                } else {
                     Modifier.width(screenHeightDp / 2f)
+                } else {
+                    Modifier.fillMaxWidth()
                 }
                     .fillMaxHeight()
                     .statusBarsPadding()

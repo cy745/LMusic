@@ -13,8 +13,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +29,7 @@ import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.ScreenData
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.ExpendableTextCard
 import com.lalilu.lmusic.screen.component.card.RecommendCard
@@ -49,14 +53,13 @@ fun LibraryScreen(
     val recentlyAdded by viewModel.recentlyAdded.observeAsState(emptyList())
     val randomRecommends = remember { Library.getSongs(10, true) }
 
-    val currentPlaying by LMusicRuntime.currentPlayingFlow.collectAsState()
-    val currentIsPlaying by LMusicRuntime.currentIsPlayingFlow.collectAsState()
+    val currentPlaying by LMusicRuntime.currentPlayingLiveData.observeAsState()
+    val currentIsPlaying by LMusicRuntime.currentIsPlayingLiveData.observeAsState(false)
 
     val playSong = remember {
         { mediaId: String ->
             currentPlaying.takeIf { it != null && it.id == mediaId && currentIsPlaying }
-                ?.let { LMusicBrowser.pause() }
-                ?: LMusicBrowser.addAndPlay(mediaId)
+                ?.let { LMusicBrowser.pause() } ?: LMusicBrowser.addAndPlay(mediaId)
         }
     }
 
@@ -73,6 +76,17 @@ fun LibraryScreen(
                 // 如果之前出栈时保存状态了，那么重新入栈时恢复状态
                 restoreState = true
             }
+        }
+    }
+
+    val isChecked = ScreenData.Library.isChecked?.value
+    LaunchedEffect(isChecked) {
+        if (isChecked == true) {
+            SmartBar.setExtraBar {
+                SearchInputBar(value = "", onSearchFor = {}, onChecked = {})
+            }
+        } else {
+            SmartBar.setExtraBar(item = null)
         }
     }
 
@@ -120,8 +134,7 @@ fun LibraryScreen(
             RecommendRow(
                 scrollToStartWhenUpdate = true,
                 items = lastPlayedStack.toList(),
-                getId = { it.id }
-            ) {
+                getId = { it.id }) {
                 RecommendCardWithOutSideText(
                     modifier = Modifier.animateItemPlacement(),
                     getSong = { it },
@@ -243,8 +256,7 @@ fun RecommendCardWithOutSideText(
             onShowDetail = onShowDetail
         )
         ExpendableTextCard(
-            title = song.name,
-            subTitle = song._artist
+            title = song.name, subTitle = song._artist
         )
     }
 }

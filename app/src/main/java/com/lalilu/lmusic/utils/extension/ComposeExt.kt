@@ -110,9 +110,20 @@ fun WindowSizeClass.isPad(): Boolean {
     }
 }
 
-@Composable
 fun ImageRequest.Builder.requirePalette(callback: (Palette) -> Unit): ImageRequest.Builder {
-    return transformations(remember { PaletteTransformation(callback = callback) })
+    var palette: Palette? = null
+    return this.transformations(PaletteTransformation { palette = it }).listener(
+        onSuccess = { _, result ->
+            val key = result.memoryCacheKey?.key ?: return@listener
+
+            if (palette != null) {
+                PaletteTransformation.resultCache.put(key, palette)
+            } else {
+                palette = PaletteTransformation.resultCache.get(key)
+            }
+
+            palette?.let { callback.invoke(it) }
+        })
 }
 
 @Composable
