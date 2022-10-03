@@ -34,6 +34,7 @@ import kotlinx.coroutines.isActive
 fun SongCard(
     modifier: Modifier = Modifier,
     index: Int,
+    serialNumber: String = "#$index",
     getSong: () -> LSong,
     loadDelay: () -> Long = { 0L },
     onSongSelected: (index: Int) -> Unit = { },
@@ -43,7 +44,7 @@ fun SongCard(
 
     val song = remember { getSong() }
     val titleText = remember(song) { song.name }
-    val artistText = remember(song) { "#${index + 1} ${song._artist}" }
+    val artistText = remember(song) { "$serialNumber ${song._artist}" }
     val durationText = remember(song) { TimeUtils.millis2String(song.durationMs, "mm:ss") }
 
     LaunchedEffect(Unit) {

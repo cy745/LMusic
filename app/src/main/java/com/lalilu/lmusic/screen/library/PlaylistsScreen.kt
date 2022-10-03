@@ -21,7 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.ToastUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmusic.datasource.entity.MPlaylist
-import com.lalilu.lmusic.screen.ScreenData
+import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.sort
 import com.lalilu.lmusic.screen.component.SmartContainer
@@ -38,6 +38,7 @@ fun PlaylistsScreen(
     val playlists by viewModel.playlists.observeAsState(initial = emptyList())
 
     val navController = LocalNavigatorHost.current
+    val navToPlaylistAction = ScreenActions.navToPlaylist()
     var sortByState by rememberDataSaverState("KEY_SORT_BY_PlaylistsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_PlaylistsScreen", true)
     val selectedItems = remember { emptyList<MPlaylist>().toMutableStateList() }
@@ -98,7 +99,7 @@ fun PlaylistsScreen(
                             selectedItems.remove(it)
                         else selectedItems.add(it)
                     } else {
-                        navController.navigate("${ScreenData.PlaylistsDetail.name}/${it.playlistId}")
+                        navToPlaylistAction.invoke(it.playlistId.toString())
                     }
                 },
                 onLongClick = {

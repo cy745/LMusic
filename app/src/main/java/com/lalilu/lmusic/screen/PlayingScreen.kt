@@ -29,7 +29,6 @@ import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
 import com.lalilu.ui.*
@@ -39,11 +38,10 @@ import com.lalilu.ui.internal.StateHelper
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
-    backPressedHelper: OnBackPressedHelper,
-    settingsViewModel: SettingsViewModel = hiltViewModel()
+    backPressedHelper: OnBackPressedHelper, settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val density = LocalDensity.current
-    val navController = LocalNavigatorHost.current
+    val navToSongAction = ScreenActions.navToSong()
     val statusBarsInsets = WindowInsets.statusBars
     val windowInsetsCompat = remember(statusBarsInsets) {
         WindowInsetsCompat.Builder().setInsets(
@@ -64,23 +62,20 @@ fun PlayingScreen(
             activity.setSupportActionBar(fmToolbar)
 
             val adapter = PlayingAdapter().apply {
-                onItemDragOrSwipedListener =
-                    object : PlayingAdapter.OnItemDragOrSwipedListener {
-                        override fun onDelete(song: LSong): Boolean {
-                            return LMusicBrowser.removeById(song.id)
-                        }
-
-                        override fun onAddToNext(song: LSong): Boolean {
-                            return LMusicBrowser.addToNext(song.id)
-                        }
+                onItemDragOrSwipedListener = object : PlayingAdapter.OnItemDragOrSwipedListener {
+                    override fun onDelete(song: LSong): Boolean {
+                        return LMusicBrowser.removeById(song.id)
                     }
+
+                    override fun onAddToNext(song: LSong): Boolean {
+                        return LMusicBrowser.addToNext(song.id)
+                    }
+                }
                 onItemClick = { id, _ ->
                     LMusicBrowser.playById(id)
                 }
                 onItemLongClick = { id, _ ->
-                    navController.navigate("${ScreenData.SongsDetail.name}/$id") {
-                        launchSingleTop = true
-                    }
+                    navToSongAction.invoke(id)
                     SmartModalBottomSheet.show()
                 }
             }

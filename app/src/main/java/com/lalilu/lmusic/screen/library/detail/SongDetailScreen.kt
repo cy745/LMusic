@@ -20,42 +20,39 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.screen.ScreenData
+import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
+import com.lalilu.lmusic.screen.component.card.ExpendableTextCard
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
 import com.lalilu.lmusic.screen.component.card.RecommendCard
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SongDetailScreen(
     song: LSong,
     networkDataViewModel: NetworkDataViewModel
 ) {
     val windowSize = LocalWindowSize.current
-    val navController = LocalNavigatorHost.current
+    val navToAlbumAction = ScreenActions.navToAlbum()
+    val navToNetworkMatchAction = ScreenActions.navToNetworkMatch()
+    val navToAddToPlaylistAction = ScreenActions.navToAddToPlaylist()
     val networkData by networkDataViewModel.getNetworkDataFlowByMediaId(song.id)
         .collectAsState(null)
 
     LaunchedEffect(song) {
         SmartBar.setExtraBar {
             SongDetailActionsBar(
-                onAddSongToPlaylist = {
-                    navController.navigate("${ScreenData.SongsAddToPlaylist.name}/${song.id}")
-                },
-                onSetSongToNext = {
-                    LMusicBrowser.addToNext(song.id)
-                },
-                onPlaySong = {
-                    LMusicBrowser.addAndPlay(song.id)
-                }
+                onAddSongToPlaylist = { navToAddToPlaylistAction.invoke(song.id) },
+                onSetSongToNext = { LMusicBrowser.addToNext(song.id) },
+                onPlaySong = { LMusicBrowser.addAndPlay(song.id) }
             )
         }
     }
@@ -98,7 +95,8 @@ fun SongDetailScreen(
                         modifier = Modifier
                             .padding(horizontal = 20.dp, vertical = 20.dp)
                             .width(intrinsicSize = IntrinsicSize.Min),
-                        shape = RoundedCornerShape(20.dp)
+                        shape = RoundedCornerShape(20.dp),
+                        onClick = { navToAlbumAction.invoke(it.id) }
                     ) {
                         Row(
                             modifier = Modifier
@@ -113,14 +111,10 @@ fun SongDetailScreen(
                                 getId = { it.id }
                             )
 
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                            ) {
-                                Text(text = it.name, style = MaterialTheme.typography.subtitle1)
-                                Text(text = it.name, style = MaterialTheme.typography.subtitle2)
-                            }
+                            ExpendableTextCard(
+                                title = it.name,
+                                subTitle = it.artistName ?: ""
+                            )
                         }
                     }
                 }
@@ -128,9 +122,7 @@ fun SongDetailScreen(
 
             item {
                 NetworkDataCard(
-                    onClick = {
-                        navController.navigate("${ScreenData.SongsMatchNetworkData.name}/${song.id}")
-                    },
+                    onClick = { navToNetworkMatchAction.invoke(song.id) },
                     mediaId = song.id
                 )
             }

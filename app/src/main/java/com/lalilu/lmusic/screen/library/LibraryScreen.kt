@@ -24,10 +24,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
@@ -36,7 +36,6 @@ import com.lalilu.lmusic.screen.component.card.RecommendCard
 import com.lalilu.lmusic.screen.component.card.RecommendCard2
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicRuntime
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -47,7 +46,6 @@ import kotlinx.coroutines.delay
 fun LibraryScreen(
     viewModel: LibraryViewModel
 ) {
-    val navController = LocalNavigatorHost.current
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
     val lastPlayedStack by viewModel.lastPlayedStack.observeAsState(emptyList())
     val recentlyAdded by viewModel.recentlyAdded.observeAsState(emptyList())
@@ -56,6 +54,8 @@ fun LibraryScreen(
     val currentPlaying by LMusicRuntime.currentPlayingLiveData.observeAsState()
     val currentIsPlaying by LMusicRuntime.currentIsPlayingLiveData.observeAsState(false)
 
+    val navToSongAction = ScreenActions.navToSongFromLibrary()
+
     val playSong = remember {
         { mediaId: String ->
             currentPlaying.takeIf { it != null && it.id == mediaId && currentIsPlaying }
@@ -63,21 +63,6 @@ fun LibraryScreen(
         }
     }
 
-    val showDetail = remember {
-        { mediaId: String ->
-            navController.navigate("${ScreenData.SongsDetail.name}/$mediaId") {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    //出栈的 BackStack 保存状态
-                    saveState = true
-                }
-                // 避免点击同一个 Item 时反复入栈
-                launchSingleTop = true
-
-                // 如果之前出栈时保存状态了，那么重新入栈时恢复状态
-                restoreState = true
-            }
-        }
-    }
 
     val isChecked = ScreenData.Library.isChecked?.value
     LaunchedEffect(isChecked) {
@@ -101,7 +86,7 @@ fun LibraryScreen(
                     getId = { it.id },
                     width = 250.dp,
                     height = 250.dp,
-                    onShowDetail = showDetail
+                    onShowDetail = navToSongAction
                 ) {
                     ExpendableTextCard(
                         title = it.name,
@@ -123,7 +108,7 @@ fun LibraryScreen(
                     getSong = { it },
                     isPlaying = (currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id),
                     onPlaySong = playSong,
-                    onShowDetail = showDetail
+                    onShowDetail = navToSongAction
                 )
             }
         }
@@ -142,7 +127,7 @@ fun LibraryScreen(
                     height = 125.dp,
                     isPlaying = (currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id),
                     onPlaySong = playSong,
-                    onShowDetail = showDetail
+                    onShowDetail = navToSongAction
                 )
             }
         }
@@ -156,7 +141,7 @@ fun LibraryScreen(
                     getId = { it.id },
                     width = 125.dp,
                     height = 250.dp,
-                    onShowDetail = showDetail
+                    onShowDetail = navToSongAction
                 ) {
                     ExpendableTextCard(
                         title = it.name,

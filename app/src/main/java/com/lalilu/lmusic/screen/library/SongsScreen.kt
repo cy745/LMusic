@@ -12,12 +12,10 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
-import com.lalilu.lmusic.screen.ScreenData
+import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.SongCard
 import com.lalilu.lmusic.service.LMusicRuntime
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.average
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -33,10 +31,10 @@ fun SongsScreen(
     val currentPlaying by LMusicRuntime.currentPlayingLiveData.observeAsState()
 
     val windowSize = LocalWindowSize.current
-    val haptic = LocalHapticFeedback.current
-    val navController = LocalNavigatorHost.current
     val gridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
+
+    val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
 
     val onSongSelected: (Int) -> Unit = remember(songs) {
         { index ->
@@ -44,22 +42,6 @@ fun SongsScreen(
                 items = songs.toMutableList(),
                 index = index
             )
-        }
-    }
-    val onSongShowDetail: (String) -> Unit = remember {
-        { mediaId ->
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navController.navigate("${ScreenData.SongsDetail.name}/$mediaId") {
-                popUpTo(ScreenData.Songs.name) {
-                    //出栈的 BackStack 保存状态
-                    saveState = true
-                }
-                // 避免点击同一个 Item 时反复入栈
-                launchSingleTop = true
-
-                // 如果之前出栈时保存状态了，那么重新入栈时恢复状态
-                restoreState = true
-            }
         }
     }
 
@@ -116,7 +98,7 @@ fun SongsScreen(
                     getSong = { item },
                     loadDelay = { 200L },
                     onSongSelected = onSongSelected,
-                    onSongShowDetail = onSongShowDetail
+                    onSongShowDetail = navToSongAction
                 )
             }
         }

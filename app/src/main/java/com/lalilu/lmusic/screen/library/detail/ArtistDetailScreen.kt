@@ -8,11 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LArtist
-import com.lalilu.lmusic.screen.ScreenData
+import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
 import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
@@ -20,7 +19,6 @@ import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.card.SongCard
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
@@ -31,9 +29,8 @@ fun ArtistDetailScreen(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val songs = artist.songs
-    val haptic = LocalHapticFeedback.current
     val windowSize = LocalWindowSize.current
-    val navController = LocalNavigatorHost.current
+    val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistDetailScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistDetailScreen", true)
 
@@ -43,13 +40,6 @@ fun ArtistDetailScreen(
                 items = songs.toMutableList(),
                 index = index
             )
-        }
-    }
-
-    val onSongShowDetail: (String) -> Unit = remember {
-        { mediaId ->
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navController.navigate("${ScreenData.SongsDetail.name}/$mediaId")
         }
     }
 
@@ -76,7 +66,7 @@ fun ArtistDetailScreen(
                 index = index,
                 getSong = { item },
                 onSongSelected = onSongSelected,
-                onSongShowDetail = onSongShowDetail
+                onSongShowDetail = navToSongAction
             )
         }
     }
