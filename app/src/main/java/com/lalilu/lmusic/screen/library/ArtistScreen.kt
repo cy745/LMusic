@@ -8,7 +8,6 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,26 +16,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.funny.data_saver.core.rememberDataSaverState
-import com.lalilu.lmusic.screen.ScreenData
+import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.component.SmartContainer
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
 @Composable
 fun ArtistScreen(
     libraryViewModel: LibraryViewModel
 ) {
+    val navToArtistAction = ScreenActions.navToArtist()
     val artists by libraryViewModel.artists.observeAsState(emptyList())
-    val navController = LocalNavigatorHost.current
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistScreen", true)
-
-    val onArtistSelected = remember {
-        { artistId: String ->
-            navController.navigate("${ScreenData.ArtistsDetail.name}/$artistId")
-        }
-    }
 
     SmartContainer.LazyColumn {
         artists.forEachIndexed { index, item ->
@@ -45,7 +37,7 @@ fun ArtistScreen(
                     index = index,
                     artistName = item.name,
                     songCount = item.songs.size,
-                    onClick = { onArtistSelected(item.name) }
+                    onClick = { navToArtistAction.invoke(item.name) }
                 )
             }
         }

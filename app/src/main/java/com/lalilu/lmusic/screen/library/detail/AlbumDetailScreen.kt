@@ -20,9 +20,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImagePainter
@@ -31,27 +29,22 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
-import com.lalilu.lmusic.screen.ScreenData
+import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.SongCard
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 fun AlbumDetailScreen(
-    album: LAlbum,
-    mainViewModel: MainViewModel = hiltViewModel()
+    album: LAlbum, mainViewModel: MainViewModel = hiltViewModel()
 ) {
+    val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
+
     val songs = album.songs
-    val haptic = LocalHapticFeedback.current
-    val windowSize = LocalWindowSize.current
-    val navController = LocalNavigatorHost.current
-    val sortedItems = remember { songs.toMutableStateList() }
     val title = album.name
-    val subTitle = album.name // todo AlbumArtist 补足
-        ?: stringResource(id = ScreenData.AlbumsDetail.subTitle)
+    val subTitle = album.artistName ?: ""
+    val sortedItems = remember { songs.toMutableStateList() }
 
     val onSongSelected: (Int) -> Unit = remember {
         { index: Int ->
@@ -59,13 +52,6 @@ fun AlbumDetailScreen(
                 items = songs.toMutableList(),
                 index = index
             )
-        }
-    }
-
-    val onSongShowDetail: (String) -> Unit = remember {
-        { mediaId ->
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            navController.navigate("${ScreenData.SongsDetail.name}/$mediaId")
         }
     }
 
@@ -120,9 +106,10 @@ fun AlbumDetailScreen(
         itemsIndexed(sortedItems) { index, item ->
             SongCard(
                 index = index,
+                serialNumber = "${item.track ?: ""} ${item.disc ?: ""}",
                 getSong = { item },
                 onSongSelected = onSongSelected,
-                onSongShowDetail = onSongShowDetail
+                onSongShowDetail = navToSongAction
             )
         }
     }

@@ -5,9 +5,15 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.navigation.NavController
+import androidx.navigation.NavOptionsBuilder
 import com.lalilu.R
 import com.lalilu.lmusic.screen.component.NavigateBar
 import com.lalilu.lmusic.screen.component.NavigateDetailBar
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 
 
 private val LibraryNavigateBar: @Composable () -> Unit = { NavigateBar() }
@@ -35,6 +41,66 @@ sealed class ComponentStrategy {
     data class Replace(val content: @Composable () -> Unit) : ComponentStrategy()
 }
 
+object ScreenActions {
+    @Composable
+    fun navToPlaylist(): (String) -> Unit {
+        return navigate(route = ScreenData.PlaylistsDetail.name)
+    }
+
+    @Composable
+    fun navToArtist(): (String) -> Unit {
+        return navigate(route = ScreenData.ArtistsDetail.name)
+    }
+
+    @Composable
+    fun navToAddToPlaylist(): (String) -> Unit {
+        return navigate(route = ScreenData.SongsAddToPlaylist.name)
+    }
+
+    @Composable
+    fun navToNetworkMatch(): (String) -> Unit {
+        return navigate(route = ScreenData.SongsMatchNetworkData.name)
+    }
+
+    @Composable
+    fun navToAlbum(): (String) -> Unit {
+        return navigate(route = ScreenData.AlbumsDetail.name) {
+            launchSingleTop = true
+        }
+    }
+
+    @Composable
+    fun navToSong(hapticType: HapticFeedbackType? = null): (String) -> Unit {
+        return navigate(route = ScreenData.SongsDetail.name, hapticType = hapticType) {
+            launchSingleTop = true
+        }
+    }
+
+    @Composable
+    fun navToSongFromLibrary(hapticType: HapticFeedbackType? = null): (String) -> Unit {
+        return navigate(route = ScreenData.SongsDetail.name, hapticType = hapticType) {
+            popUpTo(ScreenData.Library.name) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    @Composable
+    fun navigate(
+        route: String,
+        hapticType: HapticFeedbackType? = null,
+        builder: NavOptionsBuilder.(NavController) -> Unit = {}
+    ): (String) -> Unit {
+        val haptic = LocalHapticFeedback.current
+        val controller = LocalNavigatorHost.current
+        return remember {
+            {
+                hapticType?.let { type -> haptic.performHapticFeedback(type) }
+                controller.navigate("$route/$it", builder = { builder(controller) })
+            }
+        }
+    }
+}
 
 enum class ScreenData(
     @DrawableRes val icon: Int,
