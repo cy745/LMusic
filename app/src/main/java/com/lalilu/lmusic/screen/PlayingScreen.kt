@@ -24,20 +24,22 @@ import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
 import com.lalilu.lmusic.service.LMusicRuntime
+import com.lalilu.lmusic.utils.OnBackPressedHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
+import com.lalilu.ui.internal.StateHelper
 
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
+    backPressedHelper: OnBackPressedHelper,
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val density = LocalDensity.current
@@ -82,6 +84,12 @@ fun PlayingScreen(
                     SmartModalBottomSheet.show()
                 }
             }
+            backPressedHelper.callback = {
+                fmAppbarLayout.setExpanded(true)
+            }
+            behavior.addOnStateChangeListener { _, nowState ->
+                backPressedHelper.isEnabled = nowState == StateHelper.STATE_FULLY_EXPENDED
+            }
 
 //            val adapter = ComposeAdapter(
 //                onSwipeToLeft = { LMusicBrowser.addToNext(it.id) },
@@ -120,8 +128,8 @@ fun PlayingScreen(
 //                }
 //            })
             fmRecyclerView.adapter = adapter
-            fmRecyclerView.layoutManager = calculateExtraLayoutSpace(this.root.context, 500)
-            fmRecyclerView.setItemViewCacheSize(5)
+//            fmRecyclerView.layoutManager = calculateExtraLayoutSpace(this.root.context, 500)
+//            fmRecyclerView.setItemViewCacheSize(5)
 
             fmTopPic.palette.observe(activity, this::setPalette)
 

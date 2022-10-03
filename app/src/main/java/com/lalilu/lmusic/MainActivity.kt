@@ -27,6 +27,7 @@ import com.lalilu.lmusic.screen.ShowScreen
 import com.lalilu.lmusic.screen.component.SmartBar.SmartBarContent
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.utils.OnBackPressedHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import dagger.hilt.android.AndroidEntryPoint
@@ -71,6 +72,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
             this@MainActivity.moveTaskToBack(false)
         }
 
+        val backPressedHelper = OnBackPressedHelper()
+        onBackPressedDispatcher.addCallback(backPressedHelper)
+
         @OptIn(
             ExperimentalMaterial3WindowSizeClassApi::class,
             ExperimentalAnimationApi::class,
@@ -96,7 +100,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                                 }
                             )
                         },
-                        content = { PlayingScreen() }
+                        content = { PlayingScreen(backPressedHelper) }
                     )
                     ShowScreen()
                 }
