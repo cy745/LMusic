@@ -137,7 +137,11 @@ object SmartModalBottomSheet {
         } else {
             ModalBottomSheetLayout(
                 sheetState = scaffoldState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = if (isLandscape) {
+                    Modifier.aspectRatio(9f / 16f, true)
+                } else {
+                    Modifier.fillMaxSize()
+                },
                 sheetBackgroundColor = MaterialTheme.colors.background,
                 scrimColor = Color.Black.copy(alpha = 0.5f),
                 sheetShape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp),
