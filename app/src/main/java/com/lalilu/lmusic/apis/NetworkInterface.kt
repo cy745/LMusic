@@ -13,11 +13,26 @@ const val PLATFORM_NETEASE = 0
 const val PLATFORM_QQMUISC = 1
 const val PLATFORM_KUGOU = 2
 
-val PLATFORM_TEXT = mapOf(
-    PLATFORM_NETEASE to "163",
-    PLATFORM_QQMUISC to "QQ",
-    PLATFORM_KUGOU to "Kugou"
-)
+enum class NetworkSource(
+    val key: Int,
+    val text: String
+) {
+    UNKNOWN(-1, "unknown"),
+    NETEASE(PLATFORM_NETEASE, "163"),
+    QQMUISC(PLATFORM_QQMUISC, "QQ"),
+    KUGOU(PLATFORM_KUGOU, "Kugou");
+
+    companion object {
+        fun of(key: Int): NetworkSource {
+            return when (key) {
+                PLATFORM_NETEASE -> NETEASE
+                PLATFORM_QQMUISC -> QQMUISC
+                PLATFORM_KUGOU -> KUGOU
+                else -> UNKNOWN
+            }
+        }
+    }
+}
 
 /**
  * 统一定义接口返回的歌词对象应该具有的属性

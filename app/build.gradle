@@ -6,6 +6,10 @@ plugins {
     id 'com.google.devtools.ksp' version '1.7.10-1.0.6'
 }
 
+def keystorePropsFile = rootProject.file("keystore.properties")
+def keystoreProps = new Properties()
+keystoreProps.load((new FileInputStream(keystorePropsFile)))
+
 android {
     compileSdkVersion 33
 
@@ -20,7 +24,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 33
         versionCode 38
-        versionName "1.4.16"
+        versionName "1.4.16_${releaseTimeForVersion()}"
         vectorDrawables {
             useSupportLibrary true
         }
@@ -33,12 +37,22 @@ android {
         jvmTarget = "1.8"
     }
 
+    signingConfigs {
+        release {
+            storeFile file(keystoreProps['storeFile'])
+            storePassword keystoreProps['storePassword']
+            keyAlias keystoreProps['keyAlias']
+            keyPassword keystoreProps['keyPassword']
+        }
+    }
+
     buildTypes {
         release {
             resValue "string", "app_name", "@string/app_name_release"
 
             minifyEnabled true
             shrinkResources true
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
 
@@ -60,14 +74,18 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion compose_compiler_version
     }
-    packagingOptions {
-        resources {
-            excludes += ['META-INF/CONTRIBUTORS.md', 'META-INF/LICENSE.md']
-        }
-    }
+//    packagingOptions {
+//        resources {
+//            excludes += ['META-INF/CONTRIBUTORS.md', 'META-INF/LICENSE.md']
+//        }
+//    }
     lint {
         checkDependencies true
     }
+}
+
+static def releaseTimeForVersion() {
+    return new Date().format("MMdd_HHmm", TimeZone.getTimeZone("GMT+08:00"))
 }
 
 static def releaseTime() {
@@ -146,7 +164,7 @@ dependencies {
     // https://gitee.com/simplepeng/SpiderMan
     // Apache-2.0 License
     // 闪退崩溃日志捕获库
-//    implementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
+    implementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
 //    debugImplementation 'com.github.markzhai:blockcanary-android:1.5.0'
 
