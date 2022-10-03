@@ -80,7 +80,11 @@ class LMusicNotificationImpl constructor(
      */
     fun cancel() {
         synchronizer.getCount()
-        mContext.stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            mContext.stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        } else {
+            mContext.stopForeground(true)
+        }
         notificationManager.cancelAll()
     }
 
