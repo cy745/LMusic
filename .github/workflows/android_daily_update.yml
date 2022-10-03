@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-      uses: actions/checkout@v2.4.2
+        uses: actions/checkout@v2.4.2
         with:
           repository: cy745/lmusic
           ref: rebuild_screen
