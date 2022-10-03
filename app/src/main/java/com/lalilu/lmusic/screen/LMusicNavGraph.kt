@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -27,7 +28,7 @@ import com.lalilu.lmusic.screen.library.*
 import com.lalilu.lmusic.screen.library.detail.*
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.isPad
+import com.lalilu.lmusic.utils.extension.rememberIsPad
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
@@ -45,7 +46,7 @@ fun LMusicNavGraph(
     val configuration = LocalConfiguration.current
     val currentRoute = navHostController.currentBackStackEntryAsState().value
 
-    val isPad = windowSize.isPad()
+    val isPad by windowSize.rememberIsPad()
     val isLandscape = remember(configuration.orientation) {
         configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     }

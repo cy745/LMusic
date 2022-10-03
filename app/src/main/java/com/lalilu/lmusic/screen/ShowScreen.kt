@@ -40,13 +40,13 @@ import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.PlayMode
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.isPad
+import com.lalilu.lmusic.utils.extension.rememberIsPad
 
 @Composable
 fun ShowScreen() {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
-    val isPad = windowSize.isPad()
+    val isPad by windowSize.rememberIsPad()
 
     val visible = remember(isPad, configuration.orientation) {
         !isPad && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE

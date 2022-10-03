@@ -22,7 +22,7 @@ import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.R
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.isPad
+import com.lalilu.lmusic.utils.extension.rememberIsPad
 
 @Composable
 @OptIn(ExperimentalAnimationApi::class)
@@ -39,13 +39,15 @@ fun GuidingScreen(
         GuidingNavGraph.fromRoute(it)
     }
 
+    val isPad by windowSize.rememberIsPad()
+
     Surface(color = MaterialTheme.colors.background) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Column(
-                modifier = if (windowSize.isPad()) {
+                modifier = if (isPad) {
                     Modifier.width(screenHeightDp / 2f)
                 } else {
                     Modifier.fillMaxWidth()
