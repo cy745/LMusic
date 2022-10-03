@@ -25,12 +25,12 @@ import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
-import com.lalilu.lmusic.screen.component.card.ExpendableTextCard
 import com.lalilu.lmusic.screen.component.card.NetworkDataCard
 import com.lalilu.lmusic.screen.component.card.RecommendCard
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
@@ -111,10 +111,22 @@ fun SongDetailScreen(
                                 getId = { it.id }
                             )
 
-                            ExpendableTextCard(
-                                title = it.name,
-                                subTitle = it.artistName ?: ""
-                            )
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = it.name,
+                                    style = MaterialTheme.typography.subtitle1,
+                                    color = dayNightTextColor()
+                                )
+                                it.artistName?.let { it1 ->
+                                    Text(
+                                        text = it1,
+                                        style = MaterialTheme.typography.subtitle2,
+                                        color = dayNightTextColor(0.5f)
+                                    )
+                                }
+                            }
                         }
                     }
                 }

@@ -34,7 +34,8 @@ fun AlbumsScreen(
             if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 3 else 2
         ),
         verticalArrangement = Arrangement.spacedBy(10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        contentPaddingForHorizontal = 10.dp
     ) {
         items(items = albums.toList(), key = { it.id }) {
             AlbumCard(
