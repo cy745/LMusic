@@ -6,19 +6,14 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asLiveData
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.isPad
 import com.lalilu.lmusic.utils.extension.measure
+import com.lalilu.lmusic.utils.recomposeHighlighter
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
@@ -35,24 +30,23 @@ object SmartBar {
         .asLiveData()
 
     @Composable
-    @OptIn(ExperimentalAnimationApi::class)
-    fun BoxScope.SmartBarContent(translationY: Float, alpha: Float) {
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalLayoutApi::class)
+    fun BoxScope.SmartBarContent(
+        modifier: Modifier = Modifier
+    ) {
         val density = LocalDensity.current
-        val windowSize = LocalWindowSize.current
-        val hasContent = mainBar.value != null || extraBar.value != null
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        val isPad = windowSize.isPad()
+        val hasContent by remember(mainBar, extraBar) {
+            derivedStateOf { mainBar.value != null || extraBar.value != null }
+        }
 
         LaunchedEffect(statusBarHeight) {
             statusBarHeightDp.emit(statusBarHeight)
         }
 
         Surface(
-            modifier = Modifier
-                .graphicsLayer {
-                    this.translationY = if (isPad) 0f else translationY
-                    this.alpha = if (isPad) 1f else alpha
-                }
+            modifier = modifier
+                .recomposeHighlighter()
                 .align(Alignment.BottomCenter)
                 .imePadding()
                 .fillMaxWidth(),
@@ -74,8 +68,8 @@ object SmartBar {
                 AnimatedVisibility(visible = extraBar.value != null) {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
-                AnimatedContent(targetState = mainBar.value) {
-                    it?.invoke()
+                AnimatedContent(targetState = WindowInsets.isImeVisible to mainBar.value) { pair ->
+                    pair.second.takeIf { !pair.first }?.invoke()
                 }
                 AnimatedVisibility(visible = mainBar.value != null) {
                     Spacer(modifier = Modifier.height(10.dp))

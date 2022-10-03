@@ -59,17 +59,22 @@ object SmartModalBottomSheet {
         val context = LocalContext.current
         val windowSize = LocalWindowSize.current
         val configuration = LocalConfiguration.current
+
         val offset = scaffoldState.offset.value
         val isDarkModeNow = isSystemInDarkTheme()
         val statusBarHeight = rememberStatusBarHeight()
         val systemUiController = rememberSystemUiController()
-        val isExpended = remember(offset, statusBarHeight) { offset < statusBarHeight }
-        val isVisible = scaffoldState.isVisible || scaffoldState.isAnimationRunning
         val offsetRoundedCorner = LocalDensity.current.run { 15.dp.toPx() }
+        val isPad by windowSize.rememberIsPad()
 
-        val isPad = windowSize.isPad()
-        val isLandscape = remember(configuration.orientation) {
-            configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isExpended by remember(offset, statusBarHeight) {
+            derivedStateOf { offset < statusBarHeight }
+        }
+        val isVisible by remember(scaffoldState.isVisible, scaffoldState.isAnimationRunning) {
+            derivedStateOf { scaffoldState.isVisible || scaffoldState.isAnimationRunning }
+        }
+        val isLandscape by remember(configuration.orientation) {
+            derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
         }
 
         val screenHeightDp = configuration.screenHeightDp.dp +
@@ -78,7 +83,7 @@ object SmartModalBottomSheet {
 
         /**
          * 监听isVisible变化，通过BottomSheet的可见性控制navController是否处理返回键事件
-         * 若 [isPad] 为平板设备，则必须处理返回键事件
+         * 若 [rememberIsPad] 为平板设备，则必须处理返回键事件
          */
         LaunchedEffect(isVisible, isPad) {
             navController.enableOnBackPressed(isVisible || isPad)

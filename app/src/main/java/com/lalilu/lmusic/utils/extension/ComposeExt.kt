@@ -9,6 +9,8 @@ import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -103,10 +105,12 @@ fun SwipeProgress<ModalBottomSheetValue>.watchForOffset(
  * 依据是：平板没有一条边会是Compact的
  */
 @Composable
-fun WindowSizeClass.isPad(): Boolean {
+fun WindowSizeClass.rememberIsPad(): State<Boolean> {
     return remember(widthSizeClass, heightSizeClass) {
-        widthSizeClass != WindowWidthSizeClass.Compact
-                && heightSizeClass != WindowHeightSizeClass.Compact
+        derivedStateOf {
+            widthSizeClass != WindowWidthSizeClass.Compact
+                    && heightSizeClass != WindowHeightSizeClass.Compact
+        }
     }
 }
 
