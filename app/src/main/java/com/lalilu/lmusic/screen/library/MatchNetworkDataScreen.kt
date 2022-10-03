@@ -23,7 +23,7 @@ import com.lalilu.R
 import com.lalilu.databinding.FragmentInputerBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.apis.NetworkSong
-import com.lalilu.lmusic.apis.PLATFORM_TEXT
+import com.lalilu.lmusic.apis.NetworkSource
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
@@ -156,7 +156,7 @@ fun LyricCard(
     duration = TimeUtils.millis2String(
         song.songDuration,
         "mm:ss"
-    ) + " " + PLATFORM_TEXT.getOrDefault(song.fromPlatform, ""),
+    ) + " " + NetworkSource.of(song.fromPlatform).text,
     selected = selected,
     onClick = onClick
 )

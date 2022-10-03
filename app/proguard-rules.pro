@@ -38,6 +38,20 @@
 -dontwarn javax.imageio.stream.ImageInputStream
 -dontwarn javax.imageio.stream.ImageOutputStream
 
+-dontwarn org.bouncycastle.jsse.BCSSLParameters
+-dontwarn org.bouncycastle.jsse.BCSSLSocket
+-dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
+-dontwarn org.conscrypt.Conscrypt$Version
+-dontwarn org.conscrypt.Conscrypt
+-dontwarn org.conscrypt.ConscryptHostnameVerifier
+-dontwarn org.openjsse.javax.net.ssl.SSLParameters
+-dontwarn org.openjsse.javax.net.ssl.SSLSocket
+-dontwarn org.openjsse.net.ssl.OpenJSSE
+
+-dontwarn org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
+-dontwarn org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
+-dontwarn org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages$Extension
+
 -keep class com.simple.spiderman.** { *; }
 -keepnames class com.simple.spiderman.** { *; }
 -keep public class * extends android.app.Activity

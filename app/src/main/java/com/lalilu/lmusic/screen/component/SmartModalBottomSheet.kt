@@ -86,6 +86,8 @@ object SmartModalBottomSheet {
          * 若 [rememberIsPad] 为平板设备，则必须处理返回键事件
          */
         LaunchedEffect(isVisible, isPad) {
+            // [enableOnBackPressed] 被 gradle 认为是 RestrictedApi
+            //noinspection RestrictedApi
             navController.enableOnBackPressed(isVisible || isPad)
         }
 
