@@ -24,7 +24,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 33
         versionCode 38
-        versionName "1.4.16_${releaseTimeForVersion()}"
+        versionName "1.5.0"
         vectorDrawables {
             useSupportLibrary true
         }
@@ -82,10 +82,6 @@ android {
     lint {
         checkDependencies true
     }
-}
-
-static def releaseTimeForVersion() {
-    return new Date().format("MMdd_HHmm", TimeZone.getTimeZone("GMT+08:00"))
 }
 
 static def releaseTime() {

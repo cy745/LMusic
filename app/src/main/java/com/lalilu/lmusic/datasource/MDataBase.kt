@@ -21,7 +21,7 @@ import com.lalilu.lmusic.datasource.entity.SongInPlaylist
         SongInPlaylist::class,
         PlayHistory::class
     ],
-    version = 12,
+    version = 11,
     exportSchema = false
 )
 @TypeConverters(
