@@ -12,8 +12,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.repository.HistoryDataStore
-import com.lalilu.lmusic.utils.extension.getNextOf
-import com.lalilu.lmusic.utils.extension.move
+import com.lalilu.lmusic.service.runtime.LMusicRuntime
 
 object LMusicBrowser : DefaultLifecycleObserver {
     private var controller: MediaControllerCompat? = null
@@ -31,15 +30,7 @@ object LMusicBrowser : DefaultLifecycleObserver {
     }
 
     fun setSongs(songs: List<LSong>, song: LSong? = null) {
-        if (song != null && songs.contains(song)) {
-            LMusicRuntime.currentPlaying = song
-        }
-        LMusicRuntime.originPlaylist = songs
-    }
-
-    fun playSong(song: LSong?) {
-        LMusicRuntime.currentPlaying = song
-        reloadAndPlay()
+        LMusicRuntime.load(songs = songs, playing = song)
     }
 
     override fun onStart(owner: LifecycleOwner) {
@@ -68,40 +59,27 @@ object LMusicBrowser : DefaultLifecycleObserver {
     }
 
     fun addToNext(mediaId: String): Boolean {
-        val nowIndex = LMusicRuntime.originPlaylist.indexOfFirst { it.id == mediaId }
-        val currentIndex = LMusicRuntime.originPlaylist.indexOf(LMusicRuntime.currentPlaying)
-        if (currentIndex >= 0 && (currentIndex == nowIndex || (currentIndex + 1) == nowIndex)) return false
+        val nowIndex = LMusicRuntime.indexOfSong(mediaId = mediaId)
+        val currentIndex = LMusicRuntime.getPlayingIndex()
+        if (currentIndex >= 0 && (currentIndex == nowIndex || (currentIndex + 1) == nowIndex))
+            return false
 
         if (nowIndex >= 0) {
-            LMusicRuntime.originPlaylist = LMusicRuntime.originPlaylist
-                .move(nowIndex, currentIndex)
+            LMusicRuntime.move(nowIndex, currentIndex)
         } else {
             val item = Library.getSongOrNull(mediaId) ?: return false
-            LMusicRuntime.originPlaylist = LMusicRuntime.originPlaylist
-                .toMutableList()
-                .apply {
-                    add(currentIndex + 1, item)
-                }
+            LMusicRuntime.add(currentIndex + 1, item)
         }
         return true
     }
 
-    private var lastRemovedIndex: Int = -1
-    private var lastRemovedItem: LSong? = null
-
     fun removeById(mediaId: String): Boolean {
         return try {
-            lastRemovedIndex = LMusicRuntime.originPlaylist.indexOfFirst { it.id == mediaId }
-            if (mediaId == LMusicRuntime.currentPlaying?.id) {
-                LMusicRuntime.currentPlaying = LMusicRuntime.originPlaylist
-                    .getNextOf(LMusicRuntime.currentPlaying, true)
-                reloadAndPlay()
+            if (mediaId == LMusicRuntime.getPlayingId()) {
+                skipToNext()
             }
-            LMusicRuntime.originPlaylist = LMusicRuntime.originPlaylist
-                .toMutableList()
-                .apply {
-                    lastRemovedItem = removeAt(lastRemovedIndex)
-                }
+            val index = LMusicRuntime.indexOfSong(mediaId)
+            LMusicRuntime.removeAt(index)
             true
         } catch (e: Exception) {
             false
@@ -115,12 +93,12 @@ object LMusicBrowser : DefaultLifecycleObserver {
             controller = MediaControllerCompat(context, browser.sessionToken)
 
             // 若当前播放列表为空，则尝试提取历史数据填充
-            if (LMusicRuntime.originPlaylist.isEmpty()) {
+            if (LMusicRuntime.isEmpty()) {
                 historyStore?.apply {
-                    val songs = lastPlayedListIdsKey.get().mapNotNull {
-                        Library.getSongOrNull(it)
-                    }
-                    val song = lastPlayedIdKey.get()?.let { Library.getSongOrNull(it) }
+                    val songs = lastPlayedListIdsKey.get()
+                        .mapNotNull { Library.getSongOrNull(it) }
+                    val song = lastPlayedIdKey.get()
+                        ?.let { Library.getSongOrNull(it) }
                     setSongs(songs, song)
                 }
             }

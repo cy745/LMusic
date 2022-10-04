@@ -15,7 +15,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.card.SongCard
-import com.lalilu.lmusic.service.LMusicRuntime
+import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.average
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -28,7 +28,7 @@ fun SongsScreen(
     libraryViewModel: LibraryViewModel,
 ) {
     val songs by libraryViewModel.songs.observeAsState(emptyList())
-    val currentPlaying by LMusicRuntime.currentPlayingLiveData.observeAsState()
+    val currentPlaying by LMusicRuntime.playingLiveData.observeAsState()
 
     val windowSize = LocalWindowSize.current
     val gridState = rememberLazyGridState()

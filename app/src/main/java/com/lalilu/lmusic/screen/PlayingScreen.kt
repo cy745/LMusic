@@ -23,7 +23,7 @@ import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
-import com.lalilu.lmusic.service.LMusicRuntime
+import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.OnBackPressedHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
@@ -170,14 +170,14 @@ fun PlayingScreen(
             maSeekBar.cancelListeners.add(OnSeekBarCancelListener {
                 HapticUtils.haptic(this@apply.root)
             })
-            LMusicRuntime.currentPlaylistLiveData.observe(activity) {
+            LMusicRuntime.songsLiveData.observe(activity) {
                 adapter.setDiffNewData(it.toMutableList())
             }
-            LMusicRuntime.currentPlayingLiveData.observe(activity) {
+            LMusicRuntime.playingLiveData.observe(activity) {
                 maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
                 song = it
             }
-            LMusicRuntime.currentPositionLiveData.observe(activity) {
+            LMusicRuntime.positionLiveData.observe(activity) {
                 maSeekBar.updateValue(it.toFloat())
                 fmLyricViewX.updateTime(it)
             }

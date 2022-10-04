@@ -8,7 +8,7 @@ import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
-import com.lalilu.lmusic.service.LMusicRuntime
+import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
