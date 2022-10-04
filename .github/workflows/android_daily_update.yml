@@ -56,6 +56,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: "contains(github.event.head_commit.message, '#release')"
         with:
+          tag_name: Beta Release
           files: |
             ${{ github.workspace }}/app/build/outputs/apk/release/*.apk
             ${{ github.workspace }}/app/build/outputs/apk/debug/*.apk
