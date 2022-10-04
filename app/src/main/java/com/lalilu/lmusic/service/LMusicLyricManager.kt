@@ -6,6 +6,7 @@ import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.CachedFlow
 import com.lalilu.lmusic.utils.extension.UpdatableFlow
 import com.lalilu.lmusic.utils.extension.toCachedFlow
@@ -50,7 +51,7 @@ object LMusicLyricManager : CoroutineScope {
     private const val LYRIC_EXIST = 1
 
     val currentLyric: UpdatableFlow<Pair<String, String?>?> =
-        LMusicRuntime.currentPlayingFlow.mapLatest { item ->
+        LMusicRuntime.playingFlow.mapLatest { item ->
             val song = item?.let { Library.getSongOrNull(it.id) } ?: return@mapLatest null
             getLyric(song)
         }.toUpdatableFlow()

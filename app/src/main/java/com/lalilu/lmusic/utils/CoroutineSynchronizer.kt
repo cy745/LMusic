@@ -12,6 +12,7 @@ class CoroutineSynchronizer {
 
     fun getCount(): Long = synchronized(this::class) {
         counter += 1
+        counter %= 10000
         counter
     }
 

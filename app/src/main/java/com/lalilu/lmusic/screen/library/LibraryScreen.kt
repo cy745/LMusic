@@ -35,7 +35,7 @@ import com.lalilu.lmusic.screen.component.card.ExpendableTextCard
 import com.lalilu.lmusic.screen.component.card.RecommendCard
 import com.lalilu.lmusic.screen.component.card.RecommendCard2
 import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.service.LMusicRuntime
+import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -51,8 +51,8 @@ fun LibraryScreen(
     val recentlyAdded by viewModel.recentlyAdded.observeAsState(emptyList())
     val randomRecommends = remember { Library.getSongs(10, true) }
 
-    val currentPlaying by LMusicRuntime.currentPlayingLiveData.observeAsState()
-    val currentIsPlaying by LMusicRuntime.currentIsPlayingLiveData.observeAsState(false)
+    val currentPlaying by LMusicRuntime.playingLiveData.observeAsState()
+    val currentIsPlaying by LMusicRuntime.isPlayingLiveData.observeAsState(false)
 
     val navToSongAction = ScreenActions.navToSongFromLibrary()
 

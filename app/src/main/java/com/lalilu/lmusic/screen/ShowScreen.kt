@@ -11,8 +11,8 @@ import androidx.compose.material.IconToggleButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +36,7 @@ import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.service.LMusicRuntime
+import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.PlayMode
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
@@ -53,7 +53,7 @@ fun ShowScreen() {
     }
 
     if (visible) {
-        val song by LMusicRuntime.currentPlayingFlow.collectAsState()
+        val song by LMusicRuntime.playingLiveData.observeAsState()
 
         Box(
             modifier = Modifier
@@ -188,7 +188,7 @@ fun SongDetailPanel(
 
 @Composable
 fun ControlPanel() {
-    val isPlaying = LMusicRuntime.currentIsPlayingFlow.collectAsState()
+    val isPlaying = LMusicRuntime.isPlayingLiveData.observeAsState(false)
     var playMode by rememberDataSaverState(
         Config.KEY_SETTINGS_PLAY_MODE, Config.DEFAULT_SETTINGS_PLAY_MODE
     )
