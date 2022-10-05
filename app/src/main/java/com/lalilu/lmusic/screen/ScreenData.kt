@@ -132,12 +132,6 @@ enum class ScreenData(
         icon = R.drawable.ic_play_list_line,
         title = R.string.destination_label_playlists,
         subTitle = R.string.destination_subtitle_playlists,
-        mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
-    ),
-    Artists(
-        icon = R.drawable.ic_user_line,
-        title = R.string.destination_label_artist,
-        subTitle = R.string.destination_subtitle_artist,
         showNavigateButton = true,
         mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
     ),
@@ -145,6 +139,13 @@ enum class ScreenData(
         icon = R.drawable.ic_album_fill,
         title = R.string.destination_label_albums,
         subTitle = R.string.destination_subtitle_albums,
+        showNavigateButton = true,
+        mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
+    ),
+    Artists(
+        icon = R.drawable.ic_user_line,
+        title = R.string.destination_label_artist,
+        subTitle = R.string.destination_subtitle_artist,
         showNavigateButton = true,
         mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
     ),

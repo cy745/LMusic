@@ -17,37 +17,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.ToastUtils
-import com.funny.data_saver.core.rememberDataSaverState
-import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.screen.ScreenActions
-import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
-import com.lalilu.lmusic.screen.bean.sort
 import com.lalilu.lmusic.screen.component.SmartContainer
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @Composable
 fun PlaylistsScreen(
-    viewModel: PlaylistsViewModel = hiltViewModel(),
-    isAddingSongToPlaylist: Boolean = false,
-    mediaIds: List<String> = emptyList()
+    viewModel: PlaylistsViewModel,
+    libraryViewModel: LibraryViewModel
 ) {
     val showDialog = remember { mutableStateOf(false) }
-    val playlists by viewModel.playlists.observeAsState(initial = emptyList())
+    val playlists by viewModel.playlistsLiveData.observeAsState(initial = emptyList())
 
-    val navController = LocalNavigatorHost.current
     val navToPlaylistAction = ScreenActions.navToPlaylist()
-    var sortByState by rememberDataSaverState("KEY_SORT_BY_PlaylistsScreen", SORT_BY_TIME)
-    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_PlaylistsScreen", true)
-    val selectedItems = remember { emptyList<MPlaylist>().toMutableStateList() }
-    val sortedItems = remember(sortByState, sortDesc, playlists) {
-        sort(sortByState, sortDesc, playlists.toMutableStateList(),
-            getTextField = { it.playlistTitle },
-            getTimeField = { it.playlistCreateTime.time }
-        )
-    }
+//    var sortByState by rememberDataSaverState("KEY_SORT_BY_PlaylistsScreen", SORT_BY_TIME)
+//    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_PlaylistsScreen", true)
+//    val selectedItems = remember { emptyList<MPlaylist>().toMutableStateList() }
+//    val sortedItems = remember(sortByState, sortDesc, playlists) {
+//        sort(sortByState, sortDesc, playlists.toMutableStateList(),
+//            getTextField = { it.playlistTitle },
+//            getTimeField = { it.playlistCreateTime.time }
+//        )
+//    }
 
 //        NavigatorHeaderWithButtons(
 //            route = if (isAddingSongToPlaylist) MainScreenData.SongsAddToPlaylist else MainScreenData.Playlists
@@ -89,26 +82,26 @@ fun PlaylistsScreen(
 //        }
     @OptIn(ExperimentalFoundationApi::class)
     SmartContainer.LazyColumn {
-        items(sortedItems) {
+        items(items = playlists) {
             PlaylistCard(
-                title = it.playlistTitle,
+                title = it.name,
                 modifier = Modifier.animateItemPlacement(),
                 onClick = {
-                    if (isAddingSongToPlaylist) {
-                        if (selectedItems.contains(it))
-                            selectedItems.remove(it)
-                        else selectedItems.add(it)
-                    } else {
-                        navToPlaylistAction.invoke(it.playlistId.toString())
-                    }
+//                    if (isAddingSongToPlaylist) {
+//                        if (selectedItems.contains(it))
+//                            selectedItems.remove(it)
+//                        else selectedItems.add(it)
+//                    } else {
+                    navToPlaylistAction.invoke(it.id)
+//                    }
                 },
                 onLongClick = {
-                    if (selectedItems.contains(it)) {
-                        selectedItems.remove(it)
-                    }
-                    viewModel.removePlaylist(it)
+//                    if (selectedItems.contains(it)) {
+//                        selectedItems.remove(it)
+//                    }
+//                    viewModel.removePlaylist(it)
                 },
-                selected = selectedItems.contains(it)
+                selected = false
             )
         }
     }

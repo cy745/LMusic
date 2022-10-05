@@ -1,22 +1,19 @@
 package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.lalilu.lmusic.datasource.MDataBase
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.datasource.entity.SongInPlaylist
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class PlaylistsViewModel @Inject constructor(
-//    private val mediaSource: MMediaSource,
-    private val dataBase: MDataBase
-) : ViewModel() {
-    val playlists = dataBase.playlistDao().getAllLiveDataSortByTime()
+class PlaylistsViewModel @Inject constructor() : ViewModel() {
+    val playlistsLiveData = Library.getPlaylistFlow().asLiveData(viewModelScope.coroutineContext)
 
 //    suspend fun getSongsByPlaylistId(playlistId: Long): List<MediaItem> =
 //        withContext(Dispatchers.IO) {
@@ -27,19 +24,14 @@ class PlaylistsViewModel @Inject constructor(
 //                }
 //        }
 
-    suspend fun getPlaylistById(playlistId: Long): MPlaylist? =
-        withContext(Dispatchers.IO) {
-            return@withContext dataBase.playlistDao().getById(playlistId)
-        }
-
     fun createNewPlaylist(title: String? = null) = viewModelScope.launch(Dispatchers.IO) {
-        dataBase.playlistDao().save(
-            MPlaylist(playlistTitle = title ?: "空歌单")
-        )
+//        dataBase.playlistDao().save(
+//            MPlaylist(playlistTitle = title ?: "空歌单")
+//        )
     }
 
     fun removePlaylist(playlist: MPlaylist) = viewModelScope.launch(Dispatchers.IO) {
-        dataBase.playlistDao().delete(playlist)
+//        dataBase.playlistDao().delete(playlist)
     }
 
     fun copyCurrentPlayingPlaylist() = viewModelScope.launch(Dispatchers.IO) {
@@ -63,6 +55,5 @@ class PlaylistsViewModel @Inject constructor(
                     SongInPlaylist(playlistId = playlistId, mediaId = mediaId)
                 }
             }
-            dataBase.songInPlaylistDao().save(songInPlaylist)
         }
 }
