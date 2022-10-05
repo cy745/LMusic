@@ -32,15 +32,17 @@ import com.lalilu.lmusic.utils.extension.rememberIsPad
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
+import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @ExperimentalAnimationApi
 @Composable
 @ExperimentalMaterialApi
 fun LMusicNavGraph(
     navHostController: NavHostController = LocalNavigatorHost.current,
-    networkDataViewModel: NetworkDataViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel = hiltViewModel(),
     libraryViewModel: LibraryViewModel = hiltViewModel(),
-    mainViewModel: MainViewModel = hiltViewModel()
+    playlistsViewModel: PlaylistsViewModel = hiltViewModel(),
+    networkDataViewModel: NetworkDataViewModel = hiltViewModel()
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
@@ -116,7 +118,7 @@ fun LMusicNavGraph(
         composable(
             route = ScreenData.Playlists.name
         ) {
-            PlaylistsScreen()
+            PlaylistsScreen(playlistsViewModel, libraryViewModel)
         }
 
         composable(
@@ -167,20 +169,8 @@ fun LMusicNavGraph(
 
             mediaIds?.takeIf { it.isNotEmpty() }?.let {
                 PlaylistsScreen(
-                    isAddingSongToPlaylist = true, mediaIds = it
-                )
-            }
-        }
-
-        composable(
-            route = "${ScreenData.SongsAddToPlaylist.name}/{mediaId}",
-            arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val mediaId = backStackEntry.arguments?.getString("mediaId")
-
-            mediaId?.let {
-                PlaylistsScreen(
-                    isAddingSongToPlaylist = true, mediaIds = listOf(it)
+                    viewModel = playlistsViewModel, libraryViewModel = libraryViewModel
+//                    isAddingSongToPlaylist = true, mediaIds = it
                 )
             }
         }
