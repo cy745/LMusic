@@ -1,17 +1,24 @@
 package com.lalilu.lmusic.screen.component.card
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -34,18 +41,19 @@ import kotlinx.coroutines.isActive
 fun SongCard(
     modifier: Modifier = Modifier,
     index: Int,
-    serialNumber: String = "#$index",
+    serialNumber: String = "#${index + 1}",
     getSong: () -> LSong,
     loadDelay: () -> Long = { 0L },
-    onSongSelected: (index: Int) -> Unit = { },
-    onSongShowDetail: (mediaId: String) -> Unit = { }
+    getIsSelected: (LSong) -> Boolean = { false },
+    onItemClick: (song: LSong) -> Unit = { },
+    onItemLongClick: (song: LSong) -> Unit = { },
+    onItemImageClick: (song: LSong) -> Unit = { },
+    onItemImageLongClick: (song: LSong) -> Unit = { }
 ) {
-    var hasLrc by remember { mutableStateOf(false) }
-
     val song = remember { getSong() }
-    val titleText = remember(song) { song.name }
-    val artistText = remember(song) { "$serialNumber ${song._artist}" }
-    val durationText = remember(song) { TimeUtils.millis2String(song.durationMs, "mm:ss") }
+    var hasLrc by remember { mutableStateOf(false) }
+    val bgColor by animateColorAsState(if (getIsSelected(song)) dayNightTextColor(0.15f) else Color.Transparent)
+    val interaction = remember { MutableInteractionSource() }
 
     LaunchedEffect(Unit) {
         delay(loadDelay())
@@ -58,13 +66,15 @@ fun SongCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .padding(horizontal = 10.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(color = bgColor)
             .combinedClickable(
-                onClick = { onSongSelected(index) },
-                onLongClick = { onSongShowDetail(song.id) })
-            .padding(
-                horizontal = 20.dp,
-                vertical = 10.dp
-            ),
+                interactionSource = interaction,
+                indication = rememberRipple(),
+                onClick = { onItemClick(song) },
+                onLongClick = { onItemLongClick(song) })
+            .padding(vertical = 8.dp, horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(20.dp)
     ) {
@@ -79,10 +89,11 @@ fun SongCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = titleText,
-                    fontSize = 16.sp,
-                    letterSpacing = 0.05.em,
+                    text = song.name,
+//                    fontSize = 16.sp,
+//                    letterSpacing = 0.05.em,
                     color = dayNightTextColor(),
+                    style = MaterialTheme.typography.subtitle1,
                     modifier = Modifier.weight(1f)
                 )
                 Row(
@@ -115,14 +126,15 @@ fun SongCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = artistText,
+                    text = "$serialNumber ${song._artist}",
                     color = dayNightTextColor(0.5f),
-                    fontSize = 10.sp,
-                    letterSpacing = 0.05.em,
+//                    fontSize = 10.sp,
+//                    letterSpacing = 0.05.em,
+                    style = MaterialTheme.typography.caption,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = durationText,
+                    text = TimeUtils.millis2String(song.durationMs, "mm:ss"),
                     fontSize = 12.sp,
                     letterSpacing = 0.05.em,
                     color = dayNightTextColor(0.7f)
@@ -131,12 +143,23 @@ fun SongCard(
         }
         Surface(
             elevation = 2.dp,
-            shape = RoundedCornerShape(1.dp)
+            shape = RoundedCornerShape(5.dp)
         ) {
             AsyncImage(
                 modifier = Modifier
                     .size(64.dp)
-                    .aspectRatio(1f),
+                    .aspectRatio(1f)
+                    .combinedClickable(
+                        interactionSource = interaction,
+                        indication = null,
+                        onLongClick = { onItemImageLongClick(song) },
+                        onClick = { onItemImageClick(song) }
+                    ),
+//                    .pointerInput(Unit) {
+//                        detectDragGesturesAfterLongPress { change, dragAmount ->
+//                            println("change: $change, dragAmount: $dragAmount")
+//                        }
+//                    }
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(song)
                     .placeholder(R.drawable.ic_music_line_bg_64dp)

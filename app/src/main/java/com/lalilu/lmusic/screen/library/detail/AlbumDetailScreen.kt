@@ -29,6 +29,7 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartContainer
@@ -46,13 +47,8 @@ fun AlbumDetailScreen(
     val subTitle = album.artistName ?: ""
     val sortedItems = remember { songs.toMutableStateList() }
 
-    val onSongSelected: (Int) -> Unit = remember {
-        { index: Int ->
-            mainViewModel.playSongWithPlaylist(
-                items = songs.toMutableList(),
-                index = index
-            )
-        }
+    val onSongSelected: (LSong) -> Unit = { song ->
+        mainViewModel.playSongWithPlaylist(songs, song)
     }
 
     SmartContainer.LazyColumn(
@@ -108,8 +104,8 @@ fun AlbumDetailScreen(
                 index = index,
                 serialNumber = "${item.track ?: ""} ${item.disc ?: ""}",
                 getSong = { item },
-                onSongSelected = onSongSelected,
-                onSongShowDetail = navToSongAction
+                onItemClick = onSongSelected,
+                onItemLongClick = { navToSongAction(it.id) }
             )
         }
     }

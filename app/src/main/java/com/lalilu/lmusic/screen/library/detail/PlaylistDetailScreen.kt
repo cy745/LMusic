@@ -11,7 +11,6 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,7 +24,6 @@ import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.screen.component.card.SongCard
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
@@ -37,8 +35,6 @@ fun PlaylistDetailScreen(
     viewModel: PlaylistsViewModel = hiltViewModel(),
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
-    val haptic = LocalHapticFeedback.current
-    val navController = LocalNavigatorHost.current
     val windowSize = LocalWindowSize.current
     val contentPaddingForFooter: Dp = 0.dp
     val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
@@ -65,13 +61,8 @@ fun PlaylistDetailScreen(
 //        }
 //    }
 
-    val onSongSelected: (Int) -> Unit = remember {
-        { index: Int ->
-            mainViewModel.playSongWithPlaylist(
-                items = songs.toMutableList(),
-                index = index
-            )
-        }
+    val onSongSelected: (LSong) -> Unit = { song ->
+        mainViewModel.playSongWithPlaylist(songs, song)
     }
 
     Column(
@@ -99,8 +90,8 @@ fun PlaylistDetailScreen(
                     modifier = Modifier.animateItemPlacement(),
                     index = index,
                     getSong = { item },
-                    onSongSelected = onSongSelected,
-                    onSongShowDetail = navToSongAction
+                    onItemClick = onSongSelected,
+                    onItemLongClick = { navToSongAction(it.id) }
                 )
             }
         }

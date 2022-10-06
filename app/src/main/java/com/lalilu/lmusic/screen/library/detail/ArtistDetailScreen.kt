@@ -5,12 +5,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LArtist
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
@@ -34,13 +34,8 @@ fun ArtistDetailScreen(
     var sortByState by rememberDataSaverState("KEY_SORT_BY_ArtistDetailScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_ArtistDetailScreen", true)
 
-    val onSongSelected: (Int) -> Unit = remember {
-        { index: Int ->
-            mainViewModel.playSongWithPlaylist(
-                items = songs.toMutableList(),
-                index = index
-            )
-        }
+    val onSongSelected: (LSong) -> Unit = { song ->
+        mainViewModel.playSongWithPlaylist(songs, song)
     }
 
     SmartContainer.LazyVerticalGrid(
@@ -65,8 +60,8 @@ fun ArtistDetailScreen(
                 modifier = Modifier.animateItemPlacement(),
                 index = index,
                 getSong = { item },
-                onSongSelected = onSongSelected,
-                onSongShowDetail = navToSongAction
+                onItemClick = onSongSelected,
+                onItemLongClick = { navToSongAction(it.id) }
             )
         }
     }

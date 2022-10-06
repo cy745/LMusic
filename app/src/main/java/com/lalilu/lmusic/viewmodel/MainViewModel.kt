@@ -1,5 +1,7 @@
 package com.lalilu.lmusic.viewmodel
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
@@ -11,10 +13,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor() : ViewModel() {
 
-    fun playSongWithPlaylist(items: List<LSong>, index: Int) = viewModelScope.launch {
-        LMusicBrowser.setSongs(items, items.getOrNull(index))
-        LMusicBrowser.reloadAndPlay()
-    }
+    val isSelecting = mutableStateOf(false)
+    val selectedItem = mutableStateListOf<LSong>()
 
     fun playSongWithPlaylist(items: List<LSong>, item: LSong) = viewModelScope.launch {
         LMusicBrowser.setSongs(items, item)
