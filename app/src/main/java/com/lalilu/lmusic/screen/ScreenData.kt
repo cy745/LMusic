@@ -16,8 +16,8 @@ import com.lalilu.lmusic.screen.component.NavigateDetailBar
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 
 
-private val LibraryNavigateBar: @Composable () -> Unit = { NavigateBar() }
-private val LibraryDetailNavigateBar: @Composable () -> Unit = { NavigateDetailBar() }
+val LibraryNavigateBar: @Composable () -> Unit = { NavigateBar() }
+val LibraryDetailNavigateBar: @Composable () -> Unit = { NavigateDetailBar() }
 
 
 /**
@@ -132,7 +132,7 @@ enum class ScreenData(
         icon = R.drawable.ic_play_list_line,
         title = R.string.destination_label_playlists,
         subTitle = R.string.destination_subtitle_playlists,
-        showNavigateButton = true,
+//        showNavigateButton = true,
         mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
     ),
     Albums(
