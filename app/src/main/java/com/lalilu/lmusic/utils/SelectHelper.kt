@@ -1,25 +1,15 @@
 package com.lalilu.lmusic.utils
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 
-class SelectHelper<T>(
-    private val isSelecting: MutableState<Boolean> = mutableStateOf(false)
-) {
+class SelectHelper<T> {
+    private val isSelecting = mutableStateOf(false)
     val selectedItem = mutableStateListOf<T>()
 
-    val isSelected: (T) -> Boolean = { selectedItem.contains(it) }
-
-    val onSelected: (T) -> Unit = {
-        isSelecting.value = true
-        if (selectedItem.contains(it)) {
-            selectedItem.remove(it)
-        } else {
-            selectedItem.add(it)
-        }
+    val isSelected: (T) -> Boolean = {
+        if (!isSelecting.value) clear()
+        selectedItem.contains(it)
     }
 
     val clear: () -> Unit = {
@@ -27,9 +17,31 @@ class SelectHelper<T>(
         selectedItem.clear()
     }
 
+    val onSelected: (T) -> Unit = {
+        isSelecting.value = true
+        if (selectedItem.contains(it)) selectedItem.remove(it) else selectedItem.add(it)
+    }
+
     @Composable
-    fun isSelecting(): MutableState<Boolean> {
+    fun listenIsSelectingChange(onChange: (Boolean) -> Unit) {
+        LaunchedEffect(isSelecting.value) {
+            onChange(isSelecting.value)
+
+            if (!isSelecting.value) clear()
+        }
+    }
+
+    @Composable
+    fun onSelected(callback: (T) -> Unit): (T) -> Unit {
+        return remember {
+            {
+                if (isSelecting.value) onSelected(it) else callback(it)
+            }
+        }
+    }
+
+    @Composable
+    fun registerBackHandler() {
         BackHandler(isSelecting.value) { clear() }
-        return isSelecting
     }
 }

@@ -138,9 +138,13 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
-            Library.getSongOrNull(mediaId)
-                ?.let { SongDetailScreen(song = it, networkDataViewModel = networkDataViewModel) }
-                ?: EmptySongDetailScreen()
+            Library.getSongOrNull(mediaId)?.let {
+                SongDetailScreen(
+                    song = it,
+                    networkDataViewModel = networkDataViewModel,
+                    mainViewModel = mainViewModel
+                )
+            } ?: EmptySongDetailScreen()
         }
 
         composable(

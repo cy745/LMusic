@@ -53,8 +53,8 @@ object ScreenActions {
     }
 
     @Composable
-    fun navToAddToPlaylist(): (String) -> Unit {
-        return navigate(route = ScreenData.Playlists.name)
+    fun navToAddToPlaylist(): () -> Unit {
+        return navigate(route = ScreenData.Playlists)
     }
 
     @Composable
@@ -97,6 +97,22 @@ object ScreenActions {
             {
                 hapticType?.let { type -> haptic.performHapticFeedback(type) }
                 controller.navigate("$route/$it", builder = { builder(controller) })
+            }
+        }
+    }
+
+    @Composable
+    fun navigate(
+        route: ScreenData,
+        hapticType: HapticFeedbackType? = null,
+        builder: NavOptionsBuilder.(NavController) -> Unit = {}
+    ): () -> Unit {
+        val haptic = LocalHapticFeedback.current
+        val controller = LocalNavigatorHost.current
+        return remember {
+            {
+                hapticType?.let { type -> haptic.performHapticFeedback(type) }
+                controller.navigate(route.name, builder = { builder(controller) })
             }
         }
     }
