@@ -1,17 +1,19 @@
 package com.lalilu.lmusic.utils.extension
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.*
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
@@ -23,6 +25,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.palette.graphics.Palette
 import coil.request.ImageRequest
 import com.lalilu.lmusic.utils.coil.PaletteTransformation
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 fun NavController.canPopUp(): Boolean {
@@ -138,4 +142,48 @@ fun dayNightTextColor(alpha: Float = 1f): Color {
 
 fun Color.toColorFilter(): ColorFilter {
     return ColorFilter.tint(color = this)
+}
+
+@Composable
+fun <T> buildScrollToItemAction(
+    target: T,
+    getIndex: (T) -> Int,
+    state: LazyGridState = rememberLazyGridState(),
+    scope: CoroutineScope = rememberCoroutineScope()
+): () -> Unit {
+    // 获取当前可见元素的平均高度
+    fun getHeightAverage() = state.layoutInfo.visibleItemsInfo
+        .average { it.size.height }
+
+    // 获取精确的位移量（只能对可见元素获取）
+    fun getTargetOffset(index: Int) = state.layoutInfo.visibleItemsInfo
+        .find { it.index == index }
+        ?.offset?.y
+
+    // 获取粗略的位移量（通过对可见元素的高度求平均再通过index的差，计算出粗略值）
+    fun getRoughTargetOffset(index: Int) =
+        getHeightAverage() * (index - state.firstVisibleItemIndex - 1)
+
+    return {
+        scope.launch {
+            val index = getIndex(target)
+            if (index >= 0) {
+                // 若获取不到精确的位移量，则计算粗略位移量并开始scroll
+                if (getTargetOffset(index) == null) {
+                    state.animateScrollBy(
+                        getRoughTargetOffset(index),
+                        SpringSpec(stiffness = Spring.StiffnessVeryLow)
+                    )
+                }
+
+                // 若可以获取到精确的位移量，则直接滚动到目标歌曲位置
+                getTargetOffset(index)?.let {
+                    state.animateScrollBy(
+                        it.toFloat(),
+                        SpringSpec(stiffness = Spring.StiffnessVeryLow)
+                    )
+                }
+            }
+        }
+    }
 }

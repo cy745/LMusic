@@ -32,12 +32,14 @@ import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
+import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SongDetailScreen(
     song: LSong,
+    mainViewModel: MainViewModel,
     networkDataViewModel: NetworkDataViewModel
 ) {
     val windowSize = LocalWindowSize.current
@@ -50,10 +52,12 @@ fun SongDetailScreen(
     LaunchedEffect(song) {
         SmartBar.setExtraBar {
             SongDetailActionsBar(
-                onAddSongToPlaylist = { navToAddToPlaylistAction.invoke(song.id) },
+                onAddSongToPlaylist = {
+                    // TODO 完善此处跳转以及传递数据的逻辑
+                    navToAddToPlaylistAction()
+                },
                 onSetSongToNext = { LMusicBrowser.addToNext(song.id) },
-                onPlaySong = { LMusicBrowser.addAndPlay(song.id) }
-            )
+                onPlaySong = { LMusicBrowser.addAndPlay(song.id) })
         }
     }
 

@@ -41,40 +41,27 @@ fun PlaylistsScreen(
     playlistsViewModel: PlaylistsViewModel,
     libraryViewModel: LibraryViewModel
 ) {
+    val playlistSelectHelper = mainViewModel.playlistSelectHelper
+
     val context = LocalContext.current
+
+    var creatingNewPlaylist by remember { mutableStateOf(false) }
     val playlists by playlistsViewModel.playlistsLiveData.observeAsState(initial = emptyList())
     val navToPlaylistAction = ScreenActions.navToPlaylist()
 
-    val isSelecting by mainViewModel.playlistSelectHelper.isSelecting()
-    var creatingNewPlaylist by remember { mutableStateOf(false) }
+//    LaunchedEffect(selectingAction) {
+//        if (selectingAction == 0) {
+//            playlistSelectHelper.isSelecting.value = true
+//        }
+//    }
 
-    val onSelectPlaylist: (LPlaylist) -> Unit = {
-        if (isSelecting) {
-            mainViewModel.playlistSelectHelper.onSelected(it)
-        } else {
-            navToPlaylistAction.invoke(it.id)
-        }
+    val onSelectPlaylist = playlistSelectHelper.onSelected {
+        navToPlaylistAction.invoke(it.id)
     }
 
-    LaunchedEffect(creatingNewPlaylist) {
-        if (creatingNewPlaylist) {
-            SmartBar.setExtraBar {
-                createNewPlaylistBar(
-                    onCancel = { creatingNewPlaylist = false },
-                    onCommit = {
-                        playlistsViewModel.createNewPlaylist(it)
-                        creatingNewPlaylist = false
-                    }
-                )
-            }
-        } else {
-            context.getActivity()?.let { KeyboardUtils.hideSoftInput(it) }
-            SmartBar.setExtraBar(item = null)
-        }
-    }
-
-    LaunchedEffect(isSelecting) {
-        if (isSelecting) {
+    playlistSelectHelper.registerBackHandler()
+    playlistSelectHelper.listenIsSelectingChange {
+        if (it) {
             SmartBar.setMainBar {
                 Row(
                     modifier = Modifier
@@ -93,7 +80,27 @@ fun PlaylistsScreen(
             }
         } else {
             SmartBar.setMainBar(item = LibraryNavigateBar)
-            mainViewModel.playlistSelectHelper.clear()
+        }
+
+//        if (selectingAction == 0 && !it) {
+//            navController.navigateUp()
+//        }
+    }
+
+    LaunchedEffect(creatingNewPlaylist) {
+        if (creatingNewPlaylist) {
+            SmartBar.setExtraBar {
+                createNewPlaylistBar(
+                    onCancel = { creatingNewPlaylist = false },
+                    onCommit = {
+                        playlistsViewModel.createNewPlaylist(it)
+                        creatingNewPlaylist = false
+                    }
+                )
+            }
+        } else {
+            context.getActivity()?.let { KeyboardUtils.hideSoftInput(it) }
+            SmartBar.setExtraBar(item = null)
         }
     }
 
