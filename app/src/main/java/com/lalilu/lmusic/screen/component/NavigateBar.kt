@@ -3,6 +3,7 @@ package com.lalilu.lmusic.screen.component
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -90,16 +91,14 @@ fun NavigateItem(
     currentRoute: String?,
     baseColor: Color = MaterialTheme.colors.primary,
 ) {
-    val icon = painterResource(id = routeData.icon)
-    val title = stringResource(id = routeData.title)
+    val unSelectedColor = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
     val selected = currentRoute?.contains(routeData.name) ?: false
-    val imageAlpha = if (selected) 1f else 0.6f
-    val iconTintColor = if (selected) baseColor else {
-        MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-    }
-    val backgroundColor by animateColorAsState(
-        if (selected) baseColor.copy(alpha = 0.12f) else Color.Transparent
-    )
+    val title = stringResource(id = routeData.title)
+    val icon = painterResource(id = routeData.selectedIcon?.takeIf { selected } ?: routeData.icon)
+
+    val imageAlpha = animateFloatAsState(targetValue = if (selected) 1f else 0.6f)
+    val iconTintColor = animateColorAsState(if (selected) baseColor else unSelectedColor)
+    val backgroundColor by animateColorAsState(if (selected) baseColor.copy(alpha = 0.12f) else Color.Transparent)
 
     Surface(
         color = backgroundColor,
@@ -127,8 +126,8 @@ fun NavigateItem(
                 Image(
                     painter = icon,
                     contentDescription = title,
-                    colorFilter = ColorFilter.tint(iconTintColor),
-                    alpha = imageAlpha,
+                    colorFilter = ColorFilter.tint(iconTintColor.value),
+                    alpha = imageAlpha.value,
                     contentScale = FixedScale(if (selected) 1.1f else 1f)
                 )
                 AnimatedVisibility(visible = selected) {

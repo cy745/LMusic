@@ -54,7 +54,7 @@ object ScreenActions {
 
     @Composable
     fun navToAddToPlaylist(): (String) -> Unit {
-        return navigate(route = ScreenData.SongsAddToPlaylist.name)
+        return navigate(route = ScreenData.Playlists.name)
     }
 
     @Composable
@@ -106,6 +106,7 @@ enum class ScreenData(
     @DrawableRes val icon: Int,
     @StringRes val title: Int,
     @StringRes val subTitle: Int,
+    @DrawableRes val selectedIcon: Int? = null,
     val showNavigateButton: Boolean = false,
     val fadeEdgeForStatusBar: Boolean = true,
     val mainBar: ComponentStrategy = ComponentStrategy.Clear,
@@ -132,7 +133,7 @@ enum class ScreenData(
         icon = R.drawable.ic_play_list_line,
         title = R.string.destination_label_playlists,
         subTitle = R.string.destination_subtitle_playlists,
-//        showNavigateButton = true,
+        showNavigateButton = true,
         mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
     ),
     Albums(
@@ -186,13 +187,6 @@ enum class ScreenData(
         mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
         mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar),
         fadeEdgeForStatusBar = false
-    ),
-    SongsAddToPlaylist(
-        icon = R.drawable.ic_play_list_line,
-        title = R.string.destination_label_add_song_to_playlist,
-        subTitle = R.string.destination_label_add_song_to_playlist,
-        mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
-        mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     ),
     SongsMatchNetworkData(
         icon = R.drawable.ic_music_line,
