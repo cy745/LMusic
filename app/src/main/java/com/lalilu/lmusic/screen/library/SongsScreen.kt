@@ -48,8 +48,7 @@ fun SongsScreen(
     val gridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
 
-    val selectedItem = mainViewModel.selectedItem
-    var isSelecting by mainViewModel.isSelecting
+    val isSelecting by mainViewModel.songSelectHelper.isSelecting()
 
     LaunchedEffect(isSelecting) {
         if (isSelecting) {
@@ -64,39 +63,27 @@ fun SongsScreen(
                     TextWithIconButton(
                         text = "取消",
                         color = Color(0xFF006E7C),
-                        onClick = {
-                            isSelecting = false
-                            selectedItem.clear()
-                        }
+                        onClick = mainViewModel.songSelectHelper.clear
                     )
-                    Text(text = "已选择: ${selectedItem.size}")
+                    Text(text = "已选择: ${mainViewModel.songSelectHelper.selectedItem.size}")
                 }
             }
         } else {
             SmartBar.setMainBar(item = LibraryNavigateBar)
+            mainViewModel.playlistSelectHelper.clear()
         }
     }
 
     val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
 
-    val onSongSelected: (LSong) -> Unit = {
-        isSelecting = true
-        if (selectedItem.contains(it)) {
-            selectedItem.remove(it)
-        } else {
-            selectedItem.add(it)
-        }
-    }
-
     val onSongPlay: (LSong) -> Unit = { song ->
         if (isSelecting) {
-            onSongSelected(song)
+            mainViewModel.songSelectHelper.onSelected(song)
         } else {
             mainViewModel.playSongWithPlaylist(songs, song)
         }
     }
 
-    val getIsSelected = { it: LSong -> selectedItem.contains(it) }
 
     val scrollToCurrentPlaying = remember {
         {
@@ -178,11 +165,11 @@ fun SongsScreen(
                     index = index,
                     getSong = { item },
                     loadDelay = { 200L },
-                    getIsSelected = getIsSelected,
+                    getIsSelected = mainViewModel.songSelectHelper.isSelected,
                     onItemClick = onSongPlay,
                     onItemLongClick = { navToSongAction(it.id) },
                     onItemImageClick = onSongPlay,
-                    onItemImageLongClick = onSongSelected
+                    onItemImageLongClick = mainViewModel.songSelectHelper.onSelected
                 )
             }
         }

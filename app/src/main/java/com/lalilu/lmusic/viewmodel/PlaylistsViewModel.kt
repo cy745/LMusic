@@ -3,6 +3,7 @@ package com.lalilu.lmusic.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.datasource.entity.SongInPlaylist
@@ -13,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor() : ViewModel() {
-    val playlistsLiveData = Library.getPlaylistFlow().asLiveData(viewModelScope.coroutineContext)
+    val playlistsLiveData =
+        Library.getPlaylistWithDetailFlow().asLiveData(viewModelScope.coroutineContext)
 
 //    suspend fun getSongsByPlaylistId(playlistId: Long): List<MediaItem> =
 //        withContext(Dispatchers.IO) {
@@ -24,10 +26,8 @@ class PlaylistsViewModel @Inject constructor() : ViewModel() {
 //                }
 //        }
 
-    fun createNewPlaylist(title: String? = null) = viewModelScope.launch(Dispatchers.IO) {
-//        dataBase.playlistDao().save(
-//            MPlaylist(playlistTitle = title ?: "空歌单")
-//        )
+    fun createNewPlaylist(title: String) = viewModelScope.launch(Dispatchers.IO) {
+        Library.createPlaylist(LPlaylist(_title = title))
     }
 
     fun removePlaylist(playlist: MPlaylist) = viewModelScope.launch(Dispatchers.IO) {

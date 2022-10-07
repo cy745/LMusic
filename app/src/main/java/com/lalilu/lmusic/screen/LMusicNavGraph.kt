@@ -118,7 +118,7 @@ fun LMusicNavGraph(
         composable(
             route = ScreenData.Playlists.name
         ) {
-            PlaylistsScreen(playlistsViewModel, libraryViewModel)
+            PlaylistsScreen(mainViewModel, playlistsViewModel, libraryViewModel)
         }
 
         composable(
@@ -159,20 +159,6 @@ fun LMusicNavGraph(
             val albumId = backStackEntry.arguments?.getString("albumId")
             Library.getAlbumOrNull(albumId)?.let { AlbumDetailScreen(album = it) }
                 ?: EmptyAlbumDetailScreen()
-        }
-
-        composable(
-            route = ScreenData.SongsAddToPlaylist.name,
-            arguments = listOf(navArgument("mediaIds") { type = NavType.StringArrayType })
-        ) { backStackEntry ->
-            val mediaIds = backStackEntry.arguments?.getStringArrayList("mediaIds")
-
-            mediaIds?.takeIf { it.isNotEmpty() }?.let {
-                PlaylistsScreen(
-                    viewModel = playlistsViewModel, libraryViewModel = libraryViewModel
-//                    isAddingSongToPlaylist = true, mediaIds = it
-                )
-            }
         }
 
         composable(

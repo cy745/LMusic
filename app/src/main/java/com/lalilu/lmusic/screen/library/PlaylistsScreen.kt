@@ -1,149 +1,211 @@
 package com.lalilu.lmusic.screen.library
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.blankj.utilcode.util.ToastUtils
+import com.blankj.utilcode.util.KeyboardUtils
+import com.lalilu.R
+import com.lalilu.lmedia.entity.LPlaylist
+import com.lalilu.lmusic.screen.LibraryNavigateBar
 import com.lalilu.lmusic.screen.ScreenActions
+import com.lalilu.lmusic.screen.component.InputBar
+import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
+import com.lalilu.lmusic.screen.component.button.TextWithIconButton
+import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun PlaylistsScreen(
-    viewModel: PlaylistsViewModel,
+    mainViewModel: MainViewModel,
+    playlistsViewModel: PlaylistsViewModel,
     libraryViewModel: LibraryViewModel
 ) {
-    val showDialog = remember { mutableStateOf(false) }
-    val playlists by viewModel.playlistsLiveData.observeAsState(initial = emptyList())
-
+    val context = LocalContext.current
+    val playlists by playlistsViewModel.playlistsLiveData.observeAsState(initial = emptyList())
     val navToPlaylistAction = ScreenActions.navToPlaylist()
-//    var sortByState by rememberDataSaverState("KEY_SORT_BY_PlaylistsScreen", SORT_BY_TIME)
-//    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_PlaylistsScreen", true)
-//    val selectedItems = remember { emptyList<MPlaylist>().toMutableStateList() }
-//    val sortedItems = remember(sortByState, sortDesc, playlists) {
-//        sort(sortByState, sortDesc, playlists.toMutableStateList(),
-//            getTextField = { it.playlistTitle },
-//            getTimeField = { it.playlistCreateTime.time }
-//        )
-//    }
 
-//        NavigatorHeaderWithButtons(
-//            route = if (isAddingSongToPlaylist) MainScreenData.SongsAddToPlaylist else MainScreenData.Playlists
-//        ) {
-//            LazyListSortToggleButton(sortByState = sortByState) {
-//                sortByState = next(sortByState)
-//            }
-//            SortToggleButton(sortDesc = sortDesc) {
-//                sortDesc = !sortDesc
-//            }
-//            IconResButton(
-//                iconRes = R.drawable.ic_play_list_add_line,
-//                alpha = 0.8f,
-//                onClick = { showDialog.value = true }
-//            )
-//            if (!isAddingSongToPlaylist) {
-//                IconResButton(
-//                    iconRes = R.drawable.ic_file_copy_2_line,
-//                    alpha = 0.8f,
-//                    onClick = { viewModel.copyCurrentPlayingPlaylist() }
-//                )
-//            } else {
-//                IconResButton(
-//                    iconRes = R.drawable.ic_check_line,
-//                    alpha = 0.8f,
-//                    onClick = {
-//                        if (selectedItems.isEmpty()) {
-//                            ToastUtils.showShort("未选择歌单")
-//                            return@IconResButton
-//                        }
-//                        viewModel.addSongsIntoPlaylists(
-//                            mediaIds,
-//                            selectedItems.map { it.playlistId })
-//                        ToastUtils.showShort("添加到歌单成功")
-//                        navController.navigateUp()
-//                    }
-//                )
-//            }
-//        }
-    @OptIn(ExperimentalFoundationApi::class)
-    SmartContainer.LazyColumn {
-        items(items = playlists) {
-            PlaylistCard(
-                title = it.name,
-                modifier = Modifier.animateItemPlacement(),
-                onClick = {
-//                    if (isAddingSongToPlaylist) {
-//                        if (selectedItems.contains(it))
-//                            selectedItems.remove(it)
-//                        else selectedItems.add(it)
-//                    } else {
-                    navToPlaylistAction.invoke(it.id)
-//                    }
-                },
-                onLongClick = {
-//                    if (selectedItems.contains(it)) {
-//                        selectedItems.remove(it)
-//                    }
-//                    viewModel.removePlaylist(it)
-                },
-                selected = false
-            )
+    val isSelecting by mainViewModel.playlistSelectHelper.isSelecting()
+    var creatingNewPlaylist by remember { mutableStateOf(false) }
+
+    val onSelectPlaylist: (LPlaylist) -> Unit = {
+        if (isSelecting) {
+            mainViewModel.playlistSelectHelper.onSelected(it)
+        } else {
+            navToPlaylistAction.invoke(it.id)
         }
     }
-    if (showDialog.value) {
-        var playlistTitle by remember { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = { showDialog.value = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    if (playlistTitle.isNotEmpty()) {
-                        viewModel.createNewPlaylist(playlistTitle)
-                        showDialog.value = false
-                    } else {
-                        ToastUtils.showShort("歌单名不可为空")
+
+    LaunchedEffect(creatingNewPlaylist) {
+        if (creatingNewPlaylist) {
+            SmartBar.setExtraBar {
+                createNewPlaylistBar(
+                    onCancel = { creatingNewPlaylist = false },
+                    onCommit = {
+                        playlistsViewModel.createNewPlaylist(it)
+                        creatingNewPlaylist = false
                     }
-                }) {
-                    Text(text = "确认")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog.value = false }) {
-                    Text(text = "取消")
-                }
-            },
-            title = {
-                Text(text = "新建歌单")
-            },
-            text = {
-                BasicTextField(
+                )
+            }
+        } else {
+            context.getActivity()?.let { KeyboardUtils.hideSoftInput(it) }
+            SmartBar.setExtraBar(item = null)
+        }
+    }
+
+    LaunchedEffect(isSelecting) {
+        if (isSelecting) {
+            SmartBar.setMainBar {
+                Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(5.dp))
                         .fillMaxWidth()
-                        .background(color = Color.LightGray)
-                        .padding(vertical = 10.dp, horizontal = 15.dp),
-                    textStyle = MaterialTheme.typography.body2,
-                    value = playlistTitle,
-                    onValueChange = {
-                        playlistTitle = it
-                    })
-            },
-            shape = RoundedCornerShape(20.dp)
+                        .padding(horizontal = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    TextWithIconButton(
+                        text = "取消",
+                        color = Color(0xFF006E7C),
+                        onClick = mainViewModel.playlistSelectHelper.clear
+                    )
+                    Text(text = "已选择: ${mainViewModel.playlistSelectHelper.selectedItem.size}")
+                }
+            }
+        } else {
+            SmartBar.setMainBar(item = LibraryNavigateBar)
+            mainViewModel.playlistSelectHelper.clear()
+        }
+    }
+
+    @OptIn(ExperimentalFoundationApi::class)
+    SmartContainer.LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        item(key = "CREATE_PLAYLIST_BTN", contentType = "CREATE_PLAYLIST_BTN") {
+            Surface(
+                modifier = Modifier
+                    .padding(horizontal = 10.dp, vertical = 15.dp)
+                    .animateItemPlacement(),
+                color = Color.Transparent,
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.dp, dayNightTextColor(0.1f)),
+                onClick = { creatingNewPlaylist = !creatingNewPlaylist }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(15.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_add_line),
+                        contentDescription = ""
+                    )
+
+                    Text(modifier = Modifier.weight(1f), text = "新建歌单")
+
+                    AnimatedContent(targetState = creatingNewPlaylist) {
+                        Icon(
+                            painter = painterResource(if (creatingNewPlaylist) R.drawable.ic_arrow_down_s_line else R.drawable.ic_arrow_up_s_line),
+                            contentDescription = ""
+                        )
+                    }
+                }
+            }
+        }
+
+        playlists.find { it._id == 0L }?.let {
+            item(key = it._id, contentType = LPlaylist::class) {
+                PlaylistCard(
+                    modifier = Modifier.animateItemPlacement(),
+                    getPlaylist = { it },
+                    icon = R.drawable.ic_heart_3_fill,
+                    iconTint = MaterialTheme.colors.primary,
+                    getIsSelected = mainViewModel.playlistSelectHelper.isSelected,
+                    onClick = onSelectPlaylist,
+                    onLongClick = mainViewModel.playlistSelectHelper.onSelected,
+                )
+            }
+        }
+
+        playlists.forEach {
+            if (it._id != 0L) {
+                item(key = it._id, contentType = LPlaylist::class) {
+                    PlaylistCard(
+                        modifier = Modifier.animateItemPlacement(),
+                        getPlaylist = { it },
+                        getIsSelected = mainViewModel.playlistSelectHelper.isSelected,
+                        onClick = onSelectPlaylist,
+                        onLongClick = mainViewModel.playlistSelectHelper.onSelected,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun createNewPlaylistBar(
+    onCancel: () -> Unit = {},
+    onCommit: (String) -> Unit = {}
+) {
+    val text = remember { mutableStateOf("") }
+    val isCommitEnable by remember(text.value) { derivedStateOf { text.value.isNotEmpty() } }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 10.dp),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        InputBar(
+            hint = "新建歌单",
+            value = text,
+            onCommit = {
+                onCommit(it)
+                text.value = ""
+            }
         )
+        IconButton(onClick = onCancel) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_close_line),
+                contentDescription = "取消按钮"
+            )
+        }
+        IconButton(
+            onClick = {
+                onCommit(text.value)
+                text.value = ""
+            }, enabled = isCommitEnable
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_check_line),
+                contentDescription = "确认按钮"
+            )
+        }
     }
 }
 
@@ -151,31 +213,51 @@ fun PlaylistsScreen(
 @Composable
 fun PlaylistCard(
     modifier: Modifier = Modifier,
-    title: String,
-    selected: Boolean = false,
-    onClick: () -> Unit = {},
-    onLongClick: () -> Unit = {}
+    icon: Int = R.drawable.ic_play_list_fill,
+    iconTint: Color = LocalContentColor.current,
+    getPlaylist: () -> LPlaylist,
+    getIsSelected: (LPlaylist) -> Boolean = { false },
+    onClick: (LPlaylist) -> Unit = {},
+    onLongClick: (LPlaylist) -> Unit = {}
 ) {
-    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
-    val color: Color by animateColorAsState(
-        if (selected) contentColorFor(
-            backgroundColor = MaterialTheme.colors.background
-        ).copy(0.2f) else Color.Transparent
-    )
+    val playlist = remember { getPlaylist() }
+    val bgColor by animateColorAsState(if (getIsSelected(playlist)) dayNightTextColor(0.15f) else Color.Transparent)
 
-    Surface(color = color) {
-        Box(
-            modifier = modifier
+    Surface(
+        modifier = modifier
+            .padding(horizontal = 10.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .combinedClickable(
+                onClick = { onClick(playlist) },
+                onLongClick = { onLongClick(playlist) }
+            ),
+        color = bgColor
+    ) {
+        Row(
+            modifier = Modifier
                 .fillMaxWidth()
-                .combinedClickable(
-                    onClick = onClick,
-                    onLongClick = onLongClick
-                )
-                .padding(20.dp)
+                .padding(horizontal = 15.dp, vertical = 18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(15.dp)
         ) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = "",
+                tint = iconTint.copy(alpha = 0.7f)
+            )
             Text(
-                text = title,
-                color = textColor
+                modifier = Modifier.weight(1f),
+                text = playlist.name,
+                color = dayNightTextColor(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.subtitle1
+            )
+            Text(
+                modifier = Modifier.padding(start = 20.dp),
+                text = "${playlist.songs.size} 首歌曲",
+                color = dayNightTextColor(0.5f),
+                style = MaterialTheme.typography.subtitle2
             )
         }
     }

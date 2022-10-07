@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.core.widget.addTextChangedListener
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.TimeUtils
@@ -107,6 +108,10 @@ fun SearchInputBar(
                 FragmentInputerBinding.inflate(inflater, parent, attachToParent).apply {
                     val activity = parent.context.getActivity()!!
                     searchForLyricKeyword.setText(value)
+
+                    searchForLyricKeyword.addTextChangedListener {
+                        text = it.toString()
+                    }
 
                     searchForLyricKeyword.setOnEditorActionListener { textView, _, _ ->
                         text = textView.text.toString()
