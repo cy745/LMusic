@@ -3,19 +3,24 @@ package com.lalilu.lmusic.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.lalilu.lmedia.database.sort
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.indexer.Library
-import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.datasource.entity.SongInPlaylist
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor() : ViewModel() {
     val playlistsLiveData =
-        Library.getPlaylistWithDetailFlow().asLiveData(viewModelScope.coroutineContext)
+        Library.getPlaylistWithDetailFlow()
+            .mapLatest { it.sort(true) }
+            .asLiveData(viewModelScope.coroutineContext)
 
 //    suspend fun getSongsByPlaylistId(playlistId: Long): List<MediaItem> =
 //        withContext(Dispatchers.IO) {
@@ -30,8 +35,8 @@ class PlaylistsViewModel @Inject constructor() : ViewModel() {
         Library.createPlaylist(LPlaylist(_title = title))
     }
 
-    fun removePlaylist(playlist: MPlaylist) = viewModelScope.launch(Dispatchers.IO) {
-//        dataBase.playlistDao().delete(playlist)
+    fun removePlaylists(playlist: List<LPlaylist>) = viewModelScope.launch(Dispatchers.IO) {
+        Library.removePlaylists(playlist)
     }
 
     fun copyCurrentPlayingPlaylist() = viewModelScope.launch(Dispatchers.IO) {

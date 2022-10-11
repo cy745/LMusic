@@ -73,9 +73,18 @@ fun PlaylistsScreen(
                     TextWithIconButton(
                         text = "取消",
                         color = Color(0xFF006E7C),
-                        onClick = mainViewModel.playlistSelectHelper.clear
+                        onClick = playlistSelectHelper.clear
                     )
-                    Text(text = "已选择: ${mainViewModel.playlistSelectHelper.selectedItem.size}")
+                    Text(text = "已选择: ${playlistSelectHelper.selectedItem.size}")
+                    TextWithIconButton(
+                        text = "删除",
+                        color = Color(0xFF006E7C),
+                        onClick = {
+                            val items = playlistSelectHelper.selectedItem
+                            playlistsViewModel.removePlaylists(items)
+                            playlistSelectHelper.clear()
+                        }
+                    )
                 }
             }
         } else {
@@ -150,9 +159,9 @@ fun PlaylistsScreen(
                     getPlaylist = { it },
                     icon = R.drawable.ic_heart_3_fill,
                     iconTint = MaterialTheme.colors.primary,
-                    getIsSelected = mainViewModel.playlistSelectHelper.isSelected,
+                    getIsSelected = playlistSelectHelper.isSelected,
                     onClick = onSelectPlaylist,
-                    onLongClick = mainViewModel.playlistSelectHelper.onSelected,
+                    onLongClick = playlistSelectHelper.onSelected,
                 )
             }
         }
@@ -163,9 +172,9 @@ fun PlaylistsScreen(
                     PlaylistCard(
                         modifier = Modifier.animateItemPlacement(),
                         getPlaylist = { it },
-                        getIsSelected = mainViewModel.playlistSelectHelper.isSelected,
+                        getIsSelected = playlistSelectHelper.isSelected,
                         onClick = onSelectPlaylist,
-                        onLongClick = mainViewModel.playlistSelectHelper.onSelected,
+                        onLongClick = playlistSelectHelper.onSelected,
                     )
                 }
             }
