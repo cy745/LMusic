@@ -1,16 +1,13 @@
 package com.lalilu.lmusic.screen.library
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,34 +23,38 @@ import com.lalilu.lmusic.screen.LibraryNavigateBar
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.InputBar
 import com.lalilu.lmusic.screen.component.SmartBar
-import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
+import okhttp3.internal.toImmutableList
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun PlaylistsScreen(
     mainViewModel: MainViewModel,
     playlistsViewModel: PlaylistsViewModel,
     libraryViewModel: LibraryViewModel
 ) {
-    val playlistSelectHelper = mainViewModel.playlistSelectHelper
-
     val context = LocalContext.current
+    val playlistSelectHelper = mainViewModel.playlistSelectHelper
+    val playlists by playlistsViewModel.playlists
+
+    val state = rememberReorderableLazyListState(onMove = { from, to ->
+        println("from: $from to: $to stateList: ${playlists.size}")
+        playlistsViewModel.movePlaylist(from, to)
+//        val fromItem = playlists.getOrNull(from.index) ?: return@rememberReorderableLazyListState
+//        val toItem = playlists.getOrNull(to.index) ?: return@rememberReorderableLazyListState
+//        playlistsViewModel.swapTwoPlaylists(fromItem, toItem)
+    })
 
     var creatingNewPlaylist by remember { mutableStateOf(false) }
-    val playlists by playlistsViewModel.playlistsLiveData.observeAsState(initial = emptyList())
     val navToPlaylistAction = ScreenActions.navToPlaylist()
-
-//    LaunchedEffect(selectingAction) {
-//        if (selectingAction == 0) {
-//            playlistSelectHelper.isSelecting.value = true
-//        }
-//    }
 
     val onSelectPlaylist = playlistSelectHelper.onSelected {
         navToPlaylistAction.invoke(it.id)
@@ -80,7 +81,7 @@ fun PlaylistsScreen(
                         text = "删除",
                         color = Color(0xFF006E7C),
                         onClick = {
-                            val items = playlistSelectHelper.selectedItem
+                            val items = playlistSelectHelper.selectedItem.toImmutableList()
                             playlistsViewModel.removePlaylists(items)
                             playlistSelectHelper.clear()
                         }
@@ -113,70 +114,78 @@ fun PlaylistsScreen(
         }
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
-    SmartContainer.LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+    LazyColumn(
+        state = state.listState,
+        modifier = Modifier
+            .fillMaxSize()
+            .reorderable(state)
+            .detectReorderAfterLongPress(state),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        item(key = "CREATE_PLAYLIST_BTN", contentType = "CREATE_PLAYLIST_BTN") {
-            Surface(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp, vertical = 15.dp)
-                    .animateItemPlacement(),
-                color = Color.Transparent,
-                shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(1.dp, dayNightTextColor(0.1f)),
-                onClick = { creatingNewPlaylist = !creatingNewPlaylist }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 15.dp, vertical = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(15.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_add_line),
-                        contentDescription = ""
-                    )
+//        item(key = "CREATE_PLAYLIST_BTN", contentType = "CREATE_PLAYLIST_BTN") {
+//            Surface(
+//                modifier = Modifier
+//                    .padding(horizontal = 10.dp, vertical = 15.dp)
+//                    .animateItemPlacement(),
+//                color = Color.Transparent,
+//                shape = RoundedCornerShape(10.dp),
+//                border = BorderStroke(1.dp, dayNightTextColor(0.1f)),
+//                onClick = { creatingNewPlaylist = !creatingNewPlaylist }
+//            ) {
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(horizontal = 15.dp, vertical = 20.dp),
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.spacedBy(15.dp)
+//                ) {
+//                    Icon(
+//                        painter = painterResource(id = R.drawable.ic_add_line),
+//                        contentDescription = ""
+//                    )
+//
+//                    Text(modifier = Modifier.weight(1f), text = "新建歌单")
+//
+//                    AnimatedContent(targetState = creatingNewPlaylist) {
+//                        Icon(
+//                            painter = painterResource(if (creatingNewPlaylist) R.drawable.ic_arrow_down_s_line else R.drawable.ic_arrow_up_s_line),
+//                            contentDescription = ""
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//
+//        playlists.find { it._id == 0L }?.let {
+//            item(key = it._id, contentType = LPlaylist::class) {
+//                PlaylistCard(
+//                    modifier = Modifier.animateItemPlacement(),
+//                    getPlaylist = { it },
+//                    icon = R.drawable.ic_heart_3_fill,
+//                    iconTint = MaterialTheme.colors.primary,
+//                    getIsSelected = playlistSelectHelper.isSelected,
+//                    onClick = onSelectPlaylist,
+//                    onLongClick = playlistSelectHelper.onSelected,
+//                )
+//            }
+//        }
 
-                    Text(modifier = Modifier.weight(1f), text = "新建歌单")
-
-                    AnimatedContent(targetState = creatingNewPlaylist) {
-                        Icon(
-                            painter = painterResource(if (creatingNewPlaylist) R.drawable.ic_arrow_down_s_line else R.drawable.ic_arrow_up_s_line),
-                            contentDescription = ""
-                        )
-                    }
-                }
-            }
-        }
-
-        playlists.find { it._id == 0L }?.let {
-            item(key = it._id, contentType = LPlaylist::class) {
+        itemsIndexed(
+            items = playlists,
+            key = { _, item -> item._id },
+            contentType = { _, _ -> LPlaylist::class }
+        ) { index, item ->
+            ReorderableItem(
+                state = state,
+                key = item._id,
+                index = index
+            ) { isDragging ->
                 PlaylistCard(
-                    modifier = Modifier.animateItemPlacement(),
-                    getPlaylist = { it },
-                    icon = R.drawable.ic_heart_3_fill,
-                    iconTint = MaterialTheme.colors.primary,
-                    getIsSelected = playlistSelectHelper.isSelected,
+                    getPlaylist = { item },
+                    getIsSelected = { isDragging },
                     onClick = onSelectPlaylist,
                     onLongClick = playlistSelectHelper.onSelected,
                 )
-            }
-        }
-
-        playlists.forEach {
-            if (it._id != 0L) {
-                item(key = it._id, contentType = LPlaylist::class) {
-                    PlaylistCard(
-                        modifier = Modifier.animateItemPlacement(),
-                        getPlaylist = { it },
-                        getIsSelected = playlistSelectHelper.isSelected,
-                        onClick = onSelectPlaylist,
-                        onLongClick = playlistSelectHelper.onSelected,
-                    )
-                }
             }
         }
     }
@@ -243,10 +252,11 @@ fun PlaylistCard(
         modifier = modifier
             .padding(horizontal = 10.dp)
             .clip(RoundedCornerShape(10.dp))
-            .combinedClickable(
-                onClick = { onClick(playlist) },
-                onLongClick = { onLongClick(playlist) }
-            ),
+//            .combinedClickable(
+//                onClick = { onClick(playlist) },
+//                onLongClick = { onLongClick(playlist) }
+//            )
+        ,
         color = bgColor
     ) {
         Row(
