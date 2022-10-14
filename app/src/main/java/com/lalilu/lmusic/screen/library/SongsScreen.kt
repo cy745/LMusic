@@ -21,12 +21,12 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.compose.component.SongCard
 import com.lalilu.lmusic.screen.LibraryNavigateBar
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
-import com.lalilu.lmusic.screen.component.card.SongCard
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
@@ -123,15 +123,21 @@ fun SongsScreen(
                 contentType = { _, _ -> LSong::class }
             ) { index, item ->
                 SongCard(
-                    index = index,
-                    getSong = { item },
-                    loadDelay = { 200L },
-                    getIsSelected = songSelectHelper.isSelected,
-                    onItemClick = onSongPlay,
-                    onItemLongClick = { navToSongAction(it.id) },
-                    onItemImageClick = onSongPlay,
-                    onItemImageLongClick = songSelectHelper.onSelected
+                    song = { item },
+                    onClick = { onSongPlay(item) },
+                    onLongClick = { navToSongAction(item.id) },
+                    onEnterSelect = { songSelectHelper.onSelected(item) }
                 )
+//                SongCard(
+//                    index = index,
+//                    getSong = { item },
+//                    loadDelay = { 200L },
+//                    getIsSelected = songSelectHelper.isSelected,
+//                    onItemClick = onSongPlay,
+//                    onItemLongClick = { navToSongAction(it.id) },
+//                    onItemImageClick = onSongPlay,
+//                    onItemImageLongClick = songSelectHelper.onSelected
+//                )
             }
         }
     }

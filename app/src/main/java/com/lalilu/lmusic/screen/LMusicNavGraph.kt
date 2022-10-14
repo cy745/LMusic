@@ -24,8 +24,21 @@ import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
-import com.lalilu.lmusic.screen.library.*
-import com.lalilu.lmusic.screen.library.detail.*
+import com.lalilu.lmusic.screen.library.AlbumsScreen
+import com.lalilu.lmusic.screen.library.ArtistScreen
+import com.lalilu.lmusic.screen.library.EmptySearchForLyricScreen
+import com.lalilu.lmusic.screen.library.LibraryScreen
+import com.lalilu.lmusic.screen.library.MatchNetworkDataScreen
+import com.lalilu.lmusic.screen.library.PlaylistsScreen
+import com.lalilu.lmusic.screen.library.SettingsScreen
+import com.lalilu.lmusic.screen.library.SongsScreen
+import com.lalilu.lmusic.screen.library.detail.AlbumDetailScreen
+import com.lalilu.lmusic.screen.library.detail.ArtistDetailScreen
+import com.lalilu.lmusic.screen.library.detail.EmptyAlbumDetailScreen
+import com.lalilu.lmusic.screen.library.detail.EmptyArtistDetailScreen
+import com.lalilu.lmusic.screen.library.detail.EmptySongDetailScreen
+import com.lalilu.lmusic.screen.library.detail.PlaylistDetailScreen
+import com.lalilu.lmusic.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
@@ -84,13 +97,15 @@ fun LMusicNavGraph(
         SmartModalBottomSheet.fadeEdge(current.fadeEdgeForStatusBar)
     }
 
-    AnimatedNavHost(navController = navHostController,
+    AnimatedNavHost(
+        navController = navHostController,
         startDestination = ScreenData.Library.name,
         modifier = Modifier.fillMaxSize(),
         exitTransition = { ExitTransition.None },
         enterTransition = {
             fadeIn(animationSpec = tween(durationMillis = 300)) + slideInVertically { 100 }
-        }) {
+        }
+    ) {
         composable(
             route = ScreenData.Library.name
         ) {
