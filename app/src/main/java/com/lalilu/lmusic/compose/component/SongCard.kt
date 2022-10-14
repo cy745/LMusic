@@ -7,24 +7,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -59,25 +48,25 @@ fun SongCard(
     onEnterSelect: () -> Unit = {},
     isSelected: () -> Boolean = { false }
 ) {
-    val songs = remember { song() }
+    val item = remember { song() }
     var hasLyric by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         delay(200)
 
         if (isActive) {
-            hasLyric = LMusicLyricManager.hasLyric(songs)
+            hasLyric = LMusicLyricManager.hasLyric(item)
         }
     }
 
     SongCard(
         modifier = modifier,
-        title = { songs.name },
-        subTitle = { songs._artist },
-        mimeType = { songs.mimeType },
-        duration = { songs.durationMs },
+        title = { item.name },
+        subTitle = { item._artist },
+        mimeType = { item.mimeType },
+        duration = { item.durationMs },
         hasLyric = { hasLyric },
-        imageData = { songs },
+        imageData = { item },
         onClick = onClick,
         onLongClick = onLongClick,
         onEnterSelect = onEnterSelect,
