@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.utils.extension
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.gestures.animateScrollBy
@@ -9,11 +10,19 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.SwipeProgress
+import androidx.compose.material.contentColorFor
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
@@ -24,6 +33,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.palette.graphics.Palette
 import coil.request.ImageRequest
+import com.blankj.utilcode.util.TimeUtils
+import com.lalilu.R
 import com.lalilu.lmusic.utils.coil.PaletteTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -136,12 +147,40 @@ fun ImageRequest.Builder.requirePalette(callback: (Palette) -> Unit): ImageReque
 
 @Composable
 fun dayNightTextColor(alpha: Float = 1f): Color {
-    return contentColorFor(backgroundColor = MaterialTheme.colors.background)
-        .copy(alpha = alpha)
+    val color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+    return remember(color) { color.copy(alpha = alpha) }
+}
+
+@Composable
+fun dayNightTextColorFilter(alpha: Float = 1f): ColorFilter {
+    val color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+    return remember(color) { color.copy(alpha = alpha).toColorFilter() }
 }
 
 fun Color.toColorFilter(): ColorFilter {
     return ColorFilter.tint(color = this)
+}
+
+@Composable
+fun durationMsToString(duration: Long): String {
+    return remember(duration) { TimeUtils.millis2String(duration, "mm:ss") }
+}
+
+@DrawableRes
+@Composable
+fun mimeTypeToIcon(mimeType: String): Int {
+    return remember(mimeType) {
+        val strings = mimeType.split("/").toTypedArray()
+        when (strings[strings.size - 1].uppercase()) {
+            "FLAC" -> R.drawable.ic_flac_line
+            "MPEG", "MP3" -> R.drawable.ic_mp3_line
+            "MP4" -> R.drawable.ic_mp4_line
+            "APE" -> R.drawable.ic_ape_line
+            "DSD", "DSF" -> R.drawable.ic_dsd_line
+            "WAV", "X-WAV" -> R.drawable.ic_wav_line
+            else -> R.drawable.ic_mp3_line
+        }
+    }
 }
 
 @Composable
