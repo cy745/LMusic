@@ -5,12 +5,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.compose.component.SongCard
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.bean.next
@@ -18,7 +18,6 @@ import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
 import com.lalilu.lmusic.screen.component.button.SortToggleButton
-import com.lalilu.lmusic.screen.component.card.SongCard
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
@@ -57,12 +56,17 @@ fun ArtistDetailScreen(
 
         itemsIndexed(items = songs) { index, item ->
             SongCard(
-                modifier = Modifier.animateItemPlacement(),
-                index = index,
-                getSong = { item },
-                onItemClick = onSongSelected,
-                onItemLongClick = { navToSongAction(it.id) }
+                song = { item },
+                onClick = { onSongSelected(item) },
+                onLongClick = { navToSongAction(item.id) }
             )
+//            SongCard(
+//                modifier = Modifier.animateItemPlacement(),
+//                index = index,
+//                getSong = { item },
+//                onItemClick = onSongSelected,
+//                onItemLongClick = { navToSongAction(it.id) }
+//            )
         }
     }
 }
