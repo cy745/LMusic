@@ -20,20 +20,16 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
-import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmusic.compose.component.RecommendCard
+import com.lalilu.lmusic.compose.component.RecommendCard2
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.ScreenData
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
-import com.lalilu.lmusic.screen.component.card.ExpendableTextCard
-import com.lalilu.lmusic.screen.component.card.RecommendCard
-import com.lalilu.lmusic.screen.component.card.RecommendCard2
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -63,7 +59,6 @@ fun LibraryScreen(
         }
     }
 
-
     val isChecked = ScreenData.Library.isChecked?.value
     LaunchedEffect(isChecked) {
         if (isChecked == true) {
@@ -80,35 +75,32 @@ fun LibraryScreen(
     ) {
         item {
             RecommendTitle("每日推荐", onClick = { })
-            RecommendRow(items = dailyRecommends, getId = { it.id }) {
+            RecommendRow(
+                items = dailyRecommends,
+                getId = { it.id }
+            ) {
                 RecommendCard2(
-                    data = { it },
-                    getId = { it.id },
-                    width = 250.dp,
-                    height = 250.dp,
-                    onShowDetail = navToSongAction
-                ) {
-                    ExpendableTextCard(
-                        title = it.name,
-                        subTitle = it._artist,
-                        defaultState = true,
-                        titleColor = Color.White,
-                        subTitleColor = Color.White.copy(alpha = 0.8f)
-                    )
-                }
+                    contentModifier = Modifier.size(width = 250.dp, height = 250.dp),
+                    item = { it },
+                    onClick = { navToSongAction(it.id) }
+                )
             }
         }
 
         item {
-            // 最近添加
             RecommendTitle("最近添加", onClick = { })
-            RecommendRow(items = recentlyAdded.toList(), getId = { it.id }) {
-                RecommendCardWithOutSideText(
+            RecommendRow(
+                items = recentlyAdded.toList(),
+                getId = { it.id }
+            ) {
+                RecommendCard(
                     modifier = Modifier.animateItemPlacement(),
-                    getSong = { it },
-                    isPlaying = (currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id),
-                    onPlaySong = playSong,
-                    onShowDetail = navToSongAction
+                    width = { 200.dp },
+                    height = { 125.dp },
+                    item = { it },
+                    isPlaying = { currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id },
+                    onClick = { navToSongAction(it.id) },
+                    onClickButton = { playSong(it.id) }
                 )
             }
         }
@@ -119,37 +111,32 @@ fun LibraryScreen(
             RecommendRow(
                 scrollToStartWhenUpdate = true,
                 items = lastPlayedStack.toList(),
-                getId = { it.id }) {
-                RecommendCardWithOutSideText(
+                getId = { it.id }
+            ) {
+                RecommendCard(
                     modifier = Modifier.animateItemPlacement(),
-                    getSong = { it },
-                    width = 125.dp,
-                    height = 125.dp,
-                    isPlaying = (currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id),
-                    onPlaySong = playSong,
-                    onShowDetail = navToSongAction
+                    width = { 125.dp },
+                    height = { 125.dp },
+                    item = { it },
+                    isPlaying = { currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id },
+                    onClick = { navToSongAction(it.id) },
+                    onClickButton = { playSong(it.id) }
                 )
             }
         }
 
         item {
             RecommendTitle("随机推荐", onClick = { })
-            RecommendRow(items = randomRecommends.toList(), getId = { it.id }) {
+            RecommendRow(
+                items = randomRecommends.toList(),
+                getId = { it.id }
+            ) {
                 RecommendCard2(
                     modifier = Modifier.animateItemPlacement(),
-                    data = { it },
-                    getId = { it.id },
-                    width = 125.dp,
-                    height = 250.dp,
-                    onShowDetail = navToSongAction
-                ) {
-                    ExpendableTextCard(
-                        title = it.name,
-                        subTitle = it._artist,
-                        titleColor = Color.White,
-                        subTitleColor = Color.White.copy(alpha = 0.8f)
-                    )
-                }
+                    contentModifier = Modifier.size(width = 125.dp, height = 250.dp),
+                    item = { it },
+                    onClick = { navToSongAction(it.id) }
+                )
             }
         }
     }
@@ -210,38 +197,5 @@ fun <I> RecommendRow(
         items(items = items, key = getId) {
             itemContent(it)
         }
-    }
-}
-
-@Composable
-fun RecommendCardWithOutSideText(
-    modifier: Modifier = Modifier,
-    getSong: () -> LSong,
-    width: Dp = 200.dp,
-    height: Dp = 125.dp,
-    isPlaying: Boolean = false,
-    onShowDetail: (String) -> Unit = {},
-    onPlaySong: (String) -> Unit = {}
-) {
-    val song = getSong()
-
-    Column(
-        modifier = modifier
-            .width(IntrinsicSize.Min)
-            .recomposeHighlighter(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        RecommendCard(
-            data = { song },
-            getId = { song.id },
-            isPlaying = isPlaying,
-            width = width,
-            height = height,
-            onPlay = onPlaySong,
-            onShowDetail = onShowDetail
-        )
-        ExpendableTextCard(
-            title = song.name, subTitle = song._artist
-        )
     }
 }
