@@ -20,13 +20,13 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.compose.component.NetworkPairCard
+import com.lalilu.lmusic.compose.component.RecommendCardForAlbum
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.screen.component.button.TextWithIconButton
-import com.lalilu.lmusic.screen.component.card.NetworkDataCard
-import com.lalilu.lmusic.screen.component.card.RecommendCard
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
@@ -108,11 +108,10 @@ fun SongDetailScreen(
                                 .padding(10.dp),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            RecommendCard(
-                                width = 125.dp,
-                                height = 125.dp,
-                                data = { it },
-                                getId = { it.id }
+                            RecommendCardForAlbum(
+                                width = { 125.dp },
+                                height = { 125.dp },
+                                item = { it }
                             )
 
                             Column(
@@ -137,9 +136,9 @@ fun SongDetailScreen(
             }
 
             item {
-                NetworkDataCard(
-                    onClick = { navToNetworkMatchAction.invoke(song.id) },
-                    mediaId = song.id
+                NetworkPairCard(
+                    item = { networkData },
+                    onClick = { navToNetworkMatchAction.invoke(song.id) }
                 )
             }
         }
