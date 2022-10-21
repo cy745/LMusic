@@ -18,11 +18,11 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun IconTextButton(
     modifier: Modifier = Modifier,
-    text: () -> String,
-    iconPainter: Painter,
+    text: String,
+    iconPainter: Painter? = null,
     shape: Shape = MaterialTheme.shapes.small,
     color: Color = MaterialTheme.colors.primary,
-    showIcon: () -> Boolean,
+    showIcon: () -> Boolean = { false },
     onClick: () -> Unit
 ) {
     TextButton(
@@ -34,15 +34,15 @@ fun IconTextButton(
             backgroundColor = color.copy(0.15f)
         )
     ) {
-        AnimatedVisibility(visible = showIcon()) {
+        AnimatedVisibility(visible = iconPainter != null && showIcon()) {
             Icon(
                 modifier = Modifier
                     .padding(end = 5.dp)
                     .size(20.dp),
-                painter = iconPainter,
-                contentDescription = text(),
+                painter = iconPainter!!,
+                contentDescription = text,
             )
         }
-        Text(text = text())
+        Text(text = text)
     }
 }

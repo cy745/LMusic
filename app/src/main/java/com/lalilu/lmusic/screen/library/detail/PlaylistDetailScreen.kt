@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.screen.library.detail
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,7 +7,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.Dp
@@ -19,17 +22,11 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SongCard
 import com.lalilu.lmusic.datasource.entity.MPlaylist
 import com.lalilu.lmusic.screen.ScreenActions
-import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
-import com.lalilu.lmusic.screen.bean.next
-import com.lalilu.lmusic.screen.component.NavigatorHeaderWithButtons
-import com.lalilu.lmusic.screen.component.button.LazyListSortToggleButton
-import com.lalilu.lmusic.screen.component.button.SortToggleButton
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 fun PlaylistDetailScreen(
     playlistId: Long,
     viewModel: PlaylistsViewModel = hiltViewModel(),
@@ -42,7 +39,6 @@ fun PlaylistDetailScreen(
 //    val playlistItems = remember { emptyList<MediaItem>().toMutableStateList() }
     val songs = emptyList<LSong>()
 
-    var sortByState by rememberDataSaverState("KEY_SORT_BY_PlaylistDetailScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_PlaylistDetailScreen", true)
 //    val sortedItems = remember(sortByState, sortDesc, playlistItems) {
 //        sort(sortByState, sortDesc, playlistItems,
@@ -68,17 +64,17 @@ fun PlaylistDetailScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        NavigatorHeaderWithButtons(
-            title = playlist.playlistTitle,
-            subTitle = playlist.playlistInfo
-        ) {
-            LazyListSortToggleButton(sortByState = sortByState) {
-                sortByState = next(sortByState)
-            }
-            SortToggleButton(sortDesc = sortDesc) {
-                sortDesc = !sortDesc
-            }
-        }
+//        NavigatorHeaderWithButtons(
+//            title = playlist.playlistTitle,
+//            subTitle = playlist.playlistInfo
+//        ) {
+//            LazyListSortToggleButton(sortByState = sortByState) {
+//                sortByState = next(sortByState)
+//            }
+//            SortToggleButton(sortDesc = sortDesc) {
+//                sortDesc = !sortDesc
+//            }
+//        }
         LazyVerticalGrid(
             columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
             contentPadding = PaddingValues(

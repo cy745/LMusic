@@ -21,12 +21,12 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.compose.component.IconTextButton
 import com.lalilu.lmusic.compose.component.SongCard
 import com.lalilu.lmusic.screen.LibraryNavigateBar
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
-import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
@@ -69,13 +69,13 @@ fun SongsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    TextWithIconButton(
+                    IconTextButton(
                         text = "取消",
                         color = Color(0xFF006E7C),
                         onClick = songSelectHelper.clear
                     )
                     Text(text = "已选择: ${songSelectHelper.selectedItem.size}")
-                    TextWithIconButton(
+                    IconTextButton(
                         text = "添加到歌单",
                         color = Color(0xFF006E7C),
                         onClick = navToAddToPlaylist

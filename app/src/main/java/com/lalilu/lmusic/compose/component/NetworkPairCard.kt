@@ -43,7 +43,7 @@ fun NetworkPairCard(
         onClick = onClick,
         buttonExtra = {
             IconTextButton(
-                text = { "歌词" },
+                text = "歌词",
                 shape = RoundedCornerShape(20.dp),
                 iconPainter = painterResource(id = R.drawable.ic_download_cloud_2_line),
                 showIcon = { item()?.lyric == null },
@@ -51,7 +51,7 @@ fun NetworkPairCard(
             )
             AnimatedVisibility(visible = item()?.platform == PLATFORM_NETEASE) {
                 IconTextButton(
-                    text = { "封面" },
+                    text = "封面",
                     shape = RoundedCornerShape(20.dp),
                     iconPainter = painterResource(id = R.drawable.ic_download_cloud_2_line),
                     showIcon = { item()?.cover == null },
