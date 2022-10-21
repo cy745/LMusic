@@ -1,9 +1,22 @@
 package com.lalilu.lmusic.screen.library.detail
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -138,7 +151,17 @@ fun SongDetailScreen(
             item {
                 NetworkPairCard(
                     item = { networkData },
-                    onClick = { navToNetworkMatchAction.invoke(song.id) }
+                    onClick = {
+                        navToNetworkMatchAction.invoke(song.id)
+                    },
+                    onDownloadCover = {
+                        networkDataViewModel.saveCoverIntoNetworkData(networkData?.songId, song.id)
+                    },
+                    onDownloadLyric = {
+                        networkDataViewModel.saveLyricIntoNetworkData(
+                            networkData?.songId, song.id, networkData?.platform
+                        )
+                    }
                 )
             }
         }

@@ -6,7 +6,11 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
-import com.lalilu.lmusic.apis.*
+import com.lalilu.lmusic.apis.KugouDataSource
+import com.lalilu.lmusic.apis.NeteaseDataSource
+import com.lalilu.lmusic.apis.NetworkSong
+import com.lalilu.lmusic.apis.PLATFORM_KUGOU
+import com.lalilu.lmusic.apis.PLATFORM_NETEASE
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
@@ -15,7 +19,12 @@ import com.lalilu.lmusic.service.LMusicLyricManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -29,11 +38,6 @@ class NetworkDataViewModel @Inject constructor(
     fun getNetworkDataFlowByMediaId(mediaId: String) =
         dataBase.networkDataDao().getFlowById(mediaId)
             .distinctUntilChanged()
-
-    suspend fun getNetworkDataByMediaId(mediaId: String): MNetworkData? =
-        withContext(Dispatchers.IO) {
-            return@withContext dataBase.networkDataDao().getById(mediaId)
-        }
 
     fun getSongResult(
         keyword: String,
@@ -66,6 +70,13 @@ class NetworkDataViewModel @Inject constructor(
         }.launchIn(this)
     }
 
+    /**
+     * 将选中的NetworkSong保存到数据库中
+     *
+     * @param mediaId       歌曲在本地媒体数据库中的ID
+     * @param networkSong   云端请求到的歌曲数据信息
+     * @param success       保存成功回调
+     */
     fun saveMatchNetworkData(
         mediaId: String,
         networkSong: NetworkSong?,
@@ -91,7 +102,13 @@ class NetworkDataViewModel @Inject constructor(
         }
     }
 
-    fun saveCoverUrlIntoNetworkData(
+    /**
+     * 根据获取到的云端ID进行封面地址的查询获取
+     *
+     * @param songId    歌曲的云端ID
+     * @param mediaId   歌曲在本地媒体数据库中的ID
+     */
+    fun saveCoverIntoNetworkData(
         songId: String?,
         mediaId: String,
     ) = viewModelScope.launch(Dispatchers.IO) {
@@ -115,11 +132,18 @@ class NetworkDataViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 根据获取到的云端ID进行歌词的查询获取
+     *
+     * @param songId    歌曲的云端ID
+     * @param mediaId   歌曲在本地媒体数据库中的ID
+     * @param platform  请求接口的目标平台
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     fun saveLyricIntoNetworkData(
         songId: String?,
         mediaId: String,
-        platform: Int,
+        platform: Int?,
         success: () -> Unit = {}
     ) = viewModelScope.launch(Dispatchers.IO) {
         flow {
@@ -153,8 +177,7 @@ class NetworkDataViewModel @Inject constructor(
             withContext(Dispatchers.Main) {
                 success()
             }
-        }.catch {
-            ToastUtils.showShort("保存失败")
-        }.launchIn(this)
+        }.catch { ToastUtils.showShort("保存失败") }
+            .launchIn(this)
     }
 }

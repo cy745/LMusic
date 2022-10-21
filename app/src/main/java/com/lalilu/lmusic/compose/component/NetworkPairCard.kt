@@ -1,13 +1,21 @@
 package com.lalilu.lmusic.compose.component
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -23,14 +31,34 @@ import com.lalilu.lmusic.utils.extension.dayNightTextColor
 fun NetworkPairCard(
     modifier: Modifier = Modifier,
     item: () -> MNetworkData?,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onDownloadLyric: () -> Unit = {},
+    onDownloadCover: () -> Unit = {}
 ) {
     NetworkPairCard(
         modifier = modifier,
         title = { item()?.title },
         subTitle = { item()?.songId },
         platform = { item()?.platform },
-        onClick = onClick
+        onClick = onClick,
+        buttonExtra = {
+            IconTextButton(
+                text = { "歌词" },
+                shape = RoundedCornerShape(20.dp),
+                iconPainter = painterResource(id = R.drawable.ic_download_cloud_2_line),
+                showIcon = { item()?.lyric == null },
+                onClick = onDownloadLyric
+            )
+            AnimatedVisibility(visible = item()?.platform == PLATFORM_NETEASE) {
+                IconTextButton(
+                    text = { "封面" },
+                    shape = RoundedCornerShape(20.dp),
+                    iconPainter = painterResource(id = R.drawable.ic_download_cloud_2_line),
+                    showIcon = { item()?.cover == null },
+                    onClick = onDownloadCover
+                )
+            }
+        }
     )
 }
 
@@ -41,17 +69,9 @@ fun NetworkPairCard(
     title: () -> String?,
     subTitle: () -> String?,
     platform: () -> Int?,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    buttonExtra: @Composable RowScope.() -> Unit = {}
 ) {
-    // TODO title、subTitle数据不更新
-    val platformR = remember {
-        when (platform()) {
-            PLATFORM_KUGOU -> R.drawable.kugou
-            PLATFORM_NETEASE -> R.drawable.ic_netease_cloud_music_line
-            else -> null
-        }
-    }
-
     Surface(
         modifier = modifier.padding(horizontal = 20.dp),
         elevation = 0.dp,
@@ -68,20 +88,22 @@ fun NetworkPairCard(
             NetworkPairCardContent(
                 title = title,
                 subTitle = subTitle,
+                buttonExtra = buttonExtra,
                 iconExtra = {
-                    platformR?.let {
+                    when (platform()) {
+                        PLATFORM_KUGOU -> R.drawable.kugou
+                        PLATFORM_NETEASE -> R.drawable.ic_netease_cloud_music_line
+                        else -> null
+                    }?.let {
                         Icon(
                             modifier = Modifier
                                 .size(72.dp)
                                 .align(Alignment.Bottom),
                             painter = painterResource(id = it),
                             tint = dayNightTextColor(0.1f),
-                            contentDescription = "netease"
+                            contentDescription = "Platform Icon"
                         )
                     }
-                },
-                buttonExtra = {
-
                 }
             )
         }
@@ -111,10 +133,10 @@ fun NetworkPairCardContent(
     iconExtra: @Composable RowScope.() -> Unit = {},
     buttonExtra: @Composable RowScope.() -> Unit = {}
 ) {
-    val titleR = remember { title() }
-    val subTitleR = remember { subTitle() }
+    val titleR = title()
+    val subTitleR = subTitle()
 
-    if (titleR.isNullOrEmpty() || subTitleR.isNullOrBlank()) {
+    if (titleR.isNullOrEmpty() || subTitleR.isNullOrEmpty()) {
         return
     }
 
@@ -126,12 +148,12 @@ fun NetworkPairCardContent(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = subTitleR ?: "",
+                text = subTitleR,
                 fontSize = 10.sp,
                 color = dayNightTextColor(0.3f),
             )
             Text(
-                text = titleR ?: "",
+                text = titleR,
                 fontSize = 16.sp,
                 color = dayNightTextColor(),
             )
