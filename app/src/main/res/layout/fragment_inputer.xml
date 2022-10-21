@@ -6,7 +6,7 @@
     android:layout_height="wrap_content">
 
     <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/search_for_lyric_keyword"
+        android:id="@+id/inputer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@drawable/edittext_radius_bg"
