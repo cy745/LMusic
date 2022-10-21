@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.SelectHelper
 import dagger.hilt.android.lifecycle.HiltViewModel

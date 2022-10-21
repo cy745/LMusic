@@ -10,7 +10,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import com.funny.data_saver.core.DataSaverInterface
 import com.funny.data_saver.core.LocalDataSaver
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.lalilu.lmusic.screen.guiding.GuidingScreen
+import com.lalilu.lmusic.compose.screen.guiding.GuidingScreen
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import dagger.hilt.android.AndroidEntryPoint

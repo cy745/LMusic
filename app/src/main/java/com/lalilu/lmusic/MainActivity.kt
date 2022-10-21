@@ -20,12 +20,12 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
+import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
+import com.lalilu.lmusic.compose.screen.LMusicNavGraph
+import com.lalilu.lmusic.compose.screen.PlayingScreen
 import com.lalilu.lmusic.repository.SettingsDataStore
-import com.lalilu.lmusic.screen.LMusicNavGraph
-import com.lalilu.lmusic.screen.PlayingScreen
 import com.lalilu.lmusic.screen.ShowScreen
-import com.lalilu.lmusic.screen.component.SmartBar.SmartBarContent
-import com.lalilu.lmusic.screen.component.SmartModalBottomSheet
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.OnBackPressedHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
