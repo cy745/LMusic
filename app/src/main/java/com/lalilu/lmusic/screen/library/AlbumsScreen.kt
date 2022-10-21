@@ -14,7 +14,6 @@ import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmusic.compose.component.AlbumCard
 import com.lalilu.lmusic.screen.ScreenActions
-import com.lalilu.lmusic.screen.bean.SORT_BY_TIME
 import com.lalilu.lmusic.screen.component.SmartContainer
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -28,7 +27,6 @@ fun AlbumsScreen(
     val windowSize = LocalWindowSize.current
     val navToAlbumAction = ScreenActions.navToAlbum()
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
-    var sortByState by rememberDataSaverState("KEY_SORT_BY_AlbumsScreen", SORT_BY_TIME)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)
 
     SmartContainer.LazyVerticalGrid(

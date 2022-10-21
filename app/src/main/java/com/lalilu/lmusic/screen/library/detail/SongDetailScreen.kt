@@ -28,18 +28,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.compose.component.IconTextButton
 import com.lalilu.lmusic.compose.component.NetworkPairCard
 import com.lalilu.lmusic.compose.component.RecommendCardForAlbum
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.NavigatorHeader
 import com.lalilu.lmusic.screen.component.SmartBar
 import com.lalilu.lmusic.screen.component.SmartContainer
-import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
@@ -181,20 +182,20 @@ fun SongDetailActionsBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        TextWithIconButton(
-            textRes = R.string.text_button_play,
+        IconTextButton(
+            text = stringResource(id = R.string.text_button_play),
             color = Color(0xFF006E7C),
             onClick = onPlaySong
         )
-        TextWithIconButton(
-            textRes = R.string.button_set_song_to_next,
+        IconTextButton(
+            text = stringResource(id = R.string.button_set_song_to_next),
             color = Color(0xFF006E7C),
             onClick = onSetSongToNext
         )
-        TextWithIconButton(
-            textRes = R.string.button_add_song_to_playlist,
-            iconRes = R.drawable.ic_play_list_add_line,
+        IconTextButton(
             color = Color(0xFF006E7C),
+            text = stringResource(id = R.string.button_add_song_to_playlist),
+            iconPainter = painterResource(id = R.drawable.ic_play_list_add_line),
             onClick = onAddSongToPlaylist
         )
     }

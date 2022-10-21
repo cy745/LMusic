@@ -34,10 +34,10 @@ import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LPlaylist
+import com.lalilu.lmusic.compose.component.IconTextButton
 import com.lalilu.lmusic.screen.LibraryNavigateBar
 import com.lalilu.lmusic.screen.ScreenActions
 import com.lalilu.lmusic.screen.component.SmartBar
-import com.lalilu.lmusic.screen.component.button.TextWithIconButton
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -85,13 +85,13 @@ fun PlaylistsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    TextWithIconButton(
+                    IconTextButton(
                         text = "取消",
                         color = Color(0xFF006E7C),
                         onClick = playlistSelectHelper.clear
                     )
                     Text(text = "已选择: ${playlistSelectHelper.selectedItem.size}")
-                    TextWithIconButton(
+                    IconTextButton(
                         text = "删除",
                         color = Color(0xFF006E7C),
                         onClick = {
