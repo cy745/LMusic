@@ -32,12 +32,7 @@ import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
-import com.lalilu.ui.CLICK_PART_MIDDLE
-import com.lalilu.ui.ClickPart
-import com.lalilu.ui.OnSeekBarCancelListener
-import com.lalilu.ui.OnSeekBarClickListener
-import com.lalilu.ui.OnSeekBarScrollToThresholdListener
-import com.lalilu.ui.OnSeekBarSeekToListener
+import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper
 
@@ -184,7 +179,11 @@ fun PlayingScreen(
                 song = it
 
                 if (it != null) {
-                    DynamicTips.push(it.name, it)
+                    DynamicTips.push(
+                        title = it.name,
+                        subTitle = "播放中",
+                        imageData = it
+                    )
                 }
             }
             LMusicRuntime.positionLiveData.observe(activity) {

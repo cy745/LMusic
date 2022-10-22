@@ -29,6 +29,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
@@ -65,7 +66,14 @@ fun SongDetailScreen(
                     // TODO 完善此处跳转以及传递数据的逻辑
                     navToAddToPlaylistAction()
                 },
-                onSetSongToNext = { LMusicBrowser.addToNext(song.id) },
+                onSetSongToNext = {
+                    LMusicBrowser.addToNext(song.id)
+                    DynamicTips.push(
+                        title = song.name,
+                        subTitle = "下一首播放",
+                        imageData = song
+                    )
+                },
                 onPlaySong = { LMusicBrowser.addAndPlay(song.id) })
         }
     }

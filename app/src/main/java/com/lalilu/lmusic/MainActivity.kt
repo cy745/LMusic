@@ -106,8 +106,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                             },
                             content = { PlayingScreen(backPressedHelper) }
                         )
-                        DynamicTips.Content(modifier = Modifier.align(Alignment.TopCenter))
                         ShowScreen()
+                        DynamicTips.Content(modifier = Modifier.align(Alignment.TopCenter))
                     }
                 }
             }
