@@ -20,6 +20,7 @@ import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.PlayingAdapter
+import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
@@ -31,7 +32,12 @@ import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
-import com.lalilu.ui.*
+import com.lalilu.ui.CLICK_PART_MIDDLE
+import com.lalilu.ui.ClickPart
+import com.lalilu.ui.OnSeekBarCancelListener
+import com.lalilu.ui.OnSeekBarClickListener
+import com.lalilu.ui.OnSeekBarScrollToThresholdListener
+import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper
 
@@ -176,6 +182,10 @@ fun PlayingScreen(
             LMusicRuntime.playingLiveData.observe(activity) {
                 maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
                 song = it
+
+                if (it != null) {
+                    DynamicTips.push(it.name, it)
+                }
             }
             LMusicRuntime.positionLiveData.observe(activity) {
                 maSeekBar.updateValue(it.toFloat())

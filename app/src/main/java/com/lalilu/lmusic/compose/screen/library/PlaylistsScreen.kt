@@ -1,12 +1,24 @@
 package com.lalilu.lmusic.compose.screen.library
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -26,7 +38,9 @@ import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmusic.compose.component.SmartBar
+import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
+import com.lalilu.lmusic.compose.component.base.InputBar
 import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -40,6 +54,11 @@ import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
+@OptIn(
+    ExperimentalFoundationApi::class,
+    ExperimentalMaterialApi::class,
+    ExperimentalAnimationApi::class
+)
 @Composable
 fun PlaylistsScreen(
     mainViewModel: MainViewModel,
@@ -119,7 +138,7 @@ fun PlaylistsScreen(
         }
     }
 
-    LazyColumn(
+    SmartContainer.LazyColumn(
         state = state.listState,
         modifier = Modifier
             .fillMaxSize()
@@ -127,39 +146,39 @@ fun PlaylistsScreen(
             .detectReorderAfterLongPress(state),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-//        item(key = "CREATE_PLAYLIST_BTN", contentType = "CREATE_PLAYLIST_BTN") {
-//            Surface(
-//                modifier = Modifier
-//                    .padding(horizontal = 10.dp, vertical = 15.dp)
-//                    .animateItemPlacement(),
-//                color = Color.Transparent,
-//                shape = RoundedCornerShape(10.dp),
-//                border = BorderStroke(1.dp, dayNightTextColor(0.1f)),
-//                onClick = { creatingNewPlaylist = !creatingNewPlaylist }
-//            ) {
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(horizontal = 15.dp, vertical = 20.dp),
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.spacedBy(15.dp)
-//                ) {
-//                    Icon(
-//                        painter = painterResource(id = R.drawable.ic_add_line),
-//                        contentDescription = ""
-//                    )
-//
-//                    Text(modifier = Modifier.weight(1f), text = "新建歌单")
-//
-//                    AnimatedContent(targetState = creatingNewPlaylist) {
-//                        Icon(
-//                            painter = painterResource(if (creatingNewPlaylist) R.drawable.ic_arrow_down_s_line else R.drawable.ic_arrow_up_s_line),
-//                            contentDescription = ""
-//                        )
-//                    }
-//                }
-//            }
-//        }
+        item(key = "CREATE_PLAYLIST_BTN", contentType = "CREATE_PLAYLIST_BTN") {
+            Surface(
+                modifier = Modifier
+                    .padding(horizontal = 10.dp, vertical = 15.dp)
+                    .animateItemPlacement(),
+                color = Color.Transparent,
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.dp, dayNightTextColor(0.1f)),
+                onClick = { creatingNewPlaylist = !creatingNewPlaylist }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(15.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_add_line),
+                        contentDescription = ""
+                    )
+
+                    Text(modifier = Modifier.weight(1f), text = "新建歌单")
+
+                    AnimatedContent(targetState = creatingNewPlaylist) {
+                        Icon(
+                            painter = painterResource(if (creatingNewPlaylist) R.drawable.ic_arrow_down_s_line else R.drawable.ic_arrow_up_s_line),
+                            contentDescription = ""
+                        )
+                    }
+                }
+            }
+        }
 //
 //        playlists.find { it._id == 0L }?.let {
 //            item(key = it._id, contentType = LPlaylist::class) {
@@ -211,7 +230,7 @@ fun createNewPlaylistBar(
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        com.lalilu.lmusic.compose.component.InputBar(
+        InputBar(
             hint = "新建歌单",
             value = text,
             onSubmit = {
