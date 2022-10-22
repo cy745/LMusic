@@ -1,27 +1,13 @@
 package com.lalilu.lmusic.compose.component
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.TweenSpec
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideIn
-import androidx.compose.animation.slideOut
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -39,12 +25,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
+import com.lalilu.R
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 object DynamicTips : CoroutineScope {
@@ -55,8 +38,9 @@ object DynamicTips : CoroutineScope {
     private val imageData = mutableStateOf<Any?>(null)
     private val show = mutableStateOf(false)
 
-    fun push(title: String, imageData: Any? = null) = launch {
+    fun push(title: String, subTitle: String = "", imageData: Any? = null) = launch {
         this@DynamicTips.title.value = title
+        this@DynamicTips.subTitle.value = subTitle
         this@DynamicTips.imageData.value = imageData
     }
 
@@ -100,11 +84,15 @@ object DynamicTips : CoroutineScope {
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
+                            .placeholder(R.drawable.ic_music_line_bg_48dp)
+                            .error(R.drawable.ic_music_line_bg_48dp)
                             .data(imageData.value)
                             .size(200)
                             .transformations(CircleCropTransformation())
                             .build(),
-                        modifier = Modifier.size(56.dp),
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(color = dayNightTextColor(0.1f), shape = CircleShape),
                         contentScale = ContentScale.Crop,
                         contentDescription = "Icon"
                     )
