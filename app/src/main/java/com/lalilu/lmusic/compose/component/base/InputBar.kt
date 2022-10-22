@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component
+package com.lalilu.lmusic.compose.component.base
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState

@@ -6,10 +6,12 @@ import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import com.blankj.utilcode.util.ActivityUtils
@@ -20,6 +22,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.screen.LMusicNavGraph
@@ -89,20 +92,23 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                     LocalWindowSize provides calculateWindowSizeClass(activity = this),
                     LocalNavigatorHost provides navHostController
                 ) {
-                    SmartModalBottomSheet.SmartModalBottomSheetContent(
-                        navController = navHostController,
-                        sheetContent = {
-                            LMusicNavGraph()
-                            SmartBarContent(
-                                modifier = Modifier.graphicsLayer {
-                                    translationY = -SmartModalBottomSheet.offset
-                                    alpha = SmartModalBottomSheet.offsetHalfPercent
-                                }
-                            )
-                        },
-                        content = { PlayingScreen(backPressedHelper) }
-                    )
-                    ShowScreen()
+                    Box {
+                        SmartModalBottomSheet.SmartModalBottomSheetContent(
+                            navController = navHostController,
+                            sheetContent = {
+                                LMusicNavGraph()
+                                SmartBarContent(
+                                    modifier = Modifier.graphicsLayer {
+                                        translationY = -SmartModalBottomSheet.offset
+                                        alpha = SmartModalBottomSheet.offsetHalfPercent
+                                    }
+                                )
+                            },
+                            content = { PlayingScreen(backPressedHelper) }
+                        )
+                        DynamicTips.Content(modifier = Modifier.align(Alignment.TopCenter))
+                        ShowScreen()
+                    }
                 }
             }
         }
