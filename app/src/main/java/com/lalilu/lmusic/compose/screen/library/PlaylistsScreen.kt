@@ -5,20 +5,10 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -45,6 +35,7 @@ import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
@@ -62,20 +53,16 @@ import org.burnoutcrew.reorderable.reorderable
 @Composable
 fun PlaylistsScreen(
     mainViewModel: MainViewModel,
-    playlistsViewModel: PlaylistsViewModel,
+    playlistsVM: PlaylistsViewModel,
     libraryViewModel: LibraryViewModel
 ) {
     val context = LocalContext.current
     val playlistSelectHelper = mainViewModel.playlistSelectHelper
-    val playlists by playlistsViewModel.playlists
 
-    val state = rememberReorderableLazyListState(onMove = { from, to ->
-        println("from: $from to: $to stateList: ${playlists.size}")
-        playlistsViewModel.movePlaylist(from, to)
-//        val fromItem = playlists.getOrNull(from.index) ?: return@rememberReorderableLazyListState
-//        val toItem = playlists.getOrNull(to.index) ?: return@rememberReorderableLazyListState
-//        playlistsViewModel.swapTwoPlaylists(fromItem, toItem)
-    })
+    val state = rememberReorderableLazyListState(
+        onMove = playlistsVM::onMovePlaylist,
+        canDragOver = playlistsVM::canDragOver
+    )
 
     var creatingNewPlaylist by remember { mutableStateOf(false) }
     val navToPlaylistAction = ScreenActions.navToPlaylist()
@@ -106,7 +93,7 @@ fun PlaylistsScreen(
                         color = Color(0xFF006E7C),
                         onClick = {
                             val items = playlistSelectHelper.selectedItem.toImmutableList()
-                            playlistsViewModel.removePlaylists(items)
+                            playlistsVM.removePlaylists(items)
                             playlistSelectHelper.clear()
                         }
                     )
@@ -127,7 +114,7 @@ fun PlaylistsScreen(
                 createNewPlaylistBar(
                     onCancel = { creatingNewPlaylist = false },
                     onCommit = {
-                        playlistsViewModel.createNewPlaylist(it)
+                        playlistsVM.createNewPlaylist(it)
                         creatingNewPlaylist = false
                     }
                 )
@@ -141,6 +128,7 @@ fun PlaylistsScreen(
     SmartContainer.LazyColumn(
         state = state.listState,
         modifier = Modifier
+            .recomposeHighlighter()
             .fillMaxSize()
             .reorderable(state)
             .detectReorderAfterLongPress(state),
@@ -179,37 +167,34 @@ fun PlaylistsScreen(
                 }
             }
         }
-//
-//        playlists.find { it._id == 0L }?.let {
-//            item(key = it._id, contentType = LPlaylist::class) {
-//                PlaylistCard(
-//                    modifier = Modifier.animateItemPlacement(),
-//                    getPlaylist = { it },
-//                    icon = R.drawable.ic_heart_3_fill,
-//                    iconTint = MaterialTheme.colors.primary,
-//                    getIsSelected = playlistSelectHelper.isSelected,
-//                    onClick = onSelectPlaylist,
-//                    onLongClick = playlistSelectHelper.onSelected,
-//                )
-//            }
-//        }
 
-        itemsIndexed(
-            items = playlists,
-            key = { _, item -> item._id },
-            contentType = { _, _ -> LPlaylist::class }
-        ) { index, item ->
+        items(
+            items = playlistsVM.playlists,
+            key = { it._id },
+            contentType = { LPlaylist::class }
+        ) {
             ReorderableItem(
+                defaultDraggingModifier = Modifier.animateItemPlacement(),
                 state = state,
-                key = item._id,
-                index = index
+                key = it._id
             ) { isDragging ->
-                PlaylistCard(
-                    getPlaylist = { item },
-                    getIsSelected = { isDragging },
-                    onClick = onSelectPlaylist,
-                    onLongClick = playlistSelectHelper.onSelected,
-                )
+                if (it._id == 0L) {
+                    PlaylistCard(
+                        icon = R.drawable.ic_heart_3_fill,
+                        iconTint = MaterialTheme.colors.primary,
+                        getPlaylist = { it },
+                        getIsSelected = { isDragging },
+                        onClick = onSelectPlaylist,
+                        onLongClick = playlistSelectHelper.onSelected,
+                    )
+                } else {
+                    PlaylistCard(
+                        getPlaylist = { it },
+                        getIsSelected = { isDragging },
+                        onClick = onSelectPlaylist,
+                        onLongClick = playlistSelectHelper.onSelected,
+                    )
+                }
             }
         }
     }
@@ -231,6 +216,7 @@ fun createNewPlaylistBar(
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         InputBar(
+            modifier = Modifier.weight(1f),
             hint = "新建歌单",
             value = text,
             onSubmit = {
@@ -258,7 +244,6 @@ fun createNewPlaylistBar(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlaylistCard(
     modifier: Modifier = Modifier,

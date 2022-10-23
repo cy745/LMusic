@@ -94,6 +94,7 @@ dependencies {
     // Apache-2.0 license
     // Compose的拖动排序组件
     implementation 'org.burnoutcrew.composereorderable:reorderable:0.9.2'
+    // 0.9.2对LazyColumn的ContentPadding存在偏移的bug
 
     // https://github.com/Block-Network/StatusBarApiExample
     // 墨 · 状态栏歌词 API
@@ -117,6 +118,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui:$compose_version"
+    implementation "androidx.compose.ui:ui-util:$compose_version"
     implementation "androidx.compose.ui:ui-viewbinding:1.2.1"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
