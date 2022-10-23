@@ -5,10 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lalilu.lmedia.database.SongInPlaylist
 import com.lalilu.lmedia.database.sort
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.indexer.Library
-import com.lalilu.lmusic.datasource.entity.SongInPlaylist
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -52,10 +52,6 @@ class PlaylistsViewModel @Inject constructor() : ViewModel() {
 //                }
 //        }
 
-    fun swapTwoPlaylists(from: LPlaylist, to: LPlaylist) = viewModelScope.launch(Dispatchers.IO) {
-        Library.swapTwoPlaylists(from, to)
-    }
-
     fun createNewPlaylist(title: String) = viewModelScope.launch(Dispatchers.IO) {
         Library.createPlaylist(LPlaylist(_title = title))
     }
@@ -64,19 +60,15 @@ class PlaylistsViewModel @Inject constructor() : ViewModel() {
         Library.removePlaylists(playlist)
     }
 
-    fun copyCurrentPlayingPlaylist() = viewModelScope.launch(Dispatchers.IO) {
-//        val playlistTitle = "复制歌单: (${HistoryManager.currentPlayingIds.size})"
-//        val playlist = MPlaylist(playlistTitle = playlistTitle)
-//        dataBase.playlistDao().save(playlist)
-//        dataBase.songInPlaylistDao().save(
-//            HistoryManager.currentPlayingIds.map {
-//                SongInPlaylist(
-//                    playlistId = playlist.playlistId,
-//                    mediaId = it
-//                )
-//            }
-//        )
-    }
+    fun addSongIntoPlaylist(mediaId: String, playlistId: Long) =
+        viewModelScope.launch(Dispatchers.IO) {
+            Library.saveSongIntoPlaylist(SongInPlaylist(playlistId, mediaId))
+        }
+
+    fun removeSongFromPlaylist(mediaId: String, playlistId: Long) =
+        viewModelScope.launch(Dispatchers.IO) {
+            Library.removeSongFromPlaylist(SongInPlaylist(playlistId, mediaId))
+        }
 
     fun addSongsIntoPlaylists(mediaIds: List<String>, playlistIds: List<Long>) =
         viewModelScope.launch(Dispatchers.IO) {

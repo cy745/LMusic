@@ -29,9 +29,11 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.lmusic.compose.component.base.IconCheckButton
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.NetworkPairCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
@@ -44,13 +46,15 @@ import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
+import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SongDetailScreen(
     song: LSong,
     mainViewModel: MainViewModel,
-    networkDataViewModel: NetworkDataViewModel
+    networkDataViewModel: NetworkDataViewModel,
+    playlistsVM: PlaylistsViewModel
 ) {
     val windowSize = LocalWindowSize.current
     val navToAlbumAction = ScreenActions.navToAlbum()
@@ -58,10 +62,20 @@ fun SongDetailScreen(
     val navToAddToPlaylistAction = ScreenActions.navToAddToPlaylist()
     val networkData by networkDataViewModel.getNetworkDataFlowByMediaId(song.id)
         .collectAsState(null)
+    val isLiked by Library.isContainSongInPlaylist(song.id, 0L)
+        .collectAsState(false)
 
     LaunchedEffect(song) {
         SmartBar.setExtraBar {
             SongDetailActionsBar(
+                getIsLiked = { isLiked },
+                onIsLikedChange = {
+                    if (it) {
+                        playlistsVM.addSongIntoPlaylist(playlistId = 0L, mediaId = song.id)
+                    } else {
+                        playlistsVM.removeSongFromPlaylist(playlistId = 0L, mediaId = song.id)
+                    }
+                },
                 onAddSongToPlaylist = {
                     // TODO 完善此处跳转以及传递数据的逻辑
                     navToAddToPlaylistAction()
@@ -174,6 +188,8 @@ fun SongDetailScreen(
 
 @Composable
 fun SongDetailActionsBar(
+    getIsLiked: () -> Boolean = { false },
+    onIsLikedChange: (Boolean) -> Unit = {},
     onPlaySong: () -> Unit = {},
     onSetSongToNext: () -> Unit = {},
     onAddSongToPlaylist: () -> Unit = {}
@@ -183,7 +199,7 @@ fun SongDetailActionsBar(
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(20.dp)
+        horizontalArrangement = Arrangement.spacedBy(15.dp)
     ) {
         IconTextButton(
             text = stringResource(id = R.string.text_button_play),
@@ -200,6 +216,13 @@ fun SongDetailActionsBar(
             text = stringResource(id = R.string.button_add_song_to_playlist),
             iconPainter = painterResource(id = R.drawable.ic_play_list_add_line),
             onClick = onAddSongToPlaylist
+        )
+        IconCheckButton(
+            getIsChecked = getIsLiked,
+            onCheckedChange = onIsLikedChange,
+            checkedColor = MaterialTheme.colors.primary,
+            checkedIconRes = R.drawable.ic_heart_3_fill,
+            normalIconRes = R.drawable.ic_heart_3_line
         )
     }
 }

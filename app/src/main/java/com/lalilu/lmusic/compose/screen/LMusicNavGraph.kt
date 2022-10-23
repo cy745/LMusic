@@ -144,8 +144,9 @@ fun LMusicNavGraph(
             Library.getSongOrNull(mediaId)?.let {
                 SongDetailScreen(
                     song = it,
+                    mainViewModel = mainViewModel,
                     networkDataViewModel = networkDataViewModel,
-                    mainViewModel = mainViewModel
+                    playlistsVM = playlistsViewModel
                 )
             } ?: EmptySongDetailScreen()
         }
