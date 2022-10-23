@@ -6,9 +6,9 @@ plugins {
     id 'com.google.devtools.ksp' version '1.7.10-1.0.6'
 }
 
-//def keystorePropsFile = rootProject.file("keystore.properties")
-//def keystoreProps = new Properties()
-//keystoreProps.load((new FileInputStream(keystorePropsFile)))
+def keystorePropsFile = rootProject.file("keystore.properties")
+def keystoreProps = new Properties()
+keystoreProps.load((new FileInputStream(keystorePropsFile)))
 
 android {
     compileSdkVersion 33
@@ -37,14 +37,14 @@ android {
         jvmTarget = "1.8"
     }
 
-//    signingConfigs {
-//        release {
-//            storeFile file(keystoreProps['storeFile'])
-//            storePassword keystoreProps['storePassword']
-//            keyAlias keystoreProps['keyAlias']
-//            keyPassword keystoreProps['keyPassword']
-//        }
-//    }
+    signingConfigs {
+        release {
+            storeFile file(keystoreProps['storeFile'])
+            storePassword keystoreProps['storePassword']
+            keyAlias keystoreProps['keyAlias']
+            keyPassword keystoreProps['keyPassword']
+        }
+    }
 
     buildTypes {
         release {
@@ -52,7 +52,7 @@ android {
 
             minifyEnabled true
             shrinkResources true
-//            signingConfig signingConfigs.release
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
 
