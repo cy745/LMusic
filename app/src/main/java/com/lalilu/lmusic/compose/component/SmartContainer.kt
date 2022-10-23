@@ -42,10 +42,16 @@ object SmartContainer {
             userScrollEnabled = userScrollEnabled,
             contentPadding = PaddingValues(
                 start = contentPaddingForHorizontal,
-                end = contentPaddingForHorizontal,
-                top = statusBarHeight
+                end = contentPaddingForHorizontal
             )
         ) {
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(statusBarHeight)
+                )
+            }
             content()
             item {
                 Spacer(
