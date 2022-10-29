@@ -2,11 +2,8 @@ package com.lalilu.lmusic.compose.screen.library
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,11 +17,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
@@ -33,6 +28,7 @@ import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.base.InputBar
+import com.lalilu.lmusic.compose.component.card.PlaylistCard
 import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -43,7 +39,7 @@ import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import okhttp3.internal.toImmutableList
 import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
@@ -182,7 +178,7 @@ fun PlaylistsScreen(
             ) { isDragging ->
                 if (it._id == 0L) {
                     PlaylistCard(
-                        dragModifier = Modifier.detectReorderAfterLongPress(state),
+                        dragModifier = Modifier.detectReorder(state),
                         icon = R.drawable.ic_heart_3_fill,
                         iconTint = MaterialTheme.colors.primary,
                         getPlaylist = { it },
@@ -192,7 +188,7 @@ fun PlaylistsScreen(
                     )
                 } else {
                     PlaylistCard(
-                        dragModifier = Modifier.detectReorderAfterLongPress(state),
+                        dragModifier = Modifier.detectReorder(state),
                         getPlaylist = { it },
                         getIsSelected = { isDragging || playlistSelectHelper.isSelected(it) },
                         onClick = { onSelectPlaylist(it) },
@@ -245,57 +241,5 @@ fun createNewPlaylistBar(
                 contentDescription = "确认按钮"
             )
         }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun PlaylistCard(
-    modifier: Modifier = Modifier,
-    dragModifier: Modifier = Modifier,
-    icon: Int = R.drawable.ic_play_list_fill,
-    iconTint: Color = LocalContentColor.current,
-    getPlaylist: () -> LPlaylist,
-    getIsSelected: () -> Boolean = { false },
-    onClick: () -> Unit = {},
-    onLongClick: () -> Unit = {}
-) {
-    val playlist = remember { getPlaylist() }
-    val bgColor by animateColorAsState(if (getIsSelected()) dayNightTextColor(0.15f) else Color.Transparent)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(color = bgColor)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
-            )
-            .padding(horizontal = 15.dp, vertical = 18.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(15.dp)
-    ) {
-        Icon(
-            modifier = dragModifier,
-            painter = painterResource(id = icon),
-            contentDescription = "",
-            tint = iconTint.copy(alpha = 0.7f)
-        )
-        Text(
-            modifier = Modifier.weight(1f),
-            text = playlist.name,
-            color = dayNightTextColor(),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.subtitle1
-        )
-        Text(
-            modifier = dragModifier.padding(start = 20.dp),
-            text = "${playlist.songs.size} 首歌曲",
-            color = dayNightTextColor(0.5f),
-            style = MaterialTheme.typography.subtitle2
-        )
     }
 }

@@ -93,7 +93,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.burnoutcrew.composereorderable/reorderable
     // Apache-2.0 license
     // Compose的拖动排序组件
-    implementation 'org.burnoutcrew.composereorderable:reorderable:0.9.2'
+    implementation 'org.burnoutcrew.composereorderable:reorderable:0.9.4'
     // 0.9.2对LazyColumn的ContentPadding存在偏移的bug
 
     // https://github.com/Block-Network/StatusBarApiExample
