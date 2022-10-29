@@ -29,7 +29,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -62,7 +61,7 @@ fun SongDetailScreen(
     val navToAddToPlaylistAction = ScreenActions.navToAddToPlaylist()
     val networkData by networkDataViewModel.getNetworkDataFlowByMediaId(song.id)
         .collectAsState(null)
-    val isLiked by Library.isContainSongInPlaylist(song.id, 0L)
+    val isLiked by playlistsVM.isContainSongInPlaylist(song.id, 0L)
         .collectAsState(false)
 
     LaunchedEffect(song) {

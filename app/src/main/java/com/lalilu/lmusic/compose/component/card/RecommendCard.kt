@@ -44,14 +44,12 @@ fun RecommendCardForAlbum(
     onClick: () -> Unit = {},
     onClickButton: () -> Unit = {}
 ) {
-    val album = remember { item() }
-
     RecommendCard(
         modifier = modifier,
         contentModifier = contentModifier,
-        imageData = { album },
-        title = { album.name },
-        subTitle = { album.artistName ?: "未知艺术家" },
+        imageData = { item() },
+        title = { item().name },
+        subTitle = { item().artistName ?: "未知艺术家" },
         isPlaying = isPlaying,
         width = width,
         height = height,
