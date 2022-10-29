@@ -11,15 +11,17 @@ import com.lalilu.lmedia.indexer.Library
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor() : ViewModel() {
     var playlists by mutableStateOf(emptyList<LPlaylist>())
+    private var tempList by mutableStateOf(emptyList<LPlaylist>())
 
     fun onMovePlaylist(from: ItemPosition, to: ItemPosition) {
         val toIndex = playlists.indexOfFirst { it._id == to.key }
@@ -33,12 +35,25 @@ class PlaylistsViewModel @Inject constructor() : ViewModel() {
 
     fun canDragOver(pos: ItemPosition) = playlists.any { pos.key == it._id }
 
+    fun onDragEnd(startIndex: Int, endIndex: Int) {
+        val start = startIndex - 2
+        val end = endIndex - 2
+        if (start !in tempList.indices || end !in tempList.indices || start == end) return
+        viewModelScope.launch(Dispatchers.IO) {
+            Library.playlistRepo?.movePlaylist(tempList[start], tempList[end], start > end)
+        }
+    }
+
 
     init {
         Library.playlistRepoFlow
             .flatMapLatest { it?.getAllPlaylistWithDetailFlow() ?: flowOf(emptyList()) }
-            .mapLatest { it.sort(true) }
-            .onEach { playlists = it }
+            .mapLatest { it.sort(false) }
+            .debounce(50)
+            .onEach {
+                playlists = it
+                tempList = it
+            }
             .launchIn(viewModelScope)
     }
 
