@@ -5,6 +5,8 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -131,8 +133,7 @@ fun PlaylistsScreen(
         modifier = Modifier
             .recomposeHighlighter()
             .fillMaxSize()
-            .reorderable(state)
-            .detectReorderAfterLongPress(state),
+            .reorderable(state),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         item(key = "CREATE_PLAYLIST_BTN", contentType = "CREATE_PLAYLIST_BTN") {
@@ -181,19 +182,21 @@ fun PlaylistsScreen(
             ) { isDragging ->
                 if (it._id == 0L) {
                     PlaylistCard(
+                        dragModifier = Modifier.detectReorderAfterLongPress(state),
                         icon = R.drawable.ic_heart_3_fill,
                         iconTint = MaterialTheme.colors.primary,
                         getPlaylist = { it },
-                        getIsSelected = { isDragging },
-                        onClick = onSelectPlaylist,
-                        onLongClick = playlistSelectHelper.onSelected,
+                        getIsSelected = { isDragging || playlistSelectHelper.isSelected(it) },
+                        onClick = { onSelectPlaylist(it) },
+                        onLongClick = { playlistSelectHelper.onSelected(it) },
                     )
                 } else {
                     PlaylistCard(
+                        dragModifier = Modifier.detectReorderAfterLongPress(state),
                         getPlaylist = { it },
-                        getIsSelected = { isDragging },
-                        onClick = onSelectPlaylist,
-                        onLongClick = playlistSelectHelper.onSelected,
+                        getIsSelected = { isDragging || playlistSelectHelper.isSelected(it) },
+                        onClick = { onSelectPlaylist(it) },
+                        onLongClick = { playlistSelectHelper.onSelected(it) },
                     )
                 }
             }
@@ -245,56 +248,54 @@ fun createNewPlaylistBar(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlaylistCard(
     modifier: Modifier = Modifier,
+    dragModifier: Modifier = Modifier,
     icon: Int = R.drawable.ic_play_list_fill,
     iconTint: Color = LocalContentColor.current,
     getPlaylist: () -> LPlaylist,
-    getIsSelected: (LPlaylist) -> Boolean = { false },
-    onClick: (LPlaylist) -> Unit = {},
-    onLongClick: (LPlaylist) -> Unit = {}
+    getIsSelected: () -> Boolean = { false },
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {}
 ) {
     val playlist = remember { getPlaylist() }
-    val bgColor by animateColorAsState(if (getIsSelected(playlist)) dayNightTextColor(0.15f) else Color.Transparent)
+    val bgColor by animateColorAsState(if (getIsSelected()) dayNightTextColor(0.15f) else Color.Transparent)
 
-    Surface(
-        modifier = modifier
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(horizontal = 10.dp)
             .clip(RoundedCornerShape(10.dp))
-//            .combinedClickable(
-//                onClick = { onClick(playlist) },
-//                onLongClick = { onLongClick(playlist) }
-//            )
-        ,
-        color = bgColor
+            .background(color = bgColor)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+            .padding(horizontal = 15.dp, vertical = 18.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(15.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 15.dp, vertical = 18.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(15.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = "",
-                tint = iconTint.copy(alpha = 0.7f)
-            )
-            Text(
-                modifier = Modifier.weight(1f),
-                text = playlist.name,
-                color = dayNightTextColor(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.subtitle1
-            )
-            Text(
-                modifier = Modifier.padding(start = 20.dp),
-                text = "${playlist.songs.size} 首歌曲",
-                color = dayNightTextColor(0.5f),
-                style = MaterialTheme.typography.subtitle2
-            )
-        }
+        Icon(
+            modifier = dragModifier,
+            painter = painterResource(id = icon),
+            contentDescription = "",
+            tint = iconTint.copy(alpha = 0.7f)
+        )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = playlist.name,
+            color = dayNightTextColor(),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.subtitle1
+        )
+        Text(
+            modifier = dragModifier.padding(start = 20.dp),
+            text = "${playlist.songs.size} 首歌曲",
+            color = dayNightTextColor(0.5f),
+            style = MaterialTheme.typography.subtitle2
+        )
     }
 }
