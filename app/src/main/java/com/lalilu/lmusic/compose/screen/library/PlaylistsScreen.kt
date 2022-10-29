@@ -61,7 +61,8 @@ fun PlaylistsScreen(
 
     val state = rememberReorderableLazyListState(
         onMove = playlistsVM::onMovePlaylist,
-        canDragOver = playlistsVM::canDragOver
+        canDragOver = playlistsVM::canDragOver,
+        onDragEnd = playlistsVM::onDragEnd
     )
 
     var creatingNewPlaylist by remember { mutableStateOf(false) }
