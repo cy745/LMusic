@@ -128,12 +128,14 @@ fun LMusicNavGraph(
             route = "${ScreenData.PlaylistsDetail.name}/{playlistId}",
             arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
         ) { backStackEntry ->
-            // todo playlist 逻辑未完善
             val playlistId = backStackEntry.arguments?.getString("playlistId")?.toLong()
-
             playlistId?.let {
-                PlaylistDetailScreen(playlistId = it)
-            }
+                PlaylistDetailScreen(
+                    playlistId = it,
+                    playlistVM = playlistsViewModel,
+                    mainViewModel = mainViewModel
+                )
+            } ?: EmptyPlaylistDetailScreen()
         }
 
         composable(
@@ -156,7 +158,8 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("artistName") { type = NavType.StringType })
         ) { backStackEntry ->
             val artistName = backStackEntry.arguments?.getString("artistName")
-            Library.getArtistOrNull(artistName)?.let { ArtistDetailScreen(artist = it) }
+            Library.getArtistOrNull(artistName)
+                ?.let { ArtistDetailScreen(artist = it) }
                 ?: EmptyArtistDetailScreen()
         }
 
@@ -165,7 +168,8 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("albumId") { type = NavType.StringType })
         ) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId")
-            Library.getAlbumOrNull(albumId)?.let { AlbumDetailScreen(album = it) }
+            Library.getAlbumOrNull(albumId)
+                ?.let { AlbumDetailScreen(album = it) }
                 ?: EmptyAlbumDetailScreen()
         }
 
@@ -174,7 +178,8 @@ fun LMusicNavGraph(
             arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
-            Library.getSongOrNull(mediaId)?.let { MatchNetworkDataScreen(song = it) }
+            Library.getSongOrNull(mediaId)
+                ?.let { MatchNetworkDataScreen(song = it) }
                 ?: EmptySearchForLyricScreen()
         }
 

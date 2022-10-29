@@ -124,7 +124,7 @@ fun SettingsScreen() {
             SettingProgressSeekBar(
                 state = lyricTextSize,
                 title = "歌词文字大小",
-                valueRange = 12..26
+                valueRange = 14..36
             )
         }
 
