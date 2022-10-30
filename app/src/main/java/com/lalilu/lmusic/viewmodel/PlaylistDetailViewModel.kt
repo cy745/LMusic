@@ -7,14 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.database.SongInPlaylist
 import com.lalilu.lmedia.database.sort
+import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
 import javax.inject.Inject
 
@@ -23,7 +21,6 @@ import javax.inject.Inject
 class PlaylistDetailViewModel @Inject constructor() : ViewModel() {
     var songs by mutableStateOf(emptyList<LSong>())
     private var tempList by mutableStateOf(emptyList<SongInPlaylist>())
-    private val playlistIdFlow = MutableStateFlow(-1L)
 
     fun onMoveItem(from: ItemPosition, to: ItemPosition) {
         val toIndex = songs.indexOfFirst { it.id == to.key }
@@ -38,31 +35,37 @@ class PlaylistDetailViewModel @Inject constructor() : ViewModel() {
     fun canDragOver(pos: ItemPosition) = songs.any { pos.key == it.id }
 
     fun onDragEnd(startIndex: Int, endIndex: Int) {
-        val start = startIndex - 1
-        val end = endIndex - 1
+        val start = startIndex - 2
+        val end = endIndex - 2
         if (start !in tempList.indices || end !in tempList.indices || start == end) return
         viewModelScope.launch(Dispatchers.IO) {
-            Library.playlistRepo?.moveSongInPlaylist(tempList[start], tempList[end], start > end)
+            Library.playlistRepo?.moveSongInPlaylist(
+                tempList[start],
+                tempList[end],
+                start < end //
+            )
         }
     }
 
-    init {
+    fun getPlaylistDetailById(playlistId: Long, scope: CoroutineScope) {
+        songs = emptyList()
+        tempList = emptyList()
         Library.playlistRepoFlow
             .flatMapLatest { repo ->
-                playlistIdFlow.flatMapLatest {
-                    repo?.getSongInPlaylists(it) ?: flowOf(emptyList())
-                }
+                repo?.getSongInPlaylists(playlistId) ?: flowOf(emptyList())
             }
-            .mapLatest { it.sort(false) }
+            .mapLatest { it.sort(true) }
             .debounce(50)
             .onEach { list ->
                 songs = list.mapNotNull { Library.getSongOrNull(it.mediaId) }
                 tempList = list
             }
-            .launchIn(viewModelScope)
+            .launchIn(scope)
     }
 
-    fun getPlaylistDetailById(playlistId: Long) = viewModelScope.launch {
-        playlistIdFlow.emit(playlistId)
+    fun getPlaylistFlow(playlistId: Long): Flow<LPlaylist?> {
+        return Library.playlistRepoFlow.flatMapLatest { repo ->
+            repo?.getPlaylistById(playlistId) ?: flowOf(null)
+        }
     }
 }

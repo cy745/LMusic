@@ -6,13 +6,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
+import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.SongCard
+import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
@@ -29,18 +31,22 @@ fun PlaylistDetailScreen(
     vm: PlaylistDetailViewModel
 ) {
     val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
+    val playlist by vm.getPlaylistFlow(playlistId).collectAsState(initial = null)
 
-    vm.getPlaylistDetailById(playlistId)
+    LaunchedEffect(playlistId) {
+        vm.getPlaylistDetailById(playlistId, this)
+    }
+
     val state = rememberReorderableLazyListState(
         onMove = vm::onMoveItem,
         canDragOver = vm::canDragOver,
         onDragEnd = vm::onDragEnd
     )
 
-    val onSongSelected: (LSong) -> Unit = { song ->
-//        playlist.value?.songs?.let {
-//            mainViewModel.playSongWithPlaylist(it, song)
-//        }
+    val onSongSelected: (LSong) -> Unit = remember {
+        { song ->
+            mainViewModel.playSongWithPlaylist(vm.songs, song)
+        }
     }
 
     SmartContainer.LazyColumn(
@@ -50,6 +56,12 @@ fun PlaylistDetailScreen(
             .reorderable(state),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        item(key = "PLAYLIST_HEADER", contentType = LPlaylist::class) {
+            NavigatorHeader(
+                title = playlist?.name ?: "未知歌单",
+                subTitle = "共 ${vm.songs.size} 首歌曲"
+            )
+        }
         itemsIndexed(
             items = vm.songs,
             key = { _, item -> item.id },
@@ -65,7 +77,7 @@ fun PlaylistDetailScreen(
                     song = { item },
                     onClick = { onSongSelected(item) },
                     onLongClick = { navToSongAction(item.id) },
-                    onEnterSelect = { onSongSelected(item) },
+                    onEnterSelect = { },
                     isSelected = { isDragging }
                 )
             }
