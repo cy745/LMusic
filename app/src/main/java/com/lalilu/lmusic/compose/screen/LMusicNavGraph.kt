@@ -30,10 +30,7 @@ import com.lalilu.lmusic.screen.library.SettingsScreen
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
-import com.lalilu.lmusic.viewmodel.LibraryViewModel
-import com.lalilu.lmusic.viewmodel.MainViewModel
-import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
-import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
+import com.lalilu.lmusic.viewmodel.*
 
 @ExperimentalAnimationApi
 @Composable
@@ -43,7 +40,8 @@ fun LMusicNavGraph(
     mainViewModel: MainViewModel = hiltViewModel(),
     libraryViewModel: LibraryViewModel = hiltViewModel(),
     playlistsViewModel: PlaylistsViewModel = hiltViewModel(),
-    networkDataViewModel: NetworkDataViewModel = hiltViewModel()
+    networkDataViewModel: NetworkDataViewModel = hiltViewModel(),
+    playlistDetailViewModel: PlaylistDetailViewModel = hiltViewModel()
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
@@ -132,8 +130,8 @@ fun LMusicNavGraph(
             playlistId?.let {
                 PlaylistDetailScreen(
                     playlistId = it,
-                    playlistVM = playlistsViewModel,
-                    mainViewModel = mainViewModel
+                    mainViewModel = mainViewModel,
+                    vm = playlistDetailViewModel
                 )
             } ?: EmptyPlaylistDetailScreen()
         }

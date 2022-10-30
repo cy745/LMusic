@@ -36,12 +36,14 @@ import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.dayNightTextColorFilter
 import com.lalilu.lmusic.utils.extension.durationMsToString
 import com.lalilu.lmusic.utils.extension.mimeTypeToIcon
+import com.lalilu.lmusic.utils.recomposeHighlighter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 @Composable
 fun SongCard(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.recomposeHighlighter(),
+    dragModifier: Modifier = Modifier,
     song: () -> LSong,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
@@ -61,6 +63,7 @@ fun SongCard(
 
     SongCard(
         modifier = modifier,
+        dragModifier = dragModifier,
         title = { item.name },
         subTitle = { item._artist },
         mimeType = { item.mimeType },
@@ -78,6 +81,7 @@ fun SongCard(
 @Composable
 fun SongCard(
     modifier: Modifier = Modifier,
+    dragModifier: Modifier = Modifier,
     title: () -> String,
     subTitle: () -> String,
     mimeType: () -> String,
@@ -117,6 +121,7 @@ fun SongCard(
             hasLyric = hasLyric
         )
         SongCardImage(
+            modifier = dragModifier,
             imageData = imageData,
             interaction = interactionSource,
             onClick = onClick,
