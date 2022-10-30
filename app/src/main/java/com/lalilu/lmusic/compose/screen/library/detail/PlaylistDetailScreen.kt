@@ -1,62 +1,74 @@
 package com.lalilu.lmusic.compose.screen.library.detail
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
-import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.screen.ScreenActions
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
-import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
+import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorder
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlaylistDetailScreen(
     playlistId: Long,
-    playlistVM: PlaylistsViewModel,
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
+    vm: PlaylistDetailViewModel
 ) {
-    val windowSize = LocalWindowSize.current
-    val playlist = remember { mutableStateOf<LPlaylist?>(null) }
     val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
 
+    vm.getPlaylistDetailById(playlistId)
+    val state = rememberReorderableLazyListState(
+        onMove = vm::onMoveItem,
+        canDragOver = vm::canDragOver,
+        onDragEnd = vm::onDragEnd
+    )
+
     val onSongSelected: (LSong) -> Unit = { song ->
-        playlist.value?.songs?.let {
-            mainViewModel.playSongWithPlaylist(it, song)
-        }
+//        playlist.value?.songs?.let {
+//            mainViewModel.playSongWithPlaylist(it, song)
+//        }
     }
 
-    LaunchedEffect(playlistId) {
-        playlist.value = playlistVM.playlists.find { it._id == playlistId }
-    }
-
-    SmartContainer.LazyVerticalGrid(
-        columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
+    SmartContainer.LazyColumn(
+        state = state.listState,
+        modifier = Modifier
+            .fillMaxSize()
+            .reorderable(state),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         itemsIndexed(
-            items = playlist.value?.songs ?: emptyList(),
+            items = vm.songs,
             key = { _, item -> item.id },
             contentType = { _, _ -> LSong::class }
         ) { index, item ->
-            SongCard(
-                song = { item },
-                onClick = { onSongSelected(item) },
-                onLongClick = { navToSongAction(item.id) },
-                onEnterSelect = { onSongSelected(item) }
-            )
+            ReorderableItem(
+                defaultDraggingModifier = Modifier.animateItemPlacement(),
+                state = state,
+                key = item.id
+            ) { isDragging ->
+                SongCard(
+                    dragModifier = Modifier.detectReorder(state),
+                    song = { item },
+                    onClick = { onSongSelected(item) },
+                    onLongClick = { navToSongAction(item.id) },
+                    onEnterSelect = { onSongSelected(item) },
+                    isSelected = { isDragging }
+                )
+            }
         }
     }
 
