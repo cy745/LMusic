@@ -53,8 +53,8 @@ object ScreenActions {
     }
 
     @Composable
-    fun navToAddToPlaylist(): () -> Unit {
-        return navigate(route = ScreenData.Playlists)
+    fun navToAddToPlaylist(): (String) -> Unit {
+        return navigate(route = ScreenData.Playlists.name, useNullableArg = true)
     }
 
     @Composable
@@ -88,6 +88,7 @@ object ScreenActions {
     @Composable
     fun navigate(
         route: String,
+        useNullableArg: Boolean = false,
         hapticType: HapticFeedbackType? = null,
         builder: NavOptionsBuilder.(NavController) -> Unit = {}
     ): (String) -> Unit {
@@ -96,7 +97,9 @@ object ScreenActions {
         return remember {
             {
                 hapticType?.let { type -> haptic.performHapticFeedback(type) }
-                controller.navigate("$route/$it", builder = { builder(controller) })
+                controller.navigate(
+                    "$route${if (useNullableArg) "?" else "/"}$it",
+                    builder = { builder(controller) })
             }
         }
     }

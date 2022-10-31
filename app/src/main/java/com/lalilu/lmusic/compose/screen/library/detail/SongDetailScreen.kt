@@ -77,7 +77,7 @@ fun SongDetailScreen(
                 },
                 onAddSongToPlaylist = {
                     // TODO 完善此处跳转以及传递数据的逻辑
-                    navToAddToPlaylistAction()
+                    navToAddToPlaylistAction("isSelecting=${true}")
                 },
                 onSetSongToNext = {
                     LMusicBrowser.addToNext(song.id)

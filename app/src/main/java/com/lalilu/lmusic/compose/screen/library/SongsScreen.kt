@@ -11,8 +11,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,27 +29,23 @@ import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
+import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 
 @Composable
 fun SongsScreen(
-    mainViewModel: MainViewModel,
-    libraryViewModel: LibraryViewModel,
+    mainVM: MainViewModel,
+    libraryVM: LibraryViewModel,
 ) {
-    val songSelectHelper = mainViewModel.songSelectHelper
     val windowSize = LocalWindowSize.current
     val gridState = rememberLazyGridState()
 
     val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
-    val navToAddToPlaylist = mainViewModel.navToAddToPlaylist()
+    val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
-    val songs by libraryViewModel.songs.observeAsState(emptyList())
+    val songs by libraryVM.songs.observeAsState(emptyList())
     val currentPlaying by LMusicRuntime.playingLiveData.observeAsState()
-
-    val onSongPlay = songSelectHelper.onSelected { song ->
-        mainViewModel.playSongWithPlaylist(songs, song)
-    }
 
     val scrollAction = buildScrollToItemAction(
         target = currentPlaying,
@@ -58,9 +53,14 @@ fun SongsScreen(
         state = gridState
     )
 
-    songSelectHelper.registerBackHandler()
-    songSelectHelper.listenIsSelectingChange {
-        if (it) {
+    val selectedItems = remember { mutableStateListOf<LSong>() }
+    val selector = rememberSelectState(
+        defaultState = false,
+        selectedItems = selectedItems
+    )
+
+    LaunchedEffect(selector.isSelecting.value) {
+        if (selector.isSelecting.value) {
             SmartBar.setMainBar {
                 Row(
                     modifier = Modifier
@@ -72,13 +72,13 @@ fun SongsScreen(
                     IconTextButton(
                         text = "取消",
                         color = Color(0xFF006E7C),
-                        onClick = songSelectHelper.clear
+                        onClick = { selector.clear() }
                     )
-                    Text(text = "已选择: ${songSelectHelper.selectedItem.size}")
+                    Text(text = "已选择: ${selectedItems.size}")
                     IconTextButton(
                         text = "添加到歌单",
                         color = Color(0xFF006E7C),
-                        onClick = navToAddToPlaylist
+                        onClick = { navToAddToPlaylist(selectedItems) }
                     )
                 }
             }
@@ -124,20 +124,17 @@ fun SongsScreen(
             ) { index, item ->
                 SongCard(
                     song = { item },
-                    onClick = { onSongPlay(item) },
+                    onClick = {
+                        if (selector.isSelecting.value) {
+                            selector.onSelected(item)
+                        } else {
+                            mainVM.playSongWithPlaylist(songs, item)
+                        }
+                    },
                     onLongClick = { navToSongAction(item.id) },
-                    onEnterSelect = { songSelectHelper.onSelected(item) }
+                    onEnterSelect = { selector.onSelected(item) },
+                    isSelected = { selectedItems.any { it.id == item.id } }
                 )
-//                SongCard(
-//                    index = index,
-//                    getSong = { item },
-//                    loadDelay = { 200L },
-//                    getIsSelected = songSelectHelper.isSelected,
-//                    onItemClick = onSongPlay,
-//                    onItemLongClick = { navToSongAction(it.id) },
-//                    onItemImageClick = onSongPlay,
-//                    onItemImageLongClick = songSelectHelper.onSelected
-//                )
             }
         }
     }

@@ -1,47 +1,59 @@
 package com.lalilu.lmusic.utils
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 
-class SelectHelper<T> {
-    private val isSelecting = mutableStateOf(false)
-    val selectedItem = mutableStateListOf<T>()
+class SelectHelper<T>(
+    defaultState: Boolean = false,
+    private val onExitSelect: () -> Unit = {},
+    private val selectedItems: SnapshotStateList<T>
+) {
+    val isSelecting = mutableStateOf(defaultState)
 
-    val isSelected: (T) -> Boolean = {
-        if (!isSelecting.value) clear()
-        selectedItem.contains(it)
-    }
-
-    val clear: () -> Unit = {
+    fun clear() {
         isSelecting.value = false
-        selectedItem.clear()
+        selectedItems.clear()
+        onExitSelect()
     }
 
-    val onSelected: (T) -> Unit = {
-        isSelecting.value = true
-        if (selectedItem.contains(it)) selectedItem.remove(it) else selectedItem.add(it)
-    }
-
-    @Composable
-    fun listenIsSelectingChange(onChange: (Boolean) -> Unit) {
-        LaunchedEffect(isSelecting.value) {
-            onChange(isSelecting.value)
-
-            if (!isSelecting.value) clear()
+    fun onSelected(item: T) {
+        if (!isSelecting.value) {
+            isSelecting.value = true
         }
-    }
 
-    @Composable
-    fun onSelected(callback: (T) -> Unit): (T) -> Unit {
-        return remember {
-            {
-                if (isSelecting.value) onSelected(it) else callback(it)
-            }
+        // TODO 与拖拽排序存在异常问题，拖拽后选择item可能被认为是新的item
+        if (selectedItems.contains(item)) {
+            selectedItems.remove(item)
+        } else {
+            selectedItems.add(item)
         }
     }
 
     @Composable
     fun registerBackHandler() {
-        BackHandler(isSelecting.value) { clear() }
+        BackHandler(isSelecting.value) {
+            clear()
+        }
+    }
+}
+
+@Composable
+fun <T> rememberSelectState(
+    defaultState: Boolean = false,
+    selectedItems: SnapshotStateList<T> = mutableStateListOf(),
+    onExitSelect: () -> Unit = {}
+): SelectHelper<T> {
+    return remember {
+        SelectHelper(
+            defaultState = defaultState,
+            onExitSelect = onExitSelect,
+            selectedItems = selectedItems
+        )
+    }.also {
+        it.registerBackHandler()
     }
 }
