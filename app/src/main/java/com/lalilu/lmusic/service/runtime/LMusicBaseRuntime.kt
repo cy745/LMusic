@@ -149,9 +149,9 @@ abstract class LMusicBaseRuntime : CoroutineScope {
     private var updatePositionJob: Job? = null
     fun updatePosition(startPosition: Long, loopDelay: Long = 0) {
         position = startPosition
-        if (loopDelay <= 0) return
-
         updatePositionJob?.cancel()
+
+        if (loopDelay <= 0) return
         updatePositionJob = launch(Dispatchers.Default) {
             while (isActive) {
                 delay(loopDelay)
