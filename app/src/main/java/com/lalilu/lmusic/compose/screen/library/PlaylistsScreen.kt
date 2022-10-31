@@ -8,13 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,9 +25,11 @@ import com.lalilu.lmusic.compose.component.base.InputBar
 import com.lalilu.lmusic.compose.component.card.PlaylistCard
 import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.utils.recomposeHighlighter
+import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
@@ -50,29 +46,32 @@ import org.burnoutcrew.reorderable.reorderable
 )
 @Composable
 fun PlaylistsScreen(
-    mainViewModel: MainViewModel,
+    isSelecting: Boolean = false,
+    mainVM: MainViewModel,
     playlistsVM: PlaylistsViewModel,
-    libraryViewModel: LibraryViewModel
+    libraryVM: LibraryViewModel
 ) {
     val context = LocalContext.current
-    val playlistSelectHelper = mainViewModel.playlistSelectHelper
-
+    val navigator = LocalNavigatorHost.current
+    val navToPlaylistAction = ScreenActions.navToPlaylist()
     val state = rememberReorderableLazyListState(
         onMove = playlistsVM::onMovePlaylist,
         canDragOver = playlistsVM::canDragOver,
         onDragEnd = playlistsVM::onDragEnd
     )
+    val selectedItems = remember { mutableStateListOf<LPlaylist>() }
+    val selector = rememberSelectState(
+        defaultState = isSelecting,
+        selectedItems = selectedItems,
+        onExitSelect = {
+            if (isSelecting) {
+                navigator.navigateUp()
+            }
+        }
+    )
 
-    var creatingNewPlaylist by remember { mutableStateOf(false) }
-    val navToPlaylistAction = ScreenActions.navToPlaylist()
-
-    val onSelectPlaylist = playlistSelectHelper.onSelected {
-        navToPlaylistAction.invoke(it.id)
-    }
-
-    playlistSelectHelper.registerBackHandler()
-    playlistSelectHelper.listenIsSelectingChange {
-        if (it) {
+    LaunchedEffect(selector.isSelecting.value) {
+        if (selector.isSelecting.value) {
             SmartBar.setMainBar {
                 Row(
                     modifier = Modifier
@@ -84,37 +83,36 @@ fun PlaylistsScreen(
                     IconTextButton(
                         text = "取消",
                         color = Color(0xFF006E7C),
-                        onClick = playlistSelectHelper.clear
+                        onClick = { selector.clear() }
                     )
-                    Text(text = "已选择: ${playlistSelectHelper.selectedItem.size}")
+                    Text(text = "${mainVM.tempSongs.size}首歌 -> ${selectedItems.size}歌单")
                     IconTextButton(
                         text = "删除",
                         color = Color(0xFF006E7C),
                         onClick = {
-                            val items = playlistSelectHelper.selectedItem.toImmutableList()
+                            val items = selectedItems.toImmutableList()
                             playlistsVM.removePlaylists(items)
-                            playlistSelectHelper.clear()
+                            selector.clear()
                         }
                     )
                 }
             }
         } else {
-            SmartBar.setMainBar(item = LibraryNavigateBar)
+            if (!isSelecting) {
+                SmartBar.setMainBar(item = LibraryNavigateBar)
+            }
         }
-
-//        if (selectingAction == 0 && !it) {
-//            navController.navigateUp()
-//        }
     }
 
-    LaunchedEffect(creatingNewPlaylist) {
-        if (creatingNewPlaylist) {
+    var creating by remember { mutableStateOf(false) }
+    LaunchedEffect(creating) {
+        if (creating) {
             SmartBar.setExtraBar {
                 createNewPlaylistBar(
-                    onCancel = { creatingNewPlaylist = false },
+                    onCancel = { creating = false },
                     onCommit = {
                         playlistsVM.createNewPlaylist(it)
-                        creatingNewPlaylist = false
+                        creating = false
                     }
                 )
             }
@@ -140,7 +138,7 @@ fun PlaylistsScreen(
                 color = Color.Transparent,
                 shape = RoundedCornerShape(10.dp),
                 border = BorderStroke(1.dp, dayNightTextColor(0.1f)),
-                onClick = { creatingNewPlaylist = !creatingNewPlaylist }
+                onClick = { creating = !creating }
             ) {
                 Row(
                     modifier = Modifier
@@ -156,9 +154,9 @@ fun PlaylistsScreen(
 
                     Text(modifier = Modifier.weight(1f), text = "新建歌单")
 
-                    AnimatedContent(targetState = creatingNewPlaylist) {
+                    AnimatedContent(targetState = creating) {
                         Icon(
-                            painter = painterResource(if (creatingNewPlaylist) R.drawable.ic_arrow_down_s_line else R.drawable.ic_arrow_up_s_line),
+                            painter = painterResource(if (creating) R.drawable.ic_arrow_down_s_line else R.drawable.ic_arrow_up_s_line),
                             contentDescription = ""
                         )
                     }
@@ -170,29 +168,43 @@ fun PlaylistsScreen(
             items = playlistsVM.playlists,
             key = { it._id },
             contentType = { LPlaylist::class }
-        ) {
+        ) { item ->
             ReorderableItem(
                 defaultDraggingModifier = Modifier.animateItemPlacement(),
                 state = state,
-                key = it._id
+                key = item._id
             ) { isDragging ->
-                if (it._id == 0L) {
+                if (item._id == 0L) {
                     PlaylistCard(
-                        dragModifier = Modifier.detectReorder(state),
                         icon = R.drawable.ic_heart_3_fill,
                         iconTint = MaterialTheme.colors.primary,
-                        getPlaylist = { it },
-                        getIsSelected = { isDragging || playlistSelectHelper.isSelected(it) },
-                        onClick = { onSelectPlaylist(it) },
-                        onLongClick = { playlistSelectHelper.onSelected(it) },
+                        onClick = {
+                            if (selector.isSelecting.value) {
+                                selector.onSelected(item)
+                            } else {
+                                navToPlaylistAction(item.id)
+                            }
+                        },
+                        modifier = Modifier.recomposeHighlighter(),
+                        dragModifier = Modifier.detectReorder(state),
+                        getPlaylist = { item },
+                        onLongClick = { selector.onSelected(item) },
+                        getIsSelected = { isDragging || selectedItems.any { it._id == item._id } }
                     )
                 } else {
                     PlaylistCard(
+                        onClick = {
+                            if (selector.isSelecting.value) {
+                                selector.onSelected(item)
+                            } else {
+                                navToPlaylistAction(item.id)
+                            }
+                        },
+                        modifier = Modifier.recomposeHighlighter(),
                         dragModifier = Modifier.detectReorder(state),
-                        getPlaylist = { it },
-                        getIsSelected = { isDragging || playlistSelectHelper.isSelected(it) },
-                        onClick = { onSelectPlaylist(it) },
-                        onLongClick = { playlistSelectHelper.onSelected(it) },
+                        getPlaylist = { item },
+                        onLongClick = { selector.onSelected(item) },
+                        getIsSelected = { isDragging || selectedItems.any { it._id == item._id } }
                     )
                 }
             }
