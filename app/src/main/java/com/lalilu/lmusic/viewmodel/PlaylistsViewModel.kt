@@ -83,6 +83,11 @@ class PlaylistsViewModel @Inject constructor() : ViewModel() {
             Library.playlistRepo?.deleteSongFromPlaylist(playlistId, mediaId)
         }
 
+    fun removeSongsFromPlaylist(songs: List<LSong>, playlist: LPlaylist) =
+        viewModelScope.launch(Dispatchers.IO) {
+            Library.playlistRepo?.deleteSongsFromPlaylist(songs, playlist)
+        }
+
     fun isContainSongInPlaylist(mediaId: String, playlistId: Long): Flow<Boolean> {
         return Library.playlistRepoFlow.flatMapLatest {
             it?.isSongContainInPlaylist(mediaId, playlistId) ?: flowOf(false)
