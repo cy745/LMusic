@@ -51,14 +51,15 @@ import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 @Composable
 fun SongDetailScreen(
     song: LSong,
-    mainViewModel: MainViewModel,
+    mainVM: MainViewModel,
     networkDataViewModel: NetworkDataViewModel,
     playlistsVM: PlaylistsViewModel
 ) {
     val windowSize = LocalWindowSize.current
     val navToAlbumAction = ScreenActions.navToAlbum()
     val navToNetworkMatchAction = ScreenActions.navToNetworkMatch()
-    val navToAddToPlaylistAction = ScreenActions.navToAddToPlaylist()
+    val navToAddToPlaylist = mainVM.navToAddToPlaylist()
+
     val networkData by networkDataViewModel.getNetworkDataFlowByMediaId(song.id)
         .collectAsState(null)
     val isLiked by playlistsVM.isContainSongInPlaylist(song.id, 0L)
@@ -76,8 +77,7 @@ fun SongDetailScreen(
                     }
                 },
                 onAddSongToPlaylist = {
-                    // TODO 完善此处跳转以及传递数据的逻辑
-                    navToAddToPlaylistAction("isAdding=${true}")
+                    navToAddToPlaylist(listOf(song))
                 },
                 onSetSongToNext = {
                     LMusicBrowser.addToNext(song.id)
