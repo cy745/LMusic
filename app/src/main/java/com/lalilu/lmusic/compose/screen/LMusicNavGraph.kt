@@ -117,15 +117,15 @@ fun LMusicNavGraph(
         }
 
         composable(
-            route = "${ScreenData.Playlists.name}?isSelecting={isSelecting}",
-            arguments = listOf(navArgument("isSelecting") {
+            route = "${ScreenData.Playlists.name}?isAdding={isAdding}",
+            arguments = listOf(navArgument("isAdding") {
                 type = NavType.BoolType
                 defaultValue = false
             })
         ) { backStackEntry ->
-            val isSelecting = backStackEntry.arguments?.getBoolean("isSelecting") ?: false
+            val isAddingSongs = backStackEntry.arguments?.getBoolean("isAdding") ?: false
 
-            PlaylistsScreen(isSelecting, mainViewModel, playlistsViewModel, libraryViewModel)
+            PlaylistsScreen(isAddingSongs, mainViewModel, playlistsViewModel, libraryViewModel)
         }
 
         composable(

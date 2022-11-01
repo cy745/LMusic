@@ -46,7 +46,7 @@ import org.burnoutcrew.reorderable.reorderable
 )
 @Composable
 fun PlaylistsScreen(
-    isSelecting: Boolean = false,
+    isAddingSongs: Boolean = false,
     mainVM: MainViewModel,
     playlistsVM: PlaylistsViewModel,
     libraryVM: LibraryViewModel
@@ -61,10 +61,10 @@ fun PlaylistsScreen(
     )
     val selectedItems = remember { mutableStateListOf<LPlaylist>() }
     val selector = rememberSelectState(
-        defaultState = isSelecting,
+        defaultState = isAddingSongs,
         selectedItems = selectedItems,
         onExitSelect = {
-            if (isSelecting) {
+            if (isAddingSongs) {
                 navigator.navigateUp()
             }
         }
@@ -85,20 +85,34 @@ fun PlaylistsScreen(
                         color = Color(0xFF006E7C),
                         onClick = { selector.clear() }
                     )
-                    Text(text = "${mainVM.tempSongs.size}首歌 -> ${selectedItems.size}歌单")
-                    IconTextButton(
-                        text = "删除",
-                        color = Color(0xFF006E7C),
-                        onClick = {
-                            val items = selectedItems.toImmutableList()
-                            playlistsVM.removePlaylists(items)
-                            selector.clear()
-                        }
-                    )
+                    if (isAddingSongs) {
+                        Text(text = "${mainVM.tempSongs.size}首歌 -> ${selectedItems.size}歌单")
+                        IconTextButton(
+                            text = "确认保存",
+                            color = Color(0xFF3EA22C),
+                            onClick = {
+                                playlistsVM.addSongsIntoPlaylists(
+                                    playlists = selectedItems.toImmutableList(),
+                                    songs = mainVM.tempSongs.toImmutableList()
+                                )
+                                selector.clear()
+                            }
+                        )
+                    } else {
+                        Text(text = "已选择 ${selectedItems.size}")
+                        IconTextButton(
+                            text = "删除",
+                            color = Color(0xFF006E7C),
+                            onClick = {
+                                playlistsVM.removePlaylists(selectedItems)
+                                selector.clear()
+                            }
+                        )
+                    }
                 }
             }
         } else {
-            if (!isSelecting) {
+            if (!isAddingSongs) {
                 SmartBar.setMainBar(item = LibraryNavigateBar)
             }
         }
