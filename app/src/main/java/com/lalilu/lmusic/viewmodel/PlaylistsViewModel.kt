@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.database.sort
 import com.lalilu.lmedia.entity.LPlaylist
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -67,9 +68,14 @@ class PlaylistsViewModel @Inject constructor() : ViewModel() {
             Library.playlistRepo?.deletePlaylists(playlist)
         }
 
-    fun addSongIntoPlaylist(mediaId: String, playlistId: Long) =
+    fun addSongIntoPlaylist(playlistId: Long, mediaId: String) =
         viewModelScope.launch(Dispatchers.IO) {
             Library.playlistRepo?.saveSongIntoPlaylist(playlistId, mediaId)
+        }
+
+    fun addSongsIntoPlaylists(playlists: List<LPlaylist>, songs: List<LSong>) =
+        viewModelScope.launch(Dispatchers.IO) {
+            Library.playlistRepo?.saveSongsIntoPlaylists(playlists, songs)
         }
 
     fun removeSongFromPlaylist(mediaId: String, playlistId: Long) =

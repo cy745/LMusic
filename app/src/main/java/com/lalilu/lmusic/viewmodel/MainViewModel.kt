@@ -31,7 +31,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
                 } else {
                     tempSongs.clear()
                     tempSongs.addAll(songs)
-                    navToAddToPlaylistAction("isSelecting=${true}")
+                    navToAddToPlaylistAction("isAdding=${true}")
                 }
             }
         }
