@@ -185,7 +185,6 @@ fun PlaylistsScreen(
                                 navToPlaylistAction(item.id)
                             }
                         },
-                        modifier = Modifier.recomposeHighlighter(),
                         dragModifier = Modifier.detectReorder(state),
                         getPlaylist = { item },
                         onLongClick = { selector.onSelected(item) },
@@ -200,7 +199,6 @@ fun PlaylistsScreen(
                                 navToPlaylistAction(item.id)
                             }
                         },
-                        modifier = Modifier.recomposeHighlighter(),
                         dragModifier = Modifier.detectReorder(state),
                         getPlaylist = { item },
                         onLongClick = { selector.onSelected(item) },
