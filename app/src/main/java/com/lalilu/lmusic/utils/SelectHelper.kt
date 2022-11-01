@@ -25,7 +25,6 @@ class SelectHelper<T>(
             isSelecting.value = true
         }
 
-        // TODO 与拖拽排序存在异常问题，拖拽后选择item可能被认为是新的item
         if (selectedItems.contains(item)) {
             selectedItems.remove(item)
         } else {
