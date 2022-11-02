@@ -26,6 +26,7 @@ import com.lalilu.lmusic.service.playback.LMusicNoisyReceiver
 import com.lalilu.lmusic.service.playback.LMusicPlayBack
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.CoroutineSynchronizer
+import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.PlayMode
 import com.lalilu.lmusic.utils.extension.toBitmap
 import dagger.hilt.android.AndroidEntryPoint
@@ -243,6 +244,10 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
             enableStatusLyric.flow()
                 .onEach { mNotificationManager.statusLyricEnable = it == true }
+                .launchIn(this@LMusicService)
+
+            enableSystemEq.flow()
+                .onEach { EQHelper.setSystemEqEnable(it ?: false) }
                 .launchIn(this@LMusicService)
 
             playMode.flow()

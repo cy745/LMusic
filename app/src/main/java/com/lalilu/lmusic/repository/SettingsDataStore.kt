@@ -32,6 +32,7 @@ class SettingsDataStore @Inject constructor(
     val volumeControl = intPreferencesKey(Config.KEY_SETTINGS_VOLUME_CONTROL)
     val lyricTypefaceUri = stringPreferencesKey(Config.KEY_SETTINGS_LYRIC_TYPEFACE_URI)
     val enableStatusLyric = booleanPreferencesKey(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE)
+    val enableSystemEq = booleanPreferencesKey(Config.KEY_SETTINGS_ENABLE_SYSTEM_EQ)
 
     val isGuidingOver = booleanPreferencesKey(Config.KEY_REMEMBER_IS_GUIDING_OVER)
 }

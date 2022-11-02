@@ -2,6 +2,7 @@ package com.lalilu.lmusic.compose.component.settings
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -35,7 +36,9 @@ fun SettingCategory(
     content: @Composable ColumnScope.() -> Unit = {}
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(),
         horizontalAlignment = Alignment.Start
     ) {
         Row(

@@ -10,6 +10,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.PlayMode
 import java.io.IOException
 
@@ -17,15 +18,11 @@ abstract class LMusicPlayBack<T>(
     private val mContext: Context
 ) : MediaSessionCompat.Callback(), MediaPlayer.OnPreparedListener,
     MediaPlayer.OnCompletionListener {
-    private var player: MediaPlayer? = null
+    private var player: MediaPlayer? = createPlayer()
     private var volumeProxy: FadeVolumeProxy? = null
     private var isPrepared: Boolean = false
     private var isPlaying: Boolean = false
     private var isStopped: Boolean = true
-
-    companion object {
-        var audioSessionId: Int? = null
-    }
 
     abstract fun requestAudioFocus(): Boolean
     abstract fun getCurrent(): T?
@@ -51,14 +48,18 @@ abstract class LMusicPlayBack<T>(
         volumeProxy?.setMaxVolume(volume)
     }
 
-    private fun checkPlayer() {
-        player = player ?: MediaPlayer().apply {
+    private fun createPlayer(): MediaPlayer {
+        return MediaPlayer().apply {
             setOnPreparedListener(this@LMusicPlayBack)
             setOnCompletionListener(this@LMusicPlayBack)
             volumeProxy = FadeVolumeProxy(this)
             isStopped = false
-            LMusicPlayBack.audioSessionId = audioSessionId
+            EQHelper.audioSessionId = audioSessionId
         }
+    }
+
+    private fun checkPlayer() {
+        player = player ?: createPlayer()
         assert(player != null)
         assert(volumeProxy != null)
     }
@@ -168,7 +169,7 @@ abstract class LMusicPlayBack<T>(
         player?.reset()
         player?.release()
         player = null
-        audioSessionId = null
+        EQHelper.audioSessionId = null
 
         onPlayingItemUpdate(null)
         onMetadataChanged(null)

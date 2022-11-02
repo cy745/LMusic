@@ -8,6 +8,7 @@ import com.lalilu.lmusic.repository.HistoryDataStore
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicLyricManager
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
+import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
@@ -50,5 +51,6 @@ class LMusicApp : Application(), ImageLoaderFactory {
         LMusicLyricManager.init(lyricSourceFactory)
         LMusicRuntime.init(historyDataStore, mDataBase)
         LMusicBrowser.init(this, historyDataStore)
+        EQHelper.init(this)
     }
 }
