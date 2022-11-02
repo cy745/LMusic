@@ -53,13 +53,13 @@ abstract class LMusicPlayBack<T>(
             setOnPreparedListener(this@LMusicPlayBack)
             setOnCompletionListener(this@LMusicPlayBack)
             volumeProxy = FadeVolumeProxy(this)
-            isStopped = false
             EQHelper.audioSessionId = audioSessionId
         }
     }
 
     private fun checkPlayer() {
         player = player ?: createPlayer()
+        isStopped = false
         assert(player != null)
         assert(volumeProxy != null)
     }
