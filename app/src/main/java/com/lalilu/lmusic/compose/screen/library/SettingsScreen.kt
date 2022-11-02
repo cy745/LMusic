@@ -1,16 +1,16 @@
 package com.lalilu.lmusic.compose.screen.library
 
-import android.content.Intent
-import android.media.audiofx.AudioEffect
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
@@ -22,15 +22,11 @@ import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.component.settings.SettingCategory
-import com.lalilu.lmusic.compose.component.settings.SettingExtensionSwitcher
-import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
-import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
-import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
-import com.lalilu.lmusic.compose.component.settings.SettingSwitcher
+import com.lalilu.lmusic.compose.component.settings.*
 import com.lalilu.lmusic.compose.screen.ScreenData
-import com.lalilu.lmusic.service.playback.LMusicPlayBack
+import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.getActivity
@@ -79,6 +75,10 @@ fun SettingsScreen() {
         Config.KEY_SETTINGS_LYRIC_TYPEFACE_URI,
         Config.DEFAULT_SETTINGS_LYRIC_TYPEFACE_URI
     )
+    val enableSystemEq = rememberDataSaverState(
+        Config.KEY_SETTINGS_ENABLE_SYSTEM_EQ,
+        Config.DEFAULT_SETTINGS_ENABLE_SYSTEM_EQ
+    )
     val launcherForAudioFx =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
         }
@@ -111,22 +111,29 @@ fun SettingsScreen() {
                 selection = stringArrayResource(id = R.array.seekbar_handler).toList(),
                 titleRes = R.string.preference_player_settings_seekbar_handler
             )
-            TextButton(onClick = {
-                LMusicPlayBack.audioSessionId
-                    ?.takeIf { it != AudioEffect.ERROR_BAD_VALUE }
-                    ?.let {
-                        launcherForAudioFx.launch(
-                            Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, it)
-                                putExtra(
-                                    AudioEffect.EXTRA_CONTENT_TYPE,
-                                    AudioEffect.CONTENT_TYPE_MUSIC
-                                )
+            SettingSwitcher(
+                state = enableSystemEq,
+                title = "启用系统均衡器",
+                subTitle = "实验性功能，存在较大机型差异"
+            )
+            val enableSystemEqValue by enableSystemEq
+            AnimatedVisibility(visible = enableSystemEqValue) {
+                Row(
+                    Modifier.padding(horizontal = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    IconTextButton(
+                        text = "系统均衡器",
+                        iconPainter = painterResource(id = R.drawable.equalizer_line),
+                        showIcon = { true },
+                        color = Color(0xFF006E7C),
+                        onClick = {
+                            EQHelper.startSystemEqActivity {
+                                launcherForAudioFx.launch(it)
                             }
-                        )
-                    }
-            }) {
-                Text(text = "系统均衡器")
+                        })
+                }
             }
         }
 
@@ -187,14 +194,19 @@ fun SettingsScreen() {
             icon = painterResource(id = R.drawable.ic_loader_line),
             title = "其他"
         ) {
-            Column(Modifier.padding(horizontal = 20.dp)) {
-                TextButton(onClick = {
-                    context.getActivity()?.apply {
-                        ActivityUtils.startActivity(GuidingActivity::class.java)
-                    }
-                }) {
-                    Text(text = "新手引导")
-                }
+            Row(
+                Modifier.padding(horizontal = 20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                IconTextButton(
+                    text = "新手引导",
+                    color = Color(0xFF3EA22C),
+                    onClick = {
+                        context.getActivity()?.apply {
+                            ActivityUtils.startActivity(GuidingActivity::class.java)
+                        }
+                    })
             }
         }
     }
