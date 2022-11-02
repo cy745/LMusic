@@ -57,18 +57,17 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     private val mNotificationManager: LMusicNotificationImpl by lazy {
         LMusicNotificationImpl(this, database, playBack)
     }
-    private val playBack: LMusicPlayBack<LSong> =
-        object : LMusicPlayBack<LSong>(this@LMusicService) {
-            private val noisyReceiver = LMusicNoisyReceiver(this::onPause)
-            private val audioFocusHelper = LMusicAudioFocusHelper(this@LMusicService) {
-                when (it) {
-                    AudioManager.AUDIOFOCUS_LOSS,
-                    AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                        settingsDataStore.apply {
-                            if (ignoreAudioFocus.get() != true) {
-                                onPause()
-                            }
+    private val playBack: LMusicPlayBack<LSong> = object : LMusicPlayBack<LSong>(this) {
+        private val noisyReceiver = LMusicNoisyReceiver(this::onPause)
+        private val audioFocusHelper = LMusicAudioFocusHelper(this@LMusicService) {
+            when (it) {
+                AudioManager.AUDIOFOCUS_LOSS,
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                    settingsDataStore.apply {
+                        if (ignoreAudioFocus.get() != true) {
+                            onPause()
                         }
+                    }
                 }
             }
         }
