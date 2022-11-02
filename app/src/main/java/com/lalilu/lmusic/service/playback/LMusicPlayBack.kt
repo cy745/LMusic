@@ -23,6 +23,10 @@ abstract class LMusicPlayBack<T>(
     private var isPlaying: Boolean = false
     private var isStopped: Boolean = true
 
+    companion object {
+        var audioSessionId: Int? = null
+    }
+
     abstract fun requestAudioFocus(): Boolean
     abstract fun getCurrent(): T?
     abstract fun getPrevious(random: Boolean): T?
@@ -53,6 +57,7 @@ abstract class LMusicPlayBack<T>(
             setOnCompletionListener(this@LMusicPlayBack)
             volumeProxy = FadeVolumeProxy(this)
             isStopped = false
+            LMusicPlayBack.audioSessionId = audioSessionId
         }
         assert(player != null)
         assert(volumeProxy != null)
@@ -163,6 +168,7 @@ abstract class LMusicPlayBack<T>(
         player?.reset()
         player?.release()
         player = null
+        audioSessionId = null
 
         onPlayingItemUpdate(null)
         onMetadataChanged(null)
@@ -175,6 +181,7 @@ abstract class LMusicPlayBack<T>(
             Config.ACTION_PLAY_AND_PAUSE -> {
                 if (player?.isPlaying == true) onPause() else onPlay()
             }
+
             Config.ACTION_RELOAD_AND_PLAY -> {
                 isPrepared = false
                 onPlay()

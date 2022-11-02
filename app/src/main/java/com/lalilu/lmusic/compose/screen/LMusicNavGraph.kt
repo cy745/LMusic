@@ -24,13 +24,30 @@ import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
-import com.lalilu.lmusic.compose.screen.library.*
-import com.lalilu.lmusic.compose.screen.library.detail.*
-import com.lalilu.lmusic.screen.library.SettingsScreen
+import com.lalilu.lmusic.compose.screen.library.AlbumsScreen
+import com.lalilu.lmusic.compose.screen.library.ArtistScreen
+import com.lalilu.lmusic.compose.screen.library.EmptySearchForLyricScreen
+import com.lalilu.lmusic.compose.screen.library.LibraryScreen
+import com.lalilu.lmusic.compose.screen.library.MatchNetworkDataScreen
+import com.lalilu.lmusic.compose.screen.library.PlaylistsScreen
+import com.lalilu.lmusic.compose.screen.library.SettingsScreen
+import com.lalilu.lmusic.compose.screen.library.SongsScreen
+import com.lalilu.lmusic.compose.screen.library.detail.AlbumDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.ArtistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.EmptyAlbumDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.EmptyArtistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.EmptyPlaylistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.EmptySongDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.PlaylistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
-import com.lalilu.lmusic.viewmodel.*
+import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.lalilu.lmusic.viewmodel.MainViewModel
+import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
+import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
+import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @ExperimentalAnimationApi
 @Composable
