@@ -1,5 +1,9 @@
-package com.lalilu.lmusic.screen.library
+package com.lalilu.lmusic.compose.screen.library
 
+import android.content.Intent
+import android.media.audiofx.AudioEffect
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -19,8 +23,14 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.component.settings.*
+import com.lalilu.lmusic.compose.component.settings.SettingCategory
+import com.lalilu.lmusic.compose.component.settings.SettingExtensionSwitcher
+import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
+import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
+import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
+import com.lalilu.lmusic.compose.component.settings.SettingSwitcher
 import com.lalilu.lmusic.compose.screen.ScreenData
+import com.lalilu.lmusic.service.playback.LMusicPlayBack
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.getActivity
@@ -69,6 +79,9 @@ fun SettingsScreen() {
         Config.KEY_SETTINGS_LYRIC_TYPEFACE_URI,
         Config.DEFAULT_SETTINGS_LYRIC_TYPEFACE_URI
     )
+    val launcherForAudioFx =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+        }
 
     SmartContainer.StaggeredVerticalGrid(
         columns = if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1,
@@ -98,6 +111,23 @@ fun SettingsScreen() {
                 selection = stringArrayResource(id = R.array.seekbar_handler).toList(),
                 titleRes = R.string.preference_player_settings_seekbar_handler
             )
+            TextButton(onClick = {
+                LMusicPlayBack.audioSessionId
+                    ?.takeIf { it != AudioEffect.ERROR_BAD_VALUE }
+                    ?.let {
+                        launcherForAudioFx.launch(
+                            Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, it)
+                                putExtra(
+                                    AudioEffect.EXTRA_CONTENT_TYPE,
+                                    AudioEffect.CONTENT_TYPE_MUSIC
+                                )
+                            }
+                        )
+                    }
+            }) {
+                Text(text = "系统均衡器")
+            }
         }
 
         SettingCategory(
