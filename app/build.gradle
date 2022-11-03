@@ -201,7 +201,8 @@ dependencies {
     // https://github.com/Moriafly/LyricViewX
     // GPL-3.0 License
     // 歌词组件
-    implementation 'com.github.Moriafly:LyricViewX:1.3.2'
+//    implementation 'com.github.Moriafly:LyricViewX:1.3.2'
+    implementation 'com.github.cy745:LyricViewX:81e8cac1b4'
 
     // https://github.com/qinci/EdgeTranslucent
     // https://github.com/cy745/EdgeTranslucent
