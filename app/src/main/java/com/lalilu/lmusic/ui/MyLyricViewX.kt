@@ -5,11 +5,7 @@ import android.util.AttributeSet
 import com.dirror.lyricviewx.LyricViewX
 import com.lalilu.common.DeviceUtils
 
-class MyLyricViewX @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : LyricViewX(context, attrs, defStyleAttr) {
+class MyLyricViewX(context: Context, attrs: AttributeSet) : LyricViewX(context, attrs) {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
