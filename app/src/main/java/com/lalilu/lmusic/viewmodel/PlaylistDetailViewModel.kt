@@ -5,10 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lalilu.lmedia.database.SongInPlaylist
 import com.lalilu.lmedia.database.sort
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.entity.SongInPlaylist
 import com.lalilu.lmedia.indexer.Library
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*

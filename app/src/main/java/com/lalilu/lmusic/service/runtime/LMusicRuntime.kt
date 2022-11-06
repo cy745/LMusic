@@ -1,8 +1,9 @@
 package com.lalilu.lmusic.service.runtime
 
+import com.lalilu.lmedia.entity.HISTORY_TYPE_SONG
+import com.lalilu.lmedia.entity.LHistory
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.datasource.MDataBase
-import com.lalilu.lmusic.datasource.entity.PlayHistory
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.repository.HistoryDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,14 +16,9 @@ import kotlin.coroutines.CoroutineContext
 object LMusicRuntime : LMusicBaseRuntime(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
     private var historyStore: HistoryDataStore? = null
-    private var mDataBase: MDataBase? = null
 
-    fun init(
-        historyDataStore: HistoryDataStore,
-        mDataBase: MDataBase
-    ) {
+    fun init(historyDataStore: HistoryDataStore) {
         historyStore = historyDataStore
-        LMusicRuntime.mDataBase = mDataBase
     }
 
     override suspend fun onSongsUpdate(songs: List<LSong>) {
@@ -32,8 +28,11 @@ object LMusicRuntime : LMusicBaseRuntime(), CoroutineScope {
     override suspend fun onPlayingUpdate(song: LSong?) {
         historyStore?.apply { lastPlayedIdKey.set(song?.id) }
         if (song?.id == null) return
-        mDataBase?.playHistoryDao()?.save(
-            PlayHistory(mediaId = song.id, startTime = System.currentTimeMillis())
+        Library.historyRepo?.saveHistory(
+            LHistory(
+                contentId = song.id,
+                type = HISTORY_TYPE_SONG
+            )
         )
     }
 
