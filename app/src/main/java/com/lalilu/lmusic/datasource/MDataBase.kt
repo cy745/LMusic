@@ -6,14 +6,11 @@ import androidx.room.TypeConverters
 import com.lalilu.lmusic.datasource.converter.DateConverter
 import com.lalilu.lmusic.datasource.converter.UriConverter
 import com.lalilu.lmusic.datasource.dao.MNetworkDataDao
-import com.lalilu.lmusic.datasource.dao.PlayHistoryDao
 import com.lalilu.lmusic.datasource.entity.MNetworkData
-import com.lalilu.lmusic.datasource.entity.PlayHistory
 
 @Database(
     entities = [
-        MNetworkData::class,
-        PlayHistory::class
+        MNetworkData::class
     ],
     version = 11,
     exportSchema = false
@@ -23,6 +20,5 @@ import com.lalilu.lmusic.datasource.entity.PlayHistory
     DateConverter::class
 )
 abstract class MDataBase : RoomDatabase() {
-    abstract fun playHistoryDao(): PlayHistoryDao
     abstract fun networkDataDao(): MNetworkDataDao
 }

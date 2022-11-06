@@ -30,6 +30,7 @@ import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
+import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
 import com.lalilu.ui.*
@@ -39,7 +40,8 @@ import com.lalilu.ui.internal.StateHelper
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
-    backPressedHelper: OnBackPressedHelper, settingsViewModel: SettingsViewModel = hiltViewModel()
+    backPressedHelper: OnBackPressedHelper,
+    settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val density = LocalDensity.current
     val navToSongAction = ScreenActions.navToSong()
@@ -87,19 +89,6 @@ fun PlayingScreen(
                 backPressedHelper.isEnabled = nowState == StateHelper.STATE_FULLY_EXPENDED
             }
 
-//            val adapter = ComposeAdapter(
-//                onSwipeToLeft = { LMusicBrowser.addToNext(it.id) },
-//                onSwipeToRight = { LMusicBrowser.removeById(it.id) },
-//                onItemClick = { LMusicBrowser.playById(it.id) },
-//                onItemLongClick = {
-//                    HapticUtils.haptic(this@apply.root)
-//                    navController.navigate("${MainScreenData.SongsDetail.name}/${it.id}") {
-//                        launchSingleTop = true
-//                    }
-//                    SmartModalBottomSheet.show()
-//                }
-//            )
-
 //            behavior.addOnStateChangeListener(object :
 //                StateHelper.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {
 //                override fun onScrollToStateListener() {
@@ -123,9 +112,10 @@ fun PlayingScreen(
 //                    KeyboardUtils.hideSoftInput(activity)
 //                }
 //            })
+
             fmRecyclerView.adapter = adapter
-//            fmRecyclerView.layoutManager = calculateExtraLayoutSpace(this.root.context, 500)
-//            fmRecyclerView.setItemViewCacheSize(5)
+            fmRecyclerView.layoutManager = calculateExtraLayoutSpace(this.root.context, 500)
+            fmRecyclerView.setItemViewCacheSize(5)
 
             fmTopPic.palette.observe(activity, this::setPalette)
 

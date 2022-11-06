@@ -5,20 +5,20 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
-import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.repository.LibraryDataStore
 import com.lalilu.lmusic.utils.extension.toUpdatableFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    private val libraryDataStore: LibraryDataStore,
-    private val mDataBase: MDataBase
+    private val libraryDataStore: LibraryDataStore
 ) : ViewModel() {
     /**
      * 获取最近的播放记录
@@ -60,8 +60,10 @@ class LibraryViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun requirePlayHistory(): Flow<List<LSong>> {
-        return mDataBase.playHistoryDao().getFlow(20).mapLatest { list ->
-            list.distinctBy { it.mediaId }.mapNotNull { Library.getSongOrNull(it.mediaId) }
+        return Library.historyRepoFlow.flatMapLatest {
+            it?.getHistoriesFlow(20) ?: flowOf(emptyList())
+        }.mapLatest { list ->
+            list.distinctBy { it.contentId }.mapNotNull { Library.getSongOrNull(it.contentId) }
         }
     }
 }
