@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlayingBinding
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.repository.LyricHelper
+import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.utils.extension.launch
 import com.lalilu.lmusic.utils.extension.moveHeadToTail
 import kotlinx.coroutines.CoroutineScope
@@ -17,9 +17,8 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 class PlayingAdapter @Inject constructor(
-    private val lyricHelper: LyricHelper
-) :
-    BaseAdapter<LSong, ItemPlayingBinding>(R.layout.item_playing), CoroutineScope {
+    private val lyricRepository: LyricRepository
+) : BaseAdapter<LSong, ItemPlayingBinding>(R.layout.item_playing), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     interface OnItemDragOrSwipedListener {
@@ -72,7 +71,7 @@ class PlayingAdapter @Inject constructor(
         binding.song = item
         binding.launch {
             if (isActive) {
-                val hasLyric = lyricHelper.hasLyric(item)
+                val hasLyric = lyricRepository.hasLyric(item)
                 withContext(Dispatchers.Main) {
                     binding.songLrc.visibility =
                         if (hasLyric) View.VISIBLE else View.INVISIBLE

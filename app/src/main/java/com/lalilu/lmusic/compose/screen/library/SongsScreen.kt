@@ -125,7 +125,7 @@ fun SongsScreen(
             ) { index, item ->
                 SongCard(
                     song = { item },
-                    lyricHelper = playingVM.lyricHelper,
+                    lyricRepository = playingVM.lyricRepository,
                     onClick = {
                         if (selector.isSelecting.value) {
                             selector.onSelected(item)
