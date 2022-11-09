@@ -20,10 +20,13 @@ import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.viewmodel.MainViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
 fun AlbumDetailScreen(
-    album: LAlbum, mainViewModel: MainViewModel = hiltViewModel()
+    album: LAlbum,
+    mainViewModel: MainViewModel = hiltViewModel(),
+    playingVM: PlayingViewModel
 ) {
     val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
 
@@ -56,6 +59,7 @@ fun AlbumDetailScreen(
         itemsIndexed(sortedItems) { index, item ->
             SongCard(
                 song = { item },
+                lyricHelper = playingVM.lyricHelper,
                 onClick = { onSongSelected(item) },
                 onLongClick = { navToSongAction(item.id) }
             )

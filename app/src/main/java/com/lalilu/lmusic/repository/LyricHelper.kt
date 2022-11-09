@@ -1,6 +1,7 @@
-package com.lalilu.lmusic.service
+package com.lalilu.lmusic.repository
 
 import android.util.LruCache
+import androidx.compose.runtime.*
 import androidx.lifecycle.asLiveData
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
@@ -11,47 +12,60 @@ import com.lalilu.lmusic.utils.extension.CachedFlow
 import com.lalilu.lmusic.utils.extension.UpdatableFlow
 import com.lalilu.lmusic.utils.extension.toCachedFlow
 import com.lalilu.lmusic.utils.extension.toUpdatableFlow
-import com.lalilu.lmusic.utils.sources.LyricSource
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
-object LMusicLyricManager : CoroutineScope {
+@Singleton
+class LyricHelper @Inject constructor(
+    private val lyricSource: LyricSourceFactory,
+    private val runtime: LMusicRuntime
+) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-    private lateinit var lyricSource: LyricSource
-    private val cache = LruCache<String, Int>(500)
+    private val listener = LruCache<String, MutableStateFlow<Boolean>>(50)
 
-    fun init(lyricSource: LyricSourceFactory) {
-        this.lyricSource = lyricSource
+    @Composable
+    fun rememberHasLyric(song: LSong): State<Boolean> {
+        return remember { mutableStateOf(false) }.also { state ->
+            LaunchedEffect(song) {
+                listener.get(song.id)?.let { flow ->
+                    flow.collectLatest { state.value = it }
+                } ?: listener.put(song.id, MutableStateFlow(state.value)
+                    .apply { collectLatest { state.value = it } })
+                getLyric(song)
+            }
+//            DisposableEffect(Unit) {
+//                onDispose {
+//                    listener.remove(song.id)
+//                }
+//            }
+        }
     }
 
     suspend fun hasLyric(song: LSong): Boolean = withContext(Dispatchers.IO) {
-        var result = cache.get(song.id) ?: LYRIC_UNKNOWN
-        if (result == LYRIC_UNKNOWN) {
-            result = if (getLyric(song) == null) LYRIC_NOT_EXIST else LYRIC_EXIST
-        }
-        result == LYRIC_EXIST
+        getLyric(song) == null
     }
 
     suspend fun getLyric(song: LSong): Pair<String, String?>? = withContext(Dispatchers.IO) {
         val lyric = lyricSource.loadLyric(song)
-        val result = if (lyric != null && lyric.first.isNotEmpty()) LYRIC_EXIST else LYRIC_NOT_EXIST
-        cache.put(song.id, result)
+        val result = lyric != null && lyric.first.isNotEmpty()
 
-        return@withContext if (result == LYRIC_EXIST) lyric else null
+        listener.get(song.id)?.emit(result)
+
+        return@withContext if (result) lyric else null
     }
 
-    private const val LYRIC_UNKNOWN = -1
-    private const val LYRIC_NOT_EXIST = 0
-    private const val LYRIC_EXIST = 1
-
     val currentLyric: UpdatableFlow<Pair<String, String?>?> =
-        LMusicRuntime.playingFlow.mapLatest { item ->
+        runtime.playingFlow.mapLatest { item ->
             val song = item?.let { Library.getSongOrNull(it.id) } ?: return@mapLatest null
             getLyric(song)
         }.toUpdatableFlow()

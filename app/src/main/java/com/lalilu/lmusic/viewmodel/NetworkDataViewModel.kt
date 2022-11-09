@@ -6,25 +6,17 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
-import com.lalilu.lmusic.apis.KugouDataSource
-import com.lalilu.lmusic.apis.NeteaseDataSource
-import com.lalilu.lmusic.apis.NetworkSong
-import com.lalilu.lmusic.apis.PLATFORM_KUGOU
-import com.lalilu.lmusic.apis.PLATFORM_NETEASE
+import com.lalilu.lmusic.apis.*
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
-import com.lalilu.lmusic.service.LMusicLyricManager
+import com.lalilu.lmusic.repository.LyricHelper
+import com.lalilu.lmusic.repository.LyricRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -33,7 +25,9 @@ import javax.inject.Inject
 class NetworkDataViewModel @Inject constructor(
     private val neteaseDataSource: NeteaseDataSource,
     private val kugouDataSource: KugouDataSource,
-    private val dataBase: MDataBase
+    private val dataBase: MDataBase,
+    private val lyricRepo: LyricRepository,
+    private val lyricHelper: LyricHelper
 ) : ViewModel() {
     fun getNetworkDataFlowByMediaId(mediaId: String) =
         dataBase.networkDataDao().getFlowById(mediaId)
@@ -173,7 +167,7 @@ class NetworkDataViewModel @Inject constructor(
                 )
             )
             ToastUtils.showShort("保存匹配歌词成功")
-            LMusicLyricManager.currentLyric.requireUpdate()
+            lyricHelper.currentLyric.requireUpdate()
             withContext(Dispatchers.Main) {
                 success()
             }

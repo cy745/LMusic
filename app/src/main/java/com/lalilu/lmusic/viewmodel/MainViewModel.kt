@@ -15,7 +15,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor() : ViewModel() {
+class MainViewModel @Inject constructor(
+    private val browser: LMusicBrowser
+) : ViewModel() {
 
     var tempSongs: SnapshotStateList<LSong> = mutableStateListOf()
         private set
@@ -38,7 +40,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
     }
 
     fun playSongWithPlaylist(items: List<LSong>, item: LSong) = viewModelScope.launch {
-        LMusicBrowser.setSongs(items, item)
-        LMusicBrowser.reloadAndPlay()
+        browser.setSongs(items, item)
+        browser.reloadAndPlay()
     }
 }

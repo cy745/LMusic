@@ -18,8 +18,9 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
 import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
 import com.lalilu.lmusic.datasource.MDataBase
-import com.lalilu.lmusic.repository.HistoryDataStore
-import com.lalilu.lmusic.repository.SettingsDataStore
+import com.lalilu.lmusic.datastore.HistoryDataStore
+import com.lalilu.lmusic.datastore.SettingsDataStore
+import com.lalilu.lmusic.repository.LyricHelper
 import com.lalilu.lmusic.service.notification.LMusicNotificationImpl
 import com.lalilu.lmusic.service.playback.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.LMusicNoisyReceiver
@@ -44,6 +45,12 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
 
     @Inject
+    lateinit var runtime: LMusicRuntime
+
+    @Inject
+    lateinit var lyricHelper: LyricHelper
+
+    @Inject
     lateinit var historyDataStore: HistoryDataStore
 
     @Inject
@@ -55,7 +62,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var mediaSession: MediaSessionCompat
 
     private val mNotificationManager: LMusicNotificationImpl by lazy {
-        LMusicNotificationImpl(this, database, playBack)
+        LMusicNotificationImpl(this, database, playBack, lyricHelper)
     }
     private val playBack: LMusicPlayBack<LSong> = object : LMusicPlayBack<LSong>(this) {
         private val noisyReceiver = LMusicNoisyReceiver(this::onPause)
@@ -83,20 +90,20 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         }
 
         override fun getUriFromItem(item: LSong): Uri = item.uri
-        override fun getById(id: String): LSong? = LMusicRuntime.getSongById(id)
-        override fun getCurrent(): LSong? = LMusicRuntime.getPlaying()
+        override fun getById(id: String): LSong? = runtime.getSongById(id)
+        override fun getCurrent(): LSong? = runtime.getPlaying()
         override fun getMetaDataFromItem(item: LSong?): MediaMetadataCompat? = item?.metadataCompat
 
         override fun getNext(random: Boolean): LSong? {
-            if (random) LMusicRuntime.getRandomNext()?.let { return it }
+            if (random) runtime.getRandomNext()?.let { return it }
 
-            return LMusicRuntime.getNextOf(getCurrent(), true)
+            return runtime.getNextOf(getCurrent(), true)
         }
 
         override fun getPrevious(random: Boolean): LSong? {
-            if (random) LMusicRuntime.getRandomPrevious()?.let { return it }
+            if (random) runtime.getRandomPrevious()?.let { return it }
 
-            return LMusicRuntime.getPreviousOf(getCurrent(), true)
+            return runtime.getPreviousOf(getCurrent(), true)
         }
 
         override fun getMaxVolume(): Int = settingsDataStore.run {
@@ -110,7 +117,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         }
 
         override fun onPlayingItemUpdate(item: LSong?) {
-            LMusicRuntime.updatePlaying(item)
+            runtime.updatePlaying(item)
         }
 
         val synchronizer = CoroutineSynchronizer()
@@ -142,8 +149,8 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         override fun onPlaybackStateChanged(@PlaybackStateCompat.State playbackState: Int) {
             when (playbackState) {
                 PlaybackStateCompat.STATE_STOPPED -> {
-                    LMusicRuntime.updatePosition(0, false)
-                    LMusicRuntime.isPlaying = false
+                    runtime.updatePosition(0, false)
+                    runtime.isPlaying = false
 
                     noisyReceiver.unRegisterFrom(this@LMusicService)
                     audioFocusHelper.abandonAudioFocus()
@@ -180,8 +187,8 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                     audioFocusHelper.abandonAudioFocus()
                     this@LMusicService.stopForeground(false)
 
-                    LMusicRuntime.updatePosition(getPosition(), getIsPlaying())
-                    LMusicRuntime.isPlaying = false
+                    runtime.updatePosition(getPosition(), getIsPlaying())
+                    runtime.isPlaying = false
                 }
                 PlaybackStateCompat.STATE_PLAYING -> {
                     // 更新进度
@@ -198,8 +205,8 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
                     noisyReceiver.registerTo(this@LMusicService)
 
-                    LMusicRuntime.updatePosition(getPosition(), getIsPlaying())
-                    LMusicRuntime.isPlaying = true
+                    runtime.updatePosition(getPosition(), getIsPlaying())
+                    runtime.isPlaying = true
                 }
             }
         }

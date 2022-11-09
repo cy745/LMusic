@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.database.sort
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmedia.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,9 +18,11 @@ import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class PlaylistsViewModel @Inject constructor() : ViewModel() {
+class PlaylistsViewModel @Inject constructor(
+    private val playlistRepo: PlaylistRepository
+) : ViewModel() {
     var playlists by mutableStateOf(emptyList<LPlaylist>())
     private var tempList by mutableStateOf(emptyList<LPlaylist>())
 
@@ -41,56 +43,47 @@ class PlaylistsViewModel @Inject constructor() : ViewModel() {
         val end = endIndex - 2
         if (start !in tempList.indices || end !in tempList.indices || start == end) return
         viewModelScope.launch(Dispatchers.IO) {
-            Library.playlistRepo?.movePlaylist(tempList[start], tempList[end], start > end)
+            playlistRepo.movePlaylist(tempList[start], tempList[end], start > end)
         }
     }
 
-
     init {
-        Library.playlistRepoFlow
-            .flatMapLatest { it?.getAllPlaylistWithDetailFlow() ?: flowOf(emptyList()) }
-            .mapLatest { it.sort(false) }
-            .debounce(50)
+        playlistRepo.getAllPlaylistWithDetailFlow().mapLatest { it.sort(false) }.debounce(50)
             .onEach {
                 playlists = it
                 tempList = it
-            }
-            .launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
     }
 
-    fun createNewPlaylist(title: String) =
-        viewModelScope.launch(Dispatchers.IO) {
-            Library.playlistRepo?.savePlaylist(LPlaylist(_title = title))
-        }
+    fun createNewPlaylist(title: String) = viewModelScope.launch(Dispatchers.IO) {
+        playlistRepo.savePlaylist(LPlaylist(_title = title))
+    }
 
-    fun removePlaylists(playlist: List<LPlaylist>) =
-        viewModelScope.launch(Dispatchers.IO) {
-            Library.playlistRepo?.deletePlaylists(playlist)
-        }
+    fun removePlaylists(playlist: List<LPlaylist>) = viewModelScope.launch(Dispatchers.IO) {
+        playlistRepo.deletePlaylists(playlist)
+    }
 
     fun addSongIntoPlaylist(playlistId: Long, mediaId: String) =
         viewModelScope.launch(Dispatchers.IO) {
-            Library.playlistRepo?.saveSongIntoPlaylist(playlistId, mediaId)
+            playlistRepo.saveSongIntoPlaylist(playlistId, mediaId)
         }
 
     fun addSongsIntoPlaylists(playlists: List<LPlaylist>, songs: List<LSong>) =
         viewModelScope.launch(Dispatchers.IO) {
-            Library.playlistRepo?.saveSongsIntoPlaylists(playlists, songs)
+            playlistRepo.saveSongsIntoPlaylists(playlists, songs)
         }
 
     fun removeSongFromPlaylist(mediaId: String, playlistId: Long) =
         viewModelScope.launch(Dispatchers.IO) {
-            Library.playlistRepo?.deleteSongFromPlaylist(playlistId, mediaId)
+            playlistRepo.deleteSongFromPlaylist(playlistId, mediaId)
         }
 
     fun removeSongsFromPlaylist(songs: List<LSong>, playlist: LPlaylist) =
         viewModelScope.launch(Dispatchers.IO) {
-            Library.playlistRepo?.deleteSongsFromPlaylist(songs, playlist)
+            playlistRepo.deleteSongsFromPlaylist(songs, playlist)
         }
 
     fun isContainSongInPlaylist(mediaId: String, playlistId: Long): Flow<Boolean> {
-        return Library.playlistRepoFlow.flatMapLatest {
-            it?.isSongContainInPlaylist(mediaId, playlistId) ?: flowOf(false)
-        }
+        return playlistRepo.isSongContainInPlaylist(mediaId, playlistId)
     }
 }

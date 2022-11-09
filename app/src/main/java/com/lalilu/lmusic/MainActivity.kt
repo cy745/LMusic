@@ -27,8 +27,8 @@ import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.screen.LMusicNavGraph
 import com.lalilu.lmusic.compose.screen.PlayingScreen
-import com.lalilu.lmusic.repository.SettingsDataStore
-import com.lalilu.lmusic.screen.ShowScreen
+import com.lalilu.lmusic.compose.screen.ShowScreen
+import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.OnBackPressedHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
@@ -51,6 +51,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
     @Inject
     lateinit var settingsDataStore: SettingsDataStore
 
+    @Inject
+    lateinit var browser: LMusicBrowser
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -65,7 +68,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
         SystemUiUtil.immerseNavigationBar(this)
         PermissionUtils.requestPermission(this, onSuccess = {
             launch { Indexer.index(this@MainActivity) }
-            lifecycle.addObserver(LMusicBrowser)
+            lifecycle.addObserver(browser)
         }, onFailed = {
             ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
         })

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.repository
+package com.lalilu.lmusic.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore

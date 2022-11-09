@@ -13,11 +13,13 @@ import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.MainViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
 fun ArtistDetailScreen(
     artist: LArtist,
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    playingVM: PlayingViewModel
 ) {
     val songs = artist.songs
     val windowSize = LocalWindowSize.current
@@ -47,6 +49,7 @@ fun ArtistDetailScreen(
         itemsIndexed(items = songs) { index, item ->
             SongCard(
                 song = { item },
+                lyricHelper = playingVM.lyricHelper,
                 onClick = { onSongSelected(item) },
                 onLongClick = { navToSongAction(item.id) }
             )

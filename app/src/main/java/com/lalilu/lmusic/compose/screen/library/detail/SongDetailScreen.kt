@@ -38,13 +38,13 @@ import com.lalilu.lmusic.compose.component.card.NetworkPairCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.ScreenActions
-import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -53,7 +53,8 @@ fun SongDetailScreen(
     song: LSong,
     mainVM: MainViewModel,
     networkDataViewModel: NetworkDataViewModel,
-    playlistsVM: PlaylistsViewModel
+    playlistsVM: PlaylistsViewModel,
+    playingVM: PlayingViewModel
 ) {
     val windowSize = LocalWindowSize.current
     val navToAlbumAction = ScreenActions.navToAlbum()
@@ -80,14 +81,14 @@ fun SongDetailScreen(
                     navToAddToPlaylist(listOf(song))
                 },
                 onSetSongToNext = {
-                    LMusicBrowser.addToNext(song.id)
+                    playingVM.browser.addToNext(song.id)
                     DynamicTips.push(
                         title = song.name,
                         subTitle = "下一首播放",
                         imageData = song
                     )
                 },
-                onPlaySong = { LMusicBrowser.addAndPlay(song.id) })
+                onPlaySong = { playingVM.browser.addAndPlay(song.id) })
         }
     }
 

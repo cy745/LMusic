@@ -15,6 +15,10 @@ import javax.inject.Singleton
 
 interface LyricSource {
     suspend fun loadLyric(song: LSong): Pair<String, String?>?
+
+    suspend fun onLyricUpdate(callback: (Pair<String, String?>?) -> Unit) {
+        callback(null)
+    }
 }
 
 @Singleton
