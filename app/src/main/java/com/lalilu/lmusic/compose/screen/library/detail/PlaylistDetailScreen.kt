@@ -20,6 +20,7 @@ import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.MainViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import okhttp3.internal.toImmutableList
@@ -33,6 +34,7 @@ import org.burnoutcrew.reorderable.reorderable
 fun PlaylistDetailScreen(
     playlistId: Long,
     mainVM: MainViewModel,
+    playingVM: PlayingViewModel,
     playlistsVM: PlaylistsViewModel,
     playlistDetailVM: PlaylistDetailViewModel
 ) {
@@ -122,6 +124,7 @@ fun PlaylistDetailScreen(
             ) { isDragging ->
                 SongCard(
                     song = { item },
+                    lyricHelper = playingVM.lyricHelper,
                     onClick = {
                         if (selector.isSelecting.value) {
                             selector.onSelected(item)

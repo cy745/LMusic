@@ -9,7 +9,7 @@ import androidx.annotation.RequiresApi
 import com.dirror.lyricviewx.LyricEntry
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datasource.MDataBase
-import com.lalilu.lmusic.service.LMusicLyricManager
+import com.lalilu.lmusic.repository.LyricHelper
 import com.lalilu.lmusic.service.LMusicService
 import com.lalilu.lmusic.service.playback.LMusicPlayBack
 import com.lalilu.lmusic.utils.CoroutineSynchronizer
@@ -31,7 +31,8 @@ import kotlin.coroutines.CoroutineContext
 class LMusicNotificationImpl constructor(
     private val mContext: LMusicService,
     private val database: MDataBase,
-    private val playBack: LMusicPlayBack<LSong>
+    private val playBack: LMusicPlayBack<LSong>,
+    private val lyricHelper: LyricHelper
 ) : LMusicNotification(mContext), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     private val synchronizer = CoroutineSynchronizer()
@@ -52,7 +53,7 @@ class LMusicNotificationImpl constructor(
             createNotificationChannel()
         }
         notificationManager.cancelAll()
-        LMusicLyricManager.currentLyricEntry.launchIn(this)
+        lyricHelper.currentLyricEntry.launchIn(this)
     }
 
     override fun fillData(data: Any?): Any? {
@@ -128,7 +129,7 @@ class LMusicNotificationImpl constructor(
             synchronizer.checkCount(count)
 
             position = getPosition().takeIf { it >= 0L } ?: continue
-            lyricList = LMusicLyricManager.currentLyricEntry.get() ?: continue
+            lyricList = lyricHelper.currentLyricEntry.get() ?: continue
             index = findShowLine(lyricList, position + 500)
             if (lastLyricIndex == index) continue
 

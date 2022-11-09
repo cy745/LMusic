@@ -3,8 +3,14 @@ package com.lalilu.lmusic
 import android.content.Context
 import androidx.room.Room
 import com.funny.data_saver.core.DataSaverInterface
+import com.lalilu.lmedia.database.LDatabase
+import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmedia.repository.HistoryRepository
+import com.lalilu.lmedia.repository.PlaylistRepository
+import com.lalilu.lmedia.repository.impl.HistoryRepositoryImpl
+import com.lalilu.lmedia.repository.impl.PlaylistRepositoryImpl
 import com.lalilu.lmusic.datasource.MDataBase
-import com.lalilu.lmusic.repository.SettingsDataStore
+import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.utils.DataSaverDataStorePreferences
 import com.lalilu.lmusic.utils.DataSaverDataStorePreferences.Companion.setDataStorePreferences
 import dagger.Module
@@ -40,6 +46,30 @@ object LMusicHiltModule {
             "LMusic_database"
         ).fallbackToDestructiveMigration()
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideLMediaDatabase(@ApplicationContext context: Context): LDatabase {
+        return Library.createDatabase(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLMediaPlaylistRepo(database: LDatabase): PlaylistRepository {
+        return PlaylistRepositoryImpl(
+            playlistDao = database.playlistDao(),
+            songInPlaylistDao = database.songInPlaylistDao(),
+            getSongOrNull = Library::getSongOrNull
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideLMediaHistoryRepo(database: LDatabase): HistoryRepository {
+        return HistoryRepositoryImpl(
+            historyDao = database.historyDao()
+        )
     }
 
     @Provides

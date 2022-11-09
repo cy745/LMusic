@@ -13,7 +13,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,18 +33,17 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.service.LMusicLyricManager
+import com.lalilu.lmusic.repository.LyricHelper
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.dayNightTextColorFilter
 import com.lalilu.lmusic.utils.extension.durationMsToString
 import com.lalilu.lmusic.utils.extension.mimeTypeToIcon
 import com.lalilu.lmusic.utils.recomposeHighlighter
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 
 @Composable
 fun SongCard(
     modifier: Modifier = Modifier.recomposeHighlighter(),
+    lyricHelper: LyricHelper,
     dragModifier: Modifier = Modifier,
     song: () -> LSong,
     onClick: () -> Unit = {},
@@ -51,15 +52,7 @@ fun SongCard(
     isSelected: () -> Boolean = { false }
 ) {
     val item = remember { song() }
-    var hasLyric by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        delay(200)
-
-        if (isActive) {
-            hasLyric = LMusicLyricManager.hasLyric(item)
-        }
-    }
+    val hasLyric by lyricHelper.rememberHasLyric(song = item)
 
     SongCard(
         modifier = modifier,

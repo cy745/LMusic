@@ -30,32 +30,32 @@ import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.compose.screen.ScreenData
-import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LibraryScreen(
-    viewModel: LibraryViewModel
+    viewModel: LibraryViewModel,
+    playingVM: PlayingViewModel
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
     val lastPlayedStack by viewModel.lastPlayedStack.observeAsState(emptyList())
     val recentlyAdded by viewModel.recentlyAdded.observeAsState(emptyList())
     val randomRecommends = remember { Library.getSongs(10, true) }
 
-    val currentPlaying by LMusicRuntime.playingLiveData.observeAsState()
-    val currentIsPlaying by LMusicRuntime.isPlayingLiveData.observeAsState(false)
+    val currentPlaying by playingVM.runtime.playingLiveData.observeAsState()
+    val currentIsPlaying by playingVM.runtime.isPlayingLiveData.observeAsState(false)
 
     val navToSongAction = ScreenActions.navToSongFromLibrary()
 
     val playSong = remember {
         { mediaId: String ->
             currentPlaying.takeIf { it != null && it.id == mediaId && currentIsPlaying }
-                ?.let { LMusicBrowser.pause() } ?: LMusicBrowser.addAndPlay(mediaId)
+                ?.let { playingVM.browser.pause() } ?: playingVM.browser.addAndPlay(mediaId)
         }
     }
 

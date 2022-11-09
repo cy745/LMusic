@@ -26,17 +26,18 @@ import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenActions
-import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
 fun SongsScreen(
     mainVM: MainViewModel,
     libraryVM: LibraryViewModel,
+    playingVM: PlayingViewModel
 ) {
     val windowSize = LocalWindowSize.current
     val gridState = rememberLazyGridState()
@@ -45,7 +46,7 @@ fun SongsScreen(
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
     val songs by libraryVM.songs.observeAsState(emptyList())
-    val currentPlaying by LMusicRuntime.playingLiveData.observeAsState()
+    val currentPlaying by playingVM.runtime.playingLiveData.observeAsState()
 
     val scrollAction = buildScrollToItemAction(
         target = currentPlaying,
@@ -124,6 +125,7 @@ fun SongsScreen(
             ) { index, item ->
                 SongCard(
                     song = { item },
+                    lyricHelper = playingVM.lyricHelper,
                     onClick = {
                         if (selector.isSelecting.value) {
                             selector.onSelected(item)

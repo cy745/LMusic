@@ -22,9 +22,6 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
-import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.service.LMusicLyricManager
-import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.OnBackPressedHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
@@ -32,6 +29,7 @@ import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
 import com.lalilu.ui.*
 import com.lalilu.ui.appbar.MyAppbarBehavior
@@ -41,7 +39,8 @@ import com.lalilu.ui.internal.StateHelper
 @ExperimentalMaterialApi
 fun PlayingScreen(
     backPressedHelper: OnBackPressedHelper,
-    settingsViewModel: SettingsViewModel = hiltViewModel()
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
+    playingVM: PlayingViewModel = hiltViewModel()
 ) {
     val density = LocalDensity.current
     val navToSongAction = ScreenActions.navToSong()
@@ -57,25 +56,25 @@ fun PlayingScreen(
         FragmentPlayingBinding.inflate(inflater, parent, attachToParent).apply {
             val activity = parent.context.getActivity()!!
             val seekBarHandler = SeekBarHandler(
-                onPlayNext = { LMusicBrowser.skipToNext() },
-                onPlayPause = { LMusicBrowser.playPause() },
-                onPlayPrevious = { LMusicBrowser.skipToPrevious() }
+                onPlayNext = { playingVM.browser.skipToNext() },
+                onPlayPause = { playingVM.browser.playPause() },
+                onPlayPrevious = { playingVM.browser.skipToPrevious() }
             )
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
 
-            val adapter = PlayingAdapter().apply {
+            val adapter = PlayingAdapter(playingVM.lyricHelper).apply {
                 onItemDragOrSwipedListener = object : PlayingAdapter.OnItemDragOrSwipedListener {
                     override fun onDelete(song: LSong): Boolean {
-                        return LMusicBrowser.removeById(song.id)
+                        return playingVM.browser.removeById(song.id)
                     }
 
                     override fun onAddToNext(song: LSong): Boolean {
-                        return LMusicBrowser.addToNext(song.id)
+                        return playingVM.browser.addToNext(song.id)
                     }
                 }
                 onItemClick = { id, _ ->
-                    LMusicBrowser.playById(id)
+                    playingVM.browser.playById(id)
                 }
                 onItemLongClick = { id, _ ->
                     navToSongAction.invoke(id)
@@ -134,7 +133,7 @@ fun PlayingScreen(
                 override fun onClick(@ClickPart clickPart: Int, action: Int) {
                     HapticUtils.haptic(this@apply.root)
                     if (seekBarHandler.clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
-                        LMusicBrowser.playPause()
+                        playingVM.browser.playPause()
                         return
                     }
                     seekBarHandler.handle(clickPart)
@@ -156,15 +155,15 @@ fun PlayingScreen(
                 }
             })
             maSeekBar.seekToListeners.add(OnSeekBarSeekToListener { value ->
-                LMusicBrowser.seekTo(value)
+                playingVM.browser.seekTo(value)
             })
             maSeekBar.cancelListeners.add(OnSeekBarCancelListener {
                 HapticUtils.haptic(this@apply.root)
             })
-            LMusicRuntime.songsLiveData.observe(activity) {
+            playingVM.runtime.songsLiveData.observe(activity) {
                 adapter.setDiffNewData(it.toMutableList())
             }
-            LMusicRuntime.playingLiveData.observe(activity) {
+            playingVM.runtime.playingLiveData.observe(activity) {
                 maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
                 song = it
 
@@ -176,11 +175,11 @@ fun PlayingScreen(
                     )
                 }
             }
-            LMusicRuntime.positionLiveData.observe(activity) {
+            playingVM.runtime.positionLiveData.observe(activity) {
                 maSeekBar.updateValue(it.toFloat())
                 fmLyricViewX.updateTime(it)
             }
-            LMusicLyricManager.currentLyricLiveData.observe(activity) {
+            playingVM.lyricHelper.currentLyricLiveData.observe(activity) {
                 fmLyricViewX.setLyricEntryList(emptyList())
                 fmLyricViewX.loadLyric(it?.first, it?.second)
             }

@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.service
 
-import android.app.Application
 import android.content.ComponentName
 import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
@@ -11,26 +10,29 @@ import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.repository.HistoryDataStore
+import com.lalilu.lmusic.datastore.HistoryDataStore
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object LMusicBrowser : DefaultLifecycleObserver {
+@Singleton
+class LMusicBrowser @Inject constructor(
+    @ApplicationContext
+    private val context: Context,
+    private val historyStore: HistoryDataStore,
+    private val runtime: LMusicRuntime
+) : DefaultLifecycleObserver {
     private var controller: MediaControllerCompat? = null
-    private var historyStore: HistoryDataStore? = null
-    private lateinit var browser: MediaBrowserCompat
-
-    fun init(application: Application, historyDataStore: HistoryDataStore) {
-        browser = MediaBrowserCompat(
-            application,
-            ComponentName(application, LMusicService::class.java),
-            ConnectionCallback(application),
-            null
-        )
-        historyStore = historyDataStore
-    }
+    private val browser: MediaBrowserCompat = MediaBrowserCompat(
+        context,
+        ComponentName(context, LMusicService::class.java),
+        ConnectionCallback(context),
+        null
+    )
 
     fun setSongs(songs: List<LSong>, song: LSong? = null) {
-        LMusicRuntime.load(songs = songs, playing = song)
+        runtime.load(songs = songs, playing = song)
     }
 
     override fun onStart(owner: LifecycleOwner) {
@@ -59,42 +61,42 @@ object LMusicBrowser : DefaultLifecycleObserver {
     }
 
     fun addToNext(mediaId: String): Boolean {
-        val nowIndex = LMusicRuntime.indexOfSong(mediaId = mediaId)
-        val currentIndex = LMusicRuntime.getPlayingIndex()
+        val nowIndex = runtime.indexOfSong(mediaId = mediaId)
+        val currentIndex = runtime.getPlayingIndex()
         if (currentIndex >= 0 && (currentIndex == nowIndex || (currentIndex + 1) == nowIndex))
             return false
 
         if (nowIndex >= 0) {
-            LMusicRuntime.move(nowIndex, currentIndex)
+            runtime.move(nowIndex, currentIndex)
         } else {
             val item = Library.getSongOrNull(mediaId) ?: return false
-            LMusicRuntime.add(currentIndex + 1, item)
+            runtime.add(currentIndex + 1, item)
         }
         return true
     }
 
     fun removeById(mediaId: String): Boolean {
         return try {
-            if (mediaId == LMusicRuntime.getPlayingId()) {
+            if (mediaId == runtime.getPlayingId()) {
                 skipToNext()
             }
-            val index = LMusicRuntime.indexOfSong(mediaId)
-            LMusicRuntime.removeAt(index)
+            val index = runtime.indexOfSong(mediaId)
+            runtime.removeAt(index)
             true
         } catch (e: Exception) {
             false
         }
     }
 
-    private class ConnectionCallback(
+    private inner class ConnectionCallback(
         val context: Context
     ) : MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
             controller = MediaControllerCompat(context, browser.sessionToken)
 
             // 若当前播放列表为空，则尝试提取历史数据填充
-            if (LMusicRuntime.isEmpty()) {
-                historyStore?.apply {
+            if (runtime.isEmpty()) {
+                historyStore.apply {
                     val songs = lastPlayedListIdsKey.get()
                         .mapNotNull { Library.getSongOrNull(it) }
                     val song = lastPlayedIdKey.get()

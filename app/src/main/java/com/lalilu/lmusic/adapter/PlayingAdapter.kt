@@ -6,13 +6,19 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlayingBinding
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.service.LMusicLyricManager
+import com.lalilu.lmusic.repository.LyricHelper
+import com.lalilu.lmusic.utils.extension.launch
 import com.lalilu.lmusic.utils.extension.moveHeadToTail
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
-class PlayingAdapter @Inject constructor() :
+class PlayingAdapter @Inject constructor(
+    private val lyricHelper: LyricHelper
+) :
     BaseAdapter<LSong, ItemPlayingBinding>(R.layout.item_playing), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
@@ -64,9 +70,9 @@ class PlayingAdapter @Inject constructor() :
 
     override fun onBind(binding: ItemPlayingBinding, item: LSong, position: Int) {
         binding.song = item
-        launch {
+        binding.launch {
             if (isActive) {
-                val hasLyric = LMusicLyricManager.hasLyric(item)
+                val hasLyric = lyricHelper.hasLyric(item)
                 withContext(Dispatchers.Main) {
                     binding.songLrc.visibility =
                         if (hasLyric) View.VISIBLE else View.INVISIBLE

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.screen
+package com.lalilu.lmusic.compose.screen
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
@@ -35,15 +36,16 @@ import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.PlayMode
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
-fun ShowScreen() {
+fun ShowScreen(
+    playingVM: PlayingViewModel = hiltViewModel()
+) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
     val isPad by windowSize.rememberIsPad()
@@ -53,7 +55,7 @@ fun ShowScreen() {
     }
 
     if (visible) {
-        val song by LMusicRuntime.playingLiveData.observeAsState()
+        val song by playingVM.runtime.playingLiveData.observeAsState()
 
         Box(
             modifier = Modifier
@@ -79,7 +81,7 @@ fun ShowScreen() {
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     SongDetailPanel(song = song)
-                    ControlPanel()
+                    ControlPanel(playingVM)
                 }
             }
         }
@@ -187,8 +189,10 @@ fun SongDetailPanel(
 }
 
 @Composable
-fun ControlPanel() {
-    val isPlaying = LMusicRuntime.isPlayingLiveData.observeAsState(false)
+fun ControlPanel(
+    playingVM: PlayingViewModel = hiltViewModel()
+) {
+    val isPlaying = playingVM.runtime.isPlayingLiveData.observeAsState(false)
     var playMode by rememberDataSaverState(
         Config.KEY_SETTINGS_PLAY_MODE, Config.DEFAULT_SETTINGS_PLAY_MODE
     )
@@ -197,7 +201,7 @@ fun ControlPanel() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        IconButton(onClick = { LMusicBrowser.play() }) {
+        IconButton(onClick = { playingVM.browser.play() }) {
             Image(
                 painter = painterResource(id = R.drawable.ic_skip_back_line),
                 contentDescription = "skip_back",
@@ -206,7 +210,7 @@ fun ControlPanel() {
         }
         IconToggleButton(
             checked = isPlaying.value,
-            onCheckedChange = { LMusicBrowser.playPause() }
+            onCheckedChange = { playingVM.browser.playPause() }
         ) {
             Image(
                 painter = painterResource(
@@ -216,7 +220,7 @@ fun ControlPanel() {
                 modifier = Modifier.size(28.dp)
             )
         }
-        IconButton(onClick = { LMusicBrowser.skipToNext() }) {
+        IconButton(onClick = { playingVM.browser.skipToNext() }) {
             Image(
                 painter = painterResource(id = R.drawable.ic_skip_forward_line),
                 contentDescription = "skip_forward",

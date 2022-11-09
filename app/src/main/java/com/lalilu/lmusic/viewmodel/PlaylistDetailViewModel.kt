@@ -10,6 +10,7 @@ import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.entity.SongInPlaylist
 import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmedia.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -18,7 +19,9 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
-class PlaylistDetailViewModel @Inject constructor() : ViewModel() {
+class PlaylistDetailViewModel @Inject constructor(
+    private val playlistRepo: PlaylistRepository
+) : ViewModel() {
     var songs by mutableStateOf(emptyList<LSong>())
     private var tempList by mutableStateOf(emptyList<SongInPlaylist>())
 
@@ -39,7 +42,7 @@ class PlaylistDetailViewModel @Inject constructor() : ViewModel() {
         val end = endIndex - 2
         if (start !in tempList.indices || end !in tempList.indices || start == end) return
         viewModelScope.launch(Dispatchers.IO) {
-            Library.playlistRepo?.moveSongInPlaylist(
+            playlistRepo.moveSongInPlaylist(
                 tempList[start],
                 tempList[end],
                 start < end //
@@ -50,10 +53,7 @@ class PlaylistDetailViewModel @Inject constructor() : ViewModel() {
     fun getPlaylistDetailById(playlistId: Long, scope: CoroutineScope) {
         songs = emptyList()
         tempList = emptyList()
-        Library.playlistRepoFlow
-            .flatMapLatest { repo ->
-                repo?.getSongInPlaylists(playlistId) ?: flowOf(emptyList())
-            }
+        playlistRepo.getSongInPlaylists(playlistId)
             .mapLatest { it.sort(true) }
             .debounce(50)
             .onEach { list ->
@@ -64,8 +64,6 @@ class PlaylistDetailViewModel @Inject constructor() : ViewModel() {
     }
 
     fun getPlaylistFlow(playlistId: Long): Flow<LPlaylist?> {
-        return Library.playlistRepoFlow.flatMapLatest { repo ->
-            repo?.getPlaylistById(playlistId) ?: flowOf(null)
-        }
+        return playlistRepo.getPlaylistById(playlistId)
     }
 }
