@@ -49,7 +49,7 @@ fun ArtistDetailScreen(
         itemsIndexed(items = songs) { index, item ->
             SongCard(
                 song = { item },
-                lyricHelper = playingVM.lyricHelper,
+                lyricRepository = playingVM.lyricRepository,
                 onClick = { onSongSelected(item) },
                 onLongClick = { navToSongAction(item.id) }
             )

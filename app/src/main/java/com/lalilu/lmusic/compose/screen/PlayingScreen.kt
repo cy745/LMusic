@@ -63,7 +63,7 @@ fun PlayingScreen(
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
 
-            val adapter = PlayingAdapter(playingVM.lyricHelper).apply {
+            val adapter = PlayingAdapter(playingVM.lyricRepository).apply {
                 onItemDragOrSwipedListener = object : PlayingAdapter.OnItemDragOrSwipedListener {
                     override fun onDelete(song: LSong): Boolean {
                         return playingVM.browser.removeById(song.id)
@@ -179,7 +179,7 @@ fun PlayingScreen(
                 maSeekBar.updateValue(it.toFloat())
                 fmLyricViewX.updateTime(it)
             }
-            playingVM.lyricHelper.currentLyricLiveData.observe(activity) {
+            playingVM.lyricRepository.currentLyricLiveData.observe(activity) {
                 fmLyricViewX.setLyricEntryList(emptyList())
                 fmLyricViewX.loadLyric(it?.first, it?.second)
             }

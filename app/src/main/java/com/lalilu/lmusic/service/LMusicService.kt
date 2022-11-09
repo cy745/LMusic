@@ -20,7 +20,7 @@ import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
 import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datastore.HistoryDataStore
 import com.lalilu.lmusic.datastore.SettingsDataStore
-import com.lalilu.lmusic.repository.LyricHelper
+import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.notification.LMusicNotificationImpl
 import com.lalilu.lmusic.service.playback.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.LMusicNoisyReceiver
@@ -48,7 +48,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var runtime: LMusicRuntime
 
     @Inject
-    lateinit var lyricHelper: LyricHelper
+    lateinit var lyricRepository: LyricRepository
 
     @Inject
     lateinit var historyDataStore: HistoryDataStore
@@ -62,7 +62,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var mediaSession: MediaSessionCompat
 
     private val mNotificationManager: LMusicNotificationImpl by lazy {
-        LMusicNotificationImpl(this, database, playBack, lyricHelper)
+        LMusicNotificationImpl(this, database, playBack, lyricRepository)
     }
     private val playBack: LMusicPlayBack<LSong> = object : LMusicPlayBack<LSong>(this) {
         private val noisyReceiver = LMusicNoisyReceiver(this::onPause)

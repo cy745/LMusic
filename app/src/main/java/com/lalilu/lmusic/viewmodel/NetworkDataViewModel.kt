@@ -11,7 +11,6 @@ import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
 import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
-import com.lalilu.lmusic.repository.LyricHelper
 import com.lalilu.lmusic.repository.LyricRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -26,8 +25,7 @@ class NetworkDataViewModel @Inject constructor(
     private val neteaseDataSource: NeteaseDataSource,
     private val kugouDataSource: KugouDataSource,
     private val dataBase: MDataBase,
-    private val lyricRepo: LyricRepository,
-    private val lyricHelper: LyricHelper
+    private val lyricRepository: LyricRepository
 ) : ViewModel() {
     fun getNetworkDataFlowByMediaId(mediaId: String) =
         dataBase.networkDataDao().getFlowById(mediaId)
@@ -167,7 +165,7 @@ class NetworkDataViewModel @Inject constructor(
                 )
             )
             ToastUtils.showShort("保存匹配歌词成功")
-            lyricHelper.currentLyric.requireUpdate()
+            lyricRepository.currentLyric.requireUpdate()
             withContext(Dispatchers.Main) {
                 success()
             }

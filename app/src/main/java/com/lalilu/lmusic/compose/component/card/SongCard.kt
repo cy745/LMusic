@@ -33,7 +33,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.repository.LyricHelper
+import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.dayNightTextColorFilter
 import com.lalilu.lmusic.utils.extension.durationMsToString
@@ -43,7 +43,7 @@ import com.lalilu.lmusic.utils.recomposeHighlighter
 @Composable
 fun SongCard(
     modifier: Modifier = Modifier.recomposeHighlighter(),
-    lyricHelper: LyricHelper,
+    lyricRepository: LyricRepository,
     dragModifier: Modifier = Modifier,
     song: () -> LSong,
     onClick: () -> Unit = {},
@@ -52,7 +52,7 @@ fun SongCard(
     isSelected: () -> Boolean = { false }
 ) {
     val item = remember { song() }
-    val hasLyric by lyricHelper.rememberHasLyric(song = item)
+    val hasLyric by lyricRepository.rememberHasLyric(song = item)
 
     SongCard(
         modifier = modifier,
