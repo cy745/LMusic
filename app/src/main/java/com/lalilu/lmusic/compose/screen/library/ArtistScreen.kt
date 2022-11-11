@@ -32,7 +32,7 @@ fun ArtistScreen(
                 ArtistCard(
                     index = index,
                     artistName = item.name,
-                    songCount = item.songs.size,
+                    songCount = item.getSongCount(),
                     onClick = { navToArtistAction.invoke(item.name) }
                 )
             }

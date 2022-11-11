@@ -16,9 +16,6 @@ import javax.inject.Singleton
 interface LyricSource {
     suspend fun loadLyric(song: LSong): Pair<String, String?>?
 
-    suspend fun onLyricUpdate(callback: (Pair<String, String?>?) -> Unit) {
-        callback(null)
-    }
 }
 
 @Singleton
@@ -27,15 +24,7 @@ class LyricSourceFactory @Inject constructor(
     embeddedLyricSource: EmbeddedLyricSource,
     localLyricSource: LocalLyricSource
 ) : LyricSource {
-
-    private val sources: MutableList<LyricSource> = ArrayList()
-
-    init {
-        sources.add(dataBaseLyricSource)
-        sources.add(embeddedLyricSource)
-        sources.add(localLyricSource)
-        instance = this
-    }
+    private val sources = listOf(dataBaseLyricSource, embeddedLyricSource, localLyricSource)
 
     override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
@@ -45,11 +34,6 @@ class LyricSourceFactory @Inject constructor(
             }
             return@withContext null
         }
-
-    companion object {
-        var instance: LyricSourceFactory? = null
-            private set
-    }
 }
 
 class EmbeddedLyricSource @Inject constructor() : LyricSource {
@@ -92,6 +76,6 @@ class DataBaseLyricSource @Inject constructor(
     override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
             val pair = dataBase.networkDataDao().getById(song.id)
-            pair?.lyric?.let { Pair(it, pair.tlyric) }
+            pair?.lyric?.let { it to pair.tlyric }
         }
 }

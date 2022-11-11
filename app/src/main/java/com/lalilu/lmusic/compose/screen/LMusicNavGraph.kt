@@ -190,6 +190,10 @@ fun LMusicNavGraph(
                 ?: EmptySearchForLyricScreen()
         }
 
+        composable(route = ScreenData.Search.name) {
+            SearchScreen()
+        }
+
         composable(
             route = ScreenData.Settings.name
         ) {

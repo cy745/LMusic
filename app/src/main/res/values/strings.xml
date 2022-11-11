@@ -28,6 +28,7 @@
     <string name="destination_label_artist">艺术家</string>
     <string name="destination_label_playlists">歌单</string>
     <string name="destination_label_all_song">歌曲</string>
+    <string name="destination_label_search">搜索</string>
     <string name="destination_label_settings">设置</string>
     <string name="destination_label_share_center">分享中心</string>
     <string name="destination_label_album_detail">专辑详情</string>
@@ -44,6 +45,7 @@
     <string name="destination_subtitle_albums">所有专辑</string>
     <string name="destination_subtitle_playlists">所有歌单</string>
     <string name="destination_subtitle_all_song">所有歌曲</string>
+    <string name="destination_subtitle_search">搜索本地所有内容</string>
     <string name="destination_subtitle_settings">设置选项</string>
     <string name="destination_subtitle_share_center">正在听的歌曲（需启用高级网络功能）</string>
     <string name="destination_subtitle_album_detail">专辑详情</string>

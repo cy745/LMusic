@@ -7,12 +7,8 @@ import com.lalilu.R
 import com.lalilu.databinding.ItemPlayingBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.repository.LyricRepository
-import com.lalilu.lmusic.utils.extension.launch
 import com.lalilu.lmusic.utils.extension.moveHeadToTail
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -69,7 +65,7 @@ class PlayingAdapter @Inject constructor(
 
     override fun onBind(binding: ItemPlayingBinding, item: LSong, position: Int) {
         binding.song = item
-        binding.launch {
+        launch {
             if (isActive) {
                 val hasLyric = lyricRepository.hasLyric(item)
                 withContext(Dispatchers.Main) {
