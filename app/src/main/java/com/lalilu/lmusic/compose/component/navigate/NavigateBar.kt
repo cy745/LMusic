@@ -45,7 +45,7 @@ fun NavigateBar(horizontal: Boolean = true) {
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
             ScreenData.values().forEach {
                 if (it.showNavigateButton) {

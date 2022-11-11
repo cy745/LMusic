@@ -2,11 +2,11 @@ package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.datastore.LibraryDataStore
+import com.lalilu.lmusic.repository.LibraryRepository
 import com.lalilu.lmusic.utils.extension.toUpdatableFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,8 +18,14 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     private val libraryDataStore: LibraryDataStore,
-    private val historyRepo: HistoryRepository
+    private val historyRepo: HistoryRepository,
+    private val libraryRepo: LibraryRepository
 ) : ViewModel() {
+    val songs get() = libraryRepo.songsLiveData
+    val artists get() = libraryRepo.artistsLiveData
+    val albums get() = libraryRepo.albumsLiveData
+    val genres get() = libraryRepo.genresLiveData
+
     /**
      * 获取最近的播放记录
      *
@@ -30,11 +36,6 @@ class LibraryViewModel @Inject constructor(
     val recentlyAdded = Library.getSongsFlow(15).asLiveData()
     val randomRecommends = Library.getSongsFlow(15, true).toUpdatableFlow()
     val randomRecommendsLiveData = randomRecommends.asLiveData()
-
-    val songs = Library.getSongsFlow().asLiveData(viewModelScope.coroutineContext)
-    val artists = Library.getArtistsFlow().asLiveData(viewModelScope.coroutineContext)
-    val albums = Library.getAlbumsFlow().asLiveData(viewModelScope.coroutineContext)
-    val genres = Library.getGenresFlow().asLiveData(viewModelScope.coroutineContext)
 
     /**
      * 请求获取每日推荐歌曲

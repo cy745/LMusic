@@ -72,7 +72,7 @@ fun PlaylistCard(
         )
         Text(
             modifier = dragModifier.padding(start = 20.dp),
-            text = "${playlist.songs.size} 首歌曲",
+            text = "${playlist.getSongCount()} 首歌曲",
             color = dayNightTextColor(0.5f),
             style = MaterialTheme.typography.subtitle2
         )
