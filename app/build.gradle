@@ -3,7 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
-    id 'com.google.devtools.ksp' version '1.7.10-1.0.6'
+    id 'com.google.devtools.ksp' version '1.7.20-1.0.8'
 }
 
 def keystorePropsFile = rootProject.file("keystore.properties")
@@ -105,7 +105,7 @@ dependencies {
 
     // https://github.com/FunnySaltyFish/ComposeDataSaver
     // Apache-2.0 License
-    implementation 'com.github.FunnySaltyFish.ComposeDataSaver:data-saver:v1.0.2'
+    implementation 'com.github.FunnySaltyFish.ComposeDataSaver:data-saver:v1.1.3'
 
     // https://google.github.io/accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
@@ -123,58 +123,17 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
 
-    // https://github.com/ably/ably-java
-    // Apache-2.0 License
-    // implementation 'io.ably:ably-android:1.2.11'
-
-    // https://github.com/scwang90/SmartRefreshLayout
-    // Apache-2.0 License
-    // implementation 'io.github.scwang90:refresh-layout-kernel:2.0.5'
-
-    // recyclerview的动画 https://github.com/wasabeef/recyclerview-animators
-    // Apache-2.0
-    // implementation "jp.wasabeef:recyclerview-animators:4.0.2"
-
-    // https://github.com/afollestad/material-dialogs
-    // Apache-2.0 License
-    // material风格的bottomSheetDialog封装库
-    // implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
-
-    // https://github.com/square/leakcanary
-    // Apache-2.0 License
-    // 内存泄露监控组件
-    // debugImplementation because LeakCanary should only run in debug builds.
-    // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
-
-    // https://github.com/belerweb/pinyin4j
-    // https://mvnrepository.com/artifact/com.belerweb/pinyin4j
-    // 汉字转拼音库
-    // implementation 'com.belerweb:pinyin4j:2.5.1'
-
-    // https://github.com/nex3z/FlowLayout
-    // Apache-2.0 License
-    // 流式标签布局
-    // implementation 'com.nex3z:flow-layout:1.3.3'
-
-    // https://github.com/androidx/media
-    // Apache-2.0 License
-    // 媒体组件库
-    // implementation "androidx.media3:media3-common:$media3_version"
-    // implementation "androidx.media3:media3-session:$media3_version"
-    // implementation "androidx.media3:media3-exoplayer:$media3_version"
-    // implementation project(':decoder_flac')
-
     // https://gitee.com/simplepeng/SpiderMan
     // Apache-2.0 License
     // 闪退崩溃日志捕获库
-//    implementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
-//    debugImplementation 'com.github.markzhai:blockcanary-android:1.5.0'
+    // debugImplementation 'com.github.markzhai:blockcanary-android:1.5.0'
+    // implementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
 
     // https://github.com/Blankj/AndroidUtilCode/
     // Apache-2.0 License
     // 安卓工具类库
-    implementation 'com.blankj:utilcodex:1.31.0'
+    implementation 'com.blankj:utilcodex:1.31.1'
 
     // https://github.com/square/retrofit
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
@@ -193,11 +152,6 @@ dependencies {
     implementation "io.coil-kt:coil:$coil_version"
     implementation "io.coil-kt:coil-compose:$coil_version"
 
-    // https://github.com/sachiotomita/kanhira
-    // https://github.com/cy745/kanhira
-    // 汉字转平假名库
-    implementation 'com.github.cy745:kanhira:2de73b1f0a'
-
     // https://github.com/Moriafly/LyricViewX
     // GPL-3.0 License
     // 歌词组件
@@ -214,12 +168,12 @@ dependencies {
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
     implementation 'androidx.preference:preference-ktx:1.2.0'
     implementation 'androidx.media:media:1.6.0'
-    implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.palette:palette-ktx:1.0.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.3.0-beta02'
+    implementation 'androidx.recyclerview:recyclerview:1.3.0-rc01'
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     implementation 'androidx.dynamicanimation:dynamicanimation:1.1.0-alpha03'
