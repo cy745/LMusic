@@ -8,12 +8,13 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lalilu.lmusic.utils.recomposeHighlighter
 
 object SmartContainer {
 
@@ -31,27 +32,19 @@ object SmartContainer {
         userScrollEnabled: Boolean = true,
         content: LazyListScope.() -> Unit
     ) {
-        val statusBarHeight by SmartBar.statusBarHeightDpLiveData.observeAsState(0.dp)
+        val statusPaddingValues = rememberStatusBarContentPadding(contentPaddingForHorizontal)
 
         androidx.compose.foundation.lazy.LazyColumn(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier
+                .fillMaxSize()
+                .recomposeHighlighter(),
             state = state,
             verticalArrangement = verticalArrangement,
             horizontalAlignment = horizontalAlignment,
             flingBehavior = flingBehavior,
             userScrollEnabled = userScrollEnabled,
-            contentPadding = PaddingValues(
-                start = contentPaddingForHorizontal,
-                end = contentPaddingForHorizontal
-            )
+            contentPadding = statusPaddingValues
         ) {
-            item {
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(statusBarHeight)
-                )
-            }
             content()
             item {
                 Spacer(
@@ -78,21 +71,19 @@ object SmartContainer {
         userScrollEnabled: Boolean = true,
         content: LazyGridScope.() -> Unit
     ) {
-        val statusBarHeight by SmartBar.statusBarHeightDpLiveData.observeAsState(0.dp)
+        val statusPaddingValues = rememberStatusBarContentPadding(contentPaddingForHorizontal)
 
         LazyVerticalGrid(
             columns = columns,
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier
+                .fillMaxSize()
+                .recomposeHighlighter(),
             state = state,
             verticalArrangement = verticalArrangement,
             horizontalArrangement = horizontalArrangement,
             flingBehavior = flingBehavior,
             userScrollEnabled = userScrollEnabled,
-            contentPadding = PaddingValues(
-                start = contentPaddingForHorizontal,
-                end = contentPaddingForHorizontal,
-                top = statusBarHeight
-            )
+            contentPadding = statusPaddingValues
         ) {
             content()
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -112,17 +103,32 @@ object SmartContainer {
         contentPaddingForHorizontal: Dp = 0.dp,
         content: @Composable () -> Unit
     ) {
-        val statusBarHeight by SmartBar.statusBarHeightDpLiveData.observeAsState(0.dp)
+        val contentPadding = rememberStatusBarContentPadding(
+            horizontalPadding = contentPaddingForHorizontal,
+            bottomPadding = SmartBar.smartBarHeightDpState.value
+        )
 
         com.lalilu.lmusic.compose.component.base.StaggeredVerticalGrid(
             columns = columns,
             content = content,
-            contentPadding = PaddingValues(
-                start = contentPaddingForHorizontal,
-                end = contentPaddingForHorizontal,
-                top = statusBarHeight,
-                bottom = SmartBar.smartBarHeightDpState.value
-            )
+            contentPadding = contentPadding
         )
+    }
+
+    @Composable
+    fun rememberStatusBarContentPadding(
+        horizontalPadding: Dp = 0.dp,
+        bottomPadding: Dp = 0.dp
+    ): PaddingValues {
+        val density = LocalDensity.current
+        val statusBarsInsets = WindowInsets.statusBars
+        return remember(statusBarsInsets, bottomPadding) {
+            PaddingValues(
+                start = horizontalPadding,
+                end = horizontalPadding,
+                top = density.run { statusBarsInsets.getTop(density).toDp() },
+                bottom = bottomPadding
+            )
+        }
     }
 }

@@ -38,8 +38,8 @@ class PlaylistDetailViewModel @Inject constructor(
     fun canDragOver(pos: ItemPosition) = songs.any { pos.key == it.id }
 
     fun onDragEnd(startIndex: Int, endIndex: Int) {
-        val start = startIndex - 2
-        val end = endIndex - 2
+        val start = startIndex - 1
+        val end = endIndex - 1
         if (start !in tempList.indices || end !in tempList.indices || start == end) return
         viewModelScope.launch(Dispatchers.IO) {
             playlistRepo.moveSongInPlaylist(
