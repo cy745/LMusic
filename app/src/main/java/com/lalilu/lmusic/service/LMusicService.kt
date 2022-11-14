@@ -14,10 +14,10 @@ import androidx.media.session.MediaButtonReceiver
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.repository.NetDataRepository
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
 import com.lalilu.lmusic.Config.MEDIA_STOPPED_STATE
-import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datastore.HistoryDataStore
 import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.repository.LyricRepository
@@ -57,12 +57,12 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var settingsDataStore: SettingsDataStore
 
     @Inject
-    lateinit var database: MDataBase
+    lateinit var netDataRepository: NetDataRepository
 
     lateinit var mediaSession: MediaSessionCompat
 
     private val mNotificationManager: LMusicNotificationImpl by lazy {
-        LMusicNotificationImpl(this, database, playBack, lyricRepository)
+        LMusicNotificationImpl(this, playBack, lyricRepository, netDataRepository)
     }
     private val playBack: LMusicPlayBack<LSong> = object : LMusicPlayBack<LSong>(this) {
         private val noisyReceiver = LMusicNoisyReceiver(this::onPause)
@@ -161,6 +161,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                     stopSelf()
                     mNotificationManager.cancel()
                 }
+
                 PlaybackStateCompat.STATE_BUFFERING,
                 PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS,
                 PlaybackStateCompat.STATE_SKIPPING_TO_NEXT -> {
@@ -172,6 +173,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                             .build()
                     )
                 }
+
                 PlaybackStateCompat.STATE_PAUSED -> {
                     // 更新进度
                     mediaSession.setPlaybackState(
@@ -190,6 +192,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                     runtime.updatePosition(getPosition(), getIsPlaying())
                     runtime.isPlaying = false
                 }
+
                 PlaybackStateCompat.STATE_PLAYING -> {
                     // 更新进度
                     mediaSession.setPlaybackState(
