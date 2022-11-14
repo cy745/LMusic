@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
@@ -33,10 +34,10 @@ import org.burnoutcrew.reorderable.reorderable
 @Composable
 fun PlaylistDetailScreen(
     playlistId: Long,
-    mainVM: MainViewModel,
-    playingVM: PlayingViewModel,
-    playlistsVM: PlaylistsViewModel,
-    playlistDetailVM: PlaylistDetailViewModel
+    mainVM: MainViewModel = hiltViewModel(),
+    playingVM: PlayingViewModel = hiltViewModel(),
+    playlistsVM: PlaylistsViewModel = hiltViewModel(),
+    playlistDetailVM: PlaylistDetailViewModel = hiltViewModel()
 ) {
     val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
     val playlist by playlistDetailVM.getPlaylistFlow(playlistId).collectAsState(initial = null)

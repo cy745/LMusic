@@ -98,7 +98,7 @@ object ScreenActions {
             {
                 hapticType?.let { type -> haptic.performHapticFeedback(type) }
                 controller.navigate(
-                    "$route${if (useNullableArg) "?" else "/"}$it",
+                    route = "$route${if (useNullableArg) "?" else "/"}$it",
                     builder = { builder(controller) })
             }
         }
@@ -125,7 +125,6 @@ enum class ScreenData(
     @DrawableRes val icon: Int,
     @StringRes val title: Int,
     @StringRes val subTitle: Int,
-    @DrawableRes val selectedIcon: Int? = null,
     val showNavigateButton: Boolean = false,
     val fadeEdgeForStatusBar: Boolean = true,
     val mainBar: ComponentStrategy = ComponentStrategy.Clear,
@@ -145,6 +144,13 @@ enum class ScreenData(
         icon = R.drawable.ic_music_2_line,
         title = R.string.destination_label_all_song,
         subTitle = R.string.destination_subtitle_all_song,
+        mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
+    ),
+    Favourite(
+        icon = R.drawable.ic_heart_3_line,
+        title = R.string.destination_label_favourite,
+        subTitle = R.string.destination_subtitle_favourite,
+        showNavigateButton = true,
         mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
     ),
     Playlists(

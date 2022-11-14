@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
@@ -51,17 +52,17 @@ import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 @Composable
 fun SongDetailScreen(
     song: LSong,
-    mainVM: MainViewModel,
-    networkDataViewModel: NetworkDataViewModel,
-    playlistsVM: PlaylistsViewModel,
-    playingVM: PlayingViewModel
+    mainVM: MainViewModel = hiltViewModel(),
+    playingVM: PlayingViewModel = hiltViewModel(),
+    playlistsVM: PlaylistsViewModel = hiltViewModel(),
+    networkDataVM: NetworkDataViewModel = hiltViewModel()
 ) {
     val windowSize = LocalWindowSize.current
     val navToAlbumAction = ScreenActions.navToAlbum()
     val navToNetworkMatchAction = ScreenActions.navToNetworkMatch()
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
-    val networkData by networkDataViewModel.getNetworkDataFlowByMediaId(song.id)
+    val networkData by networkDataVM.getNetworkDataFlowByMediaId(song.id)
         .collectAsState(null)
     val isLiked by playlistsVM.isContainSongInPlaylist(song.id, 0L)
         .collectAsState(false)
@@ -173,10 +174,10 @@ fun SongDetailScreen(
                         navToNetworkMatchAction.invoke(song.id)
                     },
                     onDownloadCover = {
-                        networkDataViewModel.saveCoverIntoNetworkData(networkData?.songId, song.id)
+                        networkDataVM.saveCoverIntoNetworkData(networkData?.songId, song.id)
                     },
                     onDownloadLyric = {
-                        networkDataViewModel.saveLyricIntoNetworkData(
+                        networkDataVM.saveLyricIntoNetworkData(
                             networkData?.songId, song.id, networkData?.platform
                         )
                     }

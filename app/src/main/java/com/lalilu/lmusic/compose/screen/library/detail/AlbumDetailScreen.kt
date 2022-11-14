@@ -26,7 +26,7 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 fun AlbumDetailScreen(
     album: LAlbum,
     mainViewModel: MainViewModel = hiltViewModel(),
-    playingVM: PlayingViewModel
+    playingVM: PlayingViewModel = hiltViewModel()
 ) {
     val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
 

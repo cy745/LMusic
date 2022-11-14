@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -21,7 +22,7 @@ import com.lalilu.lmusic.viewmodel.LibraryViewModel
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun AlbumsScreen(
-    libraryViewModel: LibraryViewModel
+    libraryViewModel: LibraryViewModel = hiltViewModel()
 ) {
     val albums by libraryViewModel.albums.observeAsState(emptyList())
     val windowSize = LocalWindowSize.current
