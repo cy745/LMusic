@@ -174,11 +174,11 @@ fun SongDetailScreen(
                         navToNetworkMatchAction.invoke(song.id)
                     },
                     onDownloadCover = {
-                        networkDataVM.saveCoverIntoNetworkData(networkData?.songId, song.id)
+                        networkDataVM.saveCoverIntoNetworkData(networkData?.netId, song.id)
                     },
                     onDownloadLyric = {
                         networkDataVM.saveLyricIntoNetworkData(
-                            networkData?.songId, song.id, networkData?.platform
+                            networkData?.netId, song.id, networkData?.platform
                         )
                     }
                 )

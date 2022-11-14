@@ -8,7 +8,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.dirror.lyricviewx.LyricEntry
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.datasource.MDataBase
+import com.lalilu.lmedia.repository.NetDataRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicService
 import com.lalilu.lmusic.service.playback.LMusicPlayBack
@@ -30,9 +30,9 @@ import kotlin.coroutines.CoroutineContext
 @Singleton
 class LMusicNotificationImpl constructor(
     private val mContext: LMusicService,
-    private val database: MDataBase,
     private val playBack: LMusicPlayBack<LSong>,
-    private val lyricRepository: LyricRepository
+    private val lyricRepo: LyricRepository,
+    private val netDataRepo: NetDataRepository
 ) : LMusicNotification(mContext), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     private val synchronizer = CoroutineSynchronizer()
@@ -53,13 +53,13 @@ class LMusicNotificationImpl constructor(
             createNotificationChannel()
         }
         notificationManager.cancelAll()
-        lyricRepository.currentLyricEntry.launchIn(this)
+        lyricRepo.currentLyricEntry.launchIn(this)
     }
 
     override fun fillData(data: Any?): Any? {
         data ?: return null
         if (data !is LSong) return null
-        return database.networkDataDao().getById(data.id)
+        return netDataRepo.getNetDataById(data.id)
             ?.requireCoverUri()
             ?: data
     }
@@ -129,7 +129,7 @@ class LMusicNotificationImpl constructor(
             synchronizer.checkCount(count)
 
             position = getPosition().takeIf { it >= 0L } ?: continue
-            lyricList = lyricRepository.currentLyricEntry.get() ?: continue
+            lyricList = lyricRepo.currentLyricEntry.get() ?: continue
             index = findShowLine(lyricList, position + 500)
             if (lastLyricIndex == index) continue
 

@@ -14,16 +14,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
+import com.lalilu.lmedia.entity.LNetData
 import com.lalilu.lmusic.apis.PLATFORM_KUGOU
 import com.lalilu.lmusic.apis.PLATFORM_NETEASE
 import com.lalilu.lmusic.compose.component.base.IconTextButton
-import com.lalilu.lmusic.datasource.entity.MNetworkData
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 
 @Composable
 fun NetworkPairCard(
     modifier: Modifier = Modifier,
-    item: () -> MNetworkData?,
+    item: () -> LNetData?,
     onClick: () -> Unit = {},
     onDownloadLyric: () -> Unit = {},
     onDownloadCover: () -> Unit = {}
@@ -31,7 +31,7 @@ fun NetworkPairCard(
     NetworkPairCard(
         modifier = modifier,
         title = { item()?.title },
-        subTitle = { item()?.songId },
+        subTitle = { item()?.netId },
         platform = { item()?.platform },
         onClick = onClick,
         buttonExtra = {

@@ -6,11 +6,11 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.lmedia.entity.LNetData
+import com.lalilu.lmedia.entity.LNetDataUpdateForCoverUrl
+import com.lalilu.lmedia.entity.LNetDataUpdateForLyric
+import com.lalilu.lmedia.repository.NetDataRepository
 import com.lalilu.lmusic.apis.*
-import com.lalilu.lmusic.datasource.MDataBase
-import com.lalilu.lmusic.datasource.entity.MNetworkData
-import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForCoverUrl
-import com.lalilu.lmusic.datasource.entity.MNetworkDataUpdateForLyric
 import com.lalilu.lmusic.repository.LyricRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,12 +24,12 @@ import javax.inject.Inject
 class NetworkDataViewModel @Inject constructor(
     private val neteaseDataSource: NeteaseDataSource,
     private val kugouDataSource: KugouDataSource,
-    private val dataBase: MDataBase,
-    private val lyricRepository: LyricRepository
+    private val lyricRepository: LyricRepository,
+    private val netDataRepo: NetDataRepository
 ) : ViewModel() {
-    fun getNetworkDataFlowByMediaId(mediaId: String) =
-        dataBase.networkDataDao().getFlowById(mediaId)
-            .distinctUntilChanged()
+    fun getNetworkDataFlowByMediaId(mediaId: String) = netDataRepo
+        .getNetDataFlowById(mediaId)
+        .distinctUntilChanged()
 
     fun getSongResult(
         keyword: String,
@@ -79,10 +79,10 @@ class NetworkDataViewModel @Inject constructor(
             return@launch
         }
         try {
-            dataBase.networkDataDao().save(
-                MNetworkData(
+            netDataRepo.saveNetData(
+                LNetData(
                     mediaId = mediaId,
-                    songId = networkSong.songId,
+                    netId = networkSong.songId,
                     title = networkSong.songTitle,
                     platform = networkSong.fromPlatform
                 )
@@ -110,8 +110,8 @@ class NetworkDataViewModel @Inject constructor(
         }
         try {
             neteaseDataSource.searchForDetail(songId)?.let {
-                dataBase.networkDataDao().updateCoverUrl(
-                    MNetworkDataUpdateForCoverUrl(
+                netDataRepo.updateCoverUrl(
+                    LNetDataUpdateForCoverUrl(
                         mediaId = mediaId,
                         cover = it.songs[0].al.picUrl
                     )
@@ -157,8 +157,8 @@ class NetworkDataViewModel @Inject constructor(
             Pair(lyric!!, it.translateLyric)
         }.onEach {
             it ?: return@onEach
-            dataBase.networkDataDao().updateLyric(
-                MNetworkDataUpdateForLyric(
+            netDataRepo.updateLyric(
+                LNetDataUpdateForLyric(
                     mediaId = mediaId,
                     lyric = it.first,
                     tlyric = it.second

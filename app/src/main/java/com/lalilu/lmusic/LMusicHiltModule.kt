@@ -1,15 +1,15 @@
 package com.lalilu.lmusic
 
 import android.content.Context
-import androidx.room.Room
 import com.funny.data_saver.core.DataSaverInterface
 import com.lalilu.lmedia.database.LDatabase
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmedia.repository.HistoryRepository
+import com.lalilu.lmedia.repository.NetDataRepository
 import com.lalilu.lmedia.repository.PlaylistRepository
 import com.lalilu.lmedia.repository.impl.HistoryRepositoryImpl
+import com.lalilu.lmedia.repository.impl.NetDataRepositoryImpl
 import com.lalilu.lmedia.repository.impl.PlaylistRepositoryImpl
-import com.lalilu.lmusic.datasource.MDataBase
 import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.utils.DataSaverDataStorePreferences
 import com.lalilu.lmusic.utils.DataSaverDataStorePreferences.Companion.setDataStorePreferences
@@ -39,17 +39,6 @@ object LMusicHiltModule {
 
     @Provides
     @Singleton
-    fun provideLMusicDatabase(@ApplicationContext context: Context): MDataBase {
-        return Room.databaseBuilder(
-            context,
-            MDataBase::class.java,
-            "LMusic_database"
-        ).fallbackToDestructiveMigration()
-            .build()
-    }
-
-    @Provides
-    @Singleton
     fun provideLMediaDatabase(@ApplicationContext context: Context): LDatabase {
         return Library.createDatabase(context)
     }
@@ -69,6 +58,14 @@ object LMusicHiltModule {
     fun provideLMediaHistoryRepo(database: LDatabase): HistoryRepository {
         return HistoryRepositoryImpl(
             historyDao = database.historyDao()
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideLMediaNetDataRepo(database: LDatabase): NetDataRepository {
+        return NetDataRepositoryImpl(
+            netDataDao = database.netDataDao()
         )
     }
 
