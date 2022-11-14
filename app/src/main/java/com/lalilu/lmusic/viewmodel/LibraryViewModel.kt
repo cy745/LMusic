@@ -59,6 +59,10 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
+    fun refreshRandomRecommend() {
+        randomRecommends.requireUpdate()
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     fun requirePlayHistory(): Flow<List<LSong>> {
         return historyRepo

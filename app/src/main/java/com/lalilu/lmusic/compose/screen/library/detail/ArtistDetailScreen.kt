@@ -19,7 +19,7 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 fun ArtistDetailScreen(
     artist: LArtist,
     mainViewModel: MainViewModel = hiltViewModel(),
-    playingVM: PlayingViewModel
+    playingVM: PlayingViewModel = hiltViewModel()
 ) {
     val songs = artist.songs
     val windowSize = LocalWindowSize.current

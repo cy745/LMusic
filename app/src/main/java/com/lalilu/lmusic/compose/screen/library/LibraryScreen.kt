@@ -22,8 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.R
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.RecommendCard
@@ -39,13 +39,13 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LibraryScreen(
-    viewModel: LibraryViewModel,
-    playingVM: PlayingViewModel
+    viewModel: LibraryViewModel = hiltViewModel(),
+    playingVM: PlayingViewModel = hiltViewModel()
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
     val lastPlayedStack by viewModel.lastPlayedStack.observeAsState(emptyList())
     val recentlyAdded by viewModel.recentlyAdded.observeAsState(emptyList())
-    val randomRecommends = remember { Library.getSongs(10, true) }
+    val randomRecommends by viewModel.randomRecommendsLiveData.observeAsState(emptyList())
 
     val currentPlaying by playingVM.runtime.playingLiveData.observeAsState()
     val currentIsPlaying by playingVM.runtime.isPlayingLiveData.observeAsState(false)
@@ -126,7 +126,7 @@ fun LibraryScreen(
         }
 
         item {
-            RecommendTitle("随机推荐", onClick = { })
+            RecommendTitle("随机推荐", onClick = { viewModel.refreshRandomRecommend() })
             RecommendRow(
                 items = randomRecommends.toList(),
                 getId = { it.id }
@@ -143,7 +143,11 @@ fun LibraryScreen(
 }
 
 @Composable
-fun RecommendTitle(title: String, onClick: () -> Unit = {}) {
+fun RecommendTitle(
+    title: String,
+    onClick: () -> Unit = {},
+    extraContent: @Composable RowScope.() -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -159,6 +163,13 @@ fun RecommendTitle(title: String, onClick: () -> Unit = {}) {
             style = MaterialTheme.typography.h6,
             color = dayNightTextColor()
         )
+        extraContent()
+    }
+}
+
+@Composable
+fun RecommendTitle(title: String, onClick: () -> Unit = {}) {
+    RecommendTitle(title = title, onClick = onClick) {
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_right_s_line),
             contentDescription = "",

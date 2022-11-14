@@ -14,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -24,24 +23,32 @@ import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
-import com.lalilu.lmusic.compose.screen.library.*
-import com.lalilu.lmusic.compose.screen.library.detail.*
+import com.lalilu.lmusic.compose.screen.library.AlbumsScreen
+import com.lalilu.lmusic.compose.screen.library.ArtistScreen
+import com.lalilu.lmusic.compose.screen.library.EmptySearchForLyricScreen
+import com.lalilu.lmusic.compose.screen.library.LibraryScreen
+import com.lalilu.lmusic.compose.screen.library.MatchNetworkDataScreen
+import com.lalilu.lmusic.compose.screen.library.PlaylistsScreen
+import com.lalilu.lmusic.compose.screen.library.SearchScreen
+import com.lalilu.lmusic.compose.screen.library.SettingsScreen
+import com.lalilu.lmusic.compose.screen.library.SongsScreen
+import com.lalilu.lmusic.compose.screen.library.detail.AlbumDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.ArtistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.EmptyAlbumDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.EmptyArtistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.EmptyPlaylistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.EmptySongDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.PlaylistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
-import com.lalilu.lmusic.viewmodel.*
 
 @ExperimentalAnimationApi
 @Composable
 @ExperimentalMaterialApi
 fun LMusicNavGraph(
-    navHostController: NavHostController = LocalNavigatorHost.current,
-    mainViewModel: MainViewModel = hiltViewModel(),
-    playingViewModel: PlayingViewModel = hiltViewModel(),
-    libraryViewModel: LibraryViewModel = hiltViewModel(),
-    playlistsViewModel: PlaylistsViewModel = hiltViewModel(),
-    networkDataViewModel: NetworkDataViewModel = hiltViewModel(),
-    playlistDetailViewModel: PlaylistDetailViewModel = hiltViewModel()
+    navHostController: NavHostController = LocalNavigatorHost.current
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
@@ -95,25 +102,43 @@ fun LMusicNavGraph(
         composable(
             route = ScreenData.Library.name
         ) {
-            LibraryScreen(libraryViewModel, playingViewModel)
+            LibraryScreen()
         }
 
         composable(
             route = ScreenData.Songs.name
         ) {
-            SongsScreen(mainViewModel, libraryViewModel, playingViewModel)
+            SongsScreen()
+        }
+
+        composable(
+            route = ScreenData.Favourite.name
+        ) {
+            PlaylistDetailScreen(playlistId = 0)
         }
 
         composable(
             route = ScreenData.Artists.name
         ) {
-            ArtistScreen(libraryViewModel)
+            ArtistScreen()
         }
 
         composable(
             route = ScreenData.Albums.name
         ) {
-            AlbumsScreen(libraryViewModel)
+            AlbumsScreen()
+        }
+
+        composable(
+            route = ScreenData.Search.name
+        ) {
+            SearchScreen()
+        }
+
+        composable(
+            route = ScreenData.Settings.name
+        ) {
+            SettingsScreen()
         }
 
         composable(
@@ -125,7 +150,7 @@ fun LMusicNavGraph(
         ) { backStackEntry ->
             val isAddingSongs = backStackEntry.arguments?.getBoolean("isAdding") ?: false
 
-            PlaylistsScreen(isAddingSongs, mainViewModel, playlistsViewModel, libraryViewModel)
+            PlaylistsScreen(isAddingSongs)
         }
 
         composable(
@@ -134,13 +159,7 @@ fun LMusicNavGraph(
         ) { backStackEntry ->
             val playlistId = backStackEntry.arguments?.getString("playlistId")?.toLong()
             playlistId?.let {
-                PlaylistDetailScreen(
-                    playlistId = it,
-                    mainVM = mainViewModel,
-                    playingVM = playingViewModel,
-                    playlistsVM = playlistsViewModel,
-                    playlistDetailVM = playlistDetailViewModel
-                )
+                PlaylistDetailScreen(playlistId = it)
             } ?: EmptyPlaylistDetailScreen()
         }
 
@@ -150,13 +169,7 @@ fun LMusicNavGraph(
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
             Library.getSongOrNull(mediaId)?.let {
-                SongDetailScreen(
-                    song = it,
-                    mainVM = mainViewModel,
-                    networkDataViewModel = networkDataViewModel,
-                    playlistsVM = playlistsViewModel,
-                    playingVM = playingViewModel
-                )
+                SongDetailScreen(song = it)
             } ?: EmptySongDetailScreen()
         }
 
@@ -166,7 +179,7 @@ fun LMusicNavGraph(
         ) { backStackEntry ->
             val artistName = backStackEntry.arguments?.getString("artistName")
             Library.getArtistOrNull(artistName)
-                ?.let { ArtistDetailScreen(artist = it, playingVM = playingViewModel) }
+                ?.let { ArtistDetailScreen(artist = it) }
                 ?: EmptyArtistDetailScreen()
         }
 
@@ -176,7 +189,7 @@ fun LMusicNavGraph(
         ) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId")
             Library.getAlbumOrNull(albumId)
-                ?.let { AlbumDetailScreen(album = it, playingVM = playingViewModel) }
+                ?.let { AlbumDetailScreen(album = it) }
                 ?: EmptyAlbumDetailScreen()
         }
 
@@ -188,16 +201,6 @@ fun LMusicNavGraph(
             Library.getSongOrNull(mediaId)
                 ?.let { MatchNetworkDataScreen(song = it) }
                 ?: EmptySearchForLyricScreen()
-        }
-
-        composable(route = ScreenData.Search.name) {
-            SearchScreen()
-        }
-
-        composable(
-            route = ScreenData.Settings.name
-        ) {
-            SettingsScreen()
         }
     }
 }
