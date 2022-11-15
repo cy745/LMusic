@@ -3,7 +3,10 @@ package com.lalilu.lmusic.compose.screen.library
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,22 +18,26 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
-import com.lalilu.lmusic.compose.component.card.AlbumCard
 import com.lalilu.lmusic.compose.component.card.RecommendCard
+import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
+import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun SearchScreen(
-    searchVM: SearchViewModel = hiltViewModel()
+    searchVM: SearchViewModel = hiltViewModel(),
+    playingVM: PlayingViewModel = hiltViewModel()
 ) {
     val songsResult = searchVM.songsResult.observeAsState(initial = emptyList())
     val artistsResult = searchVM.artistsResult.observeAsState(initial = emptyList())
     val albumsResult = searchVM.albumsResult.observeAsState(initial = emptyList())
     val genresResult = searchVM.genresResult.observeAsState(initial = emptyList())
     val playlistResult = searchVM.playlistResult.observeAsState(initial = emptyList())
-
     val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
+    val navToSongAction = ScreenActions.navToSongPopToLibrary()
+    val navToAlbumAction = ScreenActions.navToAlbum()
 
     LaunchedEffect(Unit) {
         SmartBar.setExtraBar {
@@ -46,7 +53,10 @@ fun SearchScreen(
 
     SmartContainer.LazyColumn {
         stickyHeader(key = "SongsHeader") {
-            RecommendTitle("歌曲 ${songsResult.value.size.takeIf { it > 0 } ?: ""}", onClick = { })
+            RecommendTitle(
+                modifier = Modifier.statusBarsPadding(),
+                title = "歌曲 ${songsResult.value.size.takeIf { it > 0 } ?: ""}",
+                onClick = { })
         }
         item {
             AnimatedContent(targetState = songsResult.value.isNotEmpty()) {
@@ -58,7 +68,11 @@ fun SearchScreen(
                         RecommendCard(
                             modifier = Modifier.animateItemPlacement(),
                             item = { it },
-                            onClick = { }
+                            width = { 100.dp },
+                            height = { 100.dp },
+                            onClick = { navToSongAction(it.id) },
+                            onClickButton = { playingVM.playOrPauseSong(mediaId = it.id) },
+                            isPlaying = { playingVM.isSongPlaying(mediaId = it.id) }
                         )
                     }
                 } else {
@@ -67,7 +81,9 @@ fun SearchScreen(
             }
         }
         stickyHeader(key = "AlbumHeader") {
-            RecommendTitle("专辑 ${albumsResult.value.size.takeIf { it > 0 } ?: ""}")
+            RecommendTitle(
+                modifier = Modifier.statusBarsPadding(),
+                title = "专辑 ${albumsResult.value.size.takeIf { it > 0 } ?: ""}")
         }
         item {
             AnimatedContent(targetState = albumsResult.value.isNotEmpty()) {
@@ -76,9 +92,13 @@ fun SearchScreen(
                         items = albumsResult.value,
                         getId = { it.id }
                     ) {
-                        AlbumCard(
+                        RecommendCardForAlbum(
                             modifier = Modifier.animateItemPlacement(),
-                            album = { it }
+                            width = { 100.dp },
+                            height = { 100.dp },
+                            item = { it },
+                            onClick = { navToAlbumAction(it.id) },
+                            isPlaying = { playingVM.isSongPlaying(mediaId = it.id) }
                         )
                     }
                 } else {
@@ -86,35 +106,78 @@ fun SearchScreen(
                 }
             }
         }
-
-        genresResult.value.takeIf { it.isNotEmpty() }?.let {
-            item {
-                RecommendTitle("曲风 ${it.size}")
-                RecommendRow(
-                    scrollToStartWhenUpdate = true,
-                    items = it,
-                    getId = { it.id }
-                ) {
-                    Text(
-                        modifier = Modifier.animateItemPlacement(),
-                        text = it.name
-                    )
+        stickyHeader(key = "ArtistsHeader") {
+            RecommendTitle(
+                modifier = Modifier.statusBarsPadding(),
+                title = "歌手 ${artistsResult.value.size.takeIf { it > 0 } ?: ""}"
+            )
+        }
+        item {
+            AnimatedContent(targetState = artistsResult.value.isNotEmpty()) {
+                if (it) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        artistsResult.value.forEach {
+                            Text(
+                                modifier = Modifier
+                                    .padding(20.dp)
+                                    .animateItemPlacement(),
+                                text = it.name
+                            )
+                        }
+                    }
+                } else {
+                    Text(modifier = Modifier.padding(20.dp), text = "无匹配歌手")
                 }
             }
         }
 
-        playlistResult.value.takeIf { it.isNotEmpty() }?.let {
-            item {
-                RecommendTitle("歌单 ${it.size}")
-                RecommendRow(
-                    scrollToStartWhenUpdate = true,
-                    items = it,
-                    getId = { it.id }
-                ) {
-                    Text(
-                        modifier = Modifier.animateItemPlacement(),
-                        text = it.name
-                    )
+        stickyHeader(key = "GenresHeader") {
+            RecommendTitle(
+                modifier = Modifier.statusBarsPadding(),
+                title = "曲风 ${genresResult.value.size.takeIf { it > 0 } ?: ""}"
+            )
+        }
+        item {
+            AnimatedContent(targetState = genresResult.value.isNotEmpty()) {
+                if (it) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        genresResult.value.forEach {
+                            Text(
+                                modifier = Modifier
+                                    .padding(20.dp)
+                                    .animateItemPlacement(),
+                                text = it.name
+                            )
+                        }
+                    }
+                } else {
+                    Text(modifier = Modifier.padding(20.dp), text = "无匹配曲风")
+                }
+            }
+        }
+
+
+        stickyHeader(key = "PlaylistsHeader") {
+            RecommendTitle(
+                modifier = Modifier.statusBarsPadding(),
+                title = "歌单 ${playlistResult.value.size.takeIf { it > 0 } ?: ""}"
+            )
+        }
+        item {
+            AnimatedContent(targetState = playlistResult.value.isNotEmpty()) {
+                if (it) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        playlistResult.value.forEach {
+                            Text(
+                                modifier = Modifier
+                                    .padding(20.dp)
+                                    .animateItemPlacement(),
+                                text = it.name
+                            )
+                        }
+                    }
+                } else {
+                    Text(modifier = Modifier.padding(20.dp), text = "无匹配歌单")
                 }
             }
         }
