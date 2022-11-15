@@ -24,12 +24,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.R
-import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.screen.ScreenActions
-import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -46,35 +44,13 @@ fun LibraryScreen(
     val lastPlayedStack by viewModel.lastPlayedStack.observeAsState(emptyList())
     val recentlyAdded by viewModel.recentlyAdded.observeAsState(emptyList())
     val randomRecommends by viewModel.randomRecommendsLiveData.observeAsState(emptyList())
-
-    val currentPlaying by playingVM.runtime.playingLiveData.observeAsState()
-    val currentIsPlaying by playingVM.runtime.isPlayingLiveData.observeAsState(false)
-
-    val navToSongAction = ScreenActions.navToSongFromLibrary()
-
-    val playSong = remember {
-        { mediaId: String ->
-            currentPlaying.takeIf { it != null && it.id == mediaId && currentIsPlaying }
-                ?.let { playingVM.browser.pause() } ?: playingVM.browser.addAndPlay(mediaId)
-        }
-    }
-
-    val isChecked = ScreenData.Library.isChecked?.value
-    LaunchedEffect(isChecked) {
-        if (isChecked == true) {
-            SmartBar.setExtraBar {
-                SearchInputBar(value = "", onSearchFor = {}, onChecked = {})
-            }
-        } else {
-            SmartBar.setExtraBar(item = null)
-        }
-    }
+    val navToSongAction = ScreenActions.navToSongPopToLibrary()
 
     SmartContainer.LazyColumn(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         item {
-            RecommendTitle("每日推荐", onClick = { })
+            RecommendTitle(title = "每日推荐", onClick = { })
             RecommendRow(
                 items = dailyRecommends,
                 getId = { it.id }
@@ -88,7 +64,7 @@ fun LibraryScreen(
         }
 
         item {
-            RecommendTitle("最近添加", onClick = { })
+            RecommendTitle(title = "最近添加", onClick = { })
             RecommendRow(
                 items = recentlyAdded.toList(),
                 getId = { it.id }
@@ -98,16 +74,16 @@ fun LibraryScreen(
                     width = { 200.dp },
                     height = { 125.dp },
                     item = { it },
-                    isPlaying = { currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id },
                     onClick = { navToSongAction(it.id) },
-                    onClickButton = { playSong(it.id) }
+                    onClickButton = { playingVM.playOrPauseSong(it.id) },
+                    isPlaying = { playingVM.isSongPlaying(it.id) }
                 )
             }
         }
 
 
         item {
-            RecommendTitle("最近播放")
+            RecommendTitle(title = "最近播放")
             RecommendRow(
                 scrollToStartWhenUpdate = true,
                 items = lastPlayedStack.toList(),
@@ -118,15 +94,15 @@ fun LibraryScreen(
                     width = { 125.dp },
                     height = { 125.dp },
                     item = { it },
-                    isPlaying = { currentIsPlaying && currentPlaying != null && it.id == currentPlaying?.id },
                     onClick = { navToSongAction(it.id) },
-                    onClickButton = { playSong(it.id) }
+                    onClickButton = { playingVM.playOrPauseSong(it.id) },
+                    isPlaying = { playingVM.isSongPlaying(it.id) }
                 )
             }
         }
 
         item {
-            RecommendTitle("随机推荐", onClick = { viewModel.refreshRandomRecommend() })
+            RecommendTitle(title = "随机推荐", onClick = { viewModel.refreshRandomRecommend() })
             RecommendRow(
                 items = randomRecommends.toList(),
                 getId = { it.id }
@@ -144,12 +120,13 @@ fun LibraryScreen(
 
 @Composable
 fun RecommendTitle(
+    modifier: Modifier = Modifier,
     title: String,
     onClick: () -> Unit = {},
     extraContent: @Composable RowScope.() -> Unit = {}
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(15.dp)
@@ -168,8 +145,8 @@ fun RecommendTitle(
 }
 
 @Composable
-fun RecommendTitle(title: String, onClick: () -> Unit = {}) {
-    RecommendTitle(title = title, onClick = onClick) {
+fun RecommendTitle(modifier: Modifier = Modifier, title: String, onClick: () -> Unit = {}) {
+    RecommendTitle(modifier = modifier, title = title, onClick = onClick) {
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_right_s_line),
             contentDescription = "",

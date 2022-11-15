@@ -1,5 +1,8 @@
 package com.lalilu.lmusic.utils.extension
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 
@@ -40,4 +43,22 @@ class CachedFlow<T>(flow: Flow<T>) : Flow<T> {
 
 fun <T> Flow<T>.toCachedFlow(): CachedFlow<T> {
     return CachedFlow(this)
+}
+
+/**
+ * 将Flow转换为State
+ */
+fun <T> Flow<T>.toState(scope: CoroutineScope): State<T?> {
+    return mutableStateOf<T?>(null).also { state ->
+        this.onEach { state.value = it }.launchIn(scope)
+    }
+}
+
+/**
+ * 将Flow转换为State，附带初始值
+ */
+fun <T> Flow<T>.toState(defaultValue: T, scope: CoroutineScope): State<T> {
+    return mutableStateOf(defaultValue).also { state ->
+        this.onEach { state.value = it }.launchIn(scope)
+    }
 }

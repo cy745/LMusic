@@ -3,8 +3,6 @@ package com.lalilu.lmusic.compose.screen
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -77,7 +75,7 @@ object ScreenActions {
     }
 
     @Composable
-    fun navToSongFromLibrary(hapticType: HapticFeedbackType? = null): (String) -> Unit {
+    fun navToSongPopToLibrary(hapticType: HapticFeedbackType? = null): (String) -> Unit {
         return navigate(route = ScreenData.SongsDetail.name, hapticType = hapticType) {
             popUpTo(ScreenData.Library.name) { saveState = true }
             launchSingleTop = true
@@ -130,8 +128,7 @@ enum class ScreenData(
     val mainBar: ComponentStrategy = ComponentStrategy.Clear,
     val extraBar: ComponentStrategy = ComponentStrategy.Clear,
     val mainBarForPad: ComponentStrategy = ComponentStrategy.Clear,
-    val extraBarForPad: ComponentStrategy = ComponentStrategy.Clear,
-    val isChecked: MutableState<Boolean>? = if (showNavigateButton) mutableStateOf(false) else null
+    val extraBarForPad: ComponentStrategy = ComponentStrategy.Clear
 ) {
     Library(
         icon = R.drawable.ic_loader_line,
