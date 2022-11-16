@@ -13,7 +13,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
 import javax.inject.Inject
@@ -36,7 +40,7 @@ class PlaylistsViewModel @Inject constructor(
         }
     }
 
-    fun canDragOver(pos: ItemPosition) = playlists.any { pos.key == it._id }
+    fun canDragOver(draggedOver: ItemPosition, dragging: ItemPosition) :Boolean = playlists.any { draggedOver.key == it._id }
 
     fun onDragEnd(startIndex: Int, endIndex: Int) {
         val start = startIndex - 1

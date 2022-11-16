@@ -3,7 +3,11 @@ package com.lalilu.lmusic.compose.component.base
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.*
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,7 +23,7 @@ fun IconTextButton(
     shape: Shape = MaterialTheme.shapes.small,
     color: Color = MaterialTheme.colors.primary,
     showIcon: () -> Boolean = { false },
-    onClick: () -> Unit
+    onClick: () -> Unit = {}
 ) {
     TextButton(
         modifier = modifier,

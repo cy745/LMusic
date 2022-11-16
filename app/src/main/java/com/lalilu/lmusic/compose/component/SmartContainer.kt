@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.lalilu.lmusic.utils.recomposeHighlighter
 
 object SmartContainer {
 
@@ -36,8 +35,7 @@ object SmartContainer {
 
         androidx.compose.foundation.lazy.LazyColumn(
             modifier = modifier
-                .fillMaxSize()
-                .recomposeHighlighter(),
+                .fillMaxSize(),
             state = state,
             verticalArrangement = verticalArrangement,
             horizontalAlignment = horizontalAlignment,
@@ -76,8 +74,7 @@ object SmartContainer {
         LazyVerticalGrid(
             columns = columns,
             modifier = modifier
-                .fillMaxSize()
-                .recomposeHighlighter(),
+                .fillMaxSize(),
             state = state,
             verticalArrangement = verticalArrangement,
             horizontalArrangement = horizontalArrangement,
