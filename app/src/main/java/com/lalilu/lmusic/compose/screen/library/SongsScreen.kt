@@ -11,8 +11,12 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,7 +50,7 @@ fun SongsScreen(
     val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
-    val songs by libraryVM.songs.observeAsState(emptyList())
+    val songs by libraryVM.songs
     val currentPlaying by playingVM.runtime.playingLiveData.observeAsState()
 
     val scrollAction = buildScrollToItemAction(

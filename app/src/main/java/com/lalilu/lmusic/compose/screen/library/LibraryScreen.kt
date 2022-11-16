@@ -15,8 +15,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,9 +39,6 @@ fun LibraryScreen(
     playingVM: PlayingViewModel = hiltViewModel()
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
-    val lastPlayedStack by viewModel.lastPlayedStack.observeAsState(emptyList())
-    val recentlyAdded by viewModel.recentlyAdded.observeAsState(emptyList())
-    val randomRecommends by viewModel.randomRecommendsLiveData.observeAsState(emptyList())
     val navToSongAction = ScreenActions.navToSongPopToLibrary()
 
     SmartContainer.LazyColumn(
@@ -66,13 +61,13 @@ fun LibraryScreen(
         item {
             RecommendTitle(title = "最近添加", onClick = { })
             RecommendRow(
-                items = recentlyAdded.toList(),
+                items = viewModel.recentlyAdded.value,
                 getId = { it.id }
             ) {
                 RecommendCard(
                     modifier = Modifier.animateItemPlacement(),
-                    width = { 200.dp },
-                    height = { 125.dp },
+                    width = { 125.dp },
+                    height = { 75.dp },
                     item = { it },
                     onClick = { navToSongAction(it.id) },
                     onClickButton = { playingVM.playOrPauseSong(it.id) },
@@ -86,13 +81,13 @@ fun LibraryScreen(
             RecommendTitle(title = "最近播放")
             RecommendRow(
                 scrollToStartWhenUpdate = true,
-                items = lastPlayedStack.toList(),
+                items = viewModel.lastPlayedStack.value,
                 getId = { it.id }
             ) {
                 RecommendCard(
                     modifier = Modifier.animateItemPlacement(),
-                    width = { 125.dp },
-                    height = { 125.dp },
+                    width = { 100.dp },
+                    height = { 100.dp },
                     item = { it },
                     onClick = { navToSongAction(it.id) },
                     onClickButton = { playingVM.playOrPauseSong(it.id) },
@@ -104,12 +99,12 @@ fun LibraryScreen(
         item {
             RecommendTitle(title = "随机推荐", onClick = { viewModel.refreshRandomRecommend() })
             RecommendRow(
-                items = randomRecommends.toList(),
+                items = viewModel.randomRecommends.value,
                 getId = { it.id }
             ) {
                 RecommendCard2(
                     modifier = Modifier.animateItemPlacement(),
-                    contentModifier = Modifier.size(width = 125.dp, height = 250.dp),
+                    contentModifier = Modifier.size(width = 100.dp, height = 150.dp),
                     item = { it },
                     onClick = { navToSongAction(it.id) }
                 )
