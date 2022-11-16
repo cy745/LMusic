@@ -12,8 +12,16 @@ import com.lalilu.lmedia.entity.SongInPlaylist
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmedia.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
 import javax.inject.Inject
 
@@ -35,7 +43,7 @@ class PlaylistDetailViewModel @Inject constructor(
         }
     }
 
-    fun canDragOver(pos: ItemPosition) = songs.any { pos.key == it.id }
+    fun canDragOver(draggedOver: ItemPosition, dragging: ItemPosition) :Boolean = songs.any { draggedOver.key == it.id }
 
     fun onDragEnd(startIndex: Int, endIndex: Int) {
         val start = startIndex - 1
