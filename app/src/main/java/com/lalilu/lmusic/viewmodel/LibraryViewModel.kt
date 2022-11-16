@@ -1,12 +1,13 @@
 package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.datastore.LibraryDataStore
 import com.lalilu.lmusic.repository.LibraryRepository
+import com.lalilu.lmusic.utils.extension.toState
 import com.lalilu.lmusic.utils.extension.toUpdatableFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,10 +22,10 @@ class LibraryViewModel @Inject constructor(
     private val historyRepo: HistoryRepository,
     private val libraryRepo: LibraryRepository
 ) : ViewModel() {
-    val songs get() = libraryRepo.songsLiveData
-    val artists get() = libraryRepo.artistsLiveData
-    val albums get() = libraryRepo.albumsLiveData
-    val genres get() = libraryRepo.genresLiveData
+    val songs get() = libraryRepo.songsFlow.toState(emptyList(), viewModelScope)
+    val artists get() = libraryRepo.artistsFlow.toState(emptyList(), viewModelScope)
+    val albums get() = libraryRepo.albumsFlow.toState(emptyList(), viewModelScope)
+    val genres get() = libraryRepo.genresFlow.toState(emptyList(), viewModelScope)
 
     /**
      * 获取最近的播放记录
@@ -32,10 +33,10 @@ class LibraryViewModel @Inject constructor(
      * 之前在 Composable 里用 CollectAsState 直接通过Flow获取了，
      * 但是那样每次Recompose的时候就会重新调用生成一个Flow，间接导致每次都会重新查询数据库
      */
-    val lastPlayedStack = requirePlayHistory().asLiveData()
-    val recentlyAdded = Library.getSongsFlow(15).asLiveData()
-    val randomRecommends = Library.getSongsFlow(15, true).toUpdatableFlow()
-    val randomRecommendsLiveData = randomRecommends.asLiveData()
+    private val randomRecommendsFlow = Library.getSongsFlow(15, true).toUpdatableFlow()
+    val lastPlayedStack = requirePlayHistory().toState(emptyList(), viewModelScope)
+    val recentlyAdded = Library.getSongsFlow(15).toState(emptyList(), viewModelScope)
+    val randomRecommends = randomRecommendsFlow.toState(emptyList(), viewModelScope)
 
     /**
      * 请求获取每日推荐歌曲
@@ -60,11 +61,11 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun refreshRandomRecommend() {
-        randomRecommends.requireUpdate()
+        randomRecommendsFlow.requireUpdate()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun requirePlayHistory(): Flow<List<LSong>> {
+    private fun requirePlayHistory(): Flow<List<LSong>> {
         return historyRepo
             .getHistoriesFlow(20)
             .mapLatest { list ->

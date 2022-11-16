@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -24,7 +23,7 @@ import com.lalilu.lmusic.viewmodel.LibraryViewModel
 fun AlbumsScreen(
     libraryViewModel: LibraryViewModel = hiltViewModel()
 ) {
-    val albums by libraryViewModel.albums.observeAsState(emptyList())
+    val albums by libraryViewModel.albums
     val windowSize = LocalWindowSize.current
     val navToAlbumAction = ScreenActions.navToAlbum()
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
@@ -38,7 +37,7 @@ fun AlbumsScreen(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         contentPaddingForHorizontal = 10.dp
     ) {
-        items(items = albums.toList(), key = { it.id }, contentType = { LAlbum::class }) {
+        items(items = albums, key = { it.id }, contentType = { LAlbum::class }) {
             AlbumCard(
                 modifier = Modifier.animateItemPlacement(),
                 album = { it },

@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.repository
 
-import androidx.lifecycle.asLiveData
 import com.lalilu.lmedia.indexer.Library
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,8 +16,4 @@ class LibraryRepository @Inject constructor() : CoroutineScope {
     val albumsFlow = Library.getAlbumsFlow()
     val genresFlow = Library.getGenresFlow()
 
-    val songsLiveData = songsFlow.asLiveData(coroutineContext)
-    val artistsLiveData = artistsFlow.asLiveData(coroutineContext)
-    val albumsLiveData = albumsFlow.asLiveData(coroutineContext)
-    val genresLiveData = genresFlow.asLiveData(coroutineContext)
 }
