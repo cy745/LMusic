@@ -29,7 +29,7 @@ import com.lalilu.lmusic.viewmodel.LibraryViewModel
 fun ArtistScreen(
     libraryViewModel: LibraryViewModel = hiltViewModel()
 ) {
-    val navToArtistAction = ScreenActions.navToArtist()
+    val navToArtistAction = ScreenActions.navToArtistById()
     val artists by libraryViewModel.artists
 
     SmartContainer.LazyColumn {

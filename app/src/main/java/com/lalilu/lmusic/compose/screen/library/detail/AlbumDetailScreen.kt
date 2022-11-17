@@ -28,7 +28,7 @@ fun AlbumDetailScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     playingVM: PlayingViewModel = hiltViewModel()
 ) {
-    val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
+    val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
 
     val songs = album.songs
     val title = album.name

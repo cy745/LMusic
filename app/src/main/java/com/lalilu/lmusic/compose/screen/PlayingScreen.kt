@@ -31,7 +31,12 @@ import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
-import com.lalilu.ui.*
+import com.lalilu.ui.CLICK_PART_MIDDLE
+import com.lalilu.ui.ClickPart
+import com.lalilu.ui.OnSeekBarCancelListener
+import com.lalilu.ui.OnSeekBarClickListener
+import com.lalilu.ui.OnSeekBarScrollToThresholdListener
+import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper
 
@@ -43,7 +48,7 @@ fun PlayingScreen(
     playingVM: PlayingViewModel = hiltViewModel()
 ) {
     val density = LocalDensity.current
-    val navToSongAction = ScreenActions.navToSong()
+    val navToSongAction = ScreenActions.navToSongById()
     val statusBarsInsets = WindowInsets.statusBars
     val windowInsetsCompat = remember(statusBarsInsets) {
         WindowInsetsCompat.Builder().setInsets(

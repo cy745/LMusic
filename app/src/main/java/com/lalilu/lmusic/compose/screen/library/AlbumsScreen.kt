@@ -25,7 +25,7 @@ fun AlbumsScreen(
 ) {
     val albums by libraryViewModel.albums
     val windowSize = LocalWindowSize.current
-    val navToAlbumAction = ScreenActions.navToAlbum()
+    val navToAlbumAction = ScreenActions.navToAlbumById()
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)
 

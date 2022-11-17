@@ -70,7 +70,7 @@ fun PlaylistsScreen(
 ) {
     val context = LocalContext.current
     val navigator = LocalNavigatorHost.current
-    val navToPlaylistAction = ScreenActions.navToPlaylist()
+    val navToPlaylistAction = ScreenActions.navToPlaylistById()
     val state = rememberReorderableLazyListState(
         onMove = playlistsVM::onMovePlaylist,
         canDragOver = playlistsVM::canDragOver,

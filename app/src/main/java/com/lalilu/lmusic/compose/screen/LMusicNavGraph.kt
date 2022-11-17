@@ -15,11 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
@@ -52,7 +49,7 @@ fun LMusicNavGraph(
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
-    val currentRoute = navHostController.currentBackStackEntryAsState().value
+    val currentRoute by navHostController.currentBackStackEntryAsState()
 
     val isPad by windowSize.rememberIsPad()
     val isLandscape = remember(configuration.orientation) {
@@ -99,104 +96,56 @@ fun LMusicNavGraph(
             fadeIn(animationSpec = tween(durationMillis = 300)) + slideInVertically { 100 }
         }
     ) {
-        composable(
-            route = ScreenData.Library.name
-        ) {
+        ScreenData.Library.register(this) {
             LibraryScreen()
         }
-
-        composable(
-            route = ScreenData.Songs.name
-        ) {
+        ScreenData.Songs.register(this) {
             SongsScreen()
         }
-
-        composable(
-            route = ScreenData.Favourite.name
-        ) {
+        ScreenData.Favourite.register(this) {
             PlaylistDetailScreen(playlistId = 0)
         }
-
-        composable(
-            route = ScreenData.Artists.name
-        ) {
+        ScreenData.Artists.register(this) {
             ArtistScreen()
         }
-
-        composable(
-            route = ScreenData.Albums.name
-        ) {
+        ScreenData.Albums.register(this) {
             AlbumsScreen()
         }
-
-        composable(
-            route = ScreenData.Search.name
-        ) {
+        ScreenData.Search.register(this) {
             SearchScreen()
         }
-
-        composable(
-            route = ScreenData.Settings.name
-        ) {
+        ScreenData.Settings.register(this) {
             SettingsScreen()
         }
-
-        composable(
-            route = "${ScreenData.Playlists.name}?isAdding={isAdding}",
-            arguments = listOf(navArgument("isAdding") {
-                type = NavType.BoolType
-                defaultValue = false
-            })
-        ) { backStackEntry ->
-            val isAddingSongs = backStackEntry.arguments?.getBoolean("isAdding") ?: false
-
+        ScreenData.Playlists.register(this) {
+            val isAddingSongs = it.arguments?.getBoolean("isAdding") ?: false
             PlaylistsScreen(isAddingSongs)
         }
-
-        composable(
-            route = "${ScreenData.PlaylistsDetail.name}/{playlistId}",
-            arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
-        ) { backStackEntry ->
+        ScreenData.PlaylistsDetail.register(this) { backStackEntry ->
             val playlistId = backStackEntry.arguments?.getString("playlistId")?.toLong()
             playlistId?.let {
                 PlaylistDetailScreen(playlistId = it)
             } ?: EmptyPlaylistDetailScreen()
         }
-
-        composable(
-            route = "${ScreenData.SongsDetail.name}/{mediaId}",
-            arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
-        ) { backStackEntry ->
+        ScreenData.SongsDetail.register(this) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
             Library.getSongOrNull(mediaId)?.let {
                 SongDetailScreen(song = it)
             } ?: EmptySongDetailScreen()
         }
-
-        composable(
-            route = "${ScreenData.ArtistsDetail.name}/{artistName}",
-            arguments = listOf(navArgument("artistName") { type = NavType.StringType })
-        ) { backStackEntry ->
+        ScreenData.ArtistsDetail.register(this) { backStackEntry ->
             val artistName = backStackEntry.arguments?.getString("artistName")
             Library.getArtistOrNull(artistName)
                 ?.let { ArtistDetailScreen(artist = it) }
                 ?: EmptyArtistDetailScreen()
         }
-
-        composable(
-            route = "${ScreenData.AlbumsDetail.name}/{albumId}",
-            arguments = listOf(navArgument("albumId") { type = NavType.StringType })
-        ) { backStackEntry ->
+        ScreenData.AlbumsDetail.register(this) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId")
             Library.getAlbumOrNull(albumId)
                 ?.let { AlbumDetailScreen(album = it) }
                 ?: EmptyAlbumDetailScreen()
         }
-
-        composable(
-            route = "${ScreenData.SongsMatchNetworkData.name}/{mediaId}",
-            arguments = listOf(navArgument("mediaId") { type = NavType.StringType })
-        ) { backStackEntry ->
+        ScreenData.SongsMatchNetworkData.register(this) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
             Library.getSongOrNull(mediaId)
                 ?.let { MatchNetworkDataScreen(song = it) }

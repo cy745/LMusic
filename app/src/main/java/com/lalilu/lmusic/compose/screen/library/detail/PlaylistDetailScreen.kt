@@ -39,7 +39,7 @@ fun PlaylistDetailScreen(
     playlistsVM: PlaylistsViewModel = hiltViewModel(),
     playlistDetailVM: PlaylistDetailViewModel = hiltViewModel()
 ) {
-    val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
+    val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
     val playlist by playlistDetailVM.getPlaylistFlow(playlistId).collectAsState(initial = null)
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 

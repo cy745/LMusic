@@ -33,7 +33,7 @@ class MainViewModel @Inject constructor(
                 } else {
                     tempSongs.clear()
                     tempSongs.addAll(songs)
-                    navToAddToPlaylistAction("isAdding=${true}")
+                    navToAddToPlaylistAction(mapOf("isAdding" to true))
                 }
             }
         }
