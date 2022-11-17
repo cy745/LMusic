@@ -2,16 +2,18 @@ package com.lalilu.lmusic.compose.screen
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.navigation.NavController
-import androidx.navigation.NavOptionsBuilder
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmusic.compose.component.navigate.NavigateBar
 import com.lalilu.lmusic.compose.component.navigate.NavigateDetailBar
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 
 
 val LibraryNavigateBar: @Composable () -> Unit = { NavigateBar() }
@@ -39,92 +41,14 @@ sealed class ComponentStrategy {
     data class Replace(val content: @Composable () -> Unit) : ComponentStrategy()
 }
 
-object ScreenActions {
-    @Composable
-    fun navToPlaylist(): (String) -> Unit {
-        return navigate(route = ScreenData.PlaylistsDetail.name)
-    }
-
-    @Composable
-    fun navToArtist(): (String) -> Unit {
-        return navigate(route = ScreenData.ArtistsDetail.name)
-    }
-
-    @Composable
-    fun navToAddToPlaylist(): (String) -> Unit {
-        return navigate(route = ScreenData.Playlists.name, useNullableArg = true)
-    }
-
-    @Composable
-    fun navToNetworkMatch(): (String) -> Unit {
-        return navigate(route = ScreenData.SongsMatchNetworkData.name)
-    }
-
-    @Composable
-    fun navToAlbum(): (String) -> Unit {
-        return navigate(route = ScreenData.AlbumsDetail.name) {
-            launchSingleTop = true
-        }
-    }
-
-    @Composable
-    fun navToSong(hapticType: HapticFeedbackType? = null): (String) -> Unit {
-        return navigate(route = ScreenData.SongsDetail.name, hapticType = hapticType) {
-            launchSingleTop = true
-        }
-    }
-
-    @Composable
-    fun navToSongPopToLibrary(hapticType: HapticFeedbackType? = null): (String) -> Unit {
-        return navigate(route = ScreenData.SongsDetail.name, hapticType = hapticType) {
-            popUpTo(ScreenData.Library.name) { saveState = true }
-            launchSingleTop = true
-            restoreState = true
-        }
-    }
-
-    @Composable
-    fun navigate(
-        route: String,
-        useNullableArg: Boolean = false,
-        hapticType: HapticFeedbackType? = null,
-        builder: NavOptionsBuilder.(NavController) -> Unit = {}
-    ): (String) -> Unit {
-        val haptic = LocalHapticFeedback.current
-        val controller = LocalNavigatorHost.current
-        return remember {
-            {
-                hapticType?.let { type -> haptic.performHapticFeedback(type) }
-                controller.navigate(
-                    route = "$route${if (useNullableArg) "?" else "/"}$it",
-                    builder = { builder(controller) })
-            }
-        }
-    }
-
-    @Composable
-    fun navigate(
-        route: ScreenData,
-        hapticType: HapticFeedbackType? = null,
-        builder: NavOptionsBuilder.(NavController) -> Unit = {}
-    ): () -> Unit {
-        val haptic = LocalHapticFeedback.current
-        val controller = LocalNavigatorHost.current
-        return remember {
-            {
-                hapticType?.let { type -> haptic.performHapticFeedback(type) }
-                controller.navigate(route.name, builder = { builder(controller) })
-            }
-        }
-    }
-}
-
 enum class ScreenData(
     @DrawableRes val icon: Int,
     @StringRes val title: Int,
     @StringRes val subTitle: Int,
     val showNavigateButton: Boolean = false,
     val fadeEdgeForStatusBar: Boolean = true,
+    val pathArg: Pair<String, String?> = "" to "",
+    val nullableArgs: Map<String, Any?> = emptyMap(),
     val mainBar: ComponentStrategy = ComponentStrategy.Clear,
     val extraBar: ComponentStrategy = ComponentStrategy.Clear,
     val mainBarForPad: ComponentStrategy = ComponentStrategy.Clear,
@@ -141,7 +65,8 @@ enum class ScreenData(
         icon = R.drawable.ic_music_2_line,
         title = R.string.destination_label_all_song,
         subTitle = R.string.destination_subtitle_all_song,
-        mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
+        mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
+        mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     ),
     Favourite(
         icon = R.drawable.ic_heart_3_line,
@@ -155,19 +80,22 @@ enum class ScreenData(
         title = R.string.destination_label_playlists,
         subTitle = R.string.destination_subtitle_playlists,
         showNavigateButton = true,
+        nullableArgs = mapOf("isAdding" to false),
         mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
     ),
     Albums(
         icon = R.drawable.ic_album_fill,
         title = R.string.destination_label_albums,
         subTitle = R.string.destination_subtitle_albums,
-        mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
+        mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
+        mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     ),
     Artists(
         icon = R.drawable.ic_user_line,
         title = R.string.destination_label_artist,
         subTitle = R.string.destination_subtitle_artist,
-        mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
+        mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
+        mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     ),
     Search(
         icon = R.drawable.ic_search_2_line,
@@ -180,12 +108,14 @@ enum class ScreenData(
         icon = R.drawable.ic_settings_4_line,
         title = R.string.destination_label_settings,
         subTitle = R.string.destination_subtitle_settings,
-        mainBar = ComponentStrategy.Replace(LibraryNavigateBar)
+        mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
+        mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     ),
     PlaylistsDetail(
         icon = R.drawable.ic_play_list_line,
         title = R.string.destination_label_playlist_detail,
         subTitle = R.string.destination_subtitle_playlist_detail,
+        pathArg = "playlistId" to "",
         mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
         mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     ),
@@ -193,6 +123,7 @@ enum class ScreenData(
         icon = R.drawable.ic_user_line,
         title = R.string.destination_label_artist_detail,
         subTitle = R.string.destination_label_artist_detail,
+        pathArg = "artistName" to null,
         mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
         mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     ),
@@ -200,6 +131,7 @@ enum class ScreenData(
         icon = R.drawable.ic_album_fill,
         title = R.string.destination_label_album_detail,
         subTitle = R.string.destination_subtitle_album_detail,
+        pathArg = "albumId" to null,
         mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
         mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     ),
@@ -207,6 +139,7 @@ enum class ScreenData(
         icon = R.drawable.ic_music_2_line,
         title = R.string.destination_label_song_detail,
         subTitle = R.string.destination_subtitle_song_detail,
+        pathArg = "mediaId" to null,
         extraBar = ComponentStrategy.DoNothing,
         extraBarForPad = ComponentStrategy.DoNothing,
         mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
@@ -217,17 +150,80 @@ enum class ScreenData(
         icon = R.drawable.ic_music_line,
         title = R.string.destination_label_match_network_data,
         subTitle = R.string.destination_label_match_network_data,
+        pathArg = "mediaId" to null,
         extraBar = ComponentStrategy.DoNothing,
         extraBarForPad = ComponentStrategy.DoNothing,
         mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
         mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     );
 
+    val sourceRoute by lazy {
+        var route = name
+        pathArg.takeIf { it.first.isNotEmpty() }?.let { route += "/{${it.first}}" }
+        nullableArgs.forEach {
+            if (it.key.isNotEmpty()) route += "?${it.key}={${it.key}}"
+        }
+        return@lazy route
+    }
+
+    private val sourceArgument by lazy {
+        val arguments = arrayListOf<NamedNavArgument>()
+        pathArg.takeIf { it.first.isNotEmpty() }?.let {
+            arguments.add(navArgument(it.first) {
+                type = NavType.StringType
+                defaultValue = it.second
+                nullable = true
+            })
+        }
+        nullableArgs.forEach {
+            if (it.key.isNotEmpty()) {
+                arguments.add(navArgument(it.key) {
+                    nullable = true
+                    defaultValue = it.value
+                    type = when (it.value) {
+                        is Boolean -> {
+                            nullable = false
+                            NavType.BoolType
+                        }
+
+                        is Int -> NavType.IntType
+                        is Long -> NavType.LongType
+                        is Double, is Float -> NavType.FloatType
+                        is String -> NavType.StringType
+                        else -> NavType.StringType
+                    }
+                })
+            }
+        }
+        return@lazy arguments
+    }
+
+    @OptIn(ExperimentalAnimationApi::class)
+    fun register(
+        builder: NavGraphBuilder,
+        content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit
+    ) {
+        println("[Register]: $sourceRoute")
+        builder.composable(route = sourceRoute, arguments = sourceArgument, content = content)
+    }
+
+    fun buildRoute(paramMap: Map<String, Any?> = emptyMap()): String {
+        var targetRoute = name
+        this.pathArg.takeIf { it.first.isNotEmpty() }?.let {
+            targetRoute += "/${paramMap.getOrDefault(it.first, it.second)}"
+        }
+        this.nullableArgs.forEach {
+            if (it.key.isNotEmpty()) {
+                targetRoute += "?${it.key}=${paramMap.getOrDefault(it.key, it.value)}"
+            }
+        }
+        return targetRoute
+    }
 
     companion object {
         fun fromRoute(route: String?): ScreenData? {
-            val target = route?.substringBefore("/")
-            return values().find { it.name == target }
+            route ?: return null
+            return values().find { it.sourceRoute == route }
         }
     }
 }

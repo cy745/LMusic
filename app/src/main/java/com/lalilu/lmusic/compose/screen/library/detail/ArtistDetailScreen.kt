@@ -23,7 +23,7 @@ fun ArtistDetailScreen(
 ) {
     val songs = artist.songs
     val windowSize = LocalWindowSize.current
-    val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
+    val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
 
     val onSongSelected: (LSong) -> Unit = { song ->
         mainViewModel.playSongWithPlaylist(songs, song)

@@ -26,6 +26,7 @@ import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -39,7 +40,11 @@ fun LibraryScreen(
     playingVM: PlayingViewModel = hiltViewModel()
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
-    val navToSongAction = ScreenActions.navToSongPopToLibrary()
+    val navToSongAction = ScreenActions.navToSongById(popUpToRoute = ScreenData.Library)
+    val navToSongsAction = ScreenActions.navToSongs()
+    val navToArtistsAction = ScreenActions.navToArtists()
+    val navToAlbumsAction = ScreenActions.navToAlbums()
+    val navToSettingsAction = ScreenActions.navToSettings()
 
     SmartContainer.LazyColumn(
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -92,6 +97,27 @@ fun LibraryScreen(
                     onClick = { navToSongAction(it.id) },
                     onClickButton = { playingVM.playOrPauseSong(it.id) },
                     isPlaying = { playingVM.isSongPlaying(it.id) }
+                )
+            }
+        }
+
+        item {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                RecommendTitle(
+                    title = "歌曲 ${viewModel.songs.value.size}",
+                    onClick = { navToSongsAction() }
+                )
+                RecommendTitle(
+                    title = "专辑 ${viewModel.albums.value.size}",
+                    onClick = { navToAlbumsAction() }
+                )
+                RecommendTitle(
+                    title = "歌手 ${viewModel.artists.value.size}",
+                    onClick = { navToArtistsAction() }
+                )
+                RecommendTitle(
+                    title = "设置",
+                    onClick = { navToSettingsAction() }
                 )
             }
         }

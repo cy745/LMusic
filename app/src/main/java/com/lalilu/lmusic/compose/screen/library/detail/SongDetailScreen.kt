@@ -58,8 +58,8 @@ fun SongDetailScreen(
     networkDataVM: NetworkDataViewModel = hiltViewModel()
 ) {
     val windowSize = LocalWindowSize.current
-    val navToAlbumAction = ScreenActions.navToAlbum()
-    val navToNetworkMatchAction = ScreenActions.navToNetworkMatch()
+    val navToAlbumAction = ScreenActions.navToAlbumById()
+    val navToNetworkMatchAction = ScreenActions.navToNetData()
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
     val networkData by networkDataVM.getNetworkDataFlowByMediaId(song.id)

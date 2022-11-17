@@ -29,7 +29,7 @@ import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.SongCard
-import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
+import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
@@ -47,7 +47,7 @@ fun SongsScreen(
     val windowSize = LocalWindowSize.current
     val gridState = rememberLazyGridState()
 
-    val navToSongAction = ScreenActions.navToSong(hapticType = HapticFeedbackType.LongPress)
+    val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
     val songs by libraryVM.songs
@@ -89,7 +89,7 @@ fun SongsScreen(
                 }
             }
         } else {
-            SmartBar.setMainBar(item = LibraryNavigateBar)
+            SmartBar.setMainBar(item = LibraryDetailNavigateBar)
         }
     }
 

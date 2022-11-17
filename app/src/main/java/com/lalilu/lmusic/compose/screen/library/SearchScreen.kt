@@ -21,6 +21,7 @@ import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 
@@ -36,8 +37,8 @@ fun SearchScreen(
     val genresResult = searchVM.genresResult.observeAsState(initial = emptyList())
     val playlistResult = searchVM.playlistResult.observeAsState(initial = emptyList())
     val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
-    val navToSongAction = ScreenActions.navToSongPopToLibrary()
-    val navToAlbumAction = ScreenActions.navToAlbum()
+    val navToSongAction = ScreenActions.navToSongById(popUpToRoute = ScreenData.Search)
+    val navToAlbumAction = ScreenActions.navToAlbumById()
 
     LaunchedEffect(Unit) {
         SmartBar.setExtraBar {
