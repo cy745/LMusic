@@ -1,44 +1,61 @@
 package com.lalilu.lmusic.compose.screen.library
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.lalilu.lmedia.entity.LArtist
+import com.lalilu.lmedia.entity.LGenre
+import com.lalilu.lmedia.entity.LPlaylist
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
-import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
+import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
+@OptIn(
+    ExperimentalFoundationApi::class,
+    ExperimentalAnimationApi::class,
+    ExperimentalMaterialApi::class
+)
 @Composable
 fun SearchScreen(
     searchVM: SearchViewModel = hiltViewModel(),
     playingVM: PlayingViewModel = hiltViewModel()
 ) {
-    val songsResult = searchVM.songsResult.observeAsState(initial = emptyList())
-    val artistsResult = searchVM.artistsResult.observeAsState(initial = emptyList())
-    val albumsResult = searchVM.albumsResult.observeAsState(initial = emptyList())
-    val genresResult = searchVM.genresResult.observeAsState(initial = emptyList())
-    val playlistResult = searchVM.playlistResult.observeAsState(initial = emptyList())
     val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
-    val navToSongAction = ScreenActions.navToSongById(popUpToRoute = ScreenData.Search)
     val navToAlbumAction = ScreenActions.navToAlbumById()
+    val navToArtistAction = ScreenActions.navToArtistById()
+    val navToPlaylistAction = ScreenActions.navToPlaylistById()
+    val navToSongAction = ScreenActions.navToSongById(
+        popUpToRoute = ScreenData.Search,
+        hapticType = HapticFeedbackType.LongPress
+    )
 
     LaunchedEffect(Unit) {
         SmartBar.setExtraBar {
@@ -53,44 +70,32 @@ fun SearchScreen(
     }
 
     SmartContainer.LazyColumn {
-        stickyHeader(key = "SongsHeader") {
+        searchItem(
+            name = "歌曲",
+            items = searchVM.songsResult.value.take(5),
+            getId = { it.id },
+            getContentType = { LSong::class }
+        ) {
+            SongCard(
+                modifier = Modifier.animateItemPlacement(),
+                lyricRepository = playingVM.lyricRepository,
+                song = { it },
+                onClick = { playingVM.browser.addAndPlay(it.id) },
+                onLongClick = { navToSongAction(it.id) }
+            )
+        }
+
+
+        item(key = "AlbumHeader") {
             RecommendTitle(
                 modifier = Modifier.statusBarsPadding(),
-                title = "歌曲 ${songsResult.value.size.takeIf { it > 0 } ?: ""}",
-                onClick = { })
+                title = "专辑 ${searchVM.albumsResult.value.size.takeIf { it > 0 } ?: ""}")
         }
-        item {
-            AnimatedContent(targetState = songsResult.value.isNotEmpty()) {
+        item(key = "AlbumItems") {
+            AnimatedContent(targetState = searchVM.albumsResult.value.isNotEmpty()) {
                 if (it) {
                     RecommendRow(
-                        items = songsResult.value,
-                        getId = { it.id }
-                    ) {
-                        RecommendCard(
-                            modifier = Modifier.animateItemPlacement(),
-                            item = { it },
-                            width = { 100.dp },
-                            height = { 100.dp },
-                            onClick = { navToSongAction(it.id) },
-                            onClickButton = { playingVM.playOrPauseSong(mediaId = it.id) },
-                            isPlaying = { playingVM.isSongPlaying(mediaId = it.id) }
-                        )
-                    }
-                } else {
-                    Text(modifier = Modifier.padding(20.dp), text = "无匹配歌曲")
-                }
-            }
-        }
-        stickyHeader(key = "AlbumHeader") {
-            RecommendTitle(
-                modifier = Modifier.statusBarsPadding(),
-                title = "专辑 ${albumsResult.value.size.takeIf { it > 0 } ?: ""}")
-        }
-        item {
-            AnimatedContent(targetState = albumsResult.value.isNotEmpty()) {
-                if (it) {
-                    RecommendRow(
-                        items = albumsResult.value,
+                        items = searchVM.albumsResult.value,
                         getId = { it.id }
                     ) {
                         RecommendCardForAlbum(
@@ -107,80 +112,87 @@ fun SearchScreen(
                 }
             }
         }
-        stickyHeader(key = "ArtistsHeader") {
-            RecommendTitle(
-                modifier = Modifier.statusBarsPadding(),
-                title = "歌手 ${artistsResult.value.size.takeIf { it > 0 } ?: ""}"
-            )
-        }
-        item {
-            AnimatedContent(targetState = artistsResult.value.isNotEmpty()) {
-                if (it) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        artistsResult.value.forEach {
-                            Text(
-                                modifier = Modifier
-                                    .padding(20.dp)
-                                    .animateItemPlacement(),
-                                text = it.name
-                            )
-                        }
-                    }
-                } else {
-                    Text(modifier = Modifier.padding(20.dp), text = "无匹配歌手")
-                }
+
+        searchItem(
+            name = "歌手",
+            items = searchVM.artistsResult.value.take(5),
+            getId = { it.id },
+            getContentType = { LArtist::class }
+        ) {
+            Surface(onClick = { navToArtistAction(it.name) }) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                        .animateItemPlacement(),
+                    text = it.name
+                )
             }
         }
 
-        stickyHeader(key = "GenresHeader") {
-            RecommendTitle(
-                modifier = Modifier.statusBarsPadding(),
-                title = "曲风 ${genresResult.value.size.takeIf { it > 0 } ?: ""}"
-            )
-        }
-        item {
-            AnimatedContent(targetState = genresResult.value.isNotEmpty()) {
-                if (it) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        genresResult.value.forEach {
-                            Text(
-                                modifier = Modifier
-                                    .padding(20.dp)
-                                    .animateItemPlacement(),
-                                text = it.name
-                            )
-                        }
-                    }
-                } else {
-                    Text(modifier = Modifier.padding(20.dp), text = "无匹配曲风")
-                }
+        searchItem(
+            name = "曲风",
+            items = searchVM.genresResult.value.take(5),
+            getId = { it.id },
+            getContentType = { LGenre::class }
+        ) {
+            Surface(onClick = {}) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                        .animateItemPlacement(),
+                    text = it.name
+                )
             }
         }
 
-
-        stickyHeader(key = "PlaylistsHeader") {
-            RecommendTitle(
-                modifier = Modifier.statusBarsPadding(),
-                title = "歌单 ${playlistResult.value.size.takeIf { it > 0 } ?: ""}"
-            )
-        }
-        item {
-            AnimatedContent(targetState = playlistResult.value.isNotEmpty()) {
-                if (it) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        playlistResult.value.forEach {
-                            Text(
-                                modifier = Modifier
-                                    .padding(20.dp)
-                                    .animateItemPlacement(),
-                                text = it.name
-                            )
-                        }
-                    }
-                } else {
-                    Text(modifier = Modifier.padding(20.dp), text = "无匹配歌单")
-                }
+        searchItem(
+            name = "歌单",
+            items = searchVM.playlistResult.value.take(5),
+            getId = { it.id },
+            getContentType = { LPlaylist::class }
+        ) {
+            Surface(onClick = { navToPlaylistAction(it.id) }) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                        .animateItemPlacement(),
+                    text = it.name
+                )
             }
         }
     }
+}
+
+fun <I> LazyListScope.searchItem(
+    name: String,
+    items: List<I>,
+    getId: (I) -> Any,
+    getContentType: (I) -> Any,
+    itemContent: @Composable LazyItemScope.(I) -> Unit,
+) {
+    item(key = "${name}_Header") {
+        RecommendTitle(
+            modifier = Modifier.statusBarsPadding(),
+            title = "$name ${items.size.takeIf { it > 0 } ?: ""}",
+            onClick = { })
+    }
+    item(key = "${name}_EmptyTips") {
+        AnimatedVisibility(
+            modifier = Modifier.fillMaxWidth(),
+            visible = items.isEmpty(),
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                text = "无匹配$name"
+            )
+        }
+    }
+    items(items = items, key = getId, contentType = getContentType, itemContent = itemContent)
 }
