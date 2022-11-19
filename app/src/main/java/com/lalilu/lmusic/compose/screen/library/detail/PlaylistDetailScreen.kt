@@ -130,7 +130,7 @@ fun PlaylistDetailScreen(
                         if (selector.isSelecting.value) {
                             selector.onSelected(item)
                         } else {
-                            mainVM.playSongWithPlaylist(playlistDetailVM.songs, item)
+                            playingVM.playSongWithPlaylist(playlistDetailVM.songs, item)
                         }
                     },
                     dragModifier = Modifier.detectReorder(state),

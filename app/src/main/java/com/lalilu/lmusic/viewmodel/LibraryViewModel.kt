@@ -71,6 +71,7 @@ class LibraryViewModel @Inject constructor(
             .mapLatest { list ->
                 list.distinctBy { it.contentId }
                     .mapNotNull { Library.getSongOrNull(it.contentId) }
+                    .take(5)
             }
     }
 }
