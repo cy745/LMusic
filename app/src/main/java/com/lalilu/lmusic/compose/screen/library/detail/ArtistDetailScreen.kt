@@ -12,13 +12,11 @@ import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
 fun ArtistDetailScreen(
     artist: LArtist,
-    mainViewModel: MainViewModel = hiltViewModel(),
     playingVM: PlayingViewModel = hiltViewModel()
 ) {
     val songs = artist.songs
@@ -26,7 +24,7 @@ fun ArtistDetailScreen(
     val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
 
     val onSongSelected: (LSong) -> Unit = { song ->
-        mainViewModel.playSongWithPlaylist(songs, song)
+        playingVM.playSongWithPlaylist(songs, song)
     }
 
     SmartContainer.LazyVerticalGrid(

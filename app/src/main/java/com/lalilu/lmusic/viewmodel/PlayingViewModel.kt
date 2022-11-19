@@ -2,11 +2,13 @@ package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.toState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,6 +23,11 @@ class PlayingViewModel @Inject constructor(
     fun playOrPauseSong(mediaId: String) {
         runtime.takeIf { it.getPlaying() != null && it.isPlaying && it.getPlaying()?.id == mediaId }
             ?.let { browser.pause() } ?: browser.addAndPlay(mediaId)
+    }
+
+    fun playSongWithPlaylist(items: List<LSong>, item: LSong) = viewModelScope.launch {
+        browser.setSongs(items, item)
+        browser.reloadAndPlay()
     }
 
     fun isSongPlaying(mediaId: String): Boolean {

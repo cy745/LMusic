@@ -5,13 +5,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.service.LMusicBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,10 +35,5 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    fun playSongWithPlaylist(items: List<LSong>, item: LSong) = viewModelScope.launch {
-        browser.setSongs(items, item)
-        browser.reloadAndPlay()
     }
 }

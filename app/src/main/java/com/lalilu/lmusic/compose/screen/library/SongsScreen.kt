@@ -135,7 +135,7 @@ fun SongsScreen(
                         if (selector.isSelecting.value) {
                             selector.onSelected(item)
                         } else {
-                            mainVM.playSongWithPlaylist(songs, item)
+                            playingVM.playSongWithPlaylist(songs, item)
                         }
                     },
                     onLongClick = { navToSongAction(item.id) },
