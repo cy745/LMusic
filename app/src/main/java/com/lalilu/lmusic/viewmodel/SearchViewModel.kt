@@ -1,11 +1,11 @@
 package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.Item
 import com.lalilu.lmedia.repository.PlaylistRepository
 import com.lalilu.lmusic.repository.LibraryRepository
+import com.lalilu.lmusic.utils.extension.toState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -29,19 +29,15 @@ class SearchViewModel @Inject constructor(
     }
 
     val songsResult = libraryRepo.songsFlow.searchFor(keywords)
-        .asLiveData(viewModelScope.coroutineContext)
-
+        .toState(emptyList(), viewModelScope)
     val artistsResult = libraryRepo.artistsFlow.searchFor(keywords)
-        .asLiveData(viewModelScope.coroutineContext)
-
+        .toState(emptyList(), viewModelScope)
     val albumsResult = libraryRepo.albumsFlow.searchFor(keywords)
-        .asLiveData(viewModelScope.coroutineContext)
-
+        .toState(emptyList(), viewModelScope)
     val genresResult = libraryRepo.genresFlow.searchFor(keywords)
-        .asLiveData(viewModelScope.coroutineContext)
-
+        .toState(emptyList(), viewModelScope)
     val playlistResult = playlistRepo.getAllPlaylistFlow().searchFor(keywords)
-        .asLiveData(viewModelScope.coroutineContext)
+        .toState(emptyList(), viewModelScope)
 
     private fun <T : Item> Flow<Collection<T>>.searchFor(keywords: Flow<Collection<String>>): Flow<List<T>> =
         combine(keywords) { items, keywordList ->
