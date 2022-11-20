@@ -14,6 +14,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.funny.data_saver.core.DataSaverInterface
@@ -33,6 +34,12 @@ import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.OnBackPressedHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.viewmodel.LocalLibraryVM
+import com.lalilu.lmusic.viewmodel.LocalMainVM
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
+import com.lalilu.lmusic.viewmodel.LocalPlaylistDetailVM
+import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
+import com.lalilu.lmusic.viewmodel.LocalSearchVM
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -93,7 +100,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                 CompositionLocalProvider(
                     LocalDataSaver provides dataSaver,
                     LocalWindowSize provides calculateWindowSizeClass(activity = this),
-                    LocalNavigatorHost provides navHostController
+                    LocalNavigatorHost provides navHostController,
+                    LocalLibraryVM provides hiltViewModel(),
+                    LocalPlayingVM provides hiltViewModel(),
+                    LocalPlaylistsVM provides hiltViewModel(),
+                    LocalMainVM provides hiltViewModel(),
+                    LocalPlaylistDetailVM provides hiltViewModel(),
+                    LocalSearchVM provides hiltViewModel()
                 ) {
                     Box {
                         SmartModalBottomSheet.SmartModalBottomSheetContent(

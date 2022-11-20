@@ -31,10 +31,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LPlaylist
+import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
@@ -48,6 +48,9 @@ import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.lalilu.lmusic.viewmodel.LocalLibraryVM
+import com.lalilu.lmusic.viewmodel.LocalMainVM
+import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import okhttp3.internal.toImmutableList
@@ -64,9 +67,9 @@ import org.burnoutcrew.reorderable.reorderable
 @Composable
 fun PlaylistsScreen(
     isAddingSongs: Boolean = false,
-    mainVM: MainViewModel = hiltViewModel(),
-    libraryVM: LibraryViewModel = hiltViewModel(),
-    playlistsVM: PlaylistsViewModel = hiltViewModel()
+    mainVM: MainViewModel = LocalMainVM.current,
+    libraryVM: LibraryViewModel = LocalLibraryVM.current,
+    playlistsVM: PlaylistsViewModel = LocalPlaylistsVM.current
 ) {
     val context = LocalContext.current
     val navigator = LocalNavigatorHost.current
@@ -121,7 +124,7 @@ fun PlaylistsScreen(
                             text = "删除",
                             color = Color(0xFF006E7C),
                             onClick = {
-                                playlistsVM.removePlaylists(selectedItems)
+                                playlistsVM.removePlaylists(selectedItems.toImmutableList())
                                 selector.clear()
                             }
                         )
@@ -205,7 +208,7 @@ fun PlaylistsScreen(
                 state = state,
                 key = item._id
             ) { isDragging ->
-                if (item._id == 0L) {
+                if (item._id == FavoriteRepository.FAVORITE_PLAYLIST_ID) {
                     PlaylistCard(
                         icon = R.drawable.ic_heart_3_fill,
                         iconTint = MaterialTheme.colors.primary,

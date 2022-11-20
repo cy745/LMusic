@@ -29,6 +29,7 @@ import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
 import com.lalilu.ui.CLICK_PART_MIDDLE
@@ -45,7 +46,7 @@ import com.lalilu.ui.internal.StateHelper
 fun PlayingScreen(
     backPressedHelper: OnBackPressedHelper,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
-    playingVM: PlayingViewModel = hiltViewModel()
+    playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val density = LocalDensity.current
     val navToSongAction = ScreenActions.navToSongById()

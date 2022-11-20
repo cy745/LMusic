@@ -1,9 +1,11 @@
 package com.lalilu.lmusic
 
 import android.content.Context
+import androidx.room.Room
 import com.funny.data_saver.core.DataSaverInterface
 import com.lalilu.lmedia.database.LDatabase
 import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmedia.repository.NetDataRepository
 import com.lalilu.lmedia.repository.PlaylistRepository
@@ -40,17 +42,31 @@ object LMusicHiltModule {
     @Provides
     @Singleton
     fun provideLMediaDatabase(@ApplicationContext context: Context): LDatabase {
-        return Library.createDatabase(context)
+        return Room.databaseBuilder(context, LDatabase::class.java, "lmedia_database.db")
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
     @Singleton
-    fun provideLMediaPlaylistRepo(database: LDatabase): PlaylistRepository {
+    fun provideLMediaPlaylistRepoImpl(database: LDatabase): PlaylistRepositoryImpl {
         return PlaylistRepositoryImpl(
             playlistDao = database.playlistDao(),
             songInPlaylistDao = database.songInPlaylistDao(),
             getSongOrNull = Library::getSongOrNull
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideLMediaPlaylistRepo(impl: PlaylistRepositoryImpl): PlaylistRepository {
+        return impl
+    }
+
+    @Provides
+    @Singleton
+    fun provideLMediaFavoriteRepo(impl: PlaylistRepositoryImpl): FavoriteRepository {
+        return impl
     }
 
     @Provides

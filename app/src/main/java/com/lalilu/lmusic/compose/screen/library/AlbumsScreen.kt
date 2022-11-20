@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -17,13 +16,14 @@ import com.lalilu.lmusic.compose.component.card.AlbumCard
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.lalilu.lmusic.viewmodel.LocalLibraryVM
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun AlbumsScreen(
-    libraryViewModel: LibraryViewModel = hiltViewModel()
+    libraryVM: LibraryViewModel = LocalLibraryVM.current
 ) {
-    val albums by libraryViewModel.albums
+    val albums by libraryVM.albums
     val windowSize = LocalWindowSize.current
     val navToAlbumAction = ScreenActions.navToAlbumById()
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)

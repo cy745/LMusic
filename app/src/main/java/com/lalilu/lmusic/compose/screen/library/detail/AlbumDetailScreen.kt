@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -19,12 +18,13 @@ import com.lalilu.lmusic.compose.component.card.AlbumCoverCard
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
 fun AlbumDetailScreen(
     album: LAlbum,
-    playingVM: PlayingViewModel = hiltViewModel()
+    playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
 

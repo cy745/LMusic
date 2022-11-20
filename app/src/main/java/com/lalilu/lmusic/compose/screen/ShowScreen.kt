@@ -4,7 +4,18 @@ import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.IconToggleButton
@@ -25,7 +36,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
@@ -40,11 +50,12 @@ import com.lalilu.lmusic.utils.PlayMode
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
 fun ShowScreen(
-    playingVM: PlayingViewModel = hiltViewModel()
+    playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
@@ -190,7 +201,7 @@ fun SongDetailPanel(
 
 @Composable
 fun ControlPanel(
-    playingVM: PlayingViewModel = hiltViewModel()
+    playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val isPlaying = playingVM.runtime.isPlayingLiveData.observeAsState(false)
     var playMode by rememberDataSaverState(

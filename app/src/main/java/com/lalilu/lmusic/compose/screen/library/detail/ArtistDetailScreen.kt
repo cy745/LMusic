@@ -5,19 +5,19 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
 fun ArtistDetailScreen(
     artist: LArtist,
-    playingVM: PlayingViewModel = hiltViewModel()
+    playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val songs = artist.songs
     val windowSize = LocalWindowSize.current

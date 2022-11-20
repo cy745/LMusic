@@ -18,6 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.screen.library.AlbumsScreen
@@ -103,7 +104,7 @@ fun LMusicNavGraph(
             SongsScreen()
         }
         ScreenData.Favourite.register(this) {
-            PlaylistDetailScreen(playlistId = 0)
+            PlaylistDetailScreen(playlistId = FavoriteRepository.FAVORITE_PLAYLIST_ID)
         }
         ScreenData.Artists.register(this) {
             ArtistScreen()

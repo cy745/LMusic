@@ -10,7 +10,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -24,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LGenre
 import com.lalilu.lmedia.entity.LPlaylist
@@ -35,6 +33,8 @@ import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.compose.screen.ScreenData
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
+import com.lalilu.lmusic.viewmodel.LocalSearchVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 
@@ -45,8 +45,8 @@ import com.lalilu.lmusic.viewmodel.SearchViewModel
 )
 @Composable
 fun SearchScreen(
-    searchVM: SearchViewModel = hiltViewModel(),
-    playingVM: PlayingViewModel = hiltViewModel()
+    searchVM: SearchViewModel = LocalSearchVM.current,
+    playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
     val navToAlbumAction = ScreenActions.navToAlbumById()
@@ -87,9 +87,7 @@ fun SearchScreen(
 
 
         item(key = "AlbumHeader") {
-            RecommendTitle(
-                modifier = Modifier.statusBarsPadding(),
-                title = "专辑 ${searchVM.albumsResult.value.size.takeIf { it > 0 } ?: ""}")
+            RecommendTitle(title = "专辑 ${searchVM.albumsResult.value.size.takeIf { it > 0 } ?: ""}")
         }
         item(key = "AlbumItems") {
             AnimatedContent(targetState = searchVM.albumsResult.value.isNotEmpty()) {
@@ -174,10 +172,7 @@ fun <I> LazyListScope.searchItem(
     itemContent: @Composable LazyItemScope.(I) -> Unit,
 ) {
     item(key = "${name}_Header") {
-        RecommendTitle(
-            modifier = Modifier.statusBarsPadding(),
-            title = "$name ${items.size.takeIf { it > 0 } ?: ""}",
-            onClick = { })
+        RecommendTitle(title = "$name ${items.size.takeIf { it > 0 } ?: ""}", onClick = { })
     }
     item(key = "${name}_EmptyTips") {
         AnimatedVisibility(

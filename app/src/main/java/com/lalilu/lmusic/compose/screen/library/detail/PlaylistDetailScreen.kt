@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
@@ -20,6 +19,10 @@ import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.rememberSelectState
+import com.lalilu.lmusic.viewmodel.LocalMainVM
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
+import com.lalilu.lmusic.viewmodel.LocalPlaylistDetailVM
+import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
@@ -34,10 +37,10 @@ import org.burnoutcrew.reorderable.reorderable
 @Composable
 fun PlaylistDetailScreen(
     playlistId: Long,
-    mainVM: MainViewModel = hiltViewModel(),
-    playingVM: PlayingViewModel = hiltViewModel(),
-    playlistsVM: PlaylistsViewModel = hiltViewModel(),
-    playlistDetailVM: PlaylistDetailViewModel = hiltViewModel()
+    mainVM: MainViewModel = LocalMainVM.current,
+    playingVM: PlayingViewModel = LocalPlayingVM.current,
+    playlistsVM: PlaylistsViewModel = LocalPlaylistsVM.current,
+    playlistDetailVM: PlaylistDetailViewModel = LocalPlaylistDetailVM.current
 ) {
     val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
     val playlist by playlistDetailVM.getPlaylistFlow(playlistId).collectAsState(initial = null)
@@ -91,7 +94,7 @@ fun PlaylistDetailScreen(
                     IconTextButton(
                         text = "添加到歌单",
                         color = Color(0xFF3EA22C),
-                        onClick = { navToAddToPlaylist(selectedItems) }
+                        onClick = { navToAddToPlaylist(selectedItems.toImmutableList()) }
                     )
                 }
             }
@@ -141,43 +144,6 @@ fun PlaylistDetailScreen(
             }
         }
     }
-
-//    Column(
-//        modifier = Modifier.fillMaxSize()
-//    ) {
-////        NavigatorHeaderWithButtons(
-////            title = playlist.playlistTitle,
-////            subTitle = playlist.playlistInfo
-////        ) {
-////            LazyListSortToggleButton(sortByState = sortByState) {
-////                sortByState = next(sortByState)
-////            }
-////            SortToggleButton(sortDesc = sortDesc) {
-////                sortDesc = !sortDesc
-////            }
-////        }
-//        LazyVerticalGrid(
-//            columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
-//            contentPadding = PaddingValues(
-//                bottom = contentPaddingForFooter
-//            )
-//        ) {
-//            itemsIndexed(items = songs) { index, item ->
-//                SongCard(
-//                    song = { item },
-//                    onClick = { onSongSelected(item) },
-//                    onLongClick = { navToSongAction(item.id) }
-//                )
-////                SongCard(
-////                    modifier = Modifier.animateItemPlacement(),
-////                    index = index,
-////                    getSong = { item },
-////                    onItemClick = onSongSelected,
-////                    onItemLongClick = { navToSongAction(it.id) }
-////                )
-//            }
-//        }
-//    }
 }
 
 @Composable
