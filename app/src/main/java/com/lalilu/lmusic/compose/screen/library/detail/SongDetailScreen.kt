@@ -43,6 +43,9 @@ import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
+import com.lalilu.lmusic.viewmodel.LocalMainVM
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
+import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -52,9 +55,9 @@ import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 @Composable
 fun SongDetailScreen(
     song: LSong,
-    mainVM: MainViewModel = hiltViewModel(),
-    playingVM: PlayingViewModel = hiltViewModel(),
-    playlistsVM: PlaylistsViewModel = hiltViewModel(),
+    mainVM: MainViewModel = LocalMainVM.current,
+    playingVM: PlayingViewModel = LocalPlayingVM.current,
+    playlistsVM: PlaylistsViewModel = LocalPlaylistsVM.current,
     networkDataVM: NetworkDataViewModel = hiltViewModel()
 ) {
     val windowSize = LocalWindowSize.current
@@ -64,8 +67,7 @@ fun SongDetailScreen(
 
     val networkData by networkDataVM.getNetworkDataFlowByMediaId(song.id)
         .collectAsState(null)
-    val isLiked by playlistsVM.isContainSongInPlaylist(song.id, 0L)
-        .collectAsState(false)
+    val isLiked by playlistsVM.checkIsFavorite(song).collectAsState(initial = false)
 
     LaunchedEffect(song) {
         SmartBar.setExtraBar {
@@ -73,9 +75,9 @@ fun SongDetailScreen(
                 getIsLiked = { isLiked },
                 onIsLikedChange = {
                     if (it) {
-                        playlistsVM.addSongIntoPlaylist(playlistId = 0L, mediaId = song.id)
+                        playlistsVM.addToFavorite(song)
                     } else {
-                        playlistsVM.removeSongFromPlaylist(playlistId = 0L, mediaId = song.id)
+                        playlistsVM.removeFromFavorite(song)
                     }
                 },
                 onAddSongToPlaylist = {

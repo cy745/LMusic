@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.viewmodel
 
+import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
@@ -74,4 +75,8 @@ class LibraryViewModel @Inject constructor(
                     .take(5)
             }
     }
+}
+
+val LocalLibraryVM = compositionLocalOf<LibraryViewModel> {
+    error("LibraryViewModel hasn't not presented")
 }

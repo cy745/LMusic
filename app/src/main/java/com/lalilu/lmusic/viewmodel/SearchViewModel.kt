@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.viewmodel
 
+import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.Item
@@ -48,4 +49,8 @@ class SearchViewModel @Inject constructor(
     fun searchFor(str: String) {
         keywordStr.tryEmit(str)
     }
+}
+
+val LocalSearchVM = compositionLocalOf<SearchViewModel> {
+    error("SearchViewModel hasn't not presented")
 }

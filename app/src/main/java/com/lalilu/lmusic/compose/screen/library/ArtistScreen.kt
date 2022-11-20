@@ -20,17 +20,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.lalilu.lmusic.viewmodel.LocalLibraryVM
 
 @Composable
 fun ArtistScreen(
-    libraryViewModel: LibraryViewModel = hiltViewModel()
+    libraryVM: LibraryViewModel = LocalLibraryVM.current
 ) {
     val navToArtistAction = ScreenActions.navToArtistById()
-    val artists by libraryViewModel.artists
+    val artists by libraryVM.artists
 
     SmartContainer.LazyColumn {
         itemsIndexed(items = artists) { index, item ->

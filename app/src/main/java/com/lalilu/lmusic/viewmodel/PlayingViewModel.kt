@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.viewmodel
 
+import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
@@ -35,4 +36,8 @@ class PlayingViewModel @Inject constructor(
 
         return playing.value?.let { it.id == mediaId } ?: false
     }
+}
+
+val LocalPlayingVM = compositionLocalOf<PlayingViewModel> {
+    error("PlayingViewModel hasn't not presented")
 }

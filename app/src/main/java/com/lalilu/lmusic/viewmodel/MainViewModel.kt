@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.viewmodel
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -8,14 +9,11 @@ import androidx.lifecycle.ViewModel
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.screen.ScreenActions
-import com.lalilu.lmusic.service.LMusicBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
-    private val browser: LMusicBrowser
-) : ViewModel() {
+class MainViewModel @Inject constructor() : ViewModel() {
 
     var tempSongs: SnapshotStateList<LSong> = mutableStateListOf()
         private set
@@ -36,4 +34,8 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+}
+
+val LocalMainVM = compositionLocalOf<MainViewModel> {
+    error("MainViewModel hasn't not presented")
 }

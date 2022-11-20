@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.viewmodel
 
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -43,7 +44,8 @@ class PlaylistDetailViewModel @Inject constructor(
         }
     }
 
-    fun canDragOver(draggedOver: ItemPosition, dragging: ItemPosition) :Boolean = songs.any { draggedOver.key == it.id }
+    fun canDragOver(draggedOver: ItemPosition, dragging: ItemPosition): Boolean =
+        songs.any { draggedOver.key == it.id }
 
     fun onDragEnd(startIndex: Int, endIndex: Int) {
         val start = startIndex - 1
@@ -74,4 +76,8 @@ class PlaylistDetailViewModel @Inject constructor(
     fun getPlaylistFlow(playlistId: Long): Flow<LPlaylist?> {
         return playlistRepo.getPlaylistById(playlistId)
     }
+}
+
+val LocalPlaylistDetailVM = compositionLocalOf<PlaylistDetailViewModel> {
+    error("PlaylistDetailViewModel hasn't not presented")
 }

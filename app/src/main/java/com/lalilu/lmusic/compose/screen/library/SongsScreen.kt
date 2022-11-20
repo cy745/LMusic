@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
@@ -35,14 +34,17 @@ import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.lalilu.lmusic.viewmodel.LocalLibraryVM
+import com.lalilu.lmusic.viewmodel.LocalMainVM
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @Composable
 fun SongsScreen(
-    mainVM: MainViewModel = hiltViewModel(),
-    libraryVM: LibraryViewModel = hiltViewModel(),
-    playingVM: PlayingViewModel = hiltViewModel()
+    mainVM: MainViewModel = LocalMainVM.current,
+    libraryVM: LibraryViewModel = LocalLibraryVM.current,
+    playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val windowSize = LocalWindowSize.current
     val gridState = rememberLazyGridState()

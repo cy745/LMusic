@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.viewmodel
 
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -8,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.database.sort
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmedia.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +27,8 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor(
-    private val playlistRepo: PlaylistRepository
+    private val playlistRepo: PlaylistRepository,
+    private val favoriteRepo: FavoriteRepository
 ) : ViewModel() {
     var playlists by mutableStateOf(emptyList<LPlaylist>())
     private var tempList by mutableStateOf(emptyList<LPlaylist>())
@@ -40,7 +43,8 @@ class PlaylistsViewModel @Inject constructor(
         }
     }
 
-    fun canDragOver(draggedOver: ItemPosition, dragging: ItemPosition) :Boolean = playlists.any { draggedOver.key == it._id }
+    fun canDragOver(draggedOver: ItemPosition, dragging: ItemPosition): Boolean =
+        playlists.any { draggedOver.key == it._id }
 
     fun onDragEnd(startIndex: Int, endIndex: Int) {
         val start = startIndex - 1
@@ -59,6 +63,18 @@ class PlaylistsViewModel @Inject constructor(
             }.launchIn(viewModelScope)
     }
 
+    fun addToFavorite(song: LSong) = viewModelScope.launch(Dispatchers.IO) {
+        favoriteRepo.addToFavorite(song)
+    }
+
+    fun removeFromFavorite(song: LSong) = viewModelScope.launch(Dispatchers.IO) {
+        favoriteRepo.removeFromFavorite(song)
+    }
+
+    fun checkIsFavorite(song: LSong): Flow<Boolean> {
+        return favoriteRepo.checkIsFavorite(song.id)
+    }
+
     fun createNewPlaylist(title: String) = viewModelScope.launch(Dispatchers.IO) {
         playlistRepo.savePlaylist(LPlaylist(_title = title))
     }
@@ -67,27 +83,17 @@ class PlaylistsViewModel @Inject constructor(
         playlistRepo.deletePlaylists(playlist)
     }
 
-    fun addSongIntoPlaylist(playlistId: Long, mediaId: String) =
-        viewModelScope.launch(Dispatchers.IO) {
-            playlistRepo.saveSongIntoPlaylist(playlistId, mediaId)
-        }
-
     fun addSongsIntoPlaylists(playlists: List<LPlaylist>, songs: List<LSong>) =
         viewModelScope.launch(Dispatchers.IO) {
             playlistRepo.saveSongsIntoPlaylists(playlists, songs)
-        }
-
-    fun removeSongFromPlaylist(mediaId: String, playlistId: Long) =
-        viewModelScope.launch(Dispatchers.IO) {
-            playlistRepo.deleteSongFromPlaylist(playlistId, mediaId)
         }
 
     fun removeSongsFromPlaylist(songs: List<LSong>, playlist: LPlaylist) =
         viewModelScope.launch(Dispatchers.IO) {
             playlistRepo.deleteSongsFromPlaylist(songs, playlist)
         }
+}
 
-    fun isContainSongInPlaylist(mediaId: String, playlistId: Long): Flow<Boolean> {
-        return playlistRepo.isSongContainInPlaylist(mediaId, playlistId)
-    }
+val LocalPlaylistsVM = compositionLocalOf<PlaylistsViewModel> {
+    error("PlaylistsViewModel hasn't not presented")
 }

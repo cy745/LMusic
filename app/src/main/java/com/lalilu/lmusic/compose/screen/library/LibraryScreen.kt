@@ -32,7 +32,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -44,14 +43,16 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.lalilu.lmusic.viewmodel.LocalLibraryVM
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun LibraryScreen(
-    viewModel: LibraryViewModel = hiltViewModel(),
-    playingVM: PlayingViewModel = hiltViewModel()
+    viewModel: LibraryViewModel = LocalLibraryVM.current,
+    playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
     val navToSongAction = ScreenActions.navToSongById(popUpToRoute = ScreenData.Library)
