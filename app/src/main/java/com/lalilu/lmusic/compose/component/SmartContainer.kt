@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.component
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
@@ -7,6 +8,9 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -93,8 +97,32 @@ object SmartContainer {
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     @JvmName("SmartContainerLazyStaggeredVerticalGrid")
+    fun LazyStaggeredVerticalGrid(
+        columns: Int,
+        verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(0.dp),
+        horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(0.dp),
+        contentPaddingForHorizontal: Dp = 0.dp,
+        content: LazyStaggeredGridScope.() -> Unit
+    ) {
+        val contentPadding = rememberStatusBarContentPadding(
+            horizontalPadding = contentPaddingForHorizontal,
+            bottomPadding = SmartBar.smartBarHeightDpState.value
+        )
+
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Fixed(columns),
+            contentPadding = contentPadding,
+            verticalArrangement = verticalArrangement,
+            horizontalArrangement = horizontalArrangement,
+            content = content
+        )
+    }
+
+    @Composable
+    @JvmName("SmartContainerStaggeredVerticalGrid")
     fun StaggeredVerticalGrid(
         columns: Int,
         contentPaddingForHorizontal: Dp = 0.dp,

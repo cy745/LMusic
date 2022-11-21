@@ -2,12 +2,10 @@ package com.lalilu.lmusic.compose.screen.library
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LAlbum
@@ -29,17 +27,15 @@ fun AlbumsScreen(
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)
 
-    SmartContainer.LazyVerticalGrid(
-        columns = GridCells.Fixed(
-            if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 3 else 2
-        ),
+    SmartContainer.LazyStaggeredVerticalGrid(
+        contentPaddingForHorizontal = 10.dp,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
-        contentPaddingForHorizontal = 10.dp
+        columns = if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 3 else 2,
     ) {
         items(items = albums, key = { it.id }, contentType = { LAlbum::class }) {
             AlbumCard(
-                modifier = Modifier.animateItemPlacement(),
+//                modifier = Modifier.animateItemPlacement(),
                 album = { it },
                 showTitle = { textVisible },
                 onClick = { navToAlbumAction(it.id) }
