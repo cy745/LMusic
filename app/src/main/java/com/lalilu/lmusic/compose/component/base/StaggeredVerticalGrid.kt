@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import com.lalilu.lmusic.utils.recomposeHighlighter
 
+@Deprecated("Google已推出正式的LazyVerticalStaggerGrid，故此Composable将被替换掉")
 @Composable
 fun StaggeredVerticalGrid(
     modifier: Modifier = Modifier,

@@ -59,10 +59,6 @@ fun SettingsScreen() {
         Config.KEY_SETTINGS_LYRIC_TEXT_SIZE,
         Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
     )
-    val kanhiraEnable = rememberDataSaverState(
-        Config.KEY_SETTINGS_KANHIRA_ENABLE,
-        Config.DEFAULT_SETTINGS_KANHIRA_ENABLE
-    )
     val playMode = rememberDataSaverState(
         Config.KEY_SETTINGS_PLAY_MODE,
         Config.DEFAULT_SETTINGS_PLAY_MODE
@@ -176,19 +172,16 @@ fun SettingsScreen() {
             )
         }
 
-//                val isKanhiraInitialed by SearchTextUtil.isKanhiraInitialed
-//                    .collectAsState(initial = false)
-
-        SettingCategory(
-            iconRes = R.drawable.ic_gradienter_line,
-            titleRes = R.string.preference_extensions
-        ) {
-            SettingExtensionSwitcher(
-                state = kanhiraEnable,
-                initialed = true,
-                title = "罗马字匹配功能"
-            )
-        }
+//        SettingCategory(
+//            iconRes = R.drawable.ic_gradienter_line,
+//            titleRes = R.string.preference_extensions
+//        ) {
+//            SettingExtensionSwitcher(
+//                state = kanhiraEnable,
+//                initialed = true,
+//                title = "罗马字匹配功能"
+//            )
+//        }
 
         SettingCategory(
             icon = painterResource(id = R.drawable.ic_loader_line),
