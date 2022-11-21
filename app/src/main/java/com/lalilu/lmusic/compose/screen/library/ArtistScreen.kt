@@ -1,12 +1,7 @@
 package com.lalilu.lmusic.compose.screen.library
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -37,7 +32,7 @@ fun ArtistScreen(
             ArtistCard(
                 index = index,
                 artistName = item.name,
-                songCount = item.getSongCount(),
+                songCount = item.requireItemsCount(),
                 onClick = { navToArtistAction.invoke(item.name) }
             )
         }
@@ -48,7 +43,7 @@ fun ArtistScreen(
 fun ArtistCard(
     index: Int,
     artistName: String,
-    songCount: Int,
+    songCount: Long,
     onClick: () -> Unit = {}
 ) {
     val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)

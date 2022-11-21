@@ -1,12 +1,12 @@
 package com.lalilu.lmusic.compose.screen.library
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -23,7 +23,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.TimeUtils
+import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.extension.GroupRule
+import com.lalilu.lmedia.extension.OrderRule
+import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
@@ -32,14 +36,11 @@ import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
+import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.rememberSelectState
-import com.lalilu.lmusic.viewmodel.LibraryViewModel
-import com.lalilu.lmusic.viewmodel.LocalLibraryVM
-import com.lalilu.lmusic.viewmodel.LocalMainVM
-import com.lalilu.lmusic.viewmodel.LocalPlayingVM
-import com.lalilu.lmusic.viewmodel.MainViewModel
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lmusic.viewmodel.*
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SongsScreen(
     mainVM: MainViewModel = LocalMainVM.current,
@@ -49,6 +50,13 @@ fun SongsScreen(
     val windowSize = LocalWindowSize.current
     val gridState = rememberLazyGridState()
 
+    var sortRule by rememberDataSaverState(key = "SONGS_SORT_RULE", default = SortRule.Normal.name)
+    var orderRule by rememberDataSaverState(key = "SONGS_ORDER_RULE", default = OrderRule.ASC.name)
+    var groupRule by rememberDataSaverState(
+        key = "SONGS_GROUP_RULE",
+        default = GroupRule.Normal.name
+    )
+
     val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
@@ -57,7 +65,7 @@ fun SongsScreen(
 
     val scrollAction = buildScrollToItemAction(
         target = currentPlaying,
-        getIndex = { songs.indexOfFirst { it.id == currentPlaying!!.id } },
+        getIndex = { songs.values.flatten().indexOfFirst { it.id == currentPlaying!!.id } },
         state = gridState
     )
 
@@ -101,43 +109,105 @@ fun SongsScreen(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         val now = System.currentTimeMillis()
-        songs.groupBy { song ->
-            song.dateAdded?.let { it - (it % 60) }?.times(1000L) ?: 0L
-        }.forEach { (dateAdded, list) ->
-            item(
-                key = dateAdded,
-                contentType = LSong::dateAdded,
-                span = { GridItemSpan(maxLineSpan) }
+
+        item(key = "CONTROLLER", contentType = "CONTROLLER") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             ) {
-                Text(
-                    modifier = Modifier.padding(
-                        top = 20.dp,
-                        bottom = 10.dp,
-                        start = 20.dp,
-                        end = 20.dp
-                    ),
-                    style = MaterialTheme.typography.h6,
-                    text = when {
-                        now - dateAdded < 300000 -> "刚刚"
-                        now - dateAdded < 3600000 -> "${(now - dateAdded) / 60000}分钟前"
-                        now - dateAdded < 86400000 -> "${(now - dateAdded) / 3600000}小时前"
-                        else -> TimeUtils.millis2String(dateAdded, "M月d日 HH:mm")
-                    }
-                )
+                libraryVM.supportSortRules.forEach {
+                    Text(
+                        modifier = Modifier
+                            .background(color = if (it.name == sortRule) dayNightTextColor(0.2f) else Color.Transparent)
+                            .padding(vertical = 5.dp)
+                            .clickable { sortRule = it.name }
+                            .fillMaxWidth(),
+                        text = it.name
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                libraryVM.supportOrderRules.forEach {
+                    Text(
+                        modifier = Modifier
+                            .background(color = if (it.name == orderRule) dayNightTextColor(0.2f) else Color.Transparent)
+                            .padding(vertical = 5.dp)
+                            .clickable { orderRule = it.name }
+                            .fillMaxWidth(),
+                        text = it.name
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                libraryVM.supportGroupRules.forEach {
+                    Text(
+                        modifier = Modifier
+                            .background(color = if (it.name == groupRule) dayNightTextColor(0.2f) else Color.Transparent)
+                            .padding(vertical = 5.dp)
+                            .clickable { groupRule = it.name }
+                            .fillMaxWidth(),
+                        text = it.name
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
             }
-            itemsIndexed(
+        }
+
+        songs.forEach { (titleObj, list) ->
+            if (titleObj is Long) {
+                item(
+                    key = titleObj,
+                    contentType = LSong::dateAdded,
+                    span = { GridItemSpan(maxLineSpan) }
+                ) {
+                    Text(
+                        modifier = Modifier.padding(
+                            top = 20.dp,
+                            bottom = 10.dp,
+                            start = 20.dp,
+                            end = 20.dp
+                        ),
+                        style = MaterialTheme.typography.h6,
+                        text = when {
+                            now - titleObj < 300000 -> "刚刚"
+                            now - titleObj < 3600000 -> "${(now - titleObj) / 60000}分钟前"
+                            now - titleObj < 86400000 -> "${(now - titleObj) / 3600000}小时前"
+                            else -> TimeUtils.millis2String(titleObj, "M月d日 HH:mm")
+                        }
+                    )
+                }
+            } else if (titleObj is String && titleObj.isNotEmpty()) {
+                item(
+                    key = titleObj,
+                    contentType = LSong::dateAdded,
+                    span = { GridItemSpan(maxLineSpan) }
+                ) {
+                    Text(
+                        modifier = Modifier.padding(
+                            top = 20.dp,
+                            bottom = 10.dp,
+                            start = 20.dp,
+                            end = 20.dp
+                        ),
+                        style = MaterialTheme.typography.h6,
+                        text = titleObj
+                    )
+                }
+            }
+
+            items(
                 items = list,
-                key = { _, item -> item.id },
-                contentType = { _, _ -> LSong::class }
-            ) { index, item ->
+                key = { it.id },
+                contentType = { LSong::class }
+            ) { item ->
                 SongCard(
+                    modifier = Modifier.animateItemPlacement(),
                     song = { item },
                     lyricRepository = playingVM.lyricRepository,
                     onClick = {
                         if (selector.isSelecting.value) {
                             selector.onSelected(item)
                         } else {
-                            playingVM.playSongWithPlaylist(songs, item)
+                            playingVM.playSongWithPlaylist(songs.values.flatten(), item)
                         }
                     },
                     onLongClick = { navToSongAction(item.id) },
