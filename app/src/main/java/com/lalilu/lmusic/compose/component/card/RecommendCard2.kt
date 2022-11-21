@@ -45,7 +45,11 @@ fun RecommendCard2(
         contentModifier = contentModifier,
         imageData = imageData,
         onClick = onClick
-    ) { mainColor ->
+    ) { palette ->
+        val mainColor = Color(
+            palette?.getDarkVibrantColor(android.graphics.Color.GRAY)
+                ?: android.graphics.Color.GRAY
+        )
 
         Column(
             modifier = Modifier

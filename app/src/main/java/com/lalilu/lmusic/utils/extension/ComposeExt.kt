@@ -10,19 +10,11 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.SwipeProgress
-import androidx.compose.material.contentColorFor
+import androidx.compose.material.*
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
@@ -31,11 +23,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.palette.graphics.Palette
-import coil.request.ImageRequest
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
-import com.lalilu.lmusic.utils.coil.PaletteTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -85,9 +74,9 @@ fun rememberStatusBarHeight(): Float {
 @Composable
 fun rememberScreenHeight(): Dp {
     val configuration = LocalConfiguration.current
-    val screenHeightDp = configuration.screenHeightDp.dp +
-            WindowInsets.statusBars.asPaddingValues().calculateTopPadding() +
-            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val screenHeightDp = configuration.screenHeightDp.dp + WindowInsets.statusBars.asPaddingValues()
+        .calculateTopPadding() + WindowInsets.navigationBars.asPaddingValues()
+        .calculateBottomPadding()
     return remember {
         screenHeightDp
     }
@@ -96,9 +85,9 @@ fun rememberScreenHeight(): Dp {
 @Composable
 fun rememberScreenHeightInPx(): Int {
     val configuration = LocalConfiguration.current
-    val screenHeightDp = configuration.screenHeightDp.dp +
-            WindowInsets.statusBars.asPaddingValues().calculateTopPadding() +
-            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val screenHeightDp = configuration.screenHeightDp.dp + WindowInsets.statusBars.asPaddingValues()
+        .calculateTopPadding() + WindowInsets.navigationBars.asPaddingValues()
+        .calculateBottomPadding()
     return remember(screenHeightDp, configuration) {
         (screenHeightDp.value * configuration.densityDpi / 160f).roundToInt()
     }
@@ -106,9 +95,7 @@ fun rememberScreenHeightInPx(): Int {
 
 @OptIn(ExperimentalMaterialApi::class)
 fun SwipeProgress<ModalBottomSheetValue>.watchForOffset(
-    betweenFirst: ModalBottomSheetValue,
-    betweenSecond: ModalBottomSheetValue,
-    elseValue: Float = 1f
+    betweenFirst: ModalBottomSheetValue, betweenSecond: ModalBottomSheetValue, elseValue: Float = 1f
 ): Float = when {
     from == betweenFirst && to == betweenSecond -> 1f - (fraction * 3)
     from == betweenSecond && to == betweenFirst -> fraction * 3
@@ -123,26 +110,9 @@ fun SwipeProgress<ModalBottomSheetValue>.watchForOffset(
 fun WindowSizeClass.rememberIsPad(): State<Boolean> {
     return remember(widthSizeClass, heightSizeClass) {
         derivedStateOf {
-            widthSizeClass != WindowWidthSizeClass.Compact
-                    && heightSizeClass != WindowHeightSizeClass.Compact
+            widthSizeClass != WindowWidthSizeClass.Compact && heightSizeClass != WindowHeightSizeClass.Compact
         }
     }
-}
-
-fun ImageRequest.Builder.requirePalette(callback: (Palette) -> Unit): ImageRequest.Builder {
-    var palette: Palette? = null
-    return this.transformations(PaletteTransformation { palette = it }).listener(
-        onSuccess = { _, result ->
-            val key = result.memoryCacheKey?.key ?: return@listener
-
-            if (palette != null) {
-                PaletteTransformation.resultCache.put(key, palette)
-            } else {
-                palette = PaletteTransformation.resultCache.get(key)
-            }
-
-            palette?.let { callback.invoke(it) }
-        })
 }
 
 @Composable
@@ -191,13 +161,11 @@ fun <T> buildScrollToItemAction(
     scope: CoroutineScope = rememberCoroutineScope()
 ): () -> Unit {
     // 获取当前可见元素的平均高度
-    fun getHeightAverage() = state.layoutInfo.visibleItemsInfo
-        .average { it.size.height }
+    fun getHeightAverage() = state.layoutInfo.visibleItemsInfo.average { it.size.height }
 
     // 获取精确的位移量（只能对可见元素获取）
-    fun getTargetOffset(index: Int) = state.layoutInfo.visibleItemsInfo
-        .find { it.index == index }
-        ?.offset?.y
+    fun getTargetOffset(index: Int) =
+        state.layoutInfo.visibleItemsInfo.find { it.index == index }?.offset?.y
 
     // 获取粗略的位移量（通过对可见元素的高度求平均再通过index的差，计算出粗略值）
     fun getRoughTargetOffset(index: Int) =
@@ -210,16 +178,14 @@ fun <T> buildScrollToItemAction(
                 // 若获取不到精确的位移量，则计算粗略位移量并开始scroll
                 if (getTargetOffset(index) == null) {
                     state.animateScrollBy(
-                        getRoughTargetOffset(index),
-                        SpringSpec(stiffness = Spring.StiffnessVeryLow)
+                        getRoughTargetOffset(index), SpringSpec(stiffness = Spring.StiffnessVeryLow)
                     )
                 }
 
                 // 若可以获取到精确的位移量，则直接滚动到目标歌曲位置
                 getTargetOffset(index)?.let {
                     state.animateScrollBy(
-                        it.toFloat(),
-                        SpringSpec(stiffness = Spring.StiffnessVeryLow)
+                        it.toFloat(), SpringSpec(stiffness = Spring.StiffnessVeryLow)
                     )
                 }
             }
