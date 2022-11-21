@@ -34,7 +34,7 @@ fun ExpendableTextCard(
     modifier: Modifier = Modifier,
     maxWidth: () -> Dp = { Dp.Infinity },
     title: () -> String,
-    subTitle: () -> String,
+    subTitle: () -> String?,
     titleColor: Color = dayNightTextColor(),
     subTitleColor: Color = titleColor.copy(alpha = 0.5f),
     defaultState: Boolean = false
@@ -44,31 +44,33 @@ fun ExpendableTextCard(
     AnimatedContent(
         modifier = modifier.recomposeHighlighter(),
         targetState = expendedState
-    ) {
+    ) { expended ->
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = maxWidth())
                 .clickable(MutableInteractionSource(), indication = null) {
-                    expendedState = !it
+                    expendedState = !expended
                 }
         ) {
             Text(
-                maxLines = if (it) Int.MAX_VALUE else 1,
-                overflow = if (it) TextOverflow.Visible else TextOverflow.Ellipsis,
-                softWrap = true,
                 text = title(),
+                softWrap = true,
+                maxLines = if (expended) Int.MAX_VALUE else 1,
+                overflow = if (expended) TextOverflow.Visible else TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.subtitle1,
                 color = titleColor
             )
-            Text(
-                maxLines = if (it) Int.MAX_VALUE else 1,
-                overflow = if (it) TextOverflow.Visible else TextOverflow.Ellipsis,
-                softWrap = true,
-                text = subTitle(),
-                style = MaterialTheme.typography.subtitle2,
-                color = subTitleColor
-            )
+            subTitle()?.takeIf { it.isNotEmpty() }?.let {
+                Text(
+                    text = it,
+                    softWrap = true,
+                    maxLines = if (expended) Int.MAX_VALUE else 1,
+                    overflow = if (expended) TextOverflow.Visible else TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.subtitle2,
+                    color = subTitleColor
+                )
+            }
         }
     }
 }

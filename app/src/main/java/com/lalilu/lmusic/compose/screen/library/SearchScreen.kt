@@ -1,12 +1,6 @@
 package com.lalilu.lmusic.compose.screen.library
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -101,8 +95,7 @@ fun SearchScreen(
                             width = { 100.dp },
                             height = { 100.dp },
                             item = { it },
-                            onClick = { navToAlbumAction(it.id) },
-                            isPlaying = { playingVM.isSongPlaying(mediaId = it.id) }
+                            onClick = { navToAlbumAction(it.id) }
                         )
                     }
                 } else {
