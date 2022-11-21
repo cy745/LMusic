@@ -5,11 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
-import androidx.navigation.NamedNavArgument
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
+import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmusic.compose.component.navigate.NavigateBar
@@ -210,11 +206,11 @@ enum class ScreenData(
     fun buildRoute(paramMap: Map<String, Any?> = emptyMap()): String {
         var targetRoute = name
         this.pathArg.takeIf { it.first.isNotEmpty() }?.let {
-            targetRoute += "/${paramMap.getOrDefault(it.first, it.second)}"
+            targetRoute += "/${paramMap.getOrElse(it.first) { it.second }}"
         }
         this.nullableArgs.forEach {
             if (it.key.isNotEmpty()) {
-                targetRoute += "?${it.key}=${paramMap.getOrDefault(it.key, it.value)}"
+                targetRoute += "?${it.key}=${paramMap.getOrElse(it.key) { it.value }}"
             }
         }
         return targetRoute
