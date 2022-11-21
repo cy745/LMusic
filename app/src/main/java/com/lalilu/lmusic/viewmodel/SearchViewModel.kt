@@ -10,11 +10,7 @@ import com.lalilu.lmusic.utils.extension.toState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -43,7 +39,7 @@ class SearchViewModel @Inject constructor(
     private fun <T : Item> Flow<Collection<T>>.searchFor(keywords: Flow<Collection<String>>): Flow<List<T>> =
         combine(keywords) { items, keywordList ->
             if (keywordList.isEmpty()) return@combine emptyList()
-            items.filter { item -> keywordList.all { item.getMatchStr().contains(it) } }
+            items.filter { item -> keywordList.all { item.matchStr.contains(it) } }
         }
 
     fun searchFor(str: String) {

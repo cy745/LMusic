@@ -4,9 +4,11 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.extension.*
 import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.datastore.LibraryDataStore
+import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.repository.LibraryRepository
 import com.lalilu.lmusic.utils.extension.toState
 import com.lalilu.lmusic.utils.extension.toUpdatableFlow
@@ -18,15 +20,63 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class LibraryViewModel @Inject constructor(
     private val libraryDataStore: LibraryDataStore,
+    private val settingsDataStore: SettingsDataStore,
     private val historyRepo: HistoryRepository,
-    private val libraryRepo: LibraryRepository
+    private val libraryRepo: LibraryRepository,
 ) : ViewModel() {
-    val songs get() = libraryRepo.songsFlow.toState(emptyList(), viewModelScope)
-    val artists get() = libraryRepo.artistsFlow.toState(emptyList(), viewModelScope)
-    val albums get() = libraryRepo.albumsFlow.toState(emptyList(), viewModelScope)
-    val genres get() = libraryRepo.genresFlow.toState(emptyList(), viewModelScope)
+    private val sortRuleFlow = settingsDataStore.run {
+        songsSortRule.flow().mapLatest {
+            println("mapLatest:SortRule $it")
+            SortRule.from(it)
+        }
+    }
+
+    private val orderRuleFlow = settingsDataStore.run {
+        songsOrderRule.flow().mapLatest {
+            println("mapLatest:OrderRule $it")
+            OrderRule.from(it)
+        }
+    }
+
+    private val groupRuleFlow = settingsDataStore.run {
+        songsGroupRule.flow().mapLatest {
+            println("mapLatest:GroupRule $it")
+            GroupRule.from(it)
+        }
+    }
+
+
+    val supportSortRules = listOf(
+        SortRule.Normal,
+        SortRule.CreateTime,
+        SortRule.ModifyTime,
+        SortRule.Title,
+        SortRule.SubTitle,
+        SortRule.ContentType,
+        SortRule.ItemsDuration
+    )
+    val supportOrderRules = listOf(
+        OrderRule.ASC, OrderRule.DESC
+    )
+    val supportGroupRules = listOf(
+        GroupRule.Normal,
+        GroupRule.CreateTime,
+        GroupRule.ModifyTime,
+        GroupRule.TitleFirstLetter,
+        GroupRule.SubTitleFirstLetter
+    )
+
+    val songs = libraryRepo.songsFlow
+        .getSortedOutputFlow(sortRuleFlow, supportSortRules)
+        .getOrderedOutputFlow(orderRuleFlow, supportOrderRules)
+        .getGroupedOutputFlow(groupRuleFlow, supportGroupRules)
+        .toState(emptyMap(), viewModelScope)
+    val artists = libraryRepo.artistsFlow.toState(emptyList(), viewModelScope)
+    val albums = libraryRepo.albumsFlow.toState(emptyList(), viewModelScope)
+    val genres = libraryRepo.genresFlow.toState(emptyList(), viewModelScope)
 
     /**
      * 获取最近的播放记录

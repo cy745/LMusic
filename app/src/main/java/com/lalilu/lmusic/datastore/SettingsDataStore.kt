@@ -35,4 +35,17 @@ class SettingsDataStore @Inject constructor(
     val enableSystemEq = booleanPreferencesKey(Config.KEY_SETTINGS_ENABLE_SYSTEM_EQ)
 
     val isGuidingOver = booleanPreferencesKey(Config.KEY_REMEMBER_IS_GUIDING_OVER)
+
+
+    val songsSortRule = stringPreferencesKey("SONGS_SORT_RULE")
+    val albumsSortRule = stringPreferencesKey("ALBUMS_SORT_RULE")
+    val artistsSortRule = stringPreferencesKey("ARTISTS_SORT_RULE")
+
+    val songsOrderRule = stringPreferencesKey("SONGS_ORDER_RULE")
+    val albumsOrderRule = stringPreferencesKey("ALBUMS_ORDER_RULE")
+    val artistsOrderRule = stringPreferencesKey("ARTISTS_ORDER_RULE")
+
+    val songsGroupRule = stringPreferencesKey("SONGS_GROUP_RULE")
+    val albumsGroupRule = stringPreferencesKey("ALBUMS_GROUP_RULE")
+    val artistsGroupRule = stringPreferencesKey("ARTISTS_GROUP_RULE")
 }
