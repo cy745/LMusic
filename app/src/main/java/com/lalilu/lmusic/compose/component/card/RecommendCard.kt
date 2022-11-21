@@ -24,14 +24,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.airbnb.lottie.compose.*
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.utils.coil.requirePalette
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
-import com.lalilu.lmusic.utils.extension.requirePalette
 
 @Composable
 fun RecommendCardForAlbum(
@@ -112,7 +113,12 @@ fun RecommendCard(
             height = height,
             imageData = imageData,
             onClick = onClick
-        ) { mainColor ->
+        ) { palette ->
+            val mainColor = Color(
+                palette?.getLightMutedColor(android.graphics.Color.GRAY)
+                    ?: android.graphics.Color.GRAY
+            )
+
             androidx.compose.animation.AnimatedVisibility(
                 modifier = Modifier.fillMaxSize(),
                 visible = isPlaying(),
@@ -179,9 +185,9 @@ fun RecommendCardCover(
     shape: Shape = RoundedCornerShape(10.dp),
     imageData: () -> Any?,
     onClick: () -> Unit = {},
-    extraContent: @Composable BoxScope.(mainColor: Color) -> Unit = {}
+    extraContent: @Composable BoxScope.(palette: Palette?) -> Unit = {}
 ) {
-    var mainColor by remember { mutableStateOf(Color.Gray) }
+    var palette by remember { mutableStateOf<Palette?>(null) }
 
     Surface(
         modifier = modifier, elevation = elevation, shape = shape
@@ -198,13 +204,13 @@ fun RecommendCardCover(
                     .clickable(onClick = onClick),
                 model = ImageRequest.Builder(LocalContext.current).data(imageData())
                     .placeholder(R.drawable.ic_music_2_line_100dp)
-                    .error(R.drawable.ic_music_2_line_100dp).requirePalette {
-                        mainColor = Color(it.getLightMutedColor(android.graphics.Color.GRAY))
-                    }.build(),
+                    .error(R.drawable.ic_music_2_line_100dp)
+                    .requirePalette { palette = it }
+                    .build(),
                 contentScale = ContentScale.Crop,
                 contentDescription = "Recommend Card Cover Image"
             )
-            extraContent(mainColor)
+            extraContent(palette)
         }
     }
 }
