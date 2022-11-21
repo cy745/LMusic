@@ -38,24 +38,27 @@ fun RecommendCardForAlbum(
     modifier: Modifier = Modifier,
     contentModifier: Modifier = Modifier,
     item: () -> LAlbum,
-    isPlaying: () -> Boolean = { false },
     width: () -> Dp = { 150.dp },
     height: () -> Dp = { 150.dp },
-    onClick: () -> Unit = {},
-    onClickButton: () -> Unit = {}
+    onClick: () -> Unit = {}
 ) {
-    RecommendCard(
-        modifier = modifier,
-        contentModifier = contentModifier,
-        imageData = { item() },
-        title = { item().name },
-        subTitle = { item().artistName ?: "未知艺术家" },
-        isPlaying = isPlaying,
-        width = width,
-        height = height,
-        onClick = onClick,
-        onClickButton = onClickButton
-    )
+    Column(
+        modifier = modifier.width(IntrinsicSize.Min),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        RecommendCardCover(
+            contentModifier = contentModifier,
+            width = width,
+            height = height,
+            imageData = { item() },
+            onClick = onClick
+        )
+        ExpendableTextCard(
+            title = { item().name },
+            subTitle = { item().artistName },
+            maxWidth = width
+        )
+    }
 }
 
 @Composable
@@ -100,8 +103,7 @@ fun RecommendCard(
     onClickButton: () -> Unit = {}
 ) {
     Column(
-        modifier = modifier
-            .width(IntrinsicSize.Min),
+        modifier = modifier.width(IntrinsicSize.Min),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         RecommendCardCover(
@@ -129,8 +131,7 @@ fun RecommendCard(
                                 end = Offset(0f, Float.POSITIVE_INFINITY)
                             )
                         )
-                        .align(Alignment.Center),
-                    contentAlignment = Alignment.BottomStart
+                        .align(Alignment.Center), contentAlignment = Alignment.BottomStart
                 ) {
                     LottieAnimation(
                         composition,
@@ -151,8 +152,7 @@ fun RecommendCard(
                     elevation = 1.dp, color = mainColor, shape = CircleShape
                 ) {
                     IconButton(
-                        modifier = Modifier.size(32.dp),
-                        onClick = onClickButton
+                        modifier = Modifier.size(32.dp), onClick = onClickButton
                     ) {
                         Icon(
                             painter = painterResource(id = if (it) R.drawable.ic_pause_line else R.drawable.ic_play_line),
@@ -164,9 +164,7 @@ fun RecommendCard(
         }
 
         ExpendableTextCard(
-            title = title,
-            subTitle = subTitle,
-            maxWidth = width
+            title = title, subTitle = subTitle, maxWidth = width
         )
     }
 }
@@ -186,9 +184,7 @@ fun RecommendCardCover(
     var mainColor by remember { mutableStateOf(Color.Gray) }
 
     Surface(
-        modifier = modifier,
-        elevation = elevation,
-        shape = shape
+        modifier = modifier, elevation = elevation, shape = shape
     ) {
         Box(
             modifier = contentModifier
@@ -200,14 +196,11 @@ fun RecommendCardCover(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable(onClick = onClick),
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageData())
+                model = ImageRequest.Builder(LocalContext.current).data(imageData())
                     .placeholder(R.drawable.ic_music_2_line_100dp)
-                    .error(R.drawable.ic_music_2_line_100dp)
-                    .requirePalette {
+                    .error(R.drawable.ic_music_2_line_100dp).requirePalette {
                         mainColor = Color(it.getLightMutedColor(android.graphics.Color.GRAY))
-                    }
-                    .build(),
+                    }.build(),
                 contentScale = ContentScale.Crop,
                 contentDescription = "Recommend Card Cover Image"
             )
