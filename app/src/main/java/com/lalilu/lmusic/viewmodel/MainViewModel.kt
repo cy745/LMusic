@@ -1,19 +1,22 @@
 package com.lalilu.lmusic.viewmodel
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.remote.StringUdpService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor() : ViewModel() {
+class MainViewModel @Inject constructor(
+    private val udpService: StringUdpService
+) : ViewModel() {
 
     var tempSongs: SnapshotStateList<LSong> = mutableStateListOf()
         private set
@@ -32,6 +35,28 @@ class MainViewModel @Inject constructor() : ViewModel() {
                     navToAddToPlaylistAction(mapOf("isAdding" to true))
                 }
             }
+        }
+    }
+
+    val searching = mutableStateOf(false)
+    val remoteDeviceList = mutableStateListOf<String>()
+
+    fun stopListen() {
+        udpService.stopListen()
+        remoteDeviceList.clear()
+    }
+
+    fun search2() {
+        udpService.startListenStr {
+            remoteDeviceList.add("${System.currentTimeMillis()} $it")
+        }
+        viewModelScope.launch {
+            searching.value = true
+            repeat(5) {
+                udpService.broadcast("REQUEST CONNECT")
+                delay(3000)
+            }
+            searching.value = false
         }
     }
 }

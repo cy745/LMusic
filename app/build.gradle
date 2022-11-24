@@ -191,6 +191,7 @@ dependencies {
     implementation project(":common")
     implementation project(":ui")
     implementation project(":lmedia")
+    implementation project(":remote")
 
     ksp "androidx.room:room-compiler:$room_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"

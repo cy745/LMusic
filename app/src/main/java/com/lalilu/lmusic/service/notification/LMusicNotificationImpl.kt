@@ -16,6 +16,7 @@ import com.lalilu.lmusic.utils.CoroutineSynchronizer
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.extension.debounce
 import com.lalilu.lmusic.utils.extension.findShowLine
+import com.lalilu.remote.StringUdpService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -32,7 +33,8 @@ class LMusicNotificationImpl constructor(
     private val mContext: LMusicService,
     private val playBack: LMusicPlayBack<LSong>,
     private val lyricRepo: LyricRepository,
-    private val netDataRepo: NetDataRepository
+    private val netDataRepo: NetDataRepository,
+    private val udpService: StringUdpService
 ) : LMusicNotification(mContext), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     private val synchronizer = CoroutineSynchronizer()
@@ -146,6 +148,10 @@ class LMusicNotificationImpl constructor(
                 pushNotification(this)
             }
             lastLyricIndex = index
+
+            nowLyric?.let {
+                udpService.broadcast(it)
+            }
         }
     }
 

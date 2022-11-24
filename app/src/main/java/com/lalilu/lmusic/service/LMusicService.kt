@@ -30,6 +30,7 @@ import com.lalilu.lmusic.utils.CoroutineSynchronizer
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.PlayMode
 import com.lalilu.lmusic.utils.extension.toBitmap
+import com.lalilu.remote.StringUdpService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,10 +60,13 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     @Inject
     lateinit var netDataRepository: NetDataRepository
 
+    @Inject
+    lateinit var udpService: StringUdpService
+
     lateinit var mediaSession: MediaSessionCompat
 
     private val mNotificationManager: LMusicNotificationImpl by lazy {
-        LMusicNotificationImpl(this, playBack, lyricRepository, netDataRepository)
+        LMusicNotificationImpl(this, playBack, lyricRepository, netDataRepository, udpService)
     }
     private val playBack: LMusicPlayBack<LSong> = object : LMusicPlayBack<LSong>(this) {
         private val noisyReceiver = LMusicNoisyReceiver(this::onPause)
