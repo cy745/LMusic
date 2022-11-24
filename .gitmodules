@@ -5,3 +5,7 @@
 [submodule "lmedia"]
 	path = lmedia
 	url = https://gitee.com/lalilu/lmedia.git
+
+[submodule "remote"]
+	path = remote
+	url = https://gitee.com/lalilu/remote.git
