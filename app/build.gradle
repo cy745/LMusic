@@ -74,13 +74,17 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion compose_compiler_version
     }
-//    packagingOptions {
-//        resources {
-//            excludes += ['META-INF/CONTRIBUTORS.md', 'META-INF/LICENSE.md']
-//        }
-//    }
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/**']
+        }
+    }
     lint {
         checkDependencies true
+    }
+    configurations {
+        implementation.exclude module: 'protobuf-javalite'
+        implementation.exclude module: 'grpc-netty'
     }
 }
 
