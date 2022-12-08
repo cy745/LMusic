@@ -7,16 +7,11 @@ import com.lalilu.lmusic.utils.extension.getNextOf
 import com.lalilu.lmusic.utils.extension.getPreviousOf
 import com.lalilu.lmusic.utils.extension.move
 import com.lalilu.lmusic.utils.extension.moveHeadToTailWithSearch
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import java.util.LinkedList
+import java.util.*
 
 abstract class LMusicBaseRuntime : CoroutineScope {
     open suspend fun onPlayingUpdate(song: LSong?) {}
@@ -144,6 +139,8 @@ abstract class LMusicBaseRuntime : CoroutineScope {
 
     val isPlayingFlow: StateFlow<Boolean> = _isPlayingFlow
     val playingFlow: StateFlow<LSong?> = _playingFlow
+    val positionFlow: StateFlow<Long> = _positionFlow
+
     val playingLiveData = _playingFlow.asLiveData()
     val positionLiveData = _positionFlow.asLiveData()
     val isPlayingLiveData = _isPlayingFlow.asLiveData()

@@ -2,52 +2,42 @@ package com.lalilu.lmusic.service.playback
 
 import android.net.Uri
 import android.os.Bundle
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.Config
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class MixPlayback @Inject constructor(
-    private val localPlayer: LocalPlayer,
-    private val remotePlayer: RemotePlayer
-) : Playback<LSong>, MediaSessionCompat.Callback(), Player.Listener {
+    localPlayer: LocalPlayer,
+    remotePlayer: RemotePlayer
+) : MediaSessionCompat.Callback(), Playback<LSong>, Playback.Listener<LSong>, Player.Listener {
+    override var listener: Playback.Listener<LSong>? = null
 
     init {
         localPlayer.listener = this
         remotePlayer.listener = this
     }
 
-    private var currentPlayer = LocalPlayer::class
-        set(value) {
-            if (field == value) return
-
-            if (value == LocalPlayer::class) {
-                remotePlayer.stop()
-            } else {
-                localPlayer.stop()
-            }
-            field = value
-        }
-
     override var queue: PlayQueue<LSong>? = null
-
-    private val player: Player
-        get() = if (currentPlayer == LocalPlayer::class) localPlayer else remotePlayer
+    override val player: Player = localPlayer
 
     override fun onPause() {
         player.pause()
     }
 
-
     override fun onPlay() {
         if (player.isPrepared) {
             player.play()
         } else {
-            val uri = queue?.run {
-                getCurrent()?.let { getUriFromItem(it) }
-            } ?: return
+            val item = queue?.getCurrent() ?: return
+            val uri = queue?.getUriFromItem(item) ?: return
 
+            onPlayingItemUpdate(item)
+            onPlaybackStateChanged(PlaybackStateCompat.STATE_BUFFERING, 0L)
             onPlayFromUri(uri, null)
         }
     }
@@ -58,28 +48,98 @@ class MixPlayback @Inject constructor(
 
     override fun onPlayFromMediaId(mediaId: String, extras: Bundle?) {
         val item = queue?.getById(mediaId) ?: return
+        val uri = queue?.getUriFromItem(item) ?: return
 
+        onPlayingItemUpdate(item)
+        onPlaybackStateChanged(PlaybackStateCompat.STATE_BUFFERING, 0L)
+        onPlayFromUri(uri, extras)
+    }
 
+    override fun onSkipToNext() {
+        val next = queue?.getNext(false) ?: return
+        val uri = queue?.getUriFromItem(next) ?: return
+
+        onPlayingItemUpdate(next)
+        onPlaybackStateChanged(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, 0L)
+        onPlayFromUri(uri, null)
+    }
+
+    override fun onSkipToPrevious() {
+        val previous = queue?.getPrevious(false) ?: return
+        val uri = queue?.getUriFromItem(previous) ?: return
+
+        onPlayingItemUpdate(previous)
+        onPlaybackStateChanged(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, 0L)
+        onPlayFromUri(uri, null)
+    }
+
+    override fun onSeekTo(pos: Long) {
+        player.seekTo(pos)
+    }
+
+    override fun onStop() {
+        player.stop()
+    }
+
+    override fun onCustomAction(action: String?, extras: Bundle?) {
+        println("onCustomAction: $action")
+        when (action) {
+            Config.ACTION_PLAY_AND_PAUSE -> {
+                if (player.isPlaying) onPause() else onPlay()
+            }
+//            Config.ACTION_RELOAD_AND_PLAY -> {
+//                isPrepared = false
+//                onPlay()
+//            }
+        }
+    }
+
+    override fun onSetRepeatMode(repeatMode: Int) {
+        println("onSetRepeatMode: $repeatMode")
+//        setRepeatMode(repeatMode)
+    }
+
+    override fun onSetShuffleMode(shuffleMode: Int) {
+        println("onSetShuffleMode: $shuffleMode")
+//        setShuffleMode(shuffleMode)
     }
 
     override fun onLStart() {
+        onPlaybackStateChanged(PlaybackStateCompat.STATE_PLAYING, player.getPosition())
     }
 
     override fun onLStop() {
+        onPlayingItemUpdate(null)
+        onPlaybackStateChanged(PlaybackStateCompat.STATE_STOPPED, 0L)
     }
 
     override fun onLPlay() {
     }
 
     override fun onLPause() {
+        onPlaybackStateChanged(PlaybackStateCompat.STATE_PAUSED, player.getPosition())
     }
 
     override fun onLSeekTo(newDurationMs: Number) {
+        onPlaybackStateChanged(PlaybackStateCompat.STATE_PLAYING, newDurationMs.toLong())
     }
 
     override fun onLPrepared() {
     }
 
     override fun onLCompletion() {
+        onSkipToNext()
+    }
+
+    override fun onPlayingItemUpdate(item: LSong?) {
+        listener?.onPlayingItemUpdate(item)
+    }
+
+    override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
+        listener?.onMetadataChanged(metadata)
+    }
+
+    override fun onPlaybackStateChanged(playbackState: Int, position: Long) {
+        listener?.onPlaybackStateChanged(playbackState, position)
     }
 }

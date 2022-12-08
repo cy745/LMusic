@@ -57,9 +57,6 @@ android {
         }
 
         debug {
-            minifyEnabled true
-            shrinkResources true
-
             versionNameSuffix = "-DEBUG"
             applicationIdSuffix ".debug"
             resValue "string", "app_name", "@string/app_name_debug"

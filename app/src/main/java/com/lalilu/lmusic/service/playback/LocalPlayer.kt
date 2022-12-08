@@ -3,14 +3,14 @@ package com.lalilu.lmusic.service.playback
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
-import com.blankj.utilcode.util.ToastUtils
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class LocalPlayer @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) : Player, Player.Listener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
     private var volumeProxy: FadeVolumeProxy? = null
     private var player: MediaPlayer? = null
@@ -34,12 +34,13 @@ class LocalPlayer @Inject constructor(
         try {
             this.startWhenReady = startWhenReady
             isPlaying = false
+            isStopped = false
             player?.reset()
             player?.setDataSource(context, uri)
             player?.prepareAsync()
         } catch (e: IOException) {
             onLStop()
-            ToastUtils.showLong("播放失败：歌曲文件不存在")
+            println("播放失败：歌曲文件不存在")
         } catch (e: Exception) {
             onLStop()
         }
@@ -52,6 +53,7 @@ class LocalPlayer @Inject constructor(
 
             if (player?.isPlaying == false) {
                 isPlaying = true
+                isStopped = false
                 volumeProxy?.fadeStart()
                 onLStart()
             }
@@ -61,6 +63,7 @@ class LocalPlayer @Inject constructor(
 
     override fun pause() {
         isPlaying = false
+        isStopped = false
         volumeProxy?.fadePause()
         onLPause()
     }
@@ -83,6 +86,10 @@ class LocalPlayer @Inject constructor(
 
     override fun requestAudioFocus(): Boolean {
         return true
+    }
+
+    override fun getPosition(): Long {
+        return player?.currentPosition?.toLong() ?: 0L
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
