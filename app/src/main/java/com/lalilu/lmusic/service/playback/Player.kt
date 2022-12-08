@@ -21,6 +21,7 @@ interface Player {
      * 请求音频焦点
      */
     fun requestAudioFocus(): Boolean
+    fun getPosition(): Long
 
     interface Listener {
         fun onLStart()
