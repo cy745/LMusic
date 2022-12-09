@@ -5,21 +5,78 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Build
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.media.session.MediaButtonReceiver
+import androidx.palette.graphics.Palette
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.lalilu.R
+import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.service.LMusicService
 import com.lalilu.lmusic.service.notification.LMusicNotifier.Companion.NOTIFICATION_PLAYER_ID
 import com.lalilu.lmusic.utils.PlayMode
+import com.lalilu.lmusic.utils.extension.toBitmap
+import kotlinx.coroutines.runBlocking
 
 open class BaseNotification constructor(
     private val mContext: Context
 ) {
+    private var lastBitmap: Pair<Any, Bitmap>? = null
+    private var lastColor: Pair<Any, Int>? = null
+    private val emptyBitmap: Bitmap? by lazy {
+        ContextCompat.getDrawable(mContext, R.drawable.ic_music_notification_bg_64dp)?.toBitmap()
+    }
+
+    /**
+     * 加载歌曲封面和提取配色，若已有缓存则直接取用，若无则阻塞获取，需确保调用方不阻塞主要动作
+     */
+    protected fun NotificationCompat.Builder.loadCoverAndPalette(data: Any?): NotificationCompat.Builder {
+        var bitmap: Bitmap? = null
+        var color: Int = Color.TRANSPARENT
+
+        lastBitmap?.takeIf { it.first == data }?.let { bitmap = it.second }
+        lastColor?.takeIf { it.first == data }?.let { color = it.second }
+
+        if (bitmap == null) {
+            runBlocking {
+                bitmap = mContext.imageLoader.execute(
+                    ImageRequest.Builder(mContext)
+                        .allowHardware(false)
+                        .data(data)
+                        .size(400)
+                        .build()
+                ).drawable?.toBitmap() ?: return@runBlocking
+            }
+
+            if (bitmap != null) {
+                color = Palette.from(bitmap!!)
+                    .generate()
+                    .getAutomaticColor()
+
+                if (data != null) {
+                    lastBitmap = data to bitmap!!
+                    lastColor = data to color
+                }
+            } else {
+                bitmap = emptyBitmap
+            }
+        }
+
+        if (bitmap != null) {
+            this@loadCoverAndPalette.setLargeIcon(bitmap)
+            this@loadCoverAndPalette.color = color
+        }
+
+        return this
+    }
+
     fun buildMediaNotification(
         mediaSession: MediaSessionCompat,
         channelId: String
@@ -71,7 +128,7 @@ open class BaseNotification constructor(
         ) as NotificationManager
     }
 
-    protected val mOrderPlayAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mOrderPlayAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_order_play_line, "order_play",
         buildServicePendingIntent(
             mContext, 1,
@@ -80,7 +137,7 @@ open class BaseNotification constructor(
                 .putExtra(PlayMode.KEY, PlayMode.ListRecycle.next().value)
         )
     )
-    protected val mSingleRepeatAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mSingleRepeatAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_repeat_one_line, "single_repeat",
         buildServicePendingIntent(
             mContext, 2,
@@ -89,7 +146,7 @@ open class BaseNotification constructor(
                 .putExtra(PlayMode.KEY, PlayMode.RepeatOne.next().value)
         )
     )
-    protected val mShufflePlayAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mShufflePlayAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_shuffle_line, "shuffle_play",
         buildServicePendingIntent(
             mContext, 3,
@@ -98,31 +155,31 @@ open class BaseNotification constructor(
                 .putExtra(PlayMode.KEY, PlayMode.Shuffle.next().value)
         )
     )
-    protected val mPlayAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mPlayAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_play_line, "play",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_PLAY
         )
     )
-    protected val mPauseAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mPauseAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_pause_line, "pause",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_PAUSE
         )
     )
-    protected val mNextAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mNextAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_skip_forward_line, "next",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_SKIP_TO_NEXT
         )
     )
-    protected val mPrevAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mPrevAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_skip_back_line, "previous",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
         )
     )
-    protected val mStopAction: NotificationCompat.Action = NotificationCompat.Action(
+    private val mStopAction: NotificationCompat.Action = NotificationCompat.Action(
         R.drawable.ic_close_line, "stop",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_STOP
