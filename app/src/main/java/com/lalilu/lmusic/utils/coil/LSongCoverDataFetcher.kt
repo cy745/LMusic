@@ -14,8 +14,8 @@ import javax.inject.Singleton
 class LSongCoverDataFetcher @Inject constructor(
     private val netDataRepo: NetDataRepository
 ) : DataFetcher {
-    override fun fetch(id: Any): Flow<Any?> {
-        if (id !is String) return flowOf(id)
+    override fun fetch(id: Any?): Flow<Any?> {
+        if (id == null || id !is String) return flowOf(id)
 
         return netDataRepo.getNetDataFlowById(id).mapLatest {
             it?.requireCoverUri() ?: Library.getSongOrNull(id) ?: id

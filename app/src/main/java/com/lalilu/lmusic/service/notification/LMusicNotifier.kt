@@ -50,24 +50,22 @@ class LMusicNotifier @Inject constructor(
         notificationManager.cancelAll()
 
         notificationBuilderFlow.flatMapLatest { builder ->
-            channelFlow {
-                send(builder?.build())
+            val mediaSession = getMediaSession?.invoke()
+            val mediaId = mediaSession?.getMediaId()
 
-                val mediaId = getMediaSession?.invoke()?.getMediaId() ?: return@channelFlow
-
-                coverDataFetcher.fetch(mediaId).collectLatest {
-                    send(builder?.loadCoverAndPalette(it)?.build())
-                }
-            }.flowOn(Dispatchers.Default)
-        }.debounce(100)
-            .mapLatest { it?.also(this::pushNotification) }
-            .combine(lyricRepo.currentLyricSentence) { notification, sentence ->
-                notification?.apply {
-                    tickerText = sentence
+            coverDataFetcher.fetch(mediaId).mapLatest {
+                builder?.loadCoverAndPalette(mediaSession, it)?.build()
+            }
+        }.combine(lyricRepo.currentLyricSentence) { notification, sentence ->
+            notification?.apply {
+                tickerText = sentence
+                if (flags and FLAG_ALWAYS_SHOW_TICKER != FLAG_ALWAYS_SHOW_TICKER) {
                     flags = flags.or(FLAG_ALWAYS_SHOW_TICKER)
+                } else {
                     flags = flags.or(FLAG_ONLY_UPDATE_TICKER)
                 }
-            }.debounce(50)
+            }
+        }.debounce(50)
             .mapLatest { it?.let(this::pushNotification) }
             .launchIn(this)
     }
