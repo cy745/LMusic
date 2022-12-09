@@ -11,5 +11,7 @@ interface Playback<T> {
         fun onPlayingItemUpdate(item: T?)
         fun onMetadataChanged(metadata: MediaMetadataCompat?)
         fun onPlaybackStateChanged(playbackState: Int, position: Long)
+        fun onSetRepeatMode(repeatMode: Int)
+        fun onSetShuffleMode(shuffleMode: Int)
     }
 }

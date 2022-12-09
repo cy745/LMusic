@@ -103,13 +103,11 @@ class MixPlayback @Inject constructor(
     }
 
     override fun onSetRepeatMode(repeatMode: Int) {
-        println("onSetRepeatMode: $repeatMode")
-//        setRepeatMode(repeatMode)
+        listener?.onSetRepeatMode(repeatMode)
     }
 
     override fun onSetShuffleMode(shuffleMode: Int) {
-        println("onSetShuffleMode: $shuffleMode")
-//        setShuffleMode(shuffleMode)
+        listener?.onSetRepeatMode(shuffleMode)
     }
 
     override fun requestAudioFocus(): Boolean {

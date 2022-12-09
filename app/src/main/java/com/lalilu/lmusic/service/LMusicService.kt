@@ -242,6 +242,16 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             runtime.updatePosition(position, playback.player.isPlaying)
             notifier.update()
         }
+
+        override fun onSetRepeatMode(repeatMode: Int) {
+            mediaSession.setRepeatMode(repeatMode)
+            notifier.update()
+        }
+
+        override fun onSetShuffleMode(shuffleMode: Int) {
+            mediaSession.setShuffleMode(shuffleMode)
+            notifier.update()
+        }
     }
 
     inner class LMusicRuntimeQueue : PlayQueue<LSong> {
