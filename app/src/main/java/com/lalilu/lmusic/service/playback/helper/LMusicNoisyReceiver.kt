@@ -1,31 +1,38 @@
-package com.lalilu.lmusic.service.playback
+package com.lalilu.lmusic.service.playback.helper
 
-import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class LMusicNoisyReceiver(val onBecomingNoisy: () -> Unit = {}) : BroadcastReceiver() {
+@Singleton
+class LMusicNoisyReceiver @Inject constructor(
+    @ApplicationContext private val mContext: Context
+) : BroadcastReceiver() {
+    var onBecomingNoisy: () -> Unit = {}
+
     override fun onReceive(context: Context?, intent: Intent) {
         if (intent.action == ACTION_AUDIO_BECOMING_NOISY) {
             onBecomingNoisy()
         }
     }
 
-    fun registerTo(service: Service) {
-        service.registerReceiver(
+    fun register() {
+        mContext.registerReceiver(
             this@LMusicNoisyReceiver,
             IntentFilter(ACTION_AUDIO_BECOMING_NOISY)
         )
     }
 
-    fun unRegisterFrom(service: Service) {
+    fun unregister() {
         try {
-            service.unregisterReceiver(this@LMusicNoisyReceiver)
+            mContext.unregisterReceiver(this@LMusicNoisyReceiver)
         } catch (e: Exception) {
-            println("unRegisterFrom: ${e.message}")
+            println("unregisterFrom: ${e.message}")
         }
     }
 }
