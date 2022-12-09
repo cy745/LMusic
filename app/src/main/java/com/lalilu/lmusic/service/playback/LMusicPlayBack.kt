@@ -10,6 +10,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.service.playback.helper.FadeVolumeProxy
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.PlayMode
 import java.io.IOException

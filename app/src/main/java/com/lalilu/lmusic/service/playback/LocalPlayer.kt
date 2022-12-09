@@ -3,6 +3,8 @@ package com.lalilu.lmusic.service.playback
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import com.lalilu.lmusic.service.playback.helper.FadeVolumeProxy
+import com.lalilu.lmusic.utils.EQHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
 import javax.inject.Inject
@@ -19,6 +21,7 @@ class LocalPlayer @Inject constructor(
                 setOnPreparedListener(this@LocalPlayer)
                 setOnCompletionListener(this@LocalPlayer)
                 volumeProxy = FadeVolumeProxy(this)
+                EQHelper.audioSessionId = this.audioSessionId
             }
             return field
         }
@@ -76,6 +79,7 @@ class LocalPlayer @Inject constructor(
         player?.reset()
         player?.release()
         player = null
+        EQHelper.audioSessionId = null
         onLStop()
     }
 

@@ -8,6 +8,8 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
+import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,6 +17,7 @@ import javax.inject.Singleton
 class MixPlayback @Inject constructor(
     localPlayer: LocalPlayer,
     remotePlayer: RemotePlayer,
+    private val noisyReceiver: LMusicNoisyReceiver,
     private val audioFocusHelper: LMusicAudioFocusHelper
 ) : MediaSessionCompat.Callback(), Playback<LSong>, Playback.Listener<LSong>, Player.Listener {
     override var listener: Playback.Listener<LSong>? = null
@@ -24,6 +27,7 @@ class MixPlayback @Inject constructor(
         remotePlayer.listener = this
         audioFocusHelper.onPlay = ::onPlay
         audioFocusHelper.onPause = ::onPause
+        noisyReceiver.onBecomingNoisy = ::onPause
     }
 
     override var queue: PlayQueue<LSong>? = null
@@ -118,15 +122,17 @@ class MixPlayback @Inject constructor(
 
     override fun onLStop() {
         onPlayingItemUpdate(null)
+        noisyReceiver.unregister()
         audioFocusHelper.abandonAudioFocus()
         onPlaybackStateChanged(PlaybackStateCompat.STATE_STOPPED, 0L)
     }
 
     override fun onLPlay() {
+        noisyReceiver.register()
     }
 
     override fun onLPause() {
-        audioFocusHelper.abandonAudioFocus()
+        noisyReceiver.unregister()
         onPlaybackStateChanged(PlaybackStateCompat.STATE_PAUSED, player.getPosition())
     }
 
