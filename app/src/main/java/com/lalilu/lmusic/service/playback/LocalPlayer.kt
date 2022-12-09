@@ -85,7 +85,7 @@ class LocalPlayer @Inject constructor(
     }
 
     override fun requestAudioFocus(): Boolean {
-        return true
+        return listener?.requestAudioFocus() ?: true
     }
 
     override fun getPosition(): Long {

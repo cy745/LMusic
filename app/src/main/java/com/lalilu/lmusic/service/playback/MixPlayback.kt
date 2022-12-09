@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.service.playback
 
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
@@ -13,13 +14,16 @@ import javax.inject.Singleton
 @Singleton
 class MixPlayback @Inject constructor(
     localPlayer: LocalPlayer,
-    remotePlayer: RemotePlayer
+    remotePlayer: RemotePlayer,
+    private val audioFocusHelper: LMusicAudioFocusHelper
 ) : MediaSessionCompat.Callback(), Playback<LSong>, Playback.Listener<LSong>, Player.Listener {
     override var listener: Playback.Listener<LSong>? = null
 
     init {
         localPlayer.listener = this
         remotePlayer.listener = this
+        audioFocusHelper.onPlay = ::onPlay
+        audioFocusHelper.onPause = ::onPause
     }
 
     override var queue: PlayQueue<LSong>? = null
@@ -104,12 +108,17 @@ class MixPlayback @Inject constructor(
 //        setShuffleMode(shuffleMode)
     }
 
+    override fun requestAudioFocus(): Boolean {
+        return audioFocusHelper.requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+    }
+
     override fun onLStart() {
         onPlaybackStateChanged(PlaybackStateCompat.STATE_PLAYING, player.getPosition())
     }
 
     override fun onLStop() {
         onPlayingItemUpdate(null)
+        audioFocusHelper.abandonAudioFocus()
         onPlaybackStateChanged(PlaybackStateCompat.STATE_STOPPED, 0L)
     }
 
@@ -117,6 +126,7 @@ class MixPlayback @Inject constructor(
     }
 
     override fun onLPause() {
+        audioFocusHelper.abandonAudioFocus()
         onPlaybackStateChanged(PlaybackStateCompat.STATE_PAUSED, player.getPosition())
     }
 
