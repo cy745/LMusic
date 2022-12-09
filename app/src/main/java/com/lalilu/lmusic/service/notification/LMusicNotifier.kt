@@ -6,10 +6,13 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.os.Build
+import android.support.v4.media.MediaMetadataCompat.METADATA_KEY_MEDIA_ID
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.RequiresApi
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.playback.MixPlayback
+import com.lalilu.lmusic.utils.coil.LSongCoverDataFetcher
+import com.lalilu.lmusic.utils.extension.toUpdatableFlow
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -22,10 +25,18 @@ import kotlin.coroutines.CoroutineContext
 class LMusicNotifier @Inject constructor(
     @ApplicationContext mContext: Context,
     lyricRepo: LyricRepository,
-    playback: MixPlayback
+    playback: MixPlayback,
+    coverDataFetcher: LSongCoverDataFetcher
 ) : BaseNotification(mContext), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
-    private val lastPushTimeFlow = MutableStateFlow(System.currentTimeMillis())
+
+    /**
+     * 创建基础的Notification.Builder,从mediaSession读取基础数据填充
+     */
+    private val notificationBuilderFlow = flow {
+        val mediaSession = getMediaSession?.invoke() ?: return@flow
+        emit(buildMediaNotification(mediaSession = mediaSession, channelId = PLAYER_CHANNEL_ID))
+    }.toUpdatableFlow()
 
     var getMediaSession: (() -> MediaSessionCompat?)? = null
     var getService: (() -> Service?)? = null
@@ -38,14 +49,18 @@ class LMusicNotifier @Inject constructor(
         }
         notificationManager.cancelAll()
 
-        lastPushTimeFlow.mapLatest {
-            val mediaSessionCompat = getMediaSession?.invoke() ?: return@mapLatest null
-            buildMediaNotification(
-                mediaSession = mediaSessionCompat,
-                channelId = PLAYER_CHANNEL_ID
-            )
-        }.debounce(50)
-            .mapLatest { it?.build()?.also(this::pushNotification) }
+        notificationBuilderFlow.flatMapLatest { builder ->
+            channelFlow {
+                send(builder?.build())
+
+                val mediaId = getMediaSession?.invoke()?.getMediaId() ?: return@channelFlow
+
+                coverDataFetcher.fetch(mediaId).collectLatest {
+                    send(builder?.loadCoverAndPalette(it)?.build())
+                }
+            }.flowOn(Dispatchers.Default)
+        }.debounce(100)
+            .mapLatest { it?.also(this::pushNotification) }
             .combine(lyricRepo.currentLyricSentence) { notification, sentence ->
                 notification?.apply {
                     tickerText = sentence
@@ -58,11 +73,15 @@ class LMusicNotifier @Inject constructor(
     }
 
     fun update() {
-        lastPushTimeFlow.tryEmit(System.currentTimeMillis())
+        notificationBuilderFlow.requireUpdate()
     }
 
     fun cancel() {
         cancelNotification(notificationId = NOTIFICATION_PLAYER_ID)
+    }
+
+    private fun MediaSessionCompat.getMediaId(): String? {
+        return controller?.metadata?.getString(METADATA_KEY_MEDIA_ID)
     }
 
     override fun pushNotification(notification: Notification) {

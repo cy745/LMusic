@@ -19,11 +19,14 @@ import com.lalilu.lmusic.service.playback.MixPlayback
 import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
+import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.PlayMode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -306,7 +309,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
         sessionToken = mediaSession.sessionToken
 
-//        settingsDataStore.apply {
+        settingsDataStore.apply {
 //            volumeControl.flow()
 //                .onEach { it?.let(playBack::setMaxVolume) }
 //                .launchIn(this@LMusicService)
@@ -315,9 +318,9 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 //                .onEach { mNotificationManager.statusLyricEnable = it == true }
 //                .launchIn(this@LMusicService)
 //
-//            enableSystemEq.flow()
-//                .onEach { EQHelper.setSystemEqEnable(it ?: false) }
-//                .launchIn(this@LMusicService)
+            enableSystemEq.flow()
+                .onEach { EQHelper.setSystemEqEnable(it ?: false) }
+                .launchIn(this@LMusicService)
 //
 //            playMode.flow()
 //                .onEach {
@@ -328,7 +331,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 //                        playBack.setShuffleMode(shuffleMode)
 //                    }
 //                }.launchIn(this@LMusicService)
-//        }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
