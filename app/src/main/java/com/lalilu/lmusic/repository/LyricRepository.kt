@@ -10,10 +10,7 @@ import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.*
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -57,12 +54,13 @@ class LyricRepository @Inject constructor(
         LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
     }.toCachedFlow()
 
+    @OptIn(FlowPreview::class)
     val currentLyricSentence: Flow<String?> = currentLyricEntry.flatMapLatest { lyrics ->
         runtime.positionFlow.mapLatest {
             findShowLine(lyrics, it + 500)
         }.distinctUntilChanged()
             .mapLatest { lyrics?.get(it)?.text }
-    }
+    }.debounce(100)
 
     val currentLyricLiveData = currentLyric.asLiveData()
 }

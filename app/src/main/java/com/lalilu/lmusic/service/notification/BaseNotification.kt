@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Build
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
@@ -37,7 +38,10 @@ open class BaseNotification constructor(
     /**
      * 加载歌曲封面和提取配色，若已有缓存则直接取用，若无则阻塞获取，需确保调用方不阻塞主要动作
      */
-    protected fun NotificationCompat.Builder.loadCoverAndPalette(data: Any?): NotificationCompat.Builder {
+    protected fun NotificationCompat.Builder.loadCoverAndPalette(
+        mediaSession: MediaSessionCompat?,
+        data: Any?
+    ): NotificationCompat.Builder {
         var bitmap: Bitmap? = null
         var color: Int = Color.TRANSPARENT
 
@@ -70,6 +74,13 @@ open class BaseNotification constructor(
         }
 
         if (bitmap != null) {
+            if (bitmap != emptyBitmap) {
+                mediaSession?.setMetadata(
+                    MediaMetadataCompat.Builder(mediaSession.controller.metadata)
+                        .putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
+                        .build()
+                )
+            }
             this@loadCoverAndPalette.setLargeIcon(bitmap)
             this@loadCoverAndPalette.color = color
         }
