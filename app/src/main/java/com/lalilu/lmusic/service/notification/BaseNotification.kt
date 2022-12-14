@@ -50,8 +50,8 @@ open class BaseNotification constructor(
 
         if (bitmap == null) {
             runBlocking {
-                bitmap = mContext.imageLoader.execute(
-                    ImageRequest.Builder(mContext)
+                bitmap = this@BaseNotification.mContext.imageLoader.execute(
+                    ImageRequest.Builder(this@BaseNotification.mContext)
                         .allowHardware(false)
                         .data(data)
                         .size(400)
