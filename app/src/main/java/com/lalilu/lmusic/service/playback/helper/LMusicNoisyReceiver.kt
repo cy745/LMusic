@@ -10,10 +10,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LMusicNoisyReceiver @Inject constructor(
-    @ApplicationContext private val mContext: Context
-) : BroadcastReceiver() {
+class LMusicNoisyReceiver constructor() : BroadcastReceiver() {
     var onBecomingNoisy: () -> Unit = {}
+    private var mContext: Context? = null
+
+    @Inject
+    constructor(
+        @ApplicationContext context: Context? = null
+    ) : this() {
+        this.mContext = context
+    }
 
     override fun onReceive(context: Context?, intent: Intent) {
         if (intent.action == ACTION_AUDIO_BECOMING_NOISY) {
@@ -22,7 +28,7 @@ class LMusicNoisyReceiver @Inject constructor(
     }
 
     fun register() {
-        mContext.registerReceiver(
+        mContext?.registerReceiver(
             this@LMusicNoisyReceiver,
             IntentFilter(ACTION_AUDIO_BECOMING_NOISY)
         )
@@ -30,7 +36,7 @@ class LMusicNoisyReceiver @Inject constructor(
 
     fun unregister() {
         try {
-            mContext.unregisterReceiver(this@LMusicNoisyReceiver)
+            mContext?.unregisterReceiver(this@LMusicNoisyReceiver)
         } catch (e: Exception) {
             println("unregisterFrom: ${e.message}")
         }
