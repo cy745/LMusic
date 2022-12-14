@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.MediaBrowserServiceCompat
@@ -49,46 +48,6 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var mediaSession: MediaSessionCompat
 
 //    private val playBack: LMusicPlayBack<LSong> = object : LMusicPlayBack<LSong>(this) {
-//        private val noisyReceiver = LMusicNoisyReceiver(this::onPause)
-//        private val audioFocusHelper = LMusicAudioFocusHelper(this@LMusicService) {
-//            when (it) {
-//                AudioManager.AUDIOFOCUS_LOSS,
-//                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-//                    settingsDataStore.apply {
-//                        if (ignoreAudioFocus.get() != true) {
-//                            onPause()
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        /**
-//         * 请求获取音频焦点，若用户设置了忽略音频焦点，则直接返回true
-//         */
-//        override fun requestAudioFocus(): Boolean {
-//            settingsDataStore.apply {
-//                if (ignoreAudioFocus.get() == true) return true
-//            }
-//            return audioFocusHelper.requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-//        }
-//
-//        override fun getUriFromItem(item: LSong): Uri = item.uri
-//        override fun getById(id: String): LSong? = runtime.getSongById(id)
-//        override fun getCurrent(): LSong? = runtime.getPlaying()
-//        override fun getMetaDataFromItem(item: LSong?): MediaMetadataCompat? = item?.metadataCompat
-//
-//        override fun getNext(random: Boolean): LSong? {
-//            if (random) runtime.getRandomNext()?.let { return it }
-//
-//            return runtime.getNextOf(getCurrent(), true)
-//        }
-//
-//        override fun getPrevious(random: Boolean): LSong? {
-//            if (random) runtime.getRandomPrevious()?.let { return it }
-//
-//            return runtime.getPreviousOf(getCurrent(), true)
-//        }
 //
 //        override fun getMaxVolume(): Int = settingsDataStore.run {
 //            volumeControl.get() ?: Config.DEFAULT_SETTINGS_VOLUME_CONTROL
@@ -97,36 +56,6 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 //        override fun getCurrentPlayMode(): PlayMode {
 //            return settingsDataStore.run {
 //                PlayMode.of(playMode.get() ?: Config.DEFAULT_SETTINGS_PLAY_MODE)
-//            }
-//        }
-//
-//        override fun onPlayingItemUpdate(item: LSong?) {
-//            runtime.updatePlaying(item)
-//        }
-//
-//        val synchronizer = CoroutineSynchronizer()
-//        override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-//            mediaSession.setMetadata(metadata)
-//            metadata ?: return
-//
-//            launch {
-//                val count = synchronizer.getCount()
-//
-//                synchronizer.checkCount(count)
-//                val bitmap = this@LMusicService.imageLoader.execute(
-//                    ImageRequest.Builder(this@LMusicService)
-//                        .allowHardware(false)
-//                        .data(getCurrent())
-//                        .size(400)
-//                        .build()
-//                ).drawable?.toBitmap()
-//
-//                synchronizer.checkCount(count)
-//                mediaSession.setMetadata(
-//                    MediaMetadataCompat.Builder(metadata)
-//                        .putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
-//                        .build()
-//                )
 //            }
 //        }
 //
@@ -212,16 +141,20 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     inner class PlaybackListener : Playback.Listener<LSong> {
         override fun onPlayingItemUpdate(item: LSong?) {
             runtime.updatePlaying(item)
-            onMetadataChanged(item?.metadataCompat)
-        }
-
-        override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-            mediaSession.setMetadata(metadata)
+            mediaSession.setMetadata(item?.metadataCompat)
             notifier.update()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int, position: Long) {
-            println("[playbackState]: $playbackState, $position")
+            runtime.isPlaying = playback.player?.isPlaying ?: false
+            runtime.updatePosition(position, runtime.isPlaying)
+            mediaSession.setPlaybackState(
+                PlaybackStateCompat.Builder()
+                    .setActions(MEDIA_DEFAULT_ACTION)
+                    .setState(playbackState, position, 1f)
+                    .build()
+            )
+
             if (playbackState == PlaybackStateCompat.STATE_PLAYING) {
                 mediaSession.isActive = true
                 startService(Intent(this@LMusicService, LMusicService::class.java))
@@ -235,14 +168,6 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                 notifier.cancel()
                 stopSelf()
             }
-            mediaSession.setPlaybackState(
-                PlaybackStateCompat.Builder()
-                    .setActions(MEDIA_DEFAULT_ACTION)
-                    .setState(playbackState, position, 1f)
-                    .build()
-            )
-            runtime.isPlaying = playback.player.isPlaying
-            runtime.updatePosition(position, playback.player.isPlaying)
             notifier.update()
         }
 
@@ -321,16 +246,16 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             enableSystemEq.flow()
                 .onEach { EQHelper.setSystemEqEnable(it ?: false) }
                 .launchIn(this@LMusicService)
-//
-//            playMode.flow()
-//                .onEach {
-//                    it ?: return@onEach
-//
-//                    PlayMode.of(it).apply {
-//                        playBack.setRepeatMode(repeatMode)
-//                        playBack.setShuffleMode(shuffleMode)
-//                    }
-//                }.launchIn(this@LMusicService)
+
+            playMode.flow()
+                .onEach {
+                    it ?: return@onEach
+
+                    PlayMode.of(it).apply {
+                        playback.onSetRepeatMode(repeatMode)
+                        playback.onSetRepeatMode(shuffleMode)
+                    }
+                }.launchIn(this@LMusicService)
         }
     }
 
