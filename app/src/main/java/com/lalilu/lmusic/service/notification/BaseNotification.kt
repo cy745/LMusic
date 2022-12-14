@@ -213,11 +213,11 @@ open class BaseNotification constructor(
         )
     }
 
-    open fun pushNotification(notification: Notification) {
+    protected open fun pushNotification(notification: Notification) {
         notificationManager.notify(NOTIFICATION_PLAYER_ID, notification)
     }
 
-    open fun cancelNotification(notificationId: Int) {
+    protected open fun cancelNotification(notificationId: Int) {
         notificationManager.cancel(notificationId)
     }
 }

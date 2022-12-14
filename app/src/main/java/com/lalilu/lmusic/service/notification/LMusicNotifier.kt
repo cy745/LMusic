@@ -34,14 +34,18 @@ class LMusicNotifier @Inject constructor(
      * 创建基础的Notification.Builder,从mediaSession读取基础数据填充
      */
     private val notificationBuilderFlow = flow {
-        val mediaSession = getMediaSession?.invoke() ?: return@flow
-        emit(buildMediaNotification(mediaSession = mediaSession, channelId = PLAYER_CHANNEL_ID))
+        val mediaSession = getMediaSession.invoke() ?: return@flow
+        val builder = buildMediaNotification(
+            mediaSession = mediaSession,
+            channelId = PLAYER_CHANNEL_ID
+        )
+        emit(builder)
     }.toUpdatableFlow()
 
-    var getMediaSession: (() -> MediaSessionCompat?)? = null
-    var getService: (() -> Service?)? = null
-    private var getIsPlaying: () -> Boolean = playback.player::isPlaying
-    private var getIsStop: () -> Boolean = playback.player::isStopped
+    var getService: () -> Service? = { null }
+    var getMediaSession: () -> MediaSessionCompat? = { null }
+    private var getIsPlaying: () -> Boolean = { playback.player?.isPlaying ?: false }
+    private var getIsStop: () -> Boolean = { playback.player?.isStopped ?: true }
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -49,8 +53,8 @@ class LMusicNotifier @Inject constructor(
         }
         notificationManager.cancelAll()
 
-        notificationBuilderFlow.flatMapLatest { builder ->
-            val mediaSession = getMediaSession?.invoke()
+        notificationBuilderFlow.debounce(50).flatMapLatest { builder ->
+            val mediaSession = getMediaSession.invoke()
             val mediaId = mediaSession?.getMediaId()
 
             coverDataFetcher.fetch(mediaId).mapLatest {
@@ -86,7 +90,7 @@ class LMusicNotifier @Inject constructor(
         val isStopped = getIsStop.invoke()
         if (isStopped) return
 
-        val service = getService?.invoke()
+        val service = getService.invoke()
         val isPlaying = getIsPlaying.invoke()
         if (service != null && isPlaying) {
             service.startForeground(NOTIFICATION_PLAYER_ID, notification)

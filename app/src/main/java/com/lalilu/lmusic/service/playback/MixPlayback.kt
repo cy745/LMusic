@@ -3,11 +3,11 @@ package com.lalilu.lmusic.service.playback
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
 import javax.inject.Inject
@@ -18,7 +18,8 @@ class MixPlayback @Inject constructor(
     localPlayer: LocalPlayer,
     remotePlayer: RemotePlayer,
     private val noisyReceiver: LMusicNoisyReceiver,
-    private val audioFocusHelper: LMusicAudioFocusHelper
+    private val audioFocusHelper: LMusicAudioFocusHelper,
+    private val settingsDataStore: SettingsDataStore
 ) : MediaSessionCompat.Callback(), Playback<LSong>, Playback.Listener<LSong>, Player.Listener {
     override var listener: Playback.Listener<LSong>? = null
 
@@ -31,15 +32,24 @@ class MixPlayback @Inject constructor(
     }
 
     override var queue: PlayQueue<LSong>? = null
-    override val player: Player = localPlayer
+    override var player: Player? = localPlayer
+
+    override fun changeToPlayer(changeTo: Player) {
+        player?.takeIf { !it.isStopped }?.let {
+            it.listener = null
+            it.stop()
+        }
+        player = changeTo
+        changeTo.listener = this
+    }
 
     override fun onPause() {
-        player.pause()
+        player?.pause()
     }
 
     override fun onPlay() {
-        if (player.isPrepared) {
-            player.play()
+        if (player?.isPrepared == true) {
+            player?.play()
         } else {
             val item = queue?.getCurrent() ?: return
             val uri = queue?.getUriFromItem(item) ?: return
@@ -51,7 +61,7 @@ class MixPlayback @Inject constructor(
     }
 
     override fun onPlayFromUri(uri: Uri, extras: Bundle?) {
-        player.load(uri, true)
+        player?.load(uri, true)
     }
 
     override fun onPlayFromMediaId(mediaId: String, extras: Bundle?) {
@@ -82,18 +92,18 @@ class MixPlayback @Inject constructor(
     }
 
     override fun onSeekTo(pos: Long) {
-        player.seekTo(pos)
+        player?.seekTo(pos)
     }
 
     override fun onStop() {
-        player.stop()
+        player?.stop()
     }
 
     override fun onCustomAction(action: String?, extras: Bundle?) {
         println("onCustomAction: $action")
         when (action) {
             Config.ACTION_PLAY_AND_PAUSE -> {
-                if (player.isPlaying) onPause() else onPlay()
+                if (player?.isPlaying == true) onPause() else onPlay()
             }
 //            Config.ACTION_RELOAD_AND_PLAY -> {
 //                isPrepared = false
@@ -115,7 +125,10 @@ class MixPlayback @Inject constructor(
     }
 
     override fun onLStart() {
-        onPlaybackStateChanged(PlaybackStateCompat.STATE_PLAYING, player.getPosition())
+        onPlaybackStateChanged(
+            playbackState = PlaybackStateCompat.STATE_PLAYING,
+            position = player?.getPosition() ?: 0L
+        )
     }
 
     override fun onLStop() {
@@ -131,7 +144,10 @@ class MixPlayback @Inject constructor(
 
     override fun onLPause() {
         noisyReceiver.unregister()
-        onPlaybackStateChanged(PlaybackStateCompat.STATE_PAUSED, player.getPosition())
+        onPlaybackStateChanged(
+            playbackState = PlaybackStateCompat.STATE_PAUSED,
+            position = player?.getPosition() ?: 0L
+        )
     }
 
     override fun onLSeekTo(newDurationMs: Number) {
@@ -147,10 +163,6 @@ class MixPlayback @Inject constructor(
 
     override fun onPlayingItemUpdate(item: LSong?) {
         listener?.onPlayingItemUpdate(item)
-    }
-
-    override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-        listener?.onMetadataChanged(metadata)
     }
 
     override fun onPlaybackStateChanged(playbackState: Int, position: Long) {
