@@ -2,9 +2,11 @@ package com.lalilu.lmusic.service
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.media.browse.MediaBrowser.MediaItem.FLAG_BROWSABLE
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.MediaBrowserServiceCompat
@@ -46,97 +48,6 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var notifier: LMusicNotifier
 
     lateinit var mediaSession: MediaSessionCompat
-
-//    private val playBack: LMusicPlayBack<LSong> = object : LMusicPlayBack<LSong>(this) {
-//
-//        override fun getMaxVolume(): Int = settingsDataStore.run {
-//            volumeControl.get() ?: Config.DEFAULT_SETTINGS_VOLUME_CONTROL
-//        }
-//
-//        override fun getCurrentPlayMode(): PlayMode {
-//            return settingsDataStore.run {
-//                PlayMode.of(playMode.get() ?: Config.DEFAULT_SETTINGS_PLAY_MODE)
-//            }
-//        }
-//
-//        override fun onPlaybackStateChanged(@PlaybackStateCompat.State playbackState: Int) {
-//            when (playbackState) {
-//                PlaybackStateCompat.STATE_STOPPED -> {
-//                    runtime.updatePosition(0, false)
-//                    runtime.isPlaying = false
-//
-//                    noisyReceiver.unRegisterFrom(this@LMusicService)
-//                    audioFocusHelper.abandonAudioFocus()
-//
-//                    mediaSession.isActive = false
-//                    mediaSession.setPlaybackState(MEDIA_STOPPED_STATE)
-//
-//                    stopSelf()
-//                    mNotificationManager.cancel()
-//                }
-//
-//                PlaybackStateCompat.STATE_BUFFERING,
-//                PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS,
-//                PlaybackStateCompat.STATE_SKIPPING_TO_NEXT -> {
-//                    // 更新进度，进度置0
-//                    mediaSession.setPlaybackState(
-//                        PlaybackStateCompat.Builder()
-//                            .setActions(MEDIA_DEFAULT_ACTION)
-//                            .setState(playbackState, 0, 1f)
-//                            .build()
-//                    )
-//                }
-//
-//                PlaybackStateCompat.STATE_PAUSED -> {
-//                    // 更新进度
-//                    mediaSession.setPlaybackState(
-//                        PlaybackStateCompat.Builder()
-//                            .setActions(MEDIA_DEFAULT_ACTION)
-//                            .setState(playbackState, getPosition(), 1f)
-//                            .build()
-//                    )
-//
-//                    mediaSession.isActive = false
-//                    mNotificationManager.update()
-//                    noisyReceiver.unRegisterFrom(this@LMusicService)
-//                    audioFocusHelper.abandonAudioFocus()
-//                    this@LMusicService.stopForeground(false)
-//
-//                    runtime.updatePosition(getPosition(), getIsPlaying())
-//                    runtime.isPlaying = false
-//                }
-//
-//                PlaybackStateCompat.STATE_PLAYING -> {
-//                    // 更新进度
-//                    mediaSession.setPlaybackState(
-//                        PlaybackStateCompat.Builder()
-//                            .setActions(MEDIA_DEFAULT_ACTION)
-//                            .setState(playbackState, getPosition(), 1f)
-//                            .build()
-//                    )
-//
-//                    mediaSession.isActive = true
-//                    startService(Intent(this@LMusicService, LMusicService::class.java))
-//                    mNotificationManager.update()
-//
-//                    noisyReceiver.registerTo(this@LMusicService)
-//
-//                    runtime.updatePosition(getPosition(), getIsPlaying())
-//                    runtime.isPlaying = true
-//                }
-//            }
-//        }
-//
-//        override fun setRepeatMode(repeatMode: Int) {
-//            mediaSession.setRepeatMode(repeatMode)
-//            mNotificationManager.update()
-//        }
-//
-//        override fun setShuffleMode(shuffleMode: Int) {
-//            mediaSession.setShuffleMode(shuffleMode)
-//            mNotificationManager.update()
-//        }
-//    }
 
     inner class PlaybackListener : Playback.Listener<LSong> {
         override fun onPlayingItemUpdate(item: LSong?) {

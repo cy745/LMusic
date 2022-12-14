@@ -1,84 +1,74 @@
 package com.lalilu.lmusic.service.playback.helper
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
 import android.media.MediaPlayer
+import android.os.CountDownTimer
 import androidx.annotation.IntRange
-import androidx.dynamicanimation.animation.FloatPropertyCompat
 
 class FadeVolumeProxy(
-    private val player: MediaPlayer
+    private val mPlayer: MediaPlayer,
+    private var mDuration: Long = 500L
 ) {
-    private var maxVolume = 1f
-    private var nowVolume = 0f
-    private var valueAnimator: ValueAnimator? = null
-
     fun setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
         maxVolume = (volume / 100f).coerceIn(0f, 1f)
-        if (valueAnimator?.isRunning == true || !player.isPlaying) return
-
-        player.setVolume(maxVolume, maxVolume)
+        mPlayer.setVolume(maxVolume, maxVolume)
         nowVolume = maxVolume
     }
 
-    fun fadeStart(@IntRange(from = 0, to = 100) volume: Int = 100) {
-        maxVolume = (volume / 100f).coerceIn(0f, 1f)
-        if (valueAnimator == null) reCreateAnimation()
-        valueAnimator?.cancel()
-        if (!player.isPlaying) player.start()
-        valueAnimator?.start()
-    }
+    private var countDownTimer: CountDownTimer? = null
+    private var nowVolume = 0f
+    private var maxVolume = 1f
 
-    fun fadePause() {
-        if (valueAnimator == null) reCreateAnimation()
-        valueAnimator?.cancel()
-        valueAnimator?.reverse()
-    }
+    fun fadeStart(
+        duration: Long = mDuration,
+        onFinished: () -> Unit = {}
+    ) {
+        countDownTimer?.cancel()
 
-    private fun reCreateAnimation() {
-        valueAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-            var isReversed = false
-            var startValue = 0f
+        mPlayer.start()
+        val startValue = nowVolume
+        countDownTimer = object : CountDownTimer(duration, duration / 10L) {
+            override fun onTick(millisUntilFinished: Long) {
+                val fraction = 1f - millisUntilFinished * 1.0f / duration
+                val volume = lerp(start = startValue, stop = maxVolume, fraction = fraction)
+                    .coerceIn(0f, 1f)
+                nowVolume = volume
+                mPlayer.setVolume(volume, volume)
+            }
 
-            this.addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator, isReverse: Boolean) {
-                    startValue = volumePropertyCompat.getValue(player)
-                    isReversed = isReverse
-                }
-
-                override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
-                    if (isReverse && animatedValue as Float == 0f) {
-                        player.pause()
-                    }
-                }
-            })
-            this.addUpdateListener {
-                var value = it.animatedValue as Float
-
-                // 暂停 1f -> 0f
-                if (isReversed) {
-                    value *= startValue
-                    volumePropertyCompat.setValue(player, value)
-                    return@addUpdateListener
-                }
-
-                // 播放 0f -> 1f
-                value = startValue + (1 - startValue) * value
-                volumePropertyCompat.setValue(player, value * maxVolume)
+            override fun onFinish() {
+                mPlayer.setVolume(maxVolume, maxVolume)
+                onFinished()
             }
         }
+        countDownTimer?.start()
     }
 
-    private val volumePropertyCompat =
-        object : FloatPropertyCompat<MediaPlayer>("volume") {
-            override fun getValue(`object`: MediaPlayer?): Float {
-                return nowVolume
+    fun fadePause(
+        duration: Long = mDuration,
+        onFinished: () -> Unit = {}
+    ) {
+        countDownTimer?.cancel()
+
+        val startValue = nowVolume
+        countDownTimer = object : CountDownTimer(duration, duration / 10L) {
+            override fun onTick(millisUntilFinished: Long) {
+                val fraction = 1f - millisUntilFinished * 1.0f / duration
+                val volume = lerp(start = startValue, stop = 0f, fraction = fraction)
+                    .coerceIn(0f, maxVolume)
+                nowVolume = volume
+                mPlayer.setVolume(volume, volume)
             }
 
-            override fun setValue(`object`: MediaPlayer?, value: Float) {
-                `object`?.setVolume(value, value)
-                nowVolume = value
+            override fun onFinish() {
+                mPlayer.setVolume(0f, 0f)
+                mPlayer.pause()
+                onFinished()
             }
         }
+        countDownTimer?.start()
+    }
+
+    private fun lerp(start: Float, stop: Float, fraction: Float): Float {
+        return (1f - fraction) * start + fraction * stop
+    }
 }

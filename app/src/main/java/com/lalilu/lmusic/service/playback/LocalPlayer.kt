@@ -17,12 +17,7 @@ class LocalPlayer @Inject constructor(
     private var volumeProxy: FadeVolumeProxy? = null
     private var player: MediaPlayer? = null
         get() {
-            field = field ?: MediaPlayer().apply {
-                setOnPreparedListener(this@LocalPlayer)
-                setOnCompletionListener(this@LocalPlayer)
-                volumeProxy = FadeVolumeProxy(this)
-                EQHelper.audioSessionId = this.audioSessionId
-            }
+            field = field ?: createPlayer()
             return field
         }
 
@@ -32,15 +27,33 @@ class LocalPlayer @Inject constructor(
     override var isStopped: Boolean = true
     private var startWhenReady: Boolean = false
 
+    private fun createPlayer(): MediaPlayer {
+        return MediaPlayer().apply {
+            setOnPreparedListener(this@LocalPlayer)
+            setOnCompletionListener(this@LocalPlayer)
+            volumeProxy = FadeVolumeProxy(this)
+            EQHelper.audioSessionId = this.audioSessionId
+        }
+    }
 
     override fun load(uri: Uri, startWhenReady: Boolean) {
         try {
             this.startWhenReady = startWhenReady
+            val oldPlayer = player
+            val oldVolumeProxy = volumeProxy
+
             isPlaying = false
             isStopped = false
+            player = createPlayer()
             player?.reset()
             player?.setDataSource(context, uri)
             player?.prepareAsync()
+
+            oldVolumeProxy?.fadePause(duration = 800L) {
+                oldPlayer?.stop()
+                oldPlayer?.reset()
+                oldPlayer?.release()
+            }
         } catch (e: IOException) {
             onLStop()
             println("播放失败：歌曲文件不存在")
@@ -54,7 +67,7 @@ class LocalPlayer @Inject constructor(
             // 请求音频焦点，失败则取消播放
             if (!requestAudioFocus()) return
 
-            if (player?.isPlaying == false) {
+            if (!isPlaying) {
                 isPlaying = true
                 isStopped = false
                 volumeProxy?.fadeStart()

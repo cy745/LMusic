@@ -24,17 +24,18 @@ class MixPlayback @Inject constructor(
     override var listener: Playback.Listener<LSong>? = null
 
     init {
-        localPlayer.listener = this
-        remotePlayer.listener = this
+        changeToPlayer(localPlayer)
         audioFocusHelper.onPlay = ::onPlay
         audioFocusHelper.onPause = ::onPause
         noisyReceiver.onBecomingNoisy = ::onPause
     }
 
     override var queue: PlayQueue<LSong>? = null
-    override var player: Player? = localPlayer
+    override var player: Player? = null
 
     override fun changeToPlayer(changeTo: Player) {
+        if (player == changeTo) return
+
         player?.takeIf { !it.isStopped }?.let {
             it.listener = null
             it.stop()
@@ -100,15 +101,15 @@ class MixPlayback @Inject constructor(
     }
 
     override fun onCustomAction(action: String?, extras: Bundle?) {
-        println("onCustomAction: $action")
+        println("[onCustomAction]: $action")
         when (action) {
             Config.ACTION_PLAY_AND_PAUSE -> {
                 if (player?.isPlaying == true) onPause() else onPlay()
             }
-//            Config.ACTION_RELOAD_AND_PLAY -> {
-//                isPrepared = false
-//                onPlay()
-//            }
+            Config.ACTION_RELOAD_AND_PLAY -> {
+                player?.isPrepared = false
+                onPlay()
+            }
         }
     }
 
