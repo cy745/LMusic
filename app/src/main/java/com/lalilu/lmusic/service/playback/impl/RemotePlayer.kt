@@ -1,7 +1,8 @@
-package com.lalilu.lmusic.service.playback
+package com.lalilu.lmusic.service.playback.impl
 
 import android.content.Context
 import android.net.Uri
+import com.lalilu.lmusic.service.playback.Player
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton

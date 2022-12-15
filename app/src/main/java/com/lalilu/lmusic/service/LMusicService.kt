@@ -2,11 +2,9 @@ package com.lalilu.lmusic.service
 
 import android.app.PendingIntent
 import android.content.Intent
-import android.media.browse.MediaBrowser.MediaItem.FLAG_BROWSABLE
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.MediaBrowserServiceCompat
@@ -16,7 +14,7 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
 import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.service.notification.LMusicNotifier
-import com.lalilu.lmusic.service.playback.MixPlayback
+import com.lalilu.lmusic.service.playback.impl.MixPlayback
 import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
