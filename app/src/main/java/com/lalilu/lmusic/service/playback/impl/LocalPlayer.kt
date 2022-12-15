@@ -1,8 +1,9 @@
-package com.lalilu.lmusic.service.playback
+package com.lalilu.lmusic.service.playback.impl
 
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import com.lalilu.lmusic.service.playback.Player
 import com.lalilu.lmusic.service.playback.helper.FadeVolumeProxy
 import com.lalilu.lmusic.utils.EQHelper
 import dagger.hilt.android.qualifiers.ApplicationContext

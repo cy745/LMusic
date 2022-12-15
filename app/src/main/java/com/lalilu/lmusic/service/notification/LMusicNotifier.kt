@@ -10,7 +10,7 @@ import android.support.v4.media.MediaMetadataCompat.METADATA_KEY_MEDIA_ID
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.RequiresApi
 import com.lalilu.lmusic.repository.LyricRepository
-import com.lalilu.lmusic.service.playback.MixPlayback
+import com.lalilu.lmusic.service.playback.impl.MixPlayback
 import com.lalilu.lmusic.utils.coil.LSongCoverDataFetcher
 import com.lalilu.lmusic.utils.extension.toUpdatableFlow
 import dagger.hilt.android.qualifiers.ApplicationContext
