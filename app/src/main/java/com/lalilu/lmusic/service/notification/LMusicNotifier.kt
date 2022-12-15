@@ -9,9 +9,9 @@ import android.os.Build
 import android.support.v4.media.MediaMetadataCompat.METADATA_KEY_MEDIA_ID
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.RequiresApi
+import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.playback.impl.MixPlayback
-import com.lalilu.lmusic.utils.coil.LSongCoverDataFetcher
 import com.lalilu.lmusic.utils.extension.toUpdatableFlow
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
@@ -26,7 +26,7 @@ class LMusicNotifier @Inject constructor(
     @ApplicationContext mContext: Context,
     lyricRepo: LyricRepository,
     playback: MixPlayback,
-    coverDataFetcher: LSongCoverDataFetcher
+    coverRepo: CoverRepository
 ) : BaseNotification(mContext), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
 
@@ -57,7 +57,7 @@ class LMusicNotifier @Inject constructor(
             val mediaSession = getMediaSession.invoke()
             val mediaId = mediaSession?.getMediaId()
 
-            coverDataFetcher.fetch(mediaId).mapLatest {
+            coverRepo.fetch(mediaId).mapLatest {
                 builder?.loadCoverAndPalette(mediaSession, it)?.build()
             }
         }.combine(lyricRepo.currentLyricSentence) { notification, sentence ->
