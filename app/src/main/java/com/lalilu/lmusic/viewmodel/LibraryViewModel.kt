@@ -28,26 +28,16 @@ class LibraryViewModel @Inject constructor(
     private val libraryRepo: LibraryRepository,
 ) : ViewModel() {
     private val sortRuleFlow = settingsDataStore.run {
-        songsSortRule.flow().mapLatest {
-            println("mapLatest:SortRule $it")
-            SortRule.from(it)
-        }
+        songsSortRule.flow().mapLatest { SortRule.from(it) }
     }
 
     private val orderRuleFlow = settingsDataStore.run {
-        songsOrderRule.flow().mapLatest {
-            println("mapLatest:OrderRule $it")
-            OrderRule.from(it)
-        }
+        songsOrderRule.flow().mapLatest { OrderRule.from(it) }
     }
 
     private val groupRuleFlow = settingsDataStore.run {
-        songsGroupRule.flow().mapLatest {
-            println("mapLatest:GroupRule $it")
-            GroupRule.from(it)
-        }
+        songsGroupRule.flow().mapLatest { GroupRule.from(it) }
     }
-
 
     val supportSortRules = listOf(
         SortRule.Normal,
