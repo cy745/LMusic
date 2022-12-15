@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -24,6 +25,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.TimeUtils
 import com.funny.data_saver.core.rememberDataSaverState
+import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
@@ -116,15 +118,36 @@ fun SongsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
             ) {
-                libraryVM.supportSortRules.forEach {
-                    Text(
-                        modifier = Modifier
-                            .background(color = if (it.name == sortRule) dayNightTextColor(0.2f) else Color.Transparent)
-                            .padding(vertical = 5.dp)
-                            .clickable { sortRule = it.name }
-                            .fillMaxWidth(),
-                        text = it.name
-                    )
+                Button(onClick = {
+                    SmartBar.setExtraBar {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            SongCard(
+                                title = { "歌曲名称" },
+                                subTitle = { "歌手名称" },
+                                mimeType = { "mpeg/mp3" },
+                                duration = { 3000L },
+                                imageData = { R.drawable.ic_music_line_bg_48dp },
+                                hasLyric = { true }
+                            )
+
+                            libraryVM.supportSortRules.forEach {
+                                Text(
+                                    modifier = Modifier
+                                        .background(
+                                            color = if (it.name == sortRule) dayNightTextColor(
+                                                0.2f
+                                            ) else Color.Transparent
+                                        )
+                                        .padding(vertical = 5.dp)
+                                        .clickable { sortRule = it.name }
+                                        .fillMaxWidth(),
+                                    text = it.name
+                                )
+                            }
+                        }
+                    }
+                }) {
+                    Text(text = "选择排序")
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 libraryVM.supportOrderRules.forEach {
