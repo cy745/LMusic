@@ -25,11 +25,11 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.TimeUtils
 import com.funny.data_saver.core.rememberDataSaverState
-import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
+import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
@@ -52,13 +52,6 @@ fun SongsScreen(
     val windowSize = LocalWindowSize.current
     val gridState = rememberLazyGridState()
 
-    var sortRule by rememberDataSaverState(key = "SONGS_SORT_RULE", default = SortRule.Normal.name)
-    var orderRule by rememberDataSaverState(key = "SONGS_ORDER_RULE", default = OrderRule.ASC.name)
-    var groupRule by rememberDataSaverState(
-        key = "SONGS_GROUP_RULE",
-        default = GroupRule.Normal.name
-    )
-
     val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
@@ -73,8 +66,7 @@ fun SongsScreen(
 
     val selectedItems = remember { mutableStateListOf<LSong>() }
     val selector = rememberSelectState(
-        defaultState = false,
-        selectedItems = selectedItems
+        defaultState = false, selectedItems = selectedItems
     )
 
     LaunchedEffect(selector.isSelecting.value) {
@@ -87,17 +79,13 @@ fun SongsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    IconTextButton(
-                        text = "取消",
+                    IconTextButton(text = "取消",
                         color = Color(0xFF006E7C),
-                        onClick = { selector.clear() }
-                    )
+                        onClick = { selector.clear() })
                     Text(text = "已选择: ${selectedItems.size}")
-                    IconTextButton(
-                        text = "添加到歌单",
+                    IconTextButton(text = "添加到歌单",
                         color = Color(0xFF006E7C),
-                        onClick = { navToAddToPlaylist(selectedItems) }
-                    )
+                        onClick = { navToAddToPlaylist(selectedItems) })
                 }
             }
         } else {
@@ -120,77 +108,23 @@ fun SongsScreen(
             ) {
                 Button(onClick = {
                     SmartBar.setExtraBar {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            SongCard(
-                                title = { "歌曲名称" },
-                                subTitle = { "歌手名称" },
-                                mimeType = { "mpeg/mp3" },
-                                duration = { 3000L },
-                                imageData = { R.drawable.ic_music_line_bg_48dp },
-                                hasLyric = { true }
-                            )
-
-                            libraryVM.supportSortRules.forEach {
-                                Text(
-                                    modifier = Modifier
-                                        .background(
-                                            color = if (it.name == sortRule) dayNightTextColor(
-                                                0.2f
-                                            ) else Color.Transparent
-                                        )
-                                        .padding(vertical = 5.dp)
-                                        .clickable { sortRule = it.name }
-                                        .fillMaxWidth(),
-                                    text = it.name
-                                )
-                            }
-                        }
+                        SortBar(libraryVM = libraryVM, sortFor = Sortable.SORT_FOR_SONGS)
                     }
                 }) {
                     Text(text = "选择排序")
                 }
-                Spacer(modifier = Modifier.height(20.dp))
-                libraryVM.supportOrderRules.forEach {
-                    Text(
-                        modifier = Modifier
-                            .background(color = if (it.name == orderRule) dayNightTextColor(0.2f) else Color.Transparent)
-                            .padding(vertical = 5.dp)
-                            .clickable { orderRule = it.name }
-                            .fillMaxWidth(),
-                        text = it.name
-                    )
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                libraryVM.supportGroupRules.forEach {
-                    Text(
-                        modifier = Modifier
-                            .background(color = if (it.name == groupRule) dayNightTextColor(0.2f) else Color.Transparent)
-                            .padding(vertical = 5.dp)
-                            .clickable { groupRule = it.name }
-                            .fillMaxWidth(),
-                        text = it.name
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
             }
         }
 
         songs.forEach { (titleObj, list) ->
             if (titleObj is Long) {
-                item(
-                    key = titleObj,
+                item(key = titleObj,
                     contentType = LSong::dateAdded,
-                    span = { GridItemSpan(maxLineSpan) }
-                ) {
+                    span = { GridItemSpan(maxLineSpan) }) {
                     Text(
                         modifier = Modifier.padding(
-                            top = 20.dp,
-                            bottom = 10.dp,
-                            start = 20.dp,
-                            end = 20.dp
-                        ),
-                        style = MaterialTheme.typography.h6,
-                        text = when {
+                            top = 20.dp, bottom = 10.dp, start = 20.dp, end = 20.dp
+                        ), style = MaterialTheme.typography.h6, text = when {
                             now - titleObj < 300000 -> "刚刚"
                             now - titleObj < 3600000 -> "${(now - titleObj) / 60000}分钟前"
                             now - titleObj < 86400000 -> "${(now - titleObj) / 3600000}小时前"
@@ -199,31 +133,19 @@ fun SongsScreen(
                     )
                 }
             } else if (titleObj is String && titleObj.isNotEmpty()) {
-                item(
-                    key = titleObj,
+                item(key = titleObj,
                     contentType = LSong::dateAdded,
-                    span = { GridItemSpan(maxLineSpan) }
-                ) {
+                    span = { GridItemSpan(maxLineSpan) }) {
                     Text(
                         modifier = Modifier.padding(
-                            top = 20.dp,
-                            bottom = 10.dp,
-                            start = 20.dp,
-                            end = 20.dp
-                        ),
-                        style = MaterialTheme.typography.h6,
-                        text = titleObj
+                            top = 20.dp, bottom = 10.dp, start = 20.dp, end = 20.dp
+                        ), style = MaterialTheme.typography.h6, text = titleObj
                     )
                 }
             }
 
-            items(
-                items = list,
-                key = { it.id },
-                contentType = { LSong::class }
-            ) { item ->
-                SongCard(
-                    modifier = Modifier.animateItemPlacement(),
+            items(items = list, key = { it.id }, contentType = { LSong::class }) { item ->
+                SongCard(modifier = Modifier.animateItemPlacement(),
                     song = { item },
                     lyricRepository = playingVM.lyricRepository,
                     onClick = {
@@ -235,7 +157,74 @@ fun SongsScreen(
                     },
                     onLongClick = { navToSongAction(item.id) },
                     onEnterSelect = { selector.onSelected(item) },
-                    isSelected = { selectedItems.any { it.id == item.id } }
+                    isSelected = { selectedItems.any { it.id == item.id } })
+            }
+        }
+    }
+}
+
+@Composable
+fun SortBar(
+    libraryVM: LibraryViewModel, sortFor: String = Sortable.SORT_FOR_SONGS
+) {
+    var sortRule by rememberDataSaverState(
+        key = "${sortFor}_SORT_RULE", default = SortRule.Normal.name
+    )
+    var orderRule by rememberDataSaverState(
+        key = "${sortFor}_ORDER_RULE", default = OrderRule.ASC.name
+    )
+    var groupRule by rememberDataSaverState(
+        key = "${sortFor}_GROUP_RULE", default = GroupRule.Normal.name
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        Column {
+            libraryVM.supportSortRules.forEach {
+                Text(
+                    modifier = Modifier
+                        .background(
+                            color = if (it.name == sortRule) dayNightTextColor(
+                                0.2f
+                            ) else Color.Transparent
+                        )
+                        .padding(vertical = 5.dp)
+                        .clickable { sortRule = it.name },
+                    text = it.name
+                )
+            }
+        }
+        Column {
+            libraryVM.supportOrderRules.forEach {
+                Text(
+                    modifier = Modifier
+                        .background(
+                            color = if (it.name == orderRule) dayNightTextColor(
+                                0.2f
+                            ) else Color.Transparent
+                        )
+                        .padding(vertical = 5.dp)
+                        .clickable { orderRule = it.name },
+                    text = it.name
+                )
+            }
+        }
+        Column {
+            libraryVM.supportGroupRules.forEach {
+                Text(
+                    modifier = Modifier
+                        .background(
+                            color = if (it.name == groupRule) dayNightTextColor(
+                                0.2f
+                            ) else Color.Transparent
+                        )
+                        .padding(vertical = 5.dp)
+                        .clickable { groupRule = it.name },
+                    text = it.name
                 )
             }
         }
