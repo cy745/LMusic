@@ -84,7 +84,7 @@ android {
     }
     configurations {
         implementation.exclude module: 'protobuf-javalite'
-        implementation.exclude module: 'grpc-netty'
+//        implementation.exclude module: 'grpc-netty'
     }
 }
 

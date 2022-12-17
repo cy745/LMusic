@@ -14,6 +14,8 @@ import android.graphics.drawable.GradientDrawable.Orientation.*
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.ViewDataBinding
@@ -264,3 +266,7 @@ fun ViewDataBinding.launch(
     start: CoroutineStart = CoroutineStart.DEFAULT,
     block: suspend CoroutineScope.() -> Unit
 ): Job? = lifecycleOwner?.lifecycleScope?.launch(context, start, block)
+
+fun MediaSessionCompat.getMediaId(): String? {
+    return controller?.metadata?.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
+}

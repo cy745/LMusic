@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.service.notification
 
 import android.app.Notification
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -11,6 +12,7 @@ import android.os.Build
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.media.session.MediaButtonReceiver
@@ -211,6 +213,23 @@ open class BaseNotification constructor(
             context, requestCode, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    protected fun createNotificationChannel(channelID: String, channelName: String) {
+        val channel = NotificationChannel(
+            channelID,
+            channelName,
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = channelName
+            importance = NotificationManager.IMPORTANCE_LOW
+            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            setShowBadge(false)
+            enableLights(false)
+            enableVibration(false)
+        }
+        notificationManager.createNotificationChannel(channel)
     }
 
     protected open fun pushNotification(notification: Notification) {
