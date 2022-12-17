@@ -14,9 +14,10 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
 import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.service.notification.LMusicNotifier
-import com.lalilu.lmusic.service.playback.impl.MixPlayback
 import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
+import com.lalilu.lmusic.service.playback.impl.MixPlayback
+import com.lalilu.lmusic.service.pusher.RemotePusher
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.PlayMode
@@ -45,6 +46,9 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     @Inject
     lateinit var notifier: LMusicNotifier
 
+    @Inject
+    lateinit var pusher: RemotePusher
+
     lateinit var mediaSession: MediaSessionCompat
 
     inner class PlaybackListener : Playback.Listener<LSong> {
@@ -52,6 +56,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             runtime.updatePlaying(item)
             mediaSession.setMetadata(item?.metadataCompat)
             notifier.update()
+            pusher.update()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int, position: Long) {
@@ -75,19 +80,23 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             if (playbackState == PlaybackStateCompat.STATE_STOPPED) {
                 mediaSession.isActive = false
                 notifier.cancel()
+                pusher.cancel()
                 stopSelf()
             }
             notifier.update()
+            pusher.update()
         }
 
         override fun onSetRepeatMode(repeatMode: Int) {
             mediaSession.setRepeatMode(repeatMode)
             notifier.update()
+            pusher.update()
         }
 
         override fun onSetShuffleMode(shuffleMode: Int) {
             mediaSession.setShuffleMode(shuffleMode)
             notifier.update()
+            pusher.update()
         }
     }
 
@@ -140,6 +149,8 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
         notifier.getMediaSession = { mediaSession }
         notifier.getService = { this }
+        pusher.getMediaSession = { mediaSession }
+        pusher.getService = { this }
 
         sessionToken = mediaSession.sessionToken
 

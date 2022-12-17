@@ -1,21 +1,28 @@
 package com.lalilu.lmusic.service.notification
 
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.os.Build
-import android.support.v4.media.MediaMetadataCompat.METADATA_KEY_MEDIA_ID
 import android.support.v4.media.session.MediaSessionCompat
-import androidx.annotation.RequiresApi
 import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.playback.impl.MixPlayback
+import com.lalilu.lmusic.service.pusher.Pusher
+import com.lalilu.lmusic.utils.extension.getMediaId
 import com.lalilu.lmusic.utils.extension.toUpdatableFlow
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -27,7 +34,7 @@ class LMusicNotifier @Inject constructor(
     lyricRepo: LyricRepository,
     playback: MixPlayback,
     coverRepo: CoverRepository
-) : BaseNotification(mContext), CoroutineScope {
+) : BaseNotification(mContext), CoroutineScope, Pusher {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
 
     /**
@@ -42,14 +49,14 @@ class LMusicNotifier @Inject constructor(
         emit(builder)
     }.toUpdatableFlow()
 
-    var getService: () -> Service? = { null }
-    var getMediaSession: () -> MediaSessionCompat? = { null }
+    override var getService: () -> Service? = { null }
+    override var getMediaSession: () -> MediaSessionCompat? = { null }
     private var getIsPlaying: () -> Boolean = { playback.player?.isPlaying ?: false }
     private var getIsStop: () -> Boolean = { playback.player?.isStopped ?: true }
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
+            createNotificationChannel(PLAYER_CHANNEL_ID, PLAYER_CHANNEL_NAME)
         }
         notificationManager.cancelAll()
 
@@ -74,16 +81,17 @@ class LMusicNotifier @Inject constructor(
             .launchIn(this)
     }
 
-    fun update() {
+    override fun update() {
         notificationBuilderFlow.requireUpdate()
     }
 
-    fun cancel() {
+    override fun cancel() {
         cancelNotification(notificationId = NOTIFICATION_PLAYER_ID)
     }
 
-    private fun MediaSessionCompat.getMediaId(): String? {
-        return controller?.metadata?.getString(METADATA_KEY_MEDIA_ID)
+    override fun destroy() {
+        this.getService = { null }
+        this.getMediaSession = { null }
     }
 
     override fun pushNotification(notification: Notification) {
@@ -97,23 +105,6 @@ class LMusicNotifier @Inject constructor(
         } else {
             super.pushNotification(notification)
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(
-            PLAYER_CHANNEL_ID,
-            PLAYER_CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_LOW
-        ).apply {
-            description = "【LMusic通知频道】：${PLAYER_CHANNEL_NAME}"
-            importance = NotificationManager.IMPORTANCE_LOW
-            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-            setShowBadge(false)
-            enableLights(false)
-            enableVibration(false)
-        }
-        notificationManager.createNotificationChannel(channel)
     }
 
     companion object {
