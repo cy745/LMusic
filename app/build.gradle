@@ -114,6 +114,7 @@ dependencies {
     // https://google.github.io/accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-flowlayout:$accompanist_version"
 
     implementation platform('androidx.compose:compose-bom:2022.11.00')
     implementation "androidx.compose.compiler:compiler:$compose_compiler_version"

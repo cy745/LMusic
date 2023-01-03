@@ -13,7 +13,7 @@ import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.remote.MusicServiceGrpc
 import com.lalilu.remote.MusicServiceGrpc.MusicServiceBlockingStub
 import com.lalilu.remote.MusicServiceGrpc.MusicServiceStub
-import com.lalilu.remote.MusicServiceOuterClass
+import com.lalilu.remote.MusicServiceOuterClass.CoverInfo
 import com.lalilu.remote.MusicServiceOuterClass.HandleResult
 import com.lalilu.remote.MusicServiceOuterClass.MusicInfo
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -29,11 +29,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-@Singleton
 class RemotePusher @Inject constructor(
     @ApplicationContext mContext: Context,
     private val coverRepo: CoverRepository
@@ -55,6 +53,13 @@ class RemotePusher @Inject constructor(
             .build()
         MusicServiceGrpc.newStub(channel)
     }
+
+    private var stream: StreamObserver<CoverInfo>? = null
+        get() {
+            return field ?: kotlin.runCatching {
+                stub?.updateMusicCover(this)
+            }.getOrNull()
+        }
 
     private val pushFlow = MutableStateFlow(System.currentTimeMillis())
 
@@ -82,17 +87,16 @@ class RemotePusher @Inject constructor(
                             .build()
                     ).drawable?.toBitmap()
 
-                    stub?.updateMusicCover(this)
-                        ?.apply {
-                            ImageUtils.bitmap2Bytes(bitmap)?.toByteString()?.let {
-                                onNext(
-                                    MusicServiceOuterClass.CoverInfo.newBuilder()
-                                        .setBytes(it)
-                                        .build()
-                                )
-                            }
-                            onCompleted()
+                    stream?.apply {
+                        ImageUtils.bitmap2Bytes(bitmap)?.toByteString()?.let {
+                            onNext(
+                                CoverInfo.newBuilder()
+                                    .setBytes(it)
+                                    .build()
+                            )
                         }
+                        onCompleted()
+                    }
                 }
             }.launchIn(this)
     }
@@ -115,7 +119,7 @@ class RemotePusher @Inject constructor(
     }
 
     override fun onError(t: Throwable?) {
-        t?.printStackTrace()
+        stream = null
     }
 
     override fun onCompleted() {

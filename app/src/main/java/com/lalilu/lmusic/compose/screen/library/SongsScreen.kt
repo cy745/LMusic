@@ -1,14 +1,21 @@
 package com.lalilu.lmusic.compose.screen.library
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.Button
+import androidx.compose.material.ChipDefaults
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FilterChip
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -22,9 +29,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.TimeUtils
 import com.funny.data_saver.core.rememberDataSaverState
+import com.google.accompanist.flowlayout.FlowRow
+import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
@@ -38,7 +48,6 @@ import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenActions
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.*
 
@@ -79,7 +88,8 @@ fun SongsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    IconTextButton(text = "取消",
+                    IconTextButton(
+                        text = "取消",
                         color = Color(0xFF006E7C),
                         onClick = { selector.clear() })
                     Text(text = "已选择: ${selectedItems.size}")
@@ -163,6 +173,7 @@ fun SongsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun SortBar(
     libraryVM: LibraryViewModel, sortFor: String = Sortable.SORT_FOR_SONGS
@@ -176,56 +187,102 @@ fun SortBar(
     var groupRule by rememberDataSaverState(
         key = "${sortFor}_GROUP_RULE", default = GroupRule.Normal.name
     )
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
+            .wrapContentHeight()
+            .padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Column {
-            libraryVM.supportSortRules.forEach {
-                Text(
-                    modifier = Modifier
-                        .background(
-                            color = if (it.name == sortRule) dayNightTextColor(
-                                0.2f
-                            ) else Color.Transparent
-                        )
-                        .padding(vertical = 5.dp)
-                        .clickable { sortRule = it.name },
-                    text = it.name
-                )
+        Text(text = "排序依据")
+        FlowRow(mainAxisSpacing = 8.dp) {
+            libraryVM.supportSortRules.forEach { item ->
+                FilterChip(
+                    onClick = { sortRule = item.name },
+                    selected = item.name == sortRule,
+                    colors = ChipDefaults.outlinedFilterChipColors(),
+                    leadingIcon = {
+                        AnimatedContent(
+                            targetState = item.name == sortRule,
+                            transitionSpec = { fadeIn() with fadeOut() }
+                        ) { show ->
+                            if (show) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_checkbox_circle_line),
+                                    contentDescription = ""
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_checkbox_blank_circle_line),
+                                    contentDescription = ""
+                                )
+                            }
+                        }
+                    }
+                ) {
+                    Text(text = item.title)
+                }
             }
         }
-        Column {
-            libraryVM.supportOrderRules.forEach {
-                Text(
-                    modifier = Modifier
-                        .background(
-                            color = if (it.name == orderRule) dayNightTextColor(
-                                0.2f
-                            ) else Color.Transparent
-                        )
-                        .padding(vertical = 5.dp)
-                        .clickable { orderRule = it.name },
-                    text = it.name
-                )
+        Text(text = "分组依据")
+        FlowRow(mainAxisSpacing = 8.dp) {
+            libraryVM.supportGroupRules.forEach { item ->
+                FilterChip(
+                    onClick = { groupRule = item.name },
+                    selected = item.name == groupRule,
+                    colors = ChipDefaults.outlinedFilterChipColors(),
+                    leadingIcon = {
+                        AnimatedContent(
+                            targetState = item.name == groupRule,
+                            transitionSpec = { fadeIn() with fadeOut() }
+                        ) { show ->
+                            if (show) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_checkbox_circle_line),
+                                    contentDescription = ""
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_checkbox_blank_circle_line),
+                                    contentDescription = ""
+                                )
+                            }
+                        }
+                    }
+                ) {
+                    Text(text = item.title)
+                }
             }
         }
-        Column {
-            libraryVM.supportGroupRules.forEach {
-                Text(
-                    modifier = Modifier
-                        .background(
-                            color = if (it.name == groupRule) dayNightTextColor(
-                                0.2f
-                            ) else Color.Transparent
-                        )
-                        .padding(vertical = 5.dp)
-                        .clickable { groupRule = it.name },
-                    text = it.name
-                )
+        Text(text = "排序顺序")
+        FlowRow(mainAxisSpacing = 8.dp) {
+            libraryVM.supportOrderRules.forEach { item ->
+                FilterChip(
+                    onClick = { orderRule = item.name },
+                    selected = item.name == orderRule,
+                    colors = ChipDefaults.outlinedFilterChipColors(),
+                    leadingIcon = {
+                        AnimatedContent(
+                            targetState = item.name == orderRule,
+                            transitionSpec = { fadeIn() with fadeOut() }
+                        ) { show ->
+                            if (show) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_checkbox_circle_line),
+                                    contentDescription = ""
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_checkbox_blank_circle_line),
+                                    contentDescription = ""
+                                )
+                            }
+                        }
+                    }
+                ) {
+                    Text(text = item.title)
+                }
             }
         }
     }

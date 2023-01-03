@@ -19,7 +19,6 @@ import javax.inject.Singleton
 @Singleton
 class MixPlayback @Inject constructor(
     localPlayer: LocalPlayer,
-    remotePlayer: RemotePlayer,
     private val noisyReceiver: LMusicNoisyReceiver,
     private val audioFocusHelper: LMusicAudioFocusHelper,
     private val settingsDataStore: SettingsDataStore
