@@ -5,9 +5,7 @@ import android.net.Uri
 import com.lalilu.lmusic.service.playback.Player
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class RemotePlayer @Inject constructor(
     @ApplicationContext private val context: Context
 ) : Player, Player.Listener {
