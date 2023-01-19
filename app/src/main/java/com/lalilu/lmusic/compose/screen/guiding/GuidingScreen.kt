@@ -103,6 +103,11 @@ fun GuidingScreen(
                         AgreementPage(navController)
                     }
                     composable(
+                        route = GuidingNavGraph.Permissions.name
+                    ) {
+                        PermissionsPage(navController)
+                    }
+                    composable(
                         route = GuidingNavGraph.SeekbarGuiding.name
                     ) {
                         SeekbarGuidingPage(navController)
@@ -191,6 +196,7 @@ enum class GuidingNavGraph(
     val title: String
 ) {
     Agreement(title = "用户协议 | 隐私协议"),
+    Permissions(title = "必要权限授予"),
     SeekbarGuiding(title = "基础引导教程");
 
     fun getNext(): GuidingNavGraph? {

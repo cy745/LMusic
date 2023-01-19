@@ -1,5 +1,7 @@
 package com.lalilu.lmusic
 
+import android.Manifest
+import android.os.Build
 import android.support.v4.media.session.PlaybackStateCompat
 
 object Config {
@@ -54,4 +56,10 @@ object Config {
     val MEDIA_STOPPED_STATE: PlaybackStateCompat = PlaybackStateCompat.Builder()
         .setState(PlaybackStateCompat.STATE_STOPPED, 0, 1f)
         .build()
+
+    val REQUIRE_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_AUDIO
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
 }
