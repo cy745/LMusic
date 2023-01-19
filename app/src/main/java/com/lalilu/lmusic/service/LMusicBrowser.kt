@@ -94,15 +94,23 @@ class LMusicBrowser @Inject constructor(
         override fun onConnected() {
             controller = MediaControllerCompat(context, browser.sessionToken)
 
-            // 若当前播放列表为空，则尝试提取历史数据填充
-            if (runtime.isEmpty()) {
-                historyStore.apply {
-                    val songs = lastPlayedListIdsKey.get()
-                        .mapNotNull { Library.getSongOrNull(it) }
-                    val song = lastPlayedIdKey.get()
-                        ?.let { Library.getSongOrNull(it) }
+            // 若当前播放列表不为空，则不尝试提取历史数据填充
+            if (!runtime.isEmpty()) {
+                return
+            }
+
+            historyStore.apply {
+                val songIds = lastPlayedListIdsKey.get()
+
+                if (songIds.isNotEmpty()) {
+                    val songs = songIds.mapNotNull { Library.getSongOrNull(it) }
+                    val song = lastPlayedIdKey.get()?.let { Library.getSongOrNull(it) }
                     setSongs(songs, song)
+                    return
                 }
+
+                val songs = Library.getSongs()
+                setSongs(songs, songs.getOrNull(0))
             }
             // 取消subscribe，可以解决Service和Activity通过Parcelable传递数据导致闪退的问题
             // browser.subscribe("ROOT", MusicSubscriptionCallback())
