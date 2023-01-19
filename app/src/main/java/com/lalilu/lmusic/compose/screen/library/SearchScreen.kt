@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraphBuilder
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LGenre
 import com.lalilu.lmedia.entity.LPlaylist
@@ -25,12 +27,29 @@ import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.card.SongCard
-import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
+import com.lalilu.lmusic.compose.screen.library.detail.AlbumDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.ArtistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.PlaylistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.LocalSearchVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
+
+@OptIn(ExperimentalAnimationApi::class)
+object SearchScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(ScreenData.Search.name) {
+            SearchScreen()
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.Search.name
+    }
+}
 
 @OptIn(
     ExperimentalFoundationApi::class,
@@ -38,18 +57,19 @@ import com.lalilu.lmusic.viewmodel.SearchViewModel
     ExperimentalMaterialApi::class
 )
 @Composable
-fun SearchScreen(
+private fun SearchScreen(
     searchVM: SearchViewModel = LocalSearchVM.current,
     playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
-    val navToAlbumAction = ScreenActions.navToAlbumById()
-    val navToArtistAction = ScreenActions.navToArtistById()
-    val navToPlaylistAction = ScreenActions.navToPlaylistById()
-    val navToSongAction = ScreenActions.navToSongById(
-        popUpToRoute = ScreenData.Search,
+    val navToAlbumAction = AlbumDetailScreen.navToByArgv()
+    val navToArtistAction = ArtistDetailScreen.navToByArgv()
+    val navToPlaylistAction = PlaylistDetailScreen.navToByArgv()
+    val navToSongAction = SongDetailScreen.navToByArgv(
         hapticType = HapticFeedbackType.LongPress
-    )
+    ) {
+        popUpTo(ScreenData.Search.name)
+    }
 
     LaunchedEffect(Unit) {
         SmartBar.setExtraBar {

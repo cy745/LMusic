@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen.library.detail
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,22 +12,55 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.navArgument
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.AlbumCoverCard
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.BaseScreen
+import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
+@OptIn(ExperimentalAnimationApi::class)
+object AlbumDetailScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(
+            route = "${ScreenData.AlbumsDetail.name}?albumId={albumId}",
+            arguments = listOf(navArgument("albumId") {})
+        ) { backStackEntry ->
+            val albumId = backStackEntry.arguments?.getString("albumId")
+
+            Library.getAlbumOrNull(albumId)
+                ?.let { AlbumDetailScreen(album = it) }
+                ?: EmptyAlbumDetailScreen()
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.AlbumsDetail.name
+    }
+
+    override fun getNavToByArgvRoute(argv: String): String {
+        return "${ScreenData.AlbumsDetail.name}?albumId=$argv"
+    }
+}
+
 @Composable
-fun AlbumDetailScreen(
+private fun AlbumDetailScreen(
     album: LAlbum,
     playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
-    val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
+    val navToSongAction = SongDetailScreen.navToByArgv(
+        hapticType = HapticFeedbackType.LongPress
+    ) {
+        popUpTo(ScreenData.Library.name)
+    }
 
     val songs = album.songs
     val title = album.name

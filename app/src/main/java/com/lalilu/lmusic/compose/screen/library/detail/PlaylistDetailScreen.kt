@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen.library.detail
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -10,14 +11,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.navArgument
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.BaseScreen
+import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.LocalMainVM
 import com.lalilu.lmusic.viewmodel.LocalPlayingVM
@@ -33,16 +39,57 @@ import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
+@OptIn(ExperimentalAnimationApi::class)
+object PlaylistDetailScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(
+            route = "${ScreenData.PlaylistsDetail.name}?playlistId={playlistId}",
+            arguments = listOf(navArgument("playlistId") {
+                defaultValue = FavoriteRepository.FAVORITE_PLAYLIST_ID
+            })
+        ) {
+            val playlistId = it.arguments?.getString("playlistId")?.toLong()
+                ?: FavoriteRepository.FAVORITE_PLAYLIST_ID
+
+            PlaylistDetailScreen(playlistId = playlistId)
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.PlaylistsDetail.name
+    }
+
+    override fun getNavToByArgvRoute(argv: String): String {
+        return "${ScreenData.PlaylistsDetail.name}?playlistId=$argv"
+    }
+}
+
+
+@OptIn(ExperimentalAnimationApi::class)
+object FavouriteScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(
+            route = ScreenData.Favourite.name
+        ) {
+            PlaylistDetailScreen(playlistId = FavoriteRepository.FAVORITE_PLAYLIST_ID)
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.Favourite.name
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PlaylistDetailScreen(
+private fun PlaylistDetailScreen(
     playlistId: Long,
     mainVM: MainViewModel = LocalMainVM.current,
     playingVM: PlayingViewModel = LocalPlayingVM.current,
     playlistsVM: PlaylistsViewModel = LocalPlaylistsVM.current,
     playlistDetailVM: PlaylistDetailViewModel = LocalPlaylistDetailVM.current
 ) {
-    val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
+    val navToSongAction = SongDetailScreen.navToByArgv(hapticType = HapticFeedbackType.LongPress)
     val playlist by playlistDetailVM.getPlaylistFlow(playlistId).collectAsState(initial = null)
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
@@ -144,9 +191,4 @@ fun PlaylistDetailScreen(
             }
         }
     }
-}
-
-@Composable
-fun EmptyPlaylistDetailScreen() {
-    Text(text = "无法获取歌单信息", modifier = Modifier.padding(20.dp))
 }

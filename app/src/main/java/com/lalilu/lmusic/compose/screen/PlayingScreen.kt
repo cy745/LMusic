@@ -22,6 +22,7 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
+import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.OnBackPressedHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
@@ -49,7 +50,7 @@ fun PlayingScreen(
     playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val density = LocalDensity.current
-    val navToSongAction = ScreenActions.navToSongById()
+    val navToSongAction = SongDetailScreen.navToByArgv()
     val statusBarsInsets = WindowInsets.statusBars
     val windowInsetsCompat = remember(statusBarsInsets) {
         WindowInsetsCompat.Builder().setInsets(

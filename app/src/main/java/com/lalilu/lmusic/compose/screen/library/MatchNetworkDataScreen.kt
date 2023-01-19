@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen.library
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -31,20 +32,50 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.navArgument
 import com.blankj.utilcode.util.TimeUtils
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.apis.NetworkSong
 import com.lalilu.lmusic.apis.NetworkSource
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.InputBar
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
+import com.lalilu.lmusic.compose.screen.BaseScreen
+import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 
+@OptIn(ExperimentalAnimationApi::class)
+object MatchNetworkDataScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(
+            route = "${ScreenData.SongsMatchNetworkData.name}?mediaId={mediaId}",
+            arguments = listOf(navArgument("mediaId") {})
+        ) { backStackEntry ->
+            val mediaId = backStackEntry.arguments?.getString("mediaId")
+
+            Library.getSongOrNull(mediaId)
+                ?.let { MatchNetworkDataScreen(song = it) }
+                ?: EmptySearchForLyricScreen()
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.SongsMatchNetworkData.name
+    }
+
+    override fun getNavToByArgvRoute(argv: String): String {
+        return "${ScreenData.SongsMatchNetworkData.name}?mediaId=$argv"
+    }
+}
+
 @Composable
-fun MatchNetworkDataScreen(
+private fun MatchNetworkDataScreen(
     song: LSong,
     viewModel: NetworkDataViewModel = hiltViewModel()
 ) {

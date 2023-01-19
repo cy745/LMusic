@@ -17,12 +17,21 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.lalilu.lmedia.indexer.Library
-import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
-import com.lalilu.lmusic.compose.screen.library.*
-import com.lalilu.lmusic.compose.screen.library.detail.*
+import com.lalilu.lmusic.compose.screen.library.AlbumsScreen
+import com.lalilu.lmusic.compose.screen.library.ArtistScreen
+import com.lalilu.lmusic.compose.screen.library.LibraryScreen
+import com.lalilu.lmusic.compose.screen.library.MatchNetworkDataScreen
+import com.lalilu.lmusic.compose.screen.library.PlaylistsScreen
+import com.lalilu.lmusic.compose.screen.library.SearchScreen
+import com.lalilu.lmusic.compose.screen.library.SettingsScreen
+import com.lalilu.lmusic.compose.screen.library.SongsScreen
+import com.lalilu.lmusic.compose.screen.library.detail.AlbumDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.ArtistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.FavouriteScreen
+import com.lalilu.lmusic.compose.screen.library.detail.PlaylistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
@@ -82,60 +91,18 @@ fun LMusicNavGraph(
             fadeIn(animationSpec = tween(durationMillis = 300)) + slideInVertically { 100 }
         }
     ) {
-        ScreenData.Library.register(this) {
-            LibraryScreen()
-        }
-        ScreenData.Songs.register(this) {
-            SongsScreen()
-        }
-        ScreenData.Favourite.register(this) {
-            PlaylistDetailScreen(playlistId = FavoriteRepository.FAVORITE_PLAYLIST_ID)
-        }
-        ScreenData.Artists.register(this) {
-            ArtistScreen()
-        }
-        ScreenData.Albums.register(this) {
-            AlbumsScreen()
-        }
-        ScreenData.Search.register(this) {
-            SearchScreen()
-        }
-        ScreenData.Settings.register(this) {
-            SettingsScreen()
-        }
-        ScreenData.Playlists.register(this) {
-            val isAddingSongs = it.arguments?.getBoolean("isAdding") ?: false
-            PlaylistsScreen(isAddingSongs)
-        }
-        ScreenData.PlaylistsDetail.register(this) { backStackEntry ->
-            val playlistId = backStackEntry.arguments?.getString("playlistId")?.toLong()
-            playlistId?.let {
-                PlaylistDetailScreen(playlistId = it)
-            } ?: EmptyPlaylistDetailScreen()
-        }
-        ScreenData.SongsDetail.register(this) { backStackEntry ->
-            val mediaId = backStackEntry.arguments?.getString("mediaId")
-            Library.getSongOrNull(mediaId)?.let {
-                SongDetailScreen(song = it)
-            } ?: EmptySongDetailScreen()
-        }
-        ScreenData.ArtistsDetail.register(this) { backStackEntry ->
-            val artistName = backStackEntry.arguments?.getString("artistName")
-            Library.getArtistOrNull(artistName)
-                ?.let { ArtistDetailScreen(artist = it) }
-                ?: EmptyArtistDetailScreen()
-        }
-        ScreenData.AlbumsDetail.register(this) { backStackEntry ->
-            val albumId = backStackEntry.arguments?.getString("albumId")
-            Library.getAlbumOrNull(albumId)
-                ?.let { AlbumDetailScreen(album = it) }
-                ?: EmptyAlbumDetailScreen()
-        }
-        ScreenData.SongsMatchNetworkData.register(this) { backStackEntry ->
-            val mediaId = backStackEntry.arguments?.getString("mediaId")
-            Library.getSongOrNull(mediaId)
-                ?.let { MatchNetworkDataScreen(song = it) }
-                ?: EmptySearchForLyricScreen()
-        }
+        LibraryScreen.register(builder = this)
+        SongsScreen.register(builder = this)
+        ArtistScreen.register(builder = this)
+        AlbumsScreen.register(builder = this)
+        SearchScreen.register(builder = this)
+        SettingsScreen.register(builder = this)
+        PlaylistsScreen.register(builder = this)
+        FavouriteScreen.register(builder = this)
+        PlaylistDetailScreen.register(builder = this)
+        SongDetailScreen.register(builder = this)
+        ArtistDetailScreen.register(builder = this)
+        AlbumDetailScreen.register(builder = this)
+        MatchNetworkDataScreen.register(builder = this)
     }
 }
