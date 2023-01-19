@@ -15,7 +15,6 @@ import com.lalilu.lmedia.repository.impl.PlaylistRepositoryImpl
 import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.utils.DataSaverDataStorePreferences
 import com.lalilu.lmusic.utils.DataSaverDataStorePreferences.Companion.setDataStorePreferences
-import com.lalilu.remote.StringUdpService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -92,11 +91,5 @@ object LMusicHiltModule {
         return DataSaverDataStorePreferences().apply {
             setDataStorePreferences(settingsDataStore.getDataStore())
         }
-    }
-
-    @Provides
-    @Singleton
-    fun providesUdpService(): StringUdpService {
-        return StringUdpService(10052)
     }
 }

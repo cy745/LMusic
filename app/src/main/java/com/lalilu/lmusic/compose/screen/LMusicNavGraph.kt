@@ -92,8 +92,7 @@ fun LMusicNavGraph(
             PlaylistDetailScreen(playlistId = FavoriteRepository.FAVORITE_PLAYLIST_ID)
         }
         ScreenData.Artists.register(this) {
-            TestUDPScreen()
-//            ArtistScreen()
+            ArtistScreen()
         }
         ScreenData.Albums.register(this) {
             AlbumsScreen()
