@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v2.4.2
         with:
           repository: cy745/lmusic
-          ref: rebuild_screen
+          ref: dev
           ssh-strict: true
           persist-credentials: true
           clean: true
