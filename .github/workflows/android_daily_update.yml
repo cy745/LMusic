@@ -2,9 +2,9 @@ name: Android CI Daily Update
 
 on:
   push:
-    branches: [ "rebuild_screen" ]
+    branches: [ "dev" ]
   pull_request:
-    branches: [ "rebuild_screen" ]
+    branches: [ "dev" ]
 
 jobs:
   build:
