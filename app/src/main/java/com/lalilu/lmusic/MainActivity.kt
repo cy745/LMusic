@@ -1,5 +1,6 @@
 package com.lalilu.lmusic
 
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
 import androidx.activity.addCallback
@@ -14,15 +15,15 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.ActivityUtils
-import com.blankj.utilcode.util.ToastUtils
 import com.funny.data_saver.core.DataSaverInterface
 import com.funny.data_saver.core.LocalDataSaver
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.lalilu.common.PermissionUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
@@ -49,8 +50,7 @@ import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), CoroutineScope {
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     @Inject
     lateinit var dataSaver: DataSaverInterface
@@ -66,19 +66,16 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
 
         // 判断是否已完成初次启动时的用户引导
         val isGuidingOver = settingsDataStore.run { isGuidingOver.get() }
-        if (isGuidingOver != true) {
+        val isPermissionsGranted = ActivityCompat.checkSelfPermission(this, REQUIRE_PERMISSIONS)
+        if (isGuidingOver != true || isPermissionsGranted != PackageManager.PERMISSION_GRANTED) {
             ActivityUtils.startActivity(GuidingActivity::class.java)
             finish()
             return
         }
 
         SystemUiUtil.immerseNavigationBar(this)
-        PermissionUtils.requestPermission(this, onSuccess = {
-            launch { Indexer.index(this@MainActivity) }
-            lifecycle.addObserver(browser)
-        }, onFailed = {
-            ToastUtils.showShort("无外部存储读取权限，无法读取歌曲")
-        })
+        launch { Indexer.index(this@MainActivity) }
+        lifecycle.addObserver(browser)
 
         // 注册返回键事件回调
         onBackPressedDispatcher.addCallback {

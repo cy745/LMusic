@@ -49,7 +49,8 @@ fun SeekbarGuidingPage(navController: NavController) {
 
     var isGuidingOver by rememberDataSaverState(
         key = Config.KEY_REMEMBER_IS_GUIDING_OVER,
-        default = false
+        default = false,
+        autoSave = true
     )
 
     val reUpdateDelay = 200L
