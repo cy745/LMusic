@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen.library.detail
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,10 +27,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.navArgument
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -38,7 +43,9 @@ import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.NetworkPairCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.BaseScreen
+import com.lalilu.lmusic.compose.screen.ScreenData
+import com.lalilu.lmusic.compose.screen.library.MatchNetworkDataScreen
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -51,6 +58,30 @@ import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 
+@OptIn(ExperimentalAnimationApi::class)
+object SongDetailScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(
+            route = "${ScreenData.SongsDetail.name}?mediaId={mediaId}",
+            arguments = listOf(navArgument("mediaId") {})
+        ) { backStackEntry ->
+            val mediaId = backStackEntry.arguments?.getString("mediaId")
+
+            Library.getSongOrNull(mediaId)?.let {
+                SongDetailScreen(song = it)
+            } ?: EmptySongDetailScreen()
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.SongsDetail.name
+    }
+
+    override fun getNavToByArgvRoute(argv: String): String {
+        return "${ScreenData.SongsDetail.name}?mediaId=$argv"
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SongDetailScreen(
@@ -61,8 +92,8 @@ fun SongDetailScreen(
     networkDataVM: NetworkDataViewModel = hiltViewModel()
 ) {
     val windowSize = LocalWindowSize.current
-    val navToAlbumAction = ScreenActions.navToAlbumById()
-    val navToNetworkMatchAction = ScreenActions.navToNetData()
+    val navToAlbumAction = AlbumDetailScreen.navToByArgv()
+    val navToNetworkMatchAction = MatchNetworkDataScreen.navToByArgv()
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
     val networkData by networkDataVM.getNetworkDataFlowByMediaId(song.id)

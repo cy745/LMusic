@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen.library
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -15,16 +16,33 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavGraphBuilder
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmusic.compose.component.SmartContainer
-import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.BaseScreen
+import com.lalilu.lmusic.compose.screen.ScreenData
+import com.lalilu.lmusic.compose.screen.library.detail.ArtistDetailScreen
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.LocalLibraryVM
 
+@OptIn(ExperimentalAnimationApi::class)
+object ArtistScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(ScreenData.Artists.name) {
+            ArtistScreen()
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.Artists.name
+    }
+}
+
 @Composable
-fun ArtistScreen(
+private fun ArtistScreen(
     libraryVM: LibraryViewModel = LocalLibraryVM.current
 ) {
-    val navToArtistAction = ScreenActions.navToArtistById()
+    val navToArtistAction = ArtistDetailScreen.navToByArgv()
     val artists by libraryVM.artists
 
     SmartContainer.LazyColumn {

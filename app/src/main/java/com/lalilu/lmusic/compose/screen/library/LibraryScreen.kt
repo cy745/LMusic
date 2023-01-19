@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen.library
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
@@ -32,14 +33,17 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraphBuilder
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.component.card.SongCard
-import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
+import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -48,23 +52,39 @@ import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalAnimationApi::class)
+object LibraryScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(ScreenData.Library.name) {
+            LibraryScreen()
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.Library.name
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun LibraryScreen(
+private fun LibraryScreen(
     viewModel: LibraryViewModel = LocalLibraryVM.current,
     playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
-    val navToSongAction = ScreenActions.navToSongById(popUpToRoute = ScreenData.Library)
-    val navToSongActionHaptic = ScreenActions.navToSongById(
-        popUpToRoute = ScreenData.Library,
+    val navToSongAction = SongDetailScreen.navToByArgv {
+        popUpTo(ScreenData.Library.name)
+    }
+    val navToSongActionHaptic = SongDetailScreen.navToByArgv(
         hapticType = HapticFeedbackType.LongPress
-    )
+    ) {
+        popUpTo(ScreenData.Library.name)
+    }
 
-    val navToSongsAction = ScreenActions.navToSongs()
-    val navToArtistsAction = ScreenActions.navToArtists()
-    val navToAlbumsAction = ScreenActions.navToAlbums()
-    val navToSettingsAction = ScreenActions.navToSettings()
+    val navToSongsAction = SongsScreen.navTo { popUpTo(ScreenData.Library.name) }
+    val navToArtistsAction = ArtistScreen.navTo { popUpTo(ScreenData.Library.name) }
+    val navToAlbumsAction = AlbumsScreen.navTo { popUpTo(ScreenData.Library.name) }
+    val navToSettingsAction = SettingsScreen.navTo { popUpTo(ScreenData.Library.name) }
 
     SmartContainer.LazyColumn {
         item {

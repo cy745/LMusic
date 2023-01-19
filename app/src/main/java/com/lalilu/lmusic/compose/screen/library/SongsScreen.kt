@@ -31,9 +31,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraphBuilder
 import com.blankj.utilcode.util.TimeUtils
 import com.funny.data_saver.core.rememberDataSaverState
 import com.google.accompanist.flowlayout.FlowRow
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
@@ -44,24 +46,39 @@ import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.SongCard
+import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
-import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.ScreenData
+import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.*
 
+@OptIn(ExperimentalAnimationApi::class)
+object SongsScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(ScreenData.Songs.name) {
+            SongsScreen()
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.Songs.name
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SongsScreen(
+private fun SongsScreen(
     mainVM: MainViewModel = LocalMainVM.current,
     libraryVM: LibraryViewModel = LocalLibraryVM.current,
-    playingVM: PlayingViewModel = LocalPlayingVM.current
+    playingVM: PlayingViewModel = LocalPlayingVM.current,
 ) {
     val windowSize = LocalWindowSize.current
     val gridState = rememberLazyGridState()
 
-    val navToSongAction = ScreenActions.navToSongById(hapticType = HapticFeedbackType.LongPress)
+    val navToSongAction = SongDetailScreen.navToByArgv(hapticType = HapticFeedbackType.LongPress)
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
 
     val songs by libraryVM.songs

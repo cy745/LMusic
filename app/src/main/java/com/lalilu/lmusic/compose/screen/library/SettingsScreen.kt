@@ -3,6 +3,7 @@ package com.lalilu.lmusic.compose.screen.library
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -15,9 +16,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraphBuilder
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.RomUtils
 import com.funny.data_saver.core.rememberDataSaverState
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.GuidingActivity
@@ -25,14 +28,28 @@ import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.component.settings.*
+import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.getActivity
 
+@OptIn(ExperimentalAnimationApi::class)
+object SettingsScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(ScreenData.Settings.name) {
+            SettingsScreen()
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.Settings.name
+    }
+}
+
 @Composable
-fun SettingsScreen() {
+private fun SettingsScreen() {
     val windowSize = LocalWindowSize.current
     val context = LocalContext.current
     val ignoreAudioFocus = rememberDataSaverState(

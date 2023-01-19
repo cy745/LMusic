@@ -31,7 +31,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.navArgument
 import com.blankj.utilcode.util.KeyboardUtils
+import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.repository.FavoriteRepository
@@ -40,8 +43,10 @@ import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.base.InputBar
 import com.lalilu.lmusic.compose.component.card.PlaylistCard
+import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
-import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.ScreenData
+import com.lalilu.lmusic.compose.screen.library.detail.PlaylistDetailScreen
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.getActivity
@@ -59,13 +64,37 @@ import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
+@OptIn(ExperimentalAnimationApi::class)
+object PlaylistsScreen : BaseScreen() {
+    override fun register(builder: NavGraphBuilder) {
+        builder.composable(
+            route = "${ScreenData.Playlists.name}?isAdding={isAdding}",
+            arguments = listOf(navArgument("isAdding") { defaultValue = false })
+        ) {
+            val isAdding = it.arguments?.getBoolean("isAdding") ?: false
+
+            PlaylistsScreen(
+                isAddingSongs = isAdding
+            )
+        }
+    }
+
+    override fun getNavToRoute(): String {
+        return ScreenData.Playlists.name
+    }
+
+    override fun getNavToByArgvRoute(argv: String): String {
+        return "${ScreenData.Playlists.name}?isAdding=$argv"
+    }
+}
+
 @OptIn(
     ExperimentalFoundationApi::class,
     ExperimentalMaterialApi::class,
     ExperimentalAnimationApi::class
 )
 @Composable
-fun PlaylistsScreen(
+private fun PlaylistsScreen(
     isAddingSongs: Boolean = false,
     mainVM: MainViewModel = LocalMainVM.current,
     libraryVM: LibraryViewModel = LocalLibraryVM.current,
@@ -73,7 +102,7 @@ fun PlaylistsScreen(
 ) {
     val context = LocalContext.current
     val navigator = LocalNavigatorHost.current
-    val navToPlaylistAction = ScreenActions.navToPlaylistById()
+    val navToPlaylistAction = PlaylistDetailScreen.navToByArgv()
     val state = rememberReorderableLazyListState(
         onMove = playlistsVM::onMovePlaylist,
         canDragOver = playlistsVM::canDragOver,

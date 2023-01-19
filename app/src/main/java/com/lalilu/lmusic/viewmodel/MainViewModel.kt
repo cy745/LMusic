@@ -8,7 +8,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.compose.screen.ScreenActions
+import com.lalilu.lmusic.compose.screen.library.PlaylistsScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -21,7 +21,7 @@ class MainViewModel @Inject constructor(
 
     @Composable
     fun navToAddToPlaylist(): (songs: List<LSong>) -> Unit {
-        val navToAddToPlaylistAction = ScreenActions.navToAddToPlaylist()
+        val navToAddToPlaylistAction = PlaylistsScreen.navToByArgv()
 
         return remember {
             { songs ->
@@ -30,7 +30,7 @@ class MainViewModel @Inject constructor(
                 } else {
                     tempSongs.clear()
                     tempSongs.addAll(songs)
-                    navToAddToPlaylistAction(mapOf("isAdding" to true))
+                    navToAddToPlaylistAction(true.toString())
                 }
             }
         }
