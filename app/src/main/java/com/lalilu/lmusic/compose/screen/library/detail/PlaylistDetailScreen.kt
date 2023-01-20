@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.entity.LPlaylist
@@ -43,12 +44,13 @@ import org.burnoutcrew.reorderable.reorderable
 object PlaylistDetailScreen : BaseScreen() {
     override fun register(builder: NavGraphBuilder) {
         builder.composable(
-            route = "${ScreenData.PlaylistsDetail.name}?playlistId={playlistId}",
+            route = "${ScreenData.PlaylistsDetail.name}/{playlistId}",
             arguments = listOf(navArgument("playlistId") {
+                type = NavType.LongType
                 defaultValue = FavoriteRepository.FAVORITE_PLAYLIST_ID
             })
         ) {
-            val playlistId = it.arguments?.getString("playlistId")?.toLong()
+            val playlistId = it.arguments?.getLong("playlistId")
                 ?: FavoriteRepository.FAVORITE_PLAYLIST_ID
 
             PlaylistDetailScreen(playlistId = playlistId)
@@ -60,7 +62,7 @@ object PlaylistDetailScreen : BaseScreen() {
     }
 
     override fun getNavToByArgvRoute(argv: String): String {
-        return "${ScreenData.PlaylistsDetail.name}?playlistId=$argv"
+        return "${ScreenData.PlaylistsDetail.name}/$argv"
     }
 }
 
