@@ -13,6 +13,8 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
 import com.lalilu.lmusic.datastore.SettingsDataStore
+import com.lalilu.lmusic.repository.CoverRepository
+import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.notification.LMusicNotifier
 import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
@@ -40,12 +42,17 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var settingsDataStore: SettingsDataStore
 
     @Inject
-    lateinit var playback: MixPlayback
+    lateinit var lyricRepo: LyricRepository
 
     @Inject
-    lateinit var notifier: LMusicNotifier
+    lateinit var coverRepo: CoverRepository
+
+    @Inject
+    lateinit var playback: MixPlayback
 
     lateinit var mediaSession: MediaSessionCompat
+
+    lateinit var notifier: LMusicNotifier
 
     inner class PlaybackListener : Playback.Listener<LSong> {
         override fun onPlayingItemUpdate(item: LSong?) {
@@ -138,18 +145,20 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                 isActive = true
             }
 
-        notifier.getMediaSession = { mediaSession }
-        notifier.getService = { this }
+        notifier = LMusicNotifier(
+            lyricRepo = lyricRepo,
+            playback = playback,
+            coverRepo = coverRepo,
+            mediaSession = mediaSession,
+            settingsDataStore = settingsDataStore,
+            service = this
+        )
 
         sessionToken = mediaSession.sessionToken
 
         settingsDataStore.apply {
 //            volumeControl.flow()
 //                .onEach { it?.let(playBack::setMaxVolume) }
-//                .launchIn(this@LMusicService)
-//
-//            enableStatusLyric.flow()
-//                .onEach { mNotificationManager.statusLyricEnable = it == true }
 //                .launchIn(this@LMusicService)
 //
             enableSystemEq.flow()

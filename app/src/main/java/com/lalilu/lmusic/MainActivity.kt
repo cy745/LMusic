@@ -48,6 +48,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
+@OptIn(
+    ExperimentalMaterial3WindowSizeClassApi::class,
+    ExperimentalAnimationApi::class,
+    ExperimentalMaterialApi::class
+)
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -85,19 +90,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
         val backPressedHelper = OnBackPressedHelper()
         onBackPressedDispatcher.addCallback(backPressedHelper)
 
-        @OptIn(
-            ExperimentalMaterial3WindowSizeClassApi::class,
-            ExperimentalAnimationApi::class,
-            ExperimentalMaterialApi::class
-        )
         setContent {
             LMusicTheme {
-                val navHostController = rememberAnimatedNavController()
-
                 CompositionLocalProvider(
                     LocalDataSaver provides dataSaver,
                     LocalWindowSize provides calculateWindowSizeClass(activity = this),
-                    LocalNavigatorHost provides navHostController,
+                    LocalNavigatorHost provides rememberAnimatedNavController(),
                     LocalLibraryVM provides hiltViewModel(),
                     LocalPlayingVM provides hiltViewModel(),
                     LocalPlaylistsVM provides hiltViewModel(),
@@ -107,7 +105,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                 ) {
                     Box {
                         SmartModalBottomSheet.SmartModalBottomSheetContent(
-                            navController = navHostController,
                             sheetContent = {
                                 LMusicNavGraph()
                                 SmartBarContent(
