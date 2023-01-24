@@ -2,21 +2,32 @@ package com.lalilu.lmusic.compose.screen.library
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.entity.LArtist
@@ -35,8 +46,10 @@ import com.lalilu.lmusic.compose.screen.library.detail.PlaylistDetailScreen
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.LocalSearchVM
+import com.lalilu.lmusic.viewmodel.LocalSongsVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
+import com.lalilu.lmusic.viewmodel.SongsViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object SearchScreen : BaseScreen() {
@@ -58,6 +71,7 @@ object SearchScreen : BaseScreen() {
 )
 @Composable
 private fun SearchScreen(
+    songsVM: SongsViewModel = LocalSongsVM.current,
     searchVM: SearchViewModel = LocalSearchVM.current,
     playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
@@ -65,6 +79,7 @@ private fun SearchScreen(
     val navToAlbumAction = AlbumDetailScreen.navToByArgv()
     val navToArtistAction = ArtistDetailScreen.navToByArgv()
     val navToPlaylistAction = PlaylistDetailScreen.navToByArgv()
+    val navToSongsListAction = SongsScreen.navToByArgv { popUpTo(ScreenData.Search.name) }
     val navToSongAction = SongDetailScreen.navToByArgv(
         hapticType = HapticFeedbackType.LongPress
     ) {
@@ -86,9 +101,16 @@ private fun SearchScreen(
     SmartContainer.LazyColumn {
         searchItem(
             name = "歌曲",
-            items = searchVM.songsResult.value.take(5),
+            showCount = 5,
             getId = { it.id },
-            getContentType = { LSong::class }
+            items = searchVM.songsResult.value,
+            getContentType = { LSong::class },
+            onClickHeader = {
+                if (searchVM.songsResult.value.isNotEmpty()) {
+                    songsVM.updateBySongs(searchVM.songsResult.value)
+                    navToSongsListAction(false.toString())
+                }
+            }
         ) {
             SongCard(
                 modifier = Modifier.animateItemPlacement(),
@@ -104,8 +126,8 @@ private fun SearchScreen(
             RecommendTitle(title = "专辑 ${searchVM.albumsResult.value.size.takeIf { it > 0 } ?: ""}")
         }
         item(key = "AlbumItems") {
-            AnimatedContent(targetState = searchVM.albumsResult.value.isNotEmpty()) {
-                if (it) {
+            AnimatedContent(targetState = searchVM.albumsResult.value.isNotEmpty()) { show ->
+                if (show) {
                     RecommendRow(
                         items = searchVM.albumsResult.value,
                         getId = { it.id }
@@ -126,25 +148,22 @@ private fun SearchScreen(
 
         searchItem(
             name = "歌手",
-            items = searchVM.artistsResult.value.take(5),
+            showCount = 5,
             getId = { it.id },
+            items = searchVM.artistsResult.value,
             getContentType = { LArtist::class }
         ) {
-            Surface(onClick = { navToArtistAction(it.name) }) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                        .animateItemPlacement(),
-                    text = it.name
-                )
-            }
+            ArtistCard(
+                artist = it,
+                onClick = { navToArtistAction(it.name) }
+            )
         }
 
         searchItem(
             name = "曲风",
-            items = searchVM.genresResult.value.take(5),
+            showCount = 5,
             getId = { it.id },
+            items = searchVM.genresResult.value,
             getContentType = { LGenre::class }
         ) {
             Surface(onClick = {}) {
@@ -160,8 +179,9 @@ private fun SearchScreen(
 
         searchItem(
             name = "歌单",
-            items = searchVM.playlistResult.value.take(5),
+            showCount = 5,
             getId = { it.id },
+            items = searchVM.playlistResult.value,
             getContentType = { LPlaylist::class }
         ) {
             Surface(onClick = { navToPlaylistAction(it.id) }) {
@@ -177,15 +197,62 @@ private fun SearchScreen(
     }
 }
 
+@Composable
+fun ArtistCard(
+    artist: LArtist,
+    onClick: () -> Unit = {}
+) {
+    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .clickable(onClick = onClick)
+            .padding(start = 10.dp, end = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text(
+            modifier = Modifier.width(48.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 10.sp,
+            color = textColor.copy(alpha = 0.4f),
+            text = "#${artist._id.takeIf { it.length >= 4 }?.take(4) ?: artist._id}"
+        )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = artist.name,
+            fontSize = 14.sp,
+            color = textColor,
+            maxLines = 1,
+            textAlign = TextAlign.Start,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = "${artist.requireItemsCount()} 首歌曲",
+            fontSize = 12.sp,
+            color = textColor.copy(0.8f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
 fun <I> LazyListScope.searchItem(
     name: String,
     items: List<I>,
     getId: (I) -> Any,
+    showCount: Int = items.size,
     getContentType: (I) -> Any,
+    onClickHeader: () -> Unit = {},
     itemContent: @Composable LazyItemScope.(I) -> Unit,
 ) {
     item(key = "${name}_Header") {
-        RecommendTitle(title = "$name ${items.size.takeIf { it > 0 } ?: ""}", onClick = { })
+        RecommendTitle(
+            title = "$name ${items.size.takeIf { it > 0 } ?: ""}",
+            onClick = onClickHeader
+        )
     }
     item(key = "${name}_EmptyTips") {
         AnimatedVisibility(
@@ -202,5 +269,10 @@ fun <I> LazyListScope.searchItem(
             )
         }
     }
-    items(items = items, key = getId, contentType = getContentType, itemContent = itemContent)
+    items(
+        items = items.take(showCount),
+        key = getId,
+        contentType = getContentType,
+        itemContent = itemContent
+    )
 }
