@@ -2,7 +2,7 @@ package com.lalilu.lmusic.service.playback
 
 
 interface Playback<T> {
-    var listener: Listener<T>?
+    var playbackListener: Listener<T>?
     var queue: PlayQueue<T>?
     var player: Player?
 

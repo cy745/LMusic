@@ -18,6 +18,9 @@ import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.notification.LMusicNotifier
 import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
+import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
+import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
+import com.lalilu.lmusic.service.playback.impl.LocalPlayer
 import com.lalilu.lmusic.service.playback.impl.MixPlayback
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.EQHelper
@@ -48,9 +51,17 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var coverRepo: CoverRepository
 
     @Inject
-    lateinit var playback: MixPlayback
+    lateinit var noisyReceiver: LMusicNoisyReceiver
+
+    @Inject
+    lateinit var audioFocusHelper: LMusicAudioFocusHelper
+
+    @Inject
+    lateinit var localPlayer: LocalPlayer
 
     lateinit var mediaSession: MediaSessionCompat
+
+    lateinit var playback: MixPlayback
 
     lateinit var notifier: LMusicNotifier
 
@@ -127,8 +138,14 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     override fun onCreate() {
         super.onCreate()
 
-        playback.listener = PlaybackListener()
-        playback.queue = LMusicRuntimeQueue()
+        playback = MixPlayback(
+            player = localPlayer,
+            noisyReceiver = noisyReceiver,
+            audioFocusHelper = audioFocusHelper,
+            settingsDataStore = settingsDataStore,
+            playbackListener = PlaybackListener(),
+            queue = LMusicRuntimeQueue()
+        )
 
         val sessionActivityPendingIntent =
             packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->

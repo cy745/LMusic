@@ -13,27 +13,22 @@ import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.service.playback.Player
 import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class MixPlayback @Inject constructor(
-    localPlayer: LocalPlayer,
+class MixPlayback constructor(
     private val noisyReceiver: LMusicNoisyReceiver,
     private val audioFocusHelper: LMusicAudioFocusHelper,
-    private val settingsDataStore: SettingsDataStore
+    private val settingsDataStore: SettingsDataStore,
+    override var playbackListener: Playback.Listener<LSong>? = null,
+    override var queue: PlayQueue<LSong>? = null,
+    override var player: Player? = null
 ) : MediaSessionCompat.Callback(), Playback<LSong>, Playback.Listener<LSong>, Player.Listener {
-    override var listener: Playback.Listener<LSong>? = null
 
     init {
-        changeToPlayer(localPlayer)
+        player?.listener = this
         audioFocusHelper.onPlay = ::onPlay
         audioFocusHelper.onPause = ::onPause
         noisyReceiver.onBecomingNoisy = ::onPause
     }
-
-    override var queue: PlayQueue<LSong>? = null
-    override var player: Player? = null
 
     override fun changeToPlayer(changeTo: Player) {
         if (player == changeTo) return
@@ -108,6 +103,7 @@ class MixPlayback @Inject constructor(
             Config.ACTION_PLAY_AND_PAUSE -> {
                 if (player?.isPlaying == true) onPause() else onPlay()
             }
+
             Config.ACTION_RELOAD_AND_PLAY -> {
                 player?.isPrepared = false
                 onPlay()
@@ -116,11 +112,11 @@ class MixPlayback @Inject constructor(
     }
 
     override fun onSetRepeatMode(repeatMode: Int) {
-        listener?.onSetRepeatMode(repeatMode)
+        playbackListener?.onSetRepeatMode(repeatMode)
     }
 
     override fun onSetShuffleMode(shuffleMode: Int) {
-        listener?.onSetRepeatMode(shuffleMode)
+        playbackListener?.onSetRepeatMode(shuffleMode)
     }
 
     override fun requestAudioFocus(): Boolean {
@@ -165,10 +161,10 @@ class MixPlayback @Inject constructor(
     }
 
     override fun onPlayingItemUpdate(item: LSong?) {
-        listener?.onPlayingItemUpdate(item)
+        playbackListener?.onPlayingItemUpdate(item)
     }
 
     override fun onPlaybackStateChanged(playbackState: Int, position: Long) {
-        listener?.onPlaybackStateChanged(playbackState, position)
+        playbackListener?.onPlaybackStateChanged(playbackState, position)
     }
 }
