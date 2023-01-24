@@ -27,6 +27,8 @@ import com.lalilu.lmusic.viewmodel.MainViewModel
 @Composable
 fun SongsSelectWrapper(
     mainVM: MainViewModel = LocalMainVM.current,
+    recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
+    extraActionsContent: @Composable (SelectHelper<LSong>) -> Unit = {},
     content: @Composable (SelectHelper<LSong>) -> Unit
 ) {
     val selector = rememberSelectState<LSong>()
@@ -45,15 +47,19 @@ fun SongsSelectWrapper(
                     IconTextButton(
                         text = "取消",
                         color = Color(0xFF006E7C),
-                        onClick = { selector.clear() })
+                        onClick = { selector.clear() }
+                    )
                     Text(text = "已选择: ${selector.selectedItems.size}")
-                    IconTextButton(text = "添加到歌单",
-                        color = Color(0xFF006E7C),
-                        onClick = { navToAddToPlaylist(selector.selectedItems) })
+                    IconTextButton(
+                        text = "添加到歌单",
+                        color = Color(0xFF3EA22C),
+                        onClick = { navToAddToPlaylist(selector.selectedItems) }
+                    )
+                    extraActionsContent(selector)
                 }
             }
         } else {
-            SmartBar.setMainBar(item = LibraryDetailNavigateBar)
+            SmartBar.setMainBar(item = recoverTo)
         }
     }
     content(selector)
