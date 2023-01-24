@@ -33,12 +33,12 @@ dependencies {
     // https://github.com/getActivity/XXPermissions
     // Apache-2.0
     // 权限请求框架
-    implementation "com.github.getActivity:XXPermissions:16.2"
+    // implementation "com.github.getActivity:XXPermissions:16.2"
 
     // https://github.com/Blankj/AndroidUtilCode/
     // Apache-2.0 License
     // 安卓工具类库
-    implementation 'com.blankj:utilcodex:1.31.0'
-    implementation "androidx.palette:palette-ktx:1.0.0"
-    implementation "androidx.core:core-ktx:1.8.0"
+    api 'com.blankj:utilcodex:1.31.1'
+    api "androidx.palette:palette-ktx:1.0.0"
+    implementation "androidx.core:core-ktx:1.9.0"
 }
