@@ -24,12 +24,14 @@ class LMusicBrowser @Inject constructor(
     private val runtime: LMusicRuntime
 ) : DefaultLifecycleObserver {
     private var controller: MediaControllerCompat? = null
-    private val browser: MediaBrowserCompat = MediaBrowserCompat(
-        context,
-        ComponentName(context, LMusicService::class.java),
-        ConnectionCallback(context),
-        null
-    )
+    private val browser: MediaBrowserCompat by lazy {
+        MediaBrowserCompat(
+            context,
+            ComponentName(context, LMusicService::class.java),
+            ConnectionCallback(context),
+            null
+        )
+    }
 
     fun setSongs(songs: List<LSong>, song: LSong? = null) {
         runtime.load(songs = songs, playing = song)

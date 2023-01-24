@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -143,9 +142,7 @@ fun SongDetailScreen(
         )
         SmartContainer.LazyVerticalGrid(
             modifier = Modifier.padding(top = 100.dp),
-            columns = GridCells.Fixed(
-                if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1
-            )
+            columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 }
         ) {
             item {
                 NavigatorHeader(title = song.name, subTitle = song._artist) {

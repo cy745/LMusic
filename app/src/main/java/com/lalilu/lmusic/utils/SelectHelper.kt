@@ -9,10 +9,10 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 
 class SelectHelper<T>(
     defaultState: Boolean = false,
-    private val onExitSelect: () -> Unit = {},
-    private val selectedItems: SnapshotStateList<T>
+    private val onExitSelect: () -> Unit = {}
 ) {
     val isSelecting = mutableStateOf(defaultState)
+    val selectedItems: SnapshotStateList<T> = mutableStateListOf()
 
     fun clear() {
         isSelecting.value = false
@@ -43,14 +43,12 @@ class SelectHelper<T>(
 @Composable
 fun <T> rememberSelectState(
     defaultState: Boolean = false,
-    selectedItems: SnapshotStateList<T> = mutableStateListOf(),
     onExitSelect: () -> Unit = {}
 ): SelectHelper<T> {
     return remember {
-        SelectHelper(
+        SelectHelper<T>(
             defaultState = defaultState,
-            onExitSelect = onExitSelect,
-            selectedItems = selectedItems
+            onExitSelect = onExitSelect
         )
     }.also {
         it.registerBackHandler()

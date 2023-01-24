@@ -99,16 +99,11 @@ private fun PlaylistDetailScreen(
         playlistDetailVM.getPlaylistDetailById(playlistId, this)
     }
 
+    val selector = rememberSelectState<LSong>()
     val state = rememberReorderableLazyListState(
         onMove = playlistDetailVM::onMoveItem,
         canDragOver = playlistDetailVM::canDragOver,
         onDragEnd = playlistDetailVM::onDragEnd
-    )
-
-    val selectedItems = remember { mutableStateListOf<LSong>() }
-    val selector = rememberSelectState(
-        defaultState = false,
-        selectedItems = selectedItems
     )
 
     LaunchedEffect(selector.isSelecting.value) {
@@ -126,14 +121,14 @@ private fun PlaylistDetailScreen(
                         color = Color(0xFF006E7C),
                         onClick = { selector.clear() }
                     )
-                    Text(text = "已选择 ${selectedItems.size}")
+                    Text(text = "已选择 ${selector.selectedItems.size}")
                     IconTextButton(
                         text = "删除",
                         color = Color(0xFF006E7C),
                         onClick = {
                             playlist?.let {
                                 playlistsVM.removeSongsFromPlaylist(
-                                    songs = selectedItems.toImmutableList(),
+                                    songs = selector.selectedItems.toImmutableList(),
                                     playlist = it
                                 )
                             }
@@ -143,7 +138,7 @@ private fun PlaylistDetailScreen(
                     IconTextButton(
                         text = "添加到歌单",
                         color = Color(0xFF3EA22C),
-                        onClick = { navToAddToPlaylist(selectedItems.toImmutableList()) }
+                        onClick = { navToAddToPlaylist(selector.selectedItems.toImmutableList()) }
                     )
                 }
             }
@@ -188,7 +183,7 @@ private fun PlaylistDetailScreen(
                     dragModifier = Modifier.detectReorder(state),
                     onLongClick = { navToSongAction(item.id) },
                     onEnterSelect = { selector.onSelected(item) },
-                    isSelected = { isDragging || selectedItems.any { it.id == item.id } }
+                    isSelected = { isDragging || selector.selectedItems.any { it.id == item.id } }
                 )
             }
         }
