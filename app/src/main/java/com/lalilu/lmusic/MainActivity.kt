@@ -41,6 +41,7 @@ import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.LocalPlaylistDetailVM
 import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
 import com.lalilu.lmusic.viewmodel.LocalSearchVM
+import com.lalilu.lmusic.viewmodel.LocalSongsVM
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -101,7 +102,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                     LocalPlaylistsVM provides hiltViewModel(),
                     LocalMainVM provides hiltViewModel(),
                     LocalPlaylistDetailVM provides hiltViewModel(),
-                    LocalSearchVM provides hiltViewModel()
+                    LocalSearchVM provides hiltViewModel(),
+                    LocalSongsVM provides hiltViewModel()
                 ) {
                     Box {
                         SmartModalBottomSheet.SmartModalBottomSheetContent(

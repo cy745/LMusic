@@ -1,295 +1,186 @@
 package com.lalilu.lmusic.compose.screen.library
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.Button
-import androidx.compose.material.ChipDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FilterChip
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.blankj.utilcode.util.TimeUtils
-import com.funny.data_saver.core.rememberDataSaverState
-import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.navigation.animation.composable
-import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.extension.GroupRule
-import com.lalilu.lmedia.extension.OrderRule
-import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
-import com.lalilu.lmusic.compose.component.base.IconTextButton
+import com.lalilu.lmusic.compose.component.base.SortPanel
 import com.lalilu.lmusic.compose.component.card.SongCard
+import com.lalilu.lmusic.compose.component.card.SongsSelectWrapper
+import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.BaseScreen
-import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
-import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
-import com.lalilu.lmusic.utils.rememberSelectState
+import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.*
 
 @OptIn(ExperimentalAnimationApi::class)
 object SongsScreen : BaseScreen() {
+    @OptIn(ExperimentalMaterialApi::class)
     override fun register(builder: NavGraphBuilder) {
-        builder.composable(ScreenData.Songs.name) {
-            SongsScreen()
+        builder.composable(
+            route = "${ScreenData.Songs.name}?showAll={showAll}&title={title}",
+            arguments = listOf(
+                navArgument("showAll") {
+                    type = NavType.BoolType
+                    defaultValue = true
+                },
+                navArgument("title") {
+                    type = NavType.StringType
+                    defaultValue = "全部歌曲"
+                }
+            )
+        ) { backStackEntry ->
+            val showAll = backStackEntry.arguments?.getBoolean("showAll") ?: true
+            val title = backStackEntry.arguments?.getString("title") ?: "全部歌曲"
+
+            SongsScreen(
+                showAll = showAll
+            ) { songs, showSortBar ->
+                item {
+                    NavigatorHeader(
+                        title = title, subTitle = "共 ${songs.size} 首歌曲"
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(50.dp),
+                            color = dayNightTextColor(0.05f),
+                            onClick = showSortBar
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 15.dp, vertical = 5.dp),
+                                style = MaterialTheme.typography.subtitle2,
+                                color = dayNightTextColor(0.7f),
+                                text = "排序"
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
     override fun getNavToRoute(): String {
         return ScreenData.Songs.name
     }
+
+    override fun getNavToByArgvRoute(argv: String): String {
+        return "${ScreenData.Songs.name}?showAll=$argv"
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun SongsScreen(
-    mainVM: MainViewModel = LocalMainVM.current,
-    libraryVM: LibraryViewModel = LocalLibraryVM.current,
+fun SongsScreen(
+    showAll: Boolean = true,
     playingVM: PlayingViewModel = LocalPlayingVM.current,
+    songsViewModel: SongsViewModel = LocalSongsVM.current,
+    headerContent: LazyGridScope.(
+        songs: List<LSong>,
+        showSortBar: () -> Unit
+    ) -> Unit = { _, _ -> }
 ) {
-    val gridState = rememberLazyGridState()
-    val selector = rememberSelectState<LSong>()
-
     val navToSongAction = SongDetailScreen.navToByArgv(hapticType = HapticFeedbackType.LongPress)
-    val navToAddToPlaylist = mainVM.navToAddToPlaylist()
+    val songsState by songsViewModel.songsState
 
-    val songs by libraryVM.songs
-    val currentPlaying by playingVM.runtime.playingLiveData.observeAsState()
-
-    val scrollAction = buildScrollToItemAction(
-        target = currentPlaying,
-        getIndex = { songs.values.flatten().indexOfFirst { it.id == currentPlaying!!.id } },
-        state = gridState
-    )
-
-    LaunchedEffect(selector.isSelecting.value) {
-        if (selector.isSelecting.value) {
-            SmartBar.setMainBar {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    IconTextButton(
-                        text = "取消",
-                        color = Color(0xFF006E7C),
-                        onClick = { selector.clear() })
-                    Text(text = "已选择: ${selector.selectedItems.size}")
-                    IconTextButton(text = "添加到歌单",
-                        color = Color(0xFF006E7C),
-                        onClick = { navToAddToPlaylist(selector.selectedItems) })
-                }
-            }
-        } else {
-            SmartBar.setMainBar(item = LibraryDetailNavigateBar)
+    LaunchedEffect(showAll) {
+        if (showAll) {
+            songsViewModel.updateByLibrary()
         }
     }
 
-    SmartContainer.LazyVerticalGrid(
-        state = gridState,
-        columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        val now = System.currentTimeMillis()
+    SongsSelectWrapper { selector ->
+        SmartContainer.LazyVerticalGrid(
+            columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            val now = System.currentTimeMillis()
 
-        item(key = "CONTROLLER", contentType = "CONTROLLER") {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-            ) {
-                Button(onClick = {
-                    SmartBar.setExtraBar {
-                        SortBar(libraryVM = libraryVM, sortFor = Sortable.SORT_FOR_SONGS)
-                    }
-                }) {
-                    Text(text = "选择排序")
-                }
-            }
-        }
-
-        songs.forEach { (titleObj, list) ->
-            if (titleObj is Long) {
-                item(key = titleObj,
-                    contentType = LSong::dateAdded,
-                    span = { GridItemSpan(maxLineSpan) }) {
-                    Text(
-                        modifier = Modifier.padding(
-                            top = 20.dp, bottom = 10.dp, start = 20.dp, end = 20.dp
-                        ), style = MaterialTheme.typography.h6, text = when {
-                            now - titleObj < 300000 -> "刚刚"
-                            now - titleObj < 3600000 -> "${(now - titleObj) / 60000}分钟前"
-                            now - titleObj < 86400000 -> "${(now - titleObj) / 3600000}小时前"
-                            else -> TimeUtils.millis2String(titleObj, "M月d日 HH:mm")
-                        }
-                    )
-                }
-            } else if (titleObj is String && titleObj.isNotEmpty()) {
-                item(key = titleObj,
-                    contentType = LSong::dateAdded,
-                    span = { GridItemSpan(maxLineSpan) }) {
-                    Text(
-                        modifier = Modifier.padding(
-                            top = 20.dp, bottom = 10.dp, start = 20.dp, end = 20.dp
-                        ), style = MaterialTheme.typography.h6, text = titleObj
+            headerContent(songsState.values.flatten()) {
+                SmartBar.setMainBar {
+                    SortPanel(
+                        supportGroupRules = { songsViewModel.supportGroupRules },
+                        supportOrderRules = { songsViewModel.supportOrderRules },
+                        supportSortRules = { songsViewModel.supportSortRules },
+                        sortFor = Sortable.SORT_FOR_SONGS
                     )
                 }
             }
 
-            items(items = list, key = { it.id }, contentType = { LSong::class }) { item ->
-                SongCard(modifier = Modifier.animateItemPlacement(),
-                    song = { item },
-                    lyricRepository = playingVM.lyricRepository,
-                    onClick = {
-                        if (selector.isSelecting.value) {
-                            selector.onSelected(item)
-                        } else {
-                            playingVM.playSongWithPlaylist(songs.values.flatten(), item)
-                        }
-                    },
-                    onLongClick = { navToSongAction(item.id) },
-                    onEnterSelect = { selector.onSelected(item) },
-                    isSelected = { selector.selectedItems.any { it.id == item.id } })
-            }
-        }
-    }
-}
+            songsState.forEach { (titleObj, list) ->
+                if (titleObj is Long) {
+                    item(
+                        key = titleObj,
+                        contentType = LSong::dateAdded,
+                        span = { GridItemSpan(maxLineSpan) }
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(
+                                top = 20.dp, bottom = 10.dp, start = 20.dp, end = 20.dp
+                            ), style = MaterialTheme.typography.h6, text = when {
+                                now - titleObj < 300000 -> "刚刚"
+                                now - titleObj < 3600000 -> "${(now - titleObj) / 60000}分钟前"
+                                now - titleObj < 86400000 -> "${(now - titleObj) / 3600000}小时前"
+                                else -> TimeUtils.millis2String(titleObj, "M月d日 HH:mm")
+                            }
+                        )
+                    }
+                } else if (titleObj is String && titleObj.isNotEmpty()) {
+                    item(
+                        key = titleObj,
+                        contentType = LSong::dateAdded,
+                        span = { GridItemSpan(maxLineSpan) }
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(
+                                top = 20.dp, bottom = 10.dp, start = 20.dp, end = 20.dp
+                            ), style = MaterialTheme.typography.h6, text = titleObj
+                        )
+                    }
+                }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
-@Composable
-fun SortBar(
-    libraryVM: LibraryViewModel, sortFor: String = Sortable.SORT_FOR_SONGS
-) {
-    var sortRule by rememberDataSaverState(
-        key = "${sortFor}_SORT_RULE", default = SortRule.Normal.name
-    )
-    var orderRule by rememberDataSaverState(
-        key = "${sortFor}_ORDER_RULE", default = OrderRule.ASC.name
-    )
-    var groupRule by rememberDataSaverState(
-        key = "${sortFor}_GROUP_RULE", default = GroupRule.Normal.name
-    )
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(horizontal = 20.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Text(text = "排序依据")
-        FlowRow(mainAxisSpacing = 8.dp) {
-            libraryVM.supportSortRules.forEach { item ->
-                FilterChip(
-                    onClick = { sortRule = item.name },
-                    selected = item.name == sortRule,
-                    colors = ChipDefaults.outlinedFilterChipColors(),
-                    leadingIcon = {
-                        AnimatedContent(
-                            targetState = item.name == sortRule,
-                            transitionSpec = { fadeIn() with fadeOut() }
-                        ) { show ->
-                            if (show) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_checkbox_circle_line),
-                                    contentDescription = ""
-                                )
+                items(
+                    items = list,
+                    key = { it.id },
+                    contentType = { LSong::class }
+                ) { item ->
+                    SongCard(
+                        modifier = Modifier.animateItemPlacement(),
+                        song = { item },
+                        lyricRepository = playingVM.lyricRepository,
+                        onClick = {
+                            if (selector.isSelecting.value) {
+                                selector.onSelected(item)
                             } else {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_checkbox_blank_circle_line),
-                                    contentDescription = ""
-                                )
+                                playingVM.playSongWithPlaylist(songsState.values.flatten(), item)
                             }
-                        }
-                    }
-                ) {
-                    Text(text = item.title)
-                }
-            }
-        }
-        Text(text = "分组依据")
-        FlowRow(mainAxisSpacing = 8.dp) {
-            libraryVM.supportGroupRules.forEach { item ->
-                FilterChip(
-                    onClick = { groupRule = item.name },
-                    selected = item.name == groupRule,
-                    colors = ChipDefaults.outlinedFilterChipColors(),
-                    leadingIcon = {
-                        AnimatedContent(
-                            targetState = item.name == groupRule,
-                            transitionSpec = { fadeIn() with fadeOut() }
-                        ) { show ->
-                            if (show) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_checkbox_circle_line),
-                                    contentDescription = ""
-                                )
-                            } else {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_checkbox_blank_circle_line),
-                                    contentDescription = ""
-                                )
-                            }
-                        }
-                    }
-                ) {
-                    Text(text = item.title)
-                }
-            }
-        }
-        Text(text = "排序顺序")
-        FlowRow(mainAxisSpacing = 8.dp) {
-            libraryVM.supportOrderRules.forEach { item ->
-                FilterChip(
-                    onClick = { orderRule = item.name },
-                    selected = item.name == orderRule,
-                    colors = ChipDefaults.outlinedFilterChipColors(),
-                    leadingIcon = {
-                        AnimatedContent(
-                            targetState = item.name == orderRule,
-                            transitionSpec = { fadeIn() with fadeOut() }
-                        ) { show ->
-                            if (show) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_checkbox_circle_line),
-                                    contentDescription = ""
-                                )
-                            } else {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_checkbox_blank_circle_line),
-                                    contentDescription = ""
-                                )
-                            }
-                        }
-                    }
-                ) {
-                    Text(text = item.title)
+                        },
+                        onLongClick = { navToSongAction(item.id) },
+                        onEnterSelect = { selector.onSelected(item) },
+                        isSelected = { selector.selectedItems.any { it.id == item.id } }
+                    )
                 }
             }
         }

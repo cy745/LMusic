@@ -49,7 +49,9 @@ import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.LocalLibraryVM
 import com.lalilu.lmusic.viewmodel.LocalPlayingVM
+import com.lalilu.lmusic.viewmodel.LocalSongsVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lmusic.viewmodel.SongsViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -69,7 +71,8 @@ object LibraryScreen : BaseScreen() {
 @Composable
 private fun LibraryScreen(
     viewModel: LibraryViewModel = LocalLibraryVM.current,
-    playingVM: PlayingViewModel = LocalPlayingVM.current
+    playingVM: PlayingViewModel = LocalPlayingVM.current,
+    songsVM: SongsViewModel = LocalSongsVM.current
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
     val navToSongAction = SongDetailScreen.navToByArgv {
@@ -85,10 +88,19 @@ private fun LibraryScreen(
     val navToArtistsAction = ArtistScreen.navTo { popUpTo(ScreenData.Library.name) }
     val navToAlbumsAction = AlbumsScreen.navTo { popUpTo(ScreenData.Library.name) }
     val navToSettingsAction = SettingsScreen.navTo { popUpTo(ScreenData.Library.name) }
+    val navToSongsListAction = SongsScreen.navToByArgv { popUpTo(ScreenData.Library.name) }
 
     SmartContainer.LazyColumn {
         item {
-            RecommendTitle(title = "每日推荐", onClick = { })
+            RecommendTitle(
+                title = "每日推荐",
+                onClick = {
+                    songsVM.updateBySongs(dailyRecommends)
+                    navToSongsListAction(false.toString())
+                }
+            )
+        }
+        item {
             RecommendRow(
                 items = dailyRecommends,
                 getId = { it.id }
@@ -102,7 +114,15 @@ private fun LibraryScreen(
         }
 
         item {
-            RecommendTitle(title = "最近添加", onClick = { })
+            RecommendTitle(
+                title = "最近添加",
+                onClick = {
+                    songsVM.updateBySongs(viewModel.recentlyAdded.value)
+                    navToSongsListAction(false.toString())
+                }
+            )
+        }
+        item {
             RecommendRow(
                 items = viewModel.recentlyAdded.value,
                 getId = { it.id }
@@ -119,9 +139,14 @@ private fun LibraryScreen(
             }
         }
 
-
         item {
-            RecommendTitle(title = "最近播放")
+            RecommendTitle(
+                title = "最近播放",
+                onClick = {
+                    songsVM.updateBySongs(viewModel.lastPlayedStack.value)
+                    navToSongsListAction(false.toString())
+                }
+            )
         }
         items(
             items = viewModel.lastPlayedStack.value,
@@ -156,11 +181,15 @@ private fun LibraryScreen(
             }
         }
 
-
         item {
-            RecommendTitle(title = "随机推荐", onClick = { }) {
-                Surface(
-                    shape = RoundedCornerShape(50.dp),
+            RecommendTitle(
+                title = "随机推荐",
+                onClick = {
+                    songsVM.updateBySongs(viewModel.randomRecommends.value)
+                    navToSongsListAction(false.toString())
+                }
+            ) {
+                Surface(shape = RoundedCornerShape(50.dp),
                     color = dayNightTextColor(0.05f),
                     onClick = { viewModel.refreshRandomRecommend() }
                 ) {
