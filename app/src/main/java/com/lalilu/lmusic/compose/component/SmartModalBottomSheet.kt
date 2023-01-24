@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.blankj.utilcode.util.KeyboardUtils
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.lmusic.compose.component.navigate.NavigateBar
@@ -51,15 +50,17 @@ object SmartModalBottomSheet {
 
     @Composable
     fun SmartModalBottomSheetContent(
-        navController: NavController,
         scope: CoroutineScope = rememberCoroutineScope(),
         sheetContent: @Composable BoxScope.() -> Unit,
         content: @Composable BoxScope.() -> Unit
     ) {
-        SmartModalBottomSheet.scope = scope
+        LaunchedEffect(scope) {
+            SmartModalBottomSheet.scope = scope
+        }
         val context = LocalContext.current
         val windowSize = LocalWindowSize.current
         val configuration = LocalConfiguration.current
+        val navController = LocalNavigatorHost.current
 
         val offset = scaffoldState.offset.value
         val isDarkModeNow = isSystemInDarkTheme()
