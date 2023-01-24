@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -108,10 +107,8 @@ private fun PlaylistsScreen(
         canDragOver = playlistsVM::canDragOver,
         onDragEnd = playlistsVM::onDragEnd
     )
-    val selectedItems = remember { mutableStateListOf<LPlaylist>() }
-    val selector = rememberSelectState(
+    val selector = rememberSelectState<LPlaylist>(
         defaultState = isAddingSongs,
-        selectedItems = selectedItems,
         onExitSelect = {
             if (isAddingSongs) {
                 navigator.navigateUp()
@@ -135,25 +132,25 @@ private fun PlaylistsScreen(
                         onClick = { selector.clear() }
                     )
                     if (isAddingSongs) {
-                        Text(text = "${mainVM.tempSongs.size}首歌 -> ${selectedItems.size}歌单")
+                        Text(text = "${mainVM.tempSongs.size}首歌 -> ${selector.selectedItems.size}歌单")
                         IconTextButton(
                             text = "确认保存",
                             color = Color(0xFF3EA22C),
                             onClick = {
                                 playlistsVM.addSongsIntoPlaylists(
-                                    playlists = selectedItems.toImmutableList(),
+                                    playlists = selector.selectedItems.toImmutableList(),
                                     songs = mainVM.tempSongs.toImmutableList()
                                 )
                                 selector.clear()
                             }
                         )
                     } else {
-                        Text(text = "已选择 ${selectedItems.size}")
+                        Text(text = "已选择 ${selector.selectedItems.size}")
                         IconTextButton(
                             text = "删除",
                             color = Color(0xFF006E7C),
                             onClick = {
-                                playlistsVM.removePlaylists(selectedItems.toImmutableList())
+                                playlistsVM.removePlaylists(selector.selectedItems.toImmutableList())
                                 selector.clear()
                             }
                         )
@@ -251,7 +248,7 @@ private fun PlaylistsScreen(
                         dragModifier = Modifier.detectReorder(state),
                         getPlaylist = { item },
                         onLongClick = { selector.onSelected(item) },
-                        getIsSelected = { isDragging || selectedItems.any { it._id == item._id } }
+                        getIsSelected = { isDragging || selector.selectedItems.any { it._id == item._id } }
                     )
                 } else {
                     PlaylistCard(
@@ -265,7 +262,7 @@ private fun PlaylistsScreen(
                         dragModifier = Modifier.detectReorder(state),
                         getPlaylist = { item },
                         onLongClick = { selector.onSelected(item) },
-                        getIsSelected = { isDragging || selectedItems.any { it._id == item._id } }
+                        getIsSelected = { isDragging || selector.selectedItems.any { it._id == item._id } }
                     )
                 }
             }

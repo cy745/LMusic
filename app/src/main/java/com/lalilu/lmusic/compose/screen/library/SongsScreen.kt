@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -23,8 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,7 +47,6 @@ import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.buildScrollToItemAction
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.*
@@ -75,8 +71,8 @@ private fun SongsScreen(
     libraryVM: LibraryViewModel = LocalLibraryVM.current,
     playingVM: PlayingViewModel = LocalPlayingVM.current,
 ) {
-    val windowSize = LocalWindowSize.current
     val gridState = rememberLazyGridState()
+    val selector = rememberSelectState<LSong>()
 
     val navToSongAction = SongDetailScreen.navToByArgv(hapticType = HapticFeedbackType.LongPress)
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
@@ -88,11 +84,6 @@ private fun SongsScreen(
         target = currentPlaying,
         getIndex = { songs.values.flatten().indexOfFirst { it.id == currentPlaying!!.id } },
         state = gridState
-    )
-
-    val selectedItems = remember { mutableStateListOf<LSong>() }
-    val selector = rememberSelectState(
-        defaultState = false, selectedItems = selectedItems
     )
 
     LaunchedEffect(selector.isSelecting.value) {
@@ -109,10 +100,10 @@ private fun SongsScreen(
                         text = "取消",
                         color = Color(0xFF006E7C),
                         onClick = { selector.clear() })
-                    Text(text = "已选择: ${selectedItems.size}")
+                    Text(text = "已选择: ${selector.selectedItems.size}")
                     IconTextButton(text = "添加到歌单",
                         color = Color(0xFF006E7C),
-                        onClick = { navToAddToPlaylist(selectedItems) })
+                        onClick = { navToAddToPlaylist(selector.selectedItems) })
                 }
             }
         } else {
@@ -122,7 +113,7 @@ private fun SongsScreen(
 
     SmartContainer.LazyVerticalGrid(
         state = gridState,
-        columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
+        columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         val now = System.currentTimeMillis()
@@ -184,7 +175,7 @@ private fun SongsScreen(
                     },
                     onLongClick = { navToSongAction(item.id) },
                     onEnterSelect = { selector.onSelected(item) },
-                    isSelected = { selectedItems.any { it.id == item.id } })
+                    isSelected = { selector.selectedItems.any { it.id == item.id } })
             }
         }
     }

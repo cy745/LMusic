@@ -4,6 +4,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -32,7 +33,6 @@ import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.StatusBarLyricExt
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.getActivity
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -48,9 +48,9 @@ object SettingsScreen : BaseScreen() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SettingsScreen() {
-    val windowSize = LocalWindowSize.current
     val context = LocalContext.current
     val ignoreAudioFocus = rememberDataSaverState(
         Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
@@ -92,131 +92,144 @@ private fun SettingsScreen() {
         Config.KEY_SETTINGS_ENABLE_SYSTEM_EQ,
         Config.DEFAULT_SETTINGS_ENABLE_SYSTEM_EQ
     )
-    val launcherForAudioFx =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+    val launcherForAudioFx = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+    }
+
+    SmartContainer.LazyStaggeredVerticalGrid(
+        columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
+    ) {
+        item {
+            NavigatorHeader(route = ScreenData.Settings)
         }
 
-    SmartContainer.StaggeredVerticalGrid(
-        columns = if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1,
-    ) {
-        NavigatorHeader(route = ScreenData.Settings)
+        item {
+            SettingCategory(
+                iconRes = R.drawable.ic_settings_4_line,
+                titleRes = R.string.preference_player_settings
+            ) {
+                SettingSwitcher(
+                    titleRes = R.string.preference_player_settings_ignore_audio_focus,
+                    state = ignoreAudioFocus
+                )
+                SettingProgressSeekBar(
+                    state = volumeControl,
+                    title = "独立音量控制",
+                    valueRange = 0..100
+                )
+                SettingStateSeekBar(
+                    state = playMode,
+                    selection = listOf("列表循环", "单曲循环", "随机播放"),
+                    title = "播放模式"
+                )
+                SettingStateSeekBar(
+                    state = seekbarHandler,
+                    selection = stringArrayResource(id = R.array.seekbar_handler).toList(),
+                    titleRes = R.string.preference_player_settings_seekbar_handler
+                )
+                SettingSwitcher(
+                    state = enableSystemEq,
+                    title = "启用系统均衡器",
+                    subTitle = "实验性功能，存在较大机型差异"
+                )
+                val enableSystemEqValue by enableSystemEq
+                AnimatedVisibility(visible = enableSystemEqValue) {
+                    Row(
+                        Modifier.padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        IconTextButton(
+                            text = "系统均衡器",
+                            iconPainter = painterResource(id = R.drawable.equalizer_line),
+                            showIcon = { true },
+                            color = Color(0xFF006E7C),
+                            onClick = {
+                                EQHelper.startSystemEqActivity {
+                                    launcherForAudioFx.launch(it)
+                                }
+                            })
+                    }
+                }
+            }
+        }
 
-        SettingCategory(
-            iconRes = R.drawable.ic_settings_4_line,
-            titleRes = R.string.preference_player_settings
-        ) {
-            SettingSwitcher(
-                titleRes = R.string.preference_player_settings_ignore_audio_focus,
-                state = ignoreAudioFocus
-            )
-            SettingProgressSeekBar(
-                state = volumeControl,
-                title = "独立音量控制",
-                valueRange = 0..100
-            )
-            SettingStateSeekBar(
-                state = playMode,
-                selection = listOf("列表循环", "单曲循环", "随机播放"),
-                title = "播放模式"
-            )
-            SettingStateSeekBar(
-                state = seekbarHandler,
-                selection = stringArrayResource(id = R.array.seekbar_handler).toList(),
-                titleRes = R.string.preference_player_settings_seekbar_handler
-            )
-            SettingSwitcher(
-                state = enableSystemEq,
-                title = "启用系统均衡器",
-                subTitle = "实验性功能，存在较大机型差异"
-            )
-            val enableSystemEqValue by enableSystemEq
-            AnimatedVisibility(visible = enableSystemEqValue) {
+        item {
+            SettingCategory(
+                iconRes = R.drawable.ic_lrc_fill,
+                titleRes = R.string.preference_lyric_settings
+            ) {
+                if (RomUtils.isMeizu() || StatusBarLyricExt.hasEnable()) {
+                    SettingSwitcher(
+                        titleRes = R.string.preference_lyric_settings_status_bar_lyric,
+                        state = statusBarLyric
+                    )
+                }
+                SettingFilePicker(
+                    state = lyricTypefaceUri,
+                    title = "自定义字体",
+                    subTitle = "请选择TTF格式的字体文件",
+                    mimeType = "application/octet-stream"
+                )
+                SettingStateSeekBar(
+                    state = lyricGravity,
+                    selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
+                    titleRes = R.string.preference_lyric_settings_text_gravity
+                )
+                SettingProgressSeekBar(
+                    state = lyricTextSize,
+                    title = "歌词文字大小",
+                    valueRange = 14..36
+                )
+            }
+        }
+
+        item {
+            SettingCategory(
+                iconRes = R.drawable.ic_scan_line,
+                titleRes = R.string.preference_media_source_settings
+            ) {
+                SettingSwitcher(
+                    state = unknownFilter,
+                    titleRes = R.string.preference_media_source_settings_unknown_filter,
+                    subTitleRes = R.string.preference_media_source_tips
+                )
+            }
+        }
+
+//        item {
+//            SettingCategory(
+//                iconRes = R.drawable.ic_gradienter_line,
+//                titleRes = R.string.preference_extensions
+//            ) {
+//                SettingExtensionSwitcher(
+//                    state = kanhiraEnable,
+//                    initialed = true,
+//                    title = "罗马字匹配功能"
+//                )
+//            }
+//        }
+
+        item {
+            SettingCategory(
+                icon = painterResource(id = R.drawable.ic_loader_line),
+                title = "其他"
+            ) {
                 Row(
                     Modifier.padding(horizontal = 20.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     IconTextButton(
-                        text = "系统均衡器",
-                        iconPainter = painterResource(id = R.drawable.equalizer_line),
-                        showIcon = { true },
-                        color = Color(0xFF006E7C),
+                        text = "新手引导",
+                        color = Color(0xFF3EA22C),
                         onClick = {
-                            EQHelper.startSystemEqActivity {
-                                launcherForAudioFx.launch(it)
+                            context.getActivity()?.apply {
+                                ActivityUtils.startActivity(GuidingActivity::class.java)
                             }
                         })
                 }
-            }
-        }
-
-        SettingCategory(
-            iconRes = R.drawable.ic_lrc_fill,
-            titleRes = R.string.preference_lyric_settings
-        ) {
-            if (RomUtils.isMeizu() || StatusBarLyricExt.hasEnable()) {
-                SettingSwitcher(
-                    titleRes = R.string.preference_lyric_settings_status_bar_lyric,
-                    state = statusBarLyric
-                )
-            }
-            SettingFilePicker(
-                state = lyricTypefaceUri,
-                title = "自定义字体",
-                subTitle = "请选择TTF格式的字体文件",
-                mimeType = "application/octet-stream"
-            )
-            SettingStateSeekBar(
-                state = lyricGravity,
-                selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
-                titleRes = R.string.preference_lyric_settings_text_gravity
-            )
-            SettingProgressSeekBar(
-                state = lyricTextSize,
-                title = "歌词文字大小",
-                valueRange = 14..36
-            )
-        }
-
-        SettingCategory(
-            iconRes = R.drawable.ic_scan_line,
-            titleRes = R.string.preference_media_source_settings
-        ) {
-            SettingSwitcher(
-                state = unknownFilter,
-                titleRes = R.string.preference_media_source_settings_unknown_filter,
-                subTitleRes = R.string.preference_media_source_tips
-            )
-        }
-
-//        SettingCategory(
-//            iconRes = R.drawable.ic_gradienter_line,
-//            titleRes = R.string.preference_extensions
-//        ) {
-//            SettingExtensionSwitcher(
-//                state = kanhiraEnable,
-//                initialed = true,
-//                title = "罗马字匹配功能"
-//            )
-//        }
-
-        SettingCategory(
-            icon = painterResource(id = R.drawable.ic_loader_line),
-            title = "其他"
-        ) {
-            Row(
-                Modifier.padding(horizontal = 20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                IconTextButton(
-                    text = "新手引导",
-                    color = Color(0xFF3EA22C),
-                    onClick = {
-                        context.getActivity()?.apply {
-                            ActivityUtils.startActivity(GuidingActivity::class.java)
-                        }
-                    })
             }
         }
     }

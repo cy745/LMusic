@@ -17,7 +17,6 @@ import com.lalilu.lmusic.compose.component.card.AlbumCard
 import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.detail.AlbumDetailScreen
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.LocalLibraryVM
 
@@ -40,7 +39,6 @@ private fun AlbumsScreen(
     libraryVM: LibraryViewModel = LocalLibraryVM.current
 ) {
     val albums by libraryVM.albums
-    val windowSize = LocalWindowSize.current
     val navToAlbumAction = AlbumDetailScreen.navToByArgv()
     var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
     var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)
@@ -49,7 +47,7 @@ private fun AlbumsScreen(
         contentPaddingForHorizontal = 10.dp,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
-        columns = if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 3 else 2,
+        columns = { if (it == WindowWidthSizeClass.Expanded) 3 else 2 }
     ) {
         items(items = albums, key = { it.id }, contentType = { LAlbum::class }) {
             AlbumCard(

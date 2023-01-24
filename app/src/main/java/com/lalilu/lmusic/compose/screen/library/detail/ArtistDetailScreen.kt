@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.compose.screen.library.detail
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -16,7 +15,6 @@ import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
@@ -50,7 +48,6 @@ private fun ArtistDetailScreen(
     playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val songs = artist.songs
-    val windowSize = LocalWindowSize.current
     val navToSongAction = SongDetailScreen.navToByArgv(hapticType = HapticFeedbackType.LongPress)
 
     val onSongSelected: (LSong) -> Unit = { song ->
@@ -58,7 +55,7 @@ private fun ArtistDetailScreen(
     }
 
     SmartContainer.LazyVerticalGrid(
-        columns = GridCells.Fixed(if (windowSize.widthSizeClass == WindowWidthSizeClass.Expanded) 2 else 1),
+        columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
     ) {
 //        item {
 //            NavigatorHeaderWithButtons(

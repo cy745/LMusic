@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
 
 object SmartContainer {
 
@@ -61,7 +63,7 @@ object SmartContainer {
     @Composable
     @JvmName("SmartContainerLazyVerticalGrid")
     fun LazyVerticalGrid(
-        columns: GridCells = GridCells.Fixed(2),
+        columns: (WindowWidthSizeClass) -> Int,
         modifier: Modifier = Modifier,
         state: LazyGridState = rememberLazyGridState(),
         reverseLayout: Boolean = false,
@@ -73,10 +75,11 @@ object SmartContainer {
         userScrollEnabled: Boolean = true,
         content: LazyGridScope.() -> Unit
     ) {
+        val windowSize = LocalWindowSize.current
         val statusPaddingValues = rememberStatusBarContentPadding(contentPaddingForHorizontal)
 
         LazyVerticalGrid(
-            columns = columns,
+            columns = GridCells.Fixed(columns(windowSize.widthSizeClass)),
             modifier = modifier
                 .fillMaxSize(),
             state = state,
@@ -101,42 +104,24 @@ object SmartContainer {
     @Composable
     @JvmName("SmartContainerLazyStaggeredVerticalGrid")
     fun LazyStaggeredVerticalGrid(
-        columns: Int,
+        columns: (WindowWidthSizeClass) -> Int,
         verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(0.dp),
         horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(0.dp),
         contentPaddingForHorizontal: Dp = 0.dp,
         content: LazyStaggeredGridScope.() -> Unit
     ) {
+        val windowSize = LocalWindowSize.current
         val contentPadding = rememberStatusBarContentPadding(
             horizontalPadding = contentPaddingForHorizontal,
             bottomPadding = SmartBar.smartBarHeightDpState.value
         )
 
         LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Fixed(columns),
+            columns = StaggeredGridCells.Fixed(columns(windowSize.widthSizeClass)),
             contentPadding = contentPadding,
             verticalArrangement = verticalArrangement,
             horizontalArrangement = horizontalArrangement,
             content = content
-        )
-    }
-
-    @Composable
-    @JvmName("SmartContainerStaggeredVerticalGrid")
-    fun StaggeredVerticalGrid(
-        columns: Int,
-        contentPaddingForHorizontal: Dp = 0.dp,
-        content: @Composable () -> Unit
-    ) {
-        val contentPadding = rememberStatusBarContentPadding(
-            horizontalPadding = contentPaddingForHorizontal,
-            bottomPadding = SmartBar.smartBarHeightDpState.value
-        )
-
-        com.lalilu.lmusic.compose.component.base.StaggeredVerticalGrid(
-            columns = columns,
-            content = content,
-            contentPadding = contentPadding
         )
     }
 

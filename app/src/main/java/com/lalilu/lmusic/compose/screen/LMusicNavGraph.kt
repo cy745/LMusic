@@ -91,18 +91,18 @@ fun LMusicNavGraph(
             fadeIn(animationSpec = tween(durationMillis = 300)) + slideInVertically { 100 }
         }
     ) {
-        LibraryScreen.register(builder = this)
         SongsScreen.register(builder = this)
         ArtistScreen.register(builder = this)
         AlbumsScreen.register(builder = this)
         SearchScreen.register(builder = this)
+        LibraryScreen.register(builder = this)
         SettingsScreen.register(builder = this)
         PlaylistsScreen.register(builder = this)
         FavouriteScreen.register(builder = this)
-        PlaylistDetailScreen.register(builder = this)
         SongDetailScreen.register(builder = this)
-        ArtistDetailScreen.register(builder = this)
         AlbumDetailScreen.register(builder = this)
+        ArtistDetailScreen.register(builder = this)
+        PlaylistDetailScreen.register(builder = this)
         MatchNetworkDataScreen.register(builder = this)
     }
 }
