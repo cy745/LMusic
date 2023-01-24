@@ -25,11 +25,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.navArgument
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
@@ -40,13 +42,12 @@ import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconCheckButton
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.NetworkPairCard
-import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
+import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.MatchNetworkDataScreen
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.lmusic.viewmodel.LocalMainVM
@@ -90,7 +91,7 @@ fun SongDetailScreen(
     playlistsVM: PlaylistsViewModel = LocalPlaylistsVM.current,
     networkDataVM: NetworkDataViewModel = hiltViewModel()
 ) {
-    val windowSize = LocalWindowSize.current
+    val navToArtistAction = ArtistDetailScreen.navToByArgv()
     val navToAlbumAction = AlbumDetailScreen.navToByArgv()
     val navToNetworkMatchAction = MatchNetworkDataScreen.navToByArgv()
     val navToAddToPlaylist = mainVM.navToAddToPlaylist()
@@ -145,13 +146,32 @@ fun SongDetailScreen(
             columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 }
         ) {
             item {
-                NavigatorHeader(title = song.name, subTitle = song._artist) {
-                    IconButton(onClick = { }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_fullscreen_line),
-                            contentDescription = "查看图片"
-                        )
+                NavigatorHeader(
+                    title = song.name,
+                    columnExtraContent = {
+                        FlowRow(mainAxisSpacing = 8.dp) {
+                            song.artists.forEach {
+                                Chip(
+                                    onClick = { navToArtistAction(it.name) },
+                                    colors = ChipDefaults.outlinedChipColors(),
+                                ) {
+                                    Text(
+                                        text = it.name,
+                                        fontSize = 14.sp,
+                                        color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+                                            .copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
+                        }
                     }
+                ) {
+//                    IconButton(onClick = { }) {
+//                        Icon(
+//                            painter = painterResource(id = R.drawable.ic_fullscreen_line),
+//                            contentDescription = "查看图片"
+//                        )
+//                    }
                 }
             }
 
@@ -159,7 +179,7 @@ fun SongDetailScreen(
                 item {
                     Surface(
                         modifier = Modifier
-                            .padding(horizontal = 20.dp, vertical = 20.dp)
+                            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
                             .width(intrinsicSize = IntrinsicSize.Min),
                         shape = RoundedCornerShape(20.dp),
                         onClick = { navToAlbumAction.invoke(it.id) }
@@ -170,12 +190,11 @@ fun SongDetailScreen(
                                 .padding(10.dp),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            RecommendCardForAlbum(
+                            RecommendCardCover(
                                 width = { 125.dp },
                                 height = { 125.dp },
-                                item = { it }
+                                imageData = { it }
                             )
-
                             Column(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
