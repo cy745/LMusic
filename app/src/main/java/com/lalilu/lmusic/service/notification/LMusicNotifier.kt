@@ -14,6 +14,7 @@ import com.lalilu.lmusic.utils.extension.toUpdatableFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -23,7 +24,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import kotlin.coroutines.CoroutineContext
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class LMusicNotifier constructor(
     lyricRepo: LyricRepository,
     playback: MixPlayback,
@@ -71,7 +72,7 @@ class LMusicNotifier constructor(
             }
         }.combine(settingsDataStore.run { enableStatusLyric.flow() }) { notification, enable ->
             notification?.let {
-                if (enable == false) {
+                if (enable != true) {
                     it.tickerText = null
                     it.flags = it.flags and FLAG_ALWAYS_SHOW_TICKER.inv()
                     it.flags = it.flags and FLAG_ONLY_UPDATE_TICKER.inv()
