@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.component.base
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +21,6 @@ import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmusic.compose.component.SmartBar
-import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 
 /**
  * 将元素的分类分组和顺序设置功能统一成一个SortPanel组件
@@ -31,7 +31,8 @@ fun SortPanel(
     sortFor: String,
     supportGroupRules: () -> List<GroupRule>,
     supportSortRules: () -> List<SortRule>,
-    supportOrderRules: () -> List<OrderRule>
+    supportOrderRules: () -> List<OrderRule>,
+    recoverTo: @Composable () -> Unit
 ) {
     var sortRule by rememberDataSaverState(
         key = "${sortFor}_SORT_RULE", default = SortRule.Normal.name
@@ -86,8 +87,12 @@ fun SortPanel(
                 }
             }
         }
-        Button(onClick = { SmartBar.setMainBar(item = LibraryDetailNavigateBar) }) {
+        Button(onClick = { SmartBar.setMainBar(content = recoverTo) }) {
             Text(text = "取消")
         }
+    }
+
+    BackHandler {
+        SmartBar.setMainBar(content = recoverTo)
     }
 }

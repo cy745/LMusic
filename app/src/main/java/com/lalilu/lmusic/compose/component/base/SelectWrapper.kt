@@ -130,7 +130,7 @@ fun <T> SelectWrapper(
                 }
             }
         } else {
-            SmartBar.setMainBar(item = recoverTo)
+            SmartBar.setMainBar(content = recoverTo)
         }
     }
     content(selector)

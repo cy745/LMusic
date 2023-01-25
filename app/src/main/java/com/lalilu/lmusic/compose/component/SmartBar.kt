@@ -83,26 +83,16 @@ object SmartBar {
     }
 
     fun setMainBar(
-        toggle: Boolean = false,
-        item: (@Composable () -> Unit)?
+        content: (@Composable () -> Unit)?
     ): SmartBar {
-        if (toggle && mainBar.value === item) {
-            mainBar.value = null
-            return this
-        }
-        mainBar.value = item
+        mainBar.value = content
         return this
     }
 
     fun setExtraBar(
-        toggle: Boolean = false,
-        item: (@Composable () -> Unit)?
+        content: (@Composable () -> Unit)?
     ): SmartBar {
-        if (toggle && extraBar.value === item) {
-            extraBar.value = null
-            return this
-        }
-        extraBar.value = item
+        extraBar.value = content
         return this
     }
 }

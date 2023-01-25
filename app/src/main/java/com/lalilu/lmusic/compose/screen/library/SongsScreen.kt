@@ -32,6 +32,7 @@ import com.lalilu.lmusic.compose.component.base.SortPanel
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.BaseScreen
+import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -97,10 +98,8 @@ fun SongsScreen(
     showAll: Boolean = true,
     playingVM: PlayingViewModel = LocalPlayingVM.current,
     songsViewModel: SongsViewModel = LocalSongsVM.current,
-    headerContent: LazyGridScope.(
-        songs: List<LSong>,
-        showSortBar: () -> Unit
-    ) -> Unit = { _, _ -> }
+    sortFor: String = Sortable.SORT_FOR_SONGS,
+    headerContent: LazyGridScope.(songs: List<LSong>, showSortBar: () -> Unit) -> Unit = { _, _ -> }
 ) {
     val navToSongAction = SongDetailScreen.navToByArgv(hapticType = HapticFeedbackType.LongPress)
     val songsState by songsViewModel.songsState
@@ -124,7 +123,8 @@ fun SongsScreen(
                         supportGroupRules = { songsViewModel.supportGroupRules },
                         supportOrderRules = { songsViewModel.supportOrderRules },
                         supportSortRules = { songsViewModel.supportSortRules },
-                        sortFor = Sortable.SORT_FOR_SONGS
+                        recoverTo = LibraryDetailNavigateBar,
+                        sortFor = sortFor
                     )
                 }
             }

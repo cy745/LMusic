@@ -9,6 +9,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
@@ -55,11 +56,19 @@ private fun AlbumDetailScreen(
     album: LAlbum,
     songsVM: SongsViewModel = LocalSongsVM.current,
 ) {
+    val sortFor = remember { "ArtistDetail" }
+
     LaunchedEffect(album) {
-        songsVM.updateBySongs(album.songs)
+        songsVM.updateBySongs(
+            songs = album.songs,
+            sortFor = sortFor
+        )
     }
 
-    SongsScreen(showAll = false) { songs, showSortBar ->
+    SongsScreen(
+        showAll = false,
+        sortFor = sortFor
+    ) { songs, showSortBar ->
         item {
             AlbumCoverCard(
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
