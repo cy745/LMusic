@@ -9,6 +9,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
@@ -54,11 +55,19 @@ private fun ArtistDetailScreen(
     artist: LArtist,
     songsVM: SongsViewModel = LocalSongsVM.current
 ) {
+    val sortFor = remember { "ArtistDetail" }
+
     LaunchedEffect(artist) {
-        songsVM.updateBySongs(artist.songs)
+        songsVM.updateBySongs(
+            songs = artist.songs,
+            sortFor = sortFor
+        )
     }
 
-    SongsScreen(showAll = false) { songs, showSortBar ->
+    SongsScreen(
+        showAll = false,
+        sortFor = sortFor
+    ) { songs, showSortBar ->
         item {
             NavigatorHeader(
                 title = artist.name,

@@ -59,24 +59,24 @@ fun LMusicNavGraph(
         if (isPad && isLandscape) {
             when (current.mainBarForPad) {
                 ComponentStrategy.DoNothing -> Unit
-                ComponentStrategy.Clear -> SmartBar.setMainBar(item = null)
-                is ComponentStrategy.Replace -> SmartBar.setMainBar(item = current.mainBarForPad.content)
+                ComponentStrategy.Clear -> SmartBar.setMainBar(content = null)
+                is ComponentStrategy.Replace -> SmartBar.setMainBar(content = current.mainBarForPad.content)
             }
             when (current.extraBarForPad) {
                 ComponentStrategy.DoNothing -> Unit
-                ComponentStrategy.Clear -> SmartBar.setExtraBar(item = null)
-                is ComponentStrategy.Replace -> SmartBar.setExtraBar(item = current.extraBarForPad.content)
+                ComponentStrategy.Clear -> SmartBar.setExtraBar(content = null)
+                is ComponentStrategy.Replace -> SmartBar.setExtraBar(content = current.extraBarForPad.content)
             }
         } else {
             when (current.mainBar) {
                 ComponentStrategy.DoNothing -> Unit
-                ComponentStrategy.Clear -> SmartBar.setMainBar(item = null)
-                is ComponentStrategy.Replace -> SmartBar.setMainBar(item = current.mainBar.content)
+                ComponentStrategy.Clear -> SmartBar.setMainBar(content = null)
+                is ComponentStrategy.Replace -> SmartBar.setMainBar(content = current.mainBar.content)
             }
             when (current.extraBar) {
                 ComponentStrategy.DoNothing -> Unit
-                ComponentStrategy.Clear -> SmartBar.setExtraBar(item = null)
-                is ComponentStrategy.Replace -> SmartBar.setExtraBar(item = current.extraBar.content)
+                ComponentStrategy.Clear -> SmartBar.setExtraBar(content = null)
+                is ComponentStrategy.Replace -> SmartBar.setExtraBar(content = current.extraBar.content)
             }
         }
         SmartModalBottomSheet.fadeEdge(current.fadeEdgeForStatusBar)

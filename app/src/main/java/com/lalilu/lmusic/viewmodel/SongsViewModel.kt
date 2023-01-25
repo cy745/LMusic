@@ -74,15 +74,28 @@ class SongsViewModel @Inject constructor(
             .toState(emptyMap(), viewModelScope)
 
     fun updateByLibrary() {
-        updateBySongs(Library.getSongs())
+        updateBySongs(
+            songs = Library.getSongs(),
+            sortFor = Sortable.SORT_FOR_SONGS
+        )
     }
 
-    fun updateByIds(songIds: List<String>) {
-        updateBySongs(songIds.mapNotNull { Library.getSongOrNull(it) })
+    fun updateByIds(
+        songIds: List<String>,
+        sortFor: String = Sortable.SORT_FOR_SONGS
+    ) {
+        updateBySongs(
+            songs = songIds.mapNotNull { Library.getSongOrNull(it) },
+            sortFor = sortFor
+        )
     }
 
-    fun updateBySongs(songs: List<LSong>) = viewModelScope.launch {
+    fun updateBySongs(
+        songs: List<LSong>,
+        sortFor: String = Sortable.SORT_FOR_SONGS
+    ) = viewModelScope.launch {
         songListFlow.emit(songs)
+        sortForFlow.emit(sortFor)
     }
 }
 

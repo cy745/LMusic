@@ -134,7 +134,7 @@ private fun PlaylistsScreen(
             }
         } else {
             context.getActivity()?.let { KeyboardUtils.hideSoftInput(it) }
-            SmartBar.setExtraBar(item = null)
+            SmartBar.setExtraBar(content = null)
         }
     }
 
