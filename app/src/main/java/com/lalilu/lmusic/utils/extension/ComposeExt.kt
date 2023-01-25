@@ -52,6 +52,10 @@ fun NavController.clearBackStack() {
 fun NavController.navigateSingleTop(
     to: String,
 ) {
+    // 若目标路径与当前路径相同时不进行导航
+    // TODO 现无法判断带有参数的路径，需要实现从路径中提取参数并比对的逻辑
+    if (this.currentBackStackEntry?.destination?.route == to) return
+
     navigate(to) {
         popUpTo(graph.findStartDestination().id) {
             inclusive = false
