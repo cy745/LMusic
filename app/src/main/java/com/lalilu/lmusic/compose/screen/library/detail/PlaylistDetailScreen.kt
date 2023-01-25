@@ -18,8 +18,8 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
+import com.lalilu.lmusic.compose.component.base.SongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.SongCard
-import com.lalilu.lmusic.compose.component.card.SongsSelectWrapper
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
