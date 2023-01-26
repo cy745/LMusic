@@ -59,7 +59,7 @@ class LyricRepository @Inject constructor(
         runtime.positionFlow.mapLatest {
             findShowLine(lyrics, it + 500)
         }.distinctUntilChanged()
-            .mapLatest { lyrics?.get(it)?.text }
+            .mapLatest { lyrics?.getOrNull(it)?.text }
     }.debounce(100)
 
     val currentLyricLiveData = currentLyric.asLiveData()
