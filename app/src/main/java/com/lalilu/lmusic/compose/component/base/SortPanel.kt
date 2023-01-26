@@ -3,10 +3,10 @@ package com.lalilu.lmusic.compose.component.base
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.Button
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FilterChip
@@ -14,6 +14,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.funny.data_saver.core.rememberDataSaverState
 import com.google.accompanist.flowlayout.FlowRow
@@ -47,7 +48,7 @@ fun SortPanel(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 20.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -57,7 +58,7 @@ fun SortPanel(
                 FilterChip(
                     onClick = { sortRule = item.name },
                     selected = item.name == sortRule,
-                    colors = ChipDefaults.outlinedFilterChipColors(),
+                    colors = ChipDefaults.filterChipColors(),
                 ) {
                     Text(text = item.title)
                 }
@@ -69,26 +70,37 @@ fun SortPanel(
                 FilterChip(
                     onClick = { groupRule = item.name },
                     selected = item.name == groupRule,
-                    colors = ChipDefaults.outlinedFilterChipColors(),
+                    colors = ChipDefaults.filterChipColors(),
                 ) {
                     Text(text = item.title)
                 }
             }
         }
-        Text(text = "排序顺序")
-        FlowRow(mainAxisSpacing = 8.dp) {
-            supportOrderRules().forEach { item ->
-                FilterChip(
-                    onClick = { orderRule = item.name },
-                    selected = item.name == orderRule,
-                    colors = ChipDefaults.outlinedFilterChipColors(),
-                ) {
-                    Text(text = item.title)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = "排序顺序")
+                FlowRow(mainAxisSpacing = 8.dp) {
+                    supportOrderRules().forEach { item ->
+                        FilterChip(
+                            onClick = { orderRule = item.name },
+                            selected = item.name == orderRule,
+                            colors = ChipDefaults.filterChipColors(),
+                        ) {
+                            Text(text = item.title)
+                        }
+                    }
                 }
             }
-        }
-        Button(onClick = { SmartBar.setMainBar(content = recoverTo) }) {
-            Text(text = "取消")
+            IconTextButton(
+                text = "关闭",
+                color = Color(0xFF006E7C),
+                onClick = { SmartBar.setMainBar(content = recoverTo) }
+            )
         }
     }
 
