@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +45,7 @@ import com.lalilu.lmusic.compose.component.base.IconCheckButton
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.NetworkPairCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
+import com.lalilu.lmusic.compose.component.card.SongInformationCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
@@ -142,9 +145,13 @@ fun SongDetailScreen(
             contentDescription = ""
         )
         SmartContainer.LazyVerticalGrid(
-            modifier = Modifier.padding(top = 100.dp),
+            modifier = Modifier.fillMaxSize(),
             columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 }
         ) {
+            item {
+                Spacer(modifier = Modifier.height(100.dp))
+            }
+
             item {
                 NavigatorHeader(
                     title = song.name,
@@ -231,6 +238,10 @@ fun SongDetailScreen(
                         )
                     }
                 )
+            }
+
+            item {
+                SongInformationCard(song = song)
             }
         }
     }
