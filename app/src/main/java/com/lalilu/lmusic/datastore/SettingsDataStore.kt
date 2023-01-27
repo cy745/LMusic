@@ -33,19 +33,7 @@ class SettingsDataStore @Inject constructor(
     val lyricTypefaceUri = stringPreferencesKey(Config.KEY_SETTINGS_LYRIC_TYPEFACE_URI)
     val enableStatusLyric = booleanPreferencesKey(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE)
     val enableSystemEq = booleanPreferencesKey(Config.KEY_SETTINGS_ENABLE_SYSTEM_EQ)
+    val enableDynamicTips = booleanPreferencesKey(Config.KEY_SETTINGS_ENABLE_DYNAMIC_TIPS)
 
     val isGuidingOver = booleanPreferencesKey(Config.KEY_REMEMBER_IS_GUIDING_OVER)
-
-
-    val songsSortRule = stringPreferencesKey("SONGS_SORT_RULE")
-    val albumsSortRule = stringPreferencesKey("ALBUMS_SORT_RULE")
-    val artistsSortRule = stringPreferencesKey("ARTISTS_SORT_RULE")
-
-    val songsOrderRule = stringPreferencesKey("SONGS_ORDER_RULE")
-    val albumsOrderRule = stringPreferencesKey("ALBUMS_ORDER_RULE")
-    val artistsOrderRule = stringPreferencesKey("ARTISTS_ORDER_RULE")
-
-    val songsGroupRule = stringPreferencesKey("SONGS_GROUP_RULE")
-    val albumsGroupRule = stringPreferencesKey("ALBUMS_GROUP_RULE")
-    val artistsGroupRule = stringPreferencesKey("ARTISTS_GROUP_RULE")
 }
