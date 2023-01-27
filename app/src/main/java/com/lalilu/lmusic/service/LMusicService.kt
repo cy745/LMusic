@@ -139,12 +139,11 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         super.onCreate()
 
         playback = MixPlayback(
-            player = localPlayer,
             noisyReceiver = noisyReceiver,
             audioFocusHelper = audioFocusHelper,
-            settingsDataStore = settingsDataStore,
             playbackListener = PlaybackListener(),
-            queue = LMusicRuntimeQueue()
+            queue = LMusicRuntimeQueue(),
+            player = localPlayer
         )
 
         val sessionActivityPendingIntent =
@@ -174,10 +173,10 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         sessionToken = mediaSession.sessionToken
 
         settingsDataStore.apply {
-//            volumeControl.flow()
-//                .onEach { it?.let(playBack::setMaxVolume) }
-//                .launchIn(this@LMusicService)
-//
+            volumeControl.flow()
+                .onEach { it?.let(playback::setMaxVolume) }
+                .launchIn(this@LMusicService)
+
             enableSystemEq.flow()
                 .onEach { EQHelper.setSystemEqEnable(it ?: false) }
                 .launchIn(this@LMusicService)
@@ -188,7 +187,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
                     PlayMode.of(it).apply {
                         playback.onSetRepeatMode(repeatMode)
-                        playback.onSetRepeatMode(shuffleMode)
+                        playback.onSetShuffleMode(shuffleMode)
                     }
                 }.launchIn(this@LMusicService)
         }
@@ -201,6 +200,8 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             val playMode = getInt(PlayMode.KEY)
                 .takeIf { it in 0..2 }
                 ?: return@apply
+
+            println("ACTION_SET_REPEAT_MODE: $playMode")
             settingsDataStore.apply { this.playMode.set(playMode) }
         }
 

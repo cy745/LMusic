@@ -22,6 +22,7 @@ interface Player {
      */
     fun requestAudioFocus(): Boolean
     fun getPosition(): Long
+    fun setMaxVolume(volume: Int)
 
     interface Listener {
         fun requestAudioFocus(): Boolean

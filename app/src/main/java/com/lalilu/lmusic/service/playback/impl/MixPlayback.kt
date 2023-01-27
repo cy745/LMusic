@@ -7,17 +7,15 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.service.playback.Player
 import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
 
-class MixPlayback constructor(
+class MixPlayback(
     private val noisyReceiver: LMusicNoisyReceiver,
     private val audioFocusHelper: LMusicAudioFocusHelper,
-    private val settingsDataStore: SettingsDataStore,
     override var playbackListener: Playback.Listener<LSong>? = null,
     override var queue: PlayQueue<LSong>? = null,
     override var player: Player? = null
@@ -30,6 +28,9 @@ class MixPlayback constructor(
         noisyReceiver.onBecomingNoisy = ::onPause
     }
 
+    override var repeatMode: Int = PlaybackStateCompat.REPEAT_MODE_ALL
+    override var shuffleMode: Int = PlaybackStateCompat.SHUFFLE_MODE_NONE
+
     override fun changeToPlayer(changeTo: Player) {
         if (player == changeTo) return
 
@@ -39,6 +40,10 @@ class MixPlayback constructor(
         }
         player = changeTo
         changeTo.listener = this
+    }
+
+    override fun setMaxVolume(volume: Int) {
+        player?.setMaxVolume(volume)
     }
 
     override fun onPause() {
@@ -112,11 +117,13 @@ class MixPlayback constructor(
     }
 
     override fun onSetRepeatMode(repeatMode: Int) {
+        this.repeatMode = repeatMode
         playbackListener?.onSetRepeatMode(repeatMode)
     }
 
     override fun onSetShuffleMode(shuffleMode: Int) {
-        playbackListener?.onSetRepeatMode(shuffleMode)
+        this.shuffleMode = shuffleMode
+        playbackListener?.onSetShuffleMode(shuffleMode)
     }
 
     override fun requestAudioFocus(): Boolean {
