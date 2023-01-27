@@ -14,6 +14,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,11 +23,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.lalilu.R
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.viewmodel.DynamicTipsViewModel
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -46,7 +49,12 @@ object DynamicTips : CoroutineScope {
 
     @OptIn(ExperimentalAnimationApi::class)
     @Composable
-    fun Content(modifier: Modifier = Modifier) {
+    fun Content(
+        modifier: Modifier = Modifier,
+        dynamicTipsVM: DynamicTipsViewModel = hiltViewModel()
+    ) {
+        val enableDynamicTips by dynamicTipsVM.enableState
+
         LaunchedEffect(title.value) {
             if (title.value.isNotEmpty()) {
                 show.value = true
@@ -58,7 +66,7 @@ object DynamicTips : CoroutineScope {
         }
 
         AnimatedVisibility(
-            visible = show.value,
+            visible = show.value && enableDynamicTips == true,
             modifier = modifier
                 .widthIn(max = 300.dp)
                 .padding(top = 100.dp),

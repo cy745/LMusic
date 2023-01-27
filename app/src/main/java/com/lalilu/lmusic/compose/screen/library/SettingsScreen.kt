@@ -92,6 +92,10 @@ private fun SettingsScreen() {
         Config.KEY_SETTINGS_ENABLE_SYSTEM_EQ,
         Config.DEFAULT_SETTINGS_ENABLE_SYSTEM_EQ
     )
+    val enableDynamicTips = rememberDataSaverState(
+        Config.KEY_SETTINGS_ENABLE_DYNAMIC_TIPS,
+        Config.DEFAULT_SETTINGS_ENABLE_DYNAMIC_TIPS
+    )
     val launcherForAudioFx = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
@@ -198,24 +202,16 @@ private fun SettingsScreen() {
             }
         }
 
-//        item {
-//            SettingCategory(
-//                iconRes = R.drawable.ic_gradienter_line,
-//                titleRes = R.string.preference_extensions
-//            ) {
-//                SettingExtensionSwitcher(
-//                    state = kanhiraEnable,
-//                    initialed = true,
-//                    title = "罗马字匹配功能"
-//                )
-//            }
-//        }
-
         item {
             SettingCategory(
                 icon = painterResource(id = R.drawable.ic_loader_line),
                 title = "其他"
             ) {
+                SettingSwitcher(
+                    state = enableDynamicTips,
+                    titleRes = R.string.preference_media_source_settings_enable_dynamic_tips,
+                    subTitleRes = R.string.preference_dynamic_tips
+                )
                 Row(
                     Modifier.padding(horizontal = 20.dp),
                     verticalAlignment = Alignment.CenterVertically,
