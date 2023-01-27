@@ -18,6 +18,7 @@ import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.notification.LMusicNotifier
 import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
+import com.lalilu.lmusic.service.playback.helper.FadeVolumeProxy
 import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
 import com.lalilu.lmusic.service.playback.impl.LocalPlayer
@@ -174,7 +175,12 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
         settingsDataStore.apply {
             volumeControl.flow()
-                .onEach { it?.let(playback::setMaxVolume) }
+                .onEach {
+                    it?.let {
+                        FadeVolumeProxy.setMaxVolume(it)
+                        playback.setMaxVolume(it)
+                    }
+                }
                 .launchIn(this@LMusicService)
 
             enableSystemEq.flow()
@@ -201,7 +207,6 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                 .takeIf { it in 0..2 }
                 ?: return@apply
 
-            println("ACTION_SET_REPEAT_MODE: $playMode")
             settingsDataStore.apply { this.playMode.set(playMode) }
         }
 

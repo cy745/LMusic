@@ -11,16 +11,20 @@ class FadeVolumeProxy(
     companion object {
         var maxVolume = 1f
             private set
-    }
 
-    fun setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
-        maxVolume = (volume / 100f).coerceIn(0f, 1f)
-        mPlayer.setVolume(maxVolume, maxVolume)
-        nowVolume = maxVolume
+        fun setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
+            maxVolume = (volume / 100f).coerceIn(0f, 1f)
+        }
     }
 
     private var countDownTimer: CountDownTimer? = null
     private var nowVolume = 0f
+        get() = minOf(field, maxVolume)
+
+    fun setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
+        Companion.setMaxVolume(volume)
+        mPlayer.setVolume(maxVolume, maxVolume)
+    }
 
     fun fadeStart(
         duration: Long = mDuration,
