@@ -36,7 +36,8 @@ class SongsViewModel @Inject constructor(
         SortRule.Title,
         SortRule.SubTitle,
         SortRule.ContentType,
-        SortRule.ItemsDuration
+        SortRule.ItemsDuration,
+        SortRule.FileSize
     )
     val supportOrderRules = listOf(
         OrderRule.ASC, OrderRule.DESC

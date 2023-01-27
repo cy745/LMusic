@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         minSdk 23
-        targetSdk 32
+        targetSdk 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -16,7 +16,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -30,11 +30,6 @@ android {
 }
 
 dependencies {
-    // https://github.com/getActivity/XXPermissions
-    // Apache-2.0
-    // 权限请求框架
-    // implementation "com.github.getActivity:XXPermissions:16.2"
-
     // https://github.com/Blankj/AndroidUtilCode/
     // Apache-2.0 License
     // 安卓工具类库
