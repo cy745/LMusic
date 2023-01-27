@@ -5,8 +5,11 @@ interface Playback<T> {
     var playbackListener: Listener<T>?
     var queue: PlayQueue<T>?
     var player: Player?
+    var repeatMode: Int
+    var shuffleMode: Int
 
     fun changeToPlayer(changeTo: Player)
+    fun setMaxVolume(volume: Int)
 
     interface Listener<T> {
         fun onPlayingItemUpdate(item: T?)

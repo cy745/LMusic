@@ -8,6 +8,11 @@ class FadeVolumeProxy(
     private val mPlayer: MediaPlayer,
     private var mDuration: Long = 500L
 ) {
+    companion object {
+        var maxVolume = 1f
+            private set
+    }
+
     fun setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
         maxVolume = (volume / 100f).coerceIn(0f, 1f)
         mPlayer.setVolume(maxVolume, maxVolume)
@@ -16,7 +21,6 @@ class FadeVolumeProxy(
 
     private var countDownTimer: CountDownTimer? = null
     private var nowVolume = 0f
-    private var maxVolume = 1f
 
     fun fadeStart(
         duration: Long = mDuration,
@@ -24,6 +28,7 @@ class FadeVolumeProxy(
     ) {
         countDownTimer?.cancel()
 
+        mPlayer.setVolume(nowVolume, nowVolume)
         mPlayer.start()
         val startValue = nowVolume
         countDownTimer = object : CountDownTimer(duration, duration / 10L) {

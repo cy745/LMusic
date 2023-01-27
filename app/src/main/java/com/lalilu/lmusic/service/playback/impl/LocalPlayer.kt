@@ -110,6 +110,10 @@ class LocalPlayer @Inject constructor(
         return player?.currentPosition?.toLong() ?: 0L
     }
 
+    override fun setMaxVolume(volume: Int) {
+        volumeProxy?.setMaxVolume(volume)
+    }
+
     override fun onPrepared(mp: MediaPlayer?) {
         onLPrepared()
         isPrepared = true
