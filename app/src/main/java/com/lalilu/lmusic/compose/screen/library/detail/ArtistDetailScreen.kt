@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LArtist
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
@@ -34,7 +34,7 @@ object ArtistDetailScreen : BaseScreen() {
         ) { backStackEntry ->
             val artistName = backStackEntry.arguments?.getString("artistName")
 
-            Library.getArtistOrNull(artistName)
+            LMedia.getArtistOrNull(artistName)
                 ?.let { ArtistDetailScreen(artist = it) }
                 ?: EmptyArtistDetailScreen()
         }

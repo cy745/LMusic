@@ -1,6 +1,6 @@
 package com.lalilu.lmusic.repository
 
-import com.lalilu.lmedia.indexer.Library
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.repository.NetDataRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -18,7 +18,7 @@ class CoverRepository @Inject constructor(
         if (id == null || id !is String) return flowOf(id)
 
         return netDataRepo.getNetDataFlowById(id).mapLatest {
-            it?.requireCoverUri() ?: Library.getSongOrNull(id) ?: id
+            it?.requireCoverUri() ?: LMedia.getSongOrNull(id) ?: id
         }
     }
 }

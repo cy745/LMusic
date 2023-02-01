@@ -34,6 +34,7 @@ class SettingsDataStore @Inject constructor(
     val enableStatusLyric = booleanPreferencesKey(Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE)
     val enableSystemEq = booleanPreferencesKey(Config.KEY_SETTINGS_ENABLE_SYSTEM_EQ)
     val enableDynamicTips = booleanPreferencesKey(Config.KEY_SETTINGS_ENABLE_DYNAMIC_TIPS)
+    val enableUnknownFilter = booleanPreferencesKey(Config.KEY_SETTINGS_ENABLE_UNKNOWN_FILTER)
 
     val isGuidingOver = booleanPreferencesKey(Config.KEY_REMEMBER_IS_GUIDING_OVER)
 }

@@ -5,6 +5,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
@@ -13,7 +14,6 @@ import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmedia.extension.getGroupedOutputFlow
 import com.lalilu.lmedia.extension.getOrderedOutputFlow
 import com.lalilu.lmedia.extension.getSortedOutputFlow
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.utils.extension.toState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -76,7 +76,7 @@ class SongsViewModel @Inject constructor(
 
     fun updateByLibrary() {
         updateBySongs(
-            songs = Library.getSongs(),
+            songs = LMedia.getSongs(),
             sortFor = Sortable.SORT_FOR_SONGS
         )
     }
@@ -86,7 +86,7 @@ class SongsViewModel @Inject constructor(
         sortFor: String = Sortable.SORT_FOR_SONGS
     ) {
         updateBySongs(
-            songs = songIds.mapNotNull { Library.getSongOrNull(it) },
+            songs = songIds.mapNotNull { LMedia.getSongOrNull(it) },
             sortFor = sortFor
         )
     }

@@ -37,8 +37,8 @@ import androidx.navigation.navArgument
 import com.blankj.utilcode.util.TimeUtils
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.apis.NetworkSong
 import com.lalilu.lmusic.apis.NetworkSource
 import com.lalilu.lmusic.compose.component.SmartBar
@@ -59,7 +59,7 @@ object MatchNetworkDataScreen : BaseScreen() {
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
 
-            Library.getSongOrNull(mediaId)
+            LMedia.getSongOrNull(mediaId)
                 ?.let { MatchNetworkDataScreen(song = it) }
                 ?: EmptySearchForLyricScreen()
         }
