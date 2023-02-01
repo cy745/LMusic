@@ -35,6 +35,7 @@ class SettingsDataStore @Inject constructor(
     val enableSystemEq = booleanPreferencesKey(Config.KEY_SETTINGS_ENABLE_SYSTEM_EQ)
     val enableDynamicTips = booleanPreferencesKey(Config.KEY_SETTINGS_ENABLE_DYNAMIC_TIPS)
     val enableUnknownFilter = booleanPreferencesKey(Config.KEY_SETTINGS_ENABLE_UNKNOWN_FILTER)
+    val ignoreDictionaries = stringListPreferencesKey(Config.KEY_SETTINGS_IGNORE_DICTIONARIES)
 
     val isGuidingOver = booleanPreferencesKey(Config.KEY_REMEMBER_IS_GUIDING_OVER)
 }
