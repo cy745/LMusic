@@ -182,11 +182,11 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                         playback.setMaxVolume(it)
                     }
                 }
-                .launchIn(this@LMusicService)
+                .launchIn(this)
 
             enableSystemEq.flow()
                 .onEach { EQHelper.setSystemEqEnable(it ?: false) }
-                .launchIn(this@LMusicService)
+                .launchIn(this)
 
             playMode.flow()
                 .onEach {
@@ -196,7 +196,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                         playback.onSetRepeatMode(repeatMode)
                         playback.onSetShuffleMode(shuffleMode)
                     }
-                }.launchIn(this@LMusicService)
+                }.launchIn(this)
         }
     }
 
