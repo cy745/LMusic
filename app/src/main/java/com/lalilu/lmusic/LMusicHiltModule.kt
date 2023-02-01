@@ -3,8 +3,8 @@ package com.lalilu.lmusic
 import android.content.Context
 import androidx.room.Room
 import com.funny.data_saver.core.DataSaverInterface
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.database.LDatabase
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmedia.repository.NetDataRepository
@@ -53,7 +53,7 @@ object LMusicHiltModule {
         return PlaylistRepositoryImpl(
             playlistDao = database.playlistDao(),
             songInPlaylistDao = database.songInPlaylistDao(),
-            getSongOrNull = Library::getSongOrNull
+            getSongOrNull = LMedia::getSongOrNull
         )
     }
 

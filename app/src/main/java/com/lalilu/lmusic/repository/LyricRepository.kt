@@ -4,8 +4,8 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.asLiveData
 import com.dirror.lyricviewx.LyricEntry
 import com.dirror.lyricviewx.LyricUtil
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.*
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
@@ -45,7 +45,7 @@ class LyricRepository @Inject constructor(
 
     val currentLyric: UpdatableFlow<Pair<String, String?>?> =
         runtime.playingFlow.mapLatest { item ->
-            item?.let { Library.getSongOrNull(it.id) }
+            item?.let { LMedia.getSongOrNull(it.id) }
                 ?.let { getLyric(it) }
         }.toUpdatableFlow()
 

@@ -56,9 +56,9 @@ private fun SettingsScreen() {
         Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
         Config.DEFAULT_SETTINGS_IGNORE_AUDIO_FOCUS
     )
-    val unknownFilter = rememberDataSaverState(
-        Config.KEY_SETTINGS_MEDIA_UNKNOWN_FILTER,
-        Config.DEFAULT_SETTINGS_MEDIA_UNKNOWN_FILTER
+    val enableUnknownFilter = rememberDataSaverState(
+        Config.KEY_SETTINGS_ENABLE_UNKNOWN_FILTER,
+        Config.DEFAULT_SETTINGS_ENABLE_UNKNOWN_FILTER
     )
     val statusBarLyric = rememberDataSaverState(
         Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE,
@@ -195,7 +195,7 @@ private fun SettingsScreen() {
                 titleRes = R.string.preference_media_source_settings
             ) {
                 SettingSwitcher(
-                    state = unknownFilter,
+                    state = enableUnknownFilter,
                     titleRes = R.string.preference_media_source_settings_unknown_filter,
                     subTitleRes = R.string.preference_media_source_tips
                 )

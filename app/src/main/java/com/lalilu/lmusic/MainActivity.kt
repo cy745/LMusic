@@ -22,7 +22,7 @@ import com.funny.data_saver.core.DataSaverInterface
 import com.funny.data_saver.core.LocalDataSaver
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.common.SystemUiUtil
-import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
@@ -45,7 +45,6 @@ import com.lalilu.lmusic.viewmodel.LocalSongsVM
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -79,8 +78,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
             return
         }
 
+        LMedia.index()
         SystemUiUtil.immerseNavigationBar(this)
-        launch { Indexer.index(this@MainActivity) }
         lifecycle.addObserver(browser)
 
         // 注册返回键事件回调

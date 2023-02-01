@@ -36,8 +36,8 @@ import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -70,7 +70,7 @@ object SongDetailScreen : BaseScreen() {
         ) { backStackEntry ->
             val mediaId = backStackEntry.arguments?.getString("mediaId")
 
-            Library.getSongOrNull(mediaId)?.let {
+            LMedia.getSongOrNull(mediaId)?.let {
                 SongDetailScreen(song = it)
             } ?: EmptySongDetailScreen()
         }

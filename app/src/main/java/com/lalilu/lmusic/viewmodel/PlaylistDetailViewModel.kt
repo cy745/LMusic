@@ -6,11 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.database.sort
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.entity.SongInPlaylist
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmedia.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -67,7 +67,7 @@ class PlaylistDetailViewModel @Inject constructor(
             .mapLatest { it.sort(true) }
             .debounce(50)
             .onEach { list ->
-                songs = list.mapNotNull { Library.getSongOrNull(it.mediaId) }
+                songs = list.mapNotNull { LMedia.getSongOrNull(it.mediaId) }
                 tempList = list
             }
             .launchIn(scope)

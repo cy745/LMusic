@@ -85,6 +85,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
             if (playbackState == PlaybackStateCompat.STATE_PLAYING) {
                 mediaSession.isActive = true
+                // TODO Not allowed to start service Intent { cmp=com.lalilu.lmusic/.service.LMusicService }: app is in background uid UidRecord{2c1e733 u0a357 CAC  bg:+1m0s513ms idle change:cached procs:1 seq(0,0,0)}
                 startService(Intent(this@LMusicService, LMusicService::class.java))
             }
             if (playbackState == PlaybackStateCompat.STATE_PAUSED) {

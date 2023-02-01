@@ -7,8 +7,8 @@ import android.support.v4.media.session.MediaControllerCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.blankj.utilcode.util.LogUtils
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datastore.HistoryDataStore
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
@@ -71,7 +71,7 @@ class LMusicBrowser @Inject constructor(
         if (nowIndex >= 0) {
             runtime.move(nowIndex, currentIndex)
         } else {
-            val item = Library.getSongOrNull(mediaId) ?: return false
+            val item = LMedia.getSongOrNull(mediaId) ?: return false
             runtime.add(currentIndex + 1, item)
         }
         return true
@@ -105,13 +105,13 @@ class LMusicBrowser @Inject constructor(
                 val songIds = lastPlayedListIdsKey.get()
 
                 if (songIds.isNotEmpty()) {
-                    val songs = songIds.mapNotNull { Library.getSongOrNull(it) }
-                    val song = lastPlayedIdKey.get()?.let { Library.getSongOrNull(it) }
+                    val songs = songIds.mapNotNull { LMedia.getSongOrNull(it) }
+                    val song = lastPlayedIdKey.get()?.let { LMedia.getSongOrNull(it) }
                     setSongs(songs, song)
                     return
                 }
 
-                val songs = Library.getSongs()
+                val songs = LMedia.getSongs()
                 setSongs(songs, songs.getOrNull(0))
             }
             // 取消subscribe，可以解决Service和Activity通过Parcelable传递数据导致闪退的问题

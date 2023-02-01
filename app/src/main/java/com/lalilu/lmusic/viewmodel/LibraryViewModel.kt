@@ -3,9 +3,9 @@ package com.lalilu.lmusic.viewmodel
 import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.*
-import com.lalilu.lmedia.indexer.Library
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.datastore.LibraryDataStore
 import com.lalilu.lmusic.repository.LibraryRepository
@@ -36,9 +36,9 @@ class LibraryViewModel @Inject constructor(
      * 之前在 Composable 里用 CollectAsState 直接通过Flow获取了，
      * 但是那样每次Recompose的时候就会重新调用生成一个Flow，间接导致每次都会重新查询数据库
      */
-    private val randomRecommendsFlow = Library.getSongsFlow(15, true).toUpdatableFlow()
     val lastPlayedStack = requirePlayHistory().toState(emptyList(), viewModelScope)
-    val recentlyAdded = Library.getSongsFlow(15).toState(emptyList(), viewModelScope)
+    val recentlyAdded = libraryRepo.getSongsFlow(15).toState(emptyList(), viewModelScope)
+    private val randomRecommendsFlow = libraryRepo.getSongsFlow(15, true).toUpdatableFlow()
     val randomRecommends = randomRecommendsFlow.toState(emptyList(), viewModelScope)
 
     /**
@@ -50,11 +50,11 @@ class LibraryViewModel @Inject constructor(
             if (today == this.today.get()) {
                 dailyRecommends.get()
                     .takeIf { it.isNotEmpty() }
-                    ?.mapNotNull { Library.getSongOrNull(it) }
+                    ?.mapNotNull { LMedia.getSongOrNull(it) }
                     ?.let { return it }
             }
 
-            return Library.getSongs(num = 10, random = true).toList().also { list ->
+            return libraryRepo.getSongs(10, true).toList().also { list ->
                 if (list.isNotEmpty()) {
                     this.today.set(today)
                     this.dailyRecommends.set(value = list.map { it.id })
@@ -70,11 +70,9 @@ class LibraryViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun requirePlayHistory(): Flow<List<LSong>> {
         return historyRepo
-            .getHistoriesFlow(20)
+            .getHistoriesFlow(5)
             .mapLatest { list ->
-                list.distinctBy { it.contentId }
-                    .mapNotNull { Library.getSongOrNull(it.contentId) }
-                    .take(5)
+                list.mapNotNull { LMedia.getSongOrNull(it.contentId) }
             }
     }
 }
