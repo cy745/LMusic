@@ -40,6 +40,7 @@
     <string name="destination_label_match_network_data">网络匹配歌曲</string>
     <string name="destination_label_opensource_licence">开放源代码许可</string>
     <string name="destination_label_genres">流派</string>
+    <string name="destination_label_dictionaries">文件夹</string>
 
     <string name="destination_subtitle_library">各种各样的选项</string>
     <string name="destination_subtitle_artist">所有歌手</string>
@@ -55,6 +56,7 @@
     <string name="destination_subtitle_song_detail">歌曲详情</string>
     <string name="destination_subtitle_opensource_licence">使用到的开源代码</string>
     <string name="destination_subtitle_genres">各种风格</string>
+    <string name="destination_subtitle_dictionaries">歌曲所在目录</string>
 
 
     <string name="button_match_network_data_searching">搜索中…</string>

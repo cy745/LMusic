@@ -29,6 +29,7 @@ class LibraryViewModel @Inject constructor(
     val artists = libraryRepo.artistsFlow.toState(emptyList(), viewModelScope)
     val albums = libraryRepo.albumsFlow.toState(emptyList(), viewModelScope)
     val genres = libraryRepo.genresFlow.toState(emptyList(), viewModelScope)
+    val dictionaries = libraryRepo.dictionariesFlow.toState(emptyList(), viewModelScope)
 
     /**
      * 获取最近的播放记录

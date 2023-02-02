@@ -86,6 +86,13 @@ enum class ScreenData(
         mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
         mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     ),
+    Dictionaries(
+        icon = R.drawable.ic_file_copy_2_line,
+        title = R.string.destination_label_dictionaries,
+        subTitle = R.string.destination_subtitle_dictionaries,
+        mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
+        mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
+    ),
     Search(
         icon = R.drawable.ic_search_2_line,
         title = R.string.destination_label_search,
