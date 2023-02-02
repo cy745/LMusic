@@ -21,6 +21,7 @@ import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.screen.library.AlbumsScreen
 import com.lalilu.lmusic.compose.screen.library.ArtistScreen
+import com.lalilu.lmusic.compose.screen.library.DictionariesScreen
 import com.lalilu.lmusic.compose.screen.library.LibraryScreen
 import com.lalilu.lmusic.compose.screen.library.MatchNetworkDataScreen
 import com.lalilu.lmusic.compose.screen.library.PlaylistsScreen
@@ -101,6 +102,7 @@ fun LMusicNavGraph(
         FavouriteScreen.register(builder = this)
         SongDetailScreen.register(builder = this)
         AlbumDetailScreen.register(builder = this)
+        DictionariesScreen.register(builder = this)
         ArtistDetailScreen.register(builder = this)
         PlaylistDetailScreen.register(builder = this)
         MatchNetworkDataScreen.register(builder = this)

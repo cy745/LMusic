@@ -20,6 +20,7 @@ class LibraryRepository @Inject constructor() : CoroutineScope {
     val artistsFlow = LMedia.getArtistsFlow()
     val albumsFlow = LMedia.getAlbumsFlow()
     val genresFlow = LMedia.getGenresFlow()
+    val dictionariesFlow = LMedia.getDictionariesFlow()
 
     fun getSongsFlow(num: Int, shuffle: Boolean = false): Flow<List<LSong>> =
         songsFlow.mapLatest { it.let { if (shuffle) it.shuffled() else it }.take(num) }

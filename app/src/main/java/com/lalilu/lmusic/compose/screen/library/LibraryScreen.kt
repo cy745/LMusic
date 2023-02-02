@@ -87,6 +87,7 @@ private fun LibraryScreen(
     val navToSongsAction = SongsScreen.navTo { popUpTo(ScreenData.Library.name) }
     val navToArtistsAction = ArtistScreen.navTo { popUpTo(ScreenData.Library.name) }
     val navToAlbumsAction = AlbumsScreen.navTo { popUpTo(ScreenData.Library.name) }
+    val navToDictionariesAction = DictionariesScreen.navTo { popUpTo(ScreenData.Library.name) }
     val navToSettingsAction = SettingsScreen.navTo { popUpTo(ScreenData.Library.name) }
     val navToSongsListAction = SongsScreen.navToByArgv { popUpTo(ScreenData.Library.name) }
 
@@ -168,6 +169,7 @@ private fun LibraryScreen(
                     ScreenData.Songs,
                     ScreenData.Albums,
                     ScreenData.Artists,
+                    ScreenData.Dictionaries,
                     ScreenData.Settings
                 )
             ) {
@@ -175,6 +177,7 @@ private fun LibraryScreen(
                     ScreenData.Songs -> navToSongsAction()
                     ScreenData.Albums -> navToAlbumsAction()
                     ScreenData.Artists -> navToArtistsAction()
+                    ScreenData.Dictionaries -> navToDictionariesAction()
                     ScreenData.Settings -> navToSettingsAction()
                     else -> {}
                 }
