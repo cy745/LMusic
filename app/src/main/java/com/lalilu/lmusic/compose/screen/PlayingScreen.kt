@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen
 
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.ExperimentalMaterialApi
@@ -23,7 +24,6 @@ import com.lalilu.lmusic.adapter.PlayingAdapter
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
-import com.lalilu.lmusic.utils.OnBackPressedHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
@@ -45,7 +45,6 @@ import com.lalilu.ui.internal.StateHelper
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
-    backPressedHelper: OnBackPressedHelper,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
@@ -88,9 +87,13 @@ fun PlayingScreen(
                     SmartModalBottomSheet.show()
                 }
             }
-            backPressedHelper.callback = {
-                fmAppbarLayout.setExpanded(true)
+
+            val backPressedHelper = object : OnBackPressedCallback(false) {
+                override fun handleOnBackPressed() {
+                    fmAppbarLayout.setExpanded(true)
+                }
             }
+            activity.onBackPressedDispatcher.addCallback(backPressedHelper)
             behavior.addOnStateChangeListener { _, nowState ->
                 backPressedHelper.isEnabled = nowState == StateHelper.STATE_FULLY_EXPENDED
             }

@@ -32,7 +32,6 @@ import com.lalilu.lmusic.compose.screen.PlayingScreen
 import com.lalilu.lmusic.compose.screen.ShowScreen
 import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.utils.OnBackPressedHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.viewmodel.LocalLibraryVM
@@ -87,9 +86,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
             this@MainActivity.moveTaskToBack(false)
         }
 
-        val backPressedHelper = OnBackPressedHelper()
-        onBackPressedDispatcher.addCallback(backPressedHelper)
-
         setContent {
             LMusicTheme {
                 CompositionLocalProvider(
@@ -115,7 +111,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                                     }
                                 )
                             },
-                            content = { PlayingScreen(backPressedHelper) }
+                            content = { PlayingScreen() }
                         )
                         ShowScreen()
                         DynamicTips.Content(modifier = Modifier.align(Alignment.TopCenter))
