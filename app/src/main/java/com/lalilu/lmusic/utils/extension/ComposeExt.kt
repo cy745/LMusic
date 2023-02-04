@@ -196,3 +196,27 @@ fun <T> buildScrollToItemAction(
         }
     }
 }
+
+
+/**
+ * [LaunchedEffect] 在监听值的变化的同时无法兼顾Composition的变化，会在Compose移除后继续执行内部代码
+ * [DisposableEffect] 在进入Composition的时候无法处理初始值，只会处理之后值变化的情况
+ *
+ * 为了处理初始值和避免Compose移除后仍处理值的变化的问题，创建了这个Effect
+ */
+@Composable
+fun <T> LaunchedDisposeEffect(
+    key: () -> T,
+    onDispose: () -> Unit = {},
+    onUpdate: (key: T) -> Unit
+) {
+    val item = key()
+    DisposableEffect(item) {
+        onUpdate(item)
+        onDispose(onDispose)
+    }
+
+    LaunchedEffect(Unit) {
+        onUpdate(item)
+    }
+}
