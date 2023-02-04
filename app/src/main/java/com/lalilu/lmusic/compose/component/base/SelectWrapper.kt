@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,6 +16,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.utils.SelectHelper
+import com.lalilu.lmusic.utils.extension.LaunchedDisposeEffect
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.LocalMainVM
 import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
@@ -148,9 +148,10 @@ fun <T> SelectWrapper(
     extraActionsContent: @Composable (SelectHelper<T>) -> Unit = {},
     content: @Composable (SelectHelper<T>) -> Unit
 ) {
-
-    LaunchedEffect(selector.isSelecting.value) {
-        if (selector.isSelecting.value) {
+    LaunchedDisposeEffect(
+        key = { selector.isSelecting.value }
+    ) {
+        if (it) {
             SmartBar.setMainBar {
                 Row(
                     modifier = Modifier
