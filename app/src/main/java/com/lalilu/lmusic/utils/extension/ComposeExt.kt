@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.*
@@ -218,5 +219,49 @@ fun <T> LaunchedDisposeEffect(
 
     LaunchedEffect(Unit) {
         onUpdate(item)
+    }
+}
+
+/**
+ * 监听滚动位置的变化，计算总的滚动距离
+ */
+@Composable
+fun rememberScrollPosition(
+    state: LazyGridState
+): State<Float> {
+    val itemsHeight = remember { mutableStateMapOf<Int, Int>() }
+
+    return remember {
+        derivedStateOf {
+            val index = state.firstVisibleItemIndex
+            itemsHeight[index] = state.layoutInfo.visibleItemsInfo[index].size.height
+            val sumHeight = (0 until index)
+                .mapNotNull { itemsHeight[it] }
+                .fold(0f) { total, item -> total + item }
+
+            state.firstVisibleItemScrollOffset + sumHeight
+        }
+    }
+}
+
+/**
+ * 监听滚动位置的变化，计算总的滚动距离
+ */
+@Composable
+fun rememberScrollPosition(
+    state: LazyListState
+): State<Float> {
+    val itemsHeight = remember { mutableStateMapOf<Int, Int>() }
+
+    return remember {
+        derivedStateOf {
+            val index = state.firstVisibleItemIndex
+            itemsHeight[index] = state.layoutInfo.visibleItemsInfo[index].size
+            val sumHeight = (0 until index)
+                .mapNotNull { itemsHeight[it] }
+                .fold(0f) { total, item -> total + item }
+
+            state.firstVisibleItemScrollOffset + sumHeight
+        }
     }
 }
