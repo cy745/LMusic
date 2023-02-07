@@ -7,7 +7,6 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -18,11 +17,8 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -67,7 +63,7 @@ object LibraryScreen : BaseScreen() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LibraryScreen(
     viewModel: LibraryViewModel = LocalLibraryVM.current,
@@ -162,59 +158,42 @@ private fun LibraryScreen(
                 onClick = { playingVM.browser.addAndPlay(it.id) }
             )
         }
-
-        item {
-            NavigationGrid(
-                listOf(
-                    ScreenData.Songs,
-                    ScreenData.Albums,
-                    ScreenData.Artists,
-                    ScreenData.Dictionaries,
-                    ScreenData.Settings
+        
+        items(
+            items = listOf(
+                ScreenData.Songs,
+                ScreenData.Albums,
+                ScreenData.Artists,
+                ScreenData.Dictionaries,
+                ScreenData.Settings
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        when (it) {
+                            ScreenData.Songs -> navToSongsAction()
+                            ScreenData.Albums -> navToAlbumsAction()
+                            ScreenData.Artists -> navToArtistsAction()
+                            ScreenData.Dictionaries -> navToDictionariesAction()
+                            ScreenData.Settings -> navToSettingsAction()
+                            else -> {}
+                        }
+                    }
+                    .padding(horizontal = 20.dp, vertical = 15.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = it.icon),
+                    contentDescription = stringResource(id = it.title),
+                    tint = dayNightTextColor(0.7f)
                 )
-            ) {
-                when (it) {
-                    ScreenData.Songs -> navToSongsAction()
-                    ScreenData.Albums -> navToAlbumsAction()
-                    ScreenData.Artists -> navToArtistsAction()
-                    ScreenData.Dictionaries -> navToDictionariesAction()
-                    ScreenData.Settings -> navToSettingsAction()
-                    else -> {}
-                }
-            }
-        }
-
-        item {
-            RecommendTitle(
-                title = "随机推荐",
-                onClick = {
-                    songsVM.updateBySongs(viewModel.randomRecommends.value)
-                    navToSongsListAction(false.toString())
-                }
-            ) {
-                Surface(shape = RoundedCornerShape(50.dp),
-                    color = dayNightTextColor(0.05f),
-                    onClick = { viewModel.refreshRandomRecommend() }
-                ) {
-                    Text(
-                        modifier = Modifier.padding(horizontal = 15.dp, vertical = 5.dp),
-                        style = MaterialTheme.typography.subtitle2,
-                        color = dayNightTextColor(0.7f),
-                        text = "换一批"
-                    )
-                }
-            }
-        }
-        item {
-            RecommendRow(
-                items = viewModel.randomRecommends.value,
-                getId = { it.id }
-            ) {
-                RecommendCard2(
-                    modifier = Modifier.animateItemPlacement(),
-                    contentModifier = Modifier.size(width = 100.dp, height = 250.dp),
-                    item = { it },
-                    onClick = { navToSongAction(it.id) }
+                Text(
+                    text = stringResource(id = it.title),
+                    color = dayNightTextColor(0.6f),
+                    style = MaterialTheme.typography.subtitle2
                 )
             }
         }
@@ -287,46 +266,6 @@ fun <I> RecommendRow(
     ) {
         items(items = items, key = getId) {
             itemContent(it)
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun NavigationGrid(
-    items: List<ScreenData>,
-    onClick: (ScreenData) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 15.dp, vertical = 20.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        items.forEach {
-            Surface(
-                color = dayNightTextColor(0.05f),
-                shape = RoundedCornerShape(10.dp),
-                onClick = { onClick(it) }
-            ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 15.dp),
-                    verticalArrangement = Arrangement.spacedBy(5.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        painter = painterResource(id = it.icon),
-                        contentDescription = stringResource(id = it.title),
-                        tint = dayNightTextColor(0.7f)
-                    )
-                    Text(
-                        text = stringResource(id = it.title),
-                        color = dayNightTextColor(0.6f),
-                        style = MaterialTheme.typography.subtitle2
-                    )
-                }
-            }
         }
     }
 }

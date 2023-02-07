@@ -12,16 +12,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -53,6 +57,8 @@ import com.lalilu.lmusic.compose.screen.library.MatchNetworkDataScreen
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
+import com.lalilu.lmusic.utils.extension.rememberScrollPosition
+import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LocalMainVM
 import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
@@ -102,6 +108,14 @@ fun SongDetailScreen(
     val networkData by networkDataVM.getNetworkDataFlowByMediaId(song.id)
         .collectAsState(null)
     val isLiked by playlistsVM.checkIsFavorite(song).collectAsState(initial = false)
+    val gridState = rememberLazyGridState()
+    val scrollPosition = rememberScrollPosition(state = gridState)
+    val bgAlpha = remember {
+        derivedStateOf {
+            return@derivedStateOf 1f - (scrollPosition.value / 500f)
+                .coerceIn(0f, 0.8f)
+        }
+    }
 
     LaunchedEffect(song) {
         SmartBar.setExtraBar {
@@ -130,13 +144,18 @@ fun SongDetailScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
+            .recomposeHighlighter(),
         contentAlignment = Alignment.TopCenter
     ) {
         AsyncImage(
             modifier = Modifier
+                .recomposeHighlighter()
                 .fillMaxWidth()
-                .edgeTransparent(position = EDGE_BOTTOM, percent = 1.5f),
+                .edgeTransparent(position = EDGE_BOTTOM, percent = 1.5f)
+                .graphicsLayer {
+                    alpha = bgAlpha.value
+                },
             model = ImageRequest.Builder(LocalContext.current)
                 .data(networkData?.requireCoverUri() ?: song)
                 .crossfade(true)
@@ -145,6 +164,7 @@ fun SongDetailScreen(
             contentDescription = ""
         )
         SmartContainer.LazyVerticalGrid(
+            state = gridState,
             modifier = Modifier.fillMaxSize(),
             columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 }
         ) {
