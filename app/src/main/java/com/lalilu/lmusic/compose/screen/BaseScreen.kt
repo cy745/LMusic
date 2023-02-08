@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import java.net.URLEncoder
 
 abstract class BaseScreen {
     abstract fun register(builder: NavGraphBuilder)
@@ -43,7 +44,7 @@ abstract class BaseScreen {
             {
                 hapticType?.let(haptic::performHapticFeedback)
                 navigator.navigate(
-                    route = getNavToByArgvRoute(it)
+                    route = getNavToByArgvRoute(URLEncoder.encode(it, Charsets.UTF_8.name()))
                 ) {
                     launchSingleTop = true
                     builder()
