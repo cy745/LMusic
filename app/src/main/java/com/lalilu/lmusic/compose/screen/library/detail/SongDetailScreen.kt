@@ -30,6 +30,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -144,7 +145,8 @@ fun SongDetailScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .recomposeHighlighter(),
         contentAlignment = Alignment.TopCenter
     ) {
@@ -179,12 +181,17 @@ fun SongDetailScreen(
                         FlowRow(mainAxisSpacing = 8.dp) {
                             song.artists.forEach {
                                 Chip(
-                                    onClick = { navToArtistAction(it.name) },
+                                    onClick = {
+                                        println("navToArtistAction: [${it.name}]")
+                                        navToArtistAction(it.name)
+                                    },
                                     colors = ChipDefaults.outlinedChipColors(),
                                 ) {
                                     Text(
                                         text = it.name,
                                         fontSize = 14.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
                                         color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
                                             .copy(alpha = 0.7f)
                                     )
