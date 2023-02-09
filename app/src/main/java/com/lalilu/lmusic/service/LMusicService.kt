@@ -68,14 +68,14 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
     inner class PlaybackListener : Playback.Listener<LSong> {
         override fun onPlayingItemUpdate(item: LSong?) {
-            runtime.updatePlaying(item)
+            runtime.update(playing = item)
             mediaSession.setMetadata(item?.metadataCompat)
             notifier.update()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int, position: Long) {
-            runtime.isPlaying = playback.player?.isPlaying ?: false
-            runtime.updatePosition(position, runtime.isPlaying)
+            runtime._isPlayingFlow.value = playback.player?.isPlaying ?: false
+            runtime.updatePosition(position, runtime._isPlayingFlow.value)
             mediaSession.setPlaybackState(
                 PlaybackStateCompat.Builder()
                     .setActions(MEDIA_DEFAULT_ACTION)
@@ -133,7 +133,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         }
 
         override fun setCurrent(item: LSong) {
-            runtime.updatePlaying(item)
+            runtime.update(playing = item)
         }
     }
 
