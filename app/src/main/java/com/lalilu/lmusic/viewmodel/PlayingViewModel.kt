@@ -22,7 +22,7 @@ class PlayingViewModel @Inject constructor(
     private val isPlaying = runtime.isPlayingFlow.toState(false, viewModelScope)
 
     fun playOrPauseSong(mediaId: String) {
-        runtime.takeIf { it.getPlaying() != null && it.isPlaying && it.getPlaying()?.id == mediaId }
+        runtime.takeIf { it.getPlaying() != null && it._isPlayingFlow.value && it.getPlaying()?.id == mediaId }
             ?.let { browser.pause() } ?: browser.addAndPlay(mediaId)
     }
 
