@@ -128,6 +128,13 @@ enum class ScreenData(
         mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
         mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
     ),
+    DictionaryDetail(
+        icon = R.drawable.ic_file_copy_2_line,
+        title = R.string.destination_label_dictionary_detail,
+        subTitle = R.string.destination_subtitle_dictionary_detail,
+        mainBar = ComponentStrategy.Replace(LibraryDetailNavigateBar),
+        mainBarForPad = ComponentStrategy.Replace(LibraryDetailNavigateBar)
+    ),
     SongsDetail(
         icon = R.drawable.ic_music_2_line,
         title = R.string.destination_label_song_detail,
