@@ -16,11 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
+import com.blankj.utilcode.util.ConvertUtils
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.DictionariesSelectWrapper
 import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
+import com.lalilu.lmusic.compose.screen.library.detail.DictionaryDetailScreen
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.LocalLibraryVM
 
@@ -42,7 +44,7 @@ fun DictionariesScreen(
     libraryVM: LibraryViewModel = LocalLibraryVM.current
 ) {
     val dictionaries by libraryVM.dictionaries
-//    val navToArtistAction = ArtistDetailScreen.navToByArgv()
+    val navToDictionaryAction = DictionaryDetailScreen.navToByArgv()
 
     DictionariesSelectWrapper { selector ->
         SmartContainer.LazyColumn {
@@ -56,7 +58,7 @@ fun DictionariesScreen(
                                 }
 
                                 else -> {
-
+                                    navToDictionaryAction(item.id)
                                 }
                             }
                         }
@@ -78,10 +80,19 @@ fun DictionariesScreen(
                         )
                     }
 
-                    Text(
-                        text = "${item.requireItemsCount()} 首歌曲",
-                        style = MaterialTheme.typography.subtitle2
-                    )
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Text(
+                            text = "${item.requireItemsCount()} 首歌曲",
+                            style = MaterialTheme.typography.subtitle2
+                        )
+                        Text(
+                            text = ConvertUtils.byte2FitMemorySize(item.requireFileSize()),
+                            style = MaterialTheme.typography.subtitle2
+                        )
+                    }
                 }
             }
         }

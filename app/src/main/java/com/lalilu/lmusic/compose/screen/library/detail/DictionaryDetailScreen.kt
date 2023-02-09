@@ -16,8 +16,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.LMedia
-import com.lalilu.lmedia.entity.LAlbum
-import com.lalilu.lmusic.compose.component.card.AlbumCoverCard
+import com.lalilu.lmedia.entity.LDictionary
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
@@ -27,40 +26,39 @@ import com.lalilu.lmusic.viewmodel.LocalSongsVM
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
-object AlbumDetailScreen : BaseScreen() {
+object DictionaryDetailScreen : BaseScreen() {
     override fun register(builder: NavGraphBuilder) {
         builder.composable(
-            route = "${ScreenData.AlbumsDetail.name}?albumId={albumId}",
-            arguments = listOf(navArgument("albumId") {})
+            route = "${ScreenData.DictionaryDetail.name}/{dictionaryId}",
+            arguments = listOf(navArgument("dictionaryId") {})
         ) { backStackEntry ->
-            val albumId = backStackEntry.arguments?.getString("albumId")
+            val dictionaryId = backStackEntry.arguments?.getString("dictionaryId")
 
-            LMedia.getAlbumOrNull(albumId)
-                ?.let { AlbumDetailScreen(album = it) }
-                ?: EmptyAlbumDetailScreen()
+            LMedia.getDictionaryOrNull(dictionaryId)
+                ?.let { DictionaryDetailScreen(dictionary = it) }
         }
     }
 
     override fun getNavToRoute(): String {
-        return ScreenData.AlbumsDetail.name
+        return ScreenData.DictionaryDetail.name
     }
 
     override fun getNavToByArgvRoute(argv: String): String {
-        return "${ScreenData.AlbumsDetail.name}?albumId=$argv"
+        return "${ScreenData.DictionaryDetail.name}/$argv"
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun AlbumDetailScreen(
-    album: LAlbum,
-    songsVM: SongsViewModel = LocalSongsVM.current,
+fun DictionaryDetailScreen(
+    dictionary: LDictionary,
+    songsVM: SongsViewModel = LocalSongsVM.current
 ) {
-    val sortFor = remember { "AlbumDetail" }
+    val sortFor = remember { "DictionaryDetail" }
 
-    LaunchedEffect(album) {
+    LaunchedEffect(dictionary) {
         songsVM.updateBySongs(
-            songs = album.songs,
+            songs = dictionary.songs,
             sortFor = sortFor
         )
     }
@@ -70,21 +68,9 @@ private fun AlbumDetailScreen(
         sortFor = sortFor
     ) { songs, showSortBar ->
         item {
-            AlbumCoverCard(
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-                shape = RoundedCornerShape(10.dp),
-                elevation = 2.dp,
-                imageData = { album },
-                onClick = { }
-            )
-        }
-
-        item {
             NavigatorHeader(
-                title = album.name,
-                subTitle = album.artistName?.trim()
-                    ?.let { "$it\n共 ${songs.size} 首歌曲" }
-                    ?: "共 ${songs.size} 首歌曲"
+                title = dictionary.name,
+                subTitle = dictionary.path.let { "$it\n共 ${songs.size} 首歌曲" }
             ) {
                 Surface(
                     shape = RoundedCornerShape(50.dp),
@@ -101,9 +87,4 @@ private fun AlbumDetailScreen(
             }
         }
     }
-}
-
-@Composable
-fun EmptyAlbumDetailScreen() {
-    Text(text = "无法获取该专辑信息", modifier = Modifier.padding(20.dp))
 }

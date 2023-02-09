@@ -30,6 +30,7 @@ import com.lalilu.lmusic.compose.screen.library.SettingsScreen
 import com.lalilu.lmusic.compose.screen.library.SongsScreen
 import com.lalilu.lmusic.compose.screen.library.detail.AlbumDetailScreen
 import com.lalilu.lmusic.compose.screen.library.detail.ArtistDetailScreen
+import com.lalilu.lmusic.compose.screen.library.detail.DictionaryDetailScreen
 import com.lalilu.lmusic.compose.screen.library.detail.FavouriteScreen
 import com.lalilu.lmusic.compose.screen.library.detail.PlaylistDetailScreen
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
@@ -105,6 +106,7 @@ fun LMusicNavGraph(
         DictionariesScreen.register(builder = this)
         ArtistDetailScreen.register(builder = this)
         PlaylistDetailScreen.register(builder = this)
+        DictionaryDetailScreen.register(builder = this)
         MatchNetworkDataScreen.register(builder = this)
     }
 }
