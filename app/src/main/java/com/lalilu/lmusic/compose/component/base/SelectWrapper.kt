@@ -10,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.lalilu.lmedia.entity.LDictionary
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
@@ -18,7 +17,6 @@ import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.utils.SelectHelper
 import com.lalilu.lmusic.utils.extension.LaunchedDisposeEffect
 import com.lalilu.lmusic.utils.rememberSelectState
-import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.LocalMainVM
 import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
 import com.lalilu.lmusic.viewmodel.MainViewModel
@@ -93,48 +91,6 @@ fun PlaylistsSelectWrapper(
                     color = Color(0xFF006E7C),
                     onClick = {
                         playlistsVM.removePlaylists(it.selectedItems.toImmutableList())
-                        it.clear()
-                    }
-                )
-            }
-            extraActionsContent(it)
-        },
-        content = content
-    )
-}
-
-@Composable
-fun DictionariesSelectWrapper(
-    isRecovering: Boolean = false,
-    selector: SelectHelper<LDictionary> = rememberSelectState(),
-    dictionariesVM: DictionariesViewModel,
-    recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
-    extraActionsContent: @Composable (SelectHelper<LDictionary>) -> Unit = {},
-    content: @Composable (SelectHelper<LDictionary>) -> Unit
-) {
-    SelectWrapper(
-        selector = selector,
-        recoverTo = recoverTo,
-        getTipsText = {
-            "已选择: ${it.selectedItems.size}"
-        },
-        extraActionsContent = {
-            if (isRecovering) {
-                IconTextButton(
-                    text = "恢复",
-                    color = Color(0xFF3EA22C),
-                    onClick = {
-                        it.clear()
-                    }
-                )
-            } else {
-                IconTextButton(
-                    text = "屏蔽",
-                    color = Color(0xFF006E7C),
-                    onClick = {
-                        dictionariesVM.blockPaths(
-                            it.selectedItems.toImmutableList().map(LDictionary::path)
-                        )
                         it.clear()
                     }
                 )

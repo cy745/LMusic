@@ -17,11 +17,11 @@ class DictionariesViewModel @Inject constructor(
             .map { it ?: emptyList() }
     }
 
-    fun blockPaths(paths: List<String>) {
-        blockedSp.blockedPaths.add(paths)
+    fun blockPath(path: String) {
+        blockedSp.blockedPaths.add(path)
     }
 
-    fun recoverPaths(paths: List<String>) {
-        blockedSp.blockedPaths.remove(paths)
+    fun recoverPath(path: String) {
+        blockedSp.blockedPaths.remove(path)
     }
 }
