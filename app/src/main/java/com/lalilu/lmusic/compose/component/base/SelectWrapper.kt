@@ -18,6 +18,7 @@ import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.utils.SelectHelper
 import com.lalilu.lmusic.utils.extension.LaunchedDisposeEffect
 import com.lalilu.lmusic.utils.rememberSelectState
+import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.LocalMainVM
 import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
 import com.lalilu.lmusic.viewmodel.MainViewModel
@@ -106,6 +107,7 @@ fun PlaylistsSelectWrapper(
 fun DictionariesSelectWrapper(
     isRecovering: Boolean = false,
     selector: SelectHelper<LDictionary> = rememberSelectState(),
+    dictionariesVM: DictionariesViewModel,
     recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
     extraActionsContent: @Composable (SelectHelper<LDictionary>) -> Unit = {},
     content: @Composable (SelectHelper<LDictionary>) -> Unit
@@ -130,6 +132,9 @@ fun DictionariesSelectWrapper(
                     text = "屏蔽",
                     color = Color(0xFF006E7C),
                     onClick = {
+                        dictionariesVM.blockPaths(
+                            it.selectedItems.toImmutableList().map(LDictionary::path)
+                        )
                         it.clear()
                     }
                 )

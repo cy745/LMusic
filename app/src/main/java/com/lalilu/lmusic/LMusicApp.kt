@@ -7,6 +7,7 @@ import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.extension.LMediaExt
 import com.lalilu.lmedia.extension.LMediaExtFactory
 import com.lalilu.lmedia.extension.LMediaLifeCycle
+import com.lalilu.lmusic.datastore.BlockedSp
 import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.StatusBarLyricExt
@@ -46,7 +47,7 @@ class LMusicApp : Application(), ImageLoaderFactory, LMediaExtFactory {
     override fun newLMediaExt(): LMediaExt =
         LMediaExt.Builder()
             .addIndexFilter(UnknownFilter { settingsDataStore })
-            .addIndexFilter(DictionaryFilter { settingsDataStore })
+            .addIndexFilter(DictionaryFilter(blockedSp = BlockedSp(this)))
             .setLifeCycleListener(object : LMediaLifeCycle.Listener {
                 override fun onFirstIndexFinish() {
                     settingsDataStore.apply {
