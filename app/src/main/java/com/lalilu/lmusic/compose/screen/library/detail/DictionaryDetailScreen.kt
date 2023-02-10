@@ -34,7 +34,7 @@ object DictionaryDetailScreen : BaseScreen() {
         ) { backStackEntry ->
             val dictionaryId = backStackEntry.arguments?.getString("dictionaryId")
 
-            LMedia.getDictionaryOrNull(dictionaryId)
+            LMedia.getDictionaryOrNull(id = dictionaryId, blockFilter = false)
                 ?.let { DictionaryDetailScreen(dictionary = it) }
         }
     }
