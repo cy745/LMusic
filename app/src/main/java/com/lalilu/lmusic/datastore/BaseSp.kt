@@ -33,6 +33,21 @@ abstract class BaseSp {
 
     fun boolListSp(key: String, defaultValue: List<Boolean> = emptyList()) =
         SpListItem(key, defaultValue, sp)
+
+    fun intSetSp(key: String, defaultValue: List<Int> = emptyList()) =
+        SpSetItem(key, defaultValue, sp)
+
+    fun floatSetSp(key: String, defaultValue: List<Float> = emptyList()) =
+        SpSetItem(key, defaultValue, sp)
+
+    fun longSetSp(key: String, defaultValue: List<Long> = emptyList()) =
+        SpSetItem(key, defaultValue, sp)
+
+    fun stringSetSp(key: String, defaultValue: List<String> = emptyList()) =
+        SpSetItem(key, defaultValue, sp)
+
+    fun boolSetSp(key: String, defaultValue: List<Boolean> = emptyList()) =
+        SpSetItem(key, defaultValue, sp)
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -40,6 +55,7 @@ open class SpItem<T>(
     private val key: String,
     private val defaultValue: T,
     private val sp: SharedPreferences,
+    checkUnique: Boolean = false
 ) {
     companion object {
         private val keyKeeper = LinkedHashSet<String>()
@@ -48,10 +64,12 @@ open class SpItem<T>(
     private val id = "${sp.hashCode()}-$key"
 
     init {
-        if (keyKeeper.contains(id)) {
-            throw IllegalStateException("Mustn't define duplicate key in same sharePreference.")
-        } else {
-            keyKeeper.add(id)
+        if (checkUnique) {
+            if (keyKeeper.contains(id)) {
+                throw IllegalStateException("Mustn't define duplicate key in same sharePreference.")
+            } else {
+                keyKeeper.add(id)
+            }
         }
     }
 
@@ -74,7 +92,12 @@ open class SpItem<T>(
                         ) as T?
                     )
                 }
-            }.also { sp.registerOnSharedPreferenceChangeListener(it) }
+            }.also {
+                trySend(
+                    sp.getValue(this@SpItem::defaultValue::class, key, defaultValue) as T?
+                )
+                sp.registerOnSharedPreferenceChangeListener(it)
+            }
 
             awaitClose {
                 sp.unregisterOnSharedPreferenceChangeListener(listener)
@@ -114,12 +137,48 @@ open class SpItem<T>(
 }
 
 @Suppress("UNCHECKED_CAST")
-class SpListItem<T>(
+open class SpListItem<T>(
     key: String,
     defaultValue: List<T>,
     sp: SharedPreferences
 ) : SpItem<List<T>>(key, defaultValue, sp) {
     private val typeToken = object : TypeToken<List<T>>() {}.type
+
+    open fun remove(item: T) {
+        (get() ?: emptyList())
+            .toMutableList()
+            .apply {
+                remove(item)
+                set(this)
+            }
+    }
+
+    open fun remove(items: Collection<T>) {
+        (get() ?: emptyList())
+            .toMutableList()
+            .apply {
+                removeAll(items)
+                set(this)
+            }
+    }
+
+    open fun add(item: T) {
+        (get() ?: emptyList())
+            .toMutableList()
+            .apply {
+                add(item)
+                set(this)
+            }
+    }
+
+    open fun add(items: Collection<T>) {
+        (get() ?: emptyList())
+            .toMutableList()
+            .apply {
+                addAll(items)
+                set(this)
+            }
+    }
 
     override fun <T> SharedPreferences.setValue(
         clazz: KClass<out T & Any>,
@@ -141,5 +200,47 @@ class SpListItem<T>(
     }
 }
 
+class SpSetItem<T>(
+    key: String,
+    defaultValue: List<T>,
+    sp: SharedPreferences
+) : SpListItem<T>(key, defaultValue, sp) {
+
+    override fun remove(item: T) {
+        (get() ?: emptyList())
+            .toMutableSet()
+            .apply {
+                remove(item)
+                set(this.toList())
+            }
+    }
+
+    override fun remove(items: Collection<T>) {
+        (get() ?: emptyList())
+            .toMutableSet()
+            .apply {
+                removeAll(items.toSet())
+                set(this.toList())
+            }
+    }
+
+    override fun add(item: T) {
+        (get() ?: emptyList())
+            .toMutableSet()
+            .apply {
+                add(item)
+                set(this.toList())
+            }
+    }
+
+    override fun add(items: Collection<T>) {
+        (get() ?: emptyList())
+            .toMutableSet()
+            .apply {
+                addAll(items.toSet())
+                set(this.toList())
+            }
+    }
+}
 
 
