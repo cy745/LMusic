@@ -82,7 +82,7 @@ open class SpItem<T>(
         sp.setValue(defaultValue!!::class, key, value)
     }
 
-    fun flow(): Flow<T?> {
+    fun flow(requireCurrentValue: Boolean = true): Flow<T?> {
         return callbackFlow {
             val listener = OnSharedPreferenceChangeListener { spParams, keyParam ->
                 if (keyParam == key) {
@@ -93,9 +93,11 @@ open class SpItem<T>(
                     )
                 }
             }.also {
-                trySend(
-                    sp.getValue(this@SpItem::defaultValue::class, key, defaultValue) as T?
-                )
+                if (requireCurrentValue) {
+                    trySend(
+                        sp.getValue(this@SpItem::defaultValue::class, key, defaultValue) as T?
+                    )
+                }
                 sp.registerOnSharedPreferenceChangeListener(it)
             }
 
