@@ -70,5 +70,5 @@ jobs:
           tag_name: "Beta"
           fail_on_unmatched_files: true
           files: |
-            ${{ github.workspace }}/app/build/outputs/apk/release/*.apk
+            ${{ github.workspace }}/app/build/outputs/apk/beta/*.apk
             ${{ github.workspace }}/app/build/outputs/apk/debug/*.apk

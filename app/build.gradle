@@ -55,10 +55,23 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
 
+        beta {
+            resValue "string", "app_name", "@string/app_name_beta"
+            versionNameSuffix = "-BETA_${releaseTime()}"
+            applicationIdSuffix ".beta"
+
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+
         debug {
-            versionNameSuffix = "-DEBUG"
-            applicationIdSuffix ".debug"
             resValue "string", "app_name", "@string/app_name_debug"
+            versionNameSuffix = "-DEBUG_${releaseTime()}"
+            applicationIdSuffix ".debug"
+
+            signingConfig signingConfigs.release
         }
     }
     android.applicationVariants.all { variant ->
@@ -84,7 +97,7 @@ android {
 }
 
 static def releaseTime() {
-    return new Date().format("yyyyMMdd_HHmmssZ", TimeZone.getTimeZone("GMT+08:00"))
+    return new Date().format("yyyyMMdd_HHmmZ", TimeZone.getTimeZone("GMT+08:00"))
 }
 
 dependencies {
