@@ -2,9 +2,11 @@ package com.lalilu.lmusic.service.runtime
 
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.entity.MusicParent
+import com.lalilu.lmusic.utils.extension.add
 import com.lalilu.lmusic.utils.extension.getNextOf
 import com.lalilu.lmusic.utils.extension.getPreviousOf
 import com.lalilu.lmusic.utils.extension.move
+import com.lalilu.lmusic.utils.extension.removeAt
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.Timer
 import kotlin.concurrent.schedule
@@ -47,18 +49,11 @@ interface Runtime {
     }
 
     fun move(from: Int, to: Int) {
-        _songsFlow.value = _songsFlow.value.move(from, to)
+        update(_songsFlow.value.move(from, to))
     }
 
     fun add(index: Int = -1, song: LSong) {
-        _songsFlow.value = _songsFlow.value.toMutableList()
-            .apply {
-                if (index == -1) {
-                    add(song)
-                } else {
-                    add(index, song)
-                }
-            }
+        update(_songsFlow.value.add(index, song))
     }
 
     fun remove(song: LSong? = null) {
@@ -71,9 +66,7 @@ interface Runtime {
     }
 
     fun removeAt(index: Int) {
-        _songsFlow.value = _songsFlow.value
-            .toMutableList()
-            .apply { removeAt(index) }
+        update(_songsFlow.value.removeAt(index))
     }
 
     fun isEmpty(): Boolean = _songsFlow.value.isEmpty()

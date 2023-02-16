@@ -203,14 +203,18 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         println("onStartCommand: ${intent?.action} ${intent?.extras?.getInt(PlayMode.KEY)}")
 
-        intent?.takeIf { it.action === Config.ACTION_SET_REPEAT_MODE }?.extras?.apply {
-            val playMode = getInt(PlayMode.KEY)
-                .takeIf { it in 0..2 }
-                ?: return@apply
+        val extras = intent?.extras
+        when (intent?.action) {
+            Config.ACTION_SET_REPEAT_MODE -> {
+                extras?.apply {
+                    val playMode = getInt(PlayMode.KEY)
+                        .takeIf { it in 0..2 }
+                        ?: return@apply
 
-            settingsDataStore.apply { this.playMode.set(playMode) }
+                    settingsDataStore.apply { this.playMode.set(playMode) }
+                }
+            }
         }
-
         MediaButtonReceiver.handleIntent(mediaSession, intent)
         return START_NOT_STICKY
     }

@@ -80,10 +80,12 @@ class LMusicBrowser @Inject constructor(
     fun removeById(mediaId: String): Boolean {
         return try {
             if (mediaId == runtime.getPlayingId()) {
-                skipToNext()
+                runtime.getNextOf(runtime.getPlaying(), true)?.let {
+                    runtime.update(it)
+                    playById(it.id)
+                }
             }
-            val index = runtime.indexOfSong(mediaId)
-            runtime.removeAt(index)
+            runtime.remove(mediaId)
             true
         } catch (e: Exception) {
             false

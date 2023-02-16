@@ -14,7 +14,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,7 +26,6 @@ import androidx.navigation.NavGraphBuilder
 import com.blankj.utilcode.util.ConvertUtils
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
-import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
@@ -58,10 +56,6 @@ fun DictionariesScreen(
     val dictionaries by libraryVM.allDictionaries
     val blockedPaths by dictionariesVM.getBlockedPathsFlow().collectAsState(initial = emptyList())
     val navToDictionaryAction = DictionaryDetailScreen.navToByArgv()
-
-    LaunchedEffect(blockedPaths) {
-        LMedia.index()
-    }
 
     SmartContainer.LazyColumn {
         items(items = dictionaries) { item ->

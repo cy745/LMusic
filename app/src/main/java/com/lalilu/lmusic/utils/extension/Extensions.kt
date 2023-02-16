@@ -182,11 +182,23 @@ fun <T> List<T>.getPreviousOf(item: T, cycle: Boolean = false): T? {
     return getOrNull(previousIndex)
 }
 
-fun <T> List<T>.move(from: Int, to: Int): List<T> {
+fun <T : Any> List<T>.move(from: Int, to: Int): List<T> {
     val targetIndex = if (from < to) to else to + 1
     return this.toMutableList().apply {
         val temp = removeAt(from)
         add(targetIndex, temp)
+    }
+}
+
+fun <T : Any> List<T>.add(index: Int = -1, item: T): List<T> {
+    return this.toMutableList().apply {
+        if (index == -1) add(item) else add(index, item)
+    }
+}
+
+fun <T : Any> List<T>.removeAt(index: Int): List<T> {
+    return this.toMutableList().apply {
+        removeAt(index)
     }
 }
 
