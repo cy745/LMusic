@@ -3,17 +3,14 @@ package com.lalilu.lmusic.service.runtime
 import androidx.lifecycle.asLiveData
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.entity.MusicParent
-import com.lalilu.lmusic.utils.extension.getNextOf
 import com.lalilu.lmusic.utils.extension.moveHeadToTailWithSearch
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import java.util.LinkedList
 import java.util.Timer
 
 abstract class BaseRuntime : Runtime {
 
-    private val shuffleHistory: LinkedList<LSong> = LinkedList()
     final override val _songsFlow: MutableStateFlow<List<LSong>> = MutableStateFlow(emptyList())
     final override val _playingFlow: MutableStateFlow<LSong?> = MutableStateFlow(null)
     final override val _positionFlow: MutableStateFlow<Long> = MutableStateFlow(0L)
@@ -22,44 +19,11 @@ abstract class BaseRuntime : Runtime {
     override var listener: Runtime.Listener? = null
     override var timer: Timer? = null
 
-    fun getRandomNext(): LSong? {
-        if (_songsFlow.value.isEmpty()) return null
-        if (_songsFlow.value.size in 1..2) {
-            return _songsFlow.value.getNextOf(_playingFlow.value, true)
-                ?.also { shuffleHistory.push(it) }
-        }
+    val playingFlow: Flow<LSong?> = _playingFlow
+    val positionFlow: Flow<Long> = _positionFlow
+    val isPlayingFlow: Flow<Boolean> = _isPlayingFlow
 
-        var result: LSong
-        while (true) {
-            result = _songsFlow.value.randomOrNull() ?: return null
-            if (result.id != _playingFlow.value?.id) {
-                break
-            }
-        }
-        shuffleHistory.push(result)
-        return result
-    }
-
-    fun getRandomPrevious(): LSong? {
-        var result: LSong?
-        while (true) {
-            if (shuffleHistory.isEmpty()) {
-                result = null
-                break
-            }
-            result = shuffleHistory.pop()
-            if (indexOfSong(result.id) >= 0) {
-                break
-            }
-        }
-        return result
-    }
-
-    val isPlayingFlow: StateFlow<Boolean> = _isPlayingFlow
-    val playingFlow: StateFlow<LSong?> = _playingFlow
-    val positionFlow: StateFlow<Long> = _positionFlow
-
-    val playingLiveData = _playingFlow.asLiveData()
+    val playingLiveData = playingFlow.asLiveData()
     val positionLiveData = _positionFlow.asLiveData()
     val isPlayingLiveData = _isPlayingFlow.asLiveData()
     val songsLiveData = _songsFlow.combine(_playingFlow) { items, item ->

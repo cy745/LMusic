@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen
 
+import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
@@ -12,6 +13,7 @@ import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.recyclerview.widget.DiffUtil
 import com.blankj.utilcode.util.ConvertUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
@@ -20,7 +22,7 @@ import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.adapter.PlayingAdapter
+import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
@@ -69,24 +71,38 @@ fun PlayingScreen(
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
 
-            val adapter = PlayingAdapter(playingVM.lyricRepository).apply {
-                onItemDragOrSwipedListener = object : PlayingAdapter.OnItemDragOrSwipedListener {
-                    override fun onDelete(song: LSong): Boolean {
-                        return playingVM.browser.removeById(song.id)
-                    }
-
-                    override fun onAddToNext(song: LSong): Boolean {
-                        return playingVM.browser.addToNext(song.id)
-                    }
-                }
-                onItemClick = { id, _ ->
-                    playingVM.browser.playById(id)
-                }
-                onItemLongClick = { id, _ ->
-                    navToSongAction.invoke(id)
+            val adapter = NewPlayingAdapter.Builder()
+                .setOnLongClickCB {
+                    navToSongAction.invoke(it)
                     SmartModalBottomSheet.show()
                 }
-            }
+                .setOnClickCB {
+                    playingVM.browser.playById(it)
+                }
+                .setOnSwipedLeftCB {
+                    playingVM.browser.addToNext(it.id)
+                }
+                .setOnSwipedRightCB {
+                    playingVM.browser.removeById(it.id)
+                }
+                .setOnDataUpdatedCB {
+                    fmRecyclerView.scrollToPosition(0)
+                }
+                .setOnItemBoundCB { binding, item ->
+                    playingVM.requireLyric(item) {
+                        binding.songLrc.visibility = if (it) View.VISIBLE else View.INVISIBLE
+                    }
+                }
+                .setItemCallback(object : DiffUtil.ItemCallback<LSong>() {
+                    override fun areItemsTheSame(oldItem: LSong, newItem: LSong): Boolean =
+                        oldItem.id == newItem.id
+
+                    override fun areContentsTheSame(oldItem: LSong, newItem: LSong): Boolean =
+                        oldItem.id == newItem.id &&
+                                oldItem.name == newItem.name &&
+                                oldItem.durationMs == newItem.durationMs
+                })
+                .build()
 
             val backPressedHelper = object : OnBackPressedCallback(false) {
                 override fun handleOnBackPressed() {
@@ -171,7 +187,7 @@ fun PlayingScreen(
                 HapticUtils.haptic(this@apply.root)
             })
             playingVM.runtime.songsLiveData.observe(activity) {
-                adapter.setDiffNewData(it.toMutableList())
+                adapter.setDiffData(it)
             }
             playingVM.runtime.playingLiveData.observe(activity) {
                 maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f

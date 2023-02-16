@@ -9,7 +9,10 @@ import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.toState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,6 +38,15 @@ class PlayingViewModel @Inject constructor(
         if (!isPlaying.value) return false
 
         return playing.value?.let { it.id == mediaId } ?: false
+    }
+
+    fun requireLyric(item: LSong, callback: (hasLyric: Boolean) -> Unit) {
+        viewModelScope.launch {
+            if (isActive) {
+                val hasLyric = lyricRepository.hasLyric(item)
+                withContext(Dispatchers.Main) { callback(hasLyric) }
+            }
+        }
     }
 }
 

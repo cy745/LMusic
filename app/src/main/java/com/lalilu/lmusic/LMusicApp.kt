@@ -3,7 +3,6 @@ package com.lalilu.lmusic
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
-import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.extension.LMediaExt
 import com.lalilu.lmedia.extension.LMediaExtFactory
 import com.lalilu.lmedia.extension.LMediaLifeCycle
@@ -18,9 +17,6 @@ import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
 import com.lalilu.lmusic.utils.filter.DictionaryFilter
 import com.lalilu.lmusic.utils.filter.UnknownFilter
 import dagger.hilt.android.HiltAndroidApp
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import okhttp3.OkHttpClient
 import javax.inject.Inject
 
@@ -49,13 +45,8 @@ class LMusicApp : Application(), ImageLoaderFactory, LMediaExtFactory {
             .addIndexFilter(UnknownFilter { settingsDataStore })
             .addIndexFilter(DictionaryFilter(blockedSp = BlockedSp(this)))
             .setLifeCycleListener(object : LMediaLifeCycle.Listener {
-                override fun onFirstIndexFinish() {
-                    settingsDataStore.apply {
-                        enableUnknownFilter.flow()
-                            .distinctUntilChanged()
-                            .onEach { LMedia.index() }
-                            .launchIn(this)
-                    }
+                override fun onFinishedIndex() {
+                    LMusicFlowBus.libraryUpdate.post(System.currentTimeMillis())
                 }
             })
             .build()
