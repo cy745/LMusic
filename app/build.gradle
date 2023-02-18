@@ -127,7 +127,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-flowlayout:$accompanist_version"
     implementation "com.google.accompanist:accompanist-permissions:$accompanist_version"
 
-    implementation platform('androidx.compose:compose-bom:2022.12.00')
+    implementation platform("androidx.compose:compose-bom:$compose_bom_version")
     implementation "androidx.compose.compiler:compiler:$compose_compiler_version"
     implementation 'androidx.compose.runtime:runtime-livedata'
     implementation 'androidx.compose.material:material'
