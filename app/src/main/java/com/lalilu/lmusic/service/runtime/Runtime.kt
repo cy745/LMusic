@@ -48,6 +48,11 @@ interface Runtime {
         _songsFlow.value = songs
     }
 
+    fun update(isPlaying: Boolean) {
+        listener?.onIsPlayingUpdate(isPlaying)
+        _isPlayingFlow.value = isPlaying
+    }
+
     fun move(from: Int, to: Int) {
         update(_songsFlow.value.move(from, to))
     }

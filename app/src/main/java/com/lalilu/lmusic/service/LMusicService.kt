@@ -9,6 +9,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import com.blankj.utilcode.util.ServiceUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
@@ -16,6 +17,7 @@ import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.notification.LMusicNotifier
+import com.lalilu.lmusic.service.playback.PlayMode
 import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.service.playback.helper.FadeVolumeProxy
@@ -25,7 +27,6 @@ import com.lalilu.lmusic.service.playback.impl.LocalPlayer
 import com.lalilu.lmusic.service.playback.impl.MixPlayback
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.EQHelper
-import com.lalilu.lmusic.service.playback.PlayMode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -67,15 +68,14 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var notifier: LMusicNotifier
 
     inner class PlaybackListener : Playback.Listener<LSong> {
-        override fun onPlayingItemUpdate(item: LSong?) {
-            runtime.update(playing = item)
-            mediaSession.setMetadata(item?.metadataCompat)
-            notifier.update()
-        }
+        override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
+            val isPlaying = playback.player?.isPlaying ?: false
 
-        override fun onPlaybackStateChanged(playbackState: Int, position: Long) {
-            runtime._isPlayingFlow.value = playback.player?.isPlaying ?: false
-            runtime.updatePosition(position, runtime._isPlayingFlow.value)
+            runtime.update(playing = item)
+            runtime.update(isPlaying = isPlaying)
+            runtime.updatePosition(startValue = position, loop = isPlaying)
+
+            mediaSession.setMetadata(item?.metadataCompat)
             mediaSession.setPlaybackState(
                 PlaybackStateCompat.Builder()
                     .setActions(MEDIA_DEFAULT_ACTION)
@@ -83,19 +83,24 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                     .build()
             )
 
-            if (playbackState == PlaybackStateCompat.STATE_PLAYING) {
-                mediaSession.isActive = true
-                // TODO Not allowed to start service Intent { cmp=com.lalilu.lmusic/.service.LMusicService }: app is in background uid UidRecord{2c1e733 u0a357 CAC  bg:+1m0s513ms idle change:cached procs:1 seq(0,0,0)}
-                startService(Intent(this@LMusicService, LMusicService::class.java))
-            }
-            if (playbackState == PlaybackStateCompat.STATE_PAUSED) {
-                mediaSession.isActive = false
-                this@LMusicService.stopForeground(false)
-            }
-            if (playbackState == PlaybackStateCompat.STATE_STOPPED) {
-                mediaSession.isActive = false
-                notifier.cancel()
-                stopSelf()
+            when (playbackState) {
+                PlaybackStateCompat.STATE_PLAYING -> {
+                    mediaSession.isActive = true
+                    if (isPlaying && !ServiceUtils.isServiceRunning(LMusicService::class.java)) {
+                        startService(Intent(this@LMusicService, LMusicService::class.java))
+                    }
+                }
+
+                PlaybackStateCompat.STATE_PAUSED -> {
+                    mediaSession.isActive = false
+                    this@LMusicService.stopForeground(STOP_FOREGROUND_DETACH)
+                }
+
+                PlaybackStateCompat.STATE_STOPPED -> {
+                    mediaSession.isActive = false
+                    notifier.cancel()
+                    stopSelf()
+                }
             }
             notifier.update()
         }

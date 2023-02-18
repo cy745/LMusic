@@ -10,8 +10,7 @@ interface Playback<T> {
     fun setMaxVolume(volume: Int)
 
     interface Listener<T> {
-        fun onPlayingItemUpdate(item: T?)
-        fun onPlaybackStateChanged(playbackState: Int, position: Long)
+        fun onPlayInfoUpdate(item: T?, playbackState: Int, position: Long)
         fun onSetPlayMode(playMode: PlayMode)
     }
 }
