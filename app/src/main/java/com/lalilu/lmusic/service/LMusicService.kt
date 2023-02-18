@@ -25,7 +25,7 @@ import com.lalilu.lmusic.service.playback.impl.LocalPlayer
 import com.lalilu.lmusic.service.playback.impl.MixPlayback
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.EQHelper
-import com.lalilu.lmusic.utils.PlayMode
+import com.lalilu.lmusic.service.playback.PlayMode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -100,13 +100,9 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             notifier.update()
         }
 
-        override fun onSetRepeatMode(repeatMode: Int) {
-            mediaSession.setRepeatMode(repeatMode)
-            notifier.update()
-        }
-
-        override fun onSetShuffleMode(shuffleMode: Int) {
-            mediaSession.setShuffleMode(shuffleMode)
+        override fun onSetPlayMode(playMode: PlayMode) {
+            mediaSession.setRepeatMode(playMode.repeatMode)
+            mediaSession.setShuffleMode(playMode.shuffleMode)
             notifier.update()
         }
     }
@@ -177,10 +173,10 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         settingsDataStore.apply {
             volumeControl.flow()
                 .onEach {
-                    it?.let {
-                        FadeVolumeProxy.setMaxVolume(it)
-                        playback.setMaxVolume(it)
-                    }
+                    it ?: return@onEach
+
+                    FadeVolumeProxy.setMaxVolume(it)
+                    playback.setMaxVolume(it)
                 }
                 .launchIn(this)
 
@@ -192,10 +188,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                 .onEach {
                     it ?: return@onEach
 
-                    PlayMode.of(it).apply {
-                        playback.onSetRepeatMode(repeatMode)
-                        playback.onSetShuffleMode(shuffleMode)
-                    }
+                    playback.onSetPlayMode(PlayMode.of(it))
                 }.launchIn(this)
         }
     }

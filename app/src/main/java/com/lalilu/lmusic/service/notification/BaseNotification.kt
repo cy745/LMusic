@@ -24,7 +24,7 @@ import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.service.LMusicService
 import com.lalilu.lmusic.service.notification.LMusicNotifier.Companion.NOTIFICATION_PLAYER_ID
-import com.lalilu.lmusic.utils.PlayMode
+import com.lalilu.lmusic.service.playback.PlayMode
 import com.lalilu.lmusic.utils.extension.toBitmap
 import kotlinx.coroutines.runBlocking
 

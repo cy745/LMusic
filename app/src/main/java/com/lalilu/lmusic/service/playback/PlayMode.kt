@@ -1,6 +1,10 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lmusic.service.playback
 
-import android.support.v4.media.session.PlaybackStateCompat.*
+import android.support.v4.media.session.PlaybackStateCompat.REPEAT_MODE_ALL
+import android.support.v4.media.session.PlaybackStateCompat.REPEAT_MODE_ONE
+import android.support.v4.media.session.PlaybackStateCompat.SHUFFLE_MODE_ALL
+import android.support.v4.media.session.PlaybackStateCompat.SHUFFLE_MODE_GROUP
+import android.support.v4.media.session.PlaybackStateCompat.SHUFFLE_MODE_NONE
 
 enum class PlayMode(
     val repeatMode: Int,
@@ -30,7 +34,7 @@ enum class PlayMode(
 
         fun of(repeatMode: Int, shuffleMode: Int): PlayMode {
             if (repeatMode == REPEAT_MODE_ONE) return RepeatOne
-            if (shuffleMode == SHUFFLE_MODE_ALL) return Shuffle
+            if (shuffleMode == SHUFFLE_MODE_ALL || shuffleMode == SHUFFLE_MODE_GROUP) return Shuffle
             return ListRecycle
         }
     }
