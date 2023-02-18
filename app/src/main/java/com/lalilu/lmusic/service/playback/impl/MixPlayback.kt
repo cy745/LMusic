@@ -7,12 +7,12 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.service.playback.PlayMode
 import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.service.playback.Player
 import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
-import com.lalilu.lmusic.service.playback.PlayMode
 
 class MixPlayback(
     private val noisyReceiver: LMusicNoisyReceiver,
@@ -64,8 +64,7 @@ class MixPlayback(
             val item = queue?.getCurrent() ?: return
             val uri = queue?.getUriFromItem(item) ?: return
 
-            onPlayingItemUpdate(item)
-            onPlaybackStateChanged(PlaybackStateCompat.STATE_BUFFERING, 0L)
+            onPlayInfoUpdate(item, PlaybackStateCompat.STATE_BUFFERING, 0L)
             onPlayFromUri(uri, null)
         }
     }
@@ -78,8 +77,7 @@ class MixPlayback(
         val item = queue?.getById(mediaId) ?: return
         val uri = queue?.getUriFromItem(item) ?: return
 
-        onPlayingItemUpdate(item)
-        onPlaybackStateChanged(PlaybackStateCompat.STATE_BUFFERING, 0L)
+        onPlayInfoUpdate(item, PlaybackStateCompat.STATE_BUFFERING, 0L)
         onPlayFromUri(uri, extras)
     }
 
@@ -87,8 +85,7 @@ class MixPlayback(
         val next = queue?.getNext(playMode == PlayMode.Shuffle) ?: return
         val uri = queue?.getUriFromItem(next) ?: return
 
-        onPlayingItemUpdate(next)
-        onPlaybackStateChanged(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, 0L)
+        onPlayInfoUpdate(next, PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, 0L)
         onPlayFromUri(uri, null)
     }
 
@@ -96,8 +93,7 @@ class MixPlayback(
         val previous = queue?.getPrevious(playMode == PlayMode.Shuffle) ?: return
         val uri = queue?.getUriFromItem(previous) ?: return
 
-        onPlayingItemUpdate(previous)
-        onPlaybackStateChanged(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, 0L)
+        onPlayInfoUpdate(previous, PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, 0L)
         onPlayFromUri(uri, null)
     }
 
@@ -128,17 +124,17 @@ class MixPlayback(
     }
 
     override fun onLStart() {
-        onPlaybackStateChanged(
-            playbackState = PlaybackStateCompat.STATE_PLAYING,
-            position = player?.getPosition() ?: 0L
+        onPlayInfoUpdate(
+            queue?.getCurrent(),
+            PlaybackStateCompat.STATE_PLAYING,
+            player?.getPosition() ?: 0L
         )
     }
 
     override fun onLStop() {
-        onPlayingItemUpdate(null)
         noisyReceiver.unregister()
         audioFocusHelper.abandonAudioFocus()
-        onPlaybackStateChanged(PlaybackStateCompat.STATE_STOPPED, 0L)
+        onPlayInfoUpdate(null, PlaybackStateCompat.STATE_STOPPED, 0L)
     }
 
     override fun onLPlay() {
@@ -147,14 +143,19 @@ class MixPlayback(
 
     override fun onLPause() {
         noisyReceiver.unregister()
-        onPlaybackStateChanged(
-            playbackState = PlaybackStateCompat.STATE_PAUSED,
-            position = player?.getPosition() ?: 0L
+        onPlayInfoUpdate(
+            queue?.getCurrent(),
+            PlaybackStateCompat.STATE_PAUSED,
+            player?.getPosition() ?: 0L
         )
     }
 
     override fun onLSeekTo(newDurationMs: Number) {
-        onPlaybackStateChanged(PlaybackStateCompat.STATE_PLAYING, newDurationMs.toLong())
+        onPlayInfoUpdate(
+            queue?.getCurrent(),
+            PlaybackStateCompat.STATE_PLAYING,
+            newDurationMs.toLong()
+        )
     }
 
     override fun onLPrepared() {
@@ -163,23 +164,18 @@ class MixPlayback(
     override fun onLCompletion() {
         // 单曲循环模式
         if (playMode == PlayMode.RepeatOne) {
-            val next = queue?.getCurrent() ?: return
-            val uri = queue?.getUriFromItem(next) ?: return
+            val current = queue?.getCurrent() ?: return
+            val uri = queue?.getUriFromItem(current) ?: return
 
-            onPlayingItemUpdate(next)
-            onPlaybackStateChanged(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, 0L)
+            onPlayInfoUpdate(current, PlaybackStateCompat.STATE_BUFFERING, 0L)
             onPlayFromUri(uri, null)
             return
         }
         onSkipToNext()
     }
 
-    override fun onPlayingItemUpdate(item: LSong?) {
-        playbackListener?.onPlayingItemUpdate(item)
-    }
-
-    override fun onPlaybackStateChanged(playbackState: Int, position: Long) {
-        playbackListener?.onPlaybackStateChanged(playbackState, position)
+    override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
+        playbackListener?.onPlayInfoUpdate(item, playbackState, position)
     }
 
     override fun onSetPlayMode(playMode: PlayMode) {
