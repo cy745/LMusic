@@ -12,13 +12,15 @@ import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.service.playback.Player
 import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
+import com.lalilu.lmusic.service.playback.PlayMode
 
 class MixPlayback(
     private val noisyReceiver: LMusicNoisyReceiver,
     private val audioFocusHelper: LMusicAudioFocusHelper,
     override var playbackListener: Playback.Listener<LSong>? = null,
     override var queue: PlayQueue<LSong>? = null,
-    override var player: Player? = null
+    override var player: Player? = null,
+    override var playMode: PlayMode = PlayMode.ListRecycle
 ) : MediaSessionCompat.Callback(), Playback<LSong>, Playback.Listener<LSong>, Player.Listener {
 
     init {
@@ -28,8 +30,13 @@ class MixPlayback(
         noisyReceiver.onBecomingNoisy = ::onPause
     }
 
-    override var repeatMode: Int = PlaybackStateCompat.REPEAT_MODE_ALL
-    override var shuffleMode: Int = PlaybackStateCompat.SHUFFLE_MODE_NONE
+    override fun onSetShuffleMode(shuffleMode: Int) {
+        onSetPlayMode(PlayMode.of(playMode.repeatMode, shuffleMode))
+    }
+
+    override fun onSetRepeatMode(repeatMode: Int) {
+        onSetPlayMode(PlayMode.of(repeatMode, playMode.shuffleMode))
+    }
 
     override fun changeToPlayer(changeTo: Player) {
         if (player == changeTo) return
@@ -77,7 +84,7 @@ class MixPlayback(
     }
 
     override fun onSkipToNext() {
-        val next = queue?.getNext(false) ?: return
+        val next = queue?.getNext(playMode == PlayMode.Shuffle) ?: return
         val uri = queue?.getUriFromItem(next) ?: return
 
         onPlayingItemUpdate(next)
@@ -86,7 +93,7 @@ class MixPlayback(
     }
 
     override fun onSkipToPrevious() {
-        val previous = queue?.getPrevious(false) ?: return
+        val previous = queue?.getPrevious(playMode == PlayMode.Shuffle) ?: return
         val uri = queue?.getUriFromItem(previous) ?: return
 
         onPlayingItemUpdate(previous)
@@ -114,16 +121,6 @@ class MixPlayback(
                 onPlay()
             }
         }
-    }
-
-    override fun onSetRepeatMode(repeatMode: Int) {
-        this.repeatMode = repeatMode
-        playbackListener?.onSetRepeatMode(repeatMode)
-    }
-
-    override fun onSetShuffleMode(shuffleMode: Int) {
-        this.shuffleMode = shuffleMode
-        playbackListener?.onSetShuffleMode(shuffleMode)
     }
 
     override fun requestAudioFocus(): Boolean {
@@ -164,6 +161,16 @@ class MixPlayback(
     }
 
     override fun onLCompletion() {
+        // 单曲循环模式
+        if (playMode == PlayMode.RepeatOne) {
+            val next = queue?.getCurrent() ?: return
+            val uri = queue?.getUriFromItem(next) ?: return
+
+            onPlayingItemUpdate(next)
+            onPlaybackStateChanged(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, 0L)
+            onPlayFromUri(uri, null)
+            return
+        }
         onSkipToNext()
     }
 
@@ -173,5 +180,10 @@ class MixPlayback(
 
     override fun onPlaybackStateChanged(playbackState: Int, position: Long) {
         playbackListener?.onPlaybackStateChanged(playbackState, position)
+    }
+
+    override fun onSetPlayMode(playMode: PlayMode) {
+        this.playMode = playMode
+        playbackListener?.onSetPlayMode(playMode)
     }
 }
