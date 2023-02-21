@@ -3,6 +3,7 @@ package com.lalilu.lmusic.service
 import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -27,44 +28,27 @@ import com.lalilu.lmusic.service.playback.impl.LocalPlayer
 import com.lalilu.lmusic.service.playback.impl.MixPlayback
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.EQHelper
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
-@AndroidEntryPoint
 class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
 
-    @Inject
-    lateinit var runtime: LMusicRuntime
-
-    @Inject
-    lateinit var lMusicSp: LMusicSp
-
-    @Inject
-    lateinit var lyricRepo: LyricRepository
-
-    @Inject
-    lateinit var coverRepo: CoverRepository
-
-    @Inject
-    lateinit var noisyReceiver: LMusicNoisyReceiver
-
-    @Inject
-    lateinit var audioFocusHelper: LMusicAudioFocusHelper
-
-    @Inject
-    lateinit var localPlayer: LocalPlayer
+    private val lMusicSp: LMusicSp by inject()
+    private val runtime: LMusicRuntime by inject()
+    private val lyricRepo: LyricRepository by inject()
+    private val coverRepo: CoverRepository by inject()
+    private val audioFocusHelper: LMusicAudioFocusHelper by inject()
+    private val noisyReceiver: LMusicNoisyReceiver by inject()
+    private val localPlayer: LocalPlayer by inject()
 
     lateinit var mediaSession: MediaSessionCompat
-
     lateinit var playback: MixPlayback
-
     lateinit var notifier: LMusicNotifier
 
     inner class PlaybackListener : Playback.Listener<LSong> {
@@ -93,7 +77,11 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
                 PlaybackStateCompat.STATE_PAUSED -> {
                     mediaSession.isActive = false
-                    this@LMusicService.stopForeground(STOP_FOREGROUND_DETACH)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        this@LMusicService.stopForeground(STOP_FOREGROUND_DETACH)
+                    } else {
+                        this@LMusicService.stopForeground(false)
+                    }
                 }
 
                 PlaybackStateCompat.STATE_STOPPED -> {

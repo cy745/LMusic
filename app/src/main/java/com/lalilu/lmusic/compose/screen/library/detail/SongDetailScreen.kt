@@ -33,7 +33,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.navArgument
 import coil.compose.AsyncImage
@@ -60,13 +59,11 @@ import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.lmusic.utils.extension.rememberScrollPosition
 import com.lalilu.lmusic.utils.recomposeHighlighter
-import com.lalilu.lmusic.viewmodel.LocalMainVM
-import com.lalilu.lmusic.viewmodel.LocalPlayingVM
-import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
+import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object SongDetailScreen : BaseScreen() {
@@ -96,10 +93,10 @@ object SongDetailScreen : BaseScreen() {
 @Composable
 fun SongDetailScreen(
     song: LSong,
-    mainVM: MainViewModel = LocalMainVM.current,
-    playingVM: PlayingViewModel = LocalPlayingVM.current,
-    playlistsVM: PlaylistsViewModel = LocalPlaylistsVM.current,
-    networkDataVM: NetworkDataViewModel = hiltViewModel()
+    mainVM: MainViewModel = getViewModel(),
+    playingVM: PlayingViewModel = getViewModel(),
+    playlistsVM: PlaylistsViewModel = getViewModel(),
+    networkDataVM: NetworkDataViewModel = getViewModel()
 ) {
     val navToArtistAction = ArtistDetailScreen.navToByArgv()
     val navToAlbumAction = AlbumDetailScreen.navToByArgv()

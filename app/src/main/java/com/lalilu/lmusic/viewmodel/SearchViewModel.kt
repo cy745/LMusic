@@ -1,21 +1,21 @@
 package com.lalilu.lmusic.viewmodel
 
-import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.Item
 import com.lalilu.lmedia.repository.PlaylistRepository
 import com.lalilu.lmusic.repository.LibraryRepository
 import com.lalilu.lmusic.utils.extension.toState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
-import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.mapLatest
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-@HiltViewModel
-class SearchViewModel @Inject constructor(
+class SearchViewModel constructor(
     libraryRepo: LibraryRepository,
     playlistRepo: PlaylistRepository
 ) : ViewModel() {
@@ -45,8 +45,4 @@ class SearchViewModel @Inject constructor(
     fun searchFor(str: String) {
         keywordStr.tryEmit(str)
     }
-}
-
-val LocalSearchVM = compositionLocalOf<SearchViewModel> {
-    error("SearchViewModel hasn't not presented")
 }

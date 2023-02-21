@@ -37,6 +37,7 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.*
+import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object SongsScreen : BaseScreen() {
@@ -96,8 +97,8 @@ object SongsScreen : BaseScreen() {
 @Composable
 fun SongsScreen(
     showAll: Boolean = true,
-    playingVM: PlayingViewModel = LocalPlayingVM.current,
-    songsViewModel: SongsViewModel = LocalSongsVM.current,
+    playingVM: PlayingViewModel = getViewModel(),
+    songsViewModel: SongsViewModel = getViewModel(),
     sortFor: String = Sortable.SORT_FOR_SONGS,
     headerContent: LazyGridScope.(songs: List<LSong>, showSortBar: () -> Unit) -> Unit = { _, _ -> }
 ) {

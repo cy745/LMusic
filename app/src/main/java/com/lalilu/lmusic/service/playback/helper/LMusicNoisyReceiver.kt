@@ -5,19 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class LMusicNoisyReceiver constructor() : BroadcastReceiver() {
     var onBecomingNoisy: () -> Unit = {}
     private var mContext: Context? = null
 
-    @Inject
-    constructor(
-        @ApplicationContext context: Context? = null
-    ) : this() {
+    constructor(context: Context? = null) : this() {
         this.mContext = context
     }
 

@@ -31,7 +31,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.navArgument
 import com.blankj.utilcode.util.TimeUtils
@@ -49,6 +48,7 @@ import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
+import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object MatchNetworkDataScreen : BaseScreen() {
@@ -77,7 +77,7 @@ object MatchNetworkDataScreen : BaseScreen() {
 @Composable
 private fun MatchNetworkDataScreen(
     song: LSong,
-    viewModel: NetworkDataViewModel = hiltViewModel()
+    viewModel: NetworkDataViewModel = getViewModel()
 ) {
     val keyword = "${song.name} ${song._artist}"
     val msg = remember { mutableStateOf("") }

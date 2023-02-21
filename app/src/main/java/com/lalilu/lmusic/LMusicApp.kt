@@ -12,15 +12,14 @@ import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.SongCoverFetcher
 import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
-import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
-@HiltAndroidApp
 class LMusicApp : Application(), ImageLoaderFactory, LMediaExtFactory {
 
-    @Inject
-    lateinit var callFactory: OkHttpClient
+    private val callFactory: OkHttpClient by inject()
 
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)
@@ -45,7 +44,20 @@ class LMusicApp : Application(), ImageLoaderFactory, LMediaExtFactory {
 
     override fun onCreate() {
         super.onCreate()
+
         StatusBarLyricExt.init(this)
         EQHelper.init(this)
+
+        startKoin {
+            androidContext(this@LMusicApp)
+            modules(
+                AppModule,
+                ApiModule,
+                ViewModelModule,
+                DatabaseModule,
+                RuntimeModule,
+                PlayerModule
+            )
+        }
     }
 }

@@ -10,16 +10,13 @@ import org.jaudiotagger.tag.FieldKey
 import java.io.File
 import java.util.logging.Level
 import java.util.logging.Logger
-import javax.inject.Inject
-import javax.inject.Singleton
 
 interface LyricSource {
     suspend fun loadLyric(song: LSong): Pair<String, String?>?
 
 }
 
-@Singleton
-class LyricSourceFactory @Inject constructor(
+class LyricSourceFactory(
     dataBaseLyricSource: DataBaseLyricSource,
     embeddedLyricSource: EmbeddedLyricSource,
     localLyricSource: LocalLyricSource
@@ -36,7 +33,7 @@ class LyricSourceFactory @Inject constructor(
         }
 }
 
-class EmbeddedLyricSource @Inject constructor() : LyricSource {
+class EmbeddedLyricSource : LyricSource {
     override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
             val songData = song.pathStr ?: return@withContext null
@@ -55,7 +52,7 @@ class EmbeddedLyricSource @Inject constructor() : LyricSource {
         }
 }
 
-class LocalLyricSource @Inject constructor() : LyricSource {
+class LocalLyricSource : LyricSource {
     override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
             val songData = song.pathStr ?: return@withContext null
@@ -70,7 +67,7 @@ class LocalLyricSource @Inject constructor() : LyricSource {
         }
 }
 
-class DataBaseLyricSource @Inject constructor(
+class DataBaseLyricSource(
     private val netDataRepo: NetDataRepository
 ) : LyricSource {
     override suspend fun loadLyric(song: LSong): Pair<String, String?>? =

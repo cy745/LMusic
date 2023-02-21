@@ -12,16 +12,13 @@ import com.lalilu.lmedia.entity.LNetDataUpdateForLyric
 import com.lalilu.lmedia.repository.NetDataRepository
 import com.lalilu.lmusic.apis.*
 import com.lalilu.lmusic.repository.LyricRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-@HiltViewModel
-class NetworkDataViewModel @Inject constructor(
+class NetworkDataViewModel(
     private val neteaseDataSource: NeteaseDataSource,
     private val kugouDataSource: KugouDataSource,
     private val lyricRepository: LyricRepository,

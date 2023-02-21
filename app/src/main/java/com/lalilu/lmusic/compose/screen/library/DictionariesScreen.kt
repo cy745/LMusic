@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import com.blankj.utilcode.util.ConvertUtils
 import com.google.accompanist.navigation.animation.composable
@@ -32,7 +31,7 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.detail.DictionaryDetailScreen
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
-import com.lalilu.lmusic.viewmodel.LocalLibraryVM
+import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object DictionariesScreen : BaseScreen() {
@@ -50,8 +49,8 @@ object DictionariesScreen : BaseScreen() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DictionariesScreen(
-    libraryVM: LibraryViewModel = LocalLibraryVM.current,
-    dictionariesVM: DictionariesViewModel = hiltViewModel()
+    libraryVM: LibraryViewModel = getViewModel(),
+    dictionariesVM: DictionariesViewModel = getViewModel()
 ) {
     val dictionaries by libraryVM.allDictionaries
     val blockedPaths by dictionariesVM.getBlockedPathsFlow().collectAsState(initial = emptyList())

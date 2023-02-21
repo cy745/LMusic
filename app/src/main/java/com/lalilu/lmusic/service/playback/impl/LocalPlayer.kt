@@ -6,14 +6,10 @@ import android.net.Uri
 import com.lalilu.lmusic.service.playback.Player
 import com.lalilu.lmusic.service.playback.helper.FadeVolumeProxy
 import com.lalilu.lmusic.utils.EQHelper
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class LocalPlayer @Inject constructor(
-    @ApplicationContext private val context: Context
+class LocalPlayer(
+    private val context: Context
 ) : Player, Player.Listener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
     private var volumeProxy: FadeVolumeProxy? = null
     private var player: MediaPlayer? = null

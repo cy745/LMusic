@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.core.app.ActivityCompat
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.ActivityUtils
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.common.SystemUiUtil
@@ -32,17 +31,9 @@ import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.viewmodel.LocalLibraryVM
-import com.lalilu.lmusic.viewmodel.LocalMainVM
-import com.lalilu.lmusic.viewmodel.LocalPlayingVM
-import com.lalilu.lmusic.viewmodel.LocalPlaylistDetailVM
-import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
-import com.lalilu.lmusic.viewmodel.LocalSearchVM
-import com.lalilu.lmusic.viewmodel.LocalSongsVM
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(
@@ -50,15 +41,11 @@ import kotlin.coroutines.CoroutineContext
     ExperimentalAnimationApi::class,
     ExperimentalMaterialApi::class
 )
-@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
-    @Inject
-    lateinit var lMusicSp: LMusicSp
-
-    @Inject
-    lateinit var browser: LMusicBrowser
+    private val lMusicSp: LMusicSp by inject()
+    private val browser: LMusicBrowser by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,13 +73,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                 CompositionLocalProvider(
                     LocalWindowSize provides calculateWindowSizeClass(activity = this),
                     LocalNavigatorHost provides rememberAnimatedNavController(),
-                    LocalLibraryVM provides hiltViewModel(),
-                    LocalPlayingVM provides hiltViewModel(),
-                    LocalPlaylistsVM provides hiltViewModel(),
-                    LocalMainVM provides hiltViewModel(),
-                    LocalPlaylistDetailVM provides hiltViewModel(),
-                    LocalSearchVM provides hiltViewModel(),
-                    LocalSongsVM provides hiltViewModel()
                 ) {
                     Box {
                         SmartModalBottomSheet.SmartModalBottomSheetContent(

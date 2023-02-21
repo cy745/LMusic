@@ -44,12 +44,10 @@ import com.lalilu.lmusic.compose.screen.library.detail.AlbumDetailScreen
 import com.lalilu.lmusic.compose.screen.library.detail.ArtistDetailScreen
 import com.lalilu.lmusic.compose.screen.library.detail.PlaylistDetailScreen
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
-import com.lalilu.lmusic.viewmodel.LocalPlayingVM
-import com.lalilu.lmusic.viewmodel.LocalSearchVM
-import com.lalilu.lmusic.viewmodel.LocalSongsVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
+import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object SearchScreen : BaseScreen() {
@@ -71,9 +69,9 @@ object SearchScreen : BaseScreen() {
 )
 @Composable
 private fun SearchScreen(
-    songsVM: SongsViewModel = LocalSongsVM.current,
-    searchVM: SearchViewModel = LocalSearchVM.current,
-    playingVM: PlayingViewModel = LocalPlayingVM.current
+    songsVM: SongsViewModel = getViewModel(),
+    searchVM: SearchViewModel = getViewModel(),
+    playingVM: PlayingViewModel = getViewModel()
 ) {
     val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
     val navToAlbumAction = AlbumDetailScreen.navToByArgv()

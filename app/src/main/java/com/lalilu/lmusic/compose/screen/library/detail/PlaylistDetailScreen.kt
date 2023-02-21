@@ -25,9 +25,6 @@ import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenData
-import com.lalilu.lmusic.viewmodel.LocalPlayingVM
-import com.lalilu.lmusic.viewmodel.LocalPlaylistDetailVM
-import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
@@ -36,6 +33,7 @@ import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
+import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object PlaylistDetailScreen : BaseScreen() {
@@ -83,9 +81,9 @@ object FavouriteScreen : BaseScreen() {
 @Composable
 private fun PlaylistDetailScreen(
     playlistId: Long,
-    playingVM: PlayingViewModel = LocalPlayingVM.current,
-    playlistsVM: PlaylistsViewModel = LocalPlaylistsVM.current,
-    playlistDetailVM: PlaylistDetailViewModel = LocalPlaylistDetailVM.current
+    playingVM: PlayingViewModel = getViewModel(),
+    playlistsVM: PlaylistsViewModel = getViewModel(),
+    playlistDetailVM: PlaylistDetailViewModel = getViewModel()
 ) {
     val navToSongAction = SongDetailScreen.navToByArgv(hapticType = HapticFeedbackType.LongPress)
     val playlist by playlistDetailVM.getPlaylistFlow(playlistId).collectAsState(initial = null)

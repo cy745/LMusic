@@ -32,8 +32,8 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object SettingsScreen : BaseScreen() {
@@ -51,7 +51,7 @@ object SettingsScreen : BaseScreen() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SettingsScreen(
-    playingVM: PlayingViewModel = LocalPlayingVM.current
+    playingVM: PlayingViewModel = getViewModel()
 ) {
     val context = LocalContext.current
     val ignoreAudioFocus = playingVM.lMusicSp.ignoreAudioFocus

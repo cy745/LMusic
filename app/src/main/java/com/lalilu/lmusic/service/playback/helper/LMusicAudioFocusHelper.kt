@@ -6,13 +6,9 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import com.lalilu.lmusic.datastore.LMusicSp
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class LMusicAudioFocusHelper @Inject constructor(
-    @ApplicationContext private val context: Context,
+class LMusicAudioFocusHelper constructor(
+    private val context: Context,
     private val lMusicSp: LMusicSp
 ) : AudioManager.OnAudioFocusChangeListener {
     private val am: AudioManager
