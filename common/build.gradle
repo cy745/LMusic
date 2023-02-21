@@ -6,6 +6,8 @@ plugins {
 android {
     compileSdk 33
 
+    namespace 'com.lalilu.common'
+
     defaultConfig {
         minSdk 23
         targetSdk 33

@@ -18,6 +18,8 @@ android {
         compose true
     }
 
+    namespace 'com.lalilu'
+
     defaultConfig {
         applicationId "com.lalilu.lmusic"
         minSdkVersion 23
