@@ -119,7 +119,7 @@ dependencies {
 
     // https://github.com/FunnySaltyFish/ComposeDataSaver
     // Apache-2.0 License
-    implementation 'com.github.FunnySaltyFish.ComposeDataSaver:data-saver:v1.1.3'
+    // implementation 'com.github.FunnySaltyFish.ComposeDataSaver:data-saver:v1.1.4'
 
     // https://google.github.io/accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
@@ -175,10 +175,8 @@ dependencies {
     implementation 'com.github.cy745:EdgeTranslucent:8c25866a14'
 
     // https://mvnrepository.com/artifact/androidx.datastore/datastore-preferences
-    implementation 'androidx.datastore:datastore-preferences:1.0.0'
-    implementation 'androidx.preference:preference-ktx:1.2.0'
     implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.6.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.3.0-rc01'

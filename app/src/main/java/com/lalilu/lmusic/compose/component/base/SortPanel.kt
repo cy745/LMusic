@@ -16,12 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.funny.data_saver.core.rememberDataSaverState
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmusic.compose.component.SmartBar
+import com.lalilu.lmusic.viewmodel.SettingsViewModel
 
 /**
  * 将元素的分类分组和顺序设置功能统一成一个SortPanel组件
@@ -29,21 +30,17 @@ import com.lalilu.lmusic.compose.component.SmartBar
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SortPanel(
+    settingsVM: SettingsViewModel = hiltViewModel(),
     sortFor: String,
     supportGroupRules: () -> List<GroupRule>,
     supportSortRules: () -> List<SortRule>,
     supportOrderRules: () -> List<OrderRule>,
-    recoverTo: @Composable () -> Unit
+    recoverTo: @Composable () -> Unit,
 ) {
-    var sortRule by rememberDataSaverState(
-        key = "${sortFor}_SORT_RULE", default = SortRule.Normal.name
-    )
-    var orderRule by rememberDataSaverState(
-        key = "${sortFor}_ORDER_RULE", default = OrderRule.ASC.name
-    )
-    var groupRule by rememberDataSaverState(
-        key = "${sortFor}_GROUP_RULE", default = GroupRule.Normal.name
-    )
+    var sortRule by settingsVM.lMusicSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
+    var orderRule by settingsVM.lMusicSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.ASC.name)
+    var groupRule by settingsVM.lMusicSp.stringSp("${sortFor}_GROUP_RULE", GroupRule.Normal.name)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()

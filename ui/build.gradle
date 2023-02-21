@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         minSdk 23
-        targetSdk 32
+        targetSdk 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -16,7 +16,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -33,10 +33,10 @@ dependencies {
     // https://github.com/Blankj/AndroidUtilCode/
     // Apache-2.0 License
     // 安卓工具类库
-    implementation 'com.blankj:utilcodex:1.31.0'
+    implementation 'com.blankj:utilcodex:1.31.1'
     implementation "androidx.dynamicanimation:dynamicanimation-ktx:1.0.0-alpha03"
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
-    implementation "androidx.appcompat:appcompat:1.4.1"
+    implementation "androidx.appcompat:appcompat:1.6.1"
 
     implementation project(":common")
 }

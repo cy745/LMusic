@@ -4,7 +4,7 @@ import com.lalilu.lmedia.entity.HISTORY_TYPE_SONG
 import com.lalilu.lmedia.entity.LHistory
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.HistoryRepository
-import com.lalilu.lmusic.datastore.HistoryDataStore
+import com.lalilu.lmusic.datastore.LMusicSp
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,17 +13,17 @@ import javax.inject.Singleton
  */
 @Singleton
 class LMusicRuntime @Inject constructor(
-    private val historyStore: HistoryDataStore,
+    private val lMusicSp: LMusicSp,
     private val historyRepo: HistoryRepository
 ) : BaseRuntime(), Runtime.Listener {
     override var listener: Runtime.Listener? = this
 
     override fun onSongsUpdate(songs: List<LSong>) {
-        historyStore.apply { lastPlayedListIdsKey.set(songs.map { it.id }) }
+        lMusicSp.lastPlayedListIdsKey.set(songs.map { it.id })
     }
 
     override fun onPlayingUpdate(song: LSong?) {
-        historyStore.apply { lastPlayedIdKey.set(song?.id) }
+        lMusicSp.lastPlayedIdKey.set(song?.id)
         if (song?.id == null) return
         historyRepo.saveHistory(
             LHistory(
@@ -34,7 +34,7 @@ class LMusicRuntime @Inject constructor(
     }
 
     override fun onPositionUpdate(position: Long) {
-        historyStore.apply { lastPlayedPositionKey.set(position) }
+        lMusicSp.lastPlayedPositionKey.set(position)
     }
 
     fun updatePosition(startValue: Long = -1, loop: Boolean = false) {

@@ -31,7 +31,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/colorPrimaryVariant"
-                android:fitsSystemWindows="true"
+                android:fitsSystemWindows="false"
                 app:bgPalette="@{palette}">
 
                 <com.lalilu.ui.appbar.CollapsingLayout

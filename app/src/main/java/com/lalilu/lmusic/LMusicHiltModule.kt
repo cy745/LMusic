@@ -2,7 +2,6 @@ package com.lalilu.lmusic
 
 import android.content.Context
 import androidx.room.Room
-import com.funny.data_saver.core.DataSaverInterface
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.database.LDatabase
 import com.lalilu.lmedia.repository.FavoriteRepository
@@ -12,9 +11,6 @@ import com.lalilu.lmedia.repository.PlaylistRepository
 import com.lalilu.lmedia.repository.impl.HistoryRepositoryImpl
 import com.lalilu.lmedia.repository.impl.NetDataRepositoryImpl
 import com.lalilu.lmedia.repository.impl.PlaylistRepositoryImpl
-import com.lalilu.lmusic.datastore.SettingsDataStore
-import com.lalilu.lmusic.utils.DataSaverDataStorePreferences
-import com.lalilu.lmusic.utils.DataSaverDataStorePreferences.Companion.setDataStorePreferences
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -83,13 +79,5 @@ object LMusicHiltModule {
         return NetDataRepositoryImpl(
             netDataDao = database.netDataDao()
         )
-    }
-
-    @Provides
-    @Singleton
-    fun providesDataSaver(settingsDataStore: SettingsDataStore): DataSaverInterface {
-        return DataSaverDataStorePreferences().apply {
-            setDataStorePreferences(settingsDataStore.getDataStore())
-        }
     }
 }

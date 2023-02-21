@@ -18,8 +18,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.ActivityUtils
-import com.funny.data_saver.core.DataSaverInterface
-import com.funny.data_saver.core.LocalDataSaver
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmedia.LMedia
@@ -30,7 +28,7 @@ import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.screen.LMusicNavGraph
 import com.lalilu.lmusic.compose.screen.PlayingScreen
 import com.lalilu.lmusic.compose.screen.ShowScreen
-import com.lalilu.lmusic.datastore.SettingsDataStore
+import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
@@ -57,10 +55,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     @Inject
-    lateinit var dataSaver: DataSaverInterface
-
-    @Inject
-    lateinit var settingsDataStore: SettingsDataStore
+    lateinit var lMusicSp: LMusicSp
 
     @Inject
     lateinit var browser: LMusicBrowser
@@ -69,9 +64,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
         super.onCreate(savedInstanceState)
 
         // 判断是否已完成初次启动时的用户引导
-        val isGuidingOver = settingsDataStore.run { isGuidingOver.get() }
+        val isGuidingOver = lMusicSp.isGuidingOver.get()
         val isPermissionsGranted = ActivityCompat.checkSelfPermission(this, REQUIRE_PERMISSIONS)
-        if (isGuidingOver != true || isPermissionsGranted != PackageManager.PERMISSION_GRANTED) {
+        if (!isGuidingOver || isPermissionsGranted != PackageManager.PERMISSION_GRANTED) {
             ActivityUtils.startActivity(GuidingActivity::class.java)
             finish()
             return
@@ -89,7 +84,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
         setContent {
             LMusicTheme {
                 CompositionLocalProvider(
-                    LocalDataSaver provides dataSaver,
                     LocalWindowSize provides calculateWindowSizeClass(activity = this),
                     LocalNavigatorHost provides rememberAnimatedNavController(),
                     LocalLibraryVM provides hiltViewModel(),

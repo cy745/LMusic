@@ -8,13 +8,13 @@ import com.lalilu.lmedia.entity.LDictionary
 import com.lalilu.lmedia.entity.LGenre
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.IndexFilter
-import com.lalilu.lmusic.datastore.BlockedSp
+import com.lalilu.lmusic.datastore.LMusicSp
 
 class DictionaryFilter(
-    private val blockedSp: BlockedSp
+    private val lmusicSp: LMusicSp
 ) : IndexFilter {
     override fun onSongsBuilt(songs: List<LSong>): List<LSong> {
-        val blockedPaths = blockedSp.blockedPaths.get() ?: emptyList()
+        val blockedPaths = lmusicSp.blockedPaths.get() ?: emptyList()
 
         return songs.onEach {
             val path = FileUtils.getDirName(it.pathStr)
@@ -43,7 +43,7 @@ class DictionaryFilter(
     }
 
     override fun onDictionariesBuilt(dictionaries: List<LDictionary>): List<LDictionary> {
-        val blockedPaths = blockedSp.blockedPaths.get() ?: emptyList()
+        val blockedPaths = lmusicSp.blockedPaths.get() ?: emptyList()
 
         return dictionaries.onEach {
             it.blocked = blockedPaths.contains(it.path)

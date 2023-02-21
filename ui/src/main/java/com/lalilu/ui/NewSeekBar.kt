@@ -13,6 +13,8 @@ import androidx.dynamicanimation.animation.SpringForce
 import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.common.SystemUiUtil
+import java.util.Timer
+import kotlin.concurrent.schedule
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -115,7 +117,12 @@ class NewSeekBar @JvmOverloads constructor(
 
     var startValue: Float = nowValue
     var dataValue: Float = nowValue
-    var sensitivity = 1.3f
+    var sensitivity: Float = 1.3f
+
+    private var autoHideTimer: Timer? = null
+    var autoHide: Boolean = true
+    var autoHideDelay: Long = 2000L
+    var autoHideTargetAlpha: Float = 30f
 
     private val cancelScrollListener =
         object : OnSeekBarScrollToThresholdListener(this::cancelThreshold) {
@@ -152,6 +159,13 @@ class NewSeekBar @JvmOverloads constructor(
         }
     }
 
+    private val mAlphaAnimation: SpringAnimation by lazy {
+        SpringAnimation(this, AlphaFloatProperty(), 100f).apply {
+            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            spring.stiffness = SpringForce.STIFFNESS_LOW
+        }
+    }
+
     override fun valueToText(value: Float): String {
         return valueToText?.invoke(value) ?: TimeUtils.millis2String(value.toLong(), "mm:ss")
     }
@@ -174,7 +188,10 @@ class NewSeekBar @JvmOverloads constructor(
 
     private val gestureDetector = GestureDetectorCompat(context,
         object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDown(e: MotionEvent?): Boolean {
+            override fun onDown(e: MotionEvent): Boolean {
+                // 清除自动隐藏SeekBar计时器
+                autoHideTimer?.cancel()
+
                 touching = true
                 canceled = false
                 moved = false
@@ -182,6 +199,7 @@ class NewSeekBar @JvmOverloads constructor(
                 dataValue = nowValue
                 animateScaleTo(SizeUtils.dp2px(3f).toFloat())
                 animateOutSideAlphaTo(255f)
+                animateAlphaTo(100f)
                 return super.onDown(e)
             }
 
@@ -261,6 +279,20 @@ class NewSeekBar @JvmOverloads constructor(
                         it.state = THRESHOLD_STATE_UNREACHED
                     }
                 }
+
+                // 当启用自动隐藏时触发
+                if (autoHide && autoHideDelay > 0L) {
+                    autoHideTimer?.cancel()
+                    autoHideTimer = Timer().apply {
+                        schedule(autoHideDelay) {
+                            if (autoHide && autoHideDelay > 0L) {
+                                post {
+                                    animateAlphaTo(autoHideTargetAlpha)
+                                }
+                            }
+                        }
+                    }
+                }
                 parent.requestDisallowInterceptTouchEvent(false)
             }
         }
@@ -280,6 +312,11 @@ class NewSeekBar @JvmOverloads constructor(
     fun animateValueTo(value: Float) {
         mProgressAnimation.cancel()
         mProgressAnimation.animateToFinalPosition(value)
+    }
+
+    fun animateAlphaTo(value: Float) {
+        mAlphaAnimation.cancel()
+        mAlphaAnimation.animateToFinalPosition(value)
     }
 
     class ProgressFloatProperty :
@@ -304,6 +341,13 @@ class NewSeekBar @JvmOverloads constructor(
         override fun getValue(obj: NewProgressBar): Float = obj.outSideAlpha.toFloat()
         override fun setValue(obj: NewProgressBar, value: Float) {
             obj.outSideAlpha = value.roundToInt()
+        }
+    }
+
+    class AlphaFloatProperty : FloatPropertyCompat<NewProgressBar>("alpha") {
+        override fun getValue(obj: NewProgressBar): Float = obj.alpha * 100f
+        override fun setValue(obj: NewProgressBar, value: Float) {
+            obj.alpha = value / 100f
         }
     }
 

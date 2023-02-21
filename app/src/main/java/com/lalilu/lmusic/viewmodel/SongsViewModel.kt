@@ -2,7 +2,6 @@ package com.lalilu.lmusic.viewmodel
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.LMedia
@@ -14,7 +13,7 @@ import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmedia.extension.getGroupedOutputFlow
 import com.lalilu.lmedia.extension.getOrderedOutputFlow
 import com.lalilu.lmedia.extension.getSortedOutputFlow
-import com.lalilu.lmusic.datastore.SettingsDataStore
+import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.extension.toState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,7 +26,7 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class SongsViewModel @Inject constructor(
-    private val settingsDataStore: SettingsDataStore
+    private val lMusicSp: LMusicSp
 ) : ViewModel() {
     val supportSortRules = listOf(
         SortRule.Normal,
@@ -54,19 +53,19 @@ class SongsViewModel @Inject constructor(
     private val sortForFlow: MutableStateFlow<String> = MutableStateFlow(Sortable.SORT_FOR_SONGS)
 
     private val sortRuleFlow = sortForFlow.flatMapLatest {
-        settingsDataStore.run {
-            stringPreferencesKey("${it}_SORT_RULE").flow().mapLatest { SortRule.from(it) }
-        }
+        lMusicSp.stringSp("${it}_SORT_RULE")
+            .flow(true)
+            .mapLatest(SortRule::from)
     }
     private val orderRuleFlow = sortForFlow.flatMapLatest {
-        settingsDataStore.run {
-            stringPreferencesKey("${it}_ORDER_RULE").flow().mapLatest { OrderRule.from(it) }
-        }
+        lMusicSp.stringSp("${it}_ORDER_RULE")
+            .flow(true)
+            .mapLatest(OrderRule::from)
     }
     private val groupRuleFlow = sortForFlow.flatMapLatest {
-        settingsDataStore.run {
-            stringPreferencesKey("${it}_GROUP_RULE").flow().mapLatest { GroupRule.from(it) }
-        }
+        lMusicSp.stringSp("${it}_GROUP_RULE")
+            .flow(true)
+            .mapLatest(GroupRule::from)
     }
     val songsState: State<Map<Any, List<LSong>>> =
         songListFlow.getSortedOutputFlow(sortRuleFlow, supportSortRules)

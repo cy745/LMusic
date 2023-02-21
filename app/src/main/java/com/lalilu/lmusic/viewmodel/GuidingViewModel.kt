@@ -6,7 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(
+class GuidingViewModel @Inject constructor(
     val lMusicSp: LMusicSp
 ) : ViewModel() {
 }

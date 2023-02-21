@@ -110,7 +110,7 @@ fun GuidingScreen(
                     composable(
                         route = GuidingNavGraph.SeekbarGuiding.name
                     ) {
-                        SeekbarGuidingPage(navController)
+                        SeekbarGuidingPage()
                     }
                 }
             }

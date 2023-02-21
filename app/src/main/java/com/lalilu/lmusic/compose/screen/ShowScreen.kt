@@ -42,10 +42,8 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
-import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.service.playback.PlayMode
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
@@ -204,9 +202,7 @@ fun ControlPanel(
     playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val isPlaying = playingVM.runtime.isPlayingLiveData.observeAsState(false)
-    var playMode by rememberDataSaverState(
-        Config.KEY_SETTINGS_PLAY_MODE, Config.DEFAULT_SETTINGS_PLAY_MODE
-    )
+    var playMode by playingVM.lMusicSp.playMode
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

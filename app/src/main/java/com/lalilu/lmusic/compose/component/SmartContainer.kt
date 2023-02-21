@@ -16,9 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 
 object SmartContainer {
@@ -131,12 +133,15 @@ object SmartContainer {
         bottomPadding: Dp = 0.dp
     ): PaddingValues {
         val density = LocalDensity.current
-        val statusBarsInsets = WindowInsets.statusBars
-        return remember(statusBarsInsets, bottomPadding) {
+        val context = LocalContext.current
+        val statusBarHeight = remember {
+            density.run { SystemUiUtil.getFixedStatusHeight(context).toDp() }
+        }
+        return remember(bottomPadding) {
             PaddingValues(
                 start = horizontalPadding,
                 end = horizontalPadding,
-                top = density.run { statusBarsInsets.getTop(density).toDp() },
+                top = statusBarHeight,
                 bottom = bottomPadding
             )
         }

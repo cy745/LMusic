@@ -12,20 +12,22 @@ import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.funny.data_saver.core.DataSaverMutableState
 import com.lalilu.lmusic.compose.component.base.ProgressSeekBar
 import kotlin.math.roundToInt
 
 @Composable
 fun SettingProgressSeekBar(
-    state: DataSaverMutableState<Int>,
+    state: MutableState<Int>,
     selection: List<String>,
     @StringRes titleRes: Int,
     @StringRes subTitleRes: Int? = null
@@ -38,7 +40,7 @@ fun SettingProgressSeekBar(
 
 @Composable
 fun SettingProgressSeekBar(
-    state: DataSaverMutableState<Int>,
+    state: MutableState<Int>,
     title: String,
     subTitle: String? = null,
     valueRange: IntRange

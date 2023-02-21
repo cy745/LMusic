@@ -20,10 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.RomUtils
-import com.funny.data_saver.core.rememberDataSaverState
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.R
-import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
@@ -34,6 +32,8 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.lmusic.viewmodel.LocalPlayingVM
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object SettingsScreen : BaseScreen() {
@@ -50,52 +50,22 @@ object SettingsScreen : BaseScreen() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun SettingsScreen() {
+private fun SettingsScreen(
+    playingVM: PlayingViewModel = LocalPlayingVM.current
+) {
     val context = LocalContext.current
-    val ignoreAudioFocus = rememberDataSaverState(
-        Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
-        Config.DEFAULT_SETTINGS_IGNORE_AUDIO_FOCUS
-    )
-    val enableUnknownFilter = rememberDataSaverState(
-        Config.KEY_SETTINGS_ENABLE_UNKNOWN_FILTER,
-        Config.DEFAULT_SETTINGS_ENABLE_UNKNOWN_FILTER
-    )
-    val statusBarLyric = rememberDataSaverState(
-        Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE,
-        Config.DEFAULT_SETTINGS_STATUS_LYRIC_ENABLE
-    )
-    val seekbarHandler = rememberDataSaverState(
-        Config.KEY_SETTINGS_SEEKBAR_HANDLER,
-        Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
-    )
-    val lyricGravity = rememberDataSaverState(
-        Config.KEY_SETTINGS_LYRIC_GRAVITY,
-        Config.DEFAULT_SETTINGS_LYRIC_GRAVITY
-    )
-    val lyricTextSize = rememberDataSaverState(
-        Config.KEY_SETTINGS_LYRIC_TEXT_SIZE,
-        Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
-    )
-    val playMode = rememberDataSaverState(
-        Config.KEY_SETTINGS_PLAY_MODE,
-        Config.DEFAULT_SETTINGS_PLAY_MODE
-    )
-    val volumeControl = rememberDataSaverState(
-        Config.KEY_SETTINGS_VOLUME_CONTROL,
-        Config.DEFAULT_SETTINGS_VOLUME_CONTROL
-    )
-    val lyricTypefaceUri = rememberDataSaverState(
-        Config.KEY_SETTINGS_LYRIC_TYPEFACE_URI,
-        Config.DEFAULT_SETTINGS_LYRIC_TYPEFACE_URI
-    )
-    val enableSystemEq = rememberDataSaverState(
-        Config.KEY_SETTINGS_ENABLE_SYSTEM_EQ,
-        Config.DEFAULT_SETTINGS_ENABLE_SYSTEM_EQ
-    )
-    val enableDynamicTips = rememberDataSaverState(
-        Config.KEY_SETTINGS_ENABLE_DYNAMIC_TIPS,
-        Config.DEFAULT_SETTINGS_ENABLE_DYNAMIC_TIPS
-    )
+    val ignoreAudioFocus = playingVM.lMusicSp.ignoreAudioFocus
+    val enableUnknownFilter = playingVM.lMusicSp.enableUnknownFilter
+    val statusBarLyric = playingVM.lMusicSp.enableStatusLyric
+    val seekbarHandler = playingVM.lMusicSp.seekBarHandler
+    val lyricGravity = playingVM.lMusicSp.lyricGravity
+    val lyricTextSize = playingVM.lMusicSp.lyricTextSize
+    val playMode = playingVM.lMusicSp.playMode
+    val volumeControl = playingVM.lMusicSp.volumeControl
+    val lyricTypefaceUri = playingVM.lMusicSp.lyricTypefaceUri
+    val enableSystemEq = playingVM.lMusicSp.enableSystemEq
+    val enableDynamicTips = playingVM.lMusicSp.enableDynamicTips
+
     val launcherForAudioFx = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {

@@ -46,9 +46,11 @@ open class NewProgressBar @JvmOverloads constructor(
                 CURRENT_STATE_MIN -> progressToListener.forEach {
                     it.onProgressToMin(nowValue, fromUser)
                 }
+
                 CURRENT_STATE_MAX -> progressToListener.forEach {
                     it.onProgressToMax(nowValue, fromUser)
                 }
+
                 CURRENT_STATE_MIDDLE -> progressToListener.forEach {
                     it.onProgressToMiddle(nowValue, fromUser)
                 }
