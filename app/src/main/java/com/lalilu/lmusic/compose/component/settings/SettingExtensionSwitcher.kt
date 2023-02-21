@@ -2,14 +2,16 @@ package com.lalilu.lmusic.compose.component.settings
 
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
-import com.funny.data_saver.core.DataSaverMutableState
 import com.lalilu.R
 
 @Composable
 fun SettingExtensionSwitcher(
-    state: DataSaverMutableState<Boolean>,
+    state: MutableState<Boolean>,
     initialed: Boolean,
     title: String,
     subTitle: String? = null,

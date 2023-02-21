@@ -5,7 +5,7 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
-import com.lalilu.lmusic.datastore.SettingsDataStore
+import com.lalilu.lmusic.datastore.LMusicSp
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -13,7 +13,7 @@ import javax.inject.Singleton
 @Singleton
 class LMusicAudioFocusHelper @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val settingsDataStore: SettingsDataStore
+    private val lMusicSp: LMusicSp
 ) : AudioManager.OnAudioFocusChangeListener {
     private val am: AudioManager
         get() = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -28,27 +28,23 @@ class LMusicAudioFocusHelper @Inject constructor(
             AudioManager.AUDIOFOCUS_GAIN_TRANSIENT,
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (resumeOnGain) {
-                    settingsDataStore.apply {
-                        if (ignoreAudioFocus.get() != true) {
-                            onPlay()
-                        }
+                    if (!lMusicSp.ignoreAudioFocus.get()) {
+                        onPlay()
                     }
                 }
             }
+
             AudioManager.AUDIOFOCUS_LOSS -> {
                 resumeOnGain = false
-                settingsDataStore.apply {
-                    if (ignoreAudioFocus.get() != true) {
-                        onPause()
-                    }
+                if (!lMusicSp.ignoreAudioFocus.get()) {
+                    onPause()
                 }
             }
+
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                 resumeOnGain = true
-                settingsDataStore.apply {
-                    if (ignoreAudioFocus.get() != true) {
-                        onPause()
-                    }
+                if (!lMusicSp.ignoreAudioFocus.get()) {
+                    onPause()
                 }
             }
         }
@@ -65,7 +61,7 @@ class LMusicAudioFocusHelper @Inject constructor(
 
     fun requestAudioFocus(): Int {
         resumeOnGain = false
-        val enable = settingsDataStore.run { ignoreAudioFocus.get() != true }
+        val enable = !lMusicSp.ignoreAudioFocus.get()
         if (!enable) return AudioManager.AUDIOFOCUS_REQUEST_GRANTED
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -6,16 +6,12 @@ import coil.ImageLoaderFactory
 import com.lalilu.lmedia.extension.LMediaExt
 import com.lalilu.lmedia.extension.LMediaExtFactory
 import com.lalilu.lmedia.extension.LMediaLifeCycle
-import com.lalilu.lmusic.datastore.BlockedSp
-import com.lalilu.lmusic.datastore.SettingsDataStore
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.SongCoverFetcher
 import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
-import com.lalilu.lmusic.utils.filter.DictionaryFilter
-import com.lalilu.lmusic.utils.filter.UnknownFilter
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
 import javax.inject.Inject
@@ -25,9 +21,6 @@ class LMusicApp : Application(), ImageLoaderFactory, LMediaExtFactory {
 
     @Inject
     lateinit var callFactory: OkHttpClient
-
-    @Inject
-    lateinit var settingsDataStore: SettingsDataStore
 
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)
@@ -42,8 +35,7 @@ class LMusicApp : Application(), ImageLoaderFactory, LMediaExtFactory {
 
     override fun newLMediaExt(): LMediaExt =
         LMediaExt.Builder()
-            .addIndexFilter(UnknownFilter { settingsDataStore })
-            .addIndexFilter(DictionaryFilter(blockedSp = BlockedSp(this)))
+//            .addIndexFilter(DictionaryFilter(lmusicSp = LMusicSp(this)))
             .setLifeCycleListener(object : LMediaLifeCycle.Listener {
                 override fun onFinishedIndex() {
                     LMusicFlowBus.libraryUpdate.post(System.currentTimeMillis())

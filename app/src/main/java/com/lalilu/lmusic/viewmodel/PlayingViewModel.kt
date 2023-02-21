@@ -4,6 +4,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
@@ -19,6 +20,7 @@ import javax.inject.Inject
 class PlayingViewModel @Inject constructor(
     val runtime: LMusicRuntime,
     val browser: LMusicBrowser,
+    val lMusicSp: LMusicSp,
     val lyricRepository: LyricRepository
 ) : ViewModel() {
     private val playing = runtime.playingFlow.toState(viewModelScope)

@@ -1,5 +1,6 @@
 package com.lalilu.common
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
@@ -12,6 +13,26 @@ import androidx.annotation.RequiresApi
 import androidx.core.view.WindowCompat
 
 object SystemUiUtil {
+
+    private var fixedStatusBarHeight: Int = -1
+
+    /**
+     * 获取系统资源中固定的状态栏高度数据
+     */
+    @SuppressLint("InternalInsetResource", "DiscouragedApi")
+    fun getFixedStatusHeight(context: Context): Int {
+        if (fixedStatusBarHeight >= 0) {
+            return fixedStatusBarHeight
+        }
+        val resourceId = context.resources
+            .getIdentifier("status_bar_height", "dimen", "android")
+            .takeIf { it > 0 }
+
+        fixedStatusBarHeight =
+            resourceId?.let { context.resources.getDimensionPixelSize(it) } ?: 128
+        return fixedStatusBarHeight
+    }
+
     fun immerseStatusBar(activity: Activity) {
         val window = activity.window
         window.statusBarColor = Color.TRANSPARENT

@@ -12,13 +12,15 @@ import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.DiffUtil
 import com.blankj.utilcode.util.ConvertUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.common.HapticUtils
+import com.lalilu.common.SystemUiUtil
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
@@ -34,7 +36,6 @@ import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.LocalPlayingVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.lalilu.lmusic.viewmodel.SettingsViewModel
 import com.lalilu.ui.CLICK_PART_MIDDLE
 import com.lalilu.ui.ClickPart
 import com.lalilu.ui.OnSeekBarCancelListener
@@ -42,17 +43,18 @@ import com.lalilu.ui.OnSeekBarClickListener
 import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.appbar.MyAppbarBehavior
-import com.lalilu.ui.internal.StateHelper
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_MIDDLE
 
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
-    settingsViewModel: SettingsViewModel = hiltViewModel(),
     playingVM: PlayingViewModel = LocalPlayingVM.current
 ) {
     val density = LocalDensity.current
     val navToSongAction = SongDetailScreen.navToByArgv()
     val statusBarsInsets = WindowInsets.statusBars
+    val systemUiController = rememberSystemUiController()
     val windowInsetsCompat = remember(statusBarsInsets) {
         WindowInsetsCompat.Builder().setInsets(
             WindowInsetsCompat.Type.statusBars(),
@@ -68,8 +70,13 @@ fun PlayingScreen(
                 onPlayPause = { playingVM.browser.playPause() },
                 onPlayPrevious = { playingVM.browser.skipToPrevious() }
             )
+
+            val statusBarHeight = SystemUiUtil.getFixedStatusHeight(activity)
+
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
+            fmToolbar.setPadding(0, statusBarHeight, 0, 0)
+            fmToolbar.layoutParams.apply { height += statusBarHeight }
 
             val adapter = NewPlayingAdapter.Builder()
                 .setOnLongClickCB {
@@ -110,24 +117,17 @@ fun PlayingScreen(
                 }
             }
             activity.onBackPressedDispatcher.addCallback(backPressedHelper)
-            behavior.addOnStateChangeListener { _, nowState ->
-                backPressedHelper.isEnabled = nowState == StateHelper.STATE_FULLY_EXPENDED
-            }
+            behavior.addOnStateChangeListener { lastState, nowState ->
+                backPressedHelper.isEnabled = nowState == STATE_FULLY_EXPENDED
 
-//            behavior.addOnStateChangeListener(object :
-//                StateHelper.OnScrollToStateListener(STATE_COLLAPSED, STATE_NORMAL) {
-//                override fun onScrollToStateListener() {
-//                    if (fmToolbar.hasExpandedActionView())
-//                        fmToolbar.collapseActionView()
-//                }
-//            })
-//            behavior.addOnStateChangeListener(object :
-//                StateHelper.OnScrollToStateListener(STATE_NORMAL, STATE_EXPENDED) {
-//                override fun onScrollToStateListener() {
-//                    if (fmToolbar.hasExpandedActionView())
-//                        fmToolbar.collapseActionView()
-//                }
-//            })
+                if (lastState == STATE_FULLY_EXPENDED && nowState == STATE_MIDDLE) {
+                    maSeekBar.animateAlphaTo(100f)
+                    systemUiController.isStatusBarVisible = true
+                } else if (lastState == STATE_MIDDLE && nowState == STATE_FULLY_EXPENDED) {
+                    maSeekBar.animateAlphaTo(0f)
+                    systemUiController.isStatusBarVisible = false
+                }
+            }
 
 //            fmRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 //                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -209,8 +209,8 @@ fun PlayingScreen(
                 fmLyricViewX.setLyricEntryList(emptyList())
                 fmLyricViewX.loadLyric(it?.first, it?.second)
             }
-            settingsViewModel.settingsDataStore.apply {
-                lyricGravity.liveData().observe(activity) {
+            playingVM.lMusicSp.apply {
+                lyricGravity.flow(true).asLiveData().observe(activity) {
                     when (it ?: Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
                         0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
                         1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
@@ -218,14 +218,14 @@ fun PlayingScreen(
                     }
                 }
 
-                lyricTextSize.liveData().observe(activity) {
+                lyricTextSize.flow(true).asLiveData().observe(activity) {
                     val sp = it ?: Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
                     val textSize = ConvertUtils.sp2px(sp.toFloat()).toFloat()
                     fmLyricViewX.setNormalTextSize(textSize)
                     fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
                 }
 
-                lyricTypefaceUri.liveData().observe(activity) {
+                lyricTypefaceUri.flow(true).asLiveData().observe(activity) {
                     if (it != null) {
                         fmLyricViewX.setLyricTypeface(path = it)
                     } else {
@@ -233,7 +233,13 @@ fun PlayingScreen(
                     }
                 }
 
-                this.seekBarHandler.liveData().observe(activity) {
+                autoHideSeekbar.flow(true).asLiveData().observe(activity) {
+                    val autoHide = it ?: Config.DEFAULT_SETTINGS_AUTO_HIDE_SEEKBAR
+
+                    maSeekBar.autoHide = autoHide
+                }
+
+                this.seekBarHandler.flow(true).asLiveData().observe(activity) {
                     seekBarHandler.clickHandleMode = it ?: Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
                 }
             }

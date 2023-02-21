@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
-import com.funny.data_saver.core.rememberDataSaverState
 import com.google.accompanist.navigation.animation.composable
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -40,8 +39,8 @@ private fun AlbumsScreen(
 ) {
     val albums by libraryVM.albums
     val navToAlbumAction = AlbumDetailScreen.navToByArgv()
-    var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
-    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)
+//    var textVisible by rememberDataSaverState("KEY_TEXT_VISIBLE_AlbumsScreen", true)
+//    var sortDesc by rememberDataSaverState("KEY_SORT_DESC_AlbumsScreen", true)
 
     SmartContainer.LazyStaggeredVerticalGrid(
         contentPaddingForHorizontal = 10.dp,
@@ -53,7 +52,7 @@ private fun AlbumsScreen(
             AlbumCard(
 //                modifier = Modifier.animateItemPlacement(),
                 album = { it },
-                showTitle = { textVisible },
+                showTitle = { true },
                 onClick = { navToAlbumAction(it.id) }
             )
         }

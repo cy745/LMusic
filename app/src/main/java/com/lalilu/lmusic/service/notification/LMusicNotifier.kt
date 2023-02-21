@@ -4,7 +4,7 @@ import android.app.Notification
 import android.app.Service
 import android.os.Build
 import android.support.v4.media.session.MediaSessionCompat
-import com.lalilu.lmusic.datastore.SettingsDataStore
+import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.playback.impl.MixPlayback
@@ -29,7 +29,7 @@ class LMusicNotifier constructor(
     lyricRepo: LyricRepository,
     playback: MixPlayback,
     coverRepo: CoverRepository,
-    settingsDataStore: SettingsDataStore,
+    lMusicSp: LMusicSp,
     val mediaSession: MediaSessionCompat,
     val service: Service
 ) : BaseNotification(service), CoroutineScope, Pusher {
@@ -70,7 +70,7 @@ class LMusicNotifier constructor(
                     flags or FLAG_ONLY_UPDATE_TICKER
                 }
             }
-        }.combine(settingsDataStore.run { enableStatusLyric.flow() }) { notification, enable ->
+        }.combine(lMusicSp.enableStatusLyric.flow(true)) { notification, enable ->
             notification?.let {
                 if (enable != true) {
                     it.tickerText = null

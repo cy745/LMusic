@@ -13,7 +13,7 @@ import com.blankj.utilcode.util.ServiceUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
-import com.lalilu.lmusic.datastore.SettingsDataStore
+import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.notification.LMusicNotifier
@@ -44,7 +44,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var runtime: LMusicRuntime
 
     @Inject
-    lateinit var settingsDataStore: SettingsDataStore
+    lateinit var lMusicSp: LMusicSp
 
     @Inject
     lateinit var lyricRepo: LyricRepository
@@ -169,33 +169,34 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             playback = playback,
             coverRepo = coverRepo,
             mediaSession = mediaSession,
-            settingsDataStore = settingsDataStore,
+            lMusicSp = lMusicSp,
             service = this
         )
 
         sessionToken = mediaSession.sessionToken
 
-        settingsDataStore.apply {
-            volumeControl.flow()
-                .onEach {
-                    it ?: return@onEach
+        lMusicSp.volumeControl.flow(true)
+            .onEach {
+                it ?: return@onEach
 
-                    FadeVolumeProxy.setMaxVolume(it)
-                    playback.setMaxVolume(it)
-                }
-                .launchIn(this)
+                FadeVolumeProxy.setMaxVolume(it)
+                playback.setMaxVolume(it)
+            }
+            .launchIn(this)
 
-            enableSystemEq.flow()
-                .onEach { EQHelper.setSystemEqEnable(it ?: false) }
-                .launchIn(this)
+        lMusicSp.enableSystemEq.flow(true)
+            .onEach {
+                EQHelper.setSystemEqEnable(it ?: false)
+            }
+            .launchIn(this)
 
-            playMode.flow()
-                .onEach {
-                    it ?: return@onEach
+        lMusicSp.playMode.flow(true)
+            .onEach {
+                it ?: return@onEach
 
-                    playback.onSetPlayMode(PlayMode.of(it))
-                }.launchIn(this)
-        }
+                playback.onSetPlayMode(PlayMode.of(it))
+            }
+            .launchIn(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -209,7 +210,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                         .takeIf { it in 0..2 }
                         ?: return@apply
 
-                    settingsDataStore.apply { this.playMode.set(playMode) }
+                    lMusicSp.playMode.set(playMode)
                 }
             }
         }

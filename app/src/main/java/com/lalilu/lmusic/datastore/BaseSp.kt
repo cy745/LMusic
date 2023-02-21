@@ -2,101 +2,177 @@ package com.lalilu.lmusic.datastore
 
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
 import com.blankj.utilcode.util.GsonUtils
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
-abstract class BaseSp {
+abstract class BaseSp : CoroutineScope {
     abstract val sp: SharedPreferences
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+    private val intSpMap = LinkedHashMap<String, SpItem<Int>>()
+    private val floatSpMap = LinkedHashMap<String, SpItem<Float>>()
+    private val longSpMap = LinkedHashMap<String, SpItem<Long>>()
+    private val stringSpMap = LinkedHashMap<String, SpItem<String>>()
+    private val boolSpMap = LinkedHashMap<String, SpItem<Boolean>>()
+    private val intSpListMap = LinkedHashMap<String, SpListItem<Int>>()
+    private val floatSpListMap = LinkedHashMap<String, SpListItem<Float>>()
+    private val longSpListMap = LinkedHashMap<String, SpListItem<Long>>()
+    private val stringSpListMap = LinkedHashMap<String, SpListItem<String>>()
+    private val boolSpListMap = LinkedHashMap<String, SpListItem<Boolean>>()
+    private val intSpSetMap = LinkedHashMap<String, SpSetItem<Int>>()
+    private val floatSpSetMap = LinkedHashMap<String, SpSetItem<Float>>()
+    private val longSpSetMap = LinkedHashMap<String, SpSetItem<Long>>()
+    private val stringSpSetMap = LinkedHashMap<String, SpSetItem<String>>()
+    private val boolSpSetMap = LinkedHashMap<String, SpSetItem<Boolean>>()
 
-    fun intSp(key: String, defaultValue: Int = -1) = SpItem(key, defaultValue, sp)
-    fun floatSp(key: String, defaultValue: Float = -1F) = SpItem(key, defaultValue, sp)
-    fun longSp(key: String, defaultValue: Long = -1L) = SpItem(key, defaultValue, sp)
-    fun stringSp(key: String, defaultValue: String = "") = SpItem(key, defaultValue, sp)
-    fun boolSp(key: String, defaultValue: Boolean = false) = SpItem(key, defaultValue, sp)
+    fun intSp(key: String, defaultValue: Int = -1) =
+        intSpMap[key] ?: SpItem(key, defaultValue, sp)
+            .also { intSpMap[key] = it }
+
+    fun floatSp(key: String, defaultValue: Float = -1F) =
+        floatSpMap[key] ?: SpItem(key, defaultValue, sp)
+            .also { floatSpMap[key] = it }
+
+    fun longSp(key: String, defaultValue: Long = -1L) =
+        longSpMap[key] ?: SpItem(key, defaultValue, sp)
+            .also { longSpMap[key] = it }
+
+    fun stringSp(key: String, defaultValue: String = "") =
+        stringSpMap[key] ?: SpItem(key, defaultValue, sp)
+            .also { stringSpMap[key] = it }
+
+    fun boolSp(key: String, defaultValue: Boolean = false) =
+        boolSpMap[key] ?: SpItem(key, defaultValue, sp)
+            .also { boolSpMap[key] = it }
 
     fun intListSp(key: String, defaultValue: List<Int> = emptyList()) =
-        SpListItem(key, defaultValue, sp)
+        intSpListMap[key] ?: SpListItem(key, defaultValue, sp)
+            .also { intSpListMap[key] = it }
 
     fun floatListSp(key: String, defaultValue: List<Float> = emptyList()) =
-        SpListItem(key, defaultValue, sp)
+        floatSpListMap[key] ?: SpListItem(key, defaultValue, sp)
+            .also { floatSpListMap[key] = it }
 
     fun longListSp(key: String, defaultValue: List<Long> = emptyList()) =
-        SpListItem(key, defaultValue, sp)
+        longSpListMap[key] ?: SpListItem(key, defaultValue, sp)
+            .also { longSpListMap[key] = it }
 
     fun stringListSp(key: String, defaultValue: List<String> = emptyList()) =
-        SpListItem(key, defaultValue, sp)
+        stringSpListMap[key] ?: SpListItem(key, defaultValue, sp)
+            .also { stringSpListMap[key] = it }
 
     fun boolListSp(key: String, defaultValue: List<Boolean> = emptyList()) =
-        SpListItem(key, defaultValue, sp)
+        boolSpListMap[key] ?: SpListItem(key, defaultValue, sp)
+            .also { boolSpListMap[key] = it }
 
     fun intSetSp(key: String, defaultValue: List<Int> = emptyList()) =
-        SpSetItem(key, defaultValue, sp)
+        intSpSetMap[key] ?: SpSetItem(key, defaultValue, sp)
+            .also { intSpSetMap[key] = it }
 
     fun floatSetSp(key: String, defaultValue: List<Float> = emptyList()) =
-        SpSetItem(key, defaultValue, sp)
+        floatSpSetMap[key] ?: SpSetItem(key, defaultValue, sp)
+            .also { floatSpSetMap[key] = it }
 
     fun longSetSp(key: String, defaultValue: List<Long> = emptyList()) =
-        SpSetItem(key, defaultValue, sp)
+        longSpSetMap[key] ?: SpSetItem(key, defaultValue, sp)
+            .also { longSpSetMap[key] = it }
 
     fun stringSetSp(key: String, defaultValue: List<String> = emptyList()) =
-        SpSetItem(key, defaultValue, sp)
+        stringSpSetMap[key] ?: SpSetItem(key, defaultValue, sp)
+            .also { stringSpSetMap[key] = it }
 
     fun boolSetSp(key: String, defaultValue: List<Boolean> = emptyList()) =
-        SpSetItem(key, defaultValue, sp)
+        boolSpSetMap[key] ?: SpSetItem(key, defaultValue, sp)
+            .also { boolSpSetMap[key] = it }
 }
 
 @Suppress("UNCHECKED_CAST")
-open class SpItem<T>(
+open class SpItem<T : Any>(
     private val key: String,
     private val defaultValue: T,
     private val sp: SharedPreferences,
-    checkUnique: Boolean = false
-) {
+    registerUpdateListener: Boolean = true
+) : MutableState<T> {
     companion object {
         private val keyKeeper = LinkedHashSet<String>()
     }
 
     private val id = "${sp.hashCode()}-$key"
+    private var state: MutableState<T>? = null
+    private lateinit var listener: OnSharedPreferenceChangeListener
+
+    override var value: T
+        get() {
+            state = state ?: mutableStateOf(get())
+
+            return state!!.value
+        }
+        set(value) {
+            state = state ?: mutableStateOf(get())
+
+            val oldValue = state!!.value
+            state!!.value = value
+            if (oldValue != value) {
+                set(value)
+            }
+        }
+
+    override fun component1(): T = this.value
+    override fun component2(): (T) -> Unit = { this.value = it }
+
+    operator fun setValue(thisObj: Any?, property: KProperty<*>, value: T) {
+        this.value = value
+    }
+
+    operator fun getValue(thisObj: Any?, property: KProperty<*>): T = this.value
 
     init {
-        if (checkUnique) {
-            if (keyKeeper.contains(id)) {
-                throw IllegalStateException("Mustn't define duplicate key in same sharePreference.")
-            } else {
-                keyKeeper.add(id)
+        if (keyKeeper.contains(id)) {
+            throw IllegalStateException("Mustn't define duplicate key in same sharePreference.")
+        } else {
+            keyKeeper.add(id)
+        }
+
+        if (registerUpdateListener) {
+            listener = OnSharedPreferenceChangeListener { spParams, keyParam ->
+                if (keyParam == key) {
+                    val newValue = spParams.getValue(defaultValue::class, keyParam, defaultValue)
+                    this.value = newValue
+                }
             }
+            sp.registerOnSharedPreferenceChangeListener(listener)
         }
     }
 
-    fun get(): T? {
-        return sp.getValue(defaultValue!!::class, key, defaultValue)
+    fun get(): T {
+        return sp.getValue(defaultValue::class, key, defaultValue)
     }
 
     fun set(value: T?) {
-        println("setValue: $key $value")
-        sp.setValue(defaultValue!!::class, key, value)
+        sp.setValue(defaultValue::class, key, value)
     }
 
     fun flow(requireCurrentValue: Boolean = true): Flow<T?> {
         return callbackFlow {
             val listener = OnSharedPreferenceChangeListener { spParams, keyParam ->
                 if (keyParam == key) {
-                    trySend(
-                        spParams.getValue(
-                            this@SpItem::defaultValue::class, keyParam, defaultValue
-                        ) as T?
-                    )
+                    val newValue = spParams.getValue(defaultValue::class, keyParam, defaultValue)
+                    trySend(newValue)
                 }
             }.also {
                 if (requireCurrentValue) {
-                    trySend(
-                        sp.getValue(this@SpItem::defaultValue::class, key, defaultValue) as T?
-                    )
+                    val newValue = sp.getValue(defaultValue::class, key, defaultValue)
+                    trySend(newValue)
                 }
                 sp.registerOnSharedPreferenceChangeListener(it)
             }
@@ -111,16 +187,16 @@ open class SpItem<T>(
     open fun <T> SharedPreferences.getValue(
         clazz: KClass<out T & Any>,
         key: String,
-        defaultValue: Any?
-    ): T? {
+        defaultValue: Any
+    ): T {
         return when (clazz) {
             Int::class -> getInt(key, defaultValue as Int)
             Float::class -> getFloat(key, defaultValue as Float)
             String::class -> getString(key, defaultValue as String)
             Boolean::class -> getBoolean(key, defaultValue as Boolean)
             Long::class -> getLong(key, defaultValue as Long)
-            else -> throw IllegalArgumentException("No Matching Type Defined.")
-        } as T?
+            else -> throw IllegalArgumentException("[No Matching Type Defined]: $clazz $defaultValue")
+        } as T
     }
 
     open fun <T> SharedPreferences.setValue(clazz: KClass<out T & Any>, key: String, value: Any?) {
@@ -147,8 +223,7 @@ open class SpListItem<T>(
     private val typeToken = object : TypeToken<List<T>>() {}.type
 
     open fun remove(item: T) {
-        (get() ?: emptyList())
-            .toMutableList()
+        get().toMutableList()
             .apply {
                 remove(item)
                 set(this)
@@ -156,8 +231,7 @@ open class SpListItem<T>(
     }
 
     open fun remove(items: Collection<T>) {
-        (get() ?: emptyList())
-            .toMutableList()
+        get().toMutableList()
             .apply {
                 removeAll(items)
                 set(this)
@@ -165,8 +239,7 @@ open class SpListItem<T>(
     }
 
     open fun add(item: T) {
-        (get() ?: emptyList())
-            .toMutableList()
+        get().toMutableList()
             .apply {
                 add(item)
                 set(this)
@@ -174,8 +247,7 @@ open class SpListItem<T>(
     }
 
     open fun add(items: Collection<T>) {
-        (get() ?: emptyList())
-            .toMutableList()
+        get().toMutableList()
             .apply {
                 addAll(items)
                 set(this)
@@ -196,9 +268,9 @@ open class SpListItem<T>(
     override fun <T> SharedPreferences.getValue(
         clazz: KClass<out T & Any>,
         key: String,
-        defaultValue: Any?
-    ): T? {
-        return (GsonUtils.fromJson(getString(key, ""), typeToken) ?: defaultValue) as T?
+        defaultValue: Any
+    ): T {
+        return (GsonUtils.fromJson(getString(key, ""), typeToken) ?: defaultValue) as T
     }
 }
 
@@ -209,8 +281,7 @@ class SpSetItem<T>(
 ) : SpListItem<T>(key, defaultValue, sp) {
 
     override fun remove(item: T) {
-        (get() ?: emptyList())
-            .toMutableSet()
+        get().toMutableSet()
             .apply {
                 remove(item)
                 set(this.toList())
@@ -218,8 +289,7 @@ class SpSetItem<T>(
     }
 
     override fun remove(items: Collection<T>) {
-        (get() ?: emptyList())
-            .toMutableSet()
+        get().toMutableSet()
             .apply {
                 removeAll(items.toSet())
                 set(this.toList())
@@ -227,8 +297,7 @@ class SpSetItem<T>(
     }
 
     override fun add(item: T) {
-        (get() ?: emptyList())
-            .toMutableSet()
+        get().toMutableSet()
             .apply {
                 add(item)
                 set(this.toList())
@@ -236,8 +305,7 @@ class SpSetItem<T>(
     }
 
     override fun add(items: Collection<T>) {
-        (get() ?: emptyList())
-            .toMutableSet()
+        get().toMutableSet()
             .apply {
                 addAll(items.toSet())
                 set(this.toList())

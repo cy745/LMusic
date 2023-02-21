@@ -3,22 +3,32 @@ package com.lalilu.lmusic.compose.component.settings
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
+import androidx.compose.material.Text
+import androidx.compose.material.contentColorFor
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.funny.data_saver.core.DataSaverMutableState
 
 @Composable
 fun SettingSwitcher(
-    state: DataSaverMutableState<Boolean>,
+    state: MutableState<Boolean>,
     @StringRes titleRes: Int,
     @StringRes subTitleRes: Int? = null
 ) = SettingSwitcher(
@@ -29,7 +39,7 @@ fun SettingSwitcher(
 
 @Composable
 fun SettingSwitcher(
-    state: DataSaverMutableState<Boolean>,
+    state: MutableState<Boolean>,
     title: String,
     subTitle: String? = null
 ) {
@@ -37,7 +47,11 @@ fun SettingSwitcher(
     val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 
     SettingSwitcher(
-        onContentStartClick = { value = !value },
+        onContentStartClick = {
+            println("set: $value")
+            value = !value
+            println("after set: $value")
+        },
         contentStart = {
             Text(
                 text = title,

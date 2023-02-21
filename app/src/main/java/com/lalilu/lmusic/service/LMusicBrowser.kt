@@ -10,7 +10,7 @@ import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.datastore.HistoryDataStore
+import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -20,7 +20,7 @@ import javax.inject.Singleton
 class LMusicBrowser @Inject constructor(
     @ApplicationContext
     private val context: Context,
-    private val historyStore: HistoryDataStore,
+    private val lMusicSp: LMusicSp,
     private val runtime: LMusicRuntime
 ) : DefaultLifecycleObserver {
     private var controller: MediaControllerCompat? = null
@@ -103,19 +103,19 @@ class LMusicBrowser @Inject constructor(
                 return
             }
 
-            historyStore.apply {
-                val songIds = lastPlayedListIdsKey.get()
+            val songIds by lMusicSp.lastPlayedListIdsKey
+            val lastPlayedIdKey by lMusicSp.lastPlayedIdKey
 
-                if (songIds.isNotEmpty()) {
-                    val songs = songIds.mapNotNull { LMedia.getSongOrNull(it) }
-                    val song = lastPlayedIdKey.get()?.let { LMedia.getSongOrNull(it) }
-                    setSongs(songs, song)
-                    return
-                }
-
-                val songs = LMedia.getSongs()
-                setSongs(songs, songs.getOrNull(0))
+            if (songIds.isNotEmpty()) {
+                val songs = songIds.mapNotNull { LMedia.getSongOrNull(it) }
+                val song = LMedia.getSongOrNull(lastPlayedIdKey)
+                setSongs(songs, song)
+                return
             }
+
+            val songs = LMedia.getSongs()
+            setSongs(songs, songs.getOrNull(0))
+
             // 取消subscribe，可以解决Service和Activity通过Parcelable传递数据导致闪退的问题
             // browser.subscribe("ROOT", MusicSubscriptionCallback())
         }

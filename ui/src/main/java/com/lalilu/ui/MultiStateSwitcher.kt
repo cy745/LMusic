@@ -67,7 +67,7 @@ class MultiStateSwitcher @JvmOverloads constructor(
 
     private val gestureDetector = GestureDetectorCompat(context,
         object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDown(e: MotionEvent?): Boolean {
+            override fun onDown(e: MotionEvent): Boolean {
                 touching = true
                 canceled = false
                 moved = false

@@ -1,12 +1,23 @@
 package com.lalilu.lmusic.compose.screen.guiding
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -14,24 +25,30 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.ActivityUtils
-import com.funny.data_saver.core.rememberDataSaverState
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
-import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.MainActivity
 import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.ui.*
+import com.lalilu.lmusic.viewmodel.GuidingViewModel
+import com.lalilu.ui.CLICK_PART_MIDDLE
+import com.lalilu.ui.ClickPart
+import com.lalilu.ui.NewSeekBar
+import com.lalilu.ui.OnSeekBarCancelListener
+import com.lalilu.ui.OnSeekBarClickListener
+import com.lalilu.ui.OnSeekBarScrollToThresholdListener
+import com.lalilu.ui.OnSeekBarSeekToListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 @Composable
-fun SeekbarGuidingPage(navController: NavController) {
+fun SeekbarGuidingPage(
+    guidingVM: GuidingViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val showLyric = remember { mutableStateOf(false) }
@@ -42,16 +59,8 @@ fun SeekbarGuidingPage(navController: NavController) {
     val cancelSeekToPosition = remember { mutableStateOf(false) }
     val expendLibrary = remember { mutableStateOf(false) }
 
-    val seekbarHandlerData = rememberDataSaverState(
-        Config.KEY_SETTINGS_SEEKBAR_HANDLER,
-        Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
-    )
-
-    var isGuidingOver by rememberDataSaverState(
-        key = Config.KEY_REMEMBER_IS_GUIDING_OVER,
-        default = false,
-        autoSave = true
-    )
+    val seekbarHandlerData = guidingVM.lMusicSp.seekBarHandler
+    var isGuidingOver by guidingVM.lMusicSp.isGuidingOver
 
     val reUpdateDelay = 200L
     val seekBarHandler = remember {
