@@ -98,6 +98,9 @@ android {
     lint {
         checkDependencies true
     }
+    lintOptions {
+        disable "Instantiatable"
+    }
 }
 
 static def releaseTime() {
