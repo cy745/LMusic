@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.viewmodel
 
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,7 +10,6 @@ import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmedia.repository.PlaylistRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -22,11 +20,9 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
-import javax.inject.Inject
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class PlaylistsViewModel @Inject constructor(
+class PlaylistsViewModel constructor(
     private val playlistRepo: PlaylistRepository,
     private val favoriteRepo: FavoriteRepository
 ) : ViewModel() {
@@ -92,8 +88,4 @@ class PlaylistsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             playlistRepo.deleteSongsFromPlaylist(songs, playlist)
         }
-}
-
-val LocalPlaylistsVM = compositionLocalOf<PlaylistsViewModel> {
-    error("PlaylistsViewModel hasn't not presented")
 }

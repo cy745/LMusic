@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.viewmodel
 
 import androidx.compose.runtime.State
-import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.LMedia
@@ -15,19 +14,14 @@ import com.lalilu.lmedia.extension.getOrderedOutputFlow
 import com.lalilu.lmedia.extension.getSortedOutputFlow
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.extension.toState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class SongsViewModel @Inject constructor(
-    private val lMusicSp: LMusicSp
-) : ViewModel() {
+class SongsViewModel(private val lMusicSp: LMusicSp) : ViewModel() {
     val supportSortRules = listOf(
         SortRule.Normal,
         SortRule.CreateTime,
@@ -97,8 +91,4 @@ class SongsViewModel @Inject constructor(
         songListFlow.emit(songs)
         sortForFlow.emit(sortFor)
     }
-}
-
-val LocalSongsVM = compositionLocalOf<SongsViewModel> {
-    error("LocalSongsVM hasn't not presented")
 }

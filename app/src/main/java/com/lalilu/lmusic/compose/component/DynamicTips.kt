@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
@@ -31,6 +30,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.DynamicTipsViewModel
 import kotlinx.coroutines.*
+import org.koin.androidx.compose.getViewModel
 import kotlin.coroutines.CoroutineContext
 
 object DynamicTips : CoroutineScope {
@@ -51,7 +51,7 @@ object DynamicTips : CoroutineScope {
     @Composable
     fun Content(
         modifier: Modifier = Modifier,
-        dynamicTipsVM: DynamicTipsViewModel = hiltViewModel()
+        dynamicTipsVM: DynamicTipsViewModel = getViewModel()
     ) {
         val enableDynamicTips by dynamicTipsVM.enableState
 

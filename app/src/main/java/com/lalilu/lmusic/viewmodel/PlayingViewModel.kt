@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.viewmodel
 
-import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
@@ -9,15 +8,12 @@ import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.toState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-@HiltViewModel
-class PlayingViewModel @Inject constructor(
+class PlayingViewModel(
     val runtime: LMusicRuntime,
     val browser: LMusicBrowser,
     val lMusicSp: LMusicSp,
@@ -50,8 +46,4 @@ class PlayingViewModel @Inject constructor(
             }
         }
     }
-}
-
-val LocalPlayingVM = compositionLocalOf<PlayingViewModel> {
-    error("PlayingViewModel hasn't not presented")
 }

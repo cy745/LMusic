@@ -11,9 +11,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.lmusic.compose.screen.guiding.GuidingScreen
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class GuidingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

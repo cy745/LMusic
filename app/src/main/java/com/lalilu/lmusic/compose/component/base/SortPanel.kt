@@ -16,13 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
+import org.koin.androidx.compose.getViewModel
 
 /**
  * 将元素的分类分组和顺序设置功能统一成一个SortPanel组件
@@ -30,7 +30,7 @@ import com.lalilu.lmusic.viewmodel.SettingsViewModel
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SortPanel(
-    settingsVM: SettingsViewModel = hiltViewModel(),
+    settingsVM: SettingsViewModel = getViewModel(),
     sortFor: String,
     supportGroupRules: () -> List<GroupRule>,
     supportSortRules: () -> List<SortRule>,

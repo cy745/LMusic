@@ -25,7 +25,6 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.blankj.utilcode.util.ActivityUtils
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
@@ -44,10 +43,11 @@ import com.lalilu.ui.OnSeekBarSeekToListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.getViewModel
 
 @Composable
 fun SeekbarGuidingPage(
-    guidingVM: GuidingViewModel = hiltViewModel()
+    guidingVM: GuidingViewModel = getViewModel()
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()

@@ -12,13 +12,8 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class LMusicBrowser @Inject constructor(
-    @ApplicationContext
+class LMusicBrowser(
     private val context: Context,
     private val lMusicSp: LMusicSp,
     private val runtime: LMusicRuntime

@@ -1,23 +1,11 @@
 package com.lalilu.lmusic.apis
 
-import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.apis.bean.kugou.KugouLyric
 import com.lalilu.lmusic.apis.bean.kugou.KugouLyricResponse
 import com.lalilu.lmusic.apis.bean.kugou.KugouSearchSongResponse
 import com.lalilu.lmusic.apis.bean.netease.SongDetailSearchResponse
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
-import javax.inject.Inject
-import javax.inject.Qualifier
-import javax.inject.Singleton
 
 interface KugouSongsSource {
 
@@ -50,8 +38,7 @@ interface KugouLyricSource {
     ): KugouLyric?
 }
 
-@Singleton
-class KugouDataSource @Inject constructor(
+class KugouDataSource(
     private val kugouSongsSource: KugouSongsSource,
     private val kugouLyricSource: KugouLyricSource
 ) : NetworkDataSource {
@@ -70,53 +57,4 @@ class KugouDataSource @Inject constructor(
     }
 
     override suspend fun searchForDetail(ids: String): SongDetailSearchResponse? = null
-}
-
-
-@Module
-@ExperimentalCoroutinesApi
-@InstallIn(SingletonComponent::class)
-object KugouHiltModule {
-
-    @Qualifier
-    @Retention(AnnotationRetention.BINARY)
-    annotation class KugouSongsRetrofit
-
-    @Qualifier
-    @Retention(AnnotationRetention.BINARY)
-    annotation class KugouLyricRetrofit
-
-    @Provides
-    @Singleton
-    @KugouSongsRetrofit
-    fun provideKugouSongsRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(Config.BASE_KUGOU_SONGS_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    @KugouLyricRetrofit
-    fun provideKugouLyricRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(Config.BASE_KUGOU_LYRIC_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideKugouSongsSource(@KugouSongsRetrofit retrofit: Retrofit): KugouSongsSource {
-        return retrofit.create(KugouSongsSource::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideKugouLyricSource(@KugouLyricRetrofit retrofit: Retrofit): KugouLyricSource {
-        return retrofit.create(KugouLyricSource::class.java)
-    }
 }

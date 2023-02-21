@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.viewmodel
 
-import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.LMedia
@@ -11,16 +10,13 @@ import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.repository.LibraryRepository
 import com.lalilu.lmusic.utils.extension.toState
 import com.lalilu.lmusic.utils.extension.toUpdatableFlow
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import java.util.*
-import javax.inject.Inject
 
-@HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
-class LibraryViewModel @Inject constructor(
+class LibraryViewModel constructor(
     private val lMusicSp: LMusicSp,
     private val historyRepo: HistoryRepository,
     private val libraryRepo: LibraryRepository,
@@ -77,8 +73,4 @@ class LibraryViewModel @Inject constructor(
                 list.mapNotNull { LMedia.getSongOrNull(it.contentId) }
             }
     }
-}
-
-val LocalLibraryVM = compositionLocalOf<LibraryViewModel> {
-    error("LibraryViewModel hasn't not presented")
 }

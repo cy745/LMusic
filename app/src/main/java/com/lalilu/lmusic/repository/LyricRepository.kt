@@ -11,13 +11,10 @@ import com.lalilu.lmusic.utils.extension.*
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Singleton
-class LyricRepository @Inject constructor(
+class LyricRepository(
     private val lyricSource: LyricSourceFactory,
     private val runtime: LMusicRuntime
 ) : CoroutineScope {

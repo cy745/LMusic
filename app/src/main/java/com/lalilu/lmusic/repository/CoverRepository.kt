@@ -6,14 +6,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 @OptIn(ExperimentalCoroutinesApi::class)
-class CoverRepository @Inject constructor(
-    private val netDataRepo: NetDataRepository
-) {
+class CoverRepository(private val netDataRepo: NetDataRepository) {
     fun fetch(id: Any?): Flow<Any?> {
         if (id == null || id !is String) return flowOf(id)
 

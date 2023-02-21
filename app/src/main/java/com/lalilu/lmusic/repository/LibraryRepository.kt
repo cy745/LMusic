@@ -7,13 +7,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Singleton
-class LibraryRepository @Inject constructor() : CoroutineScope {
+class LibraryRepository : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     val songsFlow = LMedia.getSongsFlow()

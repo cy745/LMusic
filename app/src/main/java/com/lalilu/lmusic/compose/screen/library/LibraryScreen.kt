@@ -43,12 +43,10 @@ import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
-import com.lalilu.lmusic.viewmodel.LocalLibraryVM
-import com.lalilu.lmusic.viewmodel.LocalPlayingVM
-import com.lalilu.lmusic.viewmodel.LocalSongsVM
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import kotlinx.coroutines.delay
+import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object LibraryScreen : BaseScreen() {
@@ -66,9 +64,9 @@ object LibraryScreen : BaseScreen() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LibraryScreen(
-    viewModel: LibraryViewModel = LocalLibraryVM.current,
-    playingVM: PlayingViewModel = LocalPlayingVM.current,
-    songsVM: SongsViewModel = LocalSongsVM.current
+    viewModel: LibraryViewModel = getViewModel(),
+    playingVM: PlayingViewModel = getViewModel(),
+    songsVM: SongsViewModel = getViewModel()
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
     val navToSongAction = SongDetailScreen.navToByArgv {
@@ -158,7 +156,7 @@ private fun LibraryScreen(
                 onClick = { playingVM.browser.addAndPlay(it.id) }
             )
         }
-        
+
         items(
             items = listOf(
                 ScreenData.Songs,

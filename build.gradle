@@ -2,9 +2,10 @@
 buildscript {
     ext {
         kotlin_version = "1.7.20"
+        koin_version = '3.3.3'
+        koin_compose_version = '3.4.2'
         coil_version = '2.2.2'
         room_version = "2.5.0"
-        hilt_version = "2.43.2"
         lifecycle_version = "2.5.1"
         navigation_version = "2.5.3"
         compose_bom_version = "2023.01.00"
@@ -14,7 +15,6 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:7.4.1'
-        classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }

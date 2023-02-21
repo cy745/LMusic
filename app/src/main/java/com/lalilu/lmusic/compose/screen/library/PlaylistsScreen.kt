@@ -54,12 +54,12 @@ import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.utils.rememberSelectState
-import com.lalilu.lmusic.viewmodel.LocalPlaylistsVM
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
+import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object PlaylistsScreen : BaseScreen() {
@@ -93,7 +93,7 @@ object PlaylistsScreen : BaseScreen() {
 @Composable
 private fun PlaylistsScreen(
     isAddingSongs: Boolean = false,
-    playlistsVM: PlaylistsViewModel = LocalPlaylistsVM.current
+    playlistsVM: PlaylistsViewModel = getViewModel()
 ) {
     val context = LocalContext.current
     val navigator = LocalNavigatorHost.current

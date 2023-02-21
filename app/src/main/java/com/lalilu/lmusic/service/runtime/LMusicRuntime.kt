@@ -5,14 +5,11 @@ import com.lalilu.lmedia.entity.LHistory
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.datastore.LMusicSp
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * 全局单例，专门用于解决Service和Activity之间复杂的数据交互问题
  */
-@Singleton
-class LMusicRuntime @Inject constructor(
+class LMusicRuntime(
     private val lMusicSp: LMusicSp,
     private val historyRepo: HistoryRepository
 ) : BaseRuntime(), Runtime.Listener {
