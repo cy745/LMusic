@@ -29,6 +29,7 @@ import com.lalilu.lmusic.compose.screen.PlayingScreen
 import com.lalilu.lmusic.compose.screen.ShowScreen
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import kotlinx.coroutines.CoroutineScope
@@ -63,10 +64,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
         SystemUiUtil.immerseNavigationBar(this)
         lifecycle.addObserver(browser)
 
+        val backPressHelper = OnBackPressHelper()
         // 注册返回键事件回调
-        onBackPressedDispatcher.addCallback {
-            this@MainActivity.moveTaskToBack(false)
-        }
+        onBackPressedDispatcher.addCallback { this@MainActivity.moveTaskToBack(false) }
+        onBackPressedDispatcher.addCallback(backPressHelper)
 
         setContent {
             LMusicTheme {
@@ -85,7 +86,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                                     }
                                 )
                             },
-                            content = { PlayingScreen() }
+                            content = { PlayingScreen(onBackPressHelper = backPressHelper) }
                         )
                         ShowScreen()
                         DynamicTips.Content(modifier = Modifier.align(Alignment.TopCenter))
