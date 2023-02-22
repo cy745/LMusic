@@ -47,9 +47,11 @@ class LocalPlayer(
             player?.prepareAsync()
 
             oldVolumeProxy?.fadePause(duration = 800L) {
-                oldPlayer?.stop()
-                oldPlayer?.reset()
-                oldPlayer?.release()
+                oldPlayer?.apply {
+                    if (isPlaying) stop()
+                    reset()
+                    release()
+                }
             }
         } catch (e: IOException) {
             onLStop()
@@ -85,9 +87,11 @@ class LocalPlayer(
         isPlaying = false
         isPrepared = false
         isStopped = true
-        if (player?.isPlaying == true) player?.stop()
-        player?.reset()
-        player?.release()
+        player?.apply {
+            if (isPlaying) stop()
+            reset()
+            release()
+        }
         player = null
         EQHelper.audioSessionId = null
         onLStop()
