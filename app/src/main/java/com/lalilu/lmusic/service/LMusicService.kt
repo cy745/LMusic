@@ -10,7 +10,6 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
-import com.blankj.utilcode.util.ServiceUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
@@ -51,6 +50,26 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     lateinit var playback: MixPlayback
     lateinit var notifier: LMusicNotifier
 
+    private val intent: Intent by lazy {
+        Intent(this@LMusicService, LMusicService::class.java)
+    }
+
+    fun startService() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
+    }
+
+    fun stopForeground() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            this@LMusicService.stopForeground(STOP_FOREGROUND_DETACH)
+        } else {
+            this@LMusicService.stopForeground(false)
+        }
+    }
+
     inner class PlaybackListener : Playback.Listener<LSong> {
         override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
             val isPlaying = playback.player?.isPlaying ?: false
@@ -69,18 +88,17 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
             when (playbackState) {
                 PlaybackStateCompat.STATE_PLAYING -> {
+                    startService()
                     mediaSession.isActive = true
-                    if (isPlaying && !ServiceUtils.isServiceRunning(LMusicService::class.java)) {
-                        startService(Intent(this@LMusicService, LMusicService::class.java))
+                    notifier.startForeground { id, notification ->
+                        startForeground(id, notification)
                     }
                 }
 
                 PlaybackStateCompat.STATE_PAUSED -> {
-                    mediaSession.isActive = false
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        this@LMusicService.stopForeground(STOP_FOREGROUND_DETACH)
-                    } else {
-                        this@LMusicService.stopForeground(false)
+                    // mediaSession.isActive = false
+                    notifier.stopForeground {
+                        stopForeground()
                     }
                 }
 
@@ -154,11 +172,10 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
         notifier = LMusicNotifier(
             lyricRepo = lyricRepo,
-            playback = playback,
             coverRepo = coverRepo,
             mediaSession = mediaSession,
             lMusicSp = lMusicSp,
-            service = this
+            context = this
         )
 
         sessionToken = mediaSession.sessionToken
