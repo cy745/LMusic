@@ -134,7 +134,7 @@ class MixPlayback(
     override fun onLStop() {
         noisyReceiver.unregister()
         audioFocusHelper.abandonAudioFocus()
-        onPlayInfoUpdate(null, PlaybackStateCompat.STATE_STOPPED, 0L)
+        onPlayInfoUpdate(queue?.getCurrent(), PlaybackStateCompat.STATE_STOPPED, 0L)
     }
 
     override fun onLPlay() {

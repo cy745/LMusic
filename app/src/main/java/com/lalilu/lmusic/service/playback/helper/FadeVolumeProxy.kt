@@ -33,7 +33,9 @@ class FadeVolumeProxy(
         countDownTimer?.cancel()
 
         mPlayer.setVolume(nowVolume, nowVolume)
-        mPlayer.start()
+        if (!mPlayer.isPlaying) {
+            mPlayer.start()
+        }
         val startValue = nowVolume
         countDownTimer = object : CountDownTimer(duration, duration / 10L) {
             override fun onTick(millisUntilFinished: Long) {
@@ -70,7 +72,9 @@ class FadeVolumeProxy(
 
             override fun onFinish() {
                 mPlayer.setVolume(0f, 0f)
-                mPlayer.pause()
+                if (mPlayer.isPlaying) {
+                    mPlayer.pause()
+                }
                 onFinished()
             }
         }

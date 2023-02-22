@@ -88,8 +88,8 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
             when (playbackState) {
                 PlaybackStateCompat.STATE_PLAYING -> {
-                    startService()
                     mediaSession.isActive = true
+                    startService()
                     notifier.startForeground { id, notification ->
                         startForeground(id, notification)
                     }
@@ -97,15 +97,17 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
                 PlaybackStateCompat.STATE_PAUSED -> {
                     // mediaSession.isActive = false
-                    notifier.stopForeground {
-                        stopForeground()
-                    }
+                    stopForeground()
                 }
 
                 PlaybackStateCompat.STATE_STOPPED -> {
                     mediaSession.isActive = false
-                    notifier.cancel()
                     stopSelf()
+                    notifier.stopForeground {
+                        stopForeground()
+                        notifier.cancel()
+                    }
+                    return
                 }
             }
             notifier.update()
@@ -120,7 +122,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
     inner class LMusicRuntimeQueue : PlayQueue<LSong> {
         override fun getCurrent(): LSong? {
-            return runtime.getPlaying()
+            return runtime.getPlaying() ?: runtime._songsFlow.value.getOrNull(0)
         }
 
         override fun getPrevious(random: Boolean): LSong? {
@@ -205,7 +207,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        println("onStartCommand: ${intent?.action} ${intent?.extras?.getInt(PlayMode.KEY)}")
+        println("[onStartCommand]: ${intent?.action}")
 
         val extras = intent?.extras
         when (intent?.action) {

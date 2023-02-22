@@ -19,7 +19,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -74,7 +73,7 @@ class LMusicNotifier constructor(
                     flags = flags and FLAG_ONLY_UPDATE_TICKER.inv()
                 }
             }
-                .debounce(50)
+//                .debounce(50)
                 .collectLatest {
                     it?.let(this@LMusicNotifier::pushNotification)
                 }
@@ -87,7 +86,8 @@ class LMusicNotifier constructor(
     }
 
     fun startForeground(callback: (Int, Notification) -> Unit) {
-        val builder = buildMediaNotification(mediaSession, PLAYER_CHANNEL_ID) ?: return
+        val builder = buildMediaNotification(mediaSession, PLAYER_CHANNEL_ID)
+            ?.loadCoverAndPalette(mediaSession, null) ?: return
         callback(NOTIFICATION_PLAYER_ID, builder.build())
         notificationBuilderFlow.tryEmit(builder)
         startLoop()

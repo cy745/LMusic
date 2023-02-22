@@ -51,14 +51,16 @@ open class BaseNotification constructor(
         lastColor?.takeIf { it.first == data }?.let { color = it.second }
 
         if (bitmap == null) {
-            runBlocking {
-                bitmap = this@BaseNotification.mContext.imageLoader.execute(
-                    ImageRequest.Builder(this@BaseNotification.mContext)
-                        .allowHardware(false)
-                        .data(data)
-                        .size(400)
-                        .build()
-                ).drawable?.toBitmap() ?: return@runBlocking
+            if (data != null) {
+                runBlocking {
+                    bitmap = this@BaseNotification.mContext.imageLoader.execute(
+                        ImageRequest.Builder(this@BaseNotification.mContext)
+                            .allowHardware(false)
+                            .data(data)
+                            .size(400)
+                            .build()
+                    ).drawable?.toBitmap() ?: return@runBlocking
+                }
             }
 
             if (bitmap != null) {
@@ -72,6 +74,7 @@ open class BaseNotification constructor(
                 }
             } else {
                 bitmap = emptyBitmap
+                lastColor?.second?.let { color = it }
             }
         }
 
