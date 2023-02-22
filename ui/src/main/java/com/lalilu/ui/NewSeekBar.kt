@@ -120,7 +120,7 @@ class NewSeekBar @JvmOverloads constructor(
     var sensitivity: Float = 1.3f
 
     private var autoHideTimer: Timer? = null
-    var autoHide: Boolean = true
+    var autoHide: Boolean = false
     var autoHideDelay: Long = 2000L
     var autoHideTargetAlpha: Float = 30f
 

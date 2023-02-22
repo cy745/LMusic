@@ -65,6 +65,7 @@ private fun SettingsScreen(
     val lyricTypefaceUri = playingVM.lMusicSp.lyricTypefaceUri
     val enableSystemEq = playingVM.lMusicSp.enableSystemEq
     val enableDynamicTips = playingVM.lMusicSp.enableDynamicTips
+    val autoHideSeekBar = playingVM.lMusicSp.autoHideSeekbar
 
     val launcherForAudioFx = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -140,6 +141,11 @@ private fun SettingsScreen(
                         state = statusBarLyric
                     )
                 }
+                SettingSwitcher(
+                    title = "歌词页展开时隐藏其他组件",
+                    subTitle = "简化界面显示效果",
+                    state = autoHideSeekBar,
+                )
                 SettingFilePicker(
                     state = lyricTypefaceUri,
                     title = "自定义字体",

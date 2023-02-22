@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.compose.screen
 
 import android.view.View
-import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.ExperimentalMaterialApi
@@ -28,6 +27,7 @@ import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
+import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
@@ -49,6 +49,7 @@ import org.koin.androidx.compose.getViewModel
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
+    onBackPressHelper: OnBackPressHelper,
     playingVM: PlayingViewModel = getViewModel()
 ) {
     val density = LocalDensity.current
@@ -111,21 +112,21 @@ fun PlayingScreen(
                 })
                 .build()
 
-            val backPressedHelper = object : OnBackPressedCallback(false) {
-                override fun handleOnBackPressed() {
-                    fmAppbarLayout.setExpanded(true)
-                }
+            onBackPressHelper.callback = {
+                fmAppbarLayout.setExpanded(true)
             }
-            activity.onBackPressedDispatcher.addCallback(backPressedHelper)
+
             behavior.addOnStateChangeListener { lastState, nowState ->
-                backPressedHelper.isEnabled = nowState == STATE_FULLY_EXPENDED
+                onBackPressHelper.isEnabled = nowState == STATE_FULLY_EXPENDED
 
                 if (lastState == STATE_FULLY_EXPENDED && nowState == STATE_MIDDLE) {
                     maSeekBar.animateAlphaTo(100f)
                     systemUiController.isStatusBarVisible = true
                 } else if (lastState == STATE_MIDDLE && nowState == STATE_FULLY_EXPENDED) {
-                    maSeekBar.animateAlphaTo(0f)
-                    systemUiController.isStatusBarVisible = false
+                    if (playingVM.lMusicSp.autoHideSeekbar.get()) {
+                        maSeekBar.animateAlphaTo(0f)
+                        systemUiController.isStatusBarVisible = false
+                    }
                 }
             }
 
@@ -233,11 +234,9 @@ fun PlayingScreen(
                     }
                 }
 
-                autoHideSeekbar.flow(true).asLiveData().observe(activity) {
-                    val autoHide = it ?: Config.DEFAULT_SETTINGS_AUTO_HIDE_SEEKBAR
-
-                    maSeekBar.autoHide = autoHide
-                }
+//                autoHideSeekbar.flow(true).asLiveData().observe(activity) {
+//                    maSeekBar.autoHide = it ?: Config.DEFAULT_SETTINGS_AUTO_HIDE_SEEKBAR
+//                }
 
                 this.seekBarHandler.flow(true).asLiveData().observe(activity) {
                     seekBarHandler.clickHandleMode = it ?: Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
