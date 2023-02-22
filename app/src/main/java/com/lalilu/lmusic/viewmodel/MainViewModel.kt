@@ -11,8 +11,9 @@ import com.lalilu.lmusic.compose.screen.library.PlaylistsScreen
 
 class MainViewModel : ViewModel() {
 
-    var tempSongs: SnapshotStateList<LSong> = mutableStateListOf()
-        private set
+    companion object {
+        val tempSongs: SnapshotStateList<LSong> = mutableStateListOf()
+    }
 
     @Composable
     fun navToAddToPlaylist(): (songs: List<LSong>) -> Unit {
@@ -30,4 +31,6 @@ class MainViewModel : ViewModel() {
             }
         }
     }
+
+    fun getTempSong() = tempSongs
 }

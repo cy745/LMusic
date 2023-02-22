@@ -66,7 +66,7 @@ fun PlaylistsSelectWrapper(
         recoverTo = recoverTo,
         getTipsText = {
             if (isAddingSongs) {
-                "${mainVM.tempSongs.size}首歌 -> ${it.selectedItems.size}歌单"
+                "${mainVM.getTempSong().size}首歌 -> ${it.selectedItems.size}歌单"
             } else {
                 "已选择: ${it.selectedItems.size}"
             }
@@ -79,7 +79,7 @@ fun PlaylistsSelectWrapper(
                     onClick = {
                         playlistsVM.addSongsIntoPlaylists(
                             playlists = it.selectedItems.toImmutableList(),
-                            songs = mainVM.tempSongs.toImmutableList()
+                            songs = mainVM.getTempSong().toImmutableList()
                         )
                         it.clear()
                     }
