@@ -64,7 +64,6 @@ import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import org.koin.androidx.compose.get
-import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object SongDetailScreen : BaseScreen() {
@@ -96,8 +95,8 @@ fun SongDetailScreen(
     song: LSong,
     mainVM: MainViewModel = get(),
     playingVM: PlayingViewModel = get(),
-    playlistsVM: PlaylistsViewModel = getViewModel(),
-    networkDataVM: NetworkDataViewModel = getViewModel()
+    playlistsVM: PlaylistsViewModel = get(),
+    networkDataVM: NetworkDataViewModel = get()
 ) {
     val navToArtistAction = ArtistDetailScreen.navToByArgv()
     val navToAlbumAction = AlbumDetailScreen.navToByArgv()

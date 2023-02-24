@@ -48,6 +48,23 @@ object SmartModalBottomSheet {
     fun collapse() = scope?.launch { scaffoldState.animateTo(ModalBottomSheetValue.HalfExpanded) }
     fun fadeEdge(value: Boolean) = scope?.launch { enableFadeEdgeForStatusBar.value = value }
 
+
+    /**
+     * 注册一个Composable用于短暂地关闭FadeEdge功能，在Composable被移除时恢复原状
+     */
+    @Composable
+    fun RegisterForTemporaryDisableFadeEdge() {
+        LaunchedEffect(Unit) {
+            enableFadeEdgeForStatusBar.value = false
+        }
+
+        DisposableEffect(Unit) {
+            onDispose {
+                enableFadeEdgeForStatusBar.value = true
+            }
+        }
+    }
+
     @Composable
     fun SmartModalBottomSheetContent(
         scope: CoroutineScope = rememberCoroutineScope(),

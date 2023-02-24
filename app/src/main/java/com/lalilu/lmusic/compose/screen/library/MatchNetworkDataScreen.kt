@@ -48,7 +48,7 @@ import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalAnimationApi::class)
 object MatchNetworkDataScreen : BaseScreen() {
@@ -77,7 +77,7 @@ object MatchNetworkDataScreen : BaseScreen() {
 @Composable
 private fun MatchNetworkDataScreen(
     song: LSong,
-    viewModel: NetworkDataViewModel = getViewModel()
+    viewModel: NetworkDataViewModel = get()
 ) {
     val keyword = "${song.name} ${song._artist}"
     val msg = remember { mutableStateOf("") }

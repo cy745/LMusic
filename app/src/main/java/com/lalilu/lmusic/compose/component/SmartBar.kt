@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -25,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.lalilu.lmusic.compose.new_screen.NavBar
 import com.lalilu.lmusic.utils.extension.measure
 import com.lalilu.lmusic.utils.recomposeHighlighter
 
@@ -94,5 +97,37 @@ object SmartBar {
     ): SmartBar {
         extraBar.value = content
         return this
+    }
+
+    @Composable
+    fun RegisterExtraBarContent(
+        enable: () -> Boolean = { true },
+        recoverTo: (@Composable () -> Unit)? = null,
+        content: @Composable () -> Unit
+    ) {
+        LaunchedEffect(enable()) {
+            if (enable()) setExtraBar(content) else setExtraBar(recoverTo)
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                setExtraBar(recoverTo)
+            }
+        }
+    }
+
+    @Composable
+    fun RegisterMainBarContent(
+        enable: () -> Boolean = { true },
+        recoverTo: @Composable () -> Unit = NavBar.content,
+        content: @Composable () -> Unit
+    ) {
+        LaunchedEffect(enable()) {
+            if (enable()) setMainBar(content) else setMainBar(recoverTo)
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                setMainBar(recoverTo)
+            }
+        }
     }
 }
