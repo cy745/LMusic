@@ -95,7 +95,7 @@ object SongDetailScreen : BaseScreen() {
 fun SongDetailScreen(
     song: LSong,
     mainVM: MainViewModel = get(),
-    playingVM: PlayingViewModel = getViewModel(),
+    playingVM: PlayingViewModel = get(),
     playlistsVM: PlaylistsViewModel = getViewModel(),
     networkDataVM: NetworkDataViewModel = getViewModel()
 ) {

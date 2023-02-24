@@ -66,7 +66,7 @@ object LibraryScreen : BaseScreen() {
 @Composable
 private fun LibraryScreen(
     viewModel: LibraryViewModel = getViewModel(),
-    playingVM: PlayingViewModel = getViewModel(),
+    playingVM: PlayingViewModel = get(),
     songsVM: SongsViewModel = get()
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
@@ -151,7 +151,7 @@ private fun LibraryScreen(
         ) {
             SongCard(
                 modifier = Modifier.animateItemPlacement(),
-                lyricRepository = playingVM.lyricRepository,
+                hasLyric = playingVM.lyricRepository.rememberHasLyric(song = it),
                 song = { it },
                 onLongClick = { navToSongActionHaptic(it.id) },
                 onClick = { playingVM.browser.addAndPlay(it.id) }

@@ -14,7 +14,9 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,17 +35,15 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.dayNightTextColorFilter
 import com.lalilu.lmusic.utils.extension.durationMsToString
 import com.lalilu.lmusic.utils.extension.mimeTypeToIcon
-import com.lalilu.lmusic.utils.recomposeHighlighter
 
 @Composable
 fun SongCard(
-    modifier: Modifier = Modifier.recomposeHighlighter(),
-    lyricRepository: LyricRepository,
+    modifier: Modifier = Modifier,
+    hasLyric: State<Boolean> = remember { mutableStateOf(false) },
     dragModifier: Modifier = Modifier,
     song: () -> LSong,
     onClick: () -> Unit = {},
@@ -52,7 +52,6 @@ fun SongCard(
     isSelected: () -> Boolean = { false }
 ) {
     val item = remember { song() }
-    val hasLyric by lyricRepository.rememberHasLyric(song = item)
 
     SongCard(
         modifier = modifier,
@@ -61,7 +60,7 @@ fun SongCard(
         subTitle = { item._artist },
         mimeType = { item.mimeType },
         duration = { item.durationMs },
-        hasLyric = { hasLyric },
+        hasLyric = { hasLyric.value },
         imageData = { item },
         onClick = onClick,
         onLongClick = onLongClick,

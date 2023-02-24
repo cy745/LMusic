@@ -44,13 +44,13 @@ import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_MIDDLE
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.get
 
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
     onBackPressHelper: OnBackPressHelper,
-    playingVM: PlayingViewModel = getViewModel()
+    playingVM: PlayingViewModel = get()
 ) {
     val density = LocalDensity.current
     val navToSongAction = SongDetailScreen.navToByArgv()

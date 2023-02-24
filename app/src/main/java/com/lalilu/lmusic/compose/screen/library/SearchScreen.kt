@@ -72,7 +72,7 @@ object SearchScreen : BaseScreen() {
 private fun SearchScreen(
     songsVM: SongsViewModel = get(),
     searchVM: SearchViewModel = getViewModel(),
-    playingVM: PlayingViewModel = getViewModel()
+    playingVM: PlayingViewModel = get()
 ) {
     val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
     val navToAlbumAction = AlbumDetailScreen.navToByArgv()
@@ -113,7 +113,7 @@ private fun SearchScreen(
         ) {
             SongCard(
                 modifier = Modifier.animateItemPlacement(),
-                lyricRepository = playingVM.lyricRepository,
+                hasLyric = playingVM.lyricRepository.rememberHasLyric(song = it),
                 song = { it },
                 onClick = { playingVM.browser.addAndPlay(it.id) },
                 onLongClick = { navToSongAction(it.id) }

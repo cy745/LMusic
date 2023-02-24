@@ -72,7 +72,7 @@ val DatabaseModule = module {
 
 val ViewModelModule = module {
     viewModel { NetworkDataViewModel(get(), get(), get(), get()) }
-    viewModel { PlayingViewModel(get(), get(), get(), get()) }
+    single { PlayingViewModel(get(), get(), get(), get()) }
     viewModel { LibraryViewModel(get(), get(), get()) }
     viewModel { PlaylistDetailViewModel(get()) }
     viewModel { PlaylistsViewModel(get(), get()) }
