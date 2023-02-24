@@ -81,8 +81,8 @@ val ViewModelModule = module {
     viewModel { DynamicTipsViewModel(get()) }
     viewModel { GuidingViewModel(get()) }
     viewModel { SettingsViewModel(get()) }
-    viewModel { SongsViewModel(get()) }
-    viewModel { MainViewModel() }
+    single { SongsViewModel(get()) }
+    single { MainViewModel() }
 }
 
 val PlayerModule = module {

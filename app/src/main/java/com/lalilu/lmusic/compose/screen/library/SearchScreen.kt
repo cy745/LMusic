@@ -47,6 +47,7 @@ import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -69,7 +70,7 @@ object SearchScreen : BaseScreen() {
 )
 @Composable
 private fun SearchScreen(
-    songsVM: SongsViewModel = getViewModel(),
+    songsVM: SongsViewModel = get(),
     searchVM: SearchViewModel = getViewModel(),
     playingVM: PlayingViewModel = getViewModel()
 ) {

@@ -20,6 +20,7 @@ import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import okhttp3.internal.toImmutableList
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 
 /**
@@ -29,7 +30,7 @@ import org.koin.androidx.compose.getViewModel
 @Composable
 fun SongsSelectWrapper(
     selector: SelectHelper<LSong> = rememberSelectState(),
-    mainVM: MainViewModel = getViewModel(),
+    mainVM: MainViewModel = get(),
     recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
     extraActionsContent: @Composable (SelectHelper<LSong>) -> Unit = {},
     content: @Composable (SelectHelper<LSong>) -> Unit
@@ -55,7 +56,7 @@ fun SongsSelectWrapper(
 fun PlaylistsSelectWrapper(
     isAddingSongs: Boolean = false,
     selector: SelectHelper<LPlaylist> = rememberSelectState(),
-    mainVM: MainViewModel = getViewModel(),
+    mainVM: MainViewModel = get(),
     playlistsVM: PlaylistsViewModel = getViewModel(),
     recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
     extraActionsContent: @Composable (SelectHelper<LPlaylist>) -> Unit = {},
