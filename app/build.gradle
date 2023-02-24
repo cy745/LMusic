@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'com.google.devtools.ksp' version '1.8.0-1.0.9'
 }
 
 def keystorePropsFile = rootProject.file("keystore.properties")
@@ -130,6 +131,10 @@ dependencies {
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-flowlayout:$accompanist_version"
     implementation "com.google.accompanist:accompanist-permissions:$accompanist_version"
+
+
+    implementation "io.github.raamcosta.compose-destinations:animations-core:$compose_destinations_version"
+    ksp "io.github.raamcosta.compose-destinations:ksp:$compose_destinations_version"
 
     implementation platform("androidx.compose:compose-bom:$compose_bom_version")
     implementation "androidx.compose.compiler:compiler:$compose_compiler_version"
