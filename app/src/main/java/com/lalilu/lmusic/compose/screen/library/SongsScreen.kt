@@ -37,6 +37,7 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.*
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -98,16 +99,16 @@ object SongsScreen : BaseScreen() {
 fun SongsScreen(
     showAll: Boolean = true,
     playingVM: PlayingViewModel = getViewModel(),
-    songsViewModel: SongsViewModel = getViewModel(),
+    songsVM: SongsViewModel = get(),
     sortFor: String = Sortable.SORT_FOR_SONGS,
     headerContent: LazyGridScope.(songs: List<LSong>, showSortBar: () -> Unit) -> Unit = { _, _ -> }
 ) {
     val navToSongAction = SongDetailScreen.navToByArgv(hapticType = HapticFeedbackType.LongPress)
-    val songsState by songsViewModel.songsState
+    val songsState by songsVM.songsState
 
     LaunchedEffect(showAll) {
         if (showAll) {
-            songsViewModel.updateByLibrary()
+            songsVM.updateByLibrary()
         }
     }
 
@@ -121,9 +122,9 @@ fun SongsScreen(
             headerContent(songsState.values.flatten()) {
                 SmartBar.setMainBar {
                     SortPanel(
-                        supportGroupRules = { songsViewModel.supportGroupRules },
-                        supportOrderRules = { songsViewModel.supportOrderRules },
-                        supportSortRules = { songsViewModel.supportSortRules },
+                        supportGroupRules = { songsVM.supportGroupRules },
+                        supportOrderRules = { songsVM.supportOrderRules },
+                        supportSortRules = { songsVM.supportSortRules },
                         recoverTo = LibraryDetailNavigateBar,
                         sortFor = sortFor
                     )

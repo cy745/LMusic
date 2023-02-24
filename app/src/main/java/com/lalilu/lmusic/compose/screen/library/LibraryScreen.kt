@@ -46,6 +46,7 @@ import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import kotlinx.coroutines.delay
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -66,7 +67,7 @@ object LibraryScreen : BaseScreen() {
 private fun LibraryScreen(
     viewModel: LibraryViewModel = getViewModel(),
     playingVM: PlayingViewModel = getViewModel(),
-    songsVM: SongsViewModel = getViewModel()
+    songsVM: SongsViewModel = get()
 ) {
     val dailyRecommends = remember { viewModel.requireDailyRecommends() }
     val navToSongAction = SongDetailScreen.navToByArgv {

@@ -24,7 +24,7 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.SongsScreen
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.SongsViewModel
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalAnimationApi::class)
 object AlbumDetailScreen : BaseScreen() {
@@ -54,7 +54,7 @@ object AlbumDetailScreen : BaseScreen() {
 @Composable
 private fun AlbumDetailScreen(
     album: LAlbum,
-    songsVM: SongsViewModel = getViewModel(),
+    songsVM: SongsViewModel = get(),
 ) {
     val sortFor = remember { "AlbumDetail" }
 

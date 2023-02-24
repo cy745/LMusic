@@ -23,7 +23,7 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.SongsScreen
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.SongsViewModel
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalAnimationApi::class)
 object DictionaryDetailScreen : BaseScreen() {
@@ -52,7 +52,7 @@ object DictionaryDetailScreen : BaseScreen() {
 @Composable
 fun DictionaryDetailScreen(
     dictionary: LDictionary,
-    songsVM: SongsViewModel = getViewModel()
+    songsVM: SongsViewModel = get()
 ) {
     val sortFor = remember { "DictionaryDetail" }
 
