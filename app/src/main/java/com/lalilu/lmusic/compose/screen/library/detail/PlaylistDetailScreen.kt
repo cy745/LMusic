@@ -83,7 +83,7 @@ object FavouriteScreen : BaseScreen() {
 private fun PlaylistDetailScreen(
     playlistId: Long,
     playingVM: PlayingViewModel = get(),
-    playlistsVM: PlaylistsViewModel = getViewModel(),
+    playlistsVM: PlaylistsViewModel = get(),
     playlistDetailVM: PlaylistDetailViewModel = getViewModel()
 ) {
     val navToSongAction = SongDetailScreen.navToByArgv(hapticType = HapticFeedbackType.LongPress)

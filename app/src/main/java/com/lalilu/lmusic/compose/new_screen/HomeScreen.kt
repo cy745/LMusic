@@ -12,7 +12,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +19,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
@@ -29,8 +27,8 @@ import com.lalilu.lmusic.compose.new_screen.destinations.AlbumsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.DictionariesScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SettingsScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
-import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.RecommendRow
 import com.lalilu.lmusic.compose.screen.library.RecommendTitle
@@ -52,9 +50,6 @@ fun HomeScreen(
     navigator: DestinationsNavigator
 ) {
     val dailyRecommends = remember { vm.requireDailyRecommends() }
-    LaunchedEffect(Unit) {
-        SmartBar.setMainBar(content = LibraryNavigateBar)
-    }
 
     SmartContainer.LazyColumn {
         item {
@@ -72,7 +67,7 @@ fun HomeScreen(
                 RecommendCard2(
                     contentModifier = Modifier.size(width = 250.dp, height = 250.dp),
                     item = { it },
-                    onClick = { }
+                    onClick = { navigator.navigate(SongDetailScreenDestination(it.id)) }
                 )
             }
         }
@@ -94,7 +89,7 @@ fun HomeScreen(
                     width = { 100.dp },
                     height = { 100.dp },
                     item = { it },
-                    onClick = { },
+                    onClick = { navigator.navigate(SongDetailScreenDestination(it.id)) },
                     onClickButton = {},
                     isPlaying = { false }
                 )
@@ -117,7 +112,7 @@ fun HomeScreen(
                 modifier = Modifier.animateItemPlacement(),
                 hasLyric = playingVM.lyricRepository.rememberHasLyric(song = it),
                 song = { it },
-                onLongClick = { },
+                onLongClick = { navigator.navigate(SongDetailScreenDestination(it.id)) },
                 onClick = { }
             )
         }

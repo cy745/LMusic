@@ -59,7 +59,7 @@ import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalAnimationApi::class)
 object PlaylistsScreen : BaseScreen() {
@@ -93,7 +93,7 @@ object PlaylistsScreen : BaseScreen() {
 @Composable
 private fun PlaylistsScreen(
     isAddingSongs: Boolean = false,
-    playlistsVM: PlaylistsViewModel = getViewModel()
+    playlistsVM: PlaylistsViewModel = get()
 ) {
     val context = LocalContext.current
     val navigator = LocalNavigatorHost.current

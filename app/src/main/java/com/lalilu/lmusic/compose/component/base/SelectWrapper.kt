@@ -21,7 +21,6 @@ import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import okhttp3.internal.toImmutableList
 import org.koin.androidx.compose.get
-import org.koin.androidx.compose.getViewModel
 
 /**
  * 将选择歌曲时展开对应的选择工具栏的逻辑封装，
@@ -57,7 +56,7 @@ fun PlaylistsSelectWrapper(
     isAddingSongs: Boolean = false,
     selector: SelectHelper<LPlaylist> = rememberSelectState(),
     mainVM: MainViewModel = get(),
-    playlistsVM: PlaylistsViewModel = getViewModel(),
+    playlistsVM: PlaylistsViewModel = get(),
     recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
     extraActionsContent: @Composable (SelectHelper<LPlaylist>) -> Unit = {},
     content: @Composable (SelectHelper<LPlaylist>) -> Unit
