@@ -24,7 +24,7 @@ import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
-import com.lalilu.lmusic.compose.screen.LMusicNavGraph
+import com.lalilu.lmusic.compose.new_screen.LMusicNavHost
 import com.lalilu.lmusic.compose.screen.PlayingScreen
 import com.lalilu.lmusic.compose.screen.ShowScreen
 import com.lalilu.lmusic.datastore.LMusicSp
@@ -78,7 +78,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
                     Box {
                         SmartModalBottomSheet.SmartModalBottomSheetContent(
                             sheetContent = {
-                                LMusicNavGraph()
+                                LMusicNavHost()
                                 SmartBarContent(
                                     modifier = Modifier.graphicsLayer {
                                         translationY = -SmartModalBottomSheet.offset

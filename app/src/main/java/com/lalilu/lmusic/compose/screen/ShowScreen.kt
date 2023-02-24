@@ -49,11 +49,11 @@ import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.get
 
 @Composable
 fun ShowScreen(
-    playingVM: PlayingViewModel = getViewModel()
+    playingVM: PlayingViewModel = get()
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
@@ -199,7 +199,7 @@ fun SongDetailPanel(
 
 @Composable
 fun ControlPanel(
-    playingVM: PlayingViewModel = getViewModel()
+    playingVM: PlayingViewModel = get()
 ) {
     val isPlaying = playingVM.runtime.isPlayingLiveData.observeAsState(false)
     var playMode by playingVM.lMusicSp.playMode

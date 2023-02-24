@@ -33,6 +33,7 @@ import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -81,7 +82,7 @@ object FavouriteScreen : BaseScreen() {
 @Composable
 private fun PlaylistDetailScreen(
     playlistId: Long,
-    playingVM: PlayingViewModel = getViewModel(),
+    playingVM: PlayingViewModel = get(),
     playlistsVM: PlaylistsViewModel = getViewModel(),
     playlistDetailVM: PlaylistDetailViewModel = getViewModel()
 ) {
@@ -141,7 +142,7 @@ private fun PlaylistDetailScreen(
                 ) { isDragging ->
                     SongCard(
                         song = { item },
-                        lyricRepository = playingVM.lyricRepository,
+                        hasLyric = playingVM.lyricRepository.rememberHasLyric(song = item),
                         onClick = {
                             if (selector.isSelecting.value) {
                                 selector.onSelected(item)
