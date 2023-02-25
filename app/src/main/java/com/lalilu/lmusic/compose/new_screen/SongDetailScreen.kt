@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowRow
-import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -52,6 +51,7 @@ import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.lmusic.utils.extension.rememberScrollPosition
 import com.lalilu.lmusic.utils.recomposeHighlighter
+import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
@@ -63,13 +63,12 @@ import org.koin.androidx.compose.get
 @Composable
 fun SongDetailScreen(
     mediaId: String,
+    mediaVM: LMediaViewModel = get(),
     playingVM: PlayingViewModel = get(),
     playlistsVM: PlaylistsViewModel = get(),
     netDataVm: NetworkDataViewModel = get()
 ) {
-    val song = LMedia.getSongOrNull(mediaId)
-
-    if (song == null) {
+    val song = mediaVM.requireSong(mediaId = mediaId) ?: run {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = "[Error]加载失败 #$mediaId")
         }

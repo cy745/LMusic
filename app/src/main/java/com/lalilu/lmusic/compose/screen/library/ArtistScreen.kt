@@ -23,7 +23,7 @@ import com.lalilu.lmusic.compose.screen.BaseScreen
 import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.detail.ArtistDetailScreen
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalAnimationApi::class)
 object ArtistScreen : BaseScreen() {
@@ -40,7 +40,7 @@ object ArtistScreen : BaseScreen() {
 
 @Composable
 private fun ArtistScreen(
-    libraryVM: LibraryViewModel = getViewModel()
+    libraryVM: LibraryViewModel = get()
 ) {
     val navToArtistAction = ArtistDetailScreen.navToByArgv()
     val artists by libraryVM.artists

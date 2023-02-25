@@ -47,7 +47,6 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.get
-import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 object LibraryScreen : BaseScreen() {
@@ -65,7 +64,7 @@ object LibraryScreen : BaseScreen() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LibraryScreen(
-    viewModel: LibraryViewModel = getViewModel(),
+    viewModel: LibraryViewModel = get(),
     playingVM: PlayingViewModel = get(),
     songsVM: SongsViewModel = get()
 ) {

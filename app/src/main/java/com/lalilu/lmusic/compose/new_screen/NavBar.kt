@@ -86,14 +86,30 @@ object NavBar {
     )
 
     enum class NavItem(
-        val title: String,
+        val titleRes: Int,
         val iconRes: Int,
         val destination: DirectionDestinationSpec
     ) {
-        Home("曲库", R.drawable.ic_loader_line, HomeScreenDestination),
-        Favourite("我喜欢", R.drawable.ic_heart_3_line, FavouriteScreenDestination),
-        Playlists("歌单", R.drawable.ic_play_list_line, PlaylistsScreenDestination),
-        Search("搜索", R.drawable.ic_search_2_line, SearchScreenDestination);
+        Home(
+            R.string.destination_label_library,
+            R.drawable.ic_loader_line,
+            HomeScreenDestination
+        ),
+        Favourite(
+            R.string.destination_label_favourite,
+            R.drawable.ic_heart_3_line,
+            FavouriteScreenDestination
+        ),
+        Playlists(
+            R.string.destination_label_playlists,
+            R.drawable.ic_play_list_line,
+            PlaylistsScreenDestination
+        ),
+        Search(
+            R.string.destination_label_search,
+            R.drawable.ic_search_2_line,
+            SearchScreenDestination
+        );
 
         companion object {
             fun contain(destination: Destination): Boolean {
@@ -141,7 +157,7 @@ object NavBar {
                 ) {
                     NavItem.values().forEach {
                         NavigateItem(
-                            title = { it.title },
+                            titleRes = { it.titleRes },
                             iconRes = { it.iconRes },
                             isSelected = { it.destination == destination },
                             onClick = { navController.navTo(destination, it.destination) }
@@ -203,7 +219,7 @@ object NavBar {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NavigateItem(
-    title: () -> String,
+    titleRes: () -> Int,
     iconRes: () -> Int,
     isSelected: () -> Boolean = { false },
     onClick: () -> Unit = {},
@@ -211,7 +227,7 @@ fun NavigateItem(
     baseColor: Color = MaterialTheme.colors.primary,
     unSelectedColor: Color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
 ) {
-    val titleValue = title()
+    val titleValue = stringResource(id = titleRes())
     val iconTintColor = animateColorAsState(if (isSelected()) baseColor else unSelectedColor)
     val backgroundColor by animateColorAsState(if (isSelected()) baseColor.copy(alpha = 0.12f) else Color.Transparent)
 
