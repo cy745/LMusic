@@ -30,6 +30,7 @@ import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.DynamicTipsViewModel
 import com.lalilu.lmusic.viewmodel.GuidingViewModel
+import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
@@ -73,7 +74,8 @@ val DatabaseModule = module {
 val ViewModelModule = module {
     single { NetworkDataViewModel(get(), get(), get(), get()) }
     single { PlayingViewModel(get(), get(), get(), get()) }
-    viewModel { LibraryViewModel(get(), get(), get()) }
+    single { LibraryViewModel(get(), get(), get()) }
+    single { LMediaViewModel() }
     viewModel { PlaylistDetailViewModel(get()) }
     single { PlaylistsViewModel(get(), get()) }
     viewModel { SearchViewModel(get(), get()) }

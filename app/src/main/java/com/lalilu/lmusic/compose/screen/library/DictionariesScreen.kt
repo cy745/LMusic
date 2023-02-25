@@ -31,6 +31,7 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.detail.DictionaryDetailScreen
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -49,7 +50,7 @@ object DictionariesScreen : BaseScreen() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DictionariesScreen(
-    libraryVM: LibraryViewModel = getViewModel(),
+    libraryVM: LibraryViewModel = get(),
     dictionariesVM: DictionariesViewModel = getViewModel()
 ) {
     val dictionaries by libraryVM.allDictionaries

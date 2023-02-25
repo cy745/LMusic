@@ -1,17 +1,11 @@
 package com.lalilu.lmusic.compose.screen
 
 import android.view.View
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidViewBinding
-import androidx.core.graphics.Insets
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.asLiveData
+import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import com.blankj.utilcode.util.ConvertUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
@@ -26,12 +20,13 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
-import com.lalilu.lmusic.compose.screen.library.detail.SongDetailScreen
+import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -44,24 +39,17 @@ import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_MIDDLE
+import com.ramcosta.composedestinations.navigation.navigate
 import org.koin.androidx.compose.get
 
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
     onBackPressHelper: OnBackPressHelper,
-    playingVM: PlayingViewModel = get()
+    playingVM: PlayingViewModel = get(),
+    navController: NavController = LocalNavigatorHost.current
 ) {
-    val density = LocalDensity.current
-    val navToSongAction = SongDetailScreen.navToByArgv()
-    val statusBarsInsets = WindowInsets.statusBars
     val systemUiController = rememberSystemUiController()
-    val windowInsetsCompat = remember(statusBarsInsets) {
-        WindowInsetsCompat.Builder().setInsets(
-            WindowInsetsCompat.Type.statusBars(),
-            Insets.of(0, statusBarsInsets.getTop(density), 0, statusBarsInsets.getBottom(density))
-        ).build()
-    }
 
     AndroidViewBinding(factory = { inflater, parent, attachToParent ->
         FragmentPlayingBinding.inflate(inflater, parent, attachToParent).apply {
@@ -81,7 +69,7 @@ fun PlayingScreen(
 
             val adapter = NewPlayingAdapter.Builder()
                 .setOnLongClickCB {
-                    navToSongAction.invoke(it)
+                    navController.navigate(SongDetailScreenDestination(it))
                     SmartModalBottomSheet.show()
                 }
                 .setOnClickCB {
@@ -243,7 +231,5 @@ fun PlayingScreen(
                 }
             }
         }
-    }) {
-        ViewCompat.dispatchApplyWindowInsets(root, windowInsetsCompat)
-    }
+    })
 }
