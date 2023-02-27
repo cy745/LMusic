@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.compose.component.base
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +19,6 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
-import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.viewmodel.SettingsViewModel
 import org.koin.androidx.compose.getViewModel
 
@@ -35,7 +33,7 @@ fun SortPanel(
     supportGroupRules: () -> List<GroupRule>,
     supportSortRules: () -> List<SortRule>,
     supportOrderRules: () -> List<OrderRule>,
-    recoverTo: @Composable () -> Unit,
+    onClose: () -> Unit = {}
 ) {
     var sortRule by settingsVM.lMusicSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
     var orderRule by settingsVM.lMusicSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.ASC.name)
@@ -96,12 +94,8 @@ fun SortPanel(
             IconTextButton(
                 text = "关闭",
                 color = Color(0xFF006E7C),
-                onClick = { SmartBar.setMainBar(content = recoverTo) }
+                onClick = onClose
             )
         }
-    }
-
-    BackHandler {
-        SmartBar.setMainBar(content = recoverTo)
     }
 }

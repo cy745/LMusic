@@ -33,6 +33,7 @@ object SmartModalBottomSheet {
         animationSpec = SpringSpec(stiffness = 1000f),
         isSkipHalfExpanded = true
     )
+    val isVisible = derivedStateOf { scaffoldState.isVisible || scaffoldState.isAnimationRunning }
 
     val offset: Float
         get() = scaffoldState.offset.value
@@ -89,9 +90,6 @@ object SmartModalBottomSheet {
         val isExpended by remember(offset, statusBarHeight) {
             derivedStateOf { offset < statusBarHeight }
         }
-        val isVisible by remember(scaffoldState.isVisible, scaffoldState.isAnimationRunning) {
-            derivedStateOf { scaffoldState.isVisible || scaffoldState.isAnimationRunning }
-        }
         val isLandscape by remember(configuration.orientation) {
             derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
         }
@@ -104,10 +102,10 @@ object SmartModalBottomSheet {
          * 监听isVisible变化，通过BottomSheet的可见性控制navController是否处理返回键事件
          * 若 [rememberIsPad] 为平板设备，则必须处理返回键事件
          */
-        LaunchedEffect(isVisible, isPad) {
+        LaunchedEffect(isVisible.value, isPad) {
             // [enableOnBackPressed] 被 gradle 认为是 RestrictedApi
             //noinspection RestrictedApi
-            navController.enableOnBackPressed(isVisible || isPad)
+            navController.enableOnBackPressed(isVisible.value || isPad)
         }
 
         LaunchedEffect(isExpended, isDarkModeNow) {
@@ -197,7 +195,7 @@ object SmartModalBottomSheet {
         /**
          * 注册一个返回事件处理机，当BottomSheet可见时启用
          */
-        BackHandler(enabled = isVisible) {
+        BackHandler(enabled = isVisible.value) {
             hide()
         }
     }

@@ -79,7 +79,9 @@ class SongsViewModel(private val lMusicSp: LMusicSp) : ViewModel() {
         sortFor: String = Sortable.SORT_FOR_SONGS
     ) {
         updateBySongs(
-            songs = songIds.mapNotNull { LMedia.getSongOrNull(it) },
+            songs = songIds.takeIf { it.isNotEmpty() }
+                ?.mapNotNull { LMedia.getSongOrNull(it) }
+                ?: LMedia.getSongs(),
             sortFor = sortFor
         )
     }
