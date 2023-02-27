@@ -13,6 +13,11 @@
 ##### Tips
 在这个项目中尝试过自定义View，也尝试修改Google的Material库以获得满足目标的效果，但大部分都已经用Compose重新实现了，需要看旧的传统View的实现请查阅v1.4.9以前版本的代码。
 
+#### Build 指南
+1. clone 本仓库
+2. 切换至`dev`分支
+3. 拉取子模块`git submodule update --init --recursive`
+
 #### 参与贡献
 欢迎提Issues和PR，你的Issues就是我最大的动力，你的PR是对我最大的支持，十分感谢！！！
 
