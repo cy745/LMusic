@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +76,7 @@ fun SongDetailScreen(
         return
     }
 
+    val showActionBar = remember { mutableStateOf(true) }
     val isLiked by playlistsVM.checkIsFavorite(song).collectAsState(initial = false)
     val gridState = rememberLazyGridState()
     val scrollPosition = rememberScrollPosition(state = gridState)
@@ -89,7 +91,7 @@ fun SongDetailScreen(
 
 
     SmartModalBottomSheet.RegisterForTemporaryDisableFadeEdge()
-    SmartBar.RegisterExtraBarContent {
+    SmartBar.RegisterExtraBarContent(showActionBar) {
         SongDetailActionsBar(
             getIsLiked = { isLiked },
             onIsLikedChange = {

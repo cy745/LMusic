@@ -124,9 +124,10 @@ fun SongsScreen(
                         supportGroupRules = { songsVM.supportGroupRules },
                         supportOrderRules = { songsVM.supportOrderRules },
                         supportSortRules = { songsVM.supportSortRules },
-                        recoverTo = LibraryDetailNavigateBar,
                         sortFor = sortFor
-                    )
+                    ) {
+
+                    }
                 }
             }
 

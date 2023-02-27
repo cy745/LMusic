@@ -16,8 +16,9 @@ fun SearchScreen(
     searchVM: SearchViewModel = get()
 ) {
     val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
+    val showSearchBar = remember { mutableStateOf(true) }
 
-    SmartBar.RegisterExtraBarContent {
+    SmartBar.RegisterExtraBarContent(showSearchBar) {
         SearchInputBar(
             value = keyword,
             onSubmit = {
@@ -25,5 +26,4 @@ fun SearchScreen(
             }
         )
     }
-
 }

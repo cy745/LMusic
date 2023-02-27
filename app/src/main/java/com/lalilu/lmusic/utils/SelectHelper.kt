@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 
 class SelectHelper<T>(
     defaultState: Boolean = false,
@@ -31,13 +32,6 @@ class SelectHelper<T>(
             selectedItems.add(item)
         }
     }
-
-    @Composable
-    fun registerBackHandler() {
-        BackHandler(isSelecting.value) {
-            clear()
-        }
-    }
 }
 
 @Composable
@@ -51,6 +45,8 @@ fun <T> rememberSelectState(
             onExitSelect = onExitSelect
         )
     }.also {
-        it.registerBackHandler()
+        BackHandler(it.isSelecting.value && SmartModalBottomSheet.isVisible.value) {
+            it.clear()
+        }
     }
 }

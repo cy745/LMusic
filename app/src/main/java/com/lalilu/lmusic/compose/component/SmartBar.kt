@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -87,47 +88,99 @@ object SmartBar {
 
     fun setMainBar(
         content: (@Composable () -> Unit)?
-    ): SmartBar {
+    ): SmartBar = apply {
         mainBar.value = content
-        return this
     }
 
     fun setExtraBar(
         content: (@Composable () -> Unit)?
-    ): SmartBar {
+    ): SmartBar = apply {
         extraBar.value = content
-        return this
     }
+
+    private val extraContentStack = ArrayDeque<StackItem>()
+    private val mainContentStack = ArrayDeque<StackItem>()
 
     @Composable
     fun RegisterExtraBarContent(
-        enable: () -> Boolean = { true },
+        showState: State<Boolean>,
         recoverTo: (@Composable () -> Unit)? = null,
         content: @Composable () -> Unit
     ) {
-        LaunchedEffect(enable()) {
-            if (enable()) setExtraBar(content) else setExtraBar(recoverTo)
+        val stackItem = remember(showState) { StackItem(state = showState, content = content) }
+
+        LaunchedEffect(stackItem.state.value) {
+            if (stackItem.state.value) {
+                if (!extraContentStack.contains(stackItem)) {
+                    extraContentStack.addLast(stackItem)
+                    setExtraBar(stackItem.content)
+                }
+            } else {
+                if (extraContentStack.lastOrNull() == stackItem) {
+                    extraContentStack.removeLast()
+                    setExtraBar(extraContentStack.lastOrNull()?.content ?: recoverTo)
+                }
+            }
         }
         DisposableEffect(Unit) {
             onDispose {
-                setExtraBar(recoverTo)
+                if (extraContentStack.lastOrNull() == stackItem) {
+                    extraContentStack.removeLast()
+                    setExtraBar(extraContentStack.lastOrNull()?.content ?: recoverTo)
+                }
             }
         }
     }
 
     @Composable
     fun RegisterMainBarContent(
-        enable: () -> Boolean = { true },
+        showState: State<Boolean>,
         recoverTo: @Composable () -> Unit = NavBar.content,
         content: @Composable () -> Unit
     ) {
-        LaunchedEffect(enable()) {
-            if (enable()) setMainBar(content) else setMainBar(recoverTo)
+        val stackItem = remember(showState) { StackItem(state = showState, content = content) }
+
+        LaunchedEffect(stackItem.state.value) {
+            if (stackItem.state.value) {
+                if (!mainContentStack.contains(stackItem)) {
+                    mainContentStack.addLast(stackItem)
+                    setMainBar(stackItem.content)
+                }
+            } else {
+                if (mainContentStack.lastOrNull() == stackItem) {
+                    mainContentStack.removeLast()
+                    setMainBar(mainContentStack.lastOrNull()?.content ?: recoverTo)
+                }
+            }
         }
         DisposableEffect(Unit) {
             onDispose {
-                setMainBar(recoverTo)
+                if (mainContentStack.lastOrNull() == stackItem) {
+                    mainContentStack.removeLast()
+                    setMainBar(mainContentStack.lastOrNull()?.content ?: recoverTo)
+                }
             }
+        }
+    }
+
+    private class StackItem(
+        val state: State<Boolean>,
+        val key: String = state.hashCode().toString(),
+        val content: @Composable () -> Unit
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as StackItem
+
+            if (key != other.key) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return key.hashCode()
         }
     }
 }

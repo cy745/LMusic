@@ -13,12 +13,14 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
+import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
 import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.utils.SelectHelper
-import com.lalilu.lmusic.utils.extension.LaunchedDisposeEffect
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
+import com.ramcosta.composedestinations.navigation.navigate
 import okhttp3.internal.toImmutableList
 import org.koin.androidx.compose.get
 
@@ -34,16 +36,15 @@ fun SongsSelectWrapper(
     extraActionsContent: @Composable (SelectHelper<LSong>) -> Unit = {},
     content: @Composable (SelectHelper<LSong>) -> Unit
 ) {
-    val navToAddToPlaylist = mainVM.navToAddToPlaylist()
+    val navController = LocalNavigatorHost.current
 
     SelectWrapper(
         selector = selector,
-        recoverTo = recoverTo,
         extraActionsContent = {
             IconTextButton(
                 text = "添加到歌单",
                 color = Color(0xFF3EA22C),
-                onClick = { navToAddToPlaylist(it.selectedItems) }
+                onClick = { navController.navigate(PlaylistsScreenDestination) }
             )
             extraActionsContent(it)
         },
@@ -63,7 +64,6 @@ fun PlaylistsSelectWrapper(
 ) {
     SelectWrapper(
         selector = selector,
-        recoverTo = recoverTo,
         getTipsText = {
             if (isAddingSongs) {
                 "${mainVM.getTempSong().size}首歌 -> ${it.selectedItems.size}歌单"
@@ -104,33 +104,24 @@ fun PlaylistsSelectWrapper(
 fun <T> SelectWrapper(
     selector: SelectHelper<T> = rememberSelectState(),
     getTipsText: (SelectHelper<T>) -> String = { "已选择: ${it.selectedItems.size}" },
-    recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
     extraActionsContent: @Composable (SelectHelper<T>) -> Unit = {},
     content: @Composable (SelectHelper<T>) -> Unit
 ) {
-    LaunchedDisposeEffect(
-        key = { selector.isSelecting.value }
-    ) {
-        if (it) {
-            SmartBar.setMainBar {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    IconTextButton(
-                        text = "取消",
-                        color = Color(0xFF006E7C),
-                        onClick = { selector.clear() }
-                    )
-                    Text(text = getTipsText(selector))
-                    extraActionsContent(selector)
-                }
-            }
-        } else {
-            SmartBar.setMainBar(content = recoverTo)
+    SmartBar.RegisterMainBarContent(showState = selector.isSelecting) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            IconTextButton(
+                text = "取消",
+                color = Color(0xFF006E7C),
+                onClick = { selector.clear() }
+            )
+            Text(text = getTipsText(selector))
+            extraActionsContent(selector)
         }
     }
     content(selector)
