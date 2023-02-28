@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import com.lalilu.R
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumsScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.Destination
 import com.lalilu.lmusic.compose.new_screen.destinations.DictionariesScreenDestination
@@ -12,9 +13,11 @@ import com.lalilu.lmusic.compose.new_screen.destinations.DictionaryDetailScreenD
 import com.lalilu.lmusic.compose.new_screen.destinations.FavouriteScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.HomeScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.NetDataScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SearchScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SettingsScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
 
 enum class ScreenData(
@@ -81,13 +84,13 @@ enum class ScreenData(
         icon = R.drawable.ic_play_list_line,
         title = R.string.destination_label_playlist_detail,
         subTitle = R.string.destination_subtitle_playlist_detail,
-        destination = PlaylistsScreenDestination
+        destination = PlaylistDetailScreenDestination
     ),
     ArtistsDetail(
         icon = R.drawable.ic_user_line,
         title = R.string.destination_label_artist_detail,
         subTitle = R.string.destination_label_artist_detail,
-        destination = ArtistsScreenDestination
+        destination = ArtistDetailScreenDestination
     ),
     AlbumsDetail(
         icon = R.drawable.ic_album_fill,
@@ -105,7 +108,7 @@ enum class ScreenData(
         icon = R.drawable.ic_music_2_line,
         title = R.string.destination_label_song_detail,
         subTitle = R.string.destination_subtitle_song_detail,
-        destination = SongsScreenDestination
+        destination = SongDetailScreenDestination
     ),
     NetData(
         icon = R.drawable.ic_music_line,
@@ -113,4 +116,14 @@ enum class ScreenData(
         subTitle = R.string.destination_label_match_network_data,
         destination = NetDataScreenDestination
     );
+
+    companion object {
+        private val routeMap by lazy {
+            values().associateBy { it.destination.baseRoute }
+        }
+
+        fun getOrNull(baseRoute: String): ScreenData? {
+            return routeMap[baseRoute]
+        }
+    }
 }

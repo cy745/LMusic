@@ -82,7 +82,7 @@ val ViewModelModule = module {
     viewModel { DictionariesViewModel(get()) }
     viewModel { DynamicTipsViewModel(get()) }
     viewModel { GuidingViewModel(get()) }
-    viewModel { SettingsViewModel(get()) }
+    single { SettingsViewModel(get()) }
     single { SongsViewModel(get()) }
     single { MainViewModel() }
 }

@@ -95,10 +95,11 @@ object NavBar {
     @Composable
     private fun Content(navController: NavController = LocalNavigatorHost.current) {
         val destination by navController.appCurrentDestinationAsState()
-        val previous by remember {
-            derivedStateOf {
-                ScreenData.values().find { it.destination.baseRoute == destination?.baseRoute }
-            }
+        val previousDestination = remember(destination) {
+            navController.previousBackStackEntry?.destination?.route
+                ?.substringBefore('/')
+                ?.substringBefore('?')
+                ?.let(ScreenData::getOrNull)
         }
         val showMainBar by remember {
             derivedStateOf { destination != null && navItems.any { it.destination == destination } }
@@ -152,7 +153,9 @@ object NavBar {
                             colorFilter = ColorFilter.tint(color = contentColor)
                         )
                         Text(
-                            text = previous?.let { stringResource(id = it.title) } ?: "返回",
+                            text = previousDestination
+                                ?.let { stringResource(id = it.title) }
+                                ?: "返回",
                             fontSize = 14.sp
                         )
                     }
