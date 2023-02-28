@@ -76,7 +76,7 @@ val ViewModelModule = module {
     single { PlayingViewModel(get(), get(), get(), get()) }
     single { LibraryViewModel(get(), get(), get()) }
     single { LMediaViewModel() }
-    viewModel { PlaylistDetailViewModel(get()) }
+    single { PlaylistDetailViewModel(get()) }
     single { PlaylistsViewModel(get(), get()) }
     viewModel { SearchViewModel(get(), get()) }
     viewModel { DictionariesViewModel(get()) }

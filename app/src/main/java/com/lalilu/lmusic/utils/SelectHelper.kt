@@ -32,6 +32,13 @@ class SelectHelper<T>(
             selectedItems.add(item)
         }
     }
+
+    @Composable
+    fun RegisterBackHandler() {
+        BackHandler(isSelecting.value && SmartModalBottomSheet.isVisible.value) {
+            clear()
+        }
+    }
 }
 
 @Composable
@@ -45,8 +52,6 @@ fun <T> rememberSelectState(
             onExitSelect = onExitSelect
         )
     }.also {
-        BackHandler(it.isSelecting.value && SmartModalBottomSheet.isVisible.value) {
-            it.clear()
-        }
+        it.RegisterBackHandler()
     }
 }
