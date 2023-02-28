@@ -12,7 +12,5 @@ class LMediaViewModel : ViewModel() {
     val artists = LMedia.getArtistsFlow()
     val dictionaries = LMedia.getDictionariesFlow()
 
-    fun requireSong(mediaId: String): LSong? {
-        return LMedia.getSongOrNull(mediaId)
-    }
+    fun requireSong(mediaId: String): LSong? = LMedia.getSongOrNull(mediaId)
 }

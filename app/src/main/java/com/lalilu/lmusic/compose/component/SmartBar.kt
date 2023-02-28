@@ -107,7 +107,7 @@ object SmartBar {
         recoverTo: (@Composable () -> Unit)? = null,
         content: @Composable () -> Unit
     ) {
-        val stackItem = remember(showState) { StackItem(state = showState, content = content) }
+        val stackItem = remember { StackItem(state = showState, content = content) }
 
         LaunchedEffect(stackItem.state.value) {
             if (stackItem.state.value) {
@@ -127,6 +127,8 @@ object SmartBar {
                 if (extraContentStack.lastOrNull() == stackItem) {
                     extraContentStack.removeLast()
                     setExtraBar(extraContentStack.lastOrNull()?.content ?: recoverTo)
+                } else {
+                    extraContentStack.remove(stackItem)
                 }
             }
         }
@@ -138,7 +140,7 @@ object SmartBar {
         recoverTo: @Composable () -> Unit = NavBar.content,
         content: @Composable () -> Unit
     ) {
-        val stackItem = remember(showState) { StackItem(state = showState, content = content) }
+        val stackItem = remember { StackItem(state = showState, content = content) }
 
         LaunchedEffect(stackItem.state.value) {
             if (stackItem.state.value) {
@@ -158,6 +160,8 @@ object SmartBar {
                 if (mainContentStack.lastOrNull() == stackItem) {
                     mainContentStack.removeLast()
                     setMainBar(mainContentStack.lastOrNull()?.content ?: recoverTo)
+                } else {
+                    mainContentStack.remove(stackItem)
                 }
             }
         }

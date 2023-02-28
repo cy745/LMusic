@@ -17,8 +17,8 @@ import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestinat
 import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.utils.SelectHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.idsText
 import com.lalilu.lmusic.utils.rememberSelectState
-import com.lalilu.lmusic.viewmodel.MainViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.ramcosta.composedestinations.navigation.navigate
 import okhttp3.internal.toImmutableList
@@ -31,7 +31,6 @@ import org.koin.androidx.compose.get
 @Composable
 fun SongsSelectWrapper(
     selector: SelectHelper<LSong> = rememberSelectState(),
-    mainVM: MainViewModel = get(),
     recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
     extraActionsContent: @Composable (SelectHelper<LSong>) -> Unit = {},
     content: @Composable (SelectHelper<LSong>) -> Unit
@@ -44,7 +43,9 @@ fun SongsSelectWrapper(
             IconTextButton(
                 text = "添加到歌单",
                 color = Color(0xFF3EA22C),
-                onClick = { navController.navigate(PlaylistsScreenDestination) }
+                onClick = {
+                    navController.navigate(PlaylistsScreenDestination(it.selectedItems.idsText()))
+                }
             )
             extraActionsContent(it)
         },
@@ -55,8 +56,8 @@ fun SongsSelectWrapper(
 @Composable
 fun PlaylistsSelectWrapper(
     isAddingSongs: Boolean = false,
+    songsToAdd: List<String> = emptyList(),
     selector: SelectHelper<LPlaylist> = rememberSelectState(),
-    mainVM: MainViewModel = get(),
     playlistsVM: PlaylistsViewModel = get(),
     recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
     extraActionsContent: @Composable (SelectHelper<LPlaylist>) -> Unit = {},
@@ -66,7 +67,7 @@ fun PlaylistsSelectWrapper(
         selector = selector,
         getTipsText = {
             if (isAddingSongs) {
-                "${mainVM.getTempSong().size}首歌 -> ${it.selectedItems.size}歌单"
+                "${songsToAdd.size}首歌 -> ${it.selectedItems.size}歌单"
             } else {
                 "已选择: ${it.selectedItems.size}"
             }
@@ -78,8 +79,8 @@ fun PlaylistsSelectWrapper(
                     color = Color(0xFF3EA22C),
                     onClick = {
                         playlistsVM.addSongsIntoPlaylists(
-                            playlists = it.selectedItems.toImmutableList(),
-                            songs = mainVM.getTempSong().toImmutableList()
+                            pIds = it.selectedItems.map(LPlaylist::_id),
+                            mediaIds = songsToAdd
                         )
                         it.clear()
                     }

@@ -22,7 +22,10 @@ import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.blankj.utilcode.util.GsonUtils
 import com.dirror.lyricviewx.LyricEntry
+import com.google.gson.reflect.TypeToken
+import com.lalilu.lmedia.entity.LSong
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
@@ -281,4 +284,18 @@ fun ViewDataBinding.launch(
 
 fun MediaSessionCompat.getMediaId(): String? {
     return controller?.metadata?.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
+}
+
+fun List<LSong>.ids(): List<String> {
+    return map { it.id }
+}
+
+fun List<LSong>.idsText(): String {
+    return GsonUtils.toJson(map { it.id })
+}
+
+private val stringListType = object : TypeToken<List<String>>() {}.type
+fun String?.getSongsIds(): List<String> {
+    return runCatching { GsonUtils.fromJson(this, stringListType) as? List<String> }
+        .getOrNull() ?: emptyList()
 }

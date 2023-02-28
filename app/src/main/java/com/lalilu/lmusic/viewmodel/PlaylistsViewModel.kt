@@ -79,10 +79,11 @@ class PlaylistsViewModel constructor(
         playlistRepo.deletePlaylists(playlist)
     }
 
-    fun addSongsIntoPlaylists(playlists: List<LPlaylist>, songs: List<LSong>) =
+    fun addSongsIntoPlaylists(pIds: List<Long>, mediaIds: List<String>) {
         viewModelScope.launch(Dispatchers.IO) {
-            playlistRepo.saveSongsIntoPlaylists(playlists, songs)
+            playlistRepo.saveSongsIntoPlaylists(pIds, mediaIds)
         }
+    }
 
     fun removeSongsFromPlaylist(songs: List<LSong>, playlist: LPlaylist) =
         viewModelScope.launch(Dispatchers.IO) {

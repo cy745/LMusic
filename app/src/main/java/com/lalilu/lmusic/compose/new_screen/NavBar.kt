@@ -45,21 +45,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.lalilu.R
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
-import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.AlbumsScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.ArtistsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.Destination
-import com.lalilu.lmusic.compose.new_screen.destinations.DictionariesScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.DictionaryDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.FavouriteScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.HomeScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.NetDataScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.SearchScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.SettingsScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.popUpElse
@@ -68,71 +55,39 @@ import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 
 object NavBar {
 
-    private val destinationTitleMap = mapOf(
-        HomeScreenDestination.route to R.string.destination_label_library,
-        FavouriteScreenDestination.route to R.string.destination_label_favourite,
-        PlaylistsScreenDestination.route to R.string.destination_label_playlists,
-        SearchScreenDestination.route to R.string.destination_label_search,
-        SongsScreenDestination.route to R.string.destination_label_all_song,
-        SongDetailScreenDestination.route to R.string.destination_label_song_detail,
-        AlbumsScreenDestination.route to R.string.destination_label_albums,
-        AlbumDetailScreenDestination.route to R.string.destination_label_album_detail,
-        ArtistsScreenDestination.route to R.string.destination_label_artist,
-        ArtistDetailScreenDestination.route to R.string.destination_label_artist_detail,
-        DictionariesScreenDestination.route to R.string.destination_label_dictionaries,
-        DictionaryDetailScreenDestination.route to R.string.destination_label_dictionary_detail,
-        SettingsScreenDestination.route to R.string.destination_label_settings,
-        NetDataScreenDestination.route to R.string.destination_label_match_network_data
+    private val navItems = listOf(
+        ScreenData.Home,
+        ScreenData.Favourite,
+        ScreenData.Playlists,
+        ScreenData.Search
     )
-
-    enum class NavItem(
-        val titleRes: Int,
-        val iconRes: Int,
-        val destination: DirectionDestinationSpec
-    ) {
-        Home(
-            R.string.destination_label_library,
-            R.drawable.ic_loader_line,
-            HomeScreenDestination
-        ),
-        Favourite(
-            R.string.destination_label_favourite,
-            R.drawable.ic_heart_3_line,
-            FavouriteScreenDestination
-        ),
-        Playlists(
-            R.string.destination_label_playlists,
-            R.drawable.ic_play_list_line,
-            PlaylistsScreenDestination
-        ),
-        Search(
-            R.string.destination_label_search,
-            R.drawable.ic_search_2_line,
-            SearchScreenDestination
-        );
-
-        companion object {
-            fun contain(destination: Destination): Boolean {
-                return values().any { it.destination == destination }
-            }
-        }
-    }
-
     val content: @Composable () -> Unit by lazy { { Content() } }
 
     private fun NavController.navTo(
         currentDestinationSpec: Destination?,
-        targetDestinationSpec: DirectionDestinationSpec
+        targetDestinationSpec: Destination
     ) {
         if (currentDestinationSpec == targetDestinationSpec) return
 
-        navigate(targetDestinationSpec) {
-            popUpTo(graph.findStartDestination().id) {
-                inclusive = false
-                saveState = true
+        if (targetDestinationSpec is DirectionDestinationSpec) {
+            navigate(targetDestinationSpec) {
+                popUpTo(graph.findStartDestination().id) {
+                    inclusive = false
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
             }
-            launchSingleTop = true
-            restoreState = true
+        }
+        if (targetDestinationSpec is PlaylistsScreenDestination) {
+            navigate(targetDestinationSpec()) {
+                popUpTo(graph.findStartDestination().id) {
+                    inclusive = false
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
     }
 
@@ -140,9 +95,13 @@ object NavBar {
     @Composable
     private fun Content(navController: NavController = LocalNavigatorHost.current) {
         val destination by navController.appCurrentDestinationAsState()
-        val previous = destinationTitleMap[navController.previousBackStackEntry?.destination?.route]
+        val previous by remember {
+            derivedStateOf {
+                ScreenData.values().find { it.destination.baseRoute == destination?.baseRoute }
+            }
+        }
         val showMainBar by remember {
-            derivedStateOf { destination != null && NavItem.contain(destination!!) }
+            derivedStateOf { destination != null && navItems.any { it.destination == destination } }
         }
 
         AnimatedContent(targetState = showMainBar) { showMain ->
@@ -155,10 +114,10 @@ object NavBar {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    NavItem.values().forEach {
+                    navItems.forEach {
                         NavigateItem(
-                            titleRes = { it.titleRes },
-                            iconRes = { it.iconRes },
+                            titleRes = { it.title },
+                            iconRes = { it.icon },
                             isSelected = { it.destination == destination },
                             onClick = { navController.navTo(destination, it.destination) }
                         )
@@ -193,7 +152,7 @@ object NavBar {
                             colorFilter = ColorFilter.tint(color = contentColor)
                         )
                         Text(
-                            text = previous?.let { stringResource(id = it) } ?: "返回",
+                            text = previous?.let { stringResource(id = it.title) } ?: "返回",
                             fontSize = 14.sp
                         )
                     }
