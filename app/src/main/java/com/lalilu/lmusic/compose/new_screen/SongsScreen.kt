@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
@@ -14,16 +15,20 @@ import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.extension.GroupRule
+import com.lalilu.lmedia.extension.OrderRule
+import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -40,7 +45,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.androidx.compose.get
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @HomeNavGraph
 @Destination
 @Composable
@@ -53,31 +58,21 @@ fun SongsScreen(
     navigator: DestinationsNavigator
 ) {
     val songsState by songsVM.songsState
-    val haptic = LocalHapticFeedback.current
-    val showSortPanel = remember { mutableStateOf(false) }
-
     LaunchedEffect(mediaIds) {
         songsVM.updateByIds(mediaIds)
     }
 
-    SmartBar.RegisterMainBarContent(showState = showSortPanel) {
-        SortPanel(
-            supportGroupRules = { songsVM.supportGroupRules },
-            supportOrderRules = { songsVM.supportOrderRules },
-            supportSortRules = { songsVM.supportSortRules },
-            sortFor = Sortable.SORT_FOR_SONGS
-        ) {
-            showSortPanel.value = false
-        }
-        BackHandler(showSortPanel.value && SmartModalBottomSheet.isVisible.value) {
-            showSortPanel.value = false
-        }
-    }
-
-    SongsSelectWrapper { selector ->
-        SmartContainer.LazyVerticalGrid(
-            columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+    SortPanelWrapper(
+        sortFor = Sortable.SORT_FOR_SONGS,
+        supportGroupRules = { songsVM.supportGroupRules },
+        supportOrderRules = { songsVM.supportOrderRules },
+        supportSortRules = { songsVM.supportSortRules }
+    ) { showSortPanel ->
+        SongListWrapper(
+            songsState = songsState,
+            hasLyricState = { playingVM.requireHasLyricState(item = it) },
+            onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
+            onClickItem = { playingVM.playSongWithPlaylist(songsState.values.flatten(), it) }
         ) {
             item {
                 NavigatorHeader(
@@ -98,6 +93,52 @@ fun SongsScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SortPanelWrapper(
+    sortFor: String,
+    supportGroupRules: () -> List<GroupRule>,
+    supportSortRules: () -> List<SortRule>,
+    supportOrderRules: () -> List<OrderRule>,
+    content: @Composable (MutableState<Boolean>) -> Unit
+) {
+    val showSortPanel = remember { mutableStateOf(false) }
+    SmartBar.RegisterMainBarContent(showState = showSortPanel) {
+        SortPanel(
+            sortFor = sortFor,
+            supportGroupRules = supportGroupRules,
+            supportOrderRules = supportOrderRules,
+            supportSortRules = supportSortRules,
+            onClose = { showSortPanel.value = false }
+        )
+        BackHandler(showSortPanel.value && SmartModalBottomSheet.isVisible.value) {
+            showSortPanel.value = false
+        }
+    }
+    content(showSortPanel)
+}
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun SongListWrapper(
+    songsState: Map<Any, List<LSong>>,
+    hasLyricState: (LSong) -> State<Boolean>,
+    onClickItem: (LSong) -> Unit = {},
+    onLongClickItem: (LSong) -> Unit = {},
+    headerContent: LazyGridScope.() -> Unit
+) {
+    val haptic = LocalHapticFeedback.current
+
+    SongsSelectWrapper { selector ->
+        SmartContainer.LazyVerticalGrid(
+            columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            headerContent()
 
             val now = System.currentTimeMillis()
             songsState.forEach { (titleObj, list) ->
@@ -140,17 +181,17 @@ fun SongsScreen(
                     SongCard(
                         modifier = Modifier.animateItemPlacement(),
                         song = { item },
-                        hasLyric = playingVM.lyricRepository.rememberHasLyric(song = item),
+                        hasLyric = hasLyricState(item),
                         onClick = {
                             if (selector.isSelecting.value) {
                                 selector.onSelected(item)
                             } else {
-                                playingVM.playSongWithPlaylist(songsState.values.flatten(), item)
+                                onClickItem(item)
                             }
                         },
                         onLongClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            navigator.navigate(SongDetailScreenDestination(mediaId = item.id))
+                            onLongClickItem(item)
                         },
                         onEnterSelect = { selector.onSelected(item) },
                         isSelected = { selector.selectedItems.any { it.id == item.id } }

@@ -46,10 +46,15 @@ import com.lalilu.lmusic.compose.component.card.NetworkPairCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 import com.lalilu.lmusic.compose.component.card.SongInformationCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
+import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.NetDataScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
 import com.lalilu.lmusic.compose.screen.library.detail.SongDetailActionsBar
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
+import com.lalilu.lmusic.utils.extension.idsText
 import com.lalilu.lmusic.utils.extension.rememberScrollPosition
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
@@ -57,6 +62,7 @@ import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -67,7 +73,8 @@ fun SongDetailScreen(
     mediaVM: LMediaViewModel = get(),
     playingVM: PlayingViewModel = get(),
     playlistsVM: PlaylistsViewModel = get(),
-    netDataVm: NetworkDataViewModel = get()
+    netDataVm: NetworkDataViewModel = get(),
+    navigator: DestinationsNavigator
 ) {
     val song = mediaVM.requireSong(mediaId = mediaId) ?: run {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -102,6 +109,7 @@ fun SongDetailScreen(
                 }
             },
             onAddSongToPlaylist = {
+                navigator.navigate(PlaylistsScreenDestination(idsText = listOf(song).idsText()))
             },
             onSetSongToNext = {
                 playingVM.browser.addToNext(song.id)
@@ -152,7 +160,9 @@ fun SongDetailScreen(
                             song.artists.forEach {
                                 Chip(
                                     onClick = {
-                                        println("navToArtistAction: [${it.name}]")
+                                        navigator.navigate(
+                                            ArtistDetailScreenDestination(artistName = it.name)
+                                        )
                                     },
                                     colors = ChipDefaults.outlinedChipColors(),
                                 ) {
@@ -185,7 +195,9 @@ fun SongDetailScreen(
                             .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
                             .width(intrinsicSize = IntrinsicSize.Min),
                         shape = RoundedCornerShape(20.dp),
-                        onClick = { }
+                        onClick = {
+                            navigator.navigate(AlbumDetailScreenDestination(it.id))
+                        }
                     ) {
                         Row(
                             modifier = Modifier
@@ -223,6 +235,7 @@ fun SongDetailScreen(
                 NetworkPairCard(
                     item = { networkData },
                     onClick = {
+                        navigator.navigate(NetDataScreenDestination(mediaId = song.id))
                     },
                     onDownloadCover = {
                         netDataVm.saveCoverIntoNetworkData(networkData?.netId, song.id)
