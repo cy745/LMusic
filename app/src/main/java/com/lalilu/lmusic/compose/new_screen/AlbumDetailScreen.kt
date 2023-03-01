@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.lalilu.lmusic.compose.component.card.AlbumCoverCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -65,6 +66,16 @@ fun AlbumDetailScreen(
             onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
             onClickItem = { playingVM.playSongWithPlaylist(songsState.values.flatten(), it) }
         ) {
+            item {
+                AlbumCoverCard(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    elevation = 2.dp,
+                    imageData = { album },
+                    onClick = { }
+                )
+            }
+
             item {
                 NavigatorHeader(
                     title = album.name,
