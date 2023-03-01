@@ -30,6 +30,7 @@ import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.DynamicTipsViewModel
 import com.lalilu.lmusic.viewmodel.GuidingViewModel
+import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.MainViewModel
@@ -82,6 +83,7 @@ val ViewModelModule = module {
     viewModel { DictionariesViewModel(get()) }
     viewModel { DynamicTipsViewModel(get()) }
     viewModel { GuidingViewModel(get()) }
+    single { HistoryViewModel(get()) }
     single { SettingsViewModel(get()) }
     single { SongsViewModel(get()) }
     single { MainViewModel() }
@@ -95,7 +97,7 @@ val PlayerModule = module {
 
 val RuntimeModule = module {
     single { LMusicBrowser(get(), get(), get()) }
-    single { LMusicRuntime(get(), get()) }
+    single { LMusicRuntime(get()) }
     single { CoverRepository(get()) }
     single { LyricRepository(get(), get()) }
     single { LibraryRepository() }

@@ -124,8 +124,10 @@ class MixPlayback(
     }
 
     override fun onLStart() {
+        val current = queue?.getCurrent()
+        current?.let { onItemPlay(it) }
         onPlayInfoUpdate(
-            queue?.getCurrent(),
+            current,
             PlaybackStateCompat.STATE_PLAYING,
             player?.getPosition() ?: 0L
         )
@@ -181,5 +183,9 @@ class MixPlayback(
     override fun onSetPlayMode(playMode: PlayMode) {
         this.playMode = playMode
         playbackListener?.onSetPlayMode(playMode)
+    }
+
+    override fun onItemPlay(item: LSong) {
+        playbackListener?.onItemPlay(item)
     }
 }

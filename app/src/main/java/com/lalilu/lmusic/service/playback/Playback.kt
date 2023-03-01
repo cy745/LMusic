@@ -12,5 +12,6 @@ interface Playback<T> {
     interface Listener<T> {
         fun onPlayInfoUpdate(item: T?, playbackState: Int, position: Long)
         fun onSetPlayMode(playMode: PlayMode)
+        fun onItemPlay(item: T)
     }
 }

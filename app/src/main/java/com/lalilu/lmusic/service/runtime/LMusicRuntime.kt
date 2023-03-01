@@ -10,8 +10,7 @@ import com.lalilu.lmusic.datastore.LMusicSp
  * 全局单例，专门用于解决Service和Activity之间复杂的数据交互问题
  */
 class LMusicRuntime(
-    private val lMusicSp: LMusicSp,
-    private val historyRepo: HistoryRepository
+    private val lMusicSp: LMusicSp
 ) : BaseRuntime(), Runtime.Listener {
     override var listener: Runtime.Listener? = this
 
@@ -21,13 +20,6 @@ class LMusicRuntime(
 
     override fun onPlayingUpdate(song: LSong?) {
         lMusicSp.lastPlayedIdKey.set(song?.id)
-        if (song?.id == null) return
-        historyRepo.saveHistory(
-            LHistory(
-                contentId = song.id,
-                type = HISTORY_TYPE_SONG
-            )
-        )
     }
 
     override fun onPositionUpdate(position: Long) {

@@ -10,7 +10,10 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import com.lalilu.lmedia.entity.HISTORY_TYPE_SONG
+import com.lalilu.lmedia.entity.LHistory
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
 import com.lalilu.lmusic.datastore.LMusicSp
@@ -42,6 +45,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     private val runtime: LMusicRuntime by inject()
     private val lyricRepo: LyricRepository by inject()
     private val coverRepo: CoverRepository by inject()
+    private val historyRepo: HistoryRepository by inject()
     private val audioFocusHelper: LMusicAudioFocusHelper by inject()
     private val noisyReceiver: LMusicNoisyReceiver by inject()
     private val localPlayer: LocalPlayer by inject()
@@ -117,6 +121,12 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             mediaSession.setRepeatMode(playMode.repeatMode)
             mediaSession.setShuffleMode(playMode.shuffleMode)
             notifier.update()
+        }
+
+        override fun onItemPlay(item: LSong) {
+            historyRepo.saveHistory(
+                LHistory(contentId = item.id, type = HISTORY_TYPE_SONG)
+            )
         }
     }
 
