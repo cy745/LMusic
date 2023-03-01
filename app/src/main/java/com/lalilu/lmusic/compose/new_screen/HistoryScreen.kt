@@ -41,7 +41,7 @@ fun HistoryScreen(
         ) {
             item {
                 NavigatorHeader(
-                    title = "所有历史",
+                    title = "播放历史",
                     subTitle = "共 ${songs.size} 首歌曲"
                 ) {
                 }
@@ -65,7 +65,9 @@ fun HistoryScreen(
                         if (selector.isSelecting.value) {
                             selector.onSelected(item.first)
                         } else {
-                            playingVM.playSongWithPlaylist(songs.map { it.first }, item.first)
+                            historyVM.requiteHistoryList {
+                                playingVM.playSongWithPlaylist(it, item.first)
+                            }
                         }
                     },
                     onLongClick = {
