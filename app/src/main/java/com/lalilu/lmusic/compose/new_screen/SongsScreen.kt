@@ -39,6 +39,7 @@ import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.utils.extension.getSongsIds
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -52,18 +53,21 @@ import org.koin.androidx.compose.get
 fun SongsScreen(
     title: String = "全部歌曲",
     sortFor: String = Sortable.SORT_FOR_SONGS,
-    mediaIds: List<String> = emptyList(),
+    mediaIdsText: String? = null,
     songsVM: SongsViewModel = get(),
     playingVM: PlayingViewModel = get(),
     navigator: DestinationsNavigator
 ) {
     val songsState by songsVM.songsState
-    LaunchedEffect(mediaIds) {
-        songsVM.updateByIds(mediaIds)
+    LaunchedEffect(mediaIdsText) {
+        songsVM.updateByIds(
+            songIds = mediaIdsText.getSongsIds(),
+            sortFor = sortFor
+        )
     }
 
     SortPanelWrapper(
-        sortFor = Sortable.SORT_FOR_SONGS,
+        sortFor = sortFor,
         supportGroupRules = { songsVM.supportGroupRules },
         supportOrderRules = { songsVM.supportOrderRules },
         supportSortRules = { songsVM.supportSortRules }

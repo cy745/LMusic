@@ -10,6 +10,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
@@ -42,6 +44,7 @@ fun PlaylistDetailScreen(
     playlistDetailVM: PlaylistDetailViewModel = get(),
     navigator: DestinationsNavigator
 ) {
+    val haptic = LocalHapticFeedback.current
     val playlist by playlistDetailVM.getPlaylistFlow(playlistId).collectAsState(initial = null)
     LaunchedEffect(Unit) {
         playlistDetailVM.getPlaylistDetailById(playlistId, this)
@@ -104,7 +107,10 @@ fun PlaylistDetailScreen(
                             }
                         },
                         dragModifier = Modifier.detectReorder(dragState),
-                        onLongClick = { navigator.navigate(SongDetailScreenDestination(item.id)) },
+                        onLongClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            navigator.navigate(SongDetailScreenDestination(item.id))
+                        },
                         onEnterSelect = { selector.onSelected(item) },
                         isSelected = { isDragging || selector.selectedItems.any { it.id == item.id } }
                     )

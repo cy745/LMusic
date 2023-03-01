@@ -40,6 +40,7 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.RecommendRow
 import com.lalilu.lmusic.compose.screen.library.RecommendTitle
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.utils.extension.idsText
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -65,7 +66,14 @@ fun HomeScreen(
         item {
             RecommendTitle(
                 title = "每日推荐",
-                onClick = { }
+                onClick = {
+                    navigator.navigate(
+                        SongsScreenDestination(
+                            title = "每日推荐",
+                            mediaIdsText = dailyRecommends.idsText()
+                        )
+                    )
+                }
             )
         }
         item {
