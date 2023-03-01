@@ -9,11 +9,16 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LGenre
 import com.lalilu.lmedia.entity.LPlaylist
@@ -32,9 +37,10 @@ import com.lalilu.lmusic.compose.screen.library.ArtistCard
 import com.lalilu.lmusic.compose.screen.library.RecommendRow
 import com.lalilu.lmusic.compose.screen.library.RecommendTitle
 import com.lalilu.lmusic.compose.screen.library.searchItem
+import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.lmusic.utils.extension.idsText
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
-import com.lalilu.lmusic.viewmodel.SongsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.androidx.compose.get
@@ -49,10 +55,11 @@ import org.koin.androidx.compose.get
 @Composable
 fun SearchScreen(
     playingVM: PlayingViewModel = get(),
-    songsVM: SongsViewModel = get(),
     searchVM: SearchViewModel = get(),
     navigator: DestinationsNavigator
 ) {
+    val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
     val showSearchBar = remember { mutableStateOf(true) }
 
@@ -69,6 +76,12 @@ fun SearchScreen(
         searchVM.searchFor(keyword.value)
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            context.getActivity()?.let { KeyboardUtils.hideSoftInput(it) }
+        }
+    }
+
     SmartContainer.LazyColumn {
         searchItem(
             name = "歌曲",
@@ -78,9 +91,12 @@ fun SearchScreen(
             getContentType = { LSong::class },
             onClickHeader = {
                 if (searchVM.songsResult.value.isNotEmpty()) {
-                    songsVM.updateBySongs(searchVM.songsResult.value)
-                    navigator.navigate(SongsScreenDestination())
-                    //  传递指定的歌曲
+                    navigator.navigate(
+                        SongsScreenDestination(
+                            title = "[${keyword.value}]\n歌曲搜索结果",
+                            mediaIdsText = searchVM.songsResult.value.idsText()
+                        )
+                    )
                 }
             }
         ) {
@@ -90,11 +106,11 @@ fun SearchScreen(
                 song = { it },
                 onClick = { playingVM.browser.addAndPlay(it.id) },
                 onLongClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     navigator.navigate(SongDetailScreenDestination(mediaId = it.id))
                 }
             )
         }
-
 
         item(key = "AlbumHeader") {
             RecommendTitle(title = "专辑 ${searchVM.albumsResult.value.size.takeIf { it > 0 } ?: ""}")

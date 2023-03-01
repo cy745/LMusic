@@ -25,7 +25,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
@@ -70,6 +72,7 @@ fun PlaylistsScreen(
 ) {
     val idsToAdd = idsText.getSongsIds()
 
+    val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
     val creatingPlaylist = remember { mutableStateOf(false) }
     val state = rememberReorderableLazyListState(
@@ -195,7 +198,10 @@ fun PlaylistsScreen(
                         },
                         dragModifier = Modifier.detectReorder(state),
                         getPlaylist = { item },
-                        onLongClick = { selectorInside.onSelected(item) },
+                        onLongClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            selectorInside.onSelected(item)
+                        },
                         getIsSelected = { isDragging || selectorInside.selectedItems.any { it._id == item._id } }
                     )
                 }
