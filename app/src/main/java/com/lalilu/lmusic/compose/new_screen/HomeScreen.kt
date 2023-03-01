@@ -40,6 +40,7 @@ import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.compose.screen.library.RecommendRow
 import com.lalilu.lmusic.compose.screen.library.RecommendTitle
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -52,6 +53,7 @@ import org.koin.androidx.compose.get
 @Composable
 fun HomeScreen(
     vm: LibraryViewModel = get(),
+    historyVM: HistoryViewModel = get(),
     playingVM: PlayingViewModel = get(),
     navigator: DestinationsNavigator
 ) {
@@ -109,13 +111,14 @@ fun HomeScreen(
             )
         }
         items(
-            items = vm.lastPlayedStack.value,
+            items = historyVM.historyPreviewState.value,
             key = { it.id },
             contentType = { LSong::class }
         ) { item ->
             SongCard(
                 song = { item },
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier
+                    .animateItemPlacement()
                     .padding(bottom = 5.dp),
                 isSelected = { selectHelper.selectedItems.any { it.id == item.id } },
                 hasLyric = playingVM.lyricRepository.rememberHasLyric(song = item),
@@ -128,7 +131,9 @@ fun HomeScreen(
                     if (selectHelper.isSelecting.value) {
                         selectHelper.onSelected(item)
                     } else {
-                        // TODO 按历史记录播放，将历史记录倒序添加进播放列表
+                        historyVM.requiteHistoryList {
+                            playingVM.playSongWithPlaylist(it, item)
+                        }
                     }
                 }
             )

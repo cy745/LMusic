@@ -79,7 +79,7 @@ val ViewModelModule = module {
     single { LMediaViewModel() }
     single { PlaylistDetailViewModel(get()) }
     single { PlaylistsViewModel(get(), get()) }
-    viewModel { SearchViewModel(get(), get()) }
+    single { SearchViewModel(get(), get()) }
     viewModel { DictionariesViewModel(get()) }
     viewModel { DynamicTipsViewModel(get()) }
     viewModel { GuidingViewModel(get()) }
