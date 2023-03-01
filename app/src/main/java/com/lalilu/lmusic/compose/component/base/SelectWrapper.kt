@@ -54,6 +54,14 @@ fun SongsSelectWrapper(
 }
 
 @Composable
+fun rememberSongsSelectWrapper(
+    selector: SelectHelper<LSong> = rememberSelectState(),
+): SelectHelper<LSong> {
+    SongsSelectWrapper(selector = selector) {}
+    return selector
+}
+
+@Composable
 fun PlaylistsSelectWrapper(
     isAddingSongs: Boolean = false,
     songsToAdd: List<String> = emptyList(),

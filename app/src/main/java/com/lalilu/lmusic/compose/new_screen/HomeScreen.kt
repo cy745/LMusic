@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.component.card.SongCard
@@ -56,6 +57,7 @@ fun HomeScreen(
 ) {
     val haptic = LocalHapticFeedback.current
     val dailyRecommends = remember { vm.requireDailyRecommends() }
+    val selectHelper = rememberSongsSelectWrapper()
 
     SmartContainer.LazyColumn {
         item {
@@ -110,17 +112,24 @@ fun HomeScreen(
             items = vm.lastPlayedStack.value,
             key = { it.id },
             contentType = { LSong::class }
-        ) {
+        ) { item ->
             SongCard(
-                song = { it },
-                modifier = Modifier.animateItemPlacement(),
-                hasLyric = playingVM.lyricRepository.rememberHasLyric(song = it),
+                song = { item },
+                modifier = Modifier.animateItemPlacement()
+                    .padding(bottom = 5.dp),
+                isSelected = { selectHelper.selectedItems.any { it.id == item.id } },
+                hasLyric = playingVM.lyricRepository.rememberHasLyric(song = item),
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    navigator.navigate(SongDetailScreenDestination(it.id))
+                    navigator.navigate(SongDetailScreenDestination(item.id))
                 },
+                onEnterSelect = { selectHelper.onSelected(item) },
                 onClick = {
-                    // TODO 按历史记录播放，将历史记录倒序添加进播放列表
+                    if (selectHelper.isSelecting.value) {
+                        selectHelper.onSelected(item)
+                    } else {
+                        // TODO 按历史记录播放，将历史记录倒序添加进播放列表
+                    }
                 }
             )
         }
