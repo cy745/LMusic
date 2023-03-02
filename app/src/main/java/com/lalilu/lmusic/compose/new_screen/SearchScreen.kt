@@ -1,10 +1,18 @@
 package com.lalilu.lmusic.compose.new_screen
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -28,7 +36,10 @@ import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.SearchInputBar
 import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
+import com.lalilu.lmusic.compose.component.card.ArtistCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
+import com.lalilu.lmusic.compose.component.card.RecommendRow
+import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumsScreenDestination
@@ -37,10 +48,6 @@ import com.lalilu.lmusic.compose.new_screen.destinations.ArtistsScreenDestinatio
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
-import com.lalilu.lmusic.compose.screen.library.ArtistCard
-import com.lalilu.lmusic.compose.screen.library.RecommendRow
-import com.lalilu.lmusic.compose.screen.library.RecommendTitle
-import com.lalilu.lmusic.compose.screen.library.searchItem
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.utils.extension.json
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -226,4 +233,42 @@ fun SearchScreen(
             }
         }
     }
+}
+
+fun <I> LazyListScope.searchItem(
+    name: String,
+    items: List<I>,
+    getId: (I) -> Any,
+    showCount: Int = items.size,
+    getContentType: (I) -> Any,
+    onClickHeader: () -> Unit = {},
+    itemContent: @Composable LazyItemScope.(I) -> Unit,
+) {
+    item(key = "${name}_Header") {
+        RecommendTitle(
+            title = "$name ${items.size.takeIf { it > 0 } ?: ""}",
+            onClick = onClickHeader
+        )
+    }
+    item(key = "${name}_EmptyTips") {
+        AnimatedVisibility(
+            modifier = Modifier.fillMaxWidth(),
+            visible = items.isEmpty(),
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                text = "无匹配$name"
+            )
+        }
+    }
+    items(
+        items = items.take(showCount),
+        key = getId,
+        contentType = getContentType,
+        itemContent = itemContent
+    )
 }

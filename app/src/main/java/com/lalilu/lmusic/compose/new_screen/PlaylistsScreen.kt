@@ -38,11 +38,10 @@ import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.component.base.PlaylistsSelectWrapper
+import com.lalilu.lmusic.compose.component.card.NewPlaylistBar
 import com.lalilu.lmusic.compose.component.card.PlaylistCard
 import com.lalilu.lmusic.compose.new_screen.destinations.FavouriteScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistDetailScreenDestination
-import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
-import com.lalilu.lmusic.compose.screen.library.createNewPlaylistBar
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.utils.extension.getIds
@@ -96,7 +95,7 @@ fun PlaylistsScreen(
             }
         }
 
-        createNewPlaylistBar(
+        NewPlaylistBar(
             onCancel = { creatingPlaylist.value = false },
             onCommit = {
                 playlistsVM.createNewPlaylist(it)
@@ -112,7 +111,6 @@ fun PlaylistsScreen(
     PlaylistsSelectWrapper(
         isAddingSongs = idsToAdd.isNotEmpty(),
         songsToAdd = idsToAdd,
-        recoverTo = LibraryNavigateBar,
         selector = selector
     ) { selectorInside ->
         SmartContainer.LazyColumn(

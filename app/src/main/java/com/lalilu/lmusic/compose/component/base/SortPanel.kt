@@ -19,7 +19,7 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
-import com.lalilu.lmusic.viewmodel.SettingsViewModel
+import com.lalilu.lmusic.datastore.LMusicSp
 import org.koin.androidx.compose.get
 
 /**
@@ -28,16 +28,16 @@ import org.koin.androidx.compose.get
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SortPanel(
-    settingsVM: SettingsViewModel = get(),
+    lMusicSp: LMusicSp = get(),
     sortFor: String,
     supportGroupRules: () -> List<GroupRule>,
     supportSortRules: () -> List<SortRule>,
     supportOrderRules: () -> List<OrderRule>,
     onClose: () -> Unit = {}
 ) {
-    var sortRule by settingsVM.lMusicSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
-    var orderRule by settingsVM.lMusicSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.ASC.name)
-    var groupRule by settingsVM.lMusicSp.stringSp("${sortFor}_GROUP_RULE", GroupRule.Normal.name)
+    var sortRule by lMusicSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
+    var orderRule by lMusicSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.ASC.name)
+    var groupRule by lMusicSp.stringSp("${sortFor}_GROUP_RULE", GroupRule.Normal.name)
 
     Column(
         modifier = Modifier

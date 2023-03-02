@@ -1,14 +1,16 @@
-package com.lalilu.lmusic.compose.screen.library
+package com.lalilu.lmusic.compose.component.card
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,44 +18,47 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavGraphBuilder
-import com.google.accompanist.navigation.animation.composable
-import com.lalilu.lmusic.compose.component.SmartContainer
-import com.lalilu.lmusic.compose.screen.BaseScreen
-import com.lalilu.lmusic.compose.screen.ScreenData
-import com.lalilu.lmusic.compose.screen.library.detail.ArtistDetailScreen
-import com.lalilu.lmusic.viewmodel.LibraryViewModel
-import org.koin.androidx.compose.get
-
-@OptIn(ExperimentalAnimationApi::class)
-object ArtistScreen : BaseScreen() {
-    override fun register(builder: NavGraphBuilder) {
-        builder.composable(ScreenData.Artists.name) {
-            ArtistScreen()
-        }
-    }
-
-    override fun getNavToRoute(): String {
-        return ScreenData.Artists.name
-    }
-}
+import com.lalilu.lmedia.entity.LArtist
 
 @Composable
-private fun ArtistScreen(
-    libraryVM: LibraryViewModel = get()
+fun ArtistCard(
+    artist: LArtist,
+    onClick: () -> Unit = {}
 ) {
-    val navToArtistAction = ArtistDetailScreen.navToByArgv()
-    val artists by libraryVM.artists
+    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 
-    SmartContainer.LazyColumn {
-        itemsIndexed(items = artists) { index, item ->
-            ArtistCard(
-                index = index,
-                artistName = item.name,
-                songCount = item.requireItemsCount(),
-                onClick = { navToArtistAction.invoke(item.name) }
-            )
-        }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .clickable(onClick = onClick)
+            .padding(start = 10.dp, end = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text(
+            modifier = Modifier.width(48.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 10.sp,
+            color = textColor.copy(alpha = 0.4f),
+            text = "#${artist._id.takeIf { it.length >= 4 }?.take(4) ?: artist._id}"
+        )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = artist.name,
+            fontSize = 14.sp,
+            color = textColor,
+            maxLines = 1,
+            textAlign = TextAlign.Start,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = "${artist.requireItemsCount()} 首歌曲",
+            fontSize = 12.sp,
+            color = textColor.copy(0.8f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

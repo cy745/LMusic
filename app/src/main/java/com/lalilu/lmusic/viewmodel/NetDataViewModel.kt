@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class NetworkDataViewModel(
+class NetDataViewModel(
     private val neteaseDataSource: NeteaseDataSource,
     private val kugouDataSource: KugouDataSource,
     private val lyricRepository: LyricRepository,

@@ -14,7 +14,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,10 +26,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.lalilu.R
+import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
-import com.lalilu.lmusic.viewmodel.DynamicTipsViewModel
 import kotlinx.coroutines.*
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.get
 import kotlin.coroutines.CoroutineContext
 
 object DynamicTips : CoroutineScope {
@@ -51,9 +50,9 @@ object DynamicTips : CoroutineScope {
     @Composable
     fun Content(
         modifier: Modifier = Modifier,
-        dynamicTipsVM: DynamicTipsViewModel = getViewModel()
+        lMusicSp: LMusicSp = get()
     ) {
-        val enableDynamicTips by dynamicTipsVM.enableState
+        val enableDynamicTips by lMusicSp.enableDynamicTips
 
         LaunchedEffect(title.value) {
             if (title.value.isNotEmpty()) {
@@ -66,7 +65,7 @@ object DynamicTips : CoroutineScope {
         }
 
         AnimatedVisibility(
-            visible = show.value && enableDynamicTips == true,
+            visible = show.value && enableDynamicTips,
             modifier = modifier
                 .widthIn(max = 300.dp)
                 .padding(top = 100.dp),
