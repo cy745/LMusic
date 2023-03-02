@@ -20,6 +20,7 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
+import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
@@ -69,7 +70,12 @@ fun PlayingScreen(
 
             val adapter = NewPlayingAdapter.Builder()
                 .setOnLongClickCB {
-                    navController.navigate(SongDetailScreenDestination(it))
+                    if (navController.currentDestination?.route == ScreenData.SongsDetail.destination.route) {
+                        navController.popBackStack()
+                    }
+                    navController.navigate(SongDetailScreenDestination(it)) {
+                        launchSingleTop = true
+                    }
                     SmartModalBottomSheet.show()
                 }
                 .setOnClickCB {

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.lmusic.compose.component.navigate.NavigateBar
+import com.lalilu.lmusic.compose.new_screen.NavBar
 import com.lalilu.lmusic.utils.extension.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -82,7 +83,7 @@ object SmartModalBottomSheet {
 
         val offset = scaffoldState.offset.value
         val isDarkModeNow = isSystemInDarkTheme()
-        val statusBarHeight = rememberStatusBarHeight()
+        val statusBarHeight = rememberFixedStatusBarHeight()
         val systemUiController = rememberSystemUiController()
         val offsetRoundedCorner = LocalDensity.current.run { 15.dp.toPx() }
         val isPad by windowSize.rememberIsPad()
@@ -129,7 +130,7 @@ object SmartModalBottomSheet {
         if (isPad) {
             Row(modifier = Modifier.fillMaxSize()) {
                 if (isLandscape) {
-                    NavigateBar(horizontal = false)
+                    NavBar.verticalContent()
                 }
                 Box(
                     modifier = Modifier

@@ -170,11 +170,11 @@ fun HomeScreen(
                                         )
 
                                         ScreenData.Albums -> navigator.navigate(
-                                            AlbumsScreenDestination
+                                            AlbumsScreenDestination()
                                         )
 
                                         ScreenData.Artists -> navigator.navigate(
-                                            ArtistsScreenDestination
+                                            ArtistsScreenDestination()
                                         )
 
                                         ScreenData.Settings -> navigator.navigate(

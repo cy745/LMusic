@@ -72,6 +72,7 @@ class LMusicSp(context: Context) : BaseSp() {
         Config.DEFAULT_SETTINGS_AUTO_HIDE_SEEKBAR
     )
 
+    val artistSortValue = intSp("ArtistSort")
 
     val isGuidingOver = boolSp(Config.KEY_REMEMBER_IS_GUIDING_OVER, false)
 }

@@ -27,6 +27,8 @@ import com.lalilu.lmusic.utils.sources.DataBaseLyricSource
 import com.lalilu.lmusic.utils.sources.EmbeddedLyricSource
 import com.lalilu.lmusic.utils.sources.LocalLyricSource
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
+import com.lalilu.lmusic.viewmodel.AlbumsViewModel
+import com.lalilu.lmusic.viewmodel.ArtistsViewModel
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.DynamicTipsViewModel
 import com.lalilu.lmusic.viewmodel.GuidingViewModel
@@ -80,9 +82,11 @@ val ViewModelModule = module {
     single { PlaylistDetailViewModel(get()) }
     single { PlaylistsViewModel(get(), get()) }
     single { SearchViewModel(get(), get()) }
-    viewModel { DictionariesViewModel(get()) }
-    viewModel { DynamicTipsViewModel(get()) }
-    viewModel { GuidingViewModel(get()) }
+    single { AlbumsViewModel() }
+    single { ArtistsViewModel() }
+    single { DictionariesViewModel(get()) }
+    single { DynamicTipsViewModel(get()) }
+    single { GuidingViewModel(get()) }
     single { HistoryViewModel(get()) }
     single { SettingsViewModel(get()) }
     single { SongsViewModel(get()) }
