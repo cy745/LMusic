@@ -13,7 +13,6 @@ import com.lalilu.lmusic.utils.extension.getMediaId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,12 +23,11 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
-@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class LMusicNotifier constructor(
     private val lyricRepo: LyricRepository,
     private val coverRepo: CoverRepository,
     private val lMusicSp: LMusicSp,
-    private val mediaSession: MediaSessionCompat,
     context: Context
 ) : BaseNotification(context), CoroutineScope, Pusher {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
@@ -39,6 +37,11 @@ class LMusicNotifier constructor(
      */
     private val notificationBuilderFlow = MutableStateFlow<NotificationCompat.Builder?>(null)
     private var notificationLoopJob: Job? = null
+    private var mediaSession: MediaSessionCompat? = null
+
+    fun bindMediaSession(session: MediaSessionCompat) {
+        mediaSession = session
+    }
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -51,7 +54,7 @@ class LMusicNotifier constructor(
         notificationLoopJob?.cancel()
         notificationLoopJob = launch {
             notificationBuilderFlow.flatMapLatest { builder ->
-                val mediaId = mediaSession.getMediaId()
+                val mediaId = mediaSession?.getMediaId()
 
                 coverRepo.fetch(mediaId).mapLatest {
                     builder?.loadCoverAndPalette(mediaSession, it)?.build()
@@ -86,8 +89,10 @@ class LMusicNotifier constructor(
     }
 
     fun startForeground(callback: (Int, Notification) -> Unit) {
-        val builder = buildMediaNotification(mediaSession, PLAYER_CHANNEL_ID)
-            ?.loadCoverAndPalette(mediaSession, null) ?: return
+        val builder = mediaSession?.let {
+            buildMediaNotification(it, PLAYER_CHANNEL_ID)
+                ?.loadCoverAndPalette(it, null)
+        } ?: return
         callback(NOTIFICATION_PLAYER_ID, builder.build())
         notificationBuilderFlow.tryEmit(builder)
         startLoop()
@@ -101,10 +106,12 @@ class LMusicNotifier constructor(
     override fun update() {
         launch {
             notificationBuilderFlow.emit(
-                buildMediaNotification(
-                    mediaSession = mediaSession,
-                    channelId = PLAYER_CHANNEL_ID
-                )
+                mediaSession?.let {
+                    buildMediaNotification(
+                        mediaSession = it,
+                        channelId = PLAYER_CHANNEL_ID
+                    )
+                }
             )
         }
     }
@@ -115,7 +122,7 @@ class LMusicNotifier constructor(
     }
 
     override fun destroy() {
-
+        mediaSession = null
     }
 
     companion object {

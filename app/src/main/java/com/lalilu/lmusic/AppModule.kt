@@ -19,6 +19,7 @@ import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LibraryRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.service.notification.LMusicNotifier
 import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
 import com.lalilu.lmusic.service.playback.impl.LocalPlayer
@@ -91,6 +92,7 @@ val PlayerModule = module {
 }
 
 val RuntimeModule = module {
+    single { LMusicNotifier(get(), get(), get(), androidApplication()) }
     single { LMusicBrowser(get(), get(), get()) }
     single { LMusicRuntime(get()) }
     single { CoverRepository(get()) }
