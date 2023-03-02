@@ -17,8 +17,6 @@ import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
 import com.lalilu.lmusic.datastore.LMusicSp
-import com.lalilu.lmusic.repository.CoverRepository
-import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.notification.LMusicNotifier
 import com.lalilu.lmusic.service.playback.PlayMode
 import com.lalilu.lmusic.service.playback.PlayQueue
@@ -32,27 +30,25 @@ import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.EQHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
 class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
+    override val coroutineContext: CoroutineContext = Dispatchers.Default
 
     private val lMusicSp: LMusicSp by inject()
     private val runtime: LMusicRuntime by inject()
-    private val lyricRepo: LyricRepository by inject()
-    private val coverRepo: CoverRepository by inject()
     private val historyRepo: HistoryRepository by inject()
     private val audioFocusHelper: LMusicAudioFocusHelper by inject()
     private val noisyReceiver: LMusicNoisyReceiver by inject()
     private val localPlayer: LocalPlayer by inject()
+    private val notifier: LMusicNotifier by inject()
 
-    lateinit var mediaSession: MediaSessionCompat
-    lateinit var playback: MixPlayback
-    lateinit var notifier: LMusicNotifier
+    private lateinit var mediaSession: MediaSessionCompat
+    private lateinit var playback: MixPlayback
 
     private val intent: Intent by lazy {
         Intent(this@LMusicService, LMusicService::class.java)
@@ -182,14 +178,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
                 isActive = true
             }
 
-        notifier = LMusicNotifier(
-            lyricRepo = lyricRepo,
-            coverRepo = coverRepo,
-            mediaSession = mediaSession,
-            lMusicSp = lMusicSp,
-            context = this
-        )
-
+        notifier.bindMediaSession(mediaSession)
         sessionToken = mediaSession.sessionToken
 
         lMusicSp.volumeControl.flow(true)
@@ -232,7 +221,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             }
         }
         MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     /**
@@ -254,5 +243,11 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         result.sendResult(mutableListOf())
+    }
+
+    override fun onDestroy() {
+        // 服务被结束后取消本协程作用域
+        this.cancel()
+        super.onDestroy()
     }
 }
