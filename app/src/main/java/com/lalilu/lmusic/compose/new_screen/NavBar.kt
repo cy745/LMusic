@@ -1,11 +1,11 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,11 +14,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
@@ -36,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -50,8 +53,10 @@ import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.new_screen.destinations.Destination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.popUpElse
+import com.lalilu.lmusic.utils.extension.rememberIsPad
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 
@@ -64,6 +69,11 @@ object NavBar {
         ScreenData.Search
     )
     val content: @Composable () -> Unit by lazy { { Content() } }
+    val verticalContent: @Composable () -> Unit by lazy { { VerticalContent() } }
+
+    private enum class Type {
+        Main, Extra, Hide
+    }
 
     private fun NavController.navTo(
         currentDestinationSpec: Destination?,
@@ -93,6 +103,32 @@ object NavBar {
         }
     }
 
+    @Composable
+    private fun VerticalContent(navController: NavController = LocalNavigatorHost.current) {
+        val destination by navController.appCurrentDestinationAsState()
+        Box(
+            Modifier
+                .wrapContentWidth()
+                .fillMaxHeight()
+                .padding(start = 15.dp, end = 10.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                navItems.forEach {
+                    NavigateItem(
+                        titleRes = { it.title },
+                        iconRes = { it.icon },
+                        isSelected = { it.destination == destination },
+                        onClick = { navController.navTo(destination, it.destination) }
+                    )
+                }
+            }
+        }
+    }
+
     @OptIn(ExperimentalAnimationApi::class)
     @Composable
     private fun Content(navController: NavController = LocalNavigatorHost.current) {
@@ -104,12 +140,23 @@ object NavBar {
                 ?.substringBefore('?')
                 ?.let(ScreenData::getOrNull)
         }
-        val showMainBar by remember {
-            derivedStateOf { destination != null && navItems.any { it.destination == destination } }
+        val configuration = LocalConfiguration.current
+        val isPad by LocalWindowSize.current.rememberIsPad()
+        val isLandscape = remember(configuration.orientation) {
+            configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        }
+        val showType by remember(isPad, isLandscape) {
+            derivedStateOf {
+                if (navItems.any { it.destination == destination }) {
+                    if (isPad && isLandscape) Type.Hide else Type.Main
+                } else {
+                    Type.Extra
+                }
+            }
         }
 
-        AnimatedContent(targetState = showMainBar) { showMain ->
-            if (showMain) {
+        AnimatedContent(targetState = showType) { type ->
+            if (type == Type.Main) {
                 Row(
                     modifier = Modifier
                         .height(52.dp)
@@ -127,7 +174,7 @@ object NavBar {
                         )
                     }
                 }
-            } else {
+            } else if (type == Type.Extra) {
                 Row(
                     modifier = Modifier
                         .clickable(enabled = false) {}

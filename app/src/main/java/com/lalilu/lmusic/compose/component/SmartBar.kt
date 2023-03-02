@@ -1,15 +1,12 @@
 package com.lalilu.lmusic.compose.component
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -20,8 +17,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -42,9 +37,6 @@ object SmartBar {
     @OptIn(ExperimentalAnimationApi::class, ExperimentalLayoutApi::class)
     fun BoxScope.SmartBarContent(modifier: Modifier = Modifier) {
         val density = LocalDensity.current
-        val hasContent by remember(mainBar, extraBar) {
-            derivedStateOf { mainBar.value != null || extraBar.value != null }
-        }
 
         Surface(
             modifier = modifier
@@ -60,27 +52,16 @@ object SmartBar {
                         smartBarHeightDpState.value = density.run { height.toDp() + 20.dp }
                     }
             ) {
-                AnimatedVisibility(visible = hasContent) {
-                    Spacer(modifier = Modifier.height(5.dp))
-                }
                 AnimatedContent(targetState = extraBar.value) {
                     it?.invoke()
                 }
-                AnimatedVisibility(visible = extraBar.value != null) {
-                    Spacer(modifier = Modifier.height(5.dp))
-                }
-                AnimatedContent(targetState = WindowInsets.isImeVisible to mainBar.value) { pair ->
+                AnimatedContent(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .imePadding(),
+                    targetState = WindowInsets.isImeVisible to mainBar.value
+                ) { pair ->
                     pair.second.takeIf { !pair.first }?.invoke()
-                }
-                AnimatedVisibility(visible = mainBar.value != null && !WindowInsets.isImeVisible) {
-                    Spacer(modifier = Modifier.height(5.dp))
-                }
-                AnimatedVisibility(visible = hasContent) {
-                    Spacer(
-                        modifier = Modifier
-                            .navigationBarsPadding()
-                            .imePadding()
-                    )
                 }
             }
         }

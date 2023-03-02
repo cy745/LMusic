@@ -59,6 +59,7 @@ private fun ArtistScreen(
 
 @Composable
 fun ArtistCard(
+    modifier: Modifier = Modifier,
     index: Int,
     artistName: String,
     songCount: Long,
@@ -67,7 +68,7 @@ fun ArtistCard(
     val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
             .clickable(onClick = onClick)

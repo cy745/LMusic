@@ -39,7 +39,7 @@ import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
-import com.lalilu.lmusic.utils.extension.getSongsIds
+import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -61,7 +61,7 @@ fun SongsScreen(
     val songsState by songsVM.songsState
     LaunchedEffect(mediaIdsText) {
         songsVM.updateByIds(
-            songIds = mediaIdsText.getSongsIds(),
+            songIds = mediaIdsText.getIds(),
             sortFor = sortFor
         )
     }

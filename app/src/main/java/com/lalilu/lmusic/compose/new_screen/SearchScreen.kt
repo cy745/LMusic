@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
+import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LGenre
 import com.lalilu.lmedia.entity.LPlaylist
@@ -26,10 +27,13 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.SearchInputBar
+import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.AlbumsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.ArtistsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
@@ -38,7 +42,7 @@ import com.lalilu.lmusic.compose.screen.library.RecommendRow
 import com.lalilu.lmusic.compose.screen.library.RecommendTitle
 import com.lalilu.lmusic.compose.screen.library.searchItem
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.lmusic.utils.extension.idsText
+import com.lalilu.lmusic.utils.extension.json
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -62,6 +66,7 @@ fun SearchScreen(
     val haptic = LocalHapticFeedback.current
     val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
     val showSearchBar = remember { mutableStateOf(true) }
+    val selectHelper = rememberSongsSelectWrapper()
 
     SmartBar.RegisterExtraBarContent(showSearchBar) {
         SearchInputBar(
@@ -94,26 +99,46 @@ fun SearchScreen(
                     navigator.navigate(
                         SongsScreenDestination(
                             title = "[${keyword.value}]\n歌曲搜索结果",
-                            mediaIdsText = searchVM.songsResult.value.idsText()
+                            mediaIdsText = searchVM.songsResult.value.map(LSong::id).json()
                         )
                     )
                 }
             }
-        ) {
+        ) { item ->
             SongCard(
-                modifier = Modifier.animateItemPlacement(),
-                hasLyric = playingVM.lyricRepository.rememberHasLyric(song = it),
-                song = { it },
-                onClick = { playingVM.browser.addAndPlay(it.id) },
+                song = { item },
+                modifier = Modifier
+                    .animateItemPlacement()
+                    .padding(bottom = 5.dp),
+                isSelected = { selectHelper.selectedItems.any { it.id == item.id } },
+                hasLyric = playingVM.lyricRepository.rememberHasLyric(song = item),
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    navigator.navigate(SongDetailScreenDestination(mediaId = it.id))
+                    navigator.navigate(SongDetailScreenDestination(item.id))
+                },
+                onEnterSelect = { selectHelper.onSelected(item) },
+                onClick = {
+                    if (selectHelper.isSelecting.value) {
+                        selectHelper.onSelected(item)
+                    } else {
+                        playingVM.browser.addAndPlay(item.id)
+                    }
                 }
             )
         }
 
         item(key = "AlbumHeader") {
-            RecommendTitle(title = "专辑 ${searchVM.albumsResult.value.size.takeIf { it > 0 } ?: ""}")
+            RecommendTitle(
+                title = "专辑 ${searchVM.albumsResult.value.size.takeIf { it > 0 } ?: ""}",
+                onClick = {
+                    navigator.navigate(
+                        AlbumsScreenDestination(
+                            title = "[${keyword.value}]\n专辑搜索结果",
+                            albumIdsText = searchVM.albumsResult.value.map(LAlbum::id).json()
+                        )
+                    )
+                }
+            )
         }
         item(key = "AlbumItems") {
             AnimatedContent(targetState = searchVM.albumsResult.value.isNotEmpty()) { show ->
@@ -143,7 +168,15 @@ fun SearchScreen(
             showCount = 5,
             getId = { it.id },
             items = searchVM.artistsResult.value,
-            getContentType = { LArtist::class }
+            getContentType = { LArtist::class },
+            onClickHeader = {
+                navigator.navigate(
+                    ArtistsScreenDestination(
+                        title = "[${keyword.value}]\n艺术家搜索结果",
+                        artistIdsText = searchVM.artistsResult.value.map(LArtist::name).json()
+                    )
+                )
+            }
         ) {
             ArtistCard(
                 artist = it,

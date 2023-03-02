@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
+import com.lalilu.common.SystemUiUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -264,4 +266,19 @@ fun rememberScrollPosition(
             state.firstVisibleItemScrollOffset + sumHeight
         }
     }
+}
+
+@Composable
+fun rememberFixedStatusBarHeight(): Int {
+    val context = LocalContext.current
+    return remember {
+        SystemUiUtil.getFixedStatusHeight(context)
+    }
+}
+
+@Composable
+fun rememberFixedStatusBarHeightDp(): Dp {
+    val density = LocalDensity.current
+    val px = rememberFixedStatusBarHeight()
+    return remember { density.run { px.toDp() } }
 }

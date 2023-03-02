@@ -294,8 +294,12 @@ fun List<LSong>.idsText(): String {
     return GsonUtils.toJson(map { it.id })
 }
 
+fun List<String>.json(): String {
+    return GsonUtils.toJson(this)
+}
+
 private val stringListType = object : TypeToken<List<String>>() {}.type
-fun String?.getSongsIds(): List<String> {
+fun String?.getIds(): List<String> {
     return runCatching { GsonUtils.fromJson(this, stringListType) as? List<String> }
         .getOrNull() ?: emptyList()
 }

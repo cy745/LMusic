@@ -45,7 +45,7 @@ import com.lalilu.lmusic.compose.screen.LibraryNavigateBar
 import com.lalilu.lmusic.compose.screen.library.createNewPlaylistBar
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.lmusic.utils.extension.getSongsIds
+import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
@@ -70,7 +70,7 @@ fun PlaylistsScreen(
     playlistsVM: PlaylistsViewModel = get(),
     navigator: DestinationsNavigator
 ) {
-    val idsToAdd = idsText.getSongsIds()
+    val idsToAdd = idsText.getIds()
 
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
