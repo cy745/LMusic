@@ -20,7 +20,7 @@ fun SearchInputBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 20.dp),
+            .padding(horizontal = 20.dp, vertical = 5.dp),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
