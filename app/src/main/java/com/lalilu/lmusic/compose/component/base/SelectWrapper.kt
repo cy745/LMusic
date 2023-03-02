@@ -14,7 +14,6 @@ import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
-import com.lalilu.lmusic.compose.screen.LibraryDetailNavigateBar
 import com.lalilu.lmusic.utils.SelectHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.idsText
@@ -31,7 +30,6 @@ import org.koin.androidx.compose.get
 @Composable
 fun SongsSelectWrapper(
     selector: SelectHelper<LSong> = rememberSelectState(),
-    recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
     extraActionsContent: @Composable (SelectHelper<LSong>) -> Unit = {},
     content: @Composable (SelectHelper<LSong>) -> Unit
 ) {
@@ -67,7 +65,6 @@ fun PlaylistsSelectWrapper(
     songsToAdd: List<String> = emptyList(),
     selector: SelectHelper<LPlaylist> = rememberSelectState(),
     playlistsVM: PlaylistsViewModel = get(),
-    recoverTo: @Composable () -> Unit = LibraryDetailNavigateBar,
     extraActionsContent: @Composable (SelectHelper<LPlaylist>) -> Unit = {},
     content: @Composable (SelectHelper<LPlaylist>) -> Unit
 ) {

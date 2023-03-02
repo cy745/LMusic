@@ -7,9 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.lmusic.compose.component.card.ArtistCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
-import com.lalilu.lmusic.compose.screen.library.ArtistCard
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.ArtistsViewModel

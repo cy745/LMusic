@@ -28,6 +28,8 @@ import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
+import com.lalilu.lmusic.compose.component.card.RecommendRow
+import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistsScreenDestination
@@ -36,9 +38,6 @@ import com.lalilu.lmusic.compose.new_screen.destinations.HistoryScreenDestinatio
 import com.lalilu.lmusic.compose.new_screen.destinations.SettingsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
-import com.lalilu.lmusic.compose.screen.ScreenData
-import com.lalilu.lmusic.compose.screen.library.RecommendRow
-import com.lalilu.lmusic.compose.screen.library.RecommendTitle
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.idsText
 import com.lalilu.lmusic.viewmodel.HistoryViewModel

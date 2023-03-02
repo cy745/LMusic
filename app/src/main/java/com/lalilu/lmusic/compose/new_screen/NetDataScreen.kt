@@ -18,11 +18,11 @@ import com.lalilu.R
 import com.lalilu.lmusic.apis.NetworkSong
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.lmusic.compose.component.card.LyricCard
+import com.lalilu.lmusic.compose.component.card.SearchInputBar
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.screen.library.LyricCard
-import com.lalilu.lmusic.compose.screen.library.SearchInputBar
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
-import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
+import com.lalilu.lmusic.viewmodel.NetDataViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.androidx.compose.get
@@ -32,7 +32,7 @@ import org.koin.androidx.compose.get
 fun NetDataScreen(
     mediaId: String,
     mediaVM: LMediaViewModel = get(),
-    netDataVM: NetworkDataViewModel = get(),
+    netDataVM: NetDataViewModel = get(),
     navigator: DestinationsNavigator
 ) {
     val song = mediaVM.requireSong(mediaId = mediaId) ?: run {

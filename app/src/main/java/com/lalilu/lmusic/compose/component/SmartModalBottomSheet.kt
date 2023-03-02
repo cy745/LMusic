@@ -19,7 +19,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.lalilu.lmusic.compose.component.navigate.NavigateBar
 import com.lalilu.lmusic.compose.new_screen.NavBar
 import com.lalilu.lmusic.utils.extension.*
 import kotlinx.coroutines.CoroutineScope

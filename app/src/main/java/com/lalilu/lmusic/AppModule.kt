@@ -30,22 +30,17 @@ import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import com.lalilu.lmusic.viewmodel.AlbumsViewModel
 import com.lalilu.lmusic.viewmodel.ArtistsViewModel
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
-import com.lalilu.lmusic.viewmodel.DynamicTipsViewModel
-import com.lalilu.lmusic.viewmodel.GuidingViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
-import com.lalilu.lmusic.viewmodel.MainViewModel
-import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
+import com.lalilu.lmusic.viewmodel.NetDataViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
-import com.lalilu.lmusic.viewmodel.SettingsViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
-import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -75,9 +70,9 @@ val DatabaseModule = module {
 }
 
 val ViewModelModule = module {
-    single { NetworkDataViewModel(get(), get(), get(), get()) }
+    single { NetDataViewModel(get(), get(), get(), get()) }
     single { PlayingViewModel(get(), get(), get(), get()) }
-    single { LibraryViewModel(get(), get(), get()) }
+    single { LibraryViewModel(get(), get()) }
     single { LMediaViewModel() }
     single { PlaylistDetailViewModel(get()) }
     single { PlaylistsViewModel(get(), get()) }
@@ -85,12 +80,8 @@ val ViewModelModule = module {
     single { AlbumsViewModel() }
     single { ArtistsViewModel() }
     single { DictionariesViewModel(get()) }
-    single { DynamicTipsViewModel(get()) }
-    single { GuidingViewModel(get()) }
     single { HistoryViewModel(get()) }
-    single { SettingsViewModel(get()) }
     single { SongsViewModel(get()) }
-    single { MainViewModel() }
 }
 
 val PlayerModule = module {

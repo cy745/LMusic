@@ -44,13 +44,13 @@ import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.component.card.NetworkPairCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
+import com.lalilu.lmusic.compose.component.card.SongDetailActionsBar
 import com.lalilu.lmusic.compose.component.card.SongInformationCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.NetDataScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
-import com.lalilu.lmusic.compose.screen.library.detail.SongDetailActionsBar
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
@@ -58,7 +58,7 @@ import com.lalilu.lmusic.utils.extension.idsText
 import com.lalilu.lmusic.utils.extension.rememberScrollPosition
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
-import com.lalilu.lmusic.viewmodel.NetworkDataViewModel
+import com.lalilu.lmusic.viewmodel.NetDataViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -73,7 +73,7 @@ fun SongDetailScreen(
     mediaVM: LMediaViewModel = get(),
     playingVM: PlayingViewModel = get(),
     playlistsVM: PlaylistsViewModel = get(),
-    netDataVm: NetworkDataViewModel = get(),
+    netDataVm: NetDataViewModel = get(),
     navigator: DestinationsNavigator
 ) {
     val song = mediaVM.requireSong(mediaId = mediaId) ?: run {

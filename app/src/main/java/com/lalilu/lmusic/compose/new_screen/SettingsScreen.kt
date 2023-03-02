@@ -28,7 +28,6 @@ import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
 import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
 import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.compose.component.settings.SettingSwitcher
-import com.lalilu.lmusic.compose.screen.ScreenData
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.StatusBarLyricExt
