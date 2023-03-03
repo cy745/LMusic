@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Chip
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -39,7 +41,6 @@ import com.lalilu.lmusic.compose.new_screen.destinations.SettingsScreenDestinati
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
-import com.lalilu.lmusic.utils.extension.idsText
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -47,7 +48,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.androidx.compose.get
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @HomeNavGraph(start = true)
 @Destination
 @Composable
@@ -63,16 +64,13 @@ fun HomeScreen(
 
     SmartContainer.LazyColumn {
         item {
-            RecommendTitle(
-                title = "每日推荐",
-                onClick = {
-                    navigator.navigate(
-                        SongsScreenDestination(
-                            title = "每日推荐",
-                            mediaIdsText = dailyRecommends.idsText()
-                        )
-                    )
-                }
+            Text(
+                modifier = Modifier
+                    .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 10.dp)
+                    .fillMaxWidth(),
+                text = "每日推荐",
+                style = MaterialTheme.typography.h6,
+                color = dayNightTextColor()
             )
         }
         item {
@@ -91,8 +89,17 @@ fun HomeScreen(
         item {
             RecommendTitle(
                 title = "最近添加",
-                onClick = { navigator.navigate(SongsScreenDestination()) }
-            )
+                onClick = { }
+            ) {
+                Chip(
+                    onClick = { navigator.navigate(SongsScreenDestination()) },
+                ) {
+                    Text(
+                        style = MaterialTheme.typography.caption,
+                        text = "所有歌曲"
+                    )
+                }
+            }
         }
         item {
             RecommendRow(
@@ -114,8 +121,17 @@ fun HomeScreen(
         item {
             RecommendTitle(
                 title = "最近播放",
-                onClick = { navigator.navigate(HistoryScreenDestination) }
-            )
+                onClick = { }
+            ) {
+                Chip(
+                    onClick = { navigator.navigate(HistoryScreenDestination) },
+                ) {
+                    Text(
+                        style = MaterialTheme.typography.caption,
+                        text = "历史记录"
+                    )
+                }
+            }
         }
         items(
             items = historyVM.historyPreviewState.value,
