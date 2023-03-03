@@ -112,7 +112,7 @@ class NewPlayingAdapter private constructor(
     }
 
     fun interface OnDataUpdatedCallback {
-        fun onDataUpdated()
+        fun onDataUpdated(needScrollToTop: Boolean)
     }
 
     fun interface OnItemBoundCallback {
@@ -142,21 +142,29 @@ class NewPlayingAdapter private constructor(
     }
 
     fun setDiffData(list: List<LSong>) {
+        var needScrollToTop = false
         if (itemCallback == null || diffUtilCallbackHelper == null) {
             data = list
             notifyDataSetChanged()
-            onDataUpdatedCallback?.onDataUpdated()
+            onDataUpdatedCallback?.onDataUpdated(false)
         }
 
         var oldList = data
-        if (list.isNotEmpty()) {
-            // 预先将头部部分差异进行转移
-            val size = oldList.indexOfFirst { it.id == list[0].id }
-            if (size > 0) {
-                oldList = oldList.moveHeadToTail(size)
+        if (list.isNotEmpty() && oldList.isNotEmpty()) {
+            // 排除播放上一首的情况
+            if (oldList.lastOrNull()?.id == list[0].id) {
+                needScrollToTop = true
+            } else {
+                // 预先将头部部分差异进行转移
+                // 通过比对第一个元素的id来判断是否需要转移
+                val size = oldList.indexOfFirst { it.id == list[0].id }
+                if (size > 0) {
+                    oldList = oldList.moveHeadToTail(size)
 
-                notifyItemRangeRemoved(0, size)
-                notifyItemRangeInserted(oldList.size, size)
+                    notifyItemRangeRemoved(0, size)
+                    notifyItemRangeInserted(oldList.size, size)
+                    needScrollToTop = true
+                }
             }
         }
 
@@ -164,7 +172,7 @@ class NewPlayingAdapter private constructor(
         diffUtilCallbackHelper!!.update(oldList, list)
         DiffUtil.calculateDiff(diffUtilCallbackHelper, false)
             .dispatchUpdatesTo(this)
-        onDataUpdatedCallback?.onDataUpdated()
+        onDataUpdatedCallback?.onDataUpdated(needScrollToTop)
     }
 
     class DiffUtilCallbackHelper<T : Any>(
