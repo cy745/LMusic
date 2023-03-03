@@ -7,17 +7,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.database.sort
-import com.lalilu.lmedia.entity.LPlaylist
-import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.entity.SongInPlaylist
 import com.lalilu.lmedia.repository.PlaylistRepository
-import kotlinx.coroutines.CoroutineScope
+import com.lalilu.lmusic.utils.extension.toMutableState
+import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -27,8 +26,22 @@ import org.burnoutcrew.reorderable.ItemPosition
 class PlaylistDetailViewModel(
     private val playlistRepo: PlaylistRepository
 ) : ViewModel() {
-    var songs by mutableStateOf(emptyList<LSong>())
+    private val playlistId = MutableStateFlow(0L)
     private var tempList by mutableStateOf(emptyList<SongInPlaylist>())
+    val playlist by playlistId.flatMapLatest { id -> playlistRepo.getPlaylistById(id) }
+        .toState(viewModelScope)
+    var songs by playlistId.flatMapLatest { id ->
+        playlistRepo.getSongInPlaylists(id)
+            .mapLatest { it.sort(true) }
+            .debounce(50)
+            .onEach { tempList = it }
+            .mapLatest { list -> list.mapNotNull { LMedia.getSongOrNull(it.mediaId) } }
+    }.toMutableState(emptyList(), viewModelScope)
+        private set
+
+    fun loadPlaylistById(id: Long) {
+        playlistId.value = id
+    }
 
     fun onMoveItem(from: ItemPosition, to: ItemPosition) {
         val toIndex = songs.indexOfFirst { it.id == to.key }
@@ -54,22 +67,5 @@ class PlaylistDetailViewModel(
                 start < end //
             )
         }
-    }
-
-    fun getPlaylistDetailById(playlistId: Long, scope: CoroutineScope) {
-        songs = emptyList()
-        tempList = emptyList()
-        playlistRepo.getSongInPlaylists(playlistId)
-            .mapLatest { it.sort(true) }
-            .debounce(50)
-            .onEach { list ->
-                songs = list.mapNotNull { LMedia.getSongOrNull(it.mediaId) }
-                tempList = list
-            }
-            .launchIn(scope)
-    }
-
-    fun getPlaylistFlow(playlistId: Long): Flow<LPlaylist?> {
-        return playlistRepo.getPlaylistById(playlistId)
     }
 }
