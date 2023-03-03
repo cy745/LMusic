@@ -87,8 +87,10 @@ fun PlayingScreen(
                 .setOnSwipedRightCB {
                     playingVM.browser.removeById(it.id)
                 }
-                .setOnDataUpdatedCB {
-                    fmRecyclerView.scrollToPosition(0)
+                .setOnDataUpdatedCB { needScrollToTop ->
+                    if (needScrollToTop) {
+                        fmRecyclerView.scrollToPosition(0)
+                    }
                 }
                 .setOnItemBoundCB { binding, item ->
                     playingVM.requireLyric(item) {

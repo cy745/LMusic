@@ -151,7 +151,7 @@ dependencies {
     // https://gitee.com/simplepeng/SpiderMan
     // Apache-2.0 License
     // 闪退崩溃日志捕获库
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
     // debugImplementation 'com.github.markzhai:blockcanary-android:1.5.0'
     // implementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
 
