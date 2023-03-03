@@ -9,9 +9,8 @@ object Config {
     const val BASE_KUGOU_SONGS_URL = "https://mobilecdn.kugou.com/"
     const val BASE_KUGOU_LYRIC_URL = "https://krcs.kugou.com/"
 
-    const val LAST_PLAYED_SP = "LAST_PLAYED_SP"
     const val LAST_PLAYED_ID = "LAST_PLAYED_ID"
-    const val LAST_PLAYED_LIST = "LAST_PLAYED_LIST"
+    const val LAST_PLAYED_LIST_IDS = "LAST_PLAYED_LIST_IDS"
     const val LAST_PLAYED_POSITION = "LAST_PLAYED_POSITION"
 
     const val ACTION_PLAY_AND_PAUSE = "action_play_and_pause"
@@ -58,10 +57,6 @@ object Config {
             PlaybackStateCompat.ACTION_SEEK_TO or
             PlaybackStateCompat.ACTION_SET_REPEAT_MODE or
             PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE
-
-    val MEDIA_STOPPED_STATE: PlaybackStateCompat = PlaybackStateCompat.Builder()
-        .setState(PlaybackStateCompat.STATE_STOPPED, 0, 1f)
-        .build()
 
     val REQUIRE_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_AUDIO

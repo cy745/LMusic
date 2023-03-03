@@ -2,7 +2,6 @@ package com.lalilu.lmusic.service
 
 import android.app.PendingIntent
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
@@ -19,17 +18,19 @@ import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.service.notification.LMusicNotifier
 import com.lalilu.lmusic.service.playback.PlayMode
-import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.service.playback.helper.FadeVolumeProxy
 import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
+import com.lalilu.lmusic.service.playback.impl.LMusicRuntimeQueue
 import com.lalilu.lmusic.service.playback.impl.LocalPlayer
 import com.lalilu.lmusic.service.playback.impl.MixPlayback
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 import com.lalilu.lmusic.utils.EQHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -37,7 +38,7 @@ import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
 class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default
+    override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
 
     private val lMusicSp: LMusicSp by inject()
     private val runtime: LMusicRuntime by inject()
@@ -126,32 +127,6 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         }
     }
 
-    inner class LMusicRuntimeQueue : PlayQueue<LSong> {
-        override fun getCurrent(): LSong? {
-            return runtime.getPlaying() ?: runtime._songsFlow.value.getOrNull(0)
-        }
-
-        override fun getPrevious(random: Boolean): LSong? {
-            return runtime.getPreviousOf(getCurrent(), true)
-        }
-
-        override fun getNext(random: Boolean): LSong? {
-            return runtime.getNextOf(getCurrent(), true)
-        }
-
-        override fun getById(id: String): LSong? {
-            return runtime.getSongById(id)
-        }
-
-        override fun getUriFromItem(item: LSong): Uri {
-            return item.uri
-        }
-
-        override fun setCurrent(item: LSong) {
-            runtime.update(playing = item)
-        }
-    }
-
     override fun onCreate() {
         super.onCreate()
 
@@ -159,7 +134,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             noisyReceiver = noisyReceiver,
             audioFocusHelper = audioFocusHelper,
             playbackListener = PlaybackListener(),
-            queue = LMusicRuntimeQueue(),
+            queue = LMusicRuntimeQueue(runtime),
             player = localPlayer
         )
 
@@ -247,7 +222,9 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
     override fun onDestroy() {
         // 服务被结束后取消本协程作用域
-        this.cancel()
+        if (coroutineContext[Job] != null) {
+            this.cancel()
+        }
         super.onDestroy()
     }
 }
