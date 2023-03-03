@@ -82,6 +82,11 @@ fun PlayingScreen(
                     playingVM.browser.playById(it)
                 }
                 .setOnSwipedLeftCB {
+                    DynamicTips.push(
+                        title = it.name,
+                        subTitle = "下一首播放",
+                        imageData = it
+                    )
                     playingVM.browser.addToNext(it.id)
                 }
                 .setOnSwipedRightCB {
