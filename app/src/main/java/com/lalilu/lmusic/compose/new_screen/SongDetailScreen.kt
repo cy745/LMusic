@@ -112,12 +112,12 @@ fun SongDetailScreen(
                 navigator.navigate(PlaylistsScreenDestination(idsText = listOf(song).idsText()))
             },
             onSetSongToNext = {
-                playingVM.browser.addToNext(song.id)
                 DynamicTips.push(
                     title = song.name,
                     subTitle = "下一首播放",
                     imageData = song
                 )
+                playingVM.browser.addToNext(song.id)
             },
             onPlaySong = { playingVM.browser.addAndPlay(song.id) })
     }
