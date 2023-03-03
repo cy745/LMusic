@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -45,9 +43,10 @@ fun PlaylistDetailScreen(
     navigator: DestinationsNavigator
 ) {
     val haptic = LocalHapticFeedback.current
-    val playlist by playlistDetailVM.getPlaylistFlow(playlistId).collectAsState(initial = null)
+    val playlist = playlistDetailVM.playlist
+
     LaunchedEffect(Unit) {
-        playlistDetailVM.getPlaylistDetailById(playlistId, this)
+        playlistDetailVM.loadPlaylistById(playlistId)
     }
 
     val dragState = rememberReorderableLazyListState(
