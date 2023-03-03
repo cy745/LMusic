@@ -2,12 +2,16 @@ package com.lalilu.lmusic.compose.new_screen
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -44,10 +48,16 @@ fun AlbumsScreen(
     ) {
         item(key = "Header", contentType = "Header") {
             Surface(shape = RoundedCornerShape(5.dp)) {
-                NavigatorHeader(
-                    title = title,
-                    subTitle = "共 ${albums.size} 张专辑"
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp)
+                ) {
+                    NavigatorHeader(
+                        title = title,
+                        subTitle = "共 ${albums.size} 张专辑"
+                    )
+                }
             }
         }
         items(items = albums, key = { it.id }, contentType = { LAlbum::class }) {

@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Chip
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LArtist
-import com.lalilu.lmedia.entity.LGenre
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
@@ -134,18 +135,33 @@ fun SearchScreen(
             )
         }
 
+        val onAlbumHeaderClick = {
+            if (searchVM.albumsResult.value.isNotEmpty()) {
+                navigator.navigate(
+                    AlbumsScreenDestination(
+                        title = "[${keyword.value}]\n专辑搜索结果",
+                        albumIdsText = searchVM.albumsResult.value.map(LAlbum::id).json()
+                    )
+                )
+            }
+        }
+
         item(key = "AlbumHeader") {
             RecommendTitle(
-                title = "专辑 ${searchVM.albumsResult.value.size.takeIf { it > 0 } ?: ""}",
-                onClick = {
-                    navigator.navigate(
-                        AlbumsScreenDestination(
-                            title = "[${keyword.value}]\n专辑搜索结果",
-                            albumIdsText = searchVM.albumsResult.value.map(LAlbum::id).json()
+                title = "专辑",
+                onClick = onAlbumHeaderClick
+            ) {
+                AnimatedVisibility(visible = searchVM.albumsResult.value.isNotEmpty()) {
+                    Chip(
+                        onClick = onAlbumHeaderClick,
+                    ) {
+                        Text(
+                            text = "${searchVM.albumsResult.value.size} 条结果",
+                            style = MaterialTheme.typography.caption,
                         )
-                    )
+                    }
                 }
-            )
+            }
         }
         item(key = "AlbumItems") {
             AnimatedContent(targetState = searchVM.albumsResult.value.isNotEmpty()) { show ->
@@ -177,12 +193,14 @@ fun SearchScreen(
             items = searchVM.artistsResult.value,
             getContentType = { LArtist::class },
             onClickHeader = {
-                navigator.navigate(
-                    ArtistsScreenDestination(
-                        title = "[${keyword.value}]\n艺术家搜索结果",
-                        artistIdsText = searchVM.artistsResult.value.map(LArtist::name).json()
+                if (searchVM.artistsResult.value.isNotEmpty()) {
+                    navigator.navigate(
+                        ArtistsScreenDestination(
+                            title = "[${keyword.value}]\n艺术家搜索结果",
+                            artistIdsText = searchVM.artistsResult.value.map(LArtist::name).json()
+                        )
                     )
-                )
+                }
             }
         ) {
             ArtistCard(
@@ -191,24 +209,6 @@ fun SearchScreen(
                     navigator.navigate(ArtistDetailScreenDestination(artistName = it.name))
                 }
             )
-        }
-
-        searchItem(
-            name = "曲风",
-            showCount = 5,
-            getId = { it.id },
-            items = searchVM.genresResult.value,
-            getContentType = { LGenre::class }
-        ) {
-            Surface(onClick = {}) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                        .animateItemPlacement(),
-                    text = it.name
-                )
-            }
         }
 
         searchItem(
@@ -235,6 +235,7 @@ fun SearchScreen(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 fun <I> LazyListScope.searchItem(
     name: String,
     items: List<I>,
@@ -246,9 +247,20 @@ fun <I> LazyListScope.searchItem(
 ) {
     item(key = "${name}_Header") {
         RecommendTitle(
-            title = "$name ${items.size.takeIf { it > 0 } ?: ""}",
+            title = name,
             onClick = onClickHeader
-        )
+        ) {
+            AnimatedVisibility(visible = items.isNotEmpty()) {
+                Chip(
+                    onClick = onClickHeader,
+                ) {
+                    Text(
+                        text = "${items.size} 条结果",
+                        style = MaterialTheme.typography.caption,
+                    )
+                }
+            }
+        }
     }
     item(key = "${name}_EmptyTips") {
         AnimatedVisibility(
