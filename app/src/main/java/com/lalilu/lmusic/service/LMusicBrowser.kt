@@ -10,12 +10,12 @@ import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 
 class LMusicBrowser(
     private val context: Context,
-    private val lMusicSp: LMusicSp,
+    private val lastPlayedSp: LastPlayedSp,
     private val runtime: LMusicRuntime
 ) : DefaultLifecycleObserver {
     private var controller: MediaControllerCompat? = null
@@ -98,8 +98,8 @@ class LMusicBrowser(
                 return
             }
 
-            val songIds by lMusicSp.lastPlayedListIdsKey
-            val lastPlayedIdKey by lMusicSp.lastPlayedIdKey
+            val songIds by lastPlayedSp.lastPlayedListIdsKey
+            val lastPlayedIdKey by lastPlayedSp.lastPlayedIdKey
 
             if (songIds.isNotEmpty()) {
                 val songs = songIds.mapNotNull { LMedia.getSongOrNull(it) }

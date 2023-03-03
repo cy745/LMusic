@@ -15,6 +15,7 @@ import com.lalilu.lmusic.apis.KugouLyricSource
 import com.lalilu.lmusic.apis.KugouSongsSource
 import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LibraryRepository
 import com.lalilu.lmusic.repository.LyricRepository
@@ -48,6 +49,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 val AppModule = module {
     single { LMusicSp(androidApplication()) }
+    single { LastPlayedSp(androidApplication()) }
 }
 
 val DatabaseModule = module {

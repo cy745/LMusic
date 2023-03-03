@@ -82,7 +82,7 @@ class MixPlayback(
     }
 
     override fun onSkipToNext() {
-        val next = queue?.getNext(playMode == PlayMode.Shuffle) ?: return
+        val next = queue?.getNext() ?: return
         val uri = queue?.getUriFromItem(next) ?: return
 
         onPlayInfoUpdate(next, PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, 0L)
@@ -90,7 +90,7 @@ class MixPlayback(
     }
 
     override fun onSkipToPrevious() {
-        val previous = queue?.getPrevious(playMode == PlayMode.Shuffle) ?: return
+        val previous = queue?.getPrevious() ?: return
         val uri = queue?.getUriFromItem(previous) ?: return
 
         onPlayInfoUpdate(previous, PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, 0L)
@@ -181,6 +181,11 @@ class MixPlayback(
     }
 
     override fun onSetPlayMode(playMode: PlayMode) {
+        when (playMode) {
+            PlayMode.Shuffle -> queue?.shuffle()
+            PlayMode.ListRecycle -> queue?.recoverOrder()
+            else -> {}
+        }
         this.playMode = playMode
         playbackListener?.onSetPlayMode(playMode)
     }

@@ -11,13 +11,8 @@ class LMusicSp(context: Context) : BaseSp() {
     }
 
     val blockedPaths = stringSetSp("BLOCKED_PATHS")
-
     val dayOfYear = intSp("DAY_OF_YEAR")
     val dailyRecommends = stringListSp("DAILY_RECOMMENDS")
-
-    val lastPlayedIdKey = stringSp(Config.LAST_PLAYED_ID)
-    val lastPlayedPositionKey = longSp(Config.LAST_PLAYED_POSITION)
-    val lastPlayedListIdsKey = stringListSp(Config.LAST_PLAYED_LIST)
 
     val playMode = intSp(
         Config.KEY_SETTINGS_PLAY_MODE,
