@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
-import com.lalilu.lmusic.viewmodel.LMediaViewModel
+import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -30,12 +30,12 @@ import org.koin.androidx.compose.get
 @Composable
 fun DictionaryDetailScreen(
     dictionaryId: String,
-    playingVM: PlayingViewModel = get(),
-    mediaVM: LMediaViewModel = get(),
     songsVM: SongsViewModel = get(),
+    playingVM: PlayingViewModel = get(),
+    dictionariesVM: DictionariesViewModel = get(),
     navigator: DestinationsNavigator
 ) {
-    val dictionary = mediaVM.requireDictionary(dictionaryId) ?: run {
+    val dictionary = dictionariesVM.requireDictionary(dictionaryId) ?: run {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = "[Error]加载失败 #$dictionaryId")
         }
@@ -47,6 +47,7 @@ fun DictionaryDetailScreen(
     LaunchedEffect(dictionary) {
         songsVM.updateBySongs(
             songs = dictionary.songs,
+            showAll = true,
             sortFor = sortFor
         )
     }

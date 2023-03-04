@@ -19,7 +19,8 @@ import androidx.core.app.ActivityCompat
 import com.blankj.utilcode.util.ActivityUtils
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.common.SystemUiUtil
-import com.lalilu.lmedia.LMedia
+import com.lalilu.lmedia.indexer.FilterType
+import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
@@ -34,6 +35,7 @@ import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
 import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
@@ -60,7 +62,24 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
             return
         }
 
-        LMedia.index()
+        /**
+         * 在LMedia初始化完成前，设置元素筛选器逻辑
+         */
+        Indexer.setFilterPipe {
+            lMusicSp.blockedPaths.flow(true)
+                .combine(lMusicSp.enableUnknownFilter.flow(true)) { paths, hideUnknown ->
+                    val list = mutableListOf<FilterType>()
+                    if (paths != null) {
+                        list.add(FilterType.Path(paths))
+                    }
+                    if (hideUnknown == true) {
+                        list.add(FilterType.UnknownArtist)
+                    }
+                    return@combine list
+                }
+        }
+
+        Indexer.startListen()
         SystemUiUtil.immerseNavigationBar(this)
         lifecycle.addObserver(browser)
 

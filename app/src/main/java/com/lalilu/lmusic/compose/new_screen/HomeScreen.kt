@@ -17,7 +17,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -59,8 +60,12 @@ fun HomeScreen(
     navigator: DestinationsNavigator
 ) {
     val haptic = LocalHapticFeedback.current
-    val dailyRecommends = remember { vm.requireDailyRecommends() }
+    val dailyRecommends by vm.dailyRecommends
     val selectHelper = rememberSongsSelectWrapper()
+
+    LaunchedEffect(Unit) {
+        vm.checkOrUpdateToday()
+    }
 
     SmartContainer.LazyColumn {
         item {

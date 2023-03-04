@@ -17,7 +17,7 @@ import com.lalilu.lmusic.apis.NeteaseDataSource
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.repository.CoverRepository
-import com.lalilu.lmusic.repository.LibraryRepository
+import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.notification.LMusicNotifier
@@ -76,15 +76,15 @@ val ViewModelModule = module {
     single { NetDataViewModel(get(), get(), get(), get()) }
     single { PlayingViewModel(get(), get(), get(), get()) }
     single { LibraryViewModel(get(), get()) }
-    single { LMediaViewModel() }
-    single { PlaylistDetailViewModel(get()) }
+    single { LMediaViewModel(get()) }
+    single { PlaylistDetailViewModel(get(), get()) }
     single { PlaylistsViewModel(get(), get()) }
     single { SearchViewModel(get(), get()) }
-    single { AlbumsViewModel() }
-    single { ArtistsViewModel() }
-    single { DictionariesViewModel(get()) }
-    single { HistoryViewModel(get()) }
-    single { SongsViewModel(get()) }
+    single { AlbumsViewModel(get()) }
+    single { ArtistsViewModel(get()) }
+    single { DictionariesViewModel(get(), get()) }
+    single { HistoryViewModel(get(), get()) }
+    single { SongsViewModel(get(), get()) }
 }
 
 val PlayerModule = module {
@@ -95,11 +95,11 @@ val PlayerModule = module {
 
 val RuntimeModule = module {
     single { LMusicNotifier(get(), get(), get(), androidApplication()) }
-    single { LMusicBrowser(get(), get(), get()) }
+    single { LMusicBrowser(get(), get(), get(), get()) }
     single { LMusicRuntime(get()) }
     single { CoverRepository(get()) }
     single { LyricRepository(get(), get()) }
-    single { LibraryRepository() }
+    single { LMediaRepository() }
 
     single { LyricSourceFactory(get(), get(), get()) }
     single { EmbeddedLyricSource() }

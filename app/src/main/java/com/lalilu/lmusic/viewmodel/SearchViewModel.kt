@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.Item
 import com.lalilu.lmedia.repository.PlaylistRepository
-import com.lalilu.lmusic.repository.LibraryRepository
+import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.mapLatest
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class SearchViewModel constructor(
-    libraryRepo: LibraryRepository,
+    lMediaRepo: LMediaRepository,
     playlistRepo: PlaylistRepository
 ) : ViewModel() {
     val keywordStr = MutableStateFlow("")
@@ -25,13 +25,13 @@ class SearchViewModel constructor(
         it.trim().uppercase().split(' ')
     }
 
-    val songsResult = libraryRepo.songsFlow.searchFor(keywords)
+    val songsResult = lMediaRepo.songsFlow.searchFor(keywords)
         .toState(emptyList(), viewModelScope)
-    val artistsResult = libraryRepo.artistsFlow.searchFor(keywords)
+    val artistsResult = lMediaRepo.artistsFlow.searchFor(keywords)
         .toState(emptyList(), viewModelScope)
-    val albumsResult = libraryRepo.albumsFlow.searchFor(keywords)
+    val albumsResult = lMediaRepo.albumsFlow.searchFor(keywords)
         .toState(emptyList(), viewModelScope)
-    val genresResult = libraryRepo.genresFlow.searchFor(keywords)
+    val genresResult = lMediaRepo.genresFlow.searchFor(keywords)
         .toState(emptyList(), viewModelScope)
     val playlistResult = playlistRepo.getAllPlaylistFlow().searchFor(keywords)
         .toState(emptyList(), viewModelScope)

@@ -1,29 +1,26 @@
 package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.lalilu.lmedia.LMedia
+import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LArtist
-import com.lalilu.lmedia.entity.LDictionary
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.repository.LMediaRepository
+import com.lalilu.lmusic.utils.extension.toState
 
 
-class LMediaViewModel : ViewModel() {
-    val songs = LMedia.getSongsFlow()
-    val genres = LMedia.getGenresFlow()
-    val albums = LMedia.getAlbumsFlow()
-    val artists = LMedia.getArtistsFlow()
-    val dictionaries = LMedia.getDictionariesFlow()
+class LMediaViewModel(
+    private val lMediaRepo: LMediaRepository
+) : ViewModel() {
+    val allDictionaries = lMediaRepo.allDictionariesFlow
+        .toState(emptyList(), viewModelScope)
 
     fun requireSong(mediaId: String): LSong? =
-        LMedia.getSongOrNull(mediaId)
+        lMediaRepo.requireSong(mediaId)
 
     fun requireArtist(artistName: String): LArtist? =
-        LMedia.getArtistOrNull(artistName)
+        lMediaRepo.requireArtist(artistName)
 
     fun requireAlbum(albumId: String): LAlbum? =
-        LMedia.getAlbumOrNull(albumId)
-
-    fun requireDictionary(dictionaryId: String): LDictionary? =
-        LMedia.getDictionaryOrNull(dictionaryId)
+        lMediaRepo.requireAlbum(albumId)
 }
