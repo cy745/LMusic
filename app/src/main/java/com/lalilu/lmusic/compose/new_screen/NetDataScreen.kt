@@ -2,6 +2,7 @@ package com.lalilu.lmusic.compose.new_screen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -14,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.lalilu.R
 import com.lalilu.lmusic.apis.NetworkSong
 import com.lalilu.lmusic.compose.component.SmartBar
@@ -58,6 +60,7 @@ fun NetDataScreen(
 
     SmartBar.RegisterExtraBarContent(showState = showActionBar) {
         SearchInputBar(
+            modifier = Modifier.padding(vertical = 5.dp),
             value = keyword,
             onSearchFor = {
                 if (it.isNotEmpty()) {

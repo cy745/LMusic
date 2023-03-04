@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.ConvertUtils
 import com.lalilu.R
 import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.DictionaryDetailScreenDestination
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
@@ -43,6 +44,10 @@ fun DictionariesScreen(
     val blockedPaths by dictionariesVM.getBlockedPathsFlow().collectAsState(initial = emptyList())
 
     SmartContainer.LazyColumn {
+        item {
+            NavigatorHeader(title = "全部文件夹", subTitle = "长按以进行屏蔽操作")
+        }
+
         items(items = dictionaries) { item ->
             Row(
                 modifier = Modifier

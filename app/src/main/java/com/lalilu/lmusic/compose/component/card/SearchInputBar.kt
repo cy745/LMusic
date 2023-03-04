@@ -34,6 +34,7 @@ import com.lalilu.lmusic.compose.component.base.InputBar
 
 @Composable
 fun SearchInputBar(
+    modifier: Modifier = Modifier,
     value: String,
     onSearchFor: (String) -> Unit,
     onChecked: () -> Unit
@@ -41,7 +42,7 @@ fun SearchInputBar(
     val text = remember { mutableStateOf(value) }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(start = 20.dp, end = 10.dp),
         verticalAlignment = Alignment.Top,
