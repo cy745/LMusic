@@ -2,35 +2,51 @@ name: Android CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ master ]
+    branches: [ "master" ]
 
 jobs:
   build:
-
+    name: Build Apk And Release
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2.4.0
-      with:
-        repository: cy745/lmusic
-        ssh-strict: true
-        persist-credentials: true
-        clean: true
-        fetch-depth: 1
-        lfs: false
-        submodules: true
-      
-    - name: set up JDK 15
-      uses: actions/setup-java@v2
-      with:
-        java-version: '15'
-        distribution: 'adopt'
-        cache: gradle
+      - name: Checkout
+        uses: actions/checkout@v2.4.2
+        with:
+          repository: cy745/lmusic
+          ssh-strict: true
+          persist-credentials: true
+          clean: true
+          fetch-depth: 1
+          lfs: false
+          submodules: true
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
+      - name: Create the Keystore from Secrets to Sign the App
+        env:
+          KEYSTORE_JKS_BASE64: ${{ secrets.KEYSTORE_JKS_BASE64 }}
+          KEYSTORE_PROPERTIES_BASE64: ${{ secrets.KEYSTORE_PROPERTIES_BASE64 }}
+        run: |
+          # Import keystore from secrets
+          ls -all
+          echo $KEYSTORE_JKS_BASE64 | base64 -di > ${{ github.workspace }}/keystore.jks
+          echo $KEYSTORE_PROPERTIES_BASE64 | base64 -di > ${{ github.workspace }}/keystore.properties
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Upload Apk to Artifact
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: LMusic-Apks
+          path: ${{ github.workspace }}/app/build/outputs/apk/release/*.apk
