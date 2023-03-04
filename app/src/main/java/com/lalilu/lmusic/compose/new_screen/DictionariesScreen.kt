@@ -40,7 +40,7 @@ fun DictionariesScreen(
     dictionariesVM: DictionariesViewModel = get(),
     navigator: DestinationsNavigator
 ) {
-    val dictionaries by mediaVM.dictionaries.collectAsState(initial = emptyList())
+    val dictionaries by mediaVM.allDictionaries
     val blockedPaths by dictionariesVM.getBlockedPathsFlow().collectAsState(initial = emptyList())
 
     SmartContainer.LazyColumn {

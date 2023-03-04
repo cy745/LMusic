@@ -5,10 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.database.sort
 import com.lalilu.lmedia.entity.SongInPlaylist
 import com.lalilu.lmedia.repository.PlaylistRepository
+import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.utils.extension.toMutableState
 import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +24,8 @@ import org.burnoutcrew.reorderable.ItemPosition
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class PlaylistDetailViewModel(
-    private val playlistRepo: PlaylistRepository
+    private val playlistRepo: PlaylistRepository,
+    private val lMediaRepo: LMediaRepository
 ) : ViewModel() {
     private val playlistId = MutableStateFlow(0L)
     private var tempList by mutableStateOf(emptyList<SongInPlaylist>())
@@ -35,7 +36,7 @@ class PlaylistDetailViewModel(
             .mapLatest { it.sort(true) }
             .debounce(50)
             .onEach { tempList = it }
-            .mapLatest { list -> list.mapNotNull { LMedia.getSongOrNull(it.mediaId) } }
+            .mapLatest { list -> list.mapNotNull { lMediaRepo.requireSong(it.mediaId) } }
     }.toMutableState(emptyList(), viewModelScope)
         private set
 

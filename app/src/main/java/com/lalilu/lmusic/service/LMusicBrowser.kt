@@ -7,15 +7,16 @@ import android.support.v4.media.session.MediaControllerCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.blankj.utilcode.util.LogUtils
-import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datastore.LastPlayedSp
+import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 
 class LMusicBrowser(
     private val context: Context,
     private val lastPlayedSp: LastPlayedSp,
+    private val lMediaRepo: LMediaRepository,
     private val runtime: LMusicRuntime
 ) : DefaultLifecycleObserver {
     private var controller: MediaControllerCompat? = null
@@ -66,7 +67,7 @@ class LMusicBrowser(
         if (nowIndex >= 0) {
             runtime.move(nowIndex, currentIndex)
         } else {
-            val item = LMedia.getSongOrNull(mediaId) ?: return false
+            val item = lMediaRepo.requireSong(mediaId = mediaId) ?: return false
             runtime.add(currentIndex + 1, item)
         }
         return true
@@ -102,13 +103,14 @@ class LMusicBrowser(
             val lastPlayedIdKey by lastPlayedSp.lastPlayedIdKey
 
             if (songIds.isNotEmpty()) {
-                val songs = songIds.mapNotNull { LMedia.getSongOrNull(it) }
-                val song = LMedia.getSongOrNull(lastPlayedIdKey)
+                val songs = songIds.mapNotNull { lMediaRepo.requireSong(mediaId = it) }
+                val song = lMediaRepo.requireSong(mediaId = lastPlayedIdKey)
                 setSongs(songs, song)
                 return
             }
 
-            val songs = LMedia.getSongs()
+
+            val songs = lMediaRepo.getSongs()
             setSongs(songs, songs.getOrNull(0))
 
             // 取消subscribe，可以解决Service和Activity通过Parcelable传递数据导致闪退的问题

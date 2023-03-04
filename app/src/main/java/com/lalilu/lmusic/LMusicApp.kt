@@ -3,9 +3,6 @@ package com.lalilu.lmusic
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
-import com.lalilu.lmedia.extension.LMediaExt
-import com.lalilu.lmedia.extension.LMediaExtFactory
-import com.lalilu.lmedia.extension.LMediaLifeCycle
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
@@ -17,7 +14,7 @@ import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
-class LMusicApp : Application(), ImageLoaderFactory, LMediaExtFactory {
+class LMusicApp : Application(), ImageLoaderFactory {
 
     private val callFactory: OkHttpClient by inject()
 
@@ -30,16 +27,6 @@ class LMusicApp : Application(), ImageLoaderFactory, LMediaExtFactory {
                 add(SongCoverKeyer())
             }
             .transitionFactory(CrossfadeTransitionFactory())
-            .build()
-
-    override fun newLMediaExt(): LMediaExt =
-        LMediaExt.Builder()
-//            .addIndexFilter(DictionaryFilter(lmusicSp = LMusicSp(this)))
-            .setLifeCycleListener(object : LMediaLifeCycle.Listener {
-                override fun onFinishedIndex() {
-                    LMusicFlowBus.libraryUpdate.post(System.currentTimeMillis())
-                }
-            })
             .build()
 
     override fun onCreate() {
