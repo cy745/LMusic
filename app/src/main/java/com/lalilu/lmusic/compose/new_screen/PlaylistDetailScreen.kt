@@ -10,11 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.lalilu.R
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
-import com.lalilu.lmusic.compose.component.base.IconTextButton
+import com.lalilu.lmusic.compose.component.base.IconButton
 import com.lalilu.lmusic.compose.component.base.SongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
@@ -57,9 +59,10 @@ fun PlaylistDetailScreen(
 
     SongsSelectWrapper(
         extraActionsContent = { selector ->
-            IconTextButton(
-                text = "删除",
-                color = Color(0xFF006E7C),
+            IconButton(
+                color = Color(0xFFFE4141),
+                icon = painterResource(id = R.drawable.ic_delete_bin_6_line),
+                text = "Delete",
                 onClick = {
                     playlist?.let {
                         playlistsVM.removeSongsFromPlaylist(

@@ -9,7 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.lalilu.R
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
@@ -83,17 +85,20 @@ fun PlaylistsSelectWrapper(
                     text = "确认保存",
                     color = Color(0xFF3EA22C),
                     onClick = {
-                        playlistsVM.addSongsIntoPlaylists(
-                            pIds = it.selectedItems.map(LPlaylist::_id),
-                            mediaIds = songsToAdd
-                        )
-                        it.clear()
+                        if (it.selectedItems.isNotEmpty()) {
+                            playlistsVM.addSongsIntoPlaylists(
+                                pIds = it.selectedItems.map(LPlaylist::_id),
+                                mediaIds = songsToAdd
+                            )
+                            it.clear()
+                        }
                     }
                 )
             } else {
-                IconTextButton(
-                    text = "删除",
-                    color = Color(0xFF006E7C),
+                IconButton(
+                    color = Color(0xFFFE4141),
+                    icon = painterResource(id = R.drawable.ic_delete_bin_6_line),
+                    text = "Delete",
                     onClick = {
                         playlistsVM.removePlaylists(it.selectedItems.toImmutableList())
                         it.clear()
@@ -119,7 +124,7 @@ fun <T> SelectWrapper(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(20.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             IconTextButton(
                 text = "取消",

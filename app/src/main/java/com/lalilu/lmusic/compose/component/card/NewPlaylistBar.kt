@@ -29,7 +29,7 @@ fun NewPlaylistBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 10.dp),
+            .padding(start = 20.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
