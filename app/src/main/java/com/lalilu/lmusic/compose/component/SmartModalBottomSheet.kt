@@ -94,9 +94,7 @@ object SmartModalBottomSheet {
             derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
         }
 
-        val screenHeightDp = configuration.screenHeightDp.dp +
-                WindowInsets.statusBars.asPaddingValues().calculateTopPadding() +
-                WindowInsets.navigationBars.asPaddingValues().calculateTopPadding()
+        val screenHeightDp = configuration.screenHeightDp.dp
 
         /**
          * 监听isVisible变化，通过BottomSheet的可见性控制navController是否处理返回键事件

@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.utils.extension
 
+import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
@@ -281,4 +282,14 @@ fun rememberFixedStatusBarHeightDp(): Dp {
     val density = LocalDensity.current
     val px = rememberFixedStatusBarHeight()
     return remember { density.run { px.toDp() } }
+}
+
+@Composable
+fun rememberIsPadLandScape(): State<Boolean> {
+    val configuration = LocalConfiguration.current
+    val windowSize = LocalWindowSize.current
+    val isPad by windowSize.rememberIsPad()
+    return remember(configuration.orientation, isPad) {
+        derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && isPad }
+    }
 }
