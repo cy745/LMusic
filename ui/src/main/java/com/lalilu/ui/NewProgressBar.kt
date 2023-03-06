@@ -27,6 +27,10 @@ interface OnProgressChangeListener {
     fun onProgressChange(value: Float, fromUser: Boolean)
 }
 
+fun interface OnValueChangeListener {
+    fun onValueChange(value: Float)
+}
+
 interface OnProgressToListener {
     fun onProgressToMax(value: Float, fromUser: Boolean) {}
     fun onProgressToMin(value: Float, fromUser: Boolean) {}
@@ -77,6 +81,7 @@ open class NewProgressBar @JvmOverloads constructor(
 
     val progressChangeListener = ArrayList<OnProgressChangeListener>()
     val progressToListener = ArrayList<OnProgressToListener>()
+    val onValueChangeListener = HashSet<OnValueChangeListener>()
 
     var bgColor = Color.argb(50, 100, 100, 100)
         set(value) {
@@ -126,6 +131,7 @@ open class NewProgressBar @JvmOverloads constructor(
     var nowValue: Float = 0f
         set(value) {
             field = value.coerceIn(minValue, maxValue)
+            onValueChangeListener.forEach { it.onValueChange(field) }
             invalidate()
         }
 

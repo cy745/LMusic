@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.service.runtime
 
-import androidx.lifecycle.asLiveData
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.entity.MusicParent
 import com.lalilu.lmusic.utils.extension.moveHeadToTailWithSearch
@@ -22,12 +21,8 @@ abstract class BaseRuntime : Runtime {
     val playingFlow: Flow<LSong?> = _playingFlow
     val positionFlow: Flow<Long> = _positionFlow
     val isPlayingFlow: Flow<Boolean> = _isPlayingFlow
-
-    val playingLiveData = playingFlow.asLiveData()
-    val positionLiveData = _positionFlow.asLiveData()
-    val isPlayingLiveData = _isPlayingFlow.asLiveData()
-    val songsLiveData = _songsFlow.combine(_playingFlow) { items, item ->
+    val songsFlow = _songsFlow.combine(_playingFlow) { items, item ->
         item ?: return@combine items
         items.moveHeadToTailWithSearch(item.id) { listItem, id -> listItem.id == id }
-    }.asLiveData()
+    }
 }

@@ -4,7 +4,7 @@ import android.view.View
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidViewBinding
-import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import com.blankj.utilcode.util.ConvertUtils
@@ -37,10 +37,13 @@ import com.lalilu.ui.OnSeekBarCancelListener
 import com.lalilu.ui.OnSeekBarClickListener
 import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
+import com.lalilu.ui.OnValueChangeListener
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_MIDDLE
 import com.ramcosta.composedestinations.navigation.navigate
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.compose.get
 
 @Composable
@@ -188,60 +191,75 @@ fun PlayingScreen(
             maSeekBar.cancelListeners.add(OnSeekBarCancelListener {
                 HapticUtils.haptic(this@apply.root)
             })
-            playingVM.runtime.songsLiveData.observe(activity) {
-                adapter.setDiffData(it)
-            }
-            playingVM.runtime.playingLiveData.observe(activity) {
-                maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
-                song = it
 
-                if (it != null) {
-                    DynamicTips.push(
-                        title = it.name,
-                        subTitle = "播放中",
-                        imageData = it
-                    )
-                }
-            }
-            playingVM.runtime.positionLiveData.observe(activity) {
-                maSeekBar.updateValue(it.toFloat())
-                fmLyricViewX.updateTime(it)
-            }
-            playingVM.lyricRepository.currentLyricLiveData.observe(activity) {
-                fmLyricViewX.setLyricEntryList(emptyList())
-                fmLyricViewX.loadLyric(it?.first, it?.second)
-            }
-            playingVM.lMusicSp.apply {
-                lyricGravity.flow(true).asLiveData().observe(activity) {
-                    when (it ?: Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
-                        0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
-                        1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
-                        2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
-                    }
-                }
+            var now: Long
+            var lastTime = System.currentTimeMillis()
+            maSeekBar.onValueChangeListener.add(OnValueChangeListener {
+                now = System.currentTimeMillis()
+                if (lastTime + 50 > now) return@OnValueChangeListener
+                fmLyricViewX.updateTime(it.toLong())
+                lastTime = now
+            })
 
-                lyricTextSize.flow(true).asLiveData().observe(activity) {
-                    val sp = it ?: Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
-                    val textSize = ConvertUtils.sp2px(sp.toFloat()).toFloat()
-                    fmLyricViewX.setNormalTextSize(textSize)
-                    fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
-                }
+            playingVM.runtime.songsFlow
+                .onEach { adapter.setDiffData(it) }
+                .launchIn(activity.lifecycleScope)
 
-                lyricTypefaceUri.flow(true).asLiveData().observe(activity) {
+            playingVM.runtime.playingFlow
+                .onEach {
+                    maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
+                    song = it
+
                     if (it != null) {
-                        fmLyricViewX.setLyricTypeface(path = it)
-                    } else {
-                        fmLyricViewX.setLyricTypeface(typeface = null)
+                        DynamicTips.push(
+                            title = it.name,
+                            subTitle = "播放中",
+                            imageData = it
+                        )
                     }
-                }
+                }.launchIn(activity.lifecycleScope)
 
-//                autoHideSeekbar.flow(true).asLiveData().observe(activity) {
-//                    maSeekBar.autoHide = it ?: Config.DEFAULT_SETTINGS_AUTO_HIDE_SEEKBAR
-//                }
+            playingVM.runtime.positionFlow
+                .onEach { maSeekBar.updateValue(it.toFloat()) }
+                .launchIn(activity.lifecycleScope)
 
-                this.seekBarHandler.flow(true).asLiveData().observe(activity) {
-                    seekBarHandler.clickHandleMode = it ?: Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
-                }
+            playingVM.lyricRepository.currentLyric
+                .onEach {
+                    fmLyricViewX.setLyricEntryList(emptyList())
+                    fmLyricViewX.loadLyric(it?.first, it?.second)
+                }.launchIn(activity.lifecycleScope)
+
+            playingVM.lMusicSp.apply {
+                lyricGravity.flow(true)
+                    .onEach {
+                        when (it ?: Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
+                            0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
+                            1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
+                            2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
+                        }
+                    }.launchIn(activity.lifecycleScope)
+
+                lyricTextSize.flow(true)
+                    .onEach {
+                        val sp = it ?: Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
+                        val textSize = ConvertUtils.sp2px(sp.toFloat()).toFloat()
+                        fmLyricViewX.setNormalTextSize(textSize)
+                        fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
+                    }.launchIn(activity.lifecycleScope)
+
+                lyricTypefaceUri.flow(true)
+                    .onEach {
+                        it ?: return@onEach run {
+                            fmLyricViewX.setLyricTypeface(typeface = null)
+                        }
+                        fmLyricViewX.setLyricTypeface(path = it)
+                    }.launchIn(activity.lifecycleScope)
+
+                this.seekBarHandler.flow(true)
+                    .onEach {
+                        seekBarHandler.clickHandleMode =
+                            it ?: Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
+                    }.launchIn(activity.lifecycleScope)
             }
         }
     })
