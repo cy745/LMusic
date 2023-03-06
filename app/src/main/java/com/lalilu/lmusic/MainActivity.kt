@@ -1,5 +1,7 @@
 package com.lalilu.lmusic
 
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
@@ -17,10 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.core.app.ActivityCompat
 import com.blankj.utilcode.util.ActivityUtils
+import com.blankj.utilcode.util.LogUtils
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmedia.indexer.FilterType
 import com.lalilu.lmedia.indexer.Indexer
+import com.lalilu.lmedia.scanner.AudioTaggerScanner
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
@@ -44,6 +48,20 @@ import org.koin.android.ext.android.inject
 class MainActivity : AppCompatActivity() {
     private val lMusicSp: LMusicSp by inject()
     private val browser: LMusicBrowser by inject()
+
+    @SuppressLint("MissingSuperCall")
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+
+        val start = System.currentTimeMillis()
+        AudioTaggerScanner.read(this, intent.data) {
+            LogUtils.i(
+                "[onNewIntent]: 解析完成,耗时：${System.currentTimeMillis() - start}ms",
+                it
+            )
+            it?.let { browser.addAndPlay(it) }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -128,24 +128,18 @@ abstract class BaseFetcher : Fetcher {
     private suspend fun fetchMediaStoreCovers(context: Context, album: LAlbum): InputStream? {
         val uri = album.coverUri ?: return null
 
-        // Eliminate any chance that this blocking call might mess up the loading process
-        @Suppress("BlockingMethodInNonBlockingContext")
         return fetchMediaStoreCovers(context, uri)
     }
 
     private suspend fun fetchMediaStoreCovers(context: Context, song: LSong): InputStream? {
-        val uri = song._albumCoverUri ?: return null
+        val uri = song.albumCoverUri
 
-        // Eliminate any chance that this blocking call might mess up the loading process
-        @Suppress("BlockingMethodInNonBlockingContext")
         return fetchMediaStoreCovers(context, uri)
     }
 
     private suspend fun fetchMediaStoreCovers(context: Context, uri: Uri?): InputStream? {
         uri ?: return null
 
-        // Eliminate any chance that this blocking call might mess up the loading process
-        @Suppress("BlockingMethodInNonBlockingContext")
         return withContext(Dispatchers.IO) {
             runCatching {
                 context.contentResolver.openInputStream(uri)
