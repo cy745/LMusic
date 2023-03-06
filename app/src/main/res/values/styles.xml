@@ -1,31 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-<!--    <style name="MY_SnackBarStyle" parent="Widget.MaterialComponents.Snackbar.FullWidth">-->
-<!--        <item name="animationMode">slide</item>-->
-<!--    </style>-->
-
-<!--    <style name="MY_SnackBarTextViewStyle" parent="Widget.MaterialComponents.Snackbar.TextView">-->
-<!--        <item name="android:textColor">@android:color/white</item>-->
-<!--        <item name="android:layout_marginStart">20dp</item>-->
-<!--        <item name="android:layout_marginEnd">20dp</item>-->
-<!--    </style>-->
-
-<!--    <style name="MY_SnackBarButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">-->
-<!--        <item name="android:textColor">#007C15</item>-->
-<!--        <item name="android:paddingStart">24dp</item>-->
-<!--        <item name="android:paddingEnd">24dp</item>-->
-<!--        <item name="android:layout_marginStart">0dp</item>-->
-<!--        <item name="android:layout_marginEnd">10dp</item>-->
-<!--        <item name="rippleColor">#007C15</item>-->
-<!--    </style>-->
-
-<!--    <style name="MY_BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">-->
-<!--        <item name="android:background">@drawable/dialog_radius_bg</item>-->
-<!--    </style>-->
-
-    <style name="MY_SearchView" parent="Widget.AppCompat.SearchView">
-        <item name="searchHintIcon">@drawable/ic_search_2_line</item>
-        <item name="searchIcon">@drawable/ic_search_2_line</item>
-    </style>
 </resources>

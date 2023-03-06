@@ -6,7 +6,6 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.GenericShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -161,7 +160,13 @@ object SmartModalBottomSheet {
                 },
                 sheetBackgroundColor = MaterialTheme.colors.background,
                 scrimColor = Color.Black.copy(alpha = 0.5f),
-                sheetShape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp),
+                /**
+                 * 部分系统、部分机型设置了SheetShape后，会导致sheetContent中操作Canvas时出现异常情况
+                 * 具体表现为Canvas使用saveLayer函数传入的Rect命中sheetShape的区域时，会导致Canvas绘制的内容被”移除“
+                 * 猜测为SheetShape截除区域时将Canvas的saveLayer也认为是需要截除的内容了
+                 *
+                 * sheetShape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp),
+                 */
                 sheetContent = {
                     Box(
                         modifier = Modifier
