@@ -24,6 +24,6 @@ class LMusicRuntime(
     }
 
     fun updatePosition(startValue: Long = -1, loop: Boolean = false) {
-        updatePosition(startPosition = startValue, loopDelay = if (loop) 200 else 0)
+        updatePosition(startPosition = startValue, loopDelay = if (loop) 100 else 0)
     }
 }
