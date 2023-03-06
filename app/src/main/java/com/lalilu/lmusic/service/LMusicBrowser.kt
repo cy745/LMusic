@@ -58,6 +58,11 @@ class LMusicBrowser(
         playById(id)
     }
 
+    fun addAndPlay(song: LSong) {
+        addToNext(song)
+        playById(song.id)
+    }
+
     fun addToNext(mediaId: String): Boolean {
         val nowIndex = runtime.indexOfSong(mediaId = mediaId)
         val currentIndex = runtime.getPlayingIndex()
@@ -69,6 +74,20 @@ class LMusicBrowser(
         } else {
             val item = lMediaRepo.requireSong(mediaId = mediaId) ?: return false
             runtime.add(currentIndex + 1, item)
+        }
+        return true
+    }
+
+    fun addToNext(song: LSong): Boolean {
+        val nowIndex = runtime.indexOfSong(mediaId = song.id)
+        val currentIndex = runtime.getPlayingIndex()
+        if (currentIndex >= 0 && (currentIndex == nowIndex || (currentIndex + 1) == nowIndex))
+            return false
+
+        if (nowIndex >= 0) {
+            runtime.move(nowIndex, currentIndex)
+        } else {
+            runtime.add(currentIndex + 1, song)
         }
         return true
     }
