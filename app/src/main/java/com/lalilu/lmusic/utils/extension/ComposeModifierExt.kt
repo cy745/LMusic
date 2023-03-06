@@ -47,7 +47,7 @@ fun Modifier.edgeTransparentForStatusBar(enable: Boolean = true) = composed {
     if (enable) {
         edgeTransparent(
             position = EDGE_TOP,
-            edgeWidth = WindowInsets.statusBars.getTop(LocalDensity.current).toFloat()
+            edgeWidth = rememberFixedStatusBarHeight().toFloat()
         )
     } else {
         Modifier
