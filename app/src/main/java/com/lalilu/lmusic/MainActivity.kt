@@ -33,20 +33,15 @@ import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import org.koin.android.ext.android.inject
-import kotlin.coroutines.CoroutineContext
 
 @OptIn(
     ExperimentalMaterial3WindowSizeClassApi::class,
     ExperimentalAnimationApi::class,
     ExperimentalMaterialApi::class
 )
-class MainActivity : AppCompatActivity(), CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.IO
-
+class MainActivity : AppCompatActivity() {
     private val lMusicSp: LMusicSp by inject()
     private val browser: LMusicBrowser by inject()
 
