@@ -7,6 +7,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.view.View
+import android.view.Window
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
@@ -49,6 +50,16 @@ object SystemUiUtil {
                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         window.navigationBarColor = Color.TRANSPARENT
+    }
+
+    fun immersiveCutout(window: Window) {
+        window.attributes.apply {
+            // 刘海挖孔等异形屏适配，横竖屏都显示内容到被裁切的区域
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            }
+        }
     }
 
     fun isDarkMode(context: Context): Boolean {

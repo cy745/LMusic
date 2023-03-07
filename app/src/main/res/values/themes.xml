@@ -1,8 +1,6 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <style name="Theme.Music" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <!-- 刘海挖孔等异形屏适配，横竖屏都显示内容到被裁切的区域 -->
-        <item name="android:windowLayoutInDisplayCutoutMode" tools:ignore="NewApi">always</item>
 
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
