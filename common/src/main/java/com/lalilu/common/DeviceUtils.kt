@@ -20,7 +20,10 @@ object DeviceUtils {
             return windowManager.currentWindowMetrics.bounds
         }
 
-        return Rect().apply { windowManager.defaultDisplay.getRectSize(this) }
+        return DisplayMetrics().let {
+            windowManager.defaultDisplay.getRealMetrics(it)
+            Rect(0, 0, it.widthPixels, it.heightPixels)
+        }
     }
 
     /**

@@ -1,9 +1,9 @@
 package com.lalilu.ui.appbar
 
 import android.content.Context
-import android.graphics.Point
 import android.os.Build
 import android.util.AttributeSet
+import android.util.DisplayMetrics
 import android.view.*
 import android.widget.OverScroller
 import androidx.annotation.FloatRange
@@ -23,6 +23,7 @@ import com.lalilu.ui.internal.StateHelper.Companion.STATE_NORMAL
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 import kotlin.math.roundToInt
+
 
 const val INVALID_POINTER = -1
 
@@ -90,8 +91,10 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
                 val bound = windowManager.currentWindowMetrics.bounds
                 return bound.height() - (child?.measuredWidth ?: bound.width())
             }
-            val point = Point().apply { windowManager.defaultDisplay.getSize(this) }
-            return point.y - (child?.measuredWidth ?: point.x)
+            return DisplayMetrics().let {
+                windowManager.defaultDisplay.getRealMetrics(it)
+                it.heightPixels - (child?.measuredWidth ?: it.widthPixels)
+            }
         }
         return 0
     }
@@ -195,11 +198,13 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
                 // We're being dragged so scroll the ABL
                 scroll(dy)
             }
+
             MotionEvent.ACTION_POINTER_UP -> {
                 val newIndex = if (ev.actionIndex == 0) 1 else 0
                 activePointerId = ev.getPointerId(newIndex)
                 lastMotionY = (ev.getY(newIndex) + 0.5f).toInt()
             }
+
             MotionEvent.ACTION_UP -> {
                 isBeingDragged = false
                 activePointerId = INVALID_POINTER
@@ -213,6 +218,7 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
                     velocityTracker = null
                 }
             }
+
             MotionEvent.ACTION_CANCEL -> {
                 isBeingDragged = false
                 activePointerId = INVALID_POINTER
@@ -273,12 +279,15 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
             STATE_NORMAL -> calculateSnapOffset(
                 topAndBottomOffset, 0, getCollapsedOffset()
             )
+
             STATE_MIDDLE -> when (stateHelper.lastState) {
                 STATE_FULLY_EXPENDED -> 0
                 STATE_NORMAL,
                 STATE_EXPENDED -> getFullyExpendOffset()
+
                 else -> null
             }
+
             else -> null
         }?.let { animateOffsetTo(it) }
     }
@@ -391,6 +400,7 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
                     calculateSnapOffset(scroller!!.finalY, 0, minOffset)
                 )
             }
+
             STATE_MIDDLE,
             STATE_FULLY_EXPENDED -> {
                 snapToChildIfNeeded()
