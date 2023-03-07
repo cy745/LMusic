@@ -24,15 +24,6 @@ plugins {
     id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
 }
 
-//subprojects {
-//    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-//        kotlinOptions {
-//            freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + project.buildDir.absolutePath + "/compose_metrics"]
-//            freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" + project.buildDir.absolutePath + "/compose_metrics"]
-//        }
-//    }
-//}
-
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
