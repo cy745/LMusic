@@ -21,5 +21,4 @@ rootProject.name = "lmusic"
 include ':app'
 include ':ui'
 include ':common'
-include ':jaudiotagger-android'
 include ':lmedia'
