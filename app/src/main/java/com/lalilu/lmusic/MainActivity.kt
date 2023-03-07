@@ -93,8 +93,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         Indexer.startListen()
-        SystemUiUtil.immerseNavigationBar(this)
         lifecycle.addObserver(browser)
+        SystemUiUtil.immerseNavigationBar(this)
+        SystemUiUtil.immersiveCutout(window)
 
         val backPressHelper = OnBackPressHelper()
         // 注册返回键事件回调
