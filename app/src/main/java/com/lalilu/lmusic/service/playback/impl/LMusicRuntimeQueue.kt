@@ -8,22 +8,24 @@ import com.lalilu.lmusic.service.runtime.LMusicRuntime
 class LMusicRuntimeQueue(
     private val runtime: LMusicRuntime
 ) : PlayQueue<LSong> {
-    private var tempList: List<LSong>? = null
+    private var tempList: List<String>? = null
 
     override fun getCurrent(): LSong? {
-        return runtime.getPlaying() ?: runtime._songsFlow.value.getOrNull(0)
+        return runtime.getPlaying()
     }
 
     override fun getPrevious(): LSong? {
-        return runtime.getPreviousOf(getCurrent(), true)
+        val current = getCurrent() ?: return null
+        return runtime.getPreviousOf(current, true)
     }
 
     override fun getNext(): LSong? {
-        return runtime.getNextOf(getCurrent(), true)
+        val current = getCurrent() ?: return null
+        return runtime.getNextOf(current, true)
     }
 
     override fun getById(id: String): LSong? {
-        return runtime.getSongById(id)
+        return runtime.getItemById(id)
     }
 
     override fun getUriFromItem(item: LSong): Uri {
@@ -31,12 +33,12 @@ class LMusicRuntimeQueue(
     }
 
     override fun setCurrent(item: LSong) {
-        runtime.update(playing = item)
+        runtime.update(playing = item.id)
     }
 
     override fun shuffle() {
-        if (runtime._songsFlow.value.isNotEmpty()) {
-            tempList = runtime._songsFlow.value
+        if (runtime.songsIdsFlow.value.isNotEmpty()) {
+            tempList = runtime.songsIdsFlow.value
             runtime.update(tempList!!.shuffled())
         }
     }

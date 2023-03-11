@@ -1,19 +1,30 @@
 package com.lalilu.lmusic.repository
 
-import androidx.compose.runtime.*
-import androidx.lifecycle.asLiveData
-import com.dirror.lyricviewx.LyricEntry
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
-import com.lalilu.lmusic.utils.extension.*
+import com.lalilu.lmusic.utils.extension.findShowLine
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class LyricRepository(
     private val lyricSource: LyricSourceFactory,
     private val runtime: LMusicRuntime
@@ -40,24 +51,19 @@ class LyricRepository(
             ?.takeIf { it.first.isNotEmpty() }
     }
 
-    val currentLyric: UpdatableFlow<Pair<String, String?>?> =
-        runtime.playingFlow.mapLatest { item ->
-            item?.let { LMedia.getSongOrNull(it.id) }
-                ?.let { getLyric(it) }
-        }.toUpdatableFlow()
+    val currentLyric: Flow<Pair<String, String?>?> =
+        runtime.playingFlow.flatMapLatest { item ->
+            LMedia.getSongFlowById(item?.id)
+                .mapLatest { it?.let { getLyric(it) } }
+        }
 
-    val currentLyricEntry: CachedFlow<List<LyricEntry>?> = currentLyric.mapLatest { pair ->
+    val currentLyricSentence: Flow<String?> = currentLyric.mapLatest { pair ->
         pair ?: return@mapLatest null
         LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
-    }.toCachedFlow()
-
-    @OptIn(FlowPreview::class)
-    val currentLyricSentence: Flow<String?> = currentLyricEntry.flatMapLatest { lyrics ->
+    }.flatMapLatest { lyrics ->
         runtime.positionFlow.mapLatest {
             findShowLine(lyrics, it + 500)
         }.distinctUntilChanged()
             .mapLatest { lyrics?.getOrNull(it)?.text }
     }.debounce(100)
-
-    val currentLyricLiveData = currentLyric.asLiveData()
 }

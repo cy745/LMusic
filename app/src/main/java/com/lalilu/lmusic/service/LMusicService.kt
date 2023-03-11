@@ -75,7 +75,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
             val isPlaying = playback.player?.isPlaying ?: false
 
-            runtime.update(playing = item)
+            runtime.update(playing = item?.id)
             runtime.update(isPlaying = isPlaying)
             runtime.updatePosition(startValue = position, loop = isPlaying)
 
