@@ -5,19 +5,14 @@ import android.os.Build
 import android.support.v4.media.session.PlaybackStateCompat
 
 object Config {
-    const val BASE_NETEASE_URL = "https://apis.lalilu.cn/"
-    const val BASE_KUGOU_SONGS_URL = "https://mobilecdn.kugou.com/"
-    const val BASE_KUGOU_LYRIC_URL = "https://krcs.kugou.com/"
-
     const val LAST_PLAYED_ID = "LAST_PLAYED_ID"
     const val LAST_PLAYED_LIST_IDS = "LAST_PLAYED_LIST_IDS"
     const val LAST_PLAYED_POSITION = "LAST_PLAYED_POSITION"
 
-    const val ACTION_PLAY_AND_PAUSE = "action_play_and_pause"
-    const val ACTION_RELOAD_AND_PLAY = "action_reload_and_play"
     const val ACTION_SET_REPEAT_MODE = "action_set_repeat_mode"
 
     const val KEY_SETTINGS_IGNORE_DICTIONARIES = "KEY_SETTINGS_IGNORE_DICTIONARIES"
+    const val KEY_SETTINGS_DARK_MODE_OPTION = "KEY_SETTINGS_DARK_MODE_OPTION"
     const val KEY_SETTINGS_ENABLE_UNKNOWN_FILTER = "KEY_SETTINGS_ENABLE_UNKNOWN_FILTER"
     const val KEY_SETTINGS_LYRIC_GRAVITY = "KEY_SETTINGS_LYRIC_GRAVITY"
     const val KEY_SETTINGS_LYRIC_TEXT_SIZE = "KEY_SETTINGS_LYRIC_TEXT_SIZE"
@@ -34,6 +29,7 @@ object Config {
     const val KEY_REMEMBER_IS_GUIDING_OVER = "KEY_REMEMBER_IS_GUIDING_OVER"
 
     val DEFAULT_SETTINGS_IGNORE_DICTIONARIES = emptyList<String>()
+    const val DEFAULT_SETTINGS_DARK_MODE_OPTION = 0
     const val DEFAULT_SETTINGS_ENABLE_UNKNOWN_FILTER = true
     const val DEFAULT_SETTINGS_LYRIC_GRAVITY = 1
     const val DEFAULT_SETTINGS_LYRIC_TEXT_SIZE = 16

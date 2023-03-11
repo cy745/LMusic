@@ -58,6 +58,10 @@ class LMusicSp(context: Context) : BaseSp() {
         Config.KEY_SETTINGS_ENABLE_UNKNOWN_FILTER,
         Config.DEFAULT_SETTINGS_ENABLE_UNKNOWN_FILTER
     )
+    val darkModeOption = intSp(
+        Config.KEY_SETTINGS_DARK_MODE_OPTION,
+        Config.DEFAULT_SETTINGS_DARK_MODE_OPTION
+    )
     val ignoreDictionaries = stringListSp(
         Config.KEY_SETTINGS_IGNORE_DICTIONARIES,
         Config.DEFAULT_SETTINGS_IGNORE_DICTIONARIES
