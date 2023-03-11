@@ -1,5 +1,8 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import android.content.ComponentName
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -42,6 +46,7 @@ import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
+import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.NetworkPairCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 import com.lalilu.lmusic.compose.component.card.SongDetailActionsBar
@@ -52,6 +57,7 @@ import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDesti
 import com.lalilu.lmusic.compose.new_screen.destinations.NetDataScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
+import com.lalilu.lmusic.utils.extension.checkActivityIsExist
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.lmusic.utils.extension.idsText
@@ -76,6 +82,7 @@ fun SongDetailScreen(
     netDataVm: NetDataViewModel = get(),
     navigator: DestinationsNavigator
 ) {
+    val context = LocalContext.current
     val song = mediaVM.requireSong(mediaId = mediaId) ?: run {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = "[Error]加载失败 #$mediaId")
@@ -229,6 +236,28 @@ fun SongDetailScreen(
                         }
                     }
                 }
+            }
+
+            item {
+                IconTextButton(
+                    text = "使用音乐标签编辑信息",
+                    color = Color(0xFF3EA22C),
+                    onClick = {
+                        val intent = Intent().apply {
+                            component = ComponentName(
+                                "com.xjcheng.musictageditor",
+                                "com.xjcheng.musictageditor.SongDetailActivity"
+                            )
+                            action = "android.intent.action.VIEW"
+                            data = song.uri
+                        }
+                        if (context.checkActivityIsExist(intent)) {
+                            context.startActivity(intent)
+                        } else {
+                            Toast.makeText(context, "未安装[音乐标签]", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    })
             }
 
             item {

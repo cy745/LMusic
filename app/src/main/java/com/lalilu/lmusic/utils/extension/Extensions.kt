@@ -3,6 +3,8 @@ package com.lalilu.lmusic.utils.extension
 import android.content.ContentUris
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -302,4 +304,8 @@ private val stringListType = object : TypeToken<List<String>>() {}.type
 fun String?.getIds(): List<String> {
     return runCatching { GsonUtils.fromJson(this, stringListType) as? List<String> }
         .getOrNull() ?: emptyList()
+}
+
+fun Context.checkActivityIsExist(intent: Intent): Boolean {
+    return intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY) != null
 }
