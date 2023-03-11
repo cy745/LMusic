@@ -25,10 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
-import com.lalilu.lmusic.apis.NetworkSong
-import com.lalilu.lmusic.apis.NetworkSource
 import com.lalilu.lmusic.compose.component.base.InputBar
 
 
@@ -67,23 +64,6 @@ fun SearchInputBar(
         }
     }
 }
-
-@Composable
-fun LyricCard(
-    song: NetworkSong,
-    selected: Boolean,
-    onClick: () -> Unit
-) = LyricCard(
-    title = song.songTitle,
-    artist = song.songArtist,
-    albumTitle = song.songAlbum,
-    duration = TimeUtils.millis2String(
-        song.songDuration,
-        "mm:ss"
-    ) + " " + NetworkSource.of(song.fromPlatform).text,
-    selected = selected,
-    onClick = onClick
-)
 
 @Composable
 fun LyricCard(

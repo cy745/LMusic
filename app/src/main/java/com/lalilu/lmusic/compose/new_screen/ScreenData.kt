@@ -12,7 +12,6 @@ import com.lalilu.lmusic.compose.new_screen.destinations.DictionariesScreenDesti
 import com.lalilu.lmusic.compose.new_screen.destinations.DictionaryDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.FavouriteScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.HomeScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.NetDataScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SearchScreenDestination
@@ -109,12 +108,6 @@ enum class ScreenData(
         title = R.string.destination_label_song_detail,
         subTitle = R.string.destination_subtitle_song_detail,
         destination = SongDetailScreenDestination
-    ),
-    NetData(
-        icon = R.drawable.ic_music_line,
-        title = R.string.destination_label_match_network_data,
-        subTitle = R.string.destination_label_match_network_data,
-        destination = NetDataScreenDestination
     );
 
     companion object {
