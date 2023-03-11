@@ -46,6 +46,7 @@ fun SettingsScreen(
     lMusicSp: LMusicSp = get()
 ) {
     val context = LocalContext.current
+    val darkModeOption = lMusicSp.darkModeOption
     val ignoreAudioFocus = lMusicSp.ignoreAudioFocus
     val enableUnknownFilter = lMusicSp.enableUnknownFilter
     val statusBarLyric = lMusicSp.enableStatusLyric
@@ -175,6 +176,11 @@ fun SettingsScreen(
                 icon = painterResource(id = R.drawable.ic_loader_line),
                 title = "其他"
             ) {
+                SettingStateSeekBar(
+                    state = darkModeOption,
+                    selection = stringArrayResource(id = R.array.dark_mode_options).toList(),
+                    titleRes = R.string.preference_dark_mode
+                )
                 SettingSwitcher(
                     state = enableDynamicTips,
                     titleRes = R.string.preference_media_source_settings_enable_dynamic_tips,

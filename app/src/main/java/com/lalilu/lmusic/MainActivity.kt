@@ -8,6 +8,10 @@ import android.os.Bundle
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.ExperimentalMaterialApi
@@ -18,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -38,6 +43,8 @@ import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 
 @OptIn(
@@ -84,6 +91,17 @@ class MainActivity : AppCompatActivity() {
             finish()
             return
         }
+
+        // 深色模式控制
+        lMusicSp.darkModeOption.flow(true).onEach {
+            AppCompatDelegate.setDefaultNightMode(
+                when (it) {
+                    1 -> MODE_NIGHT_YES
+                    2 -> MODE_NIGHT_NO
+                    else -> MODE_NIGHT_FOLLOW_SYSTEM
+                }
+            )
+        }.launchIn(lifecycleScope)
 
         /**
          * 在LMedia初始化完成前，设置元素筛选器逻辑
