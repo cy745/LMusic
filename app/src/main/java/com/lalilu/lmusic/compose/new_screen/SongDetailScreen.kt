@@ -47,14 +47,12 @@ import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.component.base.IconTextButton
-import com.lalilu.lmusic.compose.component.card.NetworkPairCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 import com.lalilu.lmusic.compose.component.card.SongDetailActionsBar
 import com.lalilu.lmusic.compose.component.card.SongInformationCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.NetDataScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.checkActivityIsExist
@@ -64,7 +62,6 @@ import com.lalilu.lmusic.utils.extension.idsText
 import com.lalilu.lmusic.utils.extension.rememberScrollPosition
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
-import com.lalilu.lmusic.viewmodel.NetDataViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -79,7 +76,6 @@ fun SongDetailScreen(
     mediaVM: LMediaViewModel = get(),
     playingVM: PlayingViewModel = get(),
     playlistsVM: PlaylistsViewModel = get(),
-    netDataVm: NetDataViewModel = get(),
     navigator: DestinationsNavigator
 ) {
     val context = LocalContext.current
@@ -100,9 +96,6 @@ fun SongDetailScreen(
                 .coerceIn(0f, 0.8f)
         }
     }
-    val networkData by netDataVm.getNetworkDataFlowByMediaId(song.id)
-        .collectAsState(null)
-
 
     SmartModalBottomSheet.RegisterForTemporaryDisableFadeEdge()
     SmartBar.RegisterExtraBarContent(showActionBar) {
@@ -144,7 +137,7 @@ fun SongDetailScreen(
                     alpha = bgAlpha.value
                 },
             model = ImageRequest.Builder(LocalContext.current)
-                .data(networkData?.requireCoverUri() ?: song)
+                .data(song)
                 .crossfade(true)
                 .build(),
             contentScale = ContentScale.FillWidth,
@@ -258,23 +251,6 @@ fun SongDetailScreen(
                                 .show()
                         }
                     })
-            }
-
-            item {
-                NetworkPairCard(
-                    item = { networkData },
-                    onClick = {
-                        navigator.navigate(NetDataScreenDestination(mediaId = song.id))
-                    },
-                    onDownloadCover = {
-                        netDataVm.saveCoverIntoNetworkData(networkData?.netId, song.id)
-                    },
-                    onDownloadLyric = {
-                        netDataVm.saveLyricIntoNetworkData(
-                            networkData?.netId, song.id, networkData?.platform
-                        )
-                    }
-                )
             }
 
             item {

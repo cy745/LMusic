@@ -2,7 +2,6 @@ package com.lalilu.lmusic.utils.sources
 
 import android.text.TextUtils
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.repository.NetDataRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jaudiotagger.audio.AudioFileIO
@@ -17,11 +16,10 @@ interface LyricSource {
 }
 
 class LyricSourceFactory(
-    dataBaseLyricSource: DataBaseLyricSource,
     embeddedLyricSource: EmbeddedLyricSource,
     localLyricSource: LocalLyricSource
 ) : LyricSource {
-    private val sources = listOf(dataBaseLyricSource, embeddedLyricSource, localLyricSource)
+    private val sources = listOf(embeddedLyricSource, localLyricSource)
 
     override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
         withContext(Dispatchers.IO) {
@@ -64,15 +62,5 @@ class LocalLyricSource : LyricSource {
             val lyric = lrcFile.readText()
             return@withContext if (TextUtils.isEmpty(lyric)) null
             else Pair(lyric, null)
-        }
-}
-
-class DataBaseLyricSource(
-    private val netDataRepo: NetDataRepository
-) : LyricSource {
-    override suspend fun loadLyric(song: LSong): Pair<String, String?>? =
-        withContext(Dispatchers.IO) {
-            val pair = netDataRepo.getNetDataById(song.id)
-            pair?.lyric?.let { it to pair.tlyric }
         }
 }
