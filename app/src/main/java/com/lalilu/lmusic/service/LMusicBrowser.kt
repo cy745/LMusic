@@ -8,9 +8,9 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.repository.LMediaRepository
+import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
 
 class LMusicBrowser(
@@ -30,7 +30,7 @@ class LMusicBrowser(
     }
 
     fun setSongs(songs: List<LSong>, song: LSong? = null) {
-        runtime.load(songs = songs, playing = song)
+        runtime.load(songs = songs.map { it.id }, playing = song?.id)
     }
 
     override fun onStart(owner: LifecycleOwner) {
@@ -47,11 +47,9 @@ class LMusicBrowser(
     fun skipToPrevious() = controller?.transportControls?.skipToPrevious()
     fun playById(id: String) = controller?.transportControls?.playFromMediaId(id, null)
     fun seekTo(position: Number) = controller?.transportControls?.seekTo(position.toLong())
-    fun playPause() = controller?.transportControls
-        ?.sendCustomAction(Config.ACTION_PLAY_AND_PAUSE, null)
-
-    fun reloadAndPlay() = controller?.transportControls
-        ?.sendCustomAction(Config.ACTION_RELOAD_AND_PLAY, null)
+    fun sendCustomAction(action: Playback.PlaybackAction) {
+        controller?.transportControls?.sendCustomAction(action.name, null)
+    }
 
     fun addAndPlay(id: String) {
         addToNext(id)
@@ -72,8 +70,7 @@ class LMusicBrowser(
         if (nowIndex >= 0) {
             runtime.move(nowIndex, currentIndex)
         } else {
-            val item = lMediaRepo.requireSong(mediaId = mediaId) ?: return false
-            runtime.add(currentIndex + 1, item)
+            runtime.add(currentIndex + 1, mediaId)
         }
         return true
     }
@@ -87,7 +84,7 @@ class LMusicBrowser(
         if (nowIndex >= 0) {
             runtime.move(nowIndex, currentIndex)
         } else {
-            runtime.add(currentIndex + 1, song)
+            runtime.add(currentIndex + 1, song.id)
         }
         return true
     }
@@ -95,9 +92,9 @@ class LMusicBrowser(
     fun removeById(mediaId: String): Boolean {
         return try {
             if (mediaId == runtime.getPlayingId()) {
-                runtime.getNextOf(runtime.getPlaying(), true)?.let {
+                runtime.getNextOf(runtime.getPlayingId(), true)?.let {
                     runtime.update(it)
-                    playById(it.id)
+                    playById(it)
                 }
             }
             runtime.remove(mediaId)

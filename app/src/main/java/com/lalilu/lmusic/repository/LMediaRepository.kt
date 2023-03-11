@@ -42,4 +42,7 @@ class LMediaRepository : CoroutineScope {
 
     fun requireDictionary(dictionaryId: String, blockFilter: Boolean = true): LDictionary? =
         LMedia.getDictionaryOrNull(dictionaryId, blockFilter)
+
+    fun requireSongFlowById(mediaId: String?): Flow<LSong?> =
+        LMedia.getSongFlowById(mediaId)
 }

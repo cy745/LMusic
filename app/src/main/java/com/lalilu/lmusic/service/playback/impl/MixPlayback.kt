@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.service.playback.PlayMode
 import com.lalilu.lmusic.service.playback.PlayQueue
 import com.lalilu.lmusic.service.playback.Playback
@@ -105,18 +104,25 @@ class MixPlayback(
         player?.stop()
     }
 
-    override fun onCustomAction(action: String?, extras: Bundle?) {
-        println("[onCustomAction]: $action")
+    override fun onCustomActionIn(action: Playback.PlaybackAction?) {
         when (action) {
-            Config.ACTION_PLAY_AND_PAUSE -> {
+            Playback.PlaybackAction.PlayPause -> {
                 if (player?.isPlaying == true) onPause() else onPlay()
             }
 
-            Config.ACTION_RELOAD_AND_PLAY -> {
+            Playback.PlaybackAction.ReloadAndPlay -> {
                 player?.isPrepared = false
                 onPlay()
             }
+
+            null -> {
+
+            }
         }
+    }
+
+    override fun onCustomAction(action: String?, extras: Bundle?) {
+        handleCustomAction(action)
     }
 
     override fun requestAudioFocus(): Boolean {

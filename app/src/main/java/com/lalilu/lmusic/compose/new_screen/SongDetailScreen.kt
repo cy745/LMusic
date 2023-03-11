@@ -25,6 +25,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -61,9 +62,9 @@ import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.lmusic.utils.extension.idsText
 import com.lalilu.lmusic.utils.extension.rememberScrollPosition
 import com.lalilu.lmusic.utils.recomposeHighlighter
-import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
+import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.androidx.compose.get
@@ -73,13 +74,18 @@ import org.koin.androidx.compose.get
 @Composable
 fun SongDetailScreen(
     mediaId: String,
-    mediaVM: LMediaViewModel = get(),
     playingVM: PlayingViewModel = get(),
     playlistsVM: PlaylistsViewModel = get(),
+    songDetailVM: SongDetailViewModel = get(),
     navigator: DestinationsNavigator
 ) {
+    LaunchedEffect(Unit) {
+        songDetailVM.updateMediaId(mediaId)
+    }
+
     val context = LocalContext.current
-    val song = mediaVM.requireSong(mediaId = mediaId) ?: run {
+    val song = songDetailVM.song.collectAsState(initial = null).value
+    if (song == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = "[Error]加载失败 #$mediaId")
         }

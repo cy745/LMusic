@@ -32,6 +32,7 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
+import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
@@ -74,6 +75,7 @@ val ViewModelModule = module {
     single { DictionariesViewModel(get(), get()) }
     single { HistoryViewModel(get(), get()) }
     single { SongsViewModel(get(), get()) }
+    single { SongDetailViewModel(get()) }
 }
 
 val PlayerModule = module {
@@ -85,7 +87,7 @@ val PlayerModule = module {
 val RuntimeModule = module {
     single { LMusicNotifier(get(), get(), get(), androidApplication()) }
     single { LMusicBrowser(get(), get(), get(), get()) }
-    single { LMusicRuntime(get()) }
+    single { LMusicRuntime(get(), get()) }
     single { CoverRepository(get()) }
     single { LyricRepository(get(), get()) }
     single { LMediaRepository() }

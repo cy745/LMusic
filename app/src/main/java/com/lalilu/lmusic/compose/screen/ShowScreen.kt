@@ -45,6 +45,7 @@ import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.service.playback.PlayMode
+import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
@@ -217,7 +218,9 @@ fun ControlPanel(
         }
         IconToggleButton(
             checked = isPlaying.value,
-            onCheckedChange = { playingVM.browser.playPause() }
+            onCheckedChange = {
+                playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
+            }
         ) {
             Image(
                 painter = painterResource(

@@ -22,6 +22,7 @@ import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
+import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
@@ -60,7 +61,7 @@ fun PlayingScreen(
             val activity = parent.context.getActivity()!!
             val seekBarHandler = SeekBarHandler(
                 onPlayNext = { playingVM.browser.skipToNext() },
-                onPlayPause = { playingVM.browser.playPause() },
+                onPlayPause = { playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause) },
                 onPlayPrevious = { playingVM.browser.skipToPrevious() }
             )
 
@@ -164,7 +165,7 @@ fun PlayingScreen(
                 override fun onClick(@ClickPart clickPart: Int, action: Int) {
                     HapticUtils.haptic(this@apply.root)
                     if (seekBarHandler.clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
-                        playingVM.browser.playPause()
+                        playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
                         return
                     }
                     seekBarHandler.handle(clickPart)
@@ -201,33 +202,31 @@ fun PlayingScreen(
                 lastTime = now
             })
 
-            playingVM.runtime.songsFlow
-                .onEach { adapter.setDiffData(it) }
-                .launchIn(activity.lifecycleScope)
+            playingVM.currentSongs.observe(activity) {
+                adapter.setDiffData(it)
+            }
 
-            playingVM.runtime.playingFlow
-                .onEach {
-                    maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
-                    song = it
+            playingVM.currentPlaying.observe(activity) {
+                maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
+                song = it
 
-                    if (it != null) {
-                        DynamicTips.push(
-                            title = it.name,
-                            subTitle = "播放中",
-                            imageData = it
-                        )
-                    }
-                }.launchIn(activity.lifecycleScope)
+                if (it != null) {
+                    DynamicTips.push(
+                        title = it.name,
+                        subTitle = "播放中",
+                        imageData = it
+                    )
+                }
+            }
 
-            playingVM.runtime.positionFlow
-                .onEach { maSeekBar.updateValue(it.toFloat()) }
-                .launchIn(activity.lifecycleScope)
+            playingVM.currentPosition.observe(activity) {
+                maSeekBar.updateValue(it.toFloat())
+            }
 
-            playingVM.lyricRepository.currentLyric
-                .onEach {
-                    fmLyricViewX.setLyricEntryList(emptyList())
-                    fmLyricViewX.loadLyric(it?.first, it?.second)
-                }.launchIn(activity.lifecycleScope)
+            playingVM.currentLyric.observe(activity) {
+                fmLyricViewX.setLyricEntryList(emptyList())
+                fmLyricViewX.loadLyric(it?.first, it?.second)
+            }
 
             playingVM.lMusicSp.apply {
                 lyricGravity.flow(true)
