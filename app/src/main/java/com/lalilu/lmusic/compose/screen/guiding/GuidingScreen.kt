@@ -58,7 +58,6 @@ fun GuidingScreen(
                 Row(
                     modifier = Modifier
                         .padding(20.dp)
-                        .height(48.dp)
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -70,12 +69,12 @@ fun GuidingScreen(
                             )
                         }
                     }
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.Start
                     ) {
                         AnimatedContent(targetState = destination, transitionSpec = {
                             (slideInVertically { height -> height } + fadeIn() with
@@ -85,7 +84,11 @@ fun GuidingScreen(
                         }) {
                             Text(text = it?.title ?: "", fontSize = 22.sp)
                         }
-                        Text(text = "${GuidingNavGraph.getIndex(destination) + 1} / ${GuidingNavGraph.values().size}")
+                        Text(
+                            text = "${GuidingNavGraph.getIndex(destination) + 1} / ${GuidingNavGraph.values().size}",
+                            fontSize = 16.sp,
+                            color = Color.Gray
+                        )
                     }
                 }
                 AnimatedNavHost(

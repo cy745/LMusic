@@ -1,8 +1,8 @@
 package com.lalilu.lmusic.compose.screen.guiding
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -11,16 +11,17 @@ import kotlin.system.exitProcess
 
 @Composable
 fun AgreementPage(navController: NavController) {
-    Column(
+    LazyColumn(
         modifier = Modifier
             .padding(horizontal = 20.dp)
             .fillMaxSize()
     ) {
-        ActionCard(
-            onReject = { exitProcess(0) },
-            onConfirm = { GuidingNavGraph.Agreement.getNext()?.navigate(navController) }
-        ) {
-            """
+        item {
+            ActionCard(
+                onReject = { exitProcess(0) },
+                onConfirm = { GuidingNavGraph.Agreement.getNext()?.navigate(navController) }
+            ) {
+                """
             使用本应用的用户应知晓以下内容：
 
             1. 本应用所提供的网络歌词获取功能需要使用网络权限，如无此需求可拒绝网络权限授予；
@@ -32,6 +33,7 @@ fun AgreementPage(navController: NavController) {
                 
             酷安@邱邱邱Qiu  v1.4.12  2022/05/17
             """
+            }
         }
     }
 }
