@@ -1,5 +1,7 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import android.media.MediaScannerConnection
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -17,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.ActivityUtils
+import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.RomUtils
 import com.lalilu.R
 import com.lalilu.lmusic.GuidingActivity
@@ -188,6 +191,19 @@ fun SettingsScreen(
                         onClick = {
                             context.getActivity()?.apply {
                                 ActivityUtils.startActivity(GuidingActivity::class.java)
+                            }
+                        })
+
+                    IconTextButton(
+                        text = "重新扫描",
+                        color = Color(0xFFFF8B3F),
+                        onClick = {
+                            Toast.makeText(context, "扫描开始", Toast.LENGTH_SHORT).show()
+                            MediaScannerConnection.scanFile(
+                                context, arrayOf("/storage/emulated/0/"), null
+                            ) { path, uri ->
+                                Toast.makeText(context, "扫描结束", Toast.LENGTH_SHORT).show()
+                                LogUtils.i("MediaScannerConnection", "path: $path, uri: $uri")
                             }
                         })
                 }
