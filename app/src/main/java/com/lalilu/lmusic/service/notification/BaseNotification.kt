@@ -112,7 +112,7 @@ open class BaseNotification constructor(
 
         return NotificationCompat.Builder(mContext, channelId)
             .setStyle(style)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_launcher_icon)
             .setDeleteIntent(mStopAction.actionIntent)
             .setContentIntent(controller.sessionActivity)
             .setContentTitle(description.title)
