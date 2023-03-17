@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.common.SystemUiUtil
 import kotlinx.coroutines.CoroutineScope
@@ -141,7 +140,7 @@ fun Color.toColorFilter(): ColorFilter {
 
 @Composable
 fun durationMsToString(duration: Long): String {
-    return remember(duration) { TimeUtils.millis2String(duration, "mm:ss") }
+    return remember(duration) { duration.durationToTime() }
 }
 
 @DrawableRes
