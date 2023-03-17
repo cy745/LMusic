@@ -11,11 +11,11 @@ import androidx.palette.graphics.Palette
 import coil.load
 import coil.util.CoilUtils.dispose
 import com.blankj.utilcode.util.SizeUtils
-import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.R
 import com.lalilu.common.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.ui.BlurImageView
+import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.ui.NewProgressBar
 import com.lalilu.ui.appbar.AppbarLayout
 import com.lalilu.ui.appbar.CollapsingLayout
@@ -86,7 +86,7 @@ fun iconRec(imageView: ImageView, mimeType: String) {
 
 @BindingAdapter("setDuration")
 fun setDuration(textView: AppCompatTextView, duration: Long) {
-    textView.text = TimeUtils.millis2String(duration, "mm:ss")
+    textView.text = duration.durationToTime()
 }
 
 @BindingAdapter("setSongTitle")
