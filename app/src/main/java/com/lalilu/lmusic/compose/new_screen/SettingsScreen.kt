@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import StatusBarLyric.API.StatusBarLyric
 import android.media.MediaScannerConnection
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -33,7 +34,6 @@ import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.compose.component.settings.SettingSwitcher
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.EQHelper
-import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.ramcosta.composedestinations.annotation.Destination
 import org.koin.androidx.compose.get
@@ -43,7 +43,8 @@ import org.koin.androidx.compose.get
 @Destination
 @Composable
 fun SettingsScreen(
-    lMusicSp: LMusicSp = get()
+    lMusicSp: LMusicSp = get(),
+    statusBarLyricExt: StatusBarLyric = get()
 ) {
     val context = LocalContext.current
     val darkModeOption = lMusicSp.darkModeOption
@@ -128,7 +129,7 @@ fun SettingsScreen(
                 iconRes = R.drawable.ic_lrc_fill,
                 titleRes = R.string.preference_lyric_settings
             ) {
-                if (RomUtils.isMeizu() || StatusBarLyricExt.hasEnable()) {
+                if (RomUtils.isMeizu() || statusBarLyricExt.hasEnable()) {
                     SettingSwitcher(
                         titleRes = R.string.preference_lyric_settings_status_bar_lyric,
                         state = statusBarLyric
