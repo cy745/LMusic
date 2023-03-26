@@ -1,6 +1,10 @@
 package com.lalilu.lmusic
 
+import StatusBarLyric.API.StatusBarLyric
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
 import androidx.room.Room
+import com.lalilu.R
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.database.LDatabase
 import com.lalilu.lmedia.repository.FavoriteRepository
@@ -19,6 +23,7 @@ import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
 import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
 import com.lalilu.lmusic.service.playback.impl.LocalPlayer
 import com.lalilu.lmusic.service.runtime.LMusicRuntime
+import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.lmusic.utils.sources.EmbeddedLyricSource
 import com.lalilu.lmusic.utils.sources.LocalLyricSource
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
@@ -36,12 +41,22 @@ import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
+import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import retrofit2.converter.gson.GsonConverterFactory
 
 val AppModule = module {
     single { LMusicSp(androidApplication()) }
     single { LastPlayedSp(androidApplication()) }
+    single {
+        StatusBarLyric(
+            androidContext(),
+            ContextCompat.getDrawable(androidContext(), R.mipmap.ic_launcher)?.toBitmap()
+                ?.toDrawable(androidContext().resources),
+            "com.lalilu.lmusic",
+            false
+        )
+    }
 }
 
 val DatabaseModule = module {
@@ -70,11 +85,11 @@ val ViewModelModule = module {
     single { PlaylistDetailViewModel(get(), get()) }
     single { PlaylistsViewModel(get(), get()) }
     single { SearchViewModel(get(), get()) }
-    single { AlbumsViewModel(get()) }
+    single { AlbumsViewModel(get(), get(), get()) }
     single { ArtistsViewModel(get()) }
     single { DictionariesViewModel(get(), get()) }
     single { HistoryViewModel(get(), get()) }
-    single { SongsViewModel(get(), get()) }
+    single { SongsViewModel(get(), get(), get()) }
     single { SongDetailViewModel(get()) }
 }
 
@@ -85,7 +100,7 @@ val PlayerModule = module {
 }
 
 val RuntimeModule = module {
-    single { LMusicNotifier(get(), get(), get(), androidApplication()) }
+    single { LMusicNotifier(get(), get(), get(), get(), androidApplication()) }
     single { LMusicBrowser(get(), get(), get(), get()) }
     single { LMusicRuntime(get(), get()) }
     single { CoverRepository(get()) }
