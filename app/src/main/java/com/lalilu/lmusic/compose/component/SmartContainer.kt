@@ -119,6 +119,7 @@ object SmartContainer {
         )
 
         LazyVerticalStaggeredGrid(
+            modifier = Modifier.fillMaxSize(),
             columns = StaggeredGridCells.Fixed(columns(windowSize.widthSizeClass)),
             contentPadding = contentPadding,
             verticalArrangement = verticalArrangement,
