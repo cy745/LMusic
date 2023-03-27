@@ -36,41 +36,51 @@ fun SortPanel(
     onClose: () -> Unit = {}
 ) {
     var sortRule by lMusicSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
-    var orderRule by lMusicSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.ASC.name)
+    var orderRule by lMusicSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.Normal.name)
     var groupRule by lMusicSp.stringSp("${sortFor}_GROUP_RULE", GroupRule.Normal.name)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(horizontal = 20.dp, vertical = 10.dp),
+            .padding(top = 24.dp, bottom = 20.dp, start = 12.dp, end = 12.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "排序依据")
-        FlowRow(mainAxisSpacing = 8.dp) {
-            supportSortRules().forEach { item ->
-                FilterChip(
-                    onClick = { sortRule = item.name },
-                    selected = item.name == sortRule,
-                    colors = ChipDefaults.filterChipColors(),
-                ) {
-                    Text(text = item.title)
+        supportSortRules()
+            .takeIf { it.isNotEmpty() }
+            ?.let { rules ->
+                Text(text = "排序依据")
+                FlowRow(mainAxisSpacing = 8.dp) {
+                    rules.forEach { item ->
+                        FilterChip(
+                            onClick = { sortRule = item.name },
+                            selected = item.name == sortRule,
+                            colors = ChipDefaults.filterChipColors(),
+                        ) {
+                            Text(text = item.title)
+                        }
+                    }
                 }
             }
-        }
-        Text(text = "分组依据")
-        FlowRow(mainAxisSpacing = 8.dp) {
-            supportGroupRules().forEach { item ->
-                FilterChip(
-                    onClick = { groupRule = item.name },
-                    selected = item.name == groupRule,
-                    colors = ChipDefaults.filterChipColors(),
-                ) {
-                    Text(text = item.title)
+
+        supportGroupRules()
+            .takeIf { it.isNotEmpty() }
+            ?.let { rules ->
+                Text(text = "分组依据")
+                FlowRow(mainAxisSpacing = 8.dp) {
+                    rules.forEach { item ->
+                        FilterChip(
+                            onClick = { groupRule = item.name },
+                            selected = item.name == groupRule,
+                            colors = ChipDefaults.filterChipColors(),
+                        ) {
+                            Text(text = item.title)
+                        }
+                    }
                 }
             }
-        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -78,18 +88,22 @@ fun SortPanel(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "排序顺序")
-                FlowRow(mainAxisSpacing = 8.dp) {
-                    supportOrderRules().forEach { item ->
-                        FilterChip(
-                            onClick = { orderRule = item.name },
-                            selected = item.name == orderRule,
-                            colors = ChipDefaults.filterChipColors(),
-                        ) {
-                            Text(text = item.title)
+                supportOrderRules()
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { rules ->
+                        Text(text = "排序顺序")
+                        FlowRow(mainAxisSpacing = 8.dp) {
+                            rules.forEach { item ->
+                                FilterChip(
+                                    onClick = { orderRule = item.name },
+                                    selected = item.name == orderRule,
+                                    colors = ChipDefaults.filterChipColors(),
+                                ) {
+                                    Text(text = item.title)
+                                }
+                            }
                         }
                     }
-                }
             }
             IconTextButton(
                 text = "关闭",

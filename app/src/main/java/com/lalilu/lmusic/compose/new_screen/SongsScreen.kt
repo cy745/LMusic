@@ -68,9 +68,9 @@ fun SongsScreen(
 
     SortPanelWrapper(
         sortFor = sortFor,
-        supportGroupRules = { songsVM.supportGroupRules },
-        supportOrderRules = { songsVM.supportOrderRules },
-        supportSortRules = { songsVM.supportSortRules }
+        supportGroupRules = { songsVM.sorter.supportGroupRules },
+        supportOrderRules = { songsVM.sorter.supportOrderRules },
+        supportSortRules = { songsVM.sorter.supportSortRules }
     ) { showSortPanel ->
         SongListWrapper(
             songsState = songsState,
