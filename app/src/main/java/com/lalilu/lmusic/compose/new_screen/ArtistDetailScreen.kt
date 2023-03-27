@@ -55,9 +55,9 @@ fun ArtistDetailScreen(
 
     SortPanelWrapper(
         sortFor = sortFor,
-        supportGroupRules = { songsVM.supportGroupRules },
-        supportSortRules = { songsVM.supportSortRules },
-        supportOrderRules = { songsVM.supportOrderRules }
+        supportGroupRules = { songsVM.sorter.supportGroupRules },
+        supportSortRules = { songsVM.sorter.supportSortRules },
+        supportOrderRules = { songsVM.sorter.supportOrderRules }
     ) { showSortPanel ->
         SongListWrapper(
             songsState = songsState,
