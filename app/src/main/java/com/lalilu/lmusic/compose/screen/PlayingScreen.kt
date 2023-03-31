@@ -8,11 +8,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import com.blankj.utilcode.util.ConvertUtils
+import com.blankj.utilcode.util.ScreenUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.common.HapticUtils
+import com.lalilu.common.OnDoubleClickListener
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmedia.entity.LSong
@@ -41,6 +43,7 @@ import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.OnValueChangeListener
 import com.lalilu.ui.appbar.MyAppbarBehavior
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_MIDDLE
 import com.ramcosta.composedestinations.navigation.navigate
@@ -72,6 +75,17 @@ fun PlayingScreen(
             activity.setSupportActionBar(fmToolbar)
             fmToolbar.setPadding(0, statusBarHeight, 0, 0)
             fmToolbar.layoutParams.apply { height += statusBarHeight }
+
+            // 双击返回顶部
+            fmToolbar.setOnClickListener(OnDoubleClickListener {
+                if (behavior.stateHelper.nowState == STATE_COLLAPSED) {
+                    if (fmRecyclerView.computeVerticalScrollOffset() > ScreenUtils.getAppScreenHeight() * 3) {
+                        fmRecyclerView.scrollToPosition(0)
+                    } else {
+                        fmRecyclerView.smoothScrollToPosition(0)
+                    }
+                }
+            })
 
             val adapter = NewPlayingAdapter.Builder()
                 .setOnLongClickCB {
@@ -263,5 +277,11 @@ fun PlayingScreen(
                     }.launchIn(activity.lifecycleScope)
             }
         }
-    })
+    }) {
+        // 当页面重建时，若页面滚动位置与AppbarLayout的状态不匹配，则进行修正
+        // TODO 应当在View的onRestoreInstanceState中进行修正
+        if (fmRecyclerView.computeVerticalScrollOffset() > 0 && (fmAppbarLayout.behavior as MyAppbarBehavior).stateHelper.nowState != STATE_COLLAPSED) {
+            fmAppbarLayout.setExpanded(false)
+        }
+    }
 }
