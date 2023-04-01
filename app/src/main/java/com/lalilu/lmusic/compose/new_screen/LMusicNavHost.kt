@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.lalilu.lmusic.compose.component.SmartBar
@@ -44,6 +45,7 @@ annotation class PlaylistNavGraph(
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialNavigationApi::class)
 @Composable
 fun LMusicNavHost(
+    modifier: Modifier,
     navController: NavHostController = LocalNavigatorHost.current
 ) {
     LaunchedEffect(Unit) {
@@ -57,6 +59,7 @@ fun LMusicNavHost(
         )
     )
     DestinationsNavHost(
+        modifier = modifier,
         navGraph = NavGraphs.root,
         navController = navController,
         engine = animateEngine

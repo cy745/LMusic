@@ -26,12 +26,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 object SmartModalBottomSheet {
     private var scope: CoroutineScope? = null
-    private val enableFadeEdgeForStatusBar = mutableStateOf(true)
     private val scaffoldState = ModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         animationSpec = SpringSpec(stiffness = 1000f),
         isSkipHalfExpanded = true
     )
+    val enableFadeEdgeForStatusBar = mutableStateOf(true)
     val isVisible = derivedStateOf { scaffoldState.isVisible || scaffoldState.isAnimationRunning }
 
     val offset: Float
@@ -169,9 +169,7 @@ object SmartModalBottomSheet {
                  */
                 sheetContent = {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .edgeTransparentForStatusBar(enableFadeEdgeForStatusBar.value),
+                        modifier = Modifier.fillMaxSize(),
                         content = sheetContent
                     )
                 },

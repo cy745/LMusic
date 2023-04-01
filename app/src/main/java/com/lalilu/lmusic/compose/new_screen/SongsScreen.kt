@@ -110,7 +110,11 @@ fun SortPanelWrapper(
     content: @Composable (MutableState<Boolean>) -> Unit
 ) {
     val showSortPanel = remember { mutableStateOf(false) }
-    SmartBar.RegisterMainBarContent(showState = showSortPanel) {
+    SmartBar.RegisterMainBarContent(
+        showState = showSortPanel,
+        showMask = true,
+        showBackground = false
+    ) {
         SortPanel(
             sortFor = sortFor,
             supportGroupRules = supportGroupRules,
