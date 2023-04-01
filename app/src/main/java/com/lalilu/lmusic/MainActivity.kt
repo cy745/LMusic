@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
@@ -42,6 +43,7 @@ import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.edgeTransparentForStatusBar
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -139,7 +141,11 @@ class MainActivity : AppCompatActivity() {
                     Box {
                         SmartModalBottomSheet.SmartModalBottomSheetContent(
                             sheetContent = {
-                                LMusicNavHost()
+                                LMusicNavHost(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .edgeTransparentForStatusBar(SmartModalBottomSheet.enableFadeEdgeForStatusBar.value)
+                                )
                                 SmartBarContent(
                                     modifier = Modifier.graphicsLayer {
                                         translationY = -SmartModalBottomSheet.offset
