@@ -155,6 +155,7 @@ fun HomeScreen(
                     navigator.navigate(SongDetailScreenDestination(item.id))
                 },
                 onEnterSelect = { selectHelper.onSelected(item) },
+                isPlaying = { playingVM.isSongPlaying(item.id) },
                 onClick = {
                     if (selectHelper.isSelecting.value) {
                         selectHelper.onSelected(item)

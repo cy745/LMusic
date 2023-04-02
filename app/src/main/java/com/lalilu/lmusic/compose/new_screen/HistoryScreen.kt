@@ -61,6 +61,7 @@ fun HistoryScreen(
                     duration = { item.first.durationMs },
                     hasLyric = { hasLyric.value },
                     imageData = { item.first },
+                    isPlaying = { playingVM.isSongPlaying(item.first.id) },
                     onClick = {
                         if (selector.isSelecting.value) {
                             selector.onSelected(item.first)

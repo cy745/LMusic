@@ -19,6 +19,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.*
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
@@ -126,6 +128,13 @@ fun RecommendCard(
                 exit = fadeOut()
             ) {
                 val composition by rememberLottieComposition(LottieCompositionSpec.Asset("anim/90463-wave.json"))
+                val properties = rememberLottieDynamicProperties(
+                    rememberLottieDynamicProperty(
+                        property = LottieProperty.STROKE_COLOR,
+                        value = dayNightTextColor().toArgb(),
+                        keyPath = arrayOf("**", "Group 1", "Stroke 1")
+                    )
+                )
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -143,7 +152,8 @@ fun RecommendCard(
                         composition,
                         modifier = Modifier.size(50.dp, 50.dp),
                         iterations = LottieConstants.IterateForever,
-                        clipSpec = LottieClipSpec.Progress(0.06f, 0.9f)
+                        clipSpec = LottieClipSpec.Progress(0.06f, 0.9f),
+                        dynamicProperties = properties
                     )
                 }
             }

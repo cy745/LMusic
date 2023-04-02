@@ -65,6 +65,7 @@ fun AlbumDetailScreen(
     ) {
         SongListWrapper(
             songsState = songsState,
+            isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
             onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
             onClickItem = { playingVM.playSongWithPlaylist(songsState.values.flatten(), it) }
