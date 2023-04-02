@@ -25,6 +25,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.TimeUtils
+import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
@@ -32,6 +33,7 @@ import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.lmusic.compose.component.SmartFloatBtns
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.component.base.SongsSelectWrapper
 import com.lalilu.lmusic.compose.component.base.SortPanel
@@ -59,6 +61,7 @@ fun SongsScreen(
     navigator: DestinationsNavigator
 ) {
     val songsState by songsVM.songsState
+    val showSortPanel = remember { mutableStateOf(false) }
     LaunchedEffect(mediaIdsText) {
         songsVM.updateByIds(
             songIds = mediaIdsText.getIds(),
@@ -66,12 +69,38 @@ fun SongsScreen(
         )
     }
 
+    SmartFloatBtns.RegisterFloatBtns(
+        items = listOf(
+            SmartFloatBtns.FloatBtnItem(
+                title = "排序",
+                icon = R.drawable.ic_sort_desc,
+                callback = { showSortPanel.value = true }
+            ),
+            SmartFloatBtns.FloatBtnItem(
+                icon = R.drawable.ic_focus_3_line,
+                title = "定位当前播放歌曲",
+                callback = { }
+            ),
+            SmartFloatBtns.FloatBtnItem(
+                icon = R.drawable.ic_arrow_up_s_line,
+                title = "回到顶部",
+                callback = { }
+            ),
+            SmartFloatBtns.FloatBtnItem(
+                icon = R.drawable.ic_arrow_down_s_line,
+                title = "滚动到底部",
+                callback = { }
+            )
+        )
+    )
+
     SortPanelWrapper(
         sortFor = sortFor,
+        showPanelState = showSortPanel,
         supportGroupRules = { songsVM.sorter.supportGroupRules },
         supportOrderRules = { songsVM.sorter.supportOrderRules },
         supportSortRules = { songsVM.sorter.supportSortRules }
-    ) { showSortPanel ->
+    ) {
         SongListWrapper(
             songsState = songsState,
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
@@ -104,14 +133,14 @@ fun SongsScreen(
 @Composable
 fun SortPanelWrapper(
     sortFor: String,
+    showPanelState: MutableState<Boolean> = remember { mutableStateOf(false) },
     supportGroupRules: () -> List<GroupRule>,
     supportSortRules: () -> List<SortRule>,
     supportOrderRules: () -> List<OrderRule>,
-    content: @Composable (MutableState<Boolean>) -> Unit
+    content: @Composable () -> Unit
 ) {
-    val showSortPanel = remember { mutableStateOf(false) }
     SmartBar.RegisterMainBarContent(
-        showState = showSortPanel,
+        showState = showPanelState,
         showMask = true,
         showBackground = false
     ) {
@@ -120,13 +149,13 @@ fun SortPanelWrapper(
             supportGroupRules = supportGroupRules,
             supportOrderRules = supportOrderRules,
             supportSortRules = supportSortRules,
-            onClose = { showSortPanel.value = false }
+            onClose = { showPanelState.value = false }
         )
-        BackHandler(showSortPanel.value && SmartModalBottomSheet.isVisible.value) {
-            showSortPanel.value = false
+        BackHandler(showPanelState.value && SmartModalBottomSheet.isVisible.value) {
+            showPanelState.value = false
         }
     }
-    content(showSortPanel)
+    content()
 }
 
 

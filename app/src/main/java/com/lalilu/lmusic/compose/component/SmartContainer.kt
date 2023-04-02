@@ -56,7 +56,7 @@ object SmartContainer {
                 Spacer(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(SmartBar.smartBarHeightDpState.value)
+                        .height(SmartBar.smartBarHeightDpState.value + SmartFloatBtns.floatBtnsHeightDpState.value + 20.dp)
                 )
             }
         }
@@ -96,7 +96,7 @@ object SmartContainer {
                 Spacer(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(SmartBar.smartBarHeightDpState.value)
+                        .height(SmartBar.smartBarHeightDpState.value + SmartFloatBtns.floatBtnsHeightDpState.value + 20.dp)
                 )
             }
         }
@@ -115,7 +115,7 @@ object SmartContainer {
         val windowSize = LocalWindowSize.current
         val contentPadding = rememberStatusBarContentPadding(
             horizontalPadding = contentPaddingForHorizontal,
-            bottomPadding = SmartBar.smartBarHeightDpState.value
+            bottomPadding = SmartBar.smartBarHeightDpState.value + SmartFloatBtns.floatBtnsHeightDpState.value + 20.dp
         )
 
         LazyVerticalStaggeredGrid(

@@ -14,6 +14,8 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmedia.entity.LAlbum
@@ -39,6 +41,7 @@ fun AlbumsScreen(
     navigator: DestinationsNavigator
 ) {
     val albums by albumsVM.albums
+    val showSortPanel = remember { mutableStateOf(false) }
 
     LaunchedEffect(albumIdsText) {
         albumsVM.updateByIds(
@@ -49,10 +52,11 @@ fun AlbumsScreen(
 
     SortPanelWrapper(
         sortFor = Sortable.SORT_FOR_ALBUMS,
+        showPanelState = showSortPanel,
         supportGroupRules = { albumsVM.sorter.supportGroupRules },
         supportSortRules = { albumsVM.sorter.supportSortRules },
         supportOrderRules = { albumsVM.sorter.supportOrderRules }
-    ) { showSortPanel ->
+    ) {
         SmartContainer.LazyStaggeredVerticalGrid(
             contentPaddingForHorizontal = 10.dp,
             verticalArrangement = Arrangement.spacedBy(10.dp),
