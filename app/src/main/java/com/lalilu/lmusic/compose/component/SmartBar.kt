@@ -34,7 +34,7 @@ import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmusic.compose.new_screen.NavBar
-import com.lalilu.lmusic.utils.extension.measure
+import com.lalilu.lmusic.utils.extension.measureHeight
 
 object SmartBar {
     private val mainBar: MutableState<(@Composable () -> Unit)?> = mutableStateOf(null)
@@ -86,8 +86,8 @@ object SmartBar {
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .background(color = backgroundColor.value)
-                .measure { _, height ->
-                    smartBarHeightDpState.value = density.run { height.toDp() + 20.dp }
+                .measureHeight { _, height ->
+                    smartBarHeightDpState.value = density.run { height.toDp() }
                 }
         ) {
             AnimatedContent(targetState = extraBar.value) {

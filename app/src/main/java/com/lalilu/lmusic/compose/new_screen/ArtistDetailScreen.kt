@@ -11,6 +11,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,14 +52,16 @@ fun ArtistDetailScreen(
         )
     }
 
+    val showSortPanel = remember { mutableStateOf(false) }
     val songsState by songsVM.songsState
 
     SortPanelWrapper(
         sortFor = sortFor,
+        showPanelState = showSortPanel,
         supportGroupRules = { songsVM.sorter.supportGroupRules },
         supportSortRules = { songsVM.sorter.supportSortRules },
         supportOrderRules = { songsVM.sorter.supportOrderRules }
-    ) { showSortPanel ->
+    ) {
         SongListWrapper(
             songsState = songsState,
             hasLyricState = { playingVM.requireHasLyricState(item = it) },

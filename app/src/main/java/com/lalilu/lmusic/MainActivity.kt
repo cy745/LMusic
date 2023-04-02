@@ -34,6 +34,7 @@ import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
+import com.lalilu.lmusic.compose.component.SmartFloatBtns.SmartFloatBtnsContent
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.new_screen.LMusicNavHost
 import com.lalilu.lmusic.compose.screen.PlayingScreen
@@ -146,9 +147,15 @@ class MainActivity : AppCompatActivity() {
                                         .fillMaxSize()
                                         .edgeTransparentForStatusBar(SmartModalBottomSheet.enableFadeEdgeForStatusBar.value)
                                 )
+                                SmartFloatBtnsContent(
+                                    modifier = Modifier.graphicsLayer {
+                                        translationY = -SmartModalBottomSheet.offset * 0.8f
+                                        alpha = SmartModalBottomSheet.offsetHalfPercent
+                                    }
+                                )
                                 SmartBarContent(
                                     modifier = Modifier.graphicsLayer {
-                                        translationY = -SmartModalBottomSheet.offset
+                                        translationY = -SmartModalBottomSheet.offset * 0.9f
                                         alpha = SmartModalBottomSheet.offsetHalfPercent
                                     }
                                 )
