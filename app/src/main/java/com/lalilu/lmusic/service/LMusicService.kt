@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
-class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
+class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.Listener<LSong> {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
 
     private val lMusicSp: LMusicSp by inject()
@@ -71,60 +71,58 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         }
     }
 
-    inner class PlaybackListener : Playback.Listener<LSong> {
-        override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
-            val isPlaying = playback.player?.isPlaying ?: false
+    override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
+        val isPlaying = playback.player?.isPlaying ?: false
 
-            runtime.update(playing = item?.id)
-            runtime.update(isPlaying = isPlaying)
-            runtime.updatePosition(startValue = position, loop = isPlaying)
+        runtime.update(playing = item?.id)
+        runtime.update(isPlaying = isPlaying)
+        runtime.updatePosition(startValue = position, loop = isPlaying)
 
-            mediaSession.setMetadata(item?.metadataCompat)
-            mediaSession.setPlaybackState(
-                PlaybackStateCompat.Builder()
-                    .setActions(MEDIA_DEFAULT_ACTION)
-                    .setState(playbackState, position, 1f)
-                    .build()
-            )
+        mediaSession.setMetadata(item?.metadataCompat)
+        mediaSession.setPlaybackState(
+            PlaybackStateCompat.Builder()
+                .setActions(MEDIA_DEFAULT_ACTION)
+                .setState(playbackState, position, 1f)
+                .build()
+        )
 
-            when (playbackState) {
-                PlaybackStateCompat.STATE_PLAYING -> {
-                    mediaSession.isActive = true
-                    startService()
-                    notifier.startForeground { id, notification ->
-                        startForeground(id, notification)
-                    }
-                }
-
-                PlaybackStateCompat.STATE_PAUSED -> {
-                    // mediaSession.isActive = false
-                    stopForeground()
-                }
-
-                PlaybackStateCompat.STATE_STOPPED -> {
-                    mediaSession.isActive = false
-                    stopSelf()
-                    notifier.stopForeground {
-                        stopForeground()
-                        notifier.cancel()
-                    }
-                    return
+        when (playbackState) {
+            PlaybackStateCompat.STATE_PLAYING -> {
+                mediaSession.isActive = true
+                startService()
+                notifier.startForeground { id, notification ->
+                    startForeground(id, notification)
                 }
             }
-            notifier.update()
-        }
 
-        override fun onSetPlayMode(playMode: PlayMode) {
-            mediaSession.setRepeatMode(playMode.repeatMode)
-            mediaSession.setShuffleMode(playMode.shuffleMode)
-            notifier.update()
-        }
+            PlaybackStateCompat.STATE_PAUSED -> {
+                // mediaSession.isActive = false
+                stopForeground()
+            }
 
-        override fun onItemPlay(item: LSong) {
-            historyRepo.saveHistory(
-                LHistory(contentId = item.id, type = HISTORY_TYPE_SONG)
-            )
+            PlaybackStateCompat.STATE_STOPPED -> {
+                mediaSession.isActive = false
+                stopSelf()
+                notifier.stopForeground {
+                    stopForeground()
+                    notifier.cancel()
+                }
+                return
+            }
         }
+        notifier.update()
+    }
+
+    override fun onSetPlayMode(playMode: PlayMode) {
+        mediaSession.setRepeatMode(playMode.repeatMode)
+        mediaSession.setShuffleMode(playMode.shuffleMode)
+        notifier.update()
+    }
+
+    override fun onItemPlay(item: LSong) {
+        historyRepo.saveHistory(
+            LHistory(contentId = item.id, type = HISTORY_TYPE_SONG)
+        )
     }
 
     override fun onCreate() {
@@ -133,7 +131,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         playback = MixPlayback(
             noisyReceiver = noisyReceiver,
             audioFocusHelper = audioFocusHelper,
-            playbackListener = PlaybackListener(),
+            playbackListener = this,
             queue = LMusicRuntimeQueue(runtime),
             player = localPlayer
         )
@@ -196,7 +194,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             }
         }
         MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     /**
