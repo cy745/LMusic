@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -18,8 +20,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -46,6 +50,7 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -60,7 +65,10 @@ fun SongsScreen(
     playingVM: PlayingViewModel = get(),
     navigator: DestinationsNavigator
 ) {
+    val scope = rememberCoroutineScope()
+    val gridState = rememberLazyGridState()
     val songsState by songsVM.songsState
+    val currentPlaying by playingVM.currentPlaying.observeAsState()
     val showSortPanel = remember { mutableStateOf(false) }
     LaunchedEffect(mediaIdsText) {
         songsVM.updateByIds(
@@ -79,17 +87,32 @@ fun SongsScreen(
             SmartFloatBtns.FloatBtnItem(
                 icon = R.drawable.ic_focus_3_line,
                 title = "定位当前播放歌曲",
-                callback = { }
+                callback = {
+                    if (currentPlaying != null) {
+                        scope.launch {
+                            var index = 0
+                            songsState.forEach { entry ->
+                                val tempIndex =
+                                    entry.value.indexOfFirst { it.id == currentPlaying!!.id }
+                                if (tempIndex != -1) {
+                                    index += tempIndex
+                                    gridState.animateScrollToItem(index)
+                                }
+                                index += entry.value.size
+                            }
+                        }
+                    }
+                }
             ),
             SmartFloatBtns.FloatBtnItem(
                 icon = R.drawable.ic_arrow_up_s_line,
                 title = "回到顶部",
-                callback = { }
+                callback = { scope.launch { gridState.animateScrollToItem(0) } }
             ),
             SmartFloatBtns.FloatBtnItem(
                 icon = R.drawable.ic_arrow_down_s_line,
                 title = "滚动到底部",
-                callback = { }
+                callback = { scope.launch { gridState.scrollToItem(Int.MAX_VALUE) } }
             )
         )
     )
@@ -102,8 +125,10 @@ fun SongsScreen(
         supportSortRules = { songsVM.sorter.supportSortRules }
     ) {
         SongListWrapper(
+            state = gridState,
             songsState = songsState,
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
+            isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
             onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
             onClickItem = { playingVM.playSongWithPlaylist(songsState.values.flatten(), it) }
         ) {
@@ -162,16 +187,19 @@ fun SortPanelWrapper(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SongListWrapper(
+    state: LazyGridState = rememberLazyGridState(),
     songsState: Map<Any, List<LSong>>,
     hasLyricState: (LSong) -> State<Boolean>,
     onClickItem: (LSong) -> Unit = {},
     onLongClickItem: (LSong) -> Unit = {},
+    isItemPlaying: (LSong) -> Boolean = { false },
     headerContent: LazyGridScope.() -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
 
     SongsSelectWrapper { selector ->
         SmartContainer.LazyVerticalGrid(
+            state = state,
             columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -231,7 +259,8 @@ fun SongListWrapper(
                             onLongClickItem(item)
                         },
                         onEnterSelect = { selector.onSelected(item) },
-                        isSelected = { selector.selectedItems.any { it.id == item.id } }
+                        isSelected = { selector.selectedItems.any { it.id == item.id } },
+                        isPlaying = { isItemPlaying(item) }
                     )
                 }
             }

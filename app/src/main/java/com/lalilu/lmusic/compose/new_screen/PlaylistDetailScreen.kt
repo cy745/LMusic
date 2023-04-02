@@ -114,6 +114,7 @@ fun PlaylistDetailScreen(
                             navigator.navigate(SongDetailScreenDestination(item.id))
                         },
                         onEnterSelect = { selector.onSelected(item) },
+                        isPlaying = { playingVM.isSongPlaying(item.id) },
                         isSelected = { isDragging || selector.selectedItems.any { it.id == item.id } }
                     )
                 }
