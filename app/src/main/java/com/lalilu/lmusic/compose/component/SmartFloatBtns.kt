@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +38,11 @@ object SmartFloatBtns {
     private val btnItems: MutableState<List<FloatBtnItem>> = mutableStateOf(emptyList())
     private val showAll: MutableState<Boolean> = mutableStateOf(false)
 
-    val floatBtnsHeightDpState = mutableStateOf(0.dp)
+    private val actualHeightDpState = mutableStateOf(0.dp)
+    val floatBtnsHeightDpState = derivedStateOf {
+        if (btnItems.value.isNotEmpty()) actualHeightDpState.value else 0.dp
+    }
+
     val colors = listOf(
         Color(0xFF09B1C7),
         Color(0xFFF82AB3),
@@ -85,7 +90,7 @@ object SmartFloatBtns {
                         .animateContentSize()
                         .padding(9.dp)
                         .measureHeight { _, height ->
-                            floatBtnsHeightDpState.value = density.run { height.toDp() + 12.dp }
+                            actualHeightDpState.value = density.run { height.toDp() + 12.dp }
                         },
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally
