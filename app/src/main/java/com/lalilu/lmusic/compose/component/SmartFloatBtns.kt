@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.component
 
+import android.view.MotionEvent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -24,9 +25,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -37,6 +40,7 @@ import kotlinx.coroutines.delay
 object SmartFloatBtns {
     private val btnItems: MutableState<List<FloatBtnItem>> = mutableStateOf(emptyList())
     private val showAll: MutableState<Boolean> = mutableStateOf(false)
+    private val lastTouchTime: MutableState<Long> = mutableStateOf(0L)
 
     private val actualHeightDpState = mutableStateOf(0.dp)
     val floatBtnsHeightDpState = derivedStateOf {
@@ -51,18 +55,19 @@ object SmartFloatBtns {
         Color(0xFFE94C0F),
     )
 
-    @OptIn(ExperimentalAnimationApi::class)
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
     @Composable
     fun BoxScope.SmartFloatBtnsContent(modifier: Modifier) {
         val density = LocalDensity.current
 
-        LaunchedEffect(showAll.value, btnItems.value) {
+        // lastTouchTime 用于触发重启协程，即点击后重新开始计时
+        LaunchedEffect(showAll.value, btnItems.value, lastTouchTime.value) {
             // 当没有按钮时，自动收起
             if (btnItems.value.isEmpty()) {
                 showAll.value = false
                 return@LaunchedEffect
             }
-            // 展开后10s自动收起
+            // 若已展开，则10s自动收起
             if (showAll.value) {
                 delay(10000)
                 showAll.value = false
@@ -91,6 +96,13 @@ object SmartFloatBtns {
                         .padding(9.dp)
                         .measureHeight { _, height ->
                             actualHeightDpState.value = density.run { height.toDp() + 12.dp }
+                        }
+                        // 在父级监听所有的TouchEvent，但是不拦截，只用于判断用户是否点击过该区域
+                        .pointerInteropFilter {
+                            if (it.action == MotionEvent.ACTION_DOWN) {
+                                lastTouchTime.value = System.currentTimeMillis()
+                            }
+                            false
                         },
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally
