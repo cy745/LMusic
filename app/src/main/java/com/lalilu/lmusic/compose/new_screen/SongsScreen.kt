@@ -2,17 +2,19 @@ package com.lalilu.lmusic.compose.new_screen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -24,13 +26,17 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.blankj.utilcode.util.TimeUtils
+import androidx.compose.ui.unit.sp
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
@@ -41,10 +47,11 @@ import com.lalilu.lmusic.compose.component.SmartFloatBtns
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.component.base.SongsSelectWrapper
 import com.lalilu.lmusic.compose.component.base.SortPanel
+import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
@@ -53,7 +60,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
 
-@OptIn(ExperimentalMaterialApi::class)
 @HomeNavGraph
 @Destination
 @Composable
@@ -82,7 +88,10 @@ fun SongsScreen(
             SmartFloatBtns.FloatBtnItem(
                 title = "排序",
                 icon = R.drawable.ic_sort_desc,
-                callback = { showSortPanel.value = true }
+                callback = { showAll ->
+                    showSortPanel.value = true
+                    showAll.value = false
+                }
             ),
             SmartFloatBtns.FloatBtnItem(
                 icon = R.drawable.ic_focus_3_line,
@@ -91,14 +100,21 @@ fun SongsScreen(
                     if (currentPlaying != null) {
                         scope.launch {
                             var index = 0
-                            songsState.forEach { entry ->
-                                val tempIndex =
-                                    entry.value.indexOfFirst { it.id == currentPlaying!!.id }
+                            for ((identity, list) in songsState) {
+                                val skip = identity == GroupIdentity.None ||
+                                        identity is GroupIdentity.DiskNumber && identity.number < 0
+
+                                if (!skip) {
+                                    index += 1
+                                }
+                                val tempIndex = list.indexOfFirst { it.id == currentPlaying!!.id }
                                 if (tempIndex != -1) {
                                     index += tempIndex
-                                    gridState.animateScrollToItem(index)
+                                    gridState.scrollToItem(index)
+                                    break
                                 }
-                                index += entry.value.size
+
+                                index += list.size
                             }
                         }
                     }
@@ -107,7 +123,7 @@ fun SongsScreen(
             SmartFloatBtns.FloatBtnItem(
                 icon = R.drawable.ic_arrow_up_s_line,
                 title = "回到顶部",
-                callback = { scope.launch { gridState.animateScrollToItem(0) } }
+                callback = { scope.launch { gridState.scrollToItem(0) } }
             ),
             SmartFloatBtns.FloatBtnItem(
                 icon = R.drawable.ic_arrow_down_s_line,
@@ -120,6 +136,15 @@ fun SongsScreen(
     SortPanelWrapper(
         sortFor = sortFor,
         showPanelState = showSortPanel,
+        supportSortPresets = {
+            listOf(
+                SortPreset.SortByAddTime,
+                SortPreset.SortByTitle,
+                SortPreset.SortByLastPlayTime,
+                SortPreset.SortByPlayedTimes,
+                SortPreset.SortByDuration
+            )
+        },
         supportGroupRules = { songsVM.sorter.supportGroupRules },
         supportOrderRules = { songsVM.sorter.supportOrderRules },
         supportSortRules = { songsVM.sorter.supportSortRules }
@@ -129,27 +154,14 @@ fun SongsScreen(
             songsState = songsState,
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
             isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
-            onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
-            onClickItem = { playingVM.playSongWithPlaylist(songsState.values.flatten(), it) }
+            onClickItem = { playingVM.playSongWithPlaylist(songsState.values.flatten(), it) },
+            onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) }
         ) {
             item {
                 NavigatorHeader(
                     title = title,
                     subTitle = "共 ${songsState.values.flatten().size} 首歌曲"
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(50.dp),
-                        color = dayNightTextColor(0.05f),
-                        onClick = { showSortPanel.value = !showSortPanel.value }
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 15.dp, vertical = 5.dp),
-                            style = MaterialTheme.typography.subtitle2,
-                            color = dayNightTextColor(0.7f),
-                            text = "排序"
-                        )
-                    }
-                }
+                )
             }
         }
     }
@@ -158,19 +170,28 @@ fun SongsScreen(
 @Composable
 fun SortPanelWrapper(
     sortFor: String,
+    lMusicSp: LMusicSp = get(),
     showPanelState: MutableState<Boolean> = remember { mutableStateOf(false) },
+    supportSortPresets: () -> List<SortPreset>,
     supportGroupRules: () -> List<GroupRule>,
     supportSortRules: () -> List<SortRule>,
     supportOrderRules: () -> List<OrderRule>,
-    content: @Composable () -> Unit
+    content: @Composable (State<String>) -> Unit
 ) {
+    val sortRule = lMusicSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
+    val orderRule = lMusicSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.Normal.name)
+    val groupRule = lMusicSp.stringSp("${sortFor}_GROUP_RULE", GroupRule.Normal.name)
+
     SmartBar.RegisterMainBarContent(
         showState = showPanelState,
         showMask = true,
         showBackground = false
     ) {
         SortPanel(
-            sortFor = sortFor,
+            sortRule = sortRule,
+            orderRule = orderRule,
+            groupRule = groupRule,
+            supportSortPresets = supportSortPresets,
             supportGroupRules = supportGroupRules,
             supportOrderRules = supportOrderRules,
             supportSortRules = supportSortRules,
@@ -180,7 +201,7 @@ fun SortPanelWrapper(
             showPanelState.value = false
         }
     }
-    content()
+    content(sortRule)
 }
 
 
@@ -188,10 +209,11 @@ fun SortPanelWrapper(
 @Composable
 fun SongListWrapper(
     state: LazyGridState = rememberLazyGridState(),
-    songsState: Map<Any, List<LSong>>,
+    songsState: Map<GroupIdentity, List<LSong>>,
     hasLyricState: (LSong) -> State<Boolean>,
     onClickItem: (LSong) -> Unit = {},
     onLongClickItem: (LSong) -> Unit = {},
+    showTrackNumber: () -> Boolean = { false },
     isItemPlaying: (LSong) -> Boolean = { false },
     headerContent: LazyGridScope.() -> Unit
 ) {
@@ -205,35 +227,30 @@ fun SongListWrapper(
         ) {
             headerContent()
 
-            val now = System.currentTimeMillis()
-            songsState.forEach { (titleObj, list) ->
-                if (titleObj is Long) {
+            for ((groupIdentity, list) in songsState) {
+                var skip = groupIdentity == GroupIdentity.None
+                skip = skip || groupIdentity is GroupIdentity.DiskNumber && groupIdentity.number < 0
+
+                if (!skip) {
                     item(
-                        key = titleObj,
-                        contentType = LSong::dateAdded,
+                        key = groupIdentity,
+                        contentType = GroupIdentity::class,
                         span = { GridItemSpan(maxLineSpan) }
                     ) {
                         Text(
                             modifier = Modifier.padding(
-                                top = 20.dp, bottom = 10.dp, start = 20.dp, end = 20.dp
-                            ), style = MaterialTheme.typography.h6, text = when {
-                                now - titleObj < 300000 -> "刚刚"
-                                now - titleObj < 3600000 -> "${(now - titleObj) / 60000}分钟前"
-                                now - titleObj < 86400000 -> "${(now - titleObj) / 3600000}小时前"
-                                else -> TimeUtils.millis2String(titleObj, "M月d日 HH:mm")
+                                top = 20.dp,
+                                bottom = 10.dp,
+                                start = 20.dp,
+                                end = 20.dp
+                            ),
+                            style = MaterialTheme.typography.h6,
+                            text = when (groupIdentity) {
+                                is GroupIdentity.Time -> groupIdentity.time
+                                is GroupIdentity.DiskNumber -> groupIdentity.number.toString()
+                                is GroupIdentity.FirstLetter -> groupIdentity.letter
+                                else -> ""
                             }
-                        )
-                    }
-                } else if (titleObj is String && titleObj.isNotEmpty()) {
-                    item(
-                        key = titleObj,
-                        contentType = LSong::dateAdded,
-                        span = { GridItemSpan(maxLineSpan) }
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(
-                                top = 20.dp, bottom = 10.dp, start = 20.dp, end = 20.dp
-                            ), style = MaterialTheme.typography.h6, text = titleObj
                         )
                     }
                 }
@@ -260,7 +277,28 @@ fun SongListWrapper(
                         },
                         onEnterSelect = { selector.onSelected(item) },
                         isSelected = { selector.selectedItems.any { it.id == item.id } },
-                        isPlaying = { isItemPlaying(item) }
+                        isPlaying = { isItemPlaying(item) },
+                        showPrefix = showTrackNumber,
+                        prefixContent = { modifier ->
+                            Row(
+                                modifier = modifier
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colors.surface)
+                                    .padding(start = 4.dp, end = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Icon(
+                                    modifier = Modifier.size(10.dp),
+                                    painter = painterResource(id = R.drawable.headphone_fill),
+                                    contentDescription = ""
+                                )
+                                Text(
+                                    text = item.track.toString(),
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
                     )
                 }
             }

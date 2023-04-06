@@ -62,6 +62,7 @@ object SmartBar {
             if (showBackground.value) MaterialTheme.colors.background.copy(alpha = 0.95f) else Color.Transparent
         )
 
+        // Mask遮罩层，点击后即消失
         Spacer(
             modifier = Modifier
                 .background(
@@ -73,6 +74,8 @@ object SmartBar {
                     )
                 )
                 .fillMaxSize()
+                // 监听触摸时间，若为ACTION_UP或ACTION_CANCEL则触发返回事件
+                // 返回事件会将该StackItem移除，同时触发SmartBar的状态变化
                 .pointerInteropFilter {
                     if (showMask.value && (it.action == ACTION_UP || it.action == ACTION_CANCEL)) {
                         backPressDispatcher?.onBackPressedDispatcher?.onBackPressed()

@@ -1,15 +1,28 @@
 package com.lalilu.lmusic.compose.new_screen
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.SongsSelectWrapper
@@ -43,8 +56,7 @@ fun HistoryScreen(
                 NavigatorHeader(
                     title = "播放历史",
                     subTitle = "共 ${songs.size} 首歌曲"
-                ) {
-                }
+                )
             }
             items(
                 items = songs,
@@ -56,7 +68,7 @@ fun HistoryScreen(
                     modifier = Modifier.animateItemPlacement(),
                     dragModifier = Modifier,
                     title = { item.first.name },
-                    subTitle = { "${item.second}  ${item.first._artist}" },
+                    subTitle = { item.first._artist },
                     mimeType = { item.first.mimeType },
                     duration = { item.first.durationMs },
                     hasLyric = { hasLyric.value },
@@ -76,7 +88,28 @@ fun HistoryScreen(
                         navigator.navigate(SongDetailScreenDestination(mediaId = item.first.id))
                     },
                     onEnterSelect = { selector.onSelected(item.first) },
-                    isSelected = { selector.selectedItems.any { it.id == item.first.id } }
+                    isSelected = { selector.selectedItems.any { it.id == item.first.id } },
+                    showPrefix = { true },
+                    prefixContent = { modifier ->
+                        Row(
+                            modifier = modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colors.surface)
+                                .padding(start = 4.dp, end = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(10.dp),
+                                painter = painterResource(id = R.drawable.headphone_fill),
+                                contentDescription = ""
+                            )
+                            Text(
+                                text = item.second.toString(),
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
                 )
             }
         }

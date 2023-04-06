@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.BaseMatchable
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.BaseSortStrategy
+import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
@@ -171,7 +172,8 @@ open class ItemsBaseSorter<T : Sortable>(
         SortRule.ItemsDuration,
         SortRule.FileSize,
         SortRule.PlayCount,
-        SortRule.LastPlayTime
+        SortRule.LastPlayTime,
+        SortRule.TrackNumber
     )
 
     open fun obtainSupportOrderRules(): List<OrderRule> = listOf(
@@ -186,7 +188,8 @@ open class ItemsBaseSorter<T : Sortable>(
         GroupRule.ModifyTime,
         GroupRule.TitleFirstLetter,
         GroupRule.SubTitleFirstLetter,
-        GroupRule.PinYinFirstLetter
+        GroupRule.PinYinFirstLetter,
+        GroupRule.DiskNumber
     )
 
     private val sortForFlow: MutableStateFlow<String> = MutableStateFlow(Sortable.SORT_FOR_SONGS)
@@ -194,20 +197,26 @@ open class ItemsBaseSorter<T : Sortable>(
     private val sortRuleFlow: Flow<SortRule> = sortForFlow.flatMapLatest {
         lMusicSp.stringSp("${it}_SORT_RULE")
             .flow(true)
-            .mapLatest(SortRule::from)
+            .mapLatest { str ->
+                SortRule.from(str = str, default = supportSortRules.getOrNull(0))
+            }
     }
     private val orderRuleFlow: Flow<OrderRule> = sortForFlow.flatMapLatest {
         lMusicSp.stringSp("${it}_ORDER_RULE")
             .flow(true)
-            .mapLatest(OrderRule::from)
+            .mapLatest { str ->
+                OrderRule.from(str = str, default = supportOrderRules.getOrNull(0))
+            }
     }
     private val groupRuleFlow: Flow<GroupRule> = sortForFlow.flatMapLatest {
         lMusicSp.stringSp("${it}_GROUP_RULE")
             .flow(true)
-            .mapLatest(GroupRule::from)
+            .mapLatest { str ->
+                GroupRule.from(str = str, default = supportGroupRules.getOrNull(0))
+            }
     }
 
-    val output: Flow<Map<Any, List<T>>> = strategy.sortFor(
+    val output: Flow<Map<GroupIdentity, List<T>>> = strategy.sortFor(
         inputFlow = sourceFlow,
         sortRuleFlow = sortRuleFlow,
         orderRuleFlow = orderRuleFlow,

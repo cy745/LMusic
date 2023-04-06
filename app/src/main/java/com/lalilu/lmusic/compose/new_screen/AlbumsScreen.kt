@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.AlbumCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
@@ -53,6 +54,13 @@ fun AlbumsScreen(
     SortPanelWrapper(
         sortFor = Sortable.SORT_FOR_ALBUMS,
         showPanelState = showSortPanel,
+        supportSortPresets = {
+            listOf(
+                SortPreset.SortByTitle,
+                SortPreset.SortByDuration,
+                SortPreset.SortByItemCount
+            )
+        },
         supportGroupRules = { albumsVM.sorter.supportGroupRules },
         supportSortRules = { albumsVM.sorter.supportSortRules },
         supportOrderRules = { albumsVM.sorter.supportOrderRules }

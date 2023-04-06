@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -59,6 +60,15 @@ fun DictionaryDetailScreen(
     SortPanelWrapper(
         sortFor = sortFor,
         showPanelState = showSortPanel,
+        supportSortPresets = {
+            listOf(
+                SortPreset.SortByAddTime,
+                SortPreset.SortByTitle,
+                SortPreset.SortByLastPlayTime,
+                SortPreset.SortByPlayedTimes,
+                SortPreset.SortByDuration
+            )
+        },
         supportGroupRules = { songsVM.sorter.supportGroupRules },
         supportSortRules = { songsVM.sorter.supportSortRules },
         supportOrderRules = { songsVM.sorter.supportOrderRules }
