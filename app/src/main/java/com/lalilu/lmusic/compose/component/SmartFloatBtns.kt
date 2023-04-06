@@ -1,15 +1,21 @@
 package com.lalilu.lmusic.compose.component
 
+import android.annotation.SuppressLint
 import android.view.MotionEvent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -17,6 +23,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -27,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInteropFilter
@@ -55,10 +63,14 @@ object SmartFloatBtns {
         Color(0xFFE94C0F),
     )
 
+    @SuppressLint("UnnecessaryComposedModifier")
     @OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
     @Composable
     fun BoxScope.SmartFloatBtnsContent(modifier: Modifier) {
         val density = LocalDensity.current
+        val borderColor = animateColorAsState(
+            if (MaterialTheme.colors.isLight) Color.Transparent else Color.DarkGray
+        )
 
         // lastTouchTime 用于触发重启协程，即点击后重新开始计时
         LaunchedEffect(showAll.value, btnItems.value, lastTouchTime.value) {
@@ -85,14 +97,18 @@ object SmartFloatBtns {
                 modifier = Modifier
                     .padding(bottom = SmartBar.smartBarHeightDpState.value)
                     .padding(end = 22.dp, bottom = 12.dp),
+                border = BorderStroke(1.dp, borderColor.value),
                 shape = CircleShape,
                 elevation = 2.dp
             ) {
                 Column(
                     modifier = Modifier
-                        .wrapContentHeight()
+                        .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow))
+                        // 通过修改高度来控制是否展开
+                        .composed {
+                            if (showAll.value) wrapContentHeight() else height(60.dp)
+                        }
                         .wrapContentWidth()
-                        .animateContentSize()
                         .padding(9.dp)
                         .measureHeight { _, height ->
                             actualHeightDpState.value = density.run { height.toDp() + 12.dp }
@@ -116,15 +132,13 @@ object SmartFloatBtns {
                         )
                     }
                     btnItems.value.forEachIndexed { index, item ->
-                        AnimatedVisibility(visible = showAll.value) {
-                            IconItem(
-                                modifier = Modifier.padding(top = 9.dp),
-                                painter = painterResource(id = item.icon),
-                                title = item.title,
-                                color = colors[(index + 1) % colors.size],
-                                onClick = item.callback
-                            )
-                        }
+                        IconItem(
+                            modifier = Modifier.padding(top = 9.dp),
+                            painter = painterResource(id = item.icon),
+                            title = item.title,
+                            color = colors[(index + 1) % colors.size],
+                            onClick = { item.callback(showAll) }
+                        )
                     }
                 }
             }
@@ -168,7 +182,7 @@ object SmartFloatBtns {
     class FloatBtnItem(
         val icon: Int,
         val title: String,
-        val callback: () -> Unit
+        val callback: (showAll: MutableState<Boolean>) -> Unit
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

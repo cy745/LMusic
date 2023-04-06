@@ -16,6 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.lalilu.lmedia.extension.SortRule
+import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.AlbumCoverCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
@@ -59,12 +61,23 @@ fun AlbumDetailScreen(
     SortPanelWrapper(
         sortFor = sortFor,
         showPanelState = showSortPanel,
+        supportSortPresets = {
+            listOf(
+                SortPreset.SortByDiskAndTrackNumber,
+                SortPreset.SortByAddTime,
+                SortPreset.SortByTitle,
+                SortPreset.SortByLastPlayTime,
+                SortPreset.SortByPlayedTimes,
+                SortPreset.SortByDuration
+            )
+        },
         supportGroupRules = { songsVM.sorter.supportGroupRules },
         supportSortRules = { songsVM.sorter.supportSortRules },
         supportOrderRules = { songsVM.sorter.supportOrderRules }
-    ) {
+    ) { sortRule ->
         SongListWrapper(
             songsState = songsState,
+            showTrackNumber = { sortRule.value == SortRule.TrackNumber.name },
             isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
             onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },

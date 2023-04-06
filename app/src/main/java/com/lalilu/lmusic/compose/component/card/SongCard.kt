@@ -15,6 +15,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.ripple.rememberRipple
@@ -59,14 +60,16 @@ import com.lalilu.lmusic.utils.extension.mimeTypeToIcon
 @Composable
 fun SongCard(
     modifier: Modifier = Modifier,
-    hasLyric: State<Boolean> = remember { mutableStateOf(false) },
     dragModifier: Modifier = Modifier,
     song: () -> LSong,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
     onEnterSelect: () -> Unit = {},
+    isPlaying: () -> Boolean = { false },
     isSelected: () -> Boolean = { false },
-    isPlaying: () -> Boolean = { false }
+    showPrefix: () -> Boolean = { false },
+    hasLyric: State<Boolean> = remember { mutableStateOf(false) },
+    prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     val item = remember { song() }
 
@@ -83,7 +86,9 @@ fun SongCard(
         onLongClick = onLongClick,
         onEnterSelect = onEnterSelect,
         isSelected = isSelected,
-        isPlaying = isPlaying
+        isPlaying = isPlaying,
+        showPrefix = showPrefix,
+        prefixContent = prefixContent
     )
 }
 
@@ -96,13 +101,15 @@ fun SongCard(
     subTitle: () -> String,
     mimeType: () -> String,
     duration: () -> Long,
-    hasLyric: () -> Boolean = { false },
     imageData: () -> Any?,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
     onEnterSelect: () -> Unit = {},
+    hasLyric: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
-    isSelected: () -> Boolean = { false }
+    isSelected: () -> Boolean = { false },
+    showPrefix: () -> Boolean = { false },
+    prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val bgColor by animateColorAsState(if (isSelected()) dayNightTextColor(0.15f) else Color.Transparent)
@@ -130,7 +137,9 @@ fun SongCard(
             mimeType = mimeType,
             duration = duration,
             hasLyric = hasLyric,
-            isPlaying = isPlaying
+            isPlaying = isPlaying,
+            showPrefix = showPrefix,
+            prefixContent = prefixContent
         )
         SongCardImage(
             modifier = dragModifier,
@@ -150,7 +159,9 @@ fun SongCardContent(
     mimeType: () -> String,
     duration: () -> Long,
     hasLyric: () -> Boolean = { false },
-    isPlaying: () -> Boolean = { false }
+    isPlaying: () -> Boolean = { false },
+    showPrefix: () -> Boolean = { false },
+    prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     Column(
         modifier = modifier,
@@ -212,6 +223,19 @@ fun SongCardContent(
                     clipSpec = LottieClipSpec.Progress(0.06f, 0.9f),
                     dynamicProperties = properties
                 )
+            }
+            AnimatedVisibility(
+                visible = showPrefix(),
+                modifier = Modifier.wrapContentWidth(),
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkHorizontally()
+            ) {
+                ProvideTextStyle(
+                    value = MaterialTheme.typography.caption
+                        .copy(color = dayNightTextColor(0.5f)),
+                ) {
+                    prefixContent(Modifier.padding(end = 5.dp))
+                }
             }
             Text(
                 modifier = Modifier.weight(1f),
