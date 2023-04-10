@@ -7,6 +7,7 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.WindowInsetsCompat
 import com.dirror.lyricviewx.LyricViewX
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
@@ -55,6 +56,19 @@ class SquareAppbarLayout @JvmOverloads constructor(
         val dragOffset = (mDraweeView?.maxOffset ?: 0).toFloat()
         return ((offset - dragOffset) / (fullyExpendedOffset.toFloat() - dragOffset))
             .coerceIn(0F, 1F).ifNaN(0f)
+    }
+
+    init {
+        rootView.setOnApplyWindowInsetsListener { v, insets ->
+            WindowInsetsCompat
+                .toWindowInsetsCompat(insets)
+                .getInsets(WindowInsetsCompat.Type.statusBars())
+                .top.takeIf { it > 0 }?.let {
+                    mToolbar?.setPadding(0, it, 0, 0)
+                    mToolbar?.layoutParams?.apply { height += it }
+                }
+            insets
+        }
     }
 
     override fun onAttachedToWindow() {
