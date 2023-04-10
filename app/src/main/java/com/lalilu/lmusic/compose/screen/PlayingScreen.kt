@@ -15,7 +15,6 @@ import com.dirror.lyricviewx.GRAVITY_RIGHT
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.common.HapticUtils
 import com.lalilu.common.OnDoubleClickListener
-import com.lalilu.common.SystemUiUtil
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
@@ -69,12 +68,8 @@ fun PlayingScreen(
                 onPlayPrevious = { playingVM.browser.skipToPrevious() }
             )
 
-            val statusBarHeight = SystemUiUtil.getFixedStatusHeight(activity)
-
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
-            fmToolbar.setPadding(0, statusBarHeight, 0, 0)
-            fmToolbar.layoutParams.apply { height += statusBarHeight }
 
             // 双击返回顶部
             fmToolbar.setOnClickListener(OnDoubleClickListener {
