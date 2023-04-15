@@ -73,5 +73,8 @@ class LMusicSp(context: Context) : BaseSp() {
 
     val artistSortValue = intSp("ArtistSort")
 
-    val isGuidingOver = boolSp(Config.KEY_REMEMBER_IS_GUIDING_OVER, false)
+    val isGuidingOver = boolSp(
+        Config.KEY_REMEMBER_IS_GUIDING_OVER,
+        false
+    )
 }

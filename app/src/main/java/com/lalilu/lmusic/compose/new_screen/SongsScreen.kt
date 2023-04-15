@@ -168,7 +168,7 @@ fun SongsScreen(
             SmartFloatBtns.FloatBtnItem(
                 icon = R.drawable.ic_arrow_down_s_line,
                 title = "滚动到底部",
-                callback = { scope.launch { gridState.scrollToItem(Int.MAX_VALUE) } }
+                callback = { scope.launch { gridState.scrollToItem(gridState.layoutInfo.totalItemsCount) } }
             )
         )
     )

@@ -1,6 +1,10 @@
 package com.lalilu.lmusic.compose.component.card
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -82,7 +86,9 @@ fun AlbumTitleText(
 ) {
     AnimatedVisibility(
         modifier = modifier,
-        visible = showTitle()
+        visible = showTitle(),
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically()
     ) {
         Text(
             modifier = Modifier

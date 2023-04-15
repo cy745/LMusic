@@ -66,6 +66,16 @@ class AlbumsViewModel(
                 }
                 return super.sortWithFlow(rule, source)
             }
+
+            override fun sortBy(rule: SortRule, list: List<LAlbum>): List<LAlbum> {
+                return when (rule) {
+                    SortRule.Title -> list.sortedBy { it.requireTitle() }
+                    SortRule.FileSize -> list.sortedBy { it.requireFileSize() }
+                    SortRule.ItemsCount -> list.sortedBy { it.requireItemsCount() }
+                    SortRule.ItemsDuration -> list.sortedBy { it.requireItemsDuration() }
+                    else -> list
+                }
+            }
         }
     }
 
