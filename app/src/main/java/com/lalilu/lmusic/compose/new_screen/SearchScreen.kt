@@ -168,7 +168,7 @@ fun SearchScreen(
             AnimatedContent(targetState = searchVM.albumsResult.value.isNotEmpty()) { show ->
                 if (show) {
                     RecommendRow(
-                        items = searchVM.albumsResult.value,
+                        items = { searchVM.albumsResult.value },
                         getId = { it.id }
                     ) {
                         RecommendCardForAlbum(

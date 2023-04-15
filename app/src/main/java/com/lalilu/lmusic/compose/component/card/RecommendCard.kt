@@ -105,6 +105,15 @@ fun RecommendCard(
     onClick: () -> Unit = {},
     onClickButton: () -> Unit = {}
 ) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.Asset("anim/90463-wave.json"))
+    val properties = rememberLottieDynamicProperties(
+        rememberLottieDynamicProperty(
+            property = LottieProperty.STROKE_COLOR,
+            value = dayNightTextColor().toArgb(),
+            keyPath = arrayOf("**", "Group 1", "Stroke 1")
+        )
+    )
+
     Column(
         modifier = modifier.width(IntrinsicSize.Min),
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -117,24 +126,15 @@ fun RecommendCard(
             onClick = onClick
         ) { palette ->
             val mainColor = Color(
-                palette?.getLightMutedColor(android.graphics.Color.GRAY)
+                palette()?.getLightMutedColor(android.graphics.Color.GRAY)
                     ?: android.graphics.Color.GRAY
             )
-
             androidx.compose.animation.AnimatedVisibility(
                 modifier = Modifier.fillMaxSize(),
                 visible = isPlaying(),
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                val composition by rememberLottieComposition(LottieCompositionSpec.Asset("anim/90463-wave.json"))
-                val properties = rememberLottieDynamicProperties(
-                    rememberLottieDynamicProperty(
-                        property = LottieProperty.STROKE_COLOR,
-                        value = dayNightTextColor().toArgb(),
-                        keyPath = arrayOf("**", "Group 1", "Stroke 1")
-                    )
-                )
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -157,21 +157,21 @@ fun RecommendCard(
                     )
                 }
             }
-
-            AnimatedContent(
+            Surface(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 10.dp, bottom = 10.dp),
-                targetState = isPlaying()
+                elevation = 1.dp,
+                color = mainColor,
+                shape = CircleShape
             ) {
-                Surface(
-                    elevation = 1.dp, color = mainColor, shape = CircleShape
+                IconButton(
+                    modifier = Modifier.size(32.dp),
+                    onClick = onClickButton
                 ) {
-                    IconButton(
-                        modifier = Modifier.size(32.dp), onClick = onClickButton
-                    ) {
+                    AnimatedContent(targetState = isPlaying()) { playing ->
                         Icon(
-                            painter = painterResource(id = if (it) R.drawable.ic_pause_line else R.drawable.ic_play_line),
+                            painter = painterResource(id = if (playing) R.drawable.ic_pause_line else R.drawable.ic_play_line),
                             contentDescription = "Play / Pause Button"
                         )
                     }
@@ -195,7 +195,7 @@ fun RecommendCardCover(
     shape: Shape = RoundedCornerShape(10.dp),
     imageData: () -> Any?,
     onClick: () -> Unit = {},
-    extraContent: @Composable BoxScope.(palette: Palette?) -> Unit = {}
+    extraContent: @Composable BoxScope.(palette: () -> Palette?) -> Unit = {}
 ) {
     var palette by remember { mutableStateOf<Palette?>(null) }
 
@@ -220,7 +220,7 @@ fun RecommendCardCover(
                 contentScale = ContentScale.Crop,
                 contentDescription = "Recommend Card Cover Image"
             )
-            extraContent(palette)
+            extraContent { palette }
         }
     }
 }

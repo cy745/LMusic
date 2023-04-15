@@ -13,12 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -26,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.R
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
-import kotlinx.coroutines.delay
 
 @Composable
 fun RecommendTitle(
@@ -67,33 +64,18 @@ fun RecommendTitle(modifier: Modifier = Modifier, title: String, onClick: () -> 
 
 @Composable
 fun <I> RecommendRow(
-    items: List<I>,
+    items: () -> List<I>,
     getId: (I) -> Any,
-    scrollToStartWhenUpdate: Boolean = false,
     itemContent: @Composable LazyItemScope.(item: I) -> Unit
 ) {
-    val rowState = rememberLazyListState()
-
-    if (scrollToStartWhenUpdate) {
-        LaunchedEffect(items) {
-            delay(50L)
-            rowState.animateScrollToItem(0)
-        }
-    }
-
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .animateContentSize(
-                animationSpec = SpringSpec(stiffness = Spring.StiffnessLow)
-            )
+            .animateContentSize(animationSpec = SpringSpec(stiffness = Spring.StiffnessLow))
             .recomposeHighlighter(),
-        state = rowState,
         horizontalArrangement = Arrangement.spacedBy(15.dp),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
     ) {
-        items(items = items, key = getId) {
-            itemContent(it)
-        }
+        items(items = items(), key = getId, itemContent = itemContent)
     }
 }

@@ -7,6 +7,8 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,8 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -42,14 +42,6 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.airbnb.lottie.LottieProperty
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieClipSpec
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.rememberLottieComposition
-import com.airbnb.lottie.compose.rememberLottieDynamicProperties
-import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -68,6 +60,7 @@ fun SongCard(
     isPlaying: () -> Boolean = { false },
     isSelected: () -> Boolean = { false },
     showPrefix: () -> Boolean = { false },
+    fixedHeight: () -> Boolean = { false },
     hasLyric: State<Boolean> = remember { mutableStateOf(false) },
     prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
@@ -85,8 +78,9 @@ fun SongCard(
         onClick = onClick,
         onLongClick = onLongClick,
         onEnterSelect = onEnterSelect,
-        isSelected = isSelected,
+        fixedHeight = fixedHeight,
         isPlaying = isPlaying,
+        isSelected = isSelected,
         showPrefix = showPrefix,
         prefixContent = prefixContent
     )
@@ -107,6 +101,7 @@ fun SongCard(
     onEnterSelect: () -> Unit = {},
     hasLyric: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
+    fixedHeight: () -> Boolean = { false },
     isSelected: () -> Boolean = { false },
     showPrefix: () -> Boolean = { false },
     prefixContent: @Composable (Modifier) -> Unit = {}
@@ -117,6 +112,7 @@ fun SongCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .wrapContentHeight()
             .padding(horizontal = 10.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(color = bgColor)
@@ -139,6 +135,7 @@ fun SongCard(
             hasLyric = hasLyric,
             isPlaying = isPlaying,
             showPrefix = showPrefix,
+            fixedHeight = fixedHeight,
             prefixContent = prefixContent
         )
         SongCardImage(
@@ -158,14 +155,15 @@ fun SongCardContent(
     subTitle: () -> String,
     mimeType: () -> String,
     duration: () -> Long,
+    fixedHeight: () -> Boolean = { false },
     hasLyric: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
     showPrefix: () -> Boolean = { false },
     prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(15.dp)
+        modifier = modifier.fillMaxHeight(),
+        verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -175,10 +173,15 @@ fun SongCardContent(
             Text(
                 modifier = Modifier.weight(1f),
                 text = title(),
+                maxLines = if (fixedHeight()) 1 else Int.MAX_VALUE,
+                overflow = TextOverflow.Ellipsis,
                 color = dayNightTextColor(),
                 style = MaterialTheme.typography.subtitle1
             )
-            HasLyricIcon(hasLyric = hasLyric)
+            HasLyricIcon(
+                hasLyric = hasLyric,
+                fixedHeight = fixedHeight
+            )
             Image(
                 painter = painterResource(id = mimeTypeToIcon(mimeType = mimeType())),
                 contentDescription = "MediaType Icon",
@@ -195,35 +198,7 @@ fun SongCardContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            AnimatedVisibility(
-                visible = isPlaying(),
-                modifier = Modifier.wrapContentWidth(),
-                enter = fadeIn() + expandHorizontally(),
-                exit = fadeOut() + shrinkHorizontally()
-            ) {
-                val composition by rememberLottieComposition(LottieCompositionSpec.Asset("anim/90463-wave.json"))
-                val properties = rememberLottieDynamicProperties(
-                    rememberLottieDynamicProperty(
-                        property = LottieProperty.STROKE_COLOR,
-                        value = Color(0xFF00AA1C).toArgb(),
-                        keyPath = arrayOf("**", "Group 1", "Stroke 1")
-                    ),
-                )
-
-                LottieAnimation(
-                    composition,
-                    modifier = Modifier
-                        .padding(end = 5.dp)
-                        .size(28.dp, 20.dp)
-                        .graphicsLayer {
-                            scaleX = 2.5f
-                            scaleY = 2.5f
-                        },
-                    iterations = LottieConstants.IterateForever,
-                    clipSpec = LottieClipSpec.Progress(0.06f, 0.9f),
-                    dynamicProperties = properties
-                )
-            }
+            PlayingTipIcon(isPlaying = isPlaying)
             AnimatedVisibility(
                 visible = showPrefix(),
                 modifier = Modifier.wrapContentWidth(),
@@ -299,17 +274,34 @@ fun SongCardImage(
 
 @Composable
 fun HasLyricIcon(
-    hasLyric: () -> Boolean = { false }
+    hasLyric: () -> Boolean = { false },
+    fixedHeight: () -> Boolean = { false }
 ) {
-    val alpha by animateFloatAsState(targetValue = if (hasLyric()) 1f else 0f)
-
-    Image(
-        painter = painterResource(id = R.drawable.ic_lrc_fill),
-        contentDescription = "Lyric Icon",
-        colorFilter = dayNightTextColorFilter(0.9f),
-        modifier = Modifier
-            .size(20.dp)
-            .aspectRatio(1f)
-            .alpha(alpha)
-    )
+    if (fixedHeight()) {
+        AnimatedVisibility(
+            visible = hasLyric(),
+            enter = fadeIn() + slideInHorizontally(),
+            exit = fadeOut() + slideOutHorizontally()
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_lrc_fill),
+                contentDescription = "Lyric Icon",
+                colorFilter = dayNightTextColorFilter(0.9f),
+                modifier = Modifier
+                    .size(20.dp)
+                    .aspectRatio(1f)
+            )
+        }
+    } else {
+        val alpha by animateFloatAsState(targetValue = if (hasLyric()) 1f else 0f)
+        Image(
+            painter = painterResource(id = R.drawable.ic_lrc_fill),
+            contentDescription = "Lyric Icon",
+            colorFilter = dayNightTextColorFilter(0.9f),
+            modifier = Modifier
+                .size(20.dp)
+                .aspectRatio(1f)
+                .alpha(alpha)
+        )
+    }
 }
