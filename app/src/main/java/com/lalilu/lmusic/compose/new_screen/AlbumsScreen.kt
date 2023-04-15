@@ -179,6 +179,7 @@ fun AlbumsScreen(
             items(items = albums, key = { it.id }, contentType = { LAlbum::class }) {
                 AlbumCard(
                     album = { it },
+                    isPlaying = { playingVM.isAlbumPlaying(it.id) },
                     showTitle = { showTitleState.value },
                     onClick = { navigator.navigate(AlbumDetailScreenDestination(it.id)) }
                 )

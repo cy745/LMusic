@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Chip
@@ -18,7 +20,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -60,7 +61,6 @@ fun HomeScreen(
     navigator: DestinationsNavigator
 ) {
     val haptic = LocalHapticFeedback.current
-    val dailyRecommends by vm.dailyRecommends
     val selectHelper = rememberSongsSelectWrapper()
 
     LaunchedEffect(Unit) {
@@ -80,7 +80,7 @@ fun HomeScreen(
         }
         item {
             RecommendRow(
-                items = dailyRecommends,
+                items = { vm.dailyRecommends.value },
                 getId = { it.id }
             ) {
                 RecommendCard2(
@@ -108,7 +108,7 @@ fun HomeScreen(
         }
         item {
             RecommendRow(
-                items = vm.recentlyAdded.value,
+                items = { vm.recentlyAdded.value },
                 getId = { it.id }
             ) {
                 RecommendCard(
@@ -138,34 +138,44 @@ fun HomeScreen(
                 }
             }
         }
-        items(
-            items = historyVM.historyPreviewState.value,
-            key = { it.id },
-            contentType = { LSong::class }
-        ) { item ->
-            SongCard(
-                song = { item },
+
+        item {
+            LazyColumn(
                 modifier = Modifier
-                    .animateItemPlacement()
-                    .padding(bottom = 5.dp),
-                isSelected = { selectHelper.selectedItems.any { it.id == item.id } },
-                hasLyric = playingVM.lyricRepository.rememberHasLyric(song = item),
-                onLongClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    navigator.navigate(SongDetailScreenDestination(item.id))
-                },
-                onEnterSelect = { selectHelper.onSelected(item) },
-                isPlaying = { playingVM.isSongPlaying(item.id) },
-                onClick = {
-                    if (selectHelper.isSelecting.value) {
-                        selectHelper.onSelected(item)
-                    } else {
-                        historyVM.requiteHistoryList {
-                            playingVM.playSongWithPlaylist(it, item)
+                    .height(85.dp * 5f)
+                    .fillMaxWidth()
+            ) {
+                items(
+                    items = historyVM.historyPreviewState.value,
+                    key = { it.id },
+                    contentType = { LSong::class }
+                ) { item ->
+                    SongCard(
+                        song = { item },
+                        modifier = Modifier
+                            .animateItemPlacement()
+                            .padding(bottom = 5.dp),
+                        fixedHeight = { true },
+                        isSelected = { selectHelper.selectedItems.any { it.id == item.id } },
+                        hasLyric = playingVM.lyricRepository.rememberHasLyric(song = item),
+                        onEnterSelect = { selectHelper.onSelected(item) },
+                        isPlaying = { playingVM.isSongPlaying(item.id) },
+                        onClick = {
+                            if (selectHelper.isSelecting.value) {
+                                selectHelper.onSelected(item)
+                            } else {
+                                historyVM.requiteHistoryList {
+                                    playingVM.playSongWithPlaylist(it, item)
+                                }
+                            }
+                        },
+                        onLongClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            navigator.navigate(SongDetailScreenDestination(item.id))
                         }
-                    }
+                    )
                 }
-            )
+            }
         }
 
         item {

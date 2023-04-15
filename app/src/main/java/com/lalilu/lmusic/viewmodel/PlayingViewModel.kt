@@ -50,6 +50,11 @@ class PlayingViewModel(
         return playing.value?.let { it.id == mediaId } ?: false
     }
 
+    fun isAlbumPlaying(albumId: String): Boolean {
+        if (!isPlaying.value) return false
+        return playing.value?.let { it.album?.id == albumId } ?: false
+    }
+
     fun requireLyric(item: LSong, callback: (hasLyric: Boolean) -> Unit) {
         viewModelScope.launch {
             if (isActive) {
