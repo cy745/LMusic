@@ -11,6 +11,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.with
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
@@ -29,13 +30,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
@@ -49,6 +56,7 @@ object SmartFloatBtns {
     private val btnItems: MutableState<List<FloatBtnItem>> = mutableStateOf(emptyList())
     private val showAll: MutableState<Boolean> = mutableStateOf(false)
     private val lastTouchTime: MutableState<Long> = mutableStateOf(0L)
+    private var progressState: State<Float>? = null
 
     private val actualHeightDpState = mutableStateOf(0.dp)
     val floatBtnsHeightDpState = derivedStateOf {
@@ -123,7 +131,34 @@ object SmartFloatBtns {
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    AnimatedContent(targetState = showAll.value) { isShowAll ->
+                    AnimatedContent(
+                        modifier = Modifier
+                            .drawBehind {
+                                if (progressState != null) {
+                                    val border = 3.dp
+                                    drawArc(
+                                        color = Color(0xD3A2A2A2),
+                                        startAngle = -90f,
+                                        sweepAngle = 360f * progressState!!.value,
+                                        useCenter = false,
+                                        size = Size(
+                                            border.toPx() + this.size.width,
+                                            border.toPx() + this.size.height
+                                        ),
+                                        topLeft = Offset(
+                                            -(border / 2f).toPx(),
+                                            -(border / 2f).toPx()
+                                        ),
+                                        style = Stroke(
+                                            width = border.toPx(),
+                                            cap = StrokeCap.Round
+                                        )
+                                    )
+                                }
+                            },
+                        targetState = showAll.value,
+                        transitionSpec = { fadeIn() with fadeOut() }
+                    ) { isShowAll ->
                         IconItem(
                             painter = painterResource(id = if (isShowAll) R.drawable.ic_close_line else R.drawable.ic_more_fill),
                             title = "more",
@@ -172,10 +207,16 @@ object SmartFloatBtns {
     }
 
     @Composable
-    fun RegisterFloatBtns(items: List<FloatBtnItem>) {
-        LaunchedEffect(items) { btnItems.value = items }
+    fun RegisterFloatBtns(progress: State<Float>? = null, items: List<FloatBtnItem>) {
+        LaunchedEffect(items) {
+            btnItems.value = items
+            progressState = progress
+        }
         DisposableEffect(Unit) {
-            onDispose { btnItems.value = emptyList() }
+            onDispose {
+                btnItems.value = emptyList()
+                progressState = null
+            }
         }
     }
 

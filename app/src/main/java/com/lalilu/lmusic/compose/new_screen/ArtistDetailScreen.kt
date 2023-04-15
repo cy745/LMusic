@@ -68,9 +68,9 @@ fun ArtistDetailScreen(
                 SortPreset.SortByDuration
             )
         },
-        supportGroupRules = { songsVM.sorter.supportGroupRules },
-        supportSortRules = { songsVM.sorter.supportSortRules },
-        supportOrderRules = { songsVM.sorter.supportOrderRules }
+        supportGroupRules = { emptyList() },
+        supportSortRules = { emptyList() },
+        supportOrderRules = { emptyList() }
     ) {
         SongListWrapper(
             songsState = songsState,
