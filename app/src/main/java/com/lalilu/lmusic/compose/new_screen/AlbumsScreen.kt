@@ -19,6 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmedia.entity.LAlbum
+import com.lalilu.lmedia.extension.GroupRule
+import com.lalilu.lmedia.extension.OrderRule
+import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.SortPreset
@@ -43,11 +46,42 @@ fun AlbumsScreen(
 ) {
     val albums by albumsVM.albums
     val showSortPanel = remember { mutableStateOf(false) }
+    val supportSortRules = remember {
+        listOf(
+            SortRule.Normal,
+            SortRule.Title,
+            SortRule.CreateTime,
+            SortRule.ModifyTime,
+            SortRule.ItemsCount,
+            SortRule.ItemsDuration,
+            SortRule.PlayCount,
+            SortRule.LastPlayTime
+        )
+    }
+    val supportGroupRules = remember {
+        listOf(
+            GroupRule.DiskNumber,
+            GroupRule.CreateTime,
+            GroupRule.ModifyTime,
+            GroupRule.PinYinFirstLetter,
+            GroupRule.TitleFirstLetter
+        )
+    }
+    val supportOrderRules = remember {
+        listOf(
+            OrderRule.Normal,
+            OrderRule.Reverse,
+            OrderRule.Shuffle
+        )
+    }
 
     LaunchedEffect(albumIdsText) {
         albumsVM.updateByIds(
             ids = albumIdsText.getIds(),
-            sortFor = Sortable.SORT_FOR_ALBUMS
+            sortFor = Sortable.SORT_FOR_ALBUMS,
+            supportSortRules = supportSortRules,
+            supportGroupRules = supportGroupRules,
+            supportOrderRules = supportOrderRules
         )
     }
 
@@ -61,9 +95,9 @@ fun AlbumsScreen(
                 SortPreset.SortByItemCount
             )
         },
-        supportGroupRules = { albumsVM.sorter.supportGroupRules },
-        supportSortRules = { albumsVM.sorter.supportSortRules },
-        supportOrderRules = { albumsVM.sorter.supportOrderRules }
+        supportGroupRules = { supportGroupRules },
+        supportSortRules = { supportSortRules },
+        supportOrderRules = { supportOrderRules }
     ) {
         SmartContainer.LazyStaggeredVerticalGrid(
             contentPaddingForHorizontal = 10.dp,

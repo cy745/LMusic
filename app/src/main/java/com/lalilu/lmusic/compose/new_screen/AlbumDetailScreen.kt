@@ -16,6 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.lalilu.lmedia.extension.GroupRule
+import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.AlbumCoverCard
@@ -47,6 +49,34 @@ fun AlbumDetailScreen(
     }
 
     val sortFor = remember { "ArtistDetail" }
+    val supportSortRules = remember {
+        listOf(
+            SortRule.Normal,
+            SortRule.Title,
+            SortRule.CreateTime,
+            SortRule.ModifyTime,
+            SortRule.ItemsCount,
+            SortRule.ItemsDuration,
+            SortRule.PlayCount,
+            SortRule.LastPlayTime
+        )
+    }
+    val supportGroupRules = remember {
+        listOf(
+            GroupRule.DiskNumber,
+            GroupRule.CreateTime,
+            GroupRule.ModifyTime,
+            GroupRule.PinYinFirstLetter,
+            GroupRule.TitleFirstLetter
+        )
+    }
+    val supportOrderRules = remember {
+        listOf(
+            OrderRule.Normal,
+            OrderRule.Reverse,
+            OrderRule.Shuffle
+        )
+    }
 
     LaunchedEffect(album) {
         songsVM.updateBySongs(
@@ -71,9 +101,9 @@ fun AlbumDetailScreen(
                 SortPreset.SortByDuration
             )
         },
-        supportGroupRules = { songsVM.sorter.supportGroupRules },
-        supportSortRules = { songsVM.sorter.supportSortRules },
-        supportOrderRules = { songsVM.sorter.supportOrderRules }
+        supportGroupRules = { supportGroupRules },
+        supportSortRules = { supportSortRules },
+        supportOrderRules = { supportOrderRules }
     ) { sortRule ->
         SongListWrapper(
             songsState = songsState,

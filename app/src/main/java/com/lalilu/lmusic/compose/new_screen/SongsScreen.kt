@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -76,14 +77,53 @@ fun SongsScreen(
     val songsState by songsVM.songsState
     val currentPlaying by playingVM.currentPlaying.observeAsState()
     val showSortPanel = remember { mutableStateOf(false) }
+    val scrollProgress = remember(gridState) {
+        derivedStateOf {
+            if (gridState.layoutInfo.totalItemsCount == 0) return@derivedStateOf 0f
+            gridState.firstVisibleItemIndex / gridState.layoutInfo.totalItemsCount.toFloat()
+        }
+    }
+
+    val supportSortRules = remember {
+        listOf(
+            SortRule.Normal,
+            SortRule.Title,
+            SortRule.CreateTime,
+            SortRule.ModifyTime,
+            SortRule.ItemsCount,
+            SortRule.ItemsDuration,
+            SortRule.PlayCount,
+            SortRule.LastPlayTime
+        )
+    }
+    val supportGroupRules = remember {
+        listOf(
+            GroupRule.Normal,
+            GroupRule.CreateTime,
+            GroupRule.ModifyTime,
+            GroupRule.PinYinFirstLetter,
+            GroupRule.TitleFirstLetter
+        )
+    }
+    val supportOrderRules = remember {
+        listOf(
+            OrderRule.Normal,
+            OrderRule.Reverse,
+            OrderRule.Shuffle
+        )
+    }
     LaunchedEffect(mediaIdsText) {
         songsVM.updateByIds(
             songIds = mediaIdsText.getIds(),
-            sortFor = sortFor
+            sortFor = sortFor,
+            supportSortRules = supportSortRules,
+            supportOrderRules = supportOrderRules,
+            supportGroupRules = supportGroupRules
         )
     }
 
     SmartFloatBtns.RegisterFloatBtns(
+        progress = scrollProgress,
         items = listOf(
             SmartFloatBtns.FloatBtnItem(
                 title = "排序",
@@ -145,9 +185,9 @@ fun SongsScreen(
                 SortPreset.SortByDuration
             )
         },
-        supportGroupRules = { songsVM.sorter.supportGroupRules },
-        supportOrderRules = { songsVM.sorter.supportOrderRules },
-        supportSortRules = { songsVM.sorter.supportSortRules }
+        supportGroupRules = { supportGroupRules },
+        supportOrderRules = { supportOrderRules },
+        supportSortRules = { supportSortRules }
     ) {
         SongListWrapper(
             state = gridState,

@@ -11,8 +11,8 @@ import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.SortStrategy
 import com.lalilu.lmedia.extension.Sortable
-import com.lalilu.lmedia.extension.sortFor
 import com.lalilu.lmedia.repository.HistoryRepository
+import com.lalilu.lmusic.datastore.BaseSp
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.utils.extension.toState
@@ -44,58 +44,45 @@ class SongsViewModel(
         }
 
     val searcher = ItemsBaseSearcher(songsSource)
-    val sorter = object : ItemsBaseSorter<LSong>(searcher.output, lMusicSp) {
+    private val sorter = object : ItemsBaseSorter<LSong>(searcher.output, lMusicSp) {
         override fun obtainStrategy(): SortStrategy<LSong> = object : BaseSortStrategy<LSong>() {
-            override fun Flow<List<LSong>>.getSortedOutputFlow(
-                sortRule: Flow<SortRule>,
-                supportSortRules: List<SortRule>
+            override fun sortWithFlow(
+                rule: SortRule,
+                source: Flow<List<LSong>>
             ): Flow<List<LSong>> {
-                return sortRule.flatMapLatest { rule ->
-                    if (!supportSortRules.contains(rule)) return@flatMapLatest this
-
-                    // 根据播放次数排序
-                    if (rule == SortRule.PlayCount) {
-                        return@flatMapLatest historyRepo.getHistoriesWithCount(Int.MAX_VALUE)
-                            .flatMapLatest { histories ->
-                                this.mapLatest { sources ->
-                                    sources.sortedBy { song ->
-                                        (histories.entries.firstOrNull { it.key.contentId == song.id }
-                                            ?.value ?: 0)
-                                            .also { song.prefixTemp = it.toString() }
-                                    }.reversed()
-                                }
+                // 根据播放次数排序
+                if (rule == SortRule.PlayCount) {
+                    return historyRepo
+                        .getHistoriesWithCount(Int.MAX_VALUE)
+                        .flatMapLatest { histories ->
+                            source.mapLatest { sources ->
+                                sources.sortedBy { song ->
+                                    histories.entries
+                                        .firstOrNull { it.key.contentId == song.id }?.value
+                                        .also { song.prefixTemp = (it ?: 0).toString() }
+                                }.reversed()
                             }
-                    }
-
-                    // 根据最后播放时间排序
-                    if (rule == SortRule.LastPlayTime) {
-                        return@flatMapLatest historyRepo.getHistoriesFlow(Int.MAX_VALUE)
-                            .flatMapLatest { histories ->
-                                mapLatest { sources ->
-                                    sources.sortedBy { song ->
-                                        histories.indexOfFirst { it.contentId == song.id }
-                                            .takeIf { it != -1 } ?: Int.MAX_VALUE
-                                    }
-                                }
-                            }
-                    }
-
-                    // 根据其他规则排序
-                    mapLatest { list ->
-                        list.forEach { it.prefixTemp = null }
-                        when (rule) {
-                            SortRule.Normal -> list
-                            SortRule.Title -> list.sortedBy { it.requireTitle() }
-                            SortRule.SubTitle -> list.sortedBy { it.requireSubTitle() }
-                            SortRule.CreateTime -> list.sortedBy { it.requireCreateTime() }
-                            SortRule.ModifyTime -> list.sortedBy { it.requireModifyTime() }
-                            SortRule.ContentType -> list.sortedBy { it.requireContentType() }
-                            SortRule.ItemsDuration -> list.sortedBy { it.requireItemsDuration() }
-                            SortRule.FileSize -> list.sortedBy { it.requireFileSize() }
-                            else -> list
                         }
-                    }
                 }
+
+                // 根据最后播放时间排序
+                if (rule == SortRule.LastPlayTime) {
+                    return historyRepo.getHistoriesFlow(Int.MAX_VALUE)
+                        .flatMapLatest { histories ->
+                            source.mapLatest { sources ->
+                                sources.sortedBy { song ->
+                                    histories.indexOfFirst { it.contentId == song.id }
+                                        .takeIf { it != -1 } ?: Int.MAX_VALUE
+                                }
+                            }
+                        }
+                }
+                return super.sortWithFlow(rule, source)
+            }
+
+            override fun sortBy(rule: SortRule, list: List<LSong>): List<LSong> {
+                list.forEach { it.prefixTemp = null }
+                return super.sortBy(rule, list)
             }
         }
     }
@@ -105,23 +92,35 @@ class SongsViewModel(
     fun updateBySongs(
         songs: List<LSong>,
         showAll: Boolean = false,
-        sortFor: String = Sortable.SORT_FOR_SONGS
-    ) {
-        updateByIds(
-            songIds = songs.map { it.id },
-            showAll = showAll,
-            sortFor = sortFor
-        )
-    }
+        sortFor: String = Sortable.SORT_FOR_SONGS,
+        supportSortRules: List<SortRule>? = null,
+        supportGroupRules: List<GroupRule>? = null,
+        supportOrderRules: List<OrderRule>? = null
+    ) = updateByIds(
+        songIds = songs.map { it.id },
+        showAll = showAll,
+        sortFor = sortFor,
+        supportSortRules = supportSortRules,
+        supportGroupRules = supportGroupRules,
+        supportOrderRules = supportOrderRules
+    )
 
     fun updateByIds(
         songIds: List<String>,
         showAll: Boolean = false,
-        sortFor: String = Sortable.SORT_FOR_SONGS
+        sortFor: String = Sortable.SORT_FOR_SONGS,
+        supportSortRules: List<SortRule>? = null,
+        supportGroupRules: List<GroupRule>? = null,
+        supportOrderRules: List<OrderRule>? = null
     ) = viewModelScope.launch {
         showAllItem.value = showAll
         songIdsFlow.value = songIds
-        sorter.updateSortFor(sortFor)
+        sorter.updateSortFor(
+            sortFor = sortFor,
+            supportSortRules = supportSortRules,
+            supportGroupRules = supportGroupRules,
+            supportOrderRules = supportOrderRules
+        )
     }
 }
 
@@ -154,65 +153,45 @@ open class ItemsBaseSearcher<T : BaseMatchable>(
 @OptIn(ExperimentalCoroutinesApi::class)
 open class ItemsBaseSorter<T : Sortable>(
     sourceFlow: Flow<List<T>>,
-    private val lMusicSp: LMusicSp
+    private val sp: BaseSp
 ) {
     private val strategy: SortStrategy<T> by lazy { obtainStrategy() }
-    val supportSortRules: List<SortRule> by lazy { obtainSupportSortRules() }
-    val supportOrderRules: List<OrderRule> by lazy { obtainSupportOrderRules() }
-    val supportGroupRules: List<GroupRule> by lazy { obtainSupportGroupRules() }
-
     open fun obtainStrategy(): SortStrategy<T> = BaseSortStrategy()
-    open fun obtainSupportSortRules(): List<SortRule> = listOf(
-        SortRule.Normal,
-        SortRule.CreateTime,
-        SortRule.ModifyTime,
-        SortRule.Title,
-        SortRule.SubTitle,
-        SortRule.ContentType,
-        SortRule.ItemsDuration,
-        SortRule.FileSize,
-        SortRule.PlayCount,
-        SortRule.LastPlayTime,
-        SortRule.TrackNumber
-    )
 
-    open fun obtainSupportOrderRules(): List<OrderRule> = listOf(
-        OrderRule.Normal,
-        OrderRule.Reverse,
-        OrderRule.Shuffle
-    )
-
-    open fun obtainSupportGroupRules(): List<GroupRule> = listOf(
-        GroupRule.Normal,
-        GroupRule.CreateTime,
-        GroupRule.ModifyTime,
-        GroupRule.TitleFirstLetter,
-        GroupRule.SubTitleFirstLetter,
-        GroupRule.PinYinFirstLetter,
-        GroupRule.DiskNumber
-    )
+    private val supportSortRuleFlow: MutableStateFlow<List<SortRule>>
+            by lazy { MutableStateFlow(emptyList()) }
+    private val supportGroupRuleFlow: MutableStateFlow<List<GroupRule>>
+            by lazy { MutableStateFlow(emptyList()) }
+    private val supportOrderRuleFlow: MutableStateFlow<List<OrderRule>>
+            by lazy { MutableStateFlow(emptyList()) }
 
     private val sortForFlow: MutableStateFlow<String> = MutableStateFlow(Sortable.SORT_FOR_SONGS)
 
-    private val sortRuleFlow: Flow<SortRule> = sortForFlow.flatMapLatest {
-        lMusicSp.stringSp("${it}_SORT_RULE")
+    private val sortRuleFlow: Flow<SortRule> = sortForFlow.flatMapLatest { sortFor ->
+        sp.stringSp("${sortFor}_SORT_RULE")
             .flow(true)
-            .mapLatest { str ->
-                SortRule.from(str = str, default = supportSortRules.getOrNull(0))
+            .flatMapLatest { str ->
+                supportSortRuleFlow.mapLatest { list ->
+                    list.firstOrNull { it.name == str } ?: SortRule.Normal
+                }
             }
     }
-    private val orderRuleFlow: Flow<OrderRule> = sortForFlow.flatMapLatest {
-        lMusicSp.stringSp("${it}_ORDER_RULE")
+    private val orderRuleFlow: Flow<OrderRule> = sortForFlow.flatMapLatest { sortFor ->
+        sp.stringSp("${sortFor}_ORDER_RULE")
             .flow(true)
-            .mapLatest { str ->
-                OrderRule.from(str = str, default = supportOrderRules.getOrNull(0))
+            .flatMapLatest { str ->
+                supportOrderRuleFlow.mapLatest { list ->
+                    list.firstOrNull { it.name == str } ?: OrderRule.Normal
+                }
             }
     }
-    private val groupRuleFlow: Flow<GroupRule> = sortForFlow.flatMapLatest {
-        lMusicSp.stringSp("${it}_GROUP_RULE")
+    private val groupRuleFlow: Flow<GroupRule> = sortForFlow.flatMapLatest { sortFor ->
+        sp.stringSp("${sortFor}_GROUP_RULE")
             .flow(true)
-            .mapLatest { str ->
-                GroupRule.from(str = str, default = supportGroupRules.getOrNull(0))
+            .flatMapLatest { str ->
+                supportGroupRuleFlow.mapLatest { list ->
+                    list.firstOrNull { it.name == str } ?: GroupRule.Normal
+                }
             }
     }
 
@@ -221,12 +200,20 @@ open class ItemsBaseSorter<T : Sortable>(
         sortRuleFlow = sortRuleFlow,
         orderRuleFlow = orderRuleFlow,
         groupRuleFlow = groupRuleFlow,
-        supportSortRules = supportSortRules,
-        supportOrderRules = supportOrderRules,
-        supportGroupRules = supportGroupRules
+        supportSortRules = supportSortRuleFlow,
+        supportOrderRules = supportOrderRuleFlow,
+        supportGroupRules = supportGroupRuleFlow
     )
 
-    fun updateSortFor(sortFor: String) {
+    fun updateSortFor(
+        sortFor: String,
+        supportSortRules: List<SortRule>?,
+        supportGroupRules: List<GroupRule>?,
+        supportOrderRules: List<OrderRule>?
+    ) {
         sortForFlow.value = sortFor
+        supportSortRuleFlow.value = supportSortRules ?: emptyList()
+        supportGroupRuleFlow.value = supportGroupRules ?: emptyList()
+        supportOrderRuleFlow.value = supportOrderRules ?: emptyList()
     }
 }

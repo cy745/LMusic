@@ -49,15 +49,18 @@ enum class SortPreset(
 ) {
     SortByAddTime(
         titleRes = R.string.sort_preset_by_add_time,
-        sortRule = SortRule.CreateTime
+        sortRule = SortRule.CreateTime,
+        groupRule = GroupRule.CreateTime
     ),
     SortByModifyTime(
         titleRes = R.string.sort_preset_by_modify_time,
-        sortRule = SortRule.ModifyTime
+        sortRule = SortRule.ModifyTime,
+        groupRule = GroupRule.ModifyTime
     ),
     SortByTitle(
         titleRes = R.string.sort_preset_by_song_title,
-        sortRule = SortRule.Title
+        sortRule = SortRule.Title,
+        groupRule = GroupRule.PinYinFirstLetter
     ),
     SortByDuration(
         titleRes = R.string.sort_preset_by_song_duration,
@@ -324,11 +327,13 @@ fun SongCardSortPanel(
             }
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 5.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
         ) {
             IconTextButton(
-                text = "普通",
+                text = "预设",
                 modifier = Modifier.height(36.dp),
                 shape = RoundedCornerShape(5.dp),
                 color = Color(0xFF4CAF50),
