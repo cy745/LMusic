@@ -34,9 +34,9 @@ class AlbumsViewModel(
             override fun sortBy(rule: SortRule, list: List<LAlbum>): List<LAlbum> {
                 return when (rule) {
                     SortRule.Title -> list.sortedBy { it.requireTitle() }
-                    SortRule.FileSize -> list.sortedBy { it.requireFileSize() }
-                    SortRule.ItemsCount -> list.sortedBy { it.requireItemsCount() }
-                    SortRule.ItemsDuration -> list.sortedBy { it.requireItemsDuration() }
+                    SortRule.FileSize -> list.sortedByDescending { it.requireFileSize() }
+                    SortRule.ItemsCount -> list.sortedByDescending { it.requireItemsCount() }
+                    SortRule.ItemsDuration -> list.sortedByDescending { it.requireItemsDuration() }
                     else -> list
                 }
             }
