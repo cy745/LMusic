@@ -38,9 +38,9 @@ class LMusicSp(context: Context) : BaseSp() {
         Config.KEY_SETTINGS_VOLUME_CONTROL,
         Config.DEFAULT_SETTINGS_VOLUME_CONTROL
     )
-    val lyricTypefaceUri = stringSp(
-        Config.KEY_SETTINGS_LYRIC_TYPEFACE_URI,
-        Config.DEFAULT_SETTINGS_LYRIC_TYPEFACE_URI
+    val lyricTypefacePath = stringSp(
+        Config.KEY_SETTINGS_LYRIC_TYPEFACE_PATH,
+        Config.DEFAULT_SETTINGS_LYRIC_TYPEFACE_PATH
     )
     val enableStatusLyric = boolSp(
         Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE,

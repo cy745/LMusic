@@ -262,7 +262,7 @@ fun PlayingScreen(
                         fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
                     }.launchIn(activity.lifecycleScope)
 
-                lyricTypefaceUri.flow(true)
+                lyricTypefacePath.flow(true)
                     .onEach {
                         it ?: return@onEach run {
                             fmLyricViewX.setLyricTypeface(typeface = null)

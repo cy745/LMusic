@@ -56,7 +56,7 @@ fun SettingsScreen(
     val lyricTextSize = lMusicSp.lyricTextSize
     val playMode = lMusicSp.playMode
     val volumeControl = lMusicSp.volumeControl
-    val lyricTypefaceUri = lMusicSp.lyricTypefaceUri
+    val lyricTypefacePath = lMusicSp.lyricTypefacePath
     val enableSystemEq = lMusicSp.enableSystemEq
     val enableDynamicTips = lMusicSp.enableDynamicTips
     val autoHideSeekBar = lMusicSp.autoHideSeekbar
@@ -141,10 +141,10 @@ fun SettingsScreen(
                     state = autoHideSeekBar,
                 )
                 SettingFilePicker(
-                    state = lyricTypefaceUri,
+                    state = lyricTypefacePath,
                     title = "自定义字体",
                     subTitle = "请选择TTF格式的字体文件",
-                    mimeType = "application/octet-stream"
+                    mimeType = "font/ttf"
                 )
                 SettingStateSeekBar(
                     state = lyricGravity,
