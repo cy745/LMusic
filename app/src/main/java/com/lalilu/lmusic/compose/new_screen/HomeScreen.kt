@@ -1,5 +1,7 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +29,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
@@ -62,6 +65,9 @@ fun HomeScreen(
 ) {
     val haptic = LocalHapticFeedback.current
     val selectHelper = rememberSongsSelectWrapper()
+    val itemsHeight = animateDpAsState(
+        historyVM.historyState.value.size.coerceIn(0, 5) * 85.dp
+    )
 
     LaunchedEffect(Unit) {
         vm.checkOrUpdateToday()
@@ -142,11 +148,12 @@ fun HomeScreen(
         item {
             LazyColumn(
                 modifier = Modifier
-                    .height(85.dp * 5f)
+                    .height(itemsHeight.value)
+                    .animateContentSize()
                     .fillMaxWidth()
             ) {
                 items(
-                    items = historyVM.historyPreviewState.value,
+                    items = historyVM.historyState.value.take(5),
                     key = { it.id },
                     contentType = { LSong::class }
                 ) { item ->

@@ -9,22 +9,18 @@ import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.SortStrategy
 import com.lalilu.lmedia.extension.Sortable
-import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AlbumsViewModel(
     lMediaRepo: LMediaRepository,
-    private val historyRepo: HistoryRepository,
     private val lMusicSp: LMusicSp
 ) : ViewModel() {
     private val albumIds = MutableStateFlow<List<String>>(emptyList())
@@ -35,38 +31,6 @@ class AlbumsViewModel(
 
     private val sorter = object : ItemsBaseSorter<LAlbum>(albumSource, lMusicSp) {
         override fun obtainStrategy(): SortStrategy<LAlbum> = object : BaseSortStrategy<LAlbum>() {
-            override fun sortWithFlow(
-                rule: SortRule,
-                source: Flow<List<LAlbum>>
-            ): Flow<List<LAlbum>> {
-                // 根据播放次数排序
-                if (rule == SortRule.PlayCount) {
-                    return historyRepo.getHistoriesWithCount(Int.MAX_VALUE)
-                        .flatMapLatest { histories ->
-                            source.mapLatest { sources ->
-                                sources.sortedBy { album ->
-                                    histories.entries.firstOrNull { it.key.contentId == album.id }
-                                        ?.value ?: 0
-                                }.reversed()
-                            }
-                        }
-                }
-
-                // 根据最后播放时间排序
-                if (rule == SortRule.LastPlayTime) {
-                    return historyRepo.getHistoriesFlow(Int.MAX_VALUE)
-                        .flatMapLatest { histories ->
-                            source.mapLatest { sources ->
-                                sources.sortedBy { album ->
-                                    histories.indexOfFirst { it.contentId == album.id }
-                                        .takeIf { it != -1 } ?: Int.MAX_VALUE
-                                }
-                            }
-                        }
-                }
-                return super.sortWithFlow(rule, source)
-            }
-
             override fun sortBy(rule: SortRule, list: List<LAlbum>): List<LAlbum> {
                 return when (rule) {
                     SortRule.Title -> list.sortedBy { it.requireTitle() }

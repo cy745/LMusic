@@ -58,18 +58,18 @@ class SquareAppbarLayout @JvmOverloads constructor(
             .coerceIn(0F, 1F).ifNaN(0f)
     }
 
-    init {
-        rootView.setOnApplyWindowInsetsListener { v, insets ->
-            WindowInsetsCompat
-                .toWindowInsetsCompat(insets)
-                .getInsets(WindowInsetsCompat.Type.statusBars())
-                .top.takeIf { it > 0 }?.let {
-                    mToolbar?.setPadding(0, it, 0, 0)
-                    mToolbar?.layoutParams?.apply { height += it }
-                }
-            insets
-        }
-    }
+//    init {
+//        rootView.setOnApplyWindowInsetsListener { v, insets ->
+//            WindowInsetsCompat
+//                .toWindowInsetsCompat(insets)
+//                .getInsets(WindowInsetsCompat.Type.statusBars())
+//                .top.takeIf { it > 0 }?.let {
+//                    mToolbar?.setPadding(0, it, 0, 0)
+//                    mToolbar?.layoutParams?.apply { height += it }
+//                }
+//            insets
+//        }
+//    }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
