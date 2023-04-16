@@ -53,28 +53,18 @@ class SongsViewModel(
                 // 根据播放次数排序
                 if (rule == SortRule.PlayCount) {
                     return historyRepo
-                        .getHistoriesWithCount(Int.MAX_VALUE)
-                        .flatMapLatest { histories ->
-                            source.mapLatest { sources ->
-                                sources.sortedBy { song ->
-                                    histories.entries
-                                        .firstOrNull { it.key.contentId == song.id }?.value
-                                        .also { song.prefixTemp = (it ?: 0).toString() }
-                                }.reversed()
-                            }
+                        .getHistoriesIdsMapWithCount()
+                        .combine(source) { map, sources ->
+                            sources.sortedByDescending { song -> map[song.id] }
                         }
                 }
 
                 // 根据最后播放时间排序
                 if (rule == SortRule.LastPlayTime) {
-                    return historyRepo.getHistoriesFlow(Int.MAX_VALUE)
-                        .flatMapLatest { histories ->
-                            source.mapLatest { sources ->
-                                sources.sortedBy { song ->
-                                    histories.indexOfFirst { it.contentId == song.id }
-                                        .takeIf { it != -1 } ?: Int.MAX_VALUE
-                                }
-                            }
+                    return historyRepo
+                        .getHistoriesIdsMapWithLastTime()
+                        .combine(source) { map, sources ->
+                            sources.sortedByDescending { song -> map[song.id] }
                         }
                 }
                 return super.sortWithFlow(rule, source)

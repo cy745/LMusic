@@ -107,7 +107,7 @@ fun AlbumDetailScreen(
     ) { sortRule ->
         SongListWrapper(
             songsState = songsState,
-            showTrackNumber = { sortRule.value == SortRule.TrackNumber.name },
+            showPrefixContent = { sortRule.value == SortRule.TrackNumber.name },
             isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
             onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },

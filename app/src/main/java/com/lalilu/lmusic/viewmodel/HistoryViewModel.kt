@@ -14,24 +14,25 @@ class HistoryViewModel(
     historyRepo: HistoryRepository,
     lMediaRepo: LMediaRepository
 ) : ViewModel() {
-    val historyPreviewState = historyRepo
-        .getHistoriesFlow(5)
-        .mapLatest { list ->
-            list.mapNotNull { lMediaRepo.requireSong(it.contentId) }
-        }
-        .toState(emptyList(), viewModelScope)
-
     val historyState = historyRepo
-        .getHistoriesWithCount(1000)
+        .getHistoriesIdsMapWithLastTime()
         .mapLatest { map ->
             map.mapNotNull { entry ->
-                lMediaRepo.requireSong(entry.key.contentId)
-                    ?.let { it to entry.value }
-            }
-        }
-        .toState(emptyList(), viewModelScope)
+                val item = lMediaRepo.requireSong(entry.key) ?: return@mapNotNull null
+                item to entry.value
+            }.sortedByDescending { it.second }
+                .map { it.first }
+        }.toState(emptyList(), viewModelScope)
+
+    private val historyCountState = historyRepo
+        .getHistoriesIdsMapWithCount()
+        .toState(emptyMap(), viewModelScope)
 
     fun requiteHistoryList(callback: (List<LSong>) -> Unit) {
-        callback(historyState.value.map { it.first })
+        callback(historyState.value)
+    }
+
+    fun requiteHistoryCountById(mediaId: String): Int {
+        return historyCountState.value[mediaId] ?: 0
     }
 }

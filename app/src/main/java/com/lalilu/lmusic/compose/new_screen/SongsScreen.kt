@@ -54,6 +54,7 @@ import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.extension.getIds
+import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -70,6 +71,7 @@ fun SongsScreen(
     mediaIdsText: String? = null,
     songsVM: SongsViewModel = get(),
     playingVM: PlayingViewModel = get(),
+    historyVM: HistoryViewModel = get(),
     navigator: DestinationsNavigator
 ) {
     val scope = rememberCoroutineScope()
@@ -84,13 +86,21 @@ fun SongsScreen(
         }
     }
 
+    val supportSortPresets = remember {
+        listOf(
+            SortPreset.SortByAddTime,
+            SortPreset.SortByTitle,
+            SortPreset.SortByLastPlayTime,
+            SortPreset.SortByPlayedTimes,
+            SortPreset.SortByDuration
+        )
+    }
     val supportSortRules = remember {
         listOf(
             SortRule.Normal,
             SortRule.Title,
             SortRule.CreateTime,
             SortRule.ModifyTime,
-            SortRule.ItemsCount,
             SortRule.ItemsDuration,
             SortRule.PlayCount,
             SortRule.LastPlayTime
@@ -176,26 +186,47 @@ fun SongsScreen(
     SortPanelWrapper(
         sortFor = sortFor,
         showPanelState = showSortPanel,
-        supportSortPresets = {
-            listOf(
-                SortPreset.SortByAddTime,
-                SortPreset.SortByTitle,
-                SortPreset.SortByLastPlayTime,
-                SortPreset.SortByPlayedTimes,
-                SortPreset.SortByDuration
-            )
-        },
+        supportSortPresets = { supportSortPresets },
         supportGroupRules = { supportGroupRules },
         supportOrderRules = { supportOrderRules },
         supportSortRules = { supportSortRules }
-    ) {
+    ) { sortRuleStr ->
         SongListWrapper(
             state = gridState,
             songsState = songsState,
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
             isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
             onClickItem = { playingVM.playSongWithPlaylist(songsState.values.flatten(), it) },
-            onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) }
+            onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
+            showPrefixContent = { sortRuleStr.value == SortRule.TrackNumber.name || sortRuleStr.value == SortRule.PlayCount.name },
+            prefixContent = { item ->
+                var icon = -1
+                var text = ""
+                when (sortRuleStr.value) {
+                    SortRule.TrackNumber.name -> {
+                        icon = R.drawable.ic_music_line
+                        text = item.track.toString()
+                    }
+
+                    SortRule.PlayCount.name -> {
+                        icon = R.drawable.headphone_fill
+                        text = historyVM.requiteHistoryCountById(item.id).toString()
+                    }
+                }
+                if (icon != -1) {
+                    Icon(
+                        modifier = Modifier.size(10.dp),
+                        painter = painterResource(id = icon),
+                        contentDescription = ""
+                    )
+                }
+                if (text.isNotEmpty()) {
+                    Text(
+                        text = text,
+                        fontSize = 12.sp
+                    )
+                }
+            }
         ) {
             item {
                 NavigatorHeader(
@@ -216,7 +247,7 @@ fun SortPanelWrapper(
     supportGroupRules: () -> List<GroupRule>,
     supportSortRules: () -> List<SortRule>,
     supportOrderRules: () -> List<OrderRule>,
-    content: @Composable (State<String>) -> Unit
+    content: @Composable (sortRuleStr: State<String>) -> Unit
 ) {
     val sortRule = lMusicSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
     val orderRule = lMusicSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.Normal.name)
@@ -253,8 +284,9 @@ fun SongListWrapper(
     hasLyricState: (LSong) -> State<Boolean>,
     onClickItem: (LSong) -> Unit = {},
     onLongClickItem: (LSong) -> Unit = {},
-    showTrackNumber: () -> Boolean = { false },
     isItemPlaying: (LSong) -> Boolean = { false },
+    showPrefixContent: () -> Boolean = { false },
+    prefixContent: @Composable (item: LSong) -> Unit = {},
     headerContent: LazyGridScope.() -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
@@ -318,7 +350,7 @@ fun SongListWrapper(
                         onEnterSelect = { selector.onSelected(item) },
                         isSelected = { selector.selectedItems.any { it.id == item.id } },
                         isPlaying = { isItemPlaying(item) },
-                        showPrefix = showTrackNumber,
+                        showPrefix = showPrefixContent,
                         prefixContent = { modifier ->
                             Row(
                                 modifier = modifier
@@ -328,15 +360,7 @@ fun SongListWrapper(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(2.dp)
                             ) {
-                                Icon(
-                                    modifier = Modifier.size(10.dp),
-                                    painter = painterResource(id = R.drawable.headphone_fill),
-                                    contentDescription = ""
-                                )
-                                Text(
-                                    text = item.track.toString(),
-                                    fontSize = 12.sp
-                                )
+                                prefixContent(item)
                             }
                         }
                     )

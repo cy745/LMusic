@@ -52,7 +52,7 @@ fun HistoryScreen(
             columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            item {
+            item(key = "header") {
                 NavigatorHeader(
                     title = "播放历史",
                     subTitle = "共 ${songs.size} 首歌曲"
@@ -60,35 +60,35 @@ fun HistoryScreen(
             }
             items(
                 items = songs,
-                key = { it.first.id },
+                key = { it.id },
                 contentType = { LSong::class }
             ) { item ->
-                val hasLyric = playingVM.requireHasLyricState(item.first)
+                val hasLyric = playingVM.requireHasLyricState(item)
                 SongCard(
                     modifier = Modifier.animateItemPlacement(),
                     dragModifier = Modifier,
-                    title = { item.first.name },
-                    subTitle = { item.first._artist },
-                    mimeType = { item.first.mimeType },
-                    duration = { item.first.durationMs },
+                    title = { item.name },
+                    subTitle = { item._artist },
+                    mimeType = { item.mimeType },
+                    duration = { item.durationMs },
                     hasLyric = { hasLyric.value },
-                    imageData = { item.first },
-                    isPlaying = { playingVM.isSongPlaying(item.first.id) },
+                    imageData = { item },
+                    isPlaying = { playingVM.isSongPlaying(item.id) },
                     onClick = {
                         if (selector.isSelecting.value) {
-                            selector.onSelected(item.first)
+                            selector.onSelected(item)
                         } else {
                             historyVM.requiteHistoryList {
-                                playingVM.playSongWithPlaylist(it, item.first)
+                                playingVM.playSongWithPlaylist(it, item)
                             }
                         }
                     },
                     onLongClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        navigator.navigate(SongDetailScreenDestination(mediaId = item.first.id))
+                        navigator.navigate(SongDetailScreenDestination(mediaId = item.id))
                     },
-                    onEnterSelect = { selector.onSelected(item.first) },
-                    isSelected = { selector.selectedItems.any { it.id == item.first.id } },
+                    onEnterSelect = { selector.onSelected(item) },
+                    isSelected = { selector.selectedItems.any { it.id == item.id } },
                     showPrefix = { true },
                     prefixContent = { modifier ->
                         Row(
@@ -105,7 +105,7 @@ fun HistoryScreen(
                                 contentDescription = ""
                             )
                             Text(
-                                text = item.second.toString(),
+                                text = historyVM.requiteHistoryCountById(item.id).toString(),
                                 fontSize = 12.sp
                             )
                         }
