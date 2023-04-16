@@ -55,7 +55,7 @@ enum class SortPreset(
         groupRule = GroupRule.ModifyTime
     ),
     SortByTitle(
-        titleRes = R.string.sort_preset_by_song_title,
+        titleRes = R.string.sort_preset_by_title,
         sortRule = SortRule.Title,
         groupRule = GroupRule.PinYinFirstLetter
     ),

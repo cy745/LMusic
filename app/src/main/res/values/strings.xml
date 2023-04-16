@@ -47,7 +47,7 @@
     <string name="button_add_song_to_playlist">添加至歌单</string>
     <string name="button_set_song_to_next">下一首播放</string>
 
-    <string name="sort_preset_by_song_title">歌曲名称</string>
+    <string name="sort_preset_by_title">标题名称</string>
     <string name="sort_preset_by_add_time">最近添加</string>
     <string name="sort_preset_by_modify_time">最近修改</string>
     <string name="sort_preset_by_last_play_time">最近播放</string>
