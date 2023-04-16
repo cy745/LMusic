@@ -106,6 +106,12 @@ class LocalPlayer(
         onLSeekTo(durationMs)
     }
 
+    override fun destroy() {
+        stop()
+        volumeProxy = null
+        listener = null
+    }
+
     override fun requestAudioFocus(): Boolean {
         return listener?.requestAudioFocus() ?: true
     }

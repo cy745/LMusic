@@ -219,6 +219,9 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.List
     }
 
     override fun onDestroy() {
+        playback.destroy()
+        localPlayer.destroy()
+
         // 服务被结束后取消本协程作用域
         if (coroutineContext[Job] != null) {
             this.cancel()
