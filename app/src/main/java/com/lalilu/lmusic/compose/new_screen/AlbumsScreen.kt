@@ -32,6 +32,7 @@ import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.AlbumCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
+import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.AlbumsViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -46,7 +47,9 @@ import org.koin.androidx.compose.get
 @Composable
 fun AlbumsScreen(
     title: String = "全部专辑",
+    sortFor: String = Sortable.SORT_FOR_ALBUMS,
     albumIdsText: String? = null,
+    lMusicSp: LMusicSp = get(),
     playingVM: PlayingViewModel = get(),
     albumsVM: AlbumsViewModel = get(),
     navigator: DestinationsNavigator
@@ -57,7 +60,8 @@ fun AlbumsScreen(
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyStaggeredGridState()
     val showSortPanel = remember { mutableStateOf(false) }
-    val showTitleState = remember { mutableStateOf(true) }
+    val showTitleState = lMusicSp.boolSp("show_album_title", true)
+
     val supportSortPresets = remember {
         listOf(
             SortPreset.SortByAddTime,
@@ -96,7 +100,7 @@ fun AlbumsScreen(
     LaunchedEffect(albumIdsText) {
         albumsVM.updateByIds(
             ids = albumIdsText.getIds(),
-            sortFor = Sortable.SORT_FOR_ALBUMS,
+            sortFor = sortFor,
             supportSortRules = supportSortRules,
             supportGroupRules = supportGroupRules,
             supportOrderRules = supportOrderRules
@@ -148,7 +152,7 @@ fun AlbumsScreen(
     )
 
     SortPanelWrapper(
-        sortFor = Sortable.SORT_FOR_ALBUMS,
+        sortFor = sortFor,
         showPanelState = showSortPanel,
         supportSortPresets = { supportSortPresets },
         supportGroupRules = { supportGroupRules },

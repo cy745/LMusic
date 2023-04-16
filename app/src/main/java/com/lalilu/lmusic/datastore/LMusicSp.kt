@@ -10,9 +10,9 @@ class LMusicSp(context: Context) : BaseSp() {
         context.getSharedPreferences(context.packageName, Application.MODE_PRIVATE)
     }
 
-    val blockedPaths = stringSetSp("BLOCKED_PATHS")
     val dayOfYear = intSp("DAY_OF_YEAR")
     val dailyRecommends = stringListSp("DAILY_RECOMMENDS")
+    val blockedPaths = stringSetSp("BLOCKED_PATHS")
 
     val playMode = intSp(
         Config.KEY_SETTINGS_PLAY_MODE,
@@ -62,17 +62,10 @@ class LMusicSp(context: Context) : BaseSp() {
         Config.KEY_SETTINGS_DARK_MODE_OPTION,
         Config.DEFAULT_SETTINGS_DARK_MODE_OPTION
     )
-    val ignoreDictionaries = stringListSp(
-        Config.KEY_SETTINGS_IGNORE_DICTIONARIES,
-        Config.DEFAULT_SETTINGS_IGNORE_DICTIONARIES
-    )
     val autoHideSeekbar = boolSp(
         Config.KEY_SETTINGS_AUTO_HIDE_SEEKBAR,
         Config.DEFAULT_SETTINGS_AUTO_HIDE_SEEKBAR
     )
-
-    val artistSortValue = intSp("ArtistSort")
-
     val isGuidingOver = boolSp(
         Config.KEY_REMEMBER_IS_GUIDING_OVER,
         false

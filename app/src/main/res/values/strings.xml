@@ -15,7 +15,7 @@
 
     <string name="destination_label_library">曲库</string>
     <string name="destination_label_albums">专辑</string>
-    <string name="destination_label_artist">歌手</string>
+    <string name="destination_label_artist">艺术家</string>
     <string name="destination_label_playlists">歌单</string>
     <string name="destination_label_all_song">歌曲</string>
     <string name="destination_label_favourite">我喜欢</string>

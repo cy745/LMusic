@@ -33,6 +33,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -206,19 +207,43 @@ object SmartFloatBtns {
         }
     }
 
+    private val contentStack = ArrayDeque<StackItem>()
+
     @Composable
     fun RegisterFloatBtns(progress: State<Float>? = null, items: List<FloatBtnItem>) {
+        val stackItem = remember {
+            StackItem(
+                progress = progress,
+                items = items
+            )
+        }
         LaunchedEffect(items) {
-            btnItems.value = items
-            progressState = progress
+            if (!contentStack.contains(stackItem)) {
+                contentStack.addLast(stackItem)
+                stackItem.let {
+                    btnItems.value = it.items
+                    progressState = it.progress
+                }
+            }
         }
         DisposableEffect(Unit) {
             onDispose {
-                btnItems.value = emptyList()
-                progressState = null
+                if (contentStack.lastOrNull() == stackItem) {
+                    contentStack.removeLast()
+                    val lastOne = contentStack.lastOrNull()
+                    btnItems.value = lastOne?.items ?: emptyList()
+                    progressState = lastOne?.progress
+                } else {
+                    contentStack.remove(stackItem)
+                }
             }
         }
     }
+
+    private class StackItem(
+        val progress: State<Float>? = null,
+        val items: List<FloatBtnItem>
+    )
 
     class FloatBtnItem(
         val icon: Int,

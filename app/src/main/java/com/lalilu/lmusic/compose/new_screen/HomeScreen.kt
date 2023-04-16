@@ -22,6 +22,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -65,8 +67,11 @@ fun HomeScreen(
 ) {
     val haptic = LocalHapticFeedback.current
     val selectHelper = rememberSongsSelectWrapper()
+    val itemsCount = remember {
+        derivedStateOf { historyVM.historyState.value.size.coerceIn(0, 5) }
+    }
     val itemsHeight = animateDpAsState(
-        historyVM.historyState.value.size.coerceIn(0, 5) * 85.dp
+        itemsCount.value * 85.dp
     )
 
     LaunchedEffect(Unit) {
