@@ -26,6 +26,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmedia.LMedia
@@ -63,14 +64,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (hasNewIntent) {
-            val start = System.currentTimeMillis()
-            LMedia.read(this, intent.data) {
-                LogUtils.i(
-                    "[onNewIntent]: 解析完成,耗时：${System.currentTimeMillis() - start}ms",
-                    it
-                )
-                it?.let { browser.addAndPlay(it) }
-            }
+            browser.whenConnected { handleIntent(intent) }
             hasNewIntent = false
         }
     }
@@ -81,6 +75,20 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         hasNewIntent = true
+    }
+
+    private fun handleIntent(intent: Intent) {
+        if (intent.data == null) return
+
+        val start = System.currentTimeMillis()
+        LMedia.read(this, intent.data) {
+            if (it?.id == null) {
+                ToastUtils.showShort("解析失败: [${intent.data}]")
+                return@read
+            }
+            LogUtils.i("[onNewIntent]: 解析完成, 耗时：${System.currentTimeMillis() - start}ms", it)
+            browser.addAndPlay(it.id)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -169,6 +177,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         volumeControlStream = AudioManager.STREAM_MUSIC
+        browser.whenConnected { handleIntent(intent) }
     }
 }
 
