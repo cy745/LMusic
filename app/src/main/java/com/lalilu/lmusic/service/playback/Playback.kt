@@ -13,6 +13,8 @@ interface Playback<T> {
         onCustomActionIn(PlaybackAction.of(action))
     }
 
+    fun destroy()
+
     interface Listener<T> {
         fun onPlayInfoUpdate(item: T?, playbackState: Int, position: Long)
         fun onSetPlayMode(playMode: PlayMode)

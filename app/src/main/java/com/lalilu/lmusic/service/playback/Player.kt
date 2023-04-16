@@ -16,6 +16,7 @@ interface Player {
     fun pause()
     fun stop()
     fun seekTo(durationMs: Number)
+    fun destroy()
 
     /**
      * 请求音频焦点

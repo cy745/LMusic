@@ -121,6 +121,12 @@ class MixPlayback(
         }
     }
 
+    override fun destroy() {
+        playbackListener = null
+        queue = null
+        player = null
+    }
+
     override fun onCustomAction(action: String?, extras: Bundle?) {
         handleCustomAction(action)
     }
