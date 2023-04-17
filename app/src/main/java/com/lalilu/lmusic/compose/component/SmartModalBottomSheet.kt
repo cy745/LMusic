@@ -33,6 +33,7 @@ object SmartModalBottomSheet {
     )
     val enableFadeEdgeForStatusBar = mutableStateOf(true)
     val isVisible = derivedStateOf { scaffoldState.isVisible || scaffoldState.isAnimationRunning }
+    val isVisibleFlow = snapshotFlow { isVisible.value }
 
     val offset: Float
         get() = scaffoldState.offset.value

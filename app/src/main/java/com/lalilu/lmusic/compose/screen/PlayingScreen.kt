@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.compose.screen
 
 import android.view.View
+import android.view.WindowManager
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidViewBinding
@@ -47,10 +48,14 @@ import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_MIDDLE
 import com.ramcosta.composedestinations.navigation.navigate
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.compose.get
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
@@ -269,6 +274,18 @@ fun PlayingScreen(
                         }
                         fmLyricViewX.setLyricTypeface(path = it)
                     }.launchIn(activity.lifecycleScope)
+
+                keepScreenOnWhenLyricExpanded.flow(true).flatMapLatest { keepScreenOn ->
+                    SmartModalBottomSheet.isVisibleFlow.flatMapLatest { isVisible ->
+                        behavior.stateHelper.nowStateFlow.mapLatest { nowState ->
+                            if (nowState == STATE_FULLY_EXPENDED && keepScreenOn == true && !isVisible) {
+                                activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                            } else {
+                                activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                            }
+                        }
+                    }
+                }.launchIn(activity.lifecycleScope)
 
                 this.seekBarHandler.flow(true)
                     .onEach {
