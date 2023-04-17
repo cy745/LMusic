@@ -211,7 +211,7 @@ fun ControlPanel(
     ) {
         IconButton(onClick = { playingVM.browser.play() }) {
             Image(
-                painter = painterResource(id = R.drawable.ic_skip_back_line),
+                painter = painterResource(id = R.drawable.ic_skip_previous_line),
                 contentDescription = "skip_back",
                 modifier = Modifier.size(28.dp)
             )
@@ -232,7 +232,7 @@ fun ControlPanel(
         }
         IconButton(onClick = { playingVM.browser.skipToNext() }) {
             Image(
-                painter = painterResource(id = R.drawable.ic_skip_forward_line),
+                painter = painterResource(id = R.drawable.ic_skip_next_line),
                 contentDescription = "skip_forward",
                 modifier = Modifier.size(28.dp)
             )
