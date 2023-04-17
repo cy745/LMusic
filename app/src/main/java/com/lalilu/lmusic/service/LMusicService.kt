@@ -51,6 +51,15 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.List
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var playback: MixPlayback
 
+    private val sessionActivityPendingIntent by lazy {
+        packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
+            PendingIntent.getActivity(
+                this, 0, sessionIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        }
+    }
+
     private val intent: Intent by lazy {
         Intent(this@LMusicService, LMusicService::class.java)
     }
@@ -128,28 +137,24 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.List
     override fun onCreate() {
         super.onCreate()
 
-        playback = MixPlayback(
-            noisyReceiver = noisyReceiver,
-            audioFocusHelper = audioFocusHelper,
-            playbackListener = this,
-            queue = LMusicRuntimeQueue(runtime),
-            player = localPlayer
-        )
+        if (!this::playback.isInitialized) {
+            playback = MixPlayback(
+                noisyReceiver = noisyReceiver,
+                audioFocusHelper = audioFocusHelper,
+                playbackListener = this,
+                queue = LMusicRuntimeQueue(runtime),
+                player = localPlayer
+            )
+        }
 
-        val sessionActivityPendingIntent =
-            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
-                PendingIntent.getActivity(
-                    this, 0, sessionIntent,
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                )
-            }
-
-        mediaSession = MediaSessionCompat(this, "LMusicService")
-            .apply {
-                setSessionActivity(sessionActivityPendingIntent)
-                setCallback(playback)
-                isActive = true
-            }
+        if (!this::mediaSession.isInitialized) {
+            mediaSession = MediaSessionCompat(this, "LMusicService")
+                .apply {
+                    setSessionActivity(sessionActivityPendingIntent)
+                    setCallback(playback)
+                    isActive = true
+                }
+        }
 
         notifier.bindMediaSession(mediaSession)
         sessionToken = mediaSession.sessionToken
