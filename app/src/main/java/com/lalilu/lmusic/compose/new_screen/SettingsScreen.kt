@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.compose.new_screen
 
 import StatusBarLyric.API.StatusBarLyric
+import android.annotation.SuppressLint
 import android.media.MediaScannerConnection
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -23,6 +24,7 @@ import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.RomUtils
 import com.lalilu.R
+import com.lalilu.common.CustomRomUtils
 import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
@@ -38,6 +40,7 @@ import com.lalilu.lmusic.utils.extension.getActivity
 import com.ramcosta.composedestinations.annotation.Destination
 import org.koin.androidx.compose.get
 
+@SuppressLint("PrivateApi")
 @OptIn(ExperimentalFoundationApi::class)
 @HomeNavGraph
 @Destination
@@ -130,7 +133,7 @@ fun SettingsScreen(
                 iconRes = R.drawable.ic_lrc_fill,
                 titleRes = R.string.preference_lyric_settings
             ) {
-                if (RomUtils.isMeizu() || statusBarLyricExt.hasEnable()) {
+                if (RomUtils.isMeizu() || statusBarLyricExt.hasEnable() || CustomRomUtils.isFlyme) {
                     SettingSwitcher(
                         titleRes = R.string.preference_lyric_settings_status_bar_lyric,
                         state = statusBarLyric
