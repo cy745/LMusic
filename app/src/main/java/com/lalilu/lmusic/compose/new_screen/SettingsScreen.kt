@@ -60,6 +60,7 @@ fun SettingsScreen(
     val enableSystemEq = lMusicSp.enableSystemEq
     val enableDynamicTips = lMusicSp.enableDynamicTips
     val autoHideSeekBar = lMusicSp.autoHideSeekbar
+    val keepScreenOnWhenLyricExpanded = lMusicSp.keepScreenOnWhenLyricExpanded
 
     val launcherForAudioFx = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -139,6 +140,11 @@ fun SettingsScreen(
                     title = "歌词页展开时隐藏其他组件",
                     subTitle = "简化界面显示效果",
                     state = autoHideSeekBar,
+                )
+                SettingSwitcher(
+                    title = "歌词页展开时屏幕常亮",
+                    subTitle = "小心烧屏",
+                    state = keepScreenOnWhenLyricExpanded,
                 )
                 SettingFilePicker(
                     state = lyricTypefacePath,

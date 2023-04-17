@@ -2,6 +2,7 @@ package com.lalilu.ui.internal
 
 import androidx.annotation.IntDef
 import com.lalilu.ui.appbar.ExpendHeaderBehavior
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class StateHelper {
     companion object {
@@ -66,7 +67,10 @@ class StateHelper {
             lastState = field
             stateChangeListeners.forEach { it.onStateChange(lastState, value) }
             field = value
+            nowStateFlow.value = value
         }
+
+    val nowStateFlow = MutableStateFlow(nowState)
 
     interface Adapter {
         val stateHelper: StateHelper
@@ -75,6 +79,10 @@ class StateHelper {
             if (!stateHelper.stateChangeListeners.contains(listener)) {
                 stateHelper.stateChangeListeners.add(listener)
             }
+        }
+
+        fun removeListener(listener: OnStateChangeListener) {
+            stateHelper.stateChangeListeners.remove(listener)
         }
 
         fun removeAllListener() {
