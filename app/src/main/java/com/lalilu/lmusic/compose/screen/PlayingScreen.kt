@@ -25,6 +25,7 @@ import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
+import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
@@ -46,7 +47,6 @@ import com.lalilu.ui.OnValueChangeListener
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
-import com.lalilu.ui.internal.StateHelper.Companion.STATE_MIDDLE
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
@@ -60,6 +60,7 @@ import org.koin.androidx.compose.get
 @ExperimentalMaterialApi
 fun PlayingScreen(
     onBackPressHelper: OnBackPressHelper,
+    lMusicSp: LMusicSp = get(),
     playingVM: PlayingViewModel = get(),
     navController: NavController = LocalNavigatorHost.current
 ) {
@@ -68,7 +69,7 @@ fun PlayingScreen(
     AndroidViewBinding(factory = { inflater, parent, attachToParent ->
         FragmentPlayingBinding.inflate(inflater, parent, attachToParent).apply {
             val activity = parent.context.getActivity()!!
-            val seekBarHandler = SeekBarHandler(
+            val seekBarActionHandler = SeekBarHandler(
                 onPlayNext = { playingVM.browser.skipToNext() },
                 onPlayPause = { playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause) },
                 onPlayPrevious = { playingVM.browser.skipToPrevious() }
@@ -141,20 +142,6 @@ fun PlayingScreen(
                 fmAppbarLayout.setExpanded(true)
             }
 
-            behavior.addOnStateChangeListener { lastState, nowState ->
-                onBackPressHelper.isEnabled = nowState == STATE_FULLY_EXPENDED
-
-                if (lastState == STATE_FULLY_EXPENDED && nowState == STATE_MIDDLE) {
-                    maSeekBar.animateAlphaTo(100f)
-                    systemUiController.isStatusBarVisible = true
-                } else if (lastState == STATE_MIDDLE && nowState == STATE_FULLY_EXPENDED) {
-                    if (playingVM.lMusicSp.autoHideSeekbar.get()) {
-                        maSeekBar.animateAlphaTo(0f)
-                        systemUiController.isStatusBarVisible = false
-                    }
-                }
-            }
-
 //            fmRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 //                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
 //                    if (dy <= 10) return
@@ -185,26 +172,26 @@ fun PlayingScreen(
             maSeekBar.clickListeners.add(object : OnSeekBarClickListener {
                 override fun onClick(@ClickPart clickPart: Int, action: Int) {
                     HapticUtils.haptic(this@apply.root)
-                    if (seekBarHandler.clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
+                    if (seekBarActionHandler.clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
                         playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
                         return
                     }
-                    seekBarHandler.handle(clickPart)
+                    seekBarActionHandler.handle(clickPart)
                 }
 
                 override fun onLongClick(@ClickPart clickPart: Int, action: Int) {
                     HapticUtils.haptic(this@apply.root)
-                    if (seekBarHandler.clickHandleMode != CLICK_HANDLE_MODE_LONG_CLICK || clickPart == CLICK_PART_MIDDLE) {
+                    if (seekBarActionHandler.clickHandleMode != CLICK_HANDLE_MODE_LONG_CLICK || clickPart == CLICK_PART_MIDDLE) {
                         fmAppbarLayout.autoToggleExpand()
                         return
                     }
-                    seekBarHandler.handle(clickPart)
+                    seekBarActionHandler.handle(clickPart)
                 }
 
                 override fun onDoubleClick(@ClickPart clickPart: Int, action: Int) {
                     HapticUtils.doubleHaptic(this@apply.root)
-                    if (seekBarHandler.clickHandleMode != CLICK_HANDLE_MODE_DOUBLE_CLICK) return
-                    seekBarHandler.handle(clickPart)
+                    if (seekBarActionHandler.clickHandleMode != CLICK_HANDLE_MODE_DOUBLE_CLICK) return
+                    seekBarActionHandler.handle(clickPart)
                 }
             })
             maSeekBar.seekToListeners.add(OnSeekBarSeekToListener { value ->
@@ -249,49 +236,64 @@ fun PlayingScreen(
                 fmLyricViewX.loadLyric(it?.first, it?.second)
             }
 
-            playingVM.lMusicSp.apply {
-                lyricGravity.flow(true)
-                    .onEach {
-                        when (it ?: Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
-                            0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
-                            1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
-                            2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
-                        }
-                    }.launchIn(activity.lifecycleScope)
+            lMusicSp.apply {
+                lyricGravity.flow(true).onEach {
+                    when (it ?: Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
+                        0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
+                        1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
+                        2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
+                    }
+                }.launchIn(activity.lifecycleScope)
 
-                lyricTextSize.flow(true)
-                    .onEach {
-                        val sp = it ?: Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
-                        val textSize = ConvertUtils.sp2px(sp.toFloat()).toFloat()
-                        fmLyricViewX.setNormalTextSize(textSize)
-                        fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
-                    }.launchIn(activity.lifecycleScope)
+                lyricTextSize.flow(true).onEach {
+                    val sp = it ?: Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
+                    val textSize = ConvertUtils.sp2px(sp.toFloat()).toFloat()
+                    fmLyricViewX.setNormalTextSize(textSize)
+                    fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
+                }.launchIn(activity.lifecycleScope)
 
-                lyricTypefacePath.flow(true)
-                    .onEach {
-                        it ?: return@onEach run {
-                            fmLyricViewX.setLyricTypeface(typeface = null)
-                        }
-                        fmLyricViewX.setLyricTypeface(path = it)
-                    }.launchIn(activity.lifecycleScope)
+                lyricTypefacePath.flow(true).onEach {
+                    it ?: return@onEach run {
+                        fmLyricViewX.setLyricTypeface(typeface = null)
+                    }
+                    fmLyricViewX.setLyricTypeface(path = it)
+                }.launchIn(activity.lifecycleScope)
 
-                keepScreenOnWhenLyricExpanded.flow(true).flatMapLatest { keepScreenOn ->
-                    SmartModalBottomSheet.isVisibleFlow.flatMapLatest { isVisible ->
-                        behavior.stateHelper.nowStateFlow.mapLatest { nowState ->
-                            if (nowState == STATE_FULLY_EXPENDED && keepScreenOn == true && !isVisible) {
-                                activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                            } else {
-                                activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                seekBarHandler.flow(true).onEach {
+                    seekBarActionHandler.clickHandleMode =
+                        it ?: Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
+                }.launchIn(activity.lifecycleScope)
+
+                forceHideStatusBar.flow(true).flatMapLatest { forceHide ->
+                    autoHideSeekbar.flow(true).flatMapLatest { autoHide ->
+                        keepScreenOnWhenLyricExpanded.flow(true).flatMapLatest { keepScreenOn ->
+                            SmartModalBottomSheet.isVisibleFlow.flatMapLatest { isBottomSheetVisible ->
+                                behavior.stateHelper.nowStateFlow.mapLatest { nowState ->
+                                    // 通过判断当前是否展开歌词页来判断是否需要拦截返回键事件
+                                    onBackPressHelper.isEnabled = nowState == STATE_FULLY_EXPENDED
+
+                                    // 通过判断当前是否展开歌词页来判断是否需要保持屏幕常亮
+                                    if (nowState == STATE_FULLY_EXPENDED && keepScreenOn == true && !isBottomSheetVisible) {
+                                        activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                                    } else {
+                                        activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                                    }
+
+                                    // 通过判断当前是否展开歌词页来判断是否需要隐藏Seekbar
+                                    val targetAlpha =
+                                        if (autoHide == true && nowState == STATE_FULLY_EXPENDED) 0f else 100f
+                                    maSeekBar.animateAlphaTo(targetAlpha)
+
+                                    // 通过判断当前是否展开歌词页来判断是否需要隐藏状态栏
+                                    // 同时考虑强制隐藏状态栏的情况和底部弹窗是否可见的情况
+                                    val hideStatusBar =
+                                        forceHide == true || (autoHide == true && nowState == STATE_FULLY_EXPENDED && !isBottomSheetVisible)
+                                    systemUiController.isStatusBarVisible = !hideStatusBar
+                                }
                             }
                         }
                     }
                 }.launchIn(activity.lifecycleScope)
-
-                this.seekBarHandler.flow(true)
-                    .onEach {
-                        seekBarHandler.clickHandleMode =
-                            it ?: Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
-                    }.launchIn(activity.lifecycleScope)
             }
         }
     }) {
