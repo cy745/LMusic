@@ -22,6 +22,7 @@ import com.lalilu.lmedia.entity.LArtist
 @Composable
 fun ArtistCard(
     artist: LArtist,
+    isPlaying: () -> Boolean = { false },
     onClick: () -> Unit = {}
 ) {
     val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
@@ -42,6 +43,7 @@ fun ArtistCard(
             color = textColor.copy(alpha = 0.4f),
             text = "#${artist._id.takeIf { it.length >= 4 }?.take(4) ?: artist._id}"
         )
+        PlayingTipIcon(isPlaying = isPlaying)
         Text(
             modifier = Modifier.weight(1f),
             text = artist.name,
@@ -67,6 +69,7 @@ fun ArtistCard(
     index: Int,
     artistName: String,
     songCount: Long,
+    isPlaying: () -> Boolean = { false },
     onClick: () -> Unit = {}
 ) {
     val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
@@ -95,6 +98,7 @@ fun ArtistCard(
                 color = textColor.copy(alpha = 0.4f),
                 text = "${index + 1}"
             )
+            PlayingTipIcon(isPlaying = isPlaying)
             Text(
                 text = artistName,
                 fontSize = 14.sp,

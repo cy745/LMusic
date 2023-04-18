@@ -211,9 +211,8 @@ fun SearchScreen(
         ) {
             ArtistCard(
                 artist = it,
-                onClick = {
-                    navigator.navigate(ArtistDetailScreenDestination(artistName = it.name))
-                }
+                isPlaying = { playingVM.isArtistPlaying(it.name) },
+                onClick = { navigator.navigate(ArtistDetailScreenDestination(artistName = it.name)) }
             )
         }
 
