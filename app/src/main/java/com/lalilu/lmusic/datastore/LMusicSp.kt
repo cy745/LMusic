@@ -66,6 +66,10 @@ class LMusicSp(context: Context) : BaseSp() {
         Config.KEY_SETTINGS_AUTO_HIDE_SEEKBAR,
         Config.DEFAULT_SETTINGS_AUTO_HIDE_SEEKBAR
     )
+    val forceHideStatusBar = boolSp(
+        Config.KEY_SETTINGS_FORCE_HIDE_STATUS_BAR,
+        Config.DEFAULT_SETTINGS_FORCE_HIDE_STATUS_BAR
+    )
     val keepScreenOnWhenLyricExpanded = boolSp(
         Config.KEY_SETTINGS_KEEP_SCREEN_ON_WHEN_LYRIC_EXPANDED,
         Config.DEFAULT_SETTINGS_KEEP_SCREEN_ON_WHEN_LYRIC_EXPANDED

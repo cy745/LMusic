@@ -63,6 +63,7 @@ fun SettingsScreen(
     val enableSystemEq = lMusicSp.enableSystemEq
     val enableDynamicTips = lMusicSp.enableDynamicTips
     val autoHideSeekBar = lMusicSp.autoHideSeekbar
+    val forceHideStatusBar = lMusicSp.forceHideStatusBar
     val keepScreenOnWhenLyricExpanded = lMusicSp.keepScreenOnWhenLyricExpanded
 
     val launcherForAudioFx = rememberLauncherForActivityResult(
@@ -186,6 +187,11 @@ fun SettingsScreen(
                 icon = painterResource(id = R.drawable.ic_loader_line),
                 title = "其他"
             ) {
+                SettingSwitcher(
+                    title = "全局隐藏状态栏",
+                    subTitle = "简化界面显示效果",
+                    state = forceHideStatusBar,
+                )
                 SettingStateSeekBar(
                     state = darkModeOption,
                     selection = stringArrayResource(id = R.array.dark_mode_options).toList(),
