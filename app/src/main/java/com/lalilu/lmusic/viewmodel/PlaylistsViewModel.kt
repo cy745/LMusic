@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.viewmodel
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,14 +9,14 @@ import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmedia.repository.PlaylistRepository
+import com.lalilu.lmusic.utils.extension.toCachedFlow
+import com.lalilu.lmusic.utils.extension.toMutableState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
 
@@ -26,8 +25,12 @@ class PlaylistsViewModel constructor(
     private val playlistRepo: PlaylistRepository,
     private val favoriteRepo: FavoriteRepository
 ) : ViewModel() {
-    var playlists by mutableStateOf(emptyList<LPlaylist>())
-    private var tempList by mutableStateOf(emptyList<LPlaylist>())
+    private val playlistFlow = playlistRepo.getAllPlaylistWithDetailFlow()
+        .mapLatest { it.sort(false) }
+        .toCachedFlow()
+
+    var playlists by playlistFlow.debounce(50)
+        .toMutableState(emptyList(), viewModelScope)
 
     fun onMovePlaylist(from: ItemPosition, to: ItemPosition) {
         val toIndex = playlists.indexOfFirst { it._id == to.key }
@@ -43,20 +46,29 @@ class PlaylistsViewModel constructor(
         playlists.any { draggedOver.key == it._id }
 
     fun onDragEnd(startIndex: Int, endIndex: Int) {
+        val tempList = playlistFlow.get() ?: return
+
+        /**
+         * 判断是否需要重新排序
+         * 1. 列表内没有一个元素的nextId为null时，即没有末尾元素，需要重新排序
+         * 2. 列表中出现重复的nextId时，也需要重新排序
+         */
+        val needReorder = tempList.all { it.nextId != null } ||
+                tempList.map { it.nextId }.toSet().size != tempList.size
+
         val start = startIndex - 1
         val end = endIndex - 1
         if (start !in tempList.indices || end !in tempList.indices || start == end) return
         viewModelScope.launch(Dispatchers.IO) {
-            playlistRepo.movePlaylist(tempList[start], tempList[end], start > end)
+            if (needReorder) {
+                playlistRepo.reorderPlaylist(tempList)
+            }
+            playlistRepo.movePlaylist(
+                tempList[start],
+                tempList[end],
+                start > end
+            )
         }
-    }
-
-    init {
-        playlistRepo.getAllPlaylistWithDetailFlow().mapLatest { it.sort(false) }.debounce(50)
-            .onEach {
-                playlists = it
-                tempList = it
-            }.launchIn(viewModelScope)
     }
 
     fun addToFavorite(song: LSong) = viewModelScope.launch(Dispatchers.IO) {
