@@ -175,6 +175,7 @@ fun DictionaryDetailScreen(
         supportOrderRules = { supportOrderRules },
     ) { sortRuleStr ->
         SongListWrapper(
+            state = gridState,
             songsState = songsState,
             isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
