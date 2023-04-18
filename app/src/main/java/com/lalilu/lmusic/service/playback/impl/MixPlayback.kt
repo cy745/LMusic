@@ -156,6 +156,9 @@ class MixPlayback(
     }
 
     override fun onLPause() {
+        val current = queue?.getCurrent()
+        current?.let { onItemPause(it) }
+
         noisyReceiver.unregister()
         onPlayInfoUpdate(
             queue?.getCurrent(),
@@ -204,5 +207,9 @@ class MixPlayback(
 
     override fun onItemPlay(item: LSong) {
         playbackListener?.onItemPlay(item)
+    }
+
+    override fun onItemPause(item: LSong) {
+        playbackListener?.onItemPause(item)
     }
 }

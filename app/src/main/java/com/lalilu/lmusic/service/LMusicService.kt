@@ -128,10 +128,55 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.List
         notifier.update()
     }
 
+    private var lastMediaId: String? = null
+    private var startTime: Long = 0L
+    private var duration: Long = 0L
+
     override fun onItemPlay(item: LSong) {
-        historyRepo.saveHistory(
-            LHistory(contentId = item.id, type = HISTORY_TYPE_SONG)
-        )
+        val now = System.currentTimeMillis()
+        if (startTime > 0) {
+            duration += now - startTime
+        }
+
+        // 判断当前播放的歌曲是否是最近正在播放的歌曲
+        if (lastMediaId != item.id) {
+            // 若切歌了，根据播放时长判断是更新到数据库还是删除
+            if (lastMediaId != null) {
+                if (duration >= Config.HISTORY_DURATION_THRESHOLD) {
+                    historyRepo.updatePreSavedHistory(
+                        contentId = lastMediaId!!,
+                        duration = duration
+                    )
+                } else {
+                    historyRepo.removePreSavedHistory(contentId = lastMediaId!!)
+                }
+            }
+
+            // 将当前播放的歌曲预保存添加到历史记录中
+            historyRepo.preSaveHistory(
+                LHistory(
+                    contentId = item.id,
+                    duration = -1L,
+                    startTime = now,
+                    type = HISTORY_TYPE_SONG
+                )
+            )
+            duration = 0L
+        }
+
+        startTime = now
+        lastMediaId = item.id
+    }
+
+    override fun onItemPause(item: LSong) {
+        // 判断当前暂停时的歌曲是否是最近正在播放的歌曲
+        if (lastMediaId != item.id) return
+
+        // 将该歌曲目前为止播放的时间加到历史记录中
+        if (startTime > 0) {
+            duration += System.currentTimeMillis() - startTime
+            startTime = -1L
+        }
     }
 
     override fun onCreate() {
