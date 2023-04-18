@@ -24,7 +24,6 @@ import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.ArtistCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
-import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.ArtistsViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -41,7 +40,6 @@ fun ArtistsScreen(
     title: String = "所有艺术家",
     sortFor: String = Sortable.SORT_FOR_ARTISTS,
     artistIdsText: String? = null,
-    lMusicSp: LMusicSp = get(),
     playingVM: PlayingViewModel = get(),
     artistsVM: ArtistsViewModel = get(),
     navigator: DestinationsNavigator
@@ -112,9 +110,29 @@ fun ArtistsScreen(
                 callback = {
                     if (currentPlaying != null) {
                         scope.launch {
-                            var index = 0
-                            if (index != -1) {
-                                listState.scrollToItem(index)
+                            var targetIndex = -1
+                            val startIndex = listState.firstVisibleItemIndex
+
+                            // 从当前可见的元素Index开始往后找
+                            for (i in startIndex until artists.value.size) {
+                                if (i == startIndex) continue
+
+                                if (currentPlaying!!.artists.any { it.name == artists.value[i].name }) {
+                                    targetIndex = i
+                                    break
+                                }
+                            }
+
+                            // 若无法往后找到，则从头开始找
+                            if (targetIndex == -1) {
+                                targetIndex = artists.value.indexOfFirst { artist ->
+                                    currentPlaying!!.artists.any { it.name == artist.name }
+                                }
+                            }
+
+                            // 若找到则跳转
+                            if (targetIndex != -1) {
+                                listState.scrollToItem(targetIndex)
                             }
                         }
                     }
@@ -159,9 +177,8 @@ fun ArtistsScreen(
                     index = index,
                     artistName = item.name,
                     songCount = item.requireItemsCount(),
-                    onClick = {
-                        navigator.navigate(ArtistDetailScreenDestination(item.name))
-                    }
+                    isPlaying = { playingVM.isArtistPlaying(item.name) },
+                    onClick = { navigator.navigate(ArtistDetailScreenDestination(item.name)) }
                 )
             }
         }
