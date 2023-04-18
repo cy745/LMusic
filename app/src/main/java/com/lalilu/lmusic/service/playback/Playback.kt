@@ -19,6 +19,7 @@ interface Playback<T> {
         fun onPlayInfoUpdate(item: T?, playbackState: Int, position: Long)
         fun onSetPlayMode(playMode: PlayMode)
         fun onItemPlay(item: T)
+        fun onItemPause(item: T)
     }
 
     enum class PlaybackAction {

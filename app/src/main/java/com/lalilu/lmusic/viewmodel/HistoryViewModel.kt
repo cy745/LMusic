@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.mapLatest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HistoryViewModel(
-    historyRepo: HistoryRepository,
+    private val historyRepo: HistoryRepository,
     lMediaRepo: LMediaRepository
 ) : ViewModel() {
     val historyState = historyRepo
@@ -34,5 +34,9 @@ class HistoryViewModel(
 
     fun requiteHistoryCountById(mediaId: String): Int {
         return historyCountState.value[mediaId] ?: 0
+    }
+
+    fun clearHistories() {
+        historyRepo.clearHistories()
     }
 }

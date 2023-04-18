@@ -10,6 +10,8 @@ object Config {
     const val LAST_PLAYED_POSITION = "LAST_PLAYED_POSITION"
 
     const val ACTION_SET_REPEAT_MODE = "action_set_repeat_mode"
+    // 计入历史记录的播放时长阈值
+    const val HISTORY_DURATION_THRESHOLD = 1000 * 5
 
     const val KEY_SETTINGS_DARK_MODE_OPTION = "KEY_SETTINGS_DARK_MODE_OPTION"
     const val KEY_SETTINGS_ENABLE_UNKNOWN_FILTER = "KEY_SETTINGS_ENABLE_UNKNOWN_FILTER"
