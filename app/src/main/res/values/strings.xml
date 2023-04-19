@@ -9,37 +9,23 @@
     <string name="default_slogan">LMusic…</string>
 
     <string name="text_button_play">播放</string>
-    <string name="text_button_pause">暂停</string>
-    <string name="text_button_search">搜索</string>
-    <string name="text_button_settings">设置</string>
-    <string name="text_button_previous">前一首</string>
-    <string name="text_button_next">后一首</string>
-    <string name="text_button_repeat_one">单曲循环</string>
-    <string name="text_button_repeat_all">列表循环</string>
-    <string name="text_button_shuffle_on">随机播放</string>
-    <string name="text_button_close">关闭</string>
-    <string name="text_button_cancel">取消</string>
-    <string name="text_button_confirm">确认</string>
 
     <string name="dialog_bottom_sheet_navigator_back">返回</string>
     <string name="dialog_bottom_sheet_navigator_close">关闭</string>
 
     <string name="destination_label_library">曲库</string>
     <string name="destination_label_albums">专辑</string>
-    <string name="destination_label_artist">歌手</string>
+    <string name="destination_label_artist">艺术家</string>
     <string name="destination_label_playlists">歌单</string>
     <string name="destination_label_all_song">歌曲</string>
     <string name="destination_label_favourite">我喜欢</string>
     <string name="destination_label_search">搜索</string>
     <string name="destination_label_settings">设置</string>
-    <string name="destination_label_share_center">分享中心</string>
     <string name="destination_label_album_detail">专辑详情</string>
     <string name="destination_label_dictionary_detail">文件夹详情</string>
     <string name="destination_label_artist_detail">歌手详情</string>
     <string name="destination_label_playlist_detail">歌单详情</string>
     <string name="destination_label_song_detail">歌曲详情</string>
-    <string name="destination_label_add_song_to_playlist">添加至歌单</string>
-    <string name="destination_label_opensource_licence">开放源代码许可</string>
     <string name="destination_label_genres">流派</string>
     <string name="destination_label_dictionaries">文件夹</string>
 
@@ -51,23 +37,22 @@
     <string name="destination_subtitle_favourite">喜欢的歌曲</string>
     <string name="destination_subtitle_search">搜索本地所有内容</string>
     <string name="destination_subtitle_settings">设置选项</string>
-    <string name="destination_subtitle_share_center">正在听的歌曲（需启用高级网络功能）</string>
     <string name="destination_subtitle_album_detail">专辑详情</string>
     <string name="destination_subtitle_playlist_detail">歌单详情</string>
     <string name="destination_subtitle_dictionary_detail">文件夹详情</string>
     <string name="destination_subtitle_song_detail">歌曲详情</string>
-    <string name="destination_subtitle_opensource_licence">使用到的开源代码</string>
     <string name="destination_subtitle_genres">各种风格</string>
     <string name="destination_subtitle_dictionaries">歌曲所在目录</string>
 
-
-    <string name="button_match_network_data_searching">搜索中…</string>
-    <string name="button_match_network_data_no_result">无结果</string>
-
-    <string name="button_create_playlist">CREATE</string>
-    <string name="button_copy_current_playlist">COPY</string>
-
     <string name="button_add_song_to_playlist">添加至歌单</string>
     <string name="button_set_song_to_next">下一首播放</string>
-    <string name="button_match_network_data">网络匹配歌曲</string>
+
+    <string name="sort_preset_by_title">标题名称</string>
+    <string name="sort_preset_by_add_time">最近添加</string>
+    <string name="sort_preset_by_modify_time">最近修改</string>
+    <string name="sort_preset_by_last_play_time">最近播放</string>
+    <string name="sort_preset_by_played_times">播放次数</string>
+    <string name="sort_preset_by_song_duration">歌曲时长</string>
+    <string name="sort_preset_by_item_count">元素个数</string>
+    <string name="sort_preset_by_disk_and_track">碟号&amp;音轨号</string>
 </resources>

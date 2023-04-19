@@ -1,7 +1,14 @@
 package com.lalilu.lmusic.compose.component.card
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,6 +17,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.ripple.rememberRipple
@@ -28,6 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -43,13 +52,17 @@ import com.lalilu.lmusic.utils.extension.mimeTypeToIcon
 @Composable
 fun SongCard(
     modifier: Modifier = Modifier,
-    hasLyric: State<Boolean> = remember { mutableStateOf(false) },
     dragModifier: Modifier = Modifier,
     song: () -> LSong,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
     onEnterSelect: () -> Unit = {},
-    isSelected: () -> Boolean = { false }
+    isPlaying: () -> Boolean = { false },
+    isSelected: () -> Boolean = { false },
+    showPrefix: () -> Boolean = { false },
+    fixedHeight: () -> Boolean = { false },
+    hasLyric: State<Boolean> = remember { mutableStateOf(false) },
+    prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     val item = remember { song() }
 
@@ -65,7 +78,11 @@ fun SongCard(
         onClick = onClick,
         onLongClick = onLongClick,
         onEnterSelect = onEnterSelect,
-        isSelected = isSelected
+        fixedHeight = fixedHeight,
+        isPlaying = isPlaying,
+        isSelected = isSelected,
+        showPrefix = showPrefix,
+        prefixContent = prefixContent
     )
 }
 
@@ -78,12 +95,16 @@ fun SongCard(
     subTitle: () -> String,
     mimeType: () -> String,
     duration: () -> Long,
-    hasLyric: () -> Boolean = { false },
     imageData: () -> Any?,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
     onEnterSelect: () -> Unit = {},
-    isSelected: () -> Boolean = { false }
+    hasLyric: () -> Boolean = { false },
+    isPlaying: () -> Boolean = { false },
+    fixedHeight: () -> Boolean = { false },
+    isSelected: () -> Boolean = { false },
+    showPrefix: () -> Boolean = { false },
+    prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val bgColor by animateColorAsState(if (isSelected()) dayNightTextColor(0.15f) else Color.Transparent)
@@ -91,6 +112,7 @@ fun SongCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .wrapContentHeight()
             .padding(horizontal = 10.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(color = bgColor)
@@ -110,7 +132,11 @@ fun SongCard(
             subTitle = subTitle,
             mimeType = mimeType,
             duration = duration,
-            hasLyric = hasLyric
+            hasLyric = hasLyric,
+            isPlaying = isPlaying,
+            showPrefix = showPrefix,
+            fixedHeight = fixedHeight,
+            prefixContent = prefixContent
         )
         SongCardImage(
             modifier = dragModifier,
@@ -129,11 +155,15 @@ fun SongCardContent(
     subTitle: () -> String,
     mimeType: () -> String,
     duration: () -> Long,
-    hasLyric: () -> Boolean = { false }
+    fixedHeight: () -> Boolean = { false },
+    hasLyric: () -> Boolean = { false },
+    isPlaying: () -> Boolean = { false },
+    showPrefix: () -> Boolean = { false },
+    prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(15.dp)
+        modifier = modifier.fillMaxHeight(),
+        verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -143,10 +173,15 @@ fun SongCardContent(
             Text(
                 modifier = Modifier.weight(1f),
                 text = title(),
+                maxLines = if (fixedHeight()) 1 else Int.MAX_VALUE,
+                overflow = TextOverflow.Ellipsis,
                 color = dayNightTextColor(),
                 style = MaterialTheme.typography.subtitle1
             )
-            HasLyricIcon(hasLyric = hasLyric)
+            HasLyricIcon(
+                hasLyric = hasLyric,
+                fixedHeight = fixedHeight
+            )
             Image(
                 painter = painterResource(id = mimeTypeToIcon(mimeType = mimeType())),
                 contentDescription = "MediaType Icon",
@@ -157,17 +192,36 @@ fun SongCardContent(
             )
         }
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(20.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            PlayingTipIcon(isPlaying = isPlaying)
+            AnimatedVisibility(
+                visible = showPrefix(),
+                modifier = Modifier.wrapContentWidth(),
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkHorizontally()
+            ) {
+                ProvideTextStyle(
+                    value = MaterialTheme.typography.caption
+                        .copy(color = dayNightTextColor(0.5f)),
+                ) {
+                    prefixContent(Modifier.padding(end = 5.dp))
+                }
+            }
             Text(
                 modifier = Modifier.weight(1f),
                 text = subTitle(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 color = dayNightTextColor(0.5f),
                 style = MaterialTheme.typography.caption,
             )
             Text(
+                modifier = Modifier.padding(start = 5.dp),
                 text = durationMsToString(duration = duration()),
                 fontSize = 12.sp,
                 letterSpacing = 0.05.em,
@@ -220,17 +274,34 @@ fun SongCardImage(
 
 @Composable
 fun HasLyricIcon(
-    hasLyric: () -> Boolean = { false }
+    hasLyric: () -> Boolean = { false },
+    fixedHeight: () -> Boolean = { false }
 ) {
-    val alpha by animateFloatAsState(targetValue = if (hasLyric()) 1f else 0f)
-
-    Image(
-        painter = painterResource(id = R.drawable.ic_lrc_fill),
-        contentDescription = "Lyric Icon",
-        colorFilter = dayNightTextColorFilter(0.9f),
-        modifier = Modifier
-            .size(20.dp)
-            .aspectRatio(1f)
-            .alpha(alpha)
-    )
+    if (fixedHeight()) {
+        AnimatedVisibility(
+            visible = hasLyric(),
+            enter = fadeIn() + slideInHorizontally(),
+            exit = fadeOut() + slideOutHorizontally()
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_lrc_fill),
+                contentDescription = "Lyric Icon",
+                colorFilter = dayNightTextColorFilter(0.9f),
+                modifier = Modifier
+                    .size(20.dp)
+                    .aspectRatio(1f)
+            )
+        }
+    } else {
+        val alpha by animateFloatAsState(targetValue = if (hasLyric()) 1f else 0f)
+        Image(
+            painter = painterResource(id = R.drawable.ic_lrc_fill),
+            contentDescription = "Lyric Icon",
+            colorFilter = dayNightTextColorFilter(0.9f),
+            modifier = Modifier
+                .size(20.dp)
+                .aspectRatio(1f)
+                .alpha(alpha)
+        )
+    }
 }

@@ -78,3 +78,4 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+/app/mapping.txt

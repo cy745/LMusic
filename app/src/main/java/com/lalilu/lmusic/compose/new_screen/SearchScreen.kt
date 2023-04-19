@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
@@ -107,6 +108,7 @@ fun SearchScreen(
                     navigator.navigate(
                         SongsScreenDestination(
                             title = "[${keyword.value}]\n歌曲搜索结果",
+                            sortFor = "SearchResult",
                             mediaIdsText = searchVM.songsResult.value.map(LSong::id).json()
                         )
                     )
@@ -125,6 +127,7 @@ fun SearchScreen(
                     navigator.navigate(SongDetailScreenDestination(item.id))
                 },
                 onEnterSelect = { selectHelper.onSelected(item) },
+                isPlaying = { playingVM.isSongPlaying(mediaId = item.id) },
                 onClick = {
                     if (selectHelper.isSelecting.value) {
                         selectHelper.onSelected(item)
@@ -140,6 +143,7 @@ fun SearchScreen(
                 navigator.navigate(
                     AlbumsScreenDestination(
                         title = "[${keyword.value}]\n专辑搜索结果",
+                        sortFor = "SearchResultForAlbum",
                         albumIdsText = searchVM.albumsResult.value.map(LAlbum::id).json()
                     )
                 )
@@ -149,6 +153,7 @@ fun SearchScreen(
         item(key = "AlbumHeader") {
             RecommendTitle(
                 title = "专辑",
+                modifier = Modifier.height(64.dp),
                 onClick = onAlbumHeaderClick
             ) {
                 AnimatedVisibility(visible = searchVM.albumsResult.value.isNotEmpty()) {
@@ -167,7 +172,7 @@ fun SearchScreen(
             AnimatedContent(targetState = searchVM.albumsResult.value.isNotEmpty()) { show ->
                 if (show) {
                     RecommendRow(
-                        items = searchVM.albumsResult.value,
+                        items = { searchVM.albumsResult.value },
                         getId = { it.id }
                     ) {
                         RecommendCardForAlbum(
@@ -187,7 +192,7 @@ fun SearchScreen(
         }
 
         searchItem(
-            name = "歌手",
+            name = "艺术家",
             showCount = 5,
             getId = { it.id },
             items = searchVM.artistsResult.value,
@@ -197,6 +202,7 @@ fun SearchScreen(
                     navigator.navigate(
                         ArtistsScreenDestination(
                             title = "[${keyword.value}]\n艺术家搜索结果",
+                            sortFor = "SearchResultForArtist",
                             artistIdsText = searchVM.artistsResult.value.map(LArtist::name).json()
                         )
                     )
@@ -205,9 +211,8 @@ fun SearchScreen(
         ) {
             ArtistCard(
                 artist = it,
-                onClick = {
-                    navigator.navigate(ArtistDetailScreenDestination(artistName = it.name))
-                }
+                isPlaying = { playingVM.isArtistPlaying(it.name) },
+                onClick = { navigator.navigate(ArtistDetailScreenDestination(artistName = it.name)) }
             )
         }
 
@@ -247,6 +252,7 @@ fun <I> LazyListScope.searchItem(
 ) {
     item(key = "${name}_Header") {
         RecommendTitle(
+            modifier = Modifier.height(64.dp),
             title = name,
             onClick = onClickHeader
         ) {

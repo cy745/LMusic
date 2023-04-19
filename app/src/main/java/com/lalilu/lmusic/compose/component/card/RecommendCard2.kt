@@ -51,8 +51,8 @@ fun RecommendCard2(
         imageData = imageData,
         onClick = onClick
     ) { palette ->
-        val mainColor = Color(
-            palette?.getDarkVibrantColor(android.graphics.Color.GRAY)
+        val mainColor =  Color(
+            palette()?.getDarkVibrantColor(android.graphics.Color.GRAY)
                 ?: android.graphics.Color.GRAY
         )
 

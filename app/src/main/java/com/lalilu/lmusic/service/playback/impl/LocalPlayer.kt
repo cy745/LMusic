@@ -3,6 +3,7 @@ package com.lalilu.lmusic.service.playback.impl
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmusic.service.playback.Player
 import com.lalilu.lmusic.service.playback.helper.FadeVolumeProxy
 import com.lalilu.lmusic.utils.EQHelper
@@ -10,7 +11,10 @@ import java.io.IOException
 
 class LocalPlayer(
     private val context: Context
-) : Player, Player.Listener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
+) : Player, Player.Listener,
+    MediaPlayer.OnPreparedListener,
+    MediaPlayer.OnCompletionListener,
+    MediaPlayer.OnErrorListener {
     private var volumeProxy: FadeVolumeProxy? = null
     private var player: MediaPlayer? = null
         get() {
@@ -102,6 +106,12 @@ class LocalPlayer(
         onLSeekTo(durationMs)
     }
 
+    override fun destroy() {
+        stop()
+        volumeProxy = null
+        listener = null
+    }
+
     override fun requestAudioFocus(): Boolean {
         return listener?.requestAudioFocus() ?: true
     }
@@ -124,6 +134,11 @@ class LocalPlayer(
 
     override fun onCompletion(mp: MediaPlayer?) {
         onLCompletion()
+    }
+
+    override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
+        ToastUtils.showLong("播放异常：$what $extra")
+        return false
     }
 
     override fun onLStart() {

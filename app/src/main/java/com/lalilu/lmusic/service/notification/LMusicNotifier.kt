@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.service.notification
 
+import StatusBarLyric.API.StatusBarLyric
 import android.app.Notification
 import android.content.Context
 import android.os.Build
@@ -28,6 +29,7 @@ class LMusicNotifier constructor(
     private val lyricRepo: LyricRepository,
     private val coverRepo: CoverRepository,
     private val lMusicSp: LMusicSp,
+    private val statusBarLyric: StatusBarLyric,
     context: Context
 ) : BaseNotification(context), CoroutineScope, Pusher {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
@@ -78,12 +80,14 @@ class LMusicNotifier constructor(
             }
 //                .debounce(50)
                 .collectLatest {
+                    statusBarLyric.updateLyric(it?.tickerText?.toString() ?: "")
                     it?.let(this@LMusicNotifier::pushNotification)
                 }
         }
     }
 
     private fun stopLoop() {
+        statusBarLyric.stopLyric()
         notificationLoopJob?.cancel()
         notificationLoopJob = null
     }

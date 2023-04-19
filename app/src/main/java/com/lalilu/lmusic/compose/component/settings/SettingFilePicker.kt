@@ -16,8 +16,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,22 +40,21 @@ fun SettingFilePicker(
     mimeType: String
 ) {
     var value by state
-    val context = LocalContext.current
-    var fileName by remember(value) {
-        mutableStateOf(value.split('/').last())
+    val fileName = remember {
+        derivedStateOf {
+            value.split('/').last()
+        }
     }
 
+    val context = LocalContext.current
     val pickFileLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri ?: return@rememberLauncherForActivityResult
 
         // 若是可直接访问的File则直接
-        if (uri.scheme == ContentResolver.SCHEME_FILE) {
-            uri.path?.let { value = it }
-            uri.path?.split('/')?.last()?.let {
-                fileName = it
-            }
+        if (uri.scheme == ContentResolver.SCHEME_FILE && !uri.path.isNullOrEmpty()) {
+            value = uri.path!!
             return@rememberLauncherForActivityResult
         }
 
@@ -73,25 +72,19 @@ fun SettingFilePicker(
                     }
                     close()
                 }
+            val name = displayName?.takeIf { it.isNotEmpty() }
+                ?: "${System.currentTimeMillis()}_${Math.random() * 1000}.tff"
+            val path = "${context.cacheDir.absolutePath}/$name"
 
             try {
-                val bSource = contentResolver.openInputStream(uri)
-                    ?.source()
-                    ?.buffer()
-                    ?: return@rememberLauncherForActivityResult
-
-                fileName = displayName?.takeIf { it.isNotEmpty() }
-                    ?: "${System.currentTimeMillis()}_${Math.random() * 1000}.ext"
-
-                val path = "${context.cacheDir.absolutePath}/$fileName"
-
-                val bSink = File(path).outputStream()
-                    .sink()
-                    .buffer()
-                bSink.write(bSource.readByteArray())
-                bSink.flush()
-                bSink.close()
-                bSource.close()
+                contentResolver.openInputStream(uri).use { stream ->
+                    stream?.source()?.buffer()?.use { source ->
+                        File(path).outputStream().sink().buffer().use {
+                            it.write(source.readByteArray())
+                            it.flush()
+                        }
+                    }
+                }
                 value = path
             } catch (_: Exception) {
             }
@@ -118,7 +111,7 @@ fun SettingFilePicker(
                 fontSize = 14.sp
             )
             Text(
-                text = fileName.takeIf { it.isNotEmpty() } ?: subTitle ?: "",
+                text = fileName.value.takeIf { it.isNotEmpty() } ?: subTitle ?: "",
                 fontSize = 12.sp,
                 color = textColor.copy(0.5f)
             )

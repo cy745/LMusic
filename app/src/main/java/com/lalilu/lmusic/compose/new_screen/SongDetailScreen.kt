@@ -239,6 +239,10 @@ fun SongDetailScreen(
 
             item {
                 IconTextButton(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .height(48.dp),
+                    shape = RoundedCornerShape(10.dp),
                     text = "使用音乐标签编辑信息",
                     color = Color(0xFF3EA22C),
                     onClick = {
@@ -256,7 +260,8 @@ fun SongDetailScreen(
                             Toast.makeText(context, "未安装[音乐标签]", Toast.LENGTH_SHORT)
                                 .show()
                         }
-                    })
+                    }
+                )
             }
 
             item {
