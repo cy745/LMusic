@@ -25,6 +25,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.DictionaryDetailScreenDestination
+import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -82,12 +83,18 @@ fun DictionariesScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Text(text = item.name, style = MaterialTheme.typography.subtitle1)
+                    Text(
+                        text = item.name,
+                        style = MaterialTheme.typography.subtitle1,
+                        color = dayNightTextColor()
+
+                    )
                     Text(
                         text = item.path,
                         maxLines = 1,
-                        style = MaterialTheme.typography.subtitle2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = dayNightTextColor(0.5f),
+                        style = MaterialTheme.typography.caption,
                     )
                 }
 
@@ -97,11 +104,13 @@ fun DictionariesScreen(
                 ) {
                     Text(
                         text = "${item.requireItemsCount()} 首歌曲",
-                        style = MaterialTheme.typography.subtitle2
+                        style = MaterialTheme.typography.subtitle2,
+                        color = dayNightTextColor(0.7f)
                     )
                     Text(
                         text = ConvertUtils.byte2FitMemorySize(item.requireFileSize()),
-                        style = MaterialTheme.typography.subtitle2
+                        style = MaterialTheme.typography.caption,
+                        color = dayNightTextColor(0.6f)
                     )
                 }
             }
