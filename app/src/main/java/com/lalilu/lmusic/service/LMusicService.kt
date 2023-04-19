@@ -134,13 +134,10 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.List
 
     override fun onItemPlay(item: LSong) {
         val now = System.currentTimeMillis()
-        if (startTime > 0) {
-            duration += now - startTime
-        }
+        if (startTime > 0) duration += now - startTime
 
-        // 判断当前播放的歌曲是否是最近正在播放的歌曲
-        if (lastMediaId != item.id) {
-            // 若切歌了，根据播放时长判断是更新到数据库还是删除
+        // 若切歌了或者播放时长超过阈值，更新或删除上一首歌的历史记录
+        if (lastMediaId != item.id || duration >= Config.HISTORY_DURATION_THRESHOLD || duration >= item.durationMs) {
             if (lastMediaId != null) {
                 if (duration >= Config.HISTORY_DURATION_THRESHOLD) {
                     historyRepo.updatePreSavedHistory(
