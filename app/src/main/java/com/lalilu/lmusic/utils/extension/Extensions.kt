@@ -309,3 +309,11 @@ fun String?.getIds(): List<String> {
 fun Context.checkActivityIsExist(intent: Intent): Boolean {
     return intent.resolveActivityInfo(packageManager, PackageManager.MATCH_DEFAULT_ONLY) != null
 }
+
+fun Long.durationToTime(): String {
+    val hour = this / 3600000
+    val minute = this / 60000 % 60
+    val second = this / 1000 % 60
+    return if (hour > 0L) "%02d:%02d:%02d".format(hour, minute, second)
+    else "%02d:%02d".format(minute, second)
+}

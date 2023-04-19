@@ -1,8 +1,16 @@
 package com.lalilu.lmusic.utils.extension
 
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Shader
 import android.view.animation.AccelerateDecelerateInterpolator
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -24,6 +32,15 @@ fun Modifier.measure(callback: (width: Int, height: Int) -> Unit): Modifier =
         val placeable = measurable.measure(constraints)
         callback.invoke(placeable.measuredWidth, placeable.measuredHeight)
         layout(constraints.maxWidth, placeable.measuredHeight) {
+            placeable.place(0, 0)
+        }
+    }
+
+fun Modifier.measureHeight(callback: (width: Int, height: Int) -> Unit): Modifier =
+    this.layout { measurable, constraints ->
+        val placeable = measurable.measure(constraints)
+        callback.invoke(placeable.measuredWidth, placeable.measuredHeight)
+        layout(placeable.measuredWidth, placeable.measuredHeight) {
             placeable.place(0, 0)
         }
     }

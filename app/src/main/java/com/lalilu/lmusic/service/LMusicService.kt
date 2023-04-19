@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
-class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
+class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.Listener<LSong> {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
 
     private val lMusicSp: LMusicSp by inject()
@@ -50,6 +50,15 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var playback: MixPlayback
+
+    private val sessionActivityPendingIntent by lazy {
+        packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
+            PendingIntent.getActivity(
+                this, 0, sessionIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        }
+    }
 
     private val intent: Intent by lazy {
         Intent(this@LMusicService, LMusicService::class.java)
@@ -71,87 +80,123 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
         }
     }
 
-    inner class PlaybackListener : Playback.Listener<LSong> {
-        override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
-            val isPlaying = playback.player?.isPlaying ?: false
+    override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
+        val isPlaying = playback.player?.isPlaying ?: false
 
-            runtime.update(playing = item?.id)
-            runtime.update(isPlaying = isPlaying)
-            runtime.updatePosition(startValue = position, loop = isPlaying)
+        runtime.update(playing = item?.id)
+        runtime.update(isPlaying = isPlaying)
+        runtime.updatePosition(startValue = position, loop = isPlaying)
 
-            mediaSession.setMetadata(item?.metadataCompat)
-            mediaSession.setPlaybackState(
-                PlaybackStateCompat.Builder()
-                    .setActions(MEDIA_DEFAULT_ACTION)
-                    .setState(playbackState, position, 1f)
-                    .build()
-            )
+        mediaSession.setMetadata(item?.metadataCompat)
+        mediaSession.setPlaybackState(
+            PlaybackStateCompat.Builder()
+                .setActions(MEDIA_DEFAULT_ACTION)
+                .setState(playbackState, position, 1f)
+                .build()
+        )
 
-            when (playbackState) {
-                PlaybackStateCompat.STATE_PLAYING -> {
-                    mediaSession.isActive = true
-                    startService()
-                    notifier.startForeground { id, notification ->
-                        startForeground(id, notification)
-                    }
-                }
-
-                PlaybackStateCompat.STATE_PAUSED -> {
-                    // mediaSession.isActive = false
-                    stopForeground()
-                }
-
-                PlaybackStateCompat.STATE_STOPPED -> {
-                    mediaSession.isActive = false
-                    stopSelf()
-                    notifier.stopForeground {
-                        stopForeground()
-                        notifier.cancel()
-                    }
-                    return
+        when (playbackState) {
+            PlaybackStateCompat.STATE_PLAYING -> {
+                mediaSession.isActive = true
+                startService()
+                notifier.startForeground { id, notification ->
+                    startForeground(id, notification)
                 }
             }
-            notifier.update()
-        }
 
-        override fun onSetPlayMode(playMode: PlayMode) {
-            mediaSession.setRepeatMode(playMode.repeatMode)
-            mediaSession.setShuffleMode(playMode.shuffleMode)
-            notifier.update()
-        }
+            PlaybackStateCompat.STATE_PAUSED -> {
+                // mediaSession.isActive = false
+                stopForeground()
+            }
 
-        override fun onItemPlay(item: LSong) {
-            historyRepo.saveHistory(
-                LHistory(contentId = item.id, type = HISTORY_TYPE_SONG)
+            PlaybackStateCompat.STATE_STOPPED -> {
+                mediaSession.isActive = false
+                stopSelf()
+                notifier.stopForeground {
+                    stopForeground()
+                    notifier.cancel()
+                }
+                return
+            }
+        }
+        notifier.update()
+    }
+
+    override fun onSetPlayMode(playMode: PlayMode) {
+        mediaSession.setRepeatMode(playMode.repeatMode)
+        mediaSession.setShuffleMode(playMode.shuffleMode)
+        notifier.update()
+    }
+
+    private var lastMediaId: String? = null
+    private var startTime: Long = 0L
+    private var duration: Long = 0L
+
+    override fun onItemPlay(item: LSong) {
+        val now = System.currentTimeMillis()
+        if (startTime > 0) duration += now - startTime
+
+        // 若切歌了或者播放时长超过阈值，更新或删除上一首歌的历史记录
+        if (lastMediaId != item.id || duration >= Config.HISTORY_DURATION_THRESHOLD || duration >= item.durationMs) {
+            if (lastMediaId != null) {
+                if (duration >= Config.HISTORY_DURATION_THRESHOLD) {
+                    historyRepo.updatePreSavedHistory(
+                        contentId = lastMediaId!!,
+                        duration = duration
+                    )
+                } else {
+                    historyRepo.removePreSavedHistory(contentId = lastMediaId!!)
+                }
+            }
+
+            // 将当前播放的歌曲预保存添加到历史记录中
+            historyRepo.preSaveHistory(
+                LHistory(
+                    contentId = item.id,
+                    duration = -1L,
+                    startTime = now,
+                    type = HISTORY_TYPE_SONG
+                )
             )
+            duration = 0L
+        }
+
+        startTime = now
+        lastMediaId = item.id
+    }
+
+    override fun onItemPause(item: LSong) {
+        // 判断当前暂停时的歌曲是否是最近正在播放的歌曲
+        if (lastMediaId != item.id) return
+
+        // 将该歌曲目前为止播放的时间加到历史记录中
+        if (startTime > 0) {
+            duration += System.currentTimeMillis() - startTime
+            startTime = -1L
         }
     }
 
     override fun onCreate() {
         super.onCreate()
 
-        playback = MixPlayback(
-            noisyReceiver = noisyReceiver,
-            audioFocusHelper = audioFocusHelper,
-            playbackListener = PlaybackListener(),
-            queue = LMusicRuntimeQueue(runtime),
-            player = localPlayer
-        )
+        if (!this::playback.isInitialized) {
+            playback = MixPlayback(
+                noisyReceiver = noisyReceiver,
+                audioFocusHelper = audioFocusHelper,
+                playbackListener = this,
+                queue = LMusicRuntimeQueue(runtime),
+                player = localPlayer
+            )
+        }
 
-        val sessionActivityPendingIntent =
-            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
-                PendingIntent.getActivity(
-                    this, 0, sessionIntent,
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                )
-            }
-
-        mediaSession = MediaSessionCompat(this, "LMusicService")
-            .apply {
-                setSessionActivity(sessionActivityPendingIntent)
-                setCallback(playback)
-                isActive = true
-            }
+        if (!this::mediaSession.isInitialized) {
+            mediaSession = MediaSessionCompat(this, "LMusicService")
+                .apply {
+                    setSessionActivity(sessionActivityPendingIntent)
+                    setCallback(playback)
+                    isActive = true
+                }
+        }
 
         notifier.bindMediaSession(mediaSession)
         sessionToken = mediaSession.sessionToken
@@ -196,7 +241,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
             }
         }
         MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     /**
@@ -221,6 +266,9 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope {
     }
 
     override fun onDestroy() {
+        playback.destroy()
+        localPlayer.destroy()
+
         // 服务被结束后取消本协程作用域
         if (coroutineContext[Job] != null) {
             this.cancel()

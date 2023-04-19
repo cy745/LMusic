@@ -184,13 +184,13 @@ open class BaseNotification constructor(
         )
     )
     private val mNextAction: NotificationCompat.Action = NotificationCompat.Action(
-        R.drawable.ic_skip_forward_line, "next",
+        R.drawable.ic_skip_next_line, "next",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_SKIP_TO_NEXT
         )
     )
     private val mPrevAction: NotificationCompat.Action = NotificationCompat.Action(
-        R.drawable.ic_skip_back_line, "previous",
+        R.drawable.ic_skip_previous_line, "previous",
         MediaButtonReceiver.buildMediaButtonPendingIntent(
             mContext, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
         )

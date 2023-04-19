@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
@@ -25,6 +26,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.lmedia.LMedia
@@ -33,6 +35,7 @@ import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
+import com.lalilu.lmusic.compose.component.SmartFloatBtns.SmartFloatBtnsContent
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.new_screen.LMusicNavHost
 import com.lalilu.lmusic.compose.screen.PlayingScreen
@@ -42,6 +45,7 @@ import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.edgeTransparentForStatusBar
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -60,14 +64,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (hasNewIntent) {
-            val start = System.currentTimeMillis()
-            LMedia.read(this, intent.data) {
-                LogUtils.i(
-                    "[onNewIntent]: 解析完成,耗时：${System.currentTimeMillis() - start}ms",
-                    it
-                )
-                it?.let { browser.addAndPlay(it) }
-            }
+            browser.whenConnected { handleIntent(intent) }
             hasNewIntent = false
         }
     }
@@ -78,6 +75,20 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         hasNewIntent = true
+    }
+
+    private fun handleIntent(intent: Intent) {
+        if (intent.data == null) return
+
+        val start = System.currentTimeMillis()
+        LMedia.read(this, intent.data) {
+            if (it?.id == null) {
+                ToastUtils.showShort("解析失败: [${intent.data}]")
+                return@read
+            }
+            LogUtils.i("[onNewIntent]: 解析完成, 耗时：${System.currentTimeMillis() - start}ms", it)
+            browser.addAndPlay(it.id)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -139,10 +150,20 @@ class MainActivity : AppCompatActivity() {
                     Box {
                         SmartModalBottomSheet.SmartModalBottomSheetContent(
                             sheetContent = {
-                                LMusicNavHost()
+                                LMusicNavHost(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .edgeTransparentForStatusBar(SmartModalBottomSheet.enableFadeEdgeForStatusBar.value)
+                                )
+                                SmartFloatBtnsContent(
+                                    modifier = Modifier.graphicsLayer {
+                                        translationY = -SmartModalBottomSheet.offset * 0.8f
+                                        alpha = SmartModalBottomSheet.offsetHalfPercent
+                                    }
+                                )
                                 SmartBarContent(
                                     modifier = Modifier.graphicsLayer {
-                                        translationY = -SmartModalBottomSheet.offset
+                                        translationY = -SmartModalBottomSheet.offset * 0.9f
                                         alpha = SmartModalBottomSheet.offsetHalfPercent
                                     }
                                 )
@@ -156,6 +177,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         volumeControlStream = AudioManager.STREAM_MUSIC
+        browser.whenConnected { handleIntent(intent) }
     }
 }
 

@@ -1,5 +1,7 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import StatusBarLyric.API.StatusBarLyric
+import android.annotation.SuppressLint
 import android.media.MediaScannerConnection
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,6 +24,7 @@ import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.RomUtils
 import com.lalilu.R
+import com.lalilu.common.CustomRomUtils
 import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
@@ -33,17 +36,18 @@ import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.compose.component.settings.SettingSwitcher
 import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.utils.EQHelper
-import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.ramcosta.composedestinations.annotation.Destination
 import org.koin.androidx.compose.get
 
+@SuppressLint("PrivateApi")
 @OptIn(ExperimentalFoundationApi::class)
 @HomeNavGraph
 @Destination
 @Composable
 fun SettingsScreen(
-    lMusicSp: LMusicSp = get()
+    lMusicSp: LMusicSp = get(),
+    statusBarLyricExt: StatusBarLyric = get()
 ) {
     val context = LocalContext.current
     val darkModeOption = lMusicSp.darkModeOption
@@ -55,10 +59,12 @@ fun SettingsScreen(
     val lyricTextSize = lMusicSp.lyricTextSize
     val playMode = lMusicSp.playMode
     val volumeControl = lMusicSp.volumeControl
-    val lyricTypefaceUri = lMusicSp.lyricTypefaceUri
+    val lyricTypefacePath = lMusicSp.lyricTypefacePath
     val enableSystemEq = lMusicSp.enableSystemEq
     val enableDynamicTips = lMusicSp.enableDynamicTips
     val autoHideSeekBar = lMusicSp.autoHideSeekbar
+    val forceHideStatusBar = lMusicSp.forceHideStatusBar
+    val keepScreenOnWhenLyricExpanded = lMusicSp.keepScreenOnWhenLyricExpanded
 
     val launcherForAudioFx = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -128,7 +134,7 @@ fun SettingsScreen(
                 iconRes = R.drawable.ic_lrc_fill,
                 titleRes = R.string.preference_lyric_settings
             ) {
-                if (RomUtils.isMeizu() || StatusBarLyricExt.hasEnable()) {
+                if (RomUtils.isMeizu() || statusBarLyricExt.hasEnable() || CustomRomUtils.isFlyme) {
                     SettingSwitcher(
                         titleRes = R.string.preference_lyric_settings_status_bar_lyric,
                         state = statusBarLyric
@@ -139,11 +145,16 @@ fun SettingsScreen(
                     subTitle = "简化界面显示效果",
                     state = autoHideSeekBar,
                 )
+                SettingSwitcher(
+                    title = "歌词页展开时屏幕常亮",
+                    subTitle = "小心烧屏",
+                    state = keepScreenOnWhenLyricExpanded,
+                )
                 SettingFilePicker(
-                    state = lyricTypefaceUri,
+                    state = lyricTypefacePath,
                     title = "自定义字体",
                     subTitle = "请选择TTF格式的字体文件",
-                    mimeType = "application/octet-stream"
+                    mimeType = "font/ttf"
                 )
                 SettingStateSeekBar(
                     state = lyricGravity,
@@ -176,6 +187,11 @@ fun SettingsScreen(
                 icon = painterResource(id = R.drawable.ic_loader_line),
                 title = "其他"
             ) {
+                SettingSwitcher(
+                    title = "全局隐藏状态栏",
+                    subTitle = "简化界面显示效果",
+                    state = forceHideStatusBar,
+                )
                 SettingStateSeekBar(
                     state = darkModeOption,
                     selection = stringArrayResource(id = R.array.dark_mode_options).toList(),

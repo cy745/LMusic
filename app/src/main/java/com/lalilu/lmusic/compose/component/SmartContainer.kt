@@ -9,8 +9,10 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -56,7 +58,7 @@ object SmartContainer {
                 Spacer(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(SmartBar.smartBarHeightDpState.value)
+                        .height(SmartBar.smartBarHeightDpState.value + SmartFloatBtns.floatBtnsHeightDpState.value + 20.dp)
                 )
             }
         }
@@ -96,7 +98,7 @@ object SmartContainer {
                 Spacer(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(SmartBar.smartBarHeightDpState.value)
+                        .height(SmartBar.smartBarHeightDpState.value + SmartFloatBtns.floatBtnsHeightDpState.value + 20.dp)
                 )
             }
         }
@@ -107,6 +109,7 @@ object SmartContainer {
     @JvmName("SmartContainerLazyStaggeredVerticalGrid")
     fun LazyStaggeredVerticalGrid(
         columns: (WindowWidthSizeClass) -> Int,
+        staggeredGridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
         verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(0.dp),
         horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(0.dp),
         contentPaddingForHorizontal: Dp = 0.dp,
@@ -115,10 +118,13 @@ object SmartContainer {
         val windowSize = LocalWindowSize.current
         val contentPadding = rememberStatusBarContentPadding(
             horizontalPadding = contentPaddingForHorizontal,
-            bottomPadding = SmartBar.smartBarHeightDpState.value
+            // 瀑布流布局使用动态的ContentPadding会在padding变化使元素重新布局，故尽可能使用固定值较好
+            bottomPadding = 200.dp
         )
 
         LazyVerticalStaggeredGrid(
+            state = staggeredGridState,
+            modifier = Modifier.fillMaxSize(),
             columns = StaggeredGridCells.Fixed(columns(windowSize.widthSizeClass)),
             contentPadding = contentPadding,
             verticalArrangement = verticalArrangement,

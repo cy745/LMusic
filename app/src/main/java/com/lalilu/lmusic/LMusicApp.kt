@@ -4,7 +4,6 @@ import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.lalilu.lmusic.utils.EQHelper
-import com.lalilu.lmusic.utils.StatusBarLyricExt
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.SongCoverFetcher
@@ -32,7 +31,6 @@ class LMusicApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
 
-        StatusBarLyricExt.init(this)
         EQHelper.init(this)
 
         startKoin {
