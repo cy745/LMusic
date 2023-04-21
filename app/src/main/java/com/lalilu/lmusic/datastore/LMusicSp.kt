@@ -74,6 +74,10 @@ class LMusicSp(context: Context) : BaseSp() {
         Config.KEY_SETTINGS_KEEP_SCREEN_ON_WHEN_LYRIC_EXPANDED,
         Config.DEFAULT_SETTINGS_KEEP_SCREEN_ON_WHEN_LYRIC_EXPANDED
     )
+    val durationFilter = intSp(
+        Config.KEY_SETTINGS_DURATION_FILTER,
+        Config.DEFAULT_SETTINGS_DURATION_FILTER
+    )
     val isGuidingOver = boolSp(
         Config.KEY_REMEMBER_IS_GUIDING_OVER,
         false

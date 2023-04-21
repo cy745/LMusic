@@ -65,6 +65,7 @@ fun SettingsScreen(
     val autoHideSeekBar = lMusicSp.autoHideSeekbar
     val forceHideStatusBar = lMusicSp.forceHideStatusBar
     val keepScreenOnWhenLyricExpanded = lMusicSp.keepScreenOnWhenLyricExpanded
+    val durationFilter = lMusicSp.durationFilter
 
     val launcherForAudioFx = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -174,6 +175,11 @@ fun SettingsScreen(
                 iconRes = R.drawable.ic_scan_line,
                 titleRes = R.string.preference_media_source_settings
             ) {
+                SettingProgressSeekBar(
+                    state = durationFilter,
+                    title = "筛除小于时长的文件",
+                    valueRange = 0..60
+                )
                 SettingSwitcher(
                     state = enableUnknownFilter,
                     titleRes = R.string.preference_media_source_settings_unknown_filter,

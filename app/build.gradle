@@ -22,8 +22,9 @@ android {
 
     defaultConfig {
         applicationId "com.lalilu.lmusic"
-        minSdkVersion 23
-        targetSdkVersion 33
+        minSdk 21
+        targetSdk 33
+
         versionCode 41
         versionName "1.5.3"
         vectorDrawables {
@@ -153,8 +154,8 @@ dependencies {
     // 闪退崩溃日志捕获库
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
     // debugImplementation 'com.github.markzhai:blockcanary-android:1.5.0'
-    betaImplementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
-    debugImplementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
+//    betaImplementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
+//    debugImplementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
 
     // https://github.com/square/retrofit
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit

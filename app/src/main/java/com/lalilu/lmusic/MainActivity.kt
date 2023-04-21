@@ -46,15 +46,18 @@ import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.edgeTransparentForStatusBar
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 
 @OptIn(
     ExperimentalMaterial3WindowSizeClassApi::class,
     ExperimentalAnimationApi::class,
-    ExperimentalMaterialApi::class
+    ExperimentalMaterialApi::class,
+    ExperimentalCoroutinesApi::class
 )
 class MainActivity : AppCompatActivity() {
     private val lMusicSp: LMusicSp by inject()
@@ -118,17 +121,25 @@ class MainActivity : AppCompatActivity() {
          * 在LMedia初始化完成前，设置元素筛选器逻辑
          */
         Indexer.setFilterPipe {
-            lMusicSp.blockedPaths.flow(true)
-                .combine(lMusicSp.enableUnknownFilter.flow(true)) { paths, hideUnknown ->
-                    val list = mutableListOf<FilterType>()
-                    if (paths != null) {
-                        list.add(FilterType.Path(paths))
+            lMusicSp.run {
+                enableUnknownFilter.flow(true).flatMapLatest { hideUnknown ->
+                    blockedPaths.flow(true).flatMapLatest { blockedPaths ->
+                        durationFilter.flow(true).mapLatest { minDuration ->
+                            mutableListOf<FilterType>().also {
+                                if (blockedPaths != null) {
+                                    it.add(FilterType.Path(blockedPaths))
+                                }
+                                if (hideUnknown == true) {
+                                    it.add(FilterType.UnknownArtist)
+                                }
+                                if (minDuration != null && minDuration > 0) {
+                                    it.add(FilterType.Duration(minDuration))
+                                }
+                            }
+                        }
                     }
-                    if (hideUnknown == true) {
-                        list.add(FilterType.UnknownArtist)
-                    }
-                    return@combine list
                 }
+            }
         }
 
         Indexer.startListen()
