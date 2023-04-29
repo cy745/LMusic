@@ -33,6 +33,15 @@ import kotlin.math.roundToInt
 class CollapsingLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
+
+    /**
+     * 获取Collapsing最大展开高度
+     * 用于将最大展开高度与组件的测量高度解耦
+     *
+     * @return Int 自定义的最大展开高度
+     */
+    fun getExpandedHeight(): Int = measuredWidth
+
     val collapsingTextHelper: CollapsingTextHelper = CollapsingTextHelper(this)
 
     companion object {
@@ -167,7 +176,7 @@ class CollapsingLayout @JvmOverloads constructor(
         if (extraMultilineHeightEnabled && collapsingTextHelper.maxLines > 1) {
             // Need to update title and bounds in order to calculate line count and text height.
             updateTitleFromToolbarIfNeeded()
-            updateTextBounds(0, 0, measuredWidth, measuredHeight,  /* forceRecalculate= */true)
+            updateTextBounds(0, 0, measuredWidth, getExpandedHeight(),  /* forceRecalculate= */true)
             val lineCount = collapsingTextHelper.expandedLineCount
             if (lineCount > 1) {
                 // Add extra height based on the amount of height beyond the first line of title text.
@@ -209,7 +218,7 @@ class CollapsingLayout @JvmOverloads constructor(
             getViewOffsetHelper(getChildAt(i)).onViewLayout()
         }
 
-        updateTextBounds(left, top, right, bottom, false)
+        updateTextBounds(left, top, right, getExpandedHeight(), false)
         updateTitleFromToolbarIfNeeded()
 
         // Apply any view offsets, this should be done at the very end of layout
@@ -386,7 +395,7 @@ class CollapsingLayout @JvmOverloads constructor(
     private fun getMaxOffsetForPinChild(child: View): Int {
         val offsetHelper = getViewOffsetHelper(child)
         val lp = child.layoutParams as LayoutParams
-        return height - offsetHelper.layoutTop - child.height - lp.bottomMargin
+        return getExpandedHeight() - offsetHelper.layoutTop - child.height - lp.bottomMargin
     }
 
     private inner class OffsetUpdateListener : AppbarLayout.OnOffsetChangedListener {
@@ -398,14 +407,17 @@ class CollapsingLayout @JvmOverloads constructor(
                 when (lp.collapseMode) {
                     LayoutParams.COLLAPSE_MODE_PIN -> offsetHelper.topAndBottomOffset =
                         MathUtils.clamp(-verticalOffset, 0, getMaxOffsetForPinChild(child))
+
                     LayoutParams.COLLAPSE_MODE_PARALLAX -> offsetHelper.topAndBottomOffset =
                         (-verticalOffset * lp.parallaxMultiplier).roundToInt()
+
                     else -> {}
                 }
             }
 
             // Update the collapsing text's fraction
-            val expandRange = height - ViewCompat.getMinimumHeight(this@CollapsingLayout) - insetTop
+            val expandRange =
+                getExpandedHeight() - ViewCompat.getMinimumHeight(this@CollapsingLayout) - insetTop
 
             collapsingTextHelper.setCurrentOffsetY(verticalOffset + expandRange)
             collapsingTextHelper.expansionFraction = abs(verticalOffset) / expandRange.toFloat()

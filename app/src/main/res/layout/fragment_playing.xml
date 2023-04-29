@@ -59,7 +59,7 @@
                         app:cp_layout_collapseParallaxMultiplier="0.7"
                         app:loadCover="@{song}" />
 
-                    <com.lalilu.lmusic.ui.MyEdgeTransparentView
+                    <me.qinc.lib.edgetranslucent.EdgeTransparentView
                         android:id="@+id/fm_edge_transparent_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -67,20 +67,20 @@
                         app:edge_position="top|bottom"
                         app:edge_width="300dp">
 
-                        <com.lalilu.lmusic.ui.MyLyricViewX
+                        <com.dirror.lyricviewx.LyricViewX
                             android:id="@+id/fm_lyric_view_x"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:alpha="0"
                             app:lrcCurrentTextColor="#FFFFFF"
-                            app:lrcHorizontalOffset="-60dp"
+                            app:lrcHorizontalOffset="-30dp"
                             app:lrcLabel="暂无歌词"
                             app:lrcNormalTextColor="#B3B3B3"
                             app:lrcPadding="32dp"
                             app:lrcTextGravity="center"
                             app:lrcTextSize="18dp"
                             app:lrcTranslateTextScaleValue="0.8" />
-                    </com.lalilu.lmusic.ui.MyEdgeTransparentView>
+                    </me.qinc.lib.edgetranslucent.EdgeTransparentView>
 
                     <androidx.appcompat.widget.Toolbar
                         android:id="@+id/fm_toolbar"
@@ -90,6 +90,12 @@
                         android:minHeight="?attr/actionBarSize"
                         app:cp_layout_collapseMode="pin"
                         app:title="@string/default_slogan" />
+
+                    <androidx.compose.ui.platform.ComposeView
+                        android:id="@+id/fm_compose_toolbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fitsSystemWindows="false" />
                 </com.lalilu.ui.appbar.CollapsingLayout>
             </com.lalilu.lmusic.ui.SquareAppbarLayout>
 

@@ -7,7 +7,6 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.WindowInsetsCompat
 import com.dirror.lyricviewx.LyricViewX
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
@@ -37,9 +36,11 @@ class SquareAppbarLayout @JvmOverloads constructor(
     override fun getBehavior(): CoordinatorLayout.Behavior<AppbarLayout> = behavior
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        mLyricViewX?.requestLayout()
-        mDraweeView?.requestLayout()
-        super.onMeasure(widthMeasureSpec, widthMeasureSpec)
+        // 正常测量高度，以将最大高度传递给子View
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
+        // 将宽度值传递给高度，将View的宽高设置为正方形宽高
+        setMeasuredDimension(measuredWidth, measuredWidth)
     }
 
     private fun getMutableDragOffset(): Float {

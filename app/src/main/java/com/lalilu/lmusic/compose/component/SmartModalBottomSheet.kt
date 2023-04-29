@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.component
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.SpringSpec
@@ -9,6 +10,7 @@ import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -45,9 +47,6 @@ object SmartModalBottomSheet {
 
     fun hide() = scope?.launch { scaffoldState.hide() }
     fun show() = scope?.launch { scaffoldState.show() }
-    fun expend() = scope?.launch { scaffoldState.animateTo(ModalBottomSheetValue.Expanded) }
-    fun collapse() = scope?.launch { scaffoldState.animateTo(ModalBottomSheetValue.HalfExpanded) }
-    fun fadeEdge(value: Boolean) = scope?.launch { enableFadeEdgeForStatusBar.value = value }
 
 
     /**
@@ -66,31 +65,29 @@ object SmartModalBottomSheet {
         }
     }
 
+    @SuppressLint("UnnecessaryComposedModifier")
     @Composable
     fun SmartModalBottomSheetContent(
         scope: CoroutineScope = rememberCoroutineScope(),
         sheetContent: @Composable BoxScope.() -> Unit,
         content: @Composable BoxScope.() -> Unit
     ) {
-        LaunchedEffect(scope) {
-            SmartModalBottomSheet.scope = scope
-        }
+        this.scope = scope
         val context = LocalContext.current
         val windowSize = LocalWindowSize.current
         val configuration = LocalConfiguration.current
         val navController = LocalNavigatorHost.current
 
-        val offset = scaffoldState.offset.value
         val isDarkModeNow = isSystemInDarkTheme()
         val statusBarHeight = rememberFixedStatusBarHeight()
         val systemUiController = rememberSystemUiController()
         val offsetRoundedCorner = LocalDensity.current.run { 15.dp.toPx() }
         val isPad by windowSize.rememberIsPad()
 
-        val isExpended by remember(offset, statusBarHeight) {
+        val isExpended by remember {
             derivedStateOf { offset < statusBarHeight }
         }
-        val isLandscape by remember(configuration.orientation) {
+        val isLandscape by remember {
             derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
         }
 
@@ -136,11 +133,11 @@ object SmartModalBottomSheet {
                     content = sheetContent
                 )
                 Box(
-                    modifier = if (isLandscape) {
-                        Modifier.width(screenHeightDp / 2)
-                    } else {
-                        Modifier.fillMaxWidth(0.5f)
-                    }.fillMaxHeight(),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .composed {
+                            if (isLandscape) width(screenHeightDp / 2) else fillMaxWidth(0.5f)
+                        },
                     content = {
                         Surface(
                             elevation = 5.dp,
@@ -180,12 +177,9 @@ object SmartModalBottomSheet {
                             .fillMaxSize()
                             .clip(
                                 GenericShape { size, _ ->
-                                    addRect(
-                                        Rect(
-                                            0f, 0f, size.width,
-                                            if (scaffoldState.isVisible) offset + offsetRoundedCorner else size.height
-                                        )
-                                    )
+                                    val height =
+                                        if (scaffoldState.isVisible) offset + offsetRoundedCorner else size.height
+                                    addRect(Rect(0f, 0f, size.width, height))
                                 }
                             ),
                         content = content

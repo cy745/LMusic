@@ -48,7 +48,8 @@ open class AppbarLayout @JvmOverloads constructor(
             for (i in 0 until childCount) {
                 val view = getChildAt(i)
                 val lp = view.layoutParams as LayoutParams
-                val childHeight = view.measuredHeight
+                val childHeight =
+                    if (view is CollapsingLayout) view.getExpandedHeight() else view.measuredHeight
                 val flags = lp.scrollFlags
 
                 if ((flags and LayoutParams.SCROLL_FLAG_SCROLL) != 0) {
@@ -108,6 +109,7 @@ open class AppbarLayout @JvmOverloads constructor(
                 MeasureSpec.AT_MOST -> MathUtils.clamp(
                     measuredHeight + topInset, 0, MeasureSpec.getSize(heightMeasureSpec)
                 )
+
                 MeasureSpec.UNSPECIFIED -> topInset
                 else -> 0
             }
