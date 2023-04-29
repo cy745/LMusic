@@ -1,9 +1,31 @@
 package com.lalilu.lmusic.compose.screen
 
+import android.annotation.SuppressLint
 import android.view.View
 import android.view.WindowManager
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.with
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -14,6 +36,7 @@ import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.common.OnDoubleClickListener
 import com.lalilu.common.SystemUiUtil
@@ -55,7 +78,8 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.compose.get
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@SuppressLint("ClickableViewAccessibility")
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalAnimationApi::class)
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
@@ -64,7 +88,63 @@ fun PlayingScreen(
     playingVM: PlayingViewModel = get(),
     navController: NavController = LocalNavigatorHost.current
 ) {
+    val isDrawTranslation = lMusicSp.isDrawTranslation
+    val isEnableBlurEffect = lMusicSp.isEnableBlurEffect
     val systemUiController = rememberSystemUiController()
+
+    val toolbarContent: @Composable () -> Unit = remember {
+        {
+            Box(contentAlignment = Alignment.BottomCenter) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp, vertical = 22.dp),
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    val iconAlpha1 = animateFloatAsState(
+                        targetValue = if (isEnableBlurEffect.value) 1f else 0.5f
+                    )
+                    val iconAlpha2 = animateFloatAsState(
+                        targetValue = if (isDrawTranslation.value) 1f else 0.5f
+                    )
+
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = "",
+                        color = Color.White.copy(0.5f)
+                    )
+
+                    AnimatedContent(
+                        targetState = isEnableBlurEffect.value,
+                        transitionSpec = { fadeIn() with fadeOut() }
+                    ) { enable ->
+                        Icon(
+                            modifier = Modifier
+                                .clickable { isEnableBlurEffect.value = !enable }
+                                .graphicsLayer { alpha = iconAlpha1.value },
+                            painter = painterResource(id = if (enable) R.drawable.drop_line else R.drawable.blur_off_line),
+                            contentDescription = "",
+                            tint = Color.White
+                        )
+                    }
+
+                    Icon(
+                        modifier = Modifier
+                            .clickable {
+                                isDrawTranslation.value = !isDrawTranslation.value
+                            }
+                            .graphicsLayer {
+                                alpha = iconAlpha2.value
+                            },
+                        painter = painterResource(id = R.drawable.translate_2),
+                        contentDescription = "",
+                        tint = Color.White
+                    )
+                }
+            }
+        }
+    }
 
     AndroidViewBinding(factory = { inflater, parent, attachToParent ->
         FragmentPlayingBinding.inflate(inflater, parent, attachToParent).apply {
@@ -81,6 +161,8 @@ fun PlayingScreen(
             activity.setSupportActionBar(fmToolbar)
             fmToolbar.setPadding(0, statusBarHeight, 0, 0)
             fmToolbar.layoutParams.apply { height += statusBarHeight }
+
+            fmComposeToolbar.setContent(toolbarContent)
 
             // 双击返回顶部
             fmToolbar.setOnClickListener(OnDoubleClickListener {
@@ -253,6 +335,7 @@ fun PlayingScreen(
                 }.launchIn(activity.lifecycleScope)
 
                 lyricTypefacePath.flow(true).onEach {
+                    // TODO 排查偶现的字体未加载问题
                     it ?: return@onEach run {
                         fmLyricViewX.setLyricTypeface(typeface = null)
                     }
@@ -302,5 +385,7 @@ fun PlayingScreen(
         if (fmRecyclerView.computeVerticalScrollOffset() > 0 && (fmAppbarLayout.behavior as MyAppbarBehavior).stateHelper.nowState != STATE_COLLAPSED) {
             fmAppbarLayout.setExpanded(false)
         }
+        fmLyricViewX.setIsDrawTranslation(isDrawTranslation = isDrawTranslation.value)
+        fmLyricViewX.setIsEnableBlurEffect(isEnableBlurEffect = isEnableBlurEffect.value)
     }
 }

@@ -78,6 +78,14 @@ class LMusicSp(context: Context) : BaseSp() {
         Config.KEY_SETTINGS_DURATION_FILTER,
         Config.DEFAULT_SETTINGS_DURATION_FILTER
     )
+    val isDrawTranslation = boolSp(
+        Config.KEY_SETTINGS_IS_DRAW_TRANSLATION,
+        Config.DEFAULT_SETTINGS_IS_DRAW_TRANSLATION
+    )
+    val isEnableBlurEffect = boolSp(
+        Config.KEY_SETTINGS_IS_ENABLE_BLUR_EFFECT,
+        Config.DEFAULT_SETTINGS_IS_ENABLE_BLUR_EFFECT
+    )
     val isGuidingOver = boolSp(
         Config.KEY_REMEMBER_IS_GUIDING_OVER,
         false
