@@ -13,8 +13,6 @@ import androidx.dynamicanimation.animation.SpringForce
 import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.common.SystemUiUtil
-import java.util.Timer
-import kotlin.concurrent.schedule
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -54,6 +52,10 @@ fun interface OnSeekBarCancelListener {
 
 fun interface OnSeekBarSeekToListener {
     fun onSeekTo(value: Float)
+}
+
+fun interface OnTapLeaveListener {
+    fun onLeave()
 }
 
 interface OnSeekBarClickListener {
@@ -109,6 +111,7 @@ class NewSeekBar @JvmOverloads constructor(
     val clickListeners = HashSet<OnSeekBarClickListener>()
     val cancelListeners = HashSet<OnSeekBarCancelListener>()
     val seekToListeners = HashSet<OnSeekBarSeekToListener>()
+    val onTapLeaveListeners = HashSet<OnTapLeaveListener>()
     var valueToText: ((Float) -> String)? = null
 
     private var moved = false
@@ -118,11 +121,6 @@ class NewSeekBar @JvmOverloads constructor(
     var startValue: Float = nowValue
     var dataValue: Float = nowValue
     var sensitivity: Float = 1.3f
-
-    private var autoHideTimer: Timer? = null
-    var autoHide: Boolean = false
-    var autoHideDelay: Long = 2000L
-    var autoHideTargetAlpha: Float = 30f
 
     private val cancelScrollListener =
         object : OnSeekBarScrollToThresholdListener(this::cancelThreshold) {
@@ -189,9 +187,6 @@ class NewSeekBar @JvmOverloads constructor(
     private val gestureDetector = GestureDetectorCompat(context,
         object : GestureDetector.SimpleOnGestureListener() {
             override fun onDown(e: MotionEvent): Boolean {
-                // 清除自动隐藏SeekBar计时器
-                autoHideTimer?.cancel()
-
                 touching = true
                 canceled = false
                 moved = false
@@ -266,6 +261,7 @@ class NewSeekBar @JvmOverloads constructor(
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_CANCEL -> {
+                onTapLeaveListeners.forEach(OnTapLeaveListener::onLeave)
                 if (moved && !canceled && abs(nowValue - startValue) > minIncrement) {
                     seekToListeners.forEach { it.onSeekTo(nowValue) }
                 }
@@ -277,20 +273,6 @@ class NewSeekBar @JvmOverloads constructor(
                 scrollListeners.forEach {
                     if (it is OnSeekBarScrollToThresholdListener) {
                         it.state = THRESHOLD_STATE_UNREACHED
-                    }
-                }
-
-                // 当启用自动隐藏时触发
-                if (autoHide && autoHideDelay > 0L) {
-                    autoHideTimer?.cancel()
-                    autoHideTimer = Timer().apply {
-                        schedule(autoHideDelay) {
-                            if (autoHide && autoHideDelay > 0L) {
-                                post {
-                                    animateAlphaTo(autoHideTargetAlpha)
-                                }
-                            }
-                        }
                     }
                 }
                 parent.requestDisallowInterceptTouchEvent(false)

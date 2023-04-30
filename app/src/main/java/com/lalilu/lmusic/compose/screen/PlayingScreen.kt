@@ -66,12 +66,17 @@ import com.lalilu.ui.OnSeekBarCancelListener
 import com.lalilu.ui.OnSeekBarClickListener
 import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
+import com.lalilu.ui.OnTapLeaveListener
 import com.lalilu.ui.OnValueChangeListener
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
@@ -79,7 +84,7 @@ import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.compose.get
 
 @SuppressLint("ClickableViewAccessibility")
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalAnimationApi::class, FlowPreview::class)
 @Composable
 @ExperimentalMaterialApi
 fun PlayingScreen(
@@ -292,6 +297,12 @@ fun PlayingScreen(
                 lastTime = now
             })
 
+            val onLeaveEventFlow = callbackFlow {
+                val listener = OnTapLeaveListener { trySend(System.currentTimeMillis()) }
+                maSeekBar.onTapLeaveListeners.add(listener)
+                awaitClose { maSeekBar.onTapLeaveListeners.remove(listener) }
+            }
+
             playingVM.currentSongs.observe(activity) {
                 adapter.setDiffData(it)
             }
@@ -351,7 +362,7 @@ fun PlayingScreen(
                     autoHideSeekbar.flow(true).flatMapLatest { autoHide ->
                         keepScreenOnWhenLyricExpanded.flow(true).flatMapLatest { keepScreenOn ->
                             SmartModalBottomSheet.isVisibleFlow.flatMapLatest { isBottomSheetVisible ->
-                                behavior.stateHelper.nowStateFlow.mapLatest { nowState ->
+                                behavior.stateHelper.nowStateFlow.flatMapLatest { nowState ->
                                     // 通过判断当前是否展开歌词页来判断是否需要拦截返回键事件
                                     onBackPressHelper.isEnabled = nowState == STATE_FULLY_EXPENDED
 
@@ -372,6 +383,13 @@ fun PlayingScreen(
                                     val hideStatusBar =
                                         forceHide == true || (autoHide == true && nowState == STATE_FULLY_EXPENDED && !isBottomSheetVisible)
                                     systemUiController.isStatusBarVisible = !hideStatusBar
+
+                                    // 延时三秒隐藏进度条
+                                    onLeaveEventFlow.debounce(3000).mapLatest { _ ->
+                                        if (nowState == STATE_FULLY_EXPENDED && autoHide == true) {
+                                            maSeekBar.animateAlphaTo(0f)
+                                        }
+                                    }
                                 }
                             }
                         }
