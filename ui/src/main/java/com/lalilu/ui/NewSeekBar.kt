@@ -54,8 +54,8 @@ fun interface OnSeekBarSeekToListener {
     fun onSeekTo(value: Float)
 }
 
-fun interface OnTapLeaveListener {
-    fun onLeave()
+fun interface OnTapEventListener {
+    fun onTapEvent()
 }
 
 interface OnSeekBarClickListener {
@@ -111,7 +111,8 @@ class NewSeekBar @JvmOverloads constructor(
     val clickListeners = HashSet<OnSeekBarClickListener>()
     val cancelListeners = HashSet<OnSeekBarCancelListener>()
     val seekToListeners = HashSet<OnSeekBarSeekToListener>()
-    val onTapLeaveListeners = HashSet<OnTapLeaveListener>()
+    val onTapLeaveListeners = HashSet<OnTapEventListener>()
+    val onTapEnterListeners = HashSet<OnTapEventListener>()
     var valueToText: ((Float) -> String)? = null
 
     private var moved = false
@@ -195,6 +196,8 @@ class NewSeekBar @JvmOverloads constructor(
                 animateScaleTo(SizeUtils.dp2px(3f).toFloat())
                 animateOutSideAlphaTo(255f)
                 animateAlphaTo(100f)
+
+                onTapEnterListeners.forEach(OnTapEventListener::onTapEvent)
                 return super.onDown(e)
             }
 
@@ -261,7 +264,7 @@ class NewSeekBar @JvmOverloads constructor(
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_CANCEL -> {
-                onTapLeaveListeners.forEach(OnTapLeaveListener::onLeave)
+                onTapLeaveListeners.forEach(OnTapEventListener::onTapEvent)
                 if (moved && !canceled && abs(nowValue - startValue) > minIncrement) {
                     seekToListeners.forEach { it.onSeekTo(nowValue) }
                 }

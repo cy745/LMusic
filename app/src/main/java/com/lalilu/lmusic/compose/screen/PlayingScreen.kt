@@ -2,7 +2,6 @@ package com.lalilu.lmusic.compose.screen
 
 import android.annotation.SuppressLint
 import android.view.View
-import android.view.WindowManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
@@ -19,7 +18,13 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +48,7 @@ import com.lalilu.common.SystemUiUtil
 import com.lalilu.databinding.FragmentPlayingBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.LMusicFlowBus
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
@@ -59,6 +65,7 @@ import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.lmusic.utils.extension.toCachedFlow
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.ui.CLICK_PART_MIDDLE
 import com.lalilu.ui.ClickPart
@@ -66,18 +73,19 @@ import com.lalilu.ui.OnSeekBarCancelListener
 import com.lalilu.ui.OnSeekBarClickListener
 import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
-import com.lalilu.ui.OnTapLeaveListener
+import com.lalilu.ui.OnTapEventListener
 import com.lalilu.ui.OnValueChangeListener
 import com.lalilu.ui.appbar.MyAppbarBehavior
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_COLLAPSED
+import com.lalilu.ui.internal.StateHelper.Companion.STATE_EXPENDED
 import com.lalilu.ui.internal.StateHelper.Companion.STATE_FULLY_EXPENDED
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
@@ -93,9 +101,40 @@ fun PlayingScreen(
     playingVM: PlayingViewModel = get(),
     navController: NavController = LocalNavigatorHost.current
 ) {
-    val isDrawTranslation = lMusicSp.isDrawTranslation
-    val isEnableBlurEffect = lMusicSp.isEnableBlurEffect
     val systemUiController = rememberSystemUiController()
+    val keepScreenOnWhenLyricExpanded by lMusicSp.keepScreenOnWhenLyricExpanded
+    val isBottomSheetVisible by SmartModalBottomSheet.isVisible
+    val forceHideStatusBar by lMusicSp.forceHideStatusBar
+    val autoHideSeekbar by lMusicSp.autoHideSeekbar
+    var isDrawTranslation by lMusicSp.isDrawTranslation
+    var isEnableBlurEffect by lMusicSp.isEnableBlurEffect
+
+    var nowState by remember { mutableStateOf(STATE_EXPENDED) }
+
+    val stateForHideSeekBar = remember {
+        derivedStateOf { autoHideSeekbar && nowState == STATE_FULLY_EXPENDED }
+    }
+    val flowForHideSeekBar = remember {
+        snapshotFlow { stateForHideSeekBar.value }.toCachedFlow()
+    }
+    val stateForHideStatusBar = remember {
+        // 通过判断当前是否展开歌词页来判断是否需要隐藏状态栏
+        // 同时考虑强制隐藏状态栏的情况和底部弹窗是否可见的情况
+        derivedStateOf { forceHideStatusBar || (autoHideSeekbar && nowState == STATE_FULLY_EXPENDED && !isBottomSheetVisible) }
+    }
+    val keepScreenOn = remember {
+        derivedStateOf {
+            keepScreenOnWhenLyricExpanded && isBottomSheetVisible && nowState == STATE_FULLY_EXPENDED
+        }
+    }
+
+    LaunchedEffect(stateForHideStatusBar.value) {
+        systemUiController.isStatusBarVisible = !stateForHideStatusBar.value
+    }
+    LaunchedEffect(nowState) {
+        // 通过判断当前是否展开歌词页来判断是否需要拦截返回键事件
+        onBackPressHelper.isEnabled = nowState == STATE_FULLY_EXPENDED
+    }
 
     val toolbarContent: @Composable () -> Unit = remember {
         {
@@ -108,10 +147,10 @@ fun PlayingScreen(
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     val iconAlpha1 = animateFloatAsState(
-                        targetValue = if (isEnableBlurEffect.value) 1f else 0.5f
+                        targetValue = if (isEnableBlurEffect) 1f else 0.5f
                     )
                     val iconAlpha2 = animateFloatAsState(
-                        targetValue = if (isDrawTranslation.value) 1f else 0.5f
+                        targetValue = if (isDrawTranslation) 1f else 0.5f
                     )
 
                     Text(
@@ -121,12 +160,12 @@ fun PlayingScreen(
                     )
 
                     AnimatedContent(
-                        targetState = isEnableBlurEffect.value,
+                        targetState = isEnableBlurEffect,
                         transitionSpec = { fadeIn() with fadeOut() }
                     ) { enable ->
                         Icon(
                             modifier = Modifier
-                                .clickable { isEnableBlurEffect.value = !enable }
+                                .clickable { isEnableBlurEffect = !enable }
                                 .graphicsLayer { alpha = iconAlpha1.value },
                             painter = painterResource(id = if (enable) R.drawable.drop_line else R.drawable.blur_off_line),
                             contentDescription = "",
@@ -136,12 +175,8 @@ fun PlayingScreen(
 
                     Icon(
                         modifier = Modifier
-                            .clickable {
-                                isDrawTranslation.value = !isDrawTranslation.value
-                            }
-                            .graphicsLayer {
-                                alpha = iconAlpha2.value
-                            },
+                            .clickable { isDrawTranslation = !isDrawTranslation }
+                            .graphicsLayer { alpha = iconAlpha2.value },
                         painter = painterResource(id = R.drawable.translate_2),
                         contentDescription = "",
                         tint = Color.White
@@ -159,10 +194,12 @@ fun PlayingScreen(
                 onPlayPause = { playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause) },
                 onPlayPrevious = { playingVM.browser.skipToPrevious() }
             )
+            val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
+            behavior.stateHelper.nowStateFlow
+                .mapLatest { nowState = it }
+                .launchIn(activity.lifecycleScope)
 
             val statusBarHeight = SystemUiUtil.getFixedStatusHeight(activity)
-
-            val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             activity.setSupportActionBar(fmToolbar)
             fmToolbar.setPadding(0, statusBarHeight, 0, 0)
             fmToolbar.layoutParams.apply { height += statusBarHeight }
@@ -298,10 +335,29 @@ fun PlayingScreen(
             })
 
             val onLeaveEventFlow = callbackFlow {
-                val listener = OnTapLeaveListener { trySend(System.currentTimeMillis()) }
-                maSeekBar.onTapLeaveListeners.add(listener)
-                awaitClose { maSeekBar.onTapLeaveListeners.remove(listener) }
+                trySend(System.currentTimeMillis())
+                val enterListener = OnTapEventListener { trySend(-1L) }
+                val leaveListener = OnTapEventListener { trySend(System.currentTimeMillis()) }
+                maSeekBar.onTapEnterListeners.add(enterListener)
+                maSeekBar.onTapLeaveListeners.add(leaveListener)
+                awaitClose {
+                    maSeekBar.onTapEnterListeners.remove(enterListener)
+                    maSeekBar.onTapLeaveListeners.remove(leaveListener)
+                }
             }
+
+            // 控制显隐进度条,松手3秒后隐藏进度条
+            onLeaveEventFlow.debounce(3000)
+                .combine(flowForHideSeekBar) { time, hide ->
+                    if (time > 0) maSeekBar.animateAlphaTo(if (hide) 0f else 100f)
+                }
+                .launchIn(activity.lifecycleScope)
+
+            // 监听全局触摸事件，当十秒未有操作后，更新当前的keepScreenOn属性
+            LMusicFlowBus.lastTouchTime.flow()
+                .debounce(10000)
+                .mapLatest { if (it > 0) root.keepScreenOn = keepScreenOn.value }
+                .launchIn(activity.lifecycleScope)
 
             playingVM.currentSongs.observe(activity) {
                 adapter.setDiffData(it)
@@ -357,44 +413,6 @@ fun PlayingScreen(
                     seekBarActionHandler.clickHandleMode =
                         it ?: Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
                 }.launchIn(activity.lifecycleScope)
-
-                forceHideStatusBar.flow(true).flatMapLatest { forceHide ->
-                    autoHideSeekbar.flow(true).flatMapLatest { autoHide ->
-                        keepScreenOnWhenLyricExpanded.flow(true).flatMapLatest { keepScreenOn ->
-                            SmartModalBottomSheet.isVisibleFlow.flatMapLatest { isBottomSheetVisible ->
-                                behavior.stateHelper.nowStateFlow.flatMapLatest { nowState ->
-                                    // 通过判断当前是否展开歌词页来判断是否需要拦截返回键事件
-                                    onBackPressHelper.isEnabled = nowState == STATE_FULLY_EXPENDED
-
-                                    // 通过判断当前是否展开歌词页来判断是否需要保持屏幕常亮
-                                    if (nowState == STATE_FULLY_EXPENDED && keepScreenOn == true && !isBottomSheetVisible) {
-                                        activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                                    } else {
-                                        activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                                    }
-
-                                    // 通过判断当前是否展开歌词页来判断是否需要隐藏Seekbar
-                                    val targetAlpha =
-                                        if (autoHide == true && nowState == STATE_FULLY_EXPENDED) 0f else 100f
-                                    maSeekBar.animateAlphaTo(targetAlpha)
-
-                                    // 通过判断当前是否展开歌词页来判断是否需要隐藏状态栏
-                                    // 同时考虑强制隐藏状态栏的情况和底部弹窗是否可见的情况
-                                    val hideStatusBar =
-                                        forceHide == true || (autoHide == true && nowState == STATE_FULLY_EXPENDED && !isBottomSheetVisible)
-                                    systemUiController.isStatusBarVisible = !hideStatusBar
-
-                                    // 延时三秒隐藏进度条
-                                    onLeaveEventFlow.debounce(3000).mapLatest { _ ->
-                                        if (nowState == STATE_FULLY_EXPENDED && autoHide == true) {
-                                            maSeekBar.animateAlphaTo(0f)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }.launchIn(activity.lifecycleScope)
             }
         }
     }) {
@@ -403,7 +421,7 @@ fun PlayingScreen(
         if (fmRecyclerView.computeVerticalScrollOffset() > 0 && (fmAppbarLayout.behavior as MyAppbarBehavior).stateHelper.nowState != STATE_COLLAPSED) {
             fmAppbarLayout.setExpanded(false)
         }
-        fmLyricViewX.setIsDrawTranslation(isDrawTranslation = isDrawTranslation.value)
-        fmLyricViewX.setIsEnableBlurEffect(isEnableBlurEffect = isEnableBlurEffect.value)
+        fmLyricViewX.setIsDrawTranslation(isDrawTranslation = isDrawTranslation)
+        fmLyricViewX.setIsEnableBlurEffect(isEnableBlurEffect = isEnableBlurEffect)
     }
 }

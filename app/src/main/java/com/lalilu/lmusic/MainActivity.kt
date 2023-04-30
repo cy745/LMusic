@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
+import android.view.MotionEvent
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -189,6 +190,21 @@ class MainActivity : AppCompatActivity() {
         }
         volumeControlStream = AudioManager.STREAM_MUSIC
         browser.whenConnected { handleIntent(intent) }
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        when (ev?.action) {
+            MotionEvent.ACTION_DOWN -> {
+                LMusicFlowBus.lastTouchTime.post(lifecycleScope, -1L)
+            }
+
+            MotionEvent.ACTION_CANCEL,
+            MotionEvent.ACTION_POINTER_UP,
+            MotionEvent.ACTION_UP -> {
+                LMusicFlowBus.lastTouchTime.post(lifecycleScope, System.currentTimeMillis())
+            }
+        }
+        return super.dispatchTouchEvent(ev)
     }
 }
 

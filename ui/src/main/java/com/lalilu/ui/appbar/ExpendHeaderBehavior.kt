@@ -1,9 +1,7 @@
 package com.lalilu.ui.appbar
 
 import android.content.Context
-import android.os.Build
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.view.*
 import android.widget.OverScroller
 import androidx.annotation.FloatRange
@@ -85,18 +83,7 @@ abstract class ExpendHeaderBehavior<V : AppbarLayout>(
         parent: View? = parentWeakReference?.get(),
         child: V? = childWeakReference?.get()
     ): Int {
-        mContext?.let { context ->
-            val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val bound = windowManager.currentWindowMetrics.bounds
-                return bound.height() - (child?.measuredWidth ?: bound.width())
-            }
-            return DisplayMetrics().let {
-                windowManager.defaultDisplay.getRealMetrics(it)
-                it.heightPixels - (child?.measuredWidth ?: it.widthPixels)
-            }
-        }
-        return 0
+        return if (parent != null) parent.measuredHeight - parent.measuredWidth else 0
     }
 
     override fun setTopAndBottomOffset(offset: Int): Boolean {
