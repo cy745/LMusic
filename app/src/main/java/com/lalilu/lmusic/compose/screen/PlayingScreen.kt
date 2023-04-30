@@ -65,7 +65,6 @@ import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.lmusic.utils.extension.toCachedFlow
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.ui.CLICK_PART_MIDDLE
 import com.lalilu.ui.ClickPart
@@ -111,11 +110,8 @@ fun PlayingScreen(
 
     var nowState by remember { mutableStateOf(STATE_EXPENDED) }
 
-    val stateForHideSeekBar = remember {
-        derivedStateOf { autoHideSeekbar && nowState == STATE_FULLY_EXPENDED }
-    }
     val flowForHideSeekBar = remember {
-        snapshotFlow { stateForHideSeekBar.value }.toCachedFlow()
+        snapshotFlow { derivedStateOf { autoHideSeekbar && nowState == STATE_FULLY_EXPENDED }.value }
     }
     val stateForHideStatusBar = remember {
         // 通过判断当前是否展开歌词页来判断是否需要隐藏状态栏
@@ -123,9 +119,7 @@ fun PlayingScreen(
         derivedStateOf { forceHideStatusBar || (autoHideSeekbar && nowState == STATE_FULLY_EXPENDED && !isBottomSheetVisible) }
     }
     val keepScreenOn = remember {
-        derivedStateOf {
-            keepScreenOnWhenLyricExpanded && isBottomSheetVisible && nowState == STATE_FULLY_EXPENDED
-        }
+        derivedStateOf { keepScreenOnWhenLyricExpanded && !isBottomSheetVisible && nowState == STATE_FULLY_EXPENDED }
     }
 
     LaunchedEffect(stateForHideStatusBar.value) {
