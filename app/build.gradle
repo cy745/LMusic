@@ -177,7 +177,7 @@ dependencies {
     // https://github.com/Moriafly/LyricViewX
     // GPL-3.0 License
     // 歌词组件
-    implementation 'com.github.cy745:LyricViewX:4be95bf7f3'
+    implementation 'com.github.cy745:LyricViewX:7c92c6d19a'
 
     // https://github.com/qinci/EdgeTranslucent
     // https://github.com/cy745/EdgeTranslucent
