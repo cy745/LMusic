@@ -222,7 +222,7 @@ fun PlayingScreen(
                     SmartModalBottomSheet.show()
                 }
                 .setOnClickCB {
-                    playingVM.browser.playById(it)
+                    playingVM.playOrPauseSong(it)
                 }
                 .setOnSwipedLeftCB {
                     DynamicTips.push(
@@ -417,5 +417,7 @@ fun PlayingScreen(
         }
         fmLyricViewX.setIsDrawTranslation(isDrawTranslation = isDrawTranslation)
         fmLyricViewX.setIsEnableBlurEffect(isEnableBlurEffect = isEnableBlurEffect)
+        fmLyricViewX.setHorizontalOffsetPercent(0.3f)
+        fmLyricViewX.setItemOffsetPercent(0f)
     }
 }

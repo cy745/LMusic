@@ -40,8 +40,8 @@ class PlayingViewModel(
     }
 
     fun playSongWithPlaylist(items: List<LSong>, item: LSong) = viewModelScope.launch {
-        browser.setSongs(items, item)
-        browser.sendCustomAction(Playback.PlaybackAction.ReloadAndPlay)
+        browser.setSongs(items)
+        playOrPauseSong(item.id)
     }
 
     fun isSongPlaying(mediaId: String): Boolean {
