@@ -106,13 +106,10 @@ fun SongDetailScreen(
     SmartModalBottomSheet.RegisterForTemporaryDisableFadeEdge()
     SmartBar.RegisterExtraBarContent(showActionBar) {
         SongDetailActionsBar(
+            isPlaying = { playingVM.isSongPlaying(song.id) },
             getIsLiked = { isLiked },
             onIsLikedChange = {
-                if (it) {
-                    playlistsVM.addToFavorite(song)
-                } else {
-                    playlistsVM.removeFromFavorite(song)
-                }
+                if (it) playlistsVM.addToFavorite(song) else playlistsVM.removeFromFavorite(song)
             },
             onAddSongToPlaylist = {
                 navigator.navigate(PlaylistsScreenDestination(idsText = listOf(song).idsText()))
@@ -125,7 +122,10 @@ fun SongDetailScreen(
                 )
                 playingVM.browser.addToNext(song.id)
             },
-            onPlaySong = { playingVM.browser.addAndPlay(song.id) })
+            onPlayOrPause = {
+                playingVM.playOrPauseSong(song.id)
+            }
+        )
     }
 
     Box(
