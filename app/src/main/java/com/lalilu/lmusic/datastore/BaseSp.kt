@@ -10,11 +10,34 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import java.lang.reflect.Type
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 abstract class BaseSp : OnSharedPreferenceChangeListener {
     abstract val sp: SharedPreferences
+    private val typeToken: Type by lazy { object : TypeToken<Map<String, Any>>() {}.type }
+
+    fun backup(): String {
+        return GsonUtils.toJson(sp.all)
+    }
+
+    fun restore(json: String) {
+        val map = GsonUtils.fromJson<Map<String, Any>>(json, typeToken)
+
+        sp.edit {
+            for ((key, value) in map) {
+                when (value) {
+                    is Int -> putInt(key, value)
+                    is Float -> putFloat(key, value)
+                    is Long -> putLong(key, value)
+                    is String -> putString(key, value)
+                    is Boolean -> putBoolean(key, value)
+                    else -> print("Unsupported type: [$key:$value]")
+                }
+            }
+        }
+    }
 
     companion object {
         private val intSpMap = LinkedHashMap<String, SpItem<Int>>()

@@ -30,7 +30,7 @@ import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.lmusic.MainActivity
 import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.ui.CLICK_PART_MIDDLE
@@ -47,7 +47,7 @@ import org.koin.androidx.compose.get
 
 @Composable
 fun SeekbarGuidingPage(
-    lmediaSp: LMusicSp = get()
+    settingsSp: SettingsSp = get()
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -59,8 +59,8 @@ fun SeekbarGuidingPage(
     val cancelSeekToPosition = remember { mutableStateOf(false) }
     val expendLibrary = remember { mutableStateOf(false) }
 
-    val seekbarHandlerData = lmediaSp.seekBarHandler
-    var isGuidingOver by lmediaSp.isGuidingOver
+    val seekbarHandlerData = settingsSp.seekBarHandler
+    var isGuidingOver by settingsSp.isGuidingOver
 
     val reUpdateDelay = 200L
     val seekBarHandler = remember {

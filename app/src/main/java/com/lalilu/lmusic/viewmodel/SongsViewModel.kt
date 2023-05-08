@@ -13,7 +13,7 @@ import com.lalilu.lmedia.extension.SortStrategy
 import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.datastore.BaseSp
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SongsViewModel(
-    lMusicSp: LMusicSp,
+    settingsSp: SettingsSp,
     lMediaRepo: LMediaRepository,
     private val historyRepo: HistoryRepository
 ) : ViewModel() {
@@ -44,7 +44,7 @@ class SongsViewModel(
         }
 
     val searcher = ItemsBaseSearcher(songsSource)
-    private val sorter = object : ItemsBaseSorter<LSong>(searcher.output, lMusicSp) {
+    private val sorter = object : ItemsBaseSorter<LSong>(searcher.output, settingsSp) {
         override fun obtainStrategy(): SortStrategy<LSong> = object : BaseSortStrategy<LSong>() {
             override fun sortWithFlow(
                 rule: SortRule,

@@ -15,7 +15,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.Config.MEDIA_DEFAULT_ACTION
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.service.notification.LMusicNotifier
 import com.lalilu.lmusic.service.playback.PlayMode
 import com.lalilu.lmusic.service.playback.Playback
@@ -40,7 +40,7 @@ import kotlin.coroutines.CoroutineContext
 class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.Listener<LSong> {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
 
-    private val lMusicSp: LMusicSp by inject()
+    private val settingsSp: SettingsSp by inject()
     private val runtime: LMusicRuntime by inject()
     private val historyRepo: HistoryRepository by inject()
     private val audioFocusHelper: LMusicAudioFocusHelper by inject()
@@ -201,7 +201,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.List
         notifier.bindMediaSession(mediaSession)
         sessionToken = mediaSession.sessionToken
 
-        lMusicSp.volumeControl.flow(true)
+        settingsSp.volumeControl.flow(true)
             .onEach {
                 it ?: return@onEach
 
@@ -210,13 +210,13 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.List
             }
             .launchIn(this)
 
-        lMusicSp.enableSystemEq.flow(true)
+        settingsSp.enableSystemEq.flow(true)
             .onEach {
                 EQHelper.setSystemEqEnable(it ?: false)
             }
             .launchIn(this)
 
-        lMusicSp.playMode.flow(true)
+        settingsSp.playMode.flow(true)
             .onEach {
                 it ?: return@onEach
 
@@ -236,7 +236,7 @@ class LMusicService : MediaBrowserServiceCompat(), CoroutineScope, Playback.List
                         .takeIf { it in 0..2 }
                         ?: return@apply
 
-                    lMusicSp.playMode.set(playMode)
+                    settingsSp.playMode.set(playMode)
                 }
             }
         }

@@ -5,15 +5,14 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.lalilu.lmusic.Config
 
-class LMusicSp(context: Context) : BaseSp() {
+class SettingsSp(context: Context) : BaseSp() {
     override val sp: SharedPreferences by lazy {
         context.getSharedPreferences(context.packageName, Application.MODE_PRIVATE)
     }
 
-    val dayOfYear = intSp("DAY_OF_YEAR")
-    val dailyRecommends = stringListSp("DAILY_RECOMMENDS")
-    val blockedPaths = stringSetSp("BLOCKED_PATHS")
-
+    val blockedPaths = stringSetSp(
+        Config.KEY_SETTINGS_BLOCKED_PATHS
+    )
     val playMode = intSp(
         Config.KEY_SETTINGS_PLAY_MODE,
         Config.DEFAULT_SETTINGS_PLAY_MODE

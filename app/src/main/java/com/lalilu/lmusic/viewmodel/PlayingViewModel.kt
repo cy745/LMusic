@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.playback.Playback
@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 class PlayingViewModel(
     val runtime: LMusicRuntime,
     val browser: LMusicBrowser,
-    val lMusicSp: LMusicSp,
+    val settingsSp: SettingsSp,
     val lyricRepository: LyricRepository
 ) : ViewModel() {
     private val playing = runtime.playingFlow.toState(viewModelScope)

@@ -203,7 +203,7 @@ fun ControlPanel(
     playingVM: PlayingViewModel = get()
 ) {
     val isPlaying = playingVM.runtime.isPlayingFlow.collectAsState(false)
-    var playMode by playingVM.lMusicSp.playMode
+    var playMode by playingVM.settingsSp.playMode
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

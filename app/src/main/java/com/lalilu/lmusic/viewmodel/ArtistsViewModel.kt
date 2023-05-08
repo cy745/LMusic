@@ -9,7 +9,7 @@ import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.SortStrategy
 import com.lalilu.lmedia.extension.Sortable
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class ArtistsViewModel(
     lMediaRepo: LMediaRepository,
-    lMusicSp: LMusicSp,
+    settingsSp: SettingsSp,
 ) : ViewModel() {
     private val artistIds = MutableStateFlow<List<String>>(emptyList())
     private val artistSource = lMediaRepo.artistsFlow.combine(artistIds) { artists, ids ->
@@ -29,7 +29,7 @@ class ArtistsViewModel(
         artists.filter { artist -> artist.name in ids }
     }
 
-    private val sorter = object : ItemsBaseSorter<LArtist>(artistSource, lMusicSp) {
+    private val sorter = object : ItemsBaseSorter<LArtist>(artistSource, settingsSp) {
         override fun obtainStrategy(): SortStrategy<LArtist> =
             object : BaseSortStrategy<LArtist>() {
 

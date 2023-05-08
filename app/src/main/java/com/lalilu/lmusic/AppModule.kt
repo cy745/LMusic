@@ -12,8 +12,9 @@ import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmedia.repository.PlaylistRepository
 import com.lalilu.lmedia.repository.impl.HistoryRepositoryImpl
 import com.lalilu.lmedia.repository.impl.PlaylistRepositoryImpl
-import com.lalilu.lmusic.datastore.LMusicSp
 import com.lalilu.lmusic.datastore.LastPlayedSp
+import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.datastore.TempSp
 import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.repository.LyricRepository
@@ -46,8 +47,9 @@ import org.koin.dsl.module
 import retrofit2.converter.gson.GsonConverterFactory
 
 val AppModule = module {
-    single { LMusicSp(androidApplication()) }
+    single { SettingsSp(androidApplication()) }
     single { LastPlayedSp(androidApplication()) }
+    single { TempSp(androidApplication()) }
     single {
         StatusBarLyric(
             androidContext(),

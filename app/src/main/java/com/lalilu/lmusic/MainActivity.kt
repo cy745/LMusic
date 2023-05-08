@@ -41,7 +41,7 @@ import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.new_screen.LMusicNavHost
 import com.lalilu.lmusic.compose.screen.PlayingScreen
 import com.lalilu.lmusic.compose.screen.ShowScreen
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
@@ -61,7 +61,7 @@ import org.koin.android.ext.android.inject
     ExperimentalCoroutinesApi::class
 )
 class MainActivity : AppCompatActivity() {
-    private val lMusicSp: LMusicSp by inject()
+    private val settingsSp: SettingsSp by inject()
     private val browser: LMusicBrowser by inject()
     private var hasNewIntent = false
 
@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // 判断是否已完成初次启动时的用户引导
-        val isGuidingOver = lMusicSp.isGuidingOver.get()
+        val isGuidingOver = settingsSp.isGuidingOver.get()
         val isPermissionsGranted = ActivityCompat.checkSelfPermission(this, REQUIRE_PERMISSIONS)
         if (!isGuidingOver || isPermissionsGranted != PackageManager.PERMISSION_GRANTED) {
             ActivityUtils.startActivity(GuidingActivity::class.java)
@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 深色模式控制
-        lMusicSp.darkModeOption.flow(true).onEach {
+        settingsSp.darkModeOption.flow(true).onEach {
             AppCompatDelegate.setDefaultNightMode(
                 when (it) {
                     1 -> MODE_NIGHT_YES
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity() {
          * 在LMedia初始化完成前，设置元素筛选器逻辑
          */
         Indexer.setFilterPipe {
-            lMusicSp.run {
+            settingsSp.run {
                 enableUnknownFilter.flow(true).flatMapLatest { hideUnknown ->
                     blockedPaths.flow(true).flatMapLatest { blockedPaths ->
                         durationFilter.flow(true).mapLatest { minDuration ->

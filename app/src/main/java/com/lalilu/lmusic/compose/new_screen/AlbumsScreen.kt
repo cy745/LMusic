@@ -32,7 +32,7 @@ import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.AlbumCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.AlbumsViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -49,7 +49,7 @@ fun AlbumsScreen(
     title: String = "全部专辑",
     sortFor: String = Sortable.SORT_FOR_ALBUMS,
     albumIdsText: String? = null,
-    lMusicSp: LMusicSp = get(),
+    settingsSp: SettingsSp = get(),
     playingVM: PlayingViewModel = get(),
     albumsVM: AlbumsViewModel = get(),
     navigator: DestinationsNavigator
@@ -60,7 +60,7 @@ fun AlbumsScreen(
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyStaggeredGridState()
     val showSortPanel = remember { mutableStateOf(false) }
-    val showTitleState = lMusicSp.boolSp("show_album_title", true)
+    val showTitleState = settingsSp.boolSp("show_album_title", true)
 
     val supportSortPresets = remember {
         listOf(

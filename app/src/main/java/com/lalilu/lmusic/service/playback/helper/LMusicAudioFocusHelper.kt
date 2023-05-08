@@ -5,11 +5,11 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 
 class LMusicAudioFocusHelper constructor(
     private val context: Context,
-    private val lMusicSp: LMusicSp
+    private val settingsSp: SettingsSp
 ) : AudioManager.OnAudioFocusChangeListener {
     private val am: AudioManager
         get() = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -24,7 +24,7 @@ class LMusicAudioFocusHelper constructor(
             AudioManager.AUDIOFOCUS_GAIN_TRANSIENT,
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (resumeOnGain) {
-                    if (!lMusicSp.ignoreAudioFocus.get()) {
+                    if (!settingsSp.ignoreAudioFocus.get()) {
                         onPlay()
                     }
                 }
@@ -32,14 +32,14 @@ class LMusicAudioFocusHelper constructor(
 
             AudioManager.AUDIOFOCUS_LOSS -> {
                 resumeOnGain = false
-                if (!lMusicSp.ignoreAudioFocus.get()) {
+                if (!settingsSp.ignoreAudioFocus.get()) {
                     onPause()
                 }
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                 resumeOnGain = true
-                if (!lMusicSp.ignoreAudioFocus.get()) {
+                if (!settingsSp.ignoreAudioFocus.get()) {
                     onPause()
                 }
             }
@@ -57,7 +57,7 @@ class LMusicAudioFocusHelper constructor(
 
     fun requestAudioFocus(): Int {
         resumeOnGain = false
-        val enable = !lMusicSp.ignoreAudioFocus.get()
+        val enable = !settingsSp.ignoreAudioFocus.get()
         if (!enable) return AudioManager.AUDIOFOCUS_REQUEST_GRANTED
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -26,7 +26,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.lalilu.R
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import kotlinx.coroutines.*
 import org.koin.androidx.compose.get
@@ -50,9 +50,9 @@ object DynamicTips : CoroutineScope {
     @Composable
     fun Content(
         modifier: Modifier = Modifier,
-        lMusicSp: LMusicSp = get()
+        settingsSp: SettingsSp = get()
     ) {
-        val enableDynamicTips by lMusicSp.enableDynamicTips
+        val enableDynamicTips by settingsSp.enableDynamicTips
 
         LaunchedEffect(title.value) {
             if (title.value.isNotEmpty()) {

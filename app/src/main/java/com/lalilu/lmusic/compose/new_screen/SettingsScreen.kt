@@ -16,13 +16,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.RomUtils
+import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.R
 import com.lalilu.common.CustomRomUtils
 import com.lalilu.lmusic.GuidingActivity
@@ -34,11 +37,12 @@ import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
 import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
 import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.compose.component.settings.SettingSwitcher
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.ramcosta.composedestinations.annotation.Destination
 import org.koin.androidx.compose.get
+
 
 @SuppressLint("PrivateApi")
 @OptIn(ExperimentalFoundationApi::class)
@@ -46,26 +50,27 @@ import org.koin.androidx.compose.get
 @Destination
 @Composable
 fun SettingsScreen(
-    lMusicSp: LMusicSp = get(),
+    settingsSp: SettingsSp = get(),
     statusBarLyricExt: StatusBarLyric = get()
 ) {
     val context = LocalContext.current
-    val darkModeOption = lMusicSp.darkModeOption
-    val ignoreAudioFocus = lMusicSp.ignoreAudioFocus
-    val enableUnknownFilter = lMusicSp.enableUnknownFilter
-    val statusBarLyric = lMusicSp.enableStatusLyric
-    val seekbarHandler = lMusicSp.seekBarHandler
-    val lyricGravity = lMusicSp.lyricGravity
-    val lyricTextSize = lMusicSp.lyricTextSize
-    val playMode = lMusicSp.playMode
-    val volumeControl = lMusicSp.volumeControl
-    val lyricTypefacePath = lMusicSp.lyricTypefacePath
-    val enableSystemEq = lMusicSp.enableSystemEq
-    val enableDynamicTips = lMusicSp.enableDynamicTips
-    val autoHideSeekBar = lMusicSp.autoHideSeekbar
-    val forceHideStatusBar = lMusicSp.forceHideStatusBar
-    val keepScreenOnWhenLyricExpanded = lMusicSp.keepScreenOnWhenLyricExpanded
-    val durationFilter = lMusicSp.durationFilter
+    val clipboardManager = LocalClipboardManager.current
+    val darkModeOption = settingsSp.darkModeOption
+    val ignoreAudioFocus = settingsSp.ignoreAudioFocus
+    val enableUnknownFilter = settingsSp.enableUnknownFilter
+    val statusBarLyric = settingsSp.enableStatusLyric
+    val seekbarHandler = settingsSp.seekBarHandler
+    val lyricGravity = settingsSp.lyricGravity
+    val lyricTextSize = settingsSp.lyricTextSize
+    val playMode = settingsSp.playMode
+    val volumeControl = settingsSp.volumeControl
+    val lyricTypefacePath = settingsSp.lyricTypefacePath
+    val enableSystemEq = settingsSp.enableSystemEq
+    val enableDynamicTips = settingsSp.enableDynamicTips
+    val autoHideSeekBar = settingsSp.autoHideSeekbar
+    val forceHideStatusBar = settingsSp.forceHideStatusBar
+    val keepScreenOnWhenLyricExpanded = settingsSp.keepScreenOnWhenLyricExpanded
+    val durationFilter = settingsSp.durationFilter
 
     val launcherForAudioFx = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -208,10 +213,9 @@ fun SettingsScreen(
                     titleRes = R.string.preference_media_source_settings_enable_dynamic_tips,
                     subTitleRes = R.string.preference_dynamic_tips
                 )
-                Row(
-                    Modifier.padding(horizontal = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                FlowRow(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    mainAxisSpacing = 10.dp
                 ) {
                     IconTextButton(
                         text = "新手引导",
@@ -233,7 +237,24 @@ fun SettingsScreen(
                                 Toast.makeText(context, "扫描结束", Toast.LENGTH_SHORT).show()
                                 LogUtils.i("MediaScannerConnection", "path: $path, uri: $uri")
                             }
-                        })
+                        }
+                    )
+                    IconTextButton(
+                        text = "备份数据",
+                        color = Color(0xFFFF8B3F),
+                        onClick = {
+                            val json = settingsSp.backup()
+                            clipboardManager.setText(AnnotatedString(json))
+                        }
+                    )
+                    IconTextButton(
+                        text = "恢复数据",
+                        color = Color(0xFFFF8B3F),
+                        onClick = {
+                            val json = clipboardManager.getText()?.text
+                            json?.let { settingsSp.restore(it) }
+                        }
+                    )
                 }
             }
         }

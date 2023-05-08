@@ -52,7 +52,7 @@ import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -241,7 +241,7 @@ fun SongsScreen(
 @Composable
 fun SortPanelWrapper(
     sortFor: String,
-    lMusicSp: LMusicSp = get(),
+    settingsSp: SettingsSp = get(),
     showPanelState: MutableState<Boolean> = remember { mutableStateOf(false) },
     supportSortPresets: () -> List<SortPreset>,
     supportGroupRules: () -> List<GroupRule>,
@@ -249,9 +249,9 @@ fun SortPanelWrapper(
     supportOrderRules: () -> List<OrderRule>,
     content: @Composable (sortRuleStr: State<String>) -> Unit
 ) {
-    val sortRule = lMusicSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
-    val orderRule = lMusicSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.Normal.name)
-    val groupRule = lMusicSp.stringSp("${sortFor}_GROUP_RULE", GroupRule.Normal.name)
+    val sortRule = settingsSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
+    val orderRule = settingsSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.Normal.name)
+    val groupRule = settingsSp.stringSp("${sortFor}_GROUP_RULE", GroupRule.Normal.name)
 
     SmartBar.RegisterMainBarContent(
         showState = showPanelState,

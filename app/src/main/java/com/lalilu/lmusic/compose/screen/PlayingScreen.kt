@@ -54,7 +54,7 @@ import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
-import com.lalilu.lmusic.datastore.LMusicSp
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
@@ -96,17 +96,17 @@ import org.koin.androidx.compose.get
 @ExperimentalMaterialApi
 fun PlayingScreen(
     onBackPressHelper: OnBackPressHelper,
-    lMusicSp: LMusicSp = get(),
+    settingsSp: SettingsSp = get(),
     playingVM: PlayingViewModel = get(),
     navController: NavController = LocalNavigatorHost.current
 ) {
     val systemUiController = rememberSystemUiController()
-    val keepScreenOnWhenLyricExpanded by lMusicSp.keepScreenOnWhenLyricExpanded
+    val keepScreenOnWhenLyricExpanded by settingsSp.keepScreenOnWhenLyricExpanded
     val isBottomSheetVisible by SmartModalBottomSheet.isVisible
-    val forceHideStatusBar by lMusicSp.forceHideStatusBar
-    val autoHideSeekbar by lMusicSp.autoHideSeekbar
-    var isDrawTranslation by lMusicSp.isDrawTranslation
-    var isEnableBlurEffect by lMusicSp.isEnableBlurEffect
+    val forceHideStatusBar by settingsSp.forceHideStatusBar
+    val autoHideSeekbar by settingsSp.autoHideSeekbar
+    var isDrawTranslation by settingsSp.isDrawTranslation
+    var isEnableBlurEffect by settingsSp.isEnableBlurEffect
 
     var nowState by remember { mutableStateOf(STATE_EXPENDED) }
 
@@ -379,7 +379,7 @@ fun PlayingScreen(
                 fmLyricViewX.loadLyric(it?.first, it?.second)
             }
 
-            lMusicSp.apply {
+            settingsSp.apply {
                 lyricGravity.flow(true).onEach {
                     when (it ?: Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
                         0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
@@ -417,7 +417,7 @@ fun PlayingScreen(
         }
         fmLyricViewX.setIsDrawTranslation(isDrawTranslation = isDrawTranslation)
         fmLyricViewX.setIsEnableBlurEffect(isEnableBlurEffect = isEnableBlurEffect)
-        fmLyricViewX.setHorizontalOffsetPercent(0.3f)
+        fmLyricViewX.setHorizontalOffsetPercent(0.4f)
         fmLyricViewX.setItemOffsetPercent(0f)
     }
 }
