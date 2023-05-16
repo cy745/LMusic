@@ -9,8 +9,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.repository.LMediaRepository
-import com.lalilu.lmusic.service.playback.Playback
-import com.lalilu.lmusic.service.runtime.LMusicRuntime
+import com.lalilu.lplayer.playback.Playback
 
 class LMusicBrowser(
     private val context: Context,

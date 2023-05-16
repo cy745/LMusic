@@ -4,9 +4,11 @@ import StatusBarLyric.API.StatusBarLyric
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.room.Room
+import coil.ImageLoader
 import com.lalilu.R
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.database.LDatabase
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmedia.repository.PlaylistRepository
@@ -19,11 +21,13 @@ import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.service.notification.LMusicNotifier
-import com.lalilu.lmusic.service.playback.helper.LMusicAudioFocusHelper
-import com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver
-import com.lalilu.lmusic.service.playback.impl.LocalPlayer
-import com.lalilu.lmusic.service.runtime.LMusicRuntime
+import com.lalilu.lmusic.service.LMusicNotifier
+import com.lalilu.lmusic.service.LMusicRuntime
+import com.lalilu.lmusic.utils.EQHelper
+import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
+import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
+import com.lalilu.lmusic.utils.coil.fetcher.SongCoverFetcher
+import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
 import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.lmusic.utils.sources.EmbeddedLyricSource
 import com.lalilu.lmusic.utils.sources.LocalLyricSource
@@ -40,6 +44,8 @@ import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
+import com.lalilu.lplayer.notification.Notifier
+import com.lalilu.lplayer.runtime.Runtime
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
@@ -50,6 +56,7 @@ val AppModule = module {
     single { SettingsSp(androidApplication()) }
     single { LastPlayedSp(androidApplication()) }
     single { TempSp(androidApplication()) }
+    single { EQHelper(androidApplication()) }
     single {
         StatusBarLyric(
             androidContext(),
@@ -58,6 +65,17 @@ val AppModule = module {
             "com.lalilu.lmusic",
             false
         )
+    }
+    single {
+        ImageLoader.Builder(androidApplication())
+            .callFactory(get<OkHttpClient>())
+            .components {
+                add(AlbumCoverFetcher.AlbumFactory())
+                add(SongCoverFetcher.SongFactory(get<OkHttpClient>()))
+                add(SongCoverKeyer())
+            }
+            .transitionFactory(CrossfadeTransitionFactory())
+            .build()
     }
 }
 
@@ -95,16 +113,12 @@ val ViewModelModule = module {
     single { SongDetailViewModel(get()) }
 }
 
-val PlayerModule = module {
-    single { LMusicAudioFocusHelper(androidApplication(), get()) }
-    single { LMusicNoisyReceiver(androidApplication()) }
-    single { LocalPlayer(androidApplication()) }
-}
-
 val RuntimeModule = module {
-    single { LMusicNotifier(get(), get(), get(), get(), androidApplication()) }
-    single { LMusicBrowser(get(), get(), get(), get()) }
+    single<Notifier> { LMusicNotifier(androidApplication(), get(), get(), get(), get()) }
+    single<Runtime<LSong>> { get<LMusicRuntime>() }
     single { LMusicRuntime(get(), get()) }
+
+    single { LMusicBrowser(get(), get(), get(), get()) }
     single { CoverRepository(get()) }
     single { LyricRepository(get(), get()) }
     single { LMediaRepository() }

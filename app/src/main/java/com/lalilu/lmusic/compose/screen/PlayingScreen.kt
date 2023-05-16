@@ -55,7 +55,6 @@ import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.service.playback.Playback
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
@@ -66,6 +65,7 @@ import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.playback.Playback
 import com.lalilu.ui.CLICK_PART_MIDDLE
 import com.lalilu.ui.ClickPart
 import com.lalilu.ui.OnSeekBarCancelListener

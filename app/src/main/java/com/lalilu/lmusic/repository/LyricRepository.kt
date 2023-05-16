@@ -8,7 +8,7 @@ import androidx.compose.runtime.remember
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.service.runtime.LMusicRuntime
+import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.findShowLine
 import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import kotlinx.coroutines.CoroutineScope

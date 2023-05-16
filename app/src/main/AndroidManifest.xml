@@ -37,14 +37,6 @@
             android:value="true" />
 
         <receiver
-            android:name="com.lalilu.lmusic.service.playback.helper.LMusicNoisyReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.media.AUDIO_BECOMING_NOISY" />
-            </intent-filter>
-        </receiver>
-
-        <receiver
             android:name="androidx.media.session.MediaButtonReceiver"
             android:exported="false">
             <intent-filter>
@@ -55,7 +47,7 @@
         <service
             android:name="com.lalilu.lmusic.service.LMusicService"
             android:enabled="true"
-            android:exported="false"
+            android:exported="true"
             android:foregroundServiceType="mediaPlayback">
 
             <intent-filter>

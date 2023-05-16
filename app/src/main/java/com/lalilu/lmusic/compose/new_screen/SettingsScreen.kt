@@ -50,6 +50,7 @@ import org.koin.androidx.compose.get
 @Destination
 @Composable
 fun SettingsScreen(
+    eqHelper: EQHelper = get(),
     settingsSp: SettingsSp = get(),
     statusBarLyricExt: StatusBarLyric = get()
 ) {
@@ -126,10 +127,11 @@ fun SettingsScreen(
                             showIcon = { true },
                             color = Color(0xFF006E7C),
                             onClick = {
-                                EQHelper.startSystemEqActivity {
+                                eqHelper.startSystemEqActivity {
                                     launcherForAudioFx.launch(it)
                                 }
-                            })
+                            }
+                        )
                     }
                 }
             }

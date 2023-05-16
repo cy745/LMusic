@@ -205,5 +205,5 @@ dependencies {
 
     implementation project(":common")
     implementation project(":ui")
-    implementation project(":lmedia")
+    implementation project(":lplayer")
 }

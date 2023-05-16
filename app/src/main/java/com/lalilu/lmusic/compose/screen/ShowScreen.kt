@@ -44,12 +44,12 @@ import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.service.playback.PlayMode
-import com.lalilu.lmusic.service.playback.Playback
+import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.playback.Playback
 import org.koin.androidx.compose.get
 
 @Composable

@@ -5,8 +5,7 @@ import android.content.Intent
 import android.media.audiofx.AudioEffect
 import com.blankj.utilcode.util.IntentUtils.isIntentAvailable
 
-object EQHelper {
-    private var context: Context? = null
+class EQHelper(private val context: Context) {
     private var enable: Boolean = false
 
     var audioSessionId: Int? = AudioEffect.ERROR_BAD_VALUE
@@ -14,10 +13,6 @@ object EQHelper {
             field = value
             setSystemEqEnable(enable)
         }
-
-    fun init(context: Context) {
-        this.context = context
-    }
 
     fun setSystemEqEnable(value: Boolean) {
         enable = value
@@ -29,9 +24,9 @@ object EQHelper {
 
         Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
             putExtra(AudioEffect.EXTRA_AUDIO_SESSION, audioSessionId)
-            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context?.packageName)
+            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
             putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-            context?.sendBroadcast(this)
+            context.sendBroadcast(this)
         }
     }
 
@@ -40,9 +35,9 @@ object EQHelper {
 
         Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
             putExtra(AudioEffect.EXTRA_AUDIO_SESSION, audioSessionId)
-            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context?.packageName)
+            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
             putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-            context?.sendBroadcast(this)
+            context.sendBroadcast(this)
         }
     }
 
@@ -51,7 +46,7 @@ object EQHelper {
 
         callback(Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
             putExtra(AudioEffect.EXTRA_AUDIO_SESSION, audioSessionId)
-            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context?.packageName)
+            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
             putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
         })
     }

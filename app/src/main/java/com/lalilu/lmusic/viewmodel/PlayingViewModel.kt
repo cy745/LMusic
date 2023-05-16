@@ -9,9 +9,9 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.service.playback.Playback
-import com.lalilu.lmusic.service.runtime.LMusicRuntime
+import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.toState
+import com.lalilu.lplayer.playback.Playback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch

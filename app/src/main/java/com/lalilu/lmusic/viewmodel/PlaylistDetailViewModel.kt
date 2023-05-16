@@ -31,7 +31,7 @@ class PlaylistDetailViewModel(
 
     private var songsInPlaylistFlow =
         playlistId.flatMapLatest { id ->
-            playlistRepo.getSongInPlaylists(id).mapLatest { it.sort(true) }
+            playlistRepo.getSongInPlaylistsFlowById(id).mapLatest { it.sort(true) }
         }.toCachedFlow()
 //        .onEach { list ->
 //            println("Flow Update: " + list.joinToString("<-") { "[${it.nextId}:${it.getLinkableId()}]" })
