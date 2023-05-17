@@ -132,7 +132,11 @@ fun SearchScreen(
                     if (selectHelper.isSelecting.value) {
                         selectHelper.onSelected(item)
                     } else {
-                        playingVM.playOrPauseSong(item.id)
+                        playingVM.play(
+                            mediaId = item.id,
+                            addToNext = true,
+                            playOrPause = true
+                        )
                     }
                 }
             )

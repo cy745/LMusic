@@ -91,7 +91,8 @@ class MainActivity : AppCompatActivity() {
                 return@read
             }
             LogUtils.i("[onNewIntent]: 解析完成, 耗时：${System.currentTimeMillis() - start}ms", it)
-            browser.addAndPlay(it.id)
+            browser.addToNext(it.id)
+            browser.playById(it.id)
         }
     }
 

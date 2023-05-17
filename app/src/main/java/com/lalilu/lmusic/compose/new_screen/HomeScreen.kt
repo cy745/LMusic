@@ -128,7 +128,13 @@ fun HomeScreen(
                     height = { 100.dp },
                     modifier = Modifier.animateItemPlacement(),
                     onClick = { navigator.navigate(SongDetailScreenDestination(it.id)) },
-                    onClickButton = { playingVM.playOrPauseSong(it.id) },
+                    onClickButton = {
+                        playingVM.play(
+                            mediaId = it.id,
+                            playOrPause = true,
+                            addToNext = true
+                        )
+                    },
                     isPlaying = { playingVM.isSongPlaying(it.id) }
                 )
             }
@@ -177,7 +183,11 @@ fun HomeScreen(
                                 selectHelper.onSelected(item)
                             } else {
                                 historyVM.requiteHistoryList {
-                                    playingVM.playSongWithPlaylist(it, item)
+                                    playingVM.play(
+                                        song = item,
+                                        songs = it,
+                                        playOrPause = true
+                                    )
                                 }
                             }
                         },

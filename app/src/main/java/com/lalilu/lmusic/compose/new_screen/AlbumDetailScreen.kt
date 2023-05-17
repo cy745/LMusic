@@ -188,7 +188,13 @@ fun AlbumDetailScreen(
             isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
             onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
-            onClickItem = { playingVM.playSongWithPlaylist(songsState.values.flatten(), it) },
+            onClickItem = {
+                playingVM.play(
+                    song = it,
+                    songs = songsState.values.flatten(),
+                    playOrPause = true
+                )
+            },
             prefixContent = { item ->
                 // TODO 待优化代码逻辑, 使其更加简洁
                 var icon = -1

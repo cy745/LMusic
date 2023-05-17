@@ -123,7 +123,11 @@ fun SongDetailScreen(
                 playingVM.browser.addToNext(song.id)
             },
             onPlayOrPause = {
-                playingVM.playOrPauseSong(song.id)
+                playingVM.play(
+                    mediaId = song.id,
+                    addToNext = true,
+                    playOrPause = true
+                )
             }
         )
     }

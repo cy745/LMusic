@@ -222,7 +222,10 @@ fun PlayingScreen(
                     SmartModalBottomSheet.show()
                 }
                 .setOnClickCB {
-                    playingVM.playOrPauseSong(it)
+                    playingVM.play(
+                        mediaId = it,
+                        playOrPause = true
+                    )
                 }
                 .setOnSwipedLeftCB {
                     DynamicTips.push(

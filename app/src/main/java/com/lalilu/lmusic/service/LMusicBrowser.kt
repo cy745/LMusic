@@ -29,7 +29,11 @@ class LMusicBrowser(
     }
 
     fun setSongs(songs: List<LSong>, song: LSong? = null) {
-        runtime.load(songs = songs.map { it.id }, playing = song?.id)
+        setSongs(mediaIds = songs.map { it.id }, mediaId = song?.id)
+    }
+
+    fun setSongs(mediaIds: List<String>, mediaId: String? = null) {
+        runtime.load(songs = mediaIds, playing = mediaId)
     }
 
     override fun onStart(owner: LifecycleOwner) {
@@ -56,11 +60,6 @@ class LMusicBrowser(
     fun seekTo(position: Number) = controller?.transportControls?.seekTo(position.toLong())
     fun sendCustomAction(action: Playback.PlaybackAction) {
         controller?.transportControls?.sendCustomAction(action.name, null)
-    }
-
-    fun addAndPlay(id: String) {
-        addToNext(id)
-        playById(id)
     }
 
     fun addToNext(mediaId: String): Boolean {

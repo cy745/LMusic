@@ -155,7 +155,7 @@ dependencies {
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
     // debugImplementation 'com.github.markzhai:blockcanary-android:1.5.0'
     betaImplementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
-//    debugImplementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
+    debugImplementation 'com.github.simplepeng.SpiderMan:spiderman:v1.1.9'
 
     // https://github.com/square/retrofit
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit

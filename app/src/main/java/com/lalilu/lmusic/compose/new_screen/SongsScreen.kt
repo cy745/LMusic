@@ -196,7 +196,13 @@ fun SongsScreen(
             songsState = songsState,
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
             isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
-            onClickItem = { playingVM.playSongWithPlaylist(songsState.values.flatten(), it) },
+            onClickItem = {
+                playingVM.play(
+                    song = it,
+                    songs = songsState.values.flatten(),
+                    playOrPause = true
+                )
+            },
             onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
             showPrefixContent = { sortRuleStr.value == SortRule.TrackNumber.name || sortRuleStr.value == SortRule.PlayCount.name },
             prefixContent = { item ->

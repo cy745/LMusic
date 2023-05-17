@@ -115,7 +115,11 @@ fun HistoryScreen(
                             selector.onSelected(item)
                         } else {
                             historyVM.requiteHistoryList {
-                                playingVM.playSongWithPlaylist(it, item)
+                                playingVM.play(
+                                    song = item,
+                                    songs = it,
+                                    playOrPause = true
+                                )
                             }
                         }
                     },

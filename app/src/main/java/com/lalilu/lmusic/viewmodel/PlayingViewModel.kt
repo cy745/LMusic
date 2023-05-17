@@ -31,17 +31,44 @@ class PlayingViewModel(
     val currentPlaying = runtime.playingFlow.asLiveData(viewModelScope.coroutineContext)
     val currentSongs = runtime.songsFlow.asLiveData(viewModelScope.coroutineContext)
 
-    fun playOrPauseSong(mediaId: String) {
-        if (runtime.getPlayingId() == mediaId) {
-            browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
-        } else {
-            browser.addAndPlay(mediaId)
-        }
-    }
+    fun play(
+        song: LSong,
+        songs: List<LSong>? = null,
+        playOrPause: Boolean = false,
+        addToNext: Boolean = false
+    ) = play(song.id, songs?.map(LSong::id), playOrPause, addToNext)
 
-    fun playSongWithPlaylist(items: List<LSong>, item: LSong) = viewModelScope.launch {
-        browser.setSongs(items)
-        playOrPauseSong(item.id)
+    /**
+     * 综合播放操作
+     *
+     * @param mediaId 目标歌曲的ID
+     * @param mediaIds 歌曲ID列表
+     * @param playOrPause 当前正在播放则暂停，暂停则开始播放
+     * @param addToNext 是否在播放前将该歌曲移动到下一首播放的位置
+     */
+    fun play(
+        mediaId: String,
+        mediaIds: List<String>? = null,
+        playOrPause: Boolean = false,
+        addToNext: Boolean = false
+    ) = viewModelScope.launch {
+        if (mediaIds != null) {
+            browser.setSongs(mediaIds)
+        }
+        if (addToNext) {
+            browser.addToNext(mediaId)
+        }
+
+        when {
+            mediaId == runtime.getPlayingId() && playOrPause -> {
+                browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
+            }
+
+            else -> {
+                // TODO 存在播放列表中不存在该歌曲的情况
+                browser.playById(mediaId)
+            }
+        }
     }
 
     fun isSongPlaying(mediaId: String): Boolean {
