@@ -4,6 +4,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.utils.extension.moveHeadToTailWithSearch
+import com.lalilu.lplayer.runtime.Runtime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,7 +23,7 @@ import kotlin.coroutines.CoroutineContext
 class LMusicRuntime(
     private val lastPlayedSp: LastPlayedSp,
     private val lMediaRepo: LMediaRepository
-) : com.lalilu.lplayer.runtime.Runtime<LSong>, com.lalilu.lplayer.runtime.Runtime.Listener,
+) : Runtime<LSong>, Runtime.Listener,
     CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
 
@@ -30,7 +31,7 @@ class LMusicRuntime(
     override val playingIdFlow: MutableStateFlow<String?> = MutableStateFlow(null)
     override val positionFlow: MutableStateFlow<Long> = MutableStateFlow(0L)
     override val isPlayingFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    override var listener: com.lalilu.lplayer.runtime.Runtime.Listener? = this
+    override var listener: Runtime.Listener? = this
     override var timer: Timer? = null
 
     val playingFlow: Flow<LSong?> = playingIdFlow
@@ -75,9 +76,5 @@ class LMusicRuntime(
 
     override fun onPositionUpdate(position: Long) {
         lastPlayedSp.lastPlayedPositionKey.set(position)
-    }
-
-    fun updatePosition(startValue: Long = -1, loop: Boolean = false) {
-        updatePosition(startPosition = startValue, loopDelay = if (loop) 100 else 0)
     }
 }

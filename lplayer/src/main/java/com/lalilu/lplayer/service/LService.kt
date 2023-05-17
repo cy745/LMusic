@@ -15,10 +15,10 @@ import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.extensions.AudioFocusHelper
 import com.lalilu.lplayer.notification.Notifier
 import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.playback.Playback
-import com.lalilu.lplayer.extensions.AudioFocusHelper
 import com.lalilu.lplayer.playback.impl.LocalPlayer
 import com.lalilu.lplayer.playback.impl.MixPlayback
 import com.lalilu.lplayer.runtime.Runtime
@@ -35,7 +35,9 @@ import kotlin.coroutines.CoroutineContext
 @Suppress("DEPRECATION")
 abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
+
     abstract fun getStartIntent(): Intent
+    abstract fun getLoopDelay(isPlaying: Boolean): Long
 
     private val sessionActivityPendingIntent by lazy {
         packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
@@ -92,7 +94,7 @@ abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>,
 
         runtime.update(playing = item?.id)
         runtime.update(isPlaying = isPlaying)
-        runtime.updatePosition(startPosition = position, loopDelay = if (isPlaying) 200 else 0)
+        runtime.updatePosition(startPosition = position, loopDelay = getLoopDelay(isPlaying))
 
         mediaSession.setMetadata(item?.metadataCompat)
         mediaSession.setPlaybackState(

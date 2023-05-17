@@ -19,6 +19,9 @@ import org.koin.android.ext.android.inject
 class LMusicService : LService() {
     private val intent: Intent by lazy { Intent(this@LMusicService, LMusicService::class.java) }
     override fun getStartIntent(): Intent = intent
+    override fun getLoopDelay(isPlaying: Boolean): Long {
+        return if (isPlaying) 50L else 0L
+    }
 
     private val historyRepo: HistoryRepository by inject()
     private val settingsSp: SettingsSp by inject()
