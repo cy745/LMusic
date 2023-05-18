@@ -17,6 +17,7 @@ class AudioFocusHelper(context: Context) : AudioManager.OnAudioFocusChangeListen
     private var focusRequest: AudioFocusRequest? = null
     var onPlay: () -> Unit = {}
     var onPause: () -> Unit = {}
+    var isPlaying: () -> Boolean = { false }
 
 
     override fun onAudioFocusChange(focusChange: Int) {
@@ -38,7 +39,7 @@ class AudioFocusHelper(context: Context) : AudioManager.OnAudioFocusChangeListen
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                resumeOnGain = true
+                resumeOnGain = isPlaying()
                 if (!ignoreAudioFocus) {
                     onPause()
                 }

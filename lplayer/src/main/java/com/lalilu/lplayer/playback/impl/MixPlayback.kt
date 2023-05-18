@@ -24,6 +24,7 @@ class MixPlayback(
         player?.listener = this
         audioFocusHelper.onPlay = ::onPlay
         audioFocusHelper.onPause = ::onPause
+        audioFocusHelper.isPlaying = { player?.isPlaying ?: false }
     }
 
     override fun onSetShuffleMode(shuffleMode: Int) {
