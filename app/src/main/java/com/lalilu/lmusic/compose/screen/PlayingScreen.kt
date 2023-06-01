@@ -57,17 +57,15 @@ import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.OnBackPressHelper
-import com.lalilu.lmusic.utils.SeekBarHandler
-import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_CLICK
-import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_DOUBLE_CLICK
-import com.lalilu.lmusic.utils.SeekBarHandler.Companion.CLICK_HANDLE_MODE_LONG_CLICK
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.playback.Playback
+import com.lalilu.ui.CLICK_PART_LEFT
 import com.lalilu.ui.CLICK_PART_MIDDLE
+import com.lalilu.ui.CLICK_PART_RIGHT
 import com.lalilu.ui.ClickPart
 import com.lalilu.ui.OnSeekBarCancelListener
 import com.lalilu.ui.OnSeekBarClickListener
@@ -194,11 +192,6 @@ fun PlayingScreen(
     AndroidViewBinding(factory = { inflater, parent, attachToParent ->
         FragmentPlayingBinding.inflate(inflater, parent, attachToParent).apply {
             val activity = parent.context.getActivity()!!
-            val seekBarActionHandler = SeekBarHandler(
-                onPlayNext = { playingVM.browser.skipToNext() },
-                onPlayPause = { playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause) },
-                onPlayPrevious = { playingVM.browser.skipToPrevious() }
-            )
             val behavior = fmAppbarLayout.behavior as MyAppbarBehavior
             behavior.stateHelper.nowStateFlow
                 .mapLatest { nowState = it }
@@ -304,26 +297,21 @@ fun PlayingScreen(
             maSeekBar.clickListeners.add(object : OnSeekBarClickListener {
                 override fun onClick(@ClickPart clickPart: Int, action: Int) {
                     HapticUtils.haptic(this@apply.root)
-                    if (seekBarActionHandler.clickHandleMode != CLICK_HANDLE_MODE_CLICK) {
-                        playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
-                        return
+                    when (clickPart) {
+                        CLICK_PART_LEFT -> playingVM.browser.skipToPrevious()
+                        CLICK_PART_MIDDLE -> playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
+                        CLICK_PART_RIGHT -> playingVM.browser.skipToNext()
+                        else -> {
+                        }
                     }
-                    seekBarActionHandler.handle(clickPart)
                 }
 
                 override fun onLongClick(@ClickPart clickPart: Int, action: Int) {
                     HapticUtils.haptic(this@apply.root)
-                    if (seekBarActionHandler.clickHandleMode != CLICK_HANDLE_MODE_LONG_CLICK || clickPart == CLICK_PART_MIDDLE) {
-                        fmAppbarLayout.autoToggleExpand()
-                        return
-                    }
-                    seekBarActionHandler.handle(clickPart)
                 }
 
                 override fun onDoubleClick(@ClickPart clickPart: Int, action: Int) {
                     HapticUtils.doubleHaptic(this@apply.root)
-                    if (seekBarActionHandler.clickHandleMode != CLICK_HANDLE_MODE_DOUBLE_CLICK) return
-                    seekBarActionHandler.handle(clickPart)
                 }
             })
             maSeekBar.seekToListeners.add(OnSeekBarSeekToListener { value ->
@@ -415,11 +403,6 @@ fun PlayingScreen(
                         fmLyricViewX.setLyricTypeface(typeface = null)
                     }
                     fmLyricViewX.setLyricTypeface(path = it)
-                }.launchIn(activity.lifecycleScope)
-
-                seekBarHandler.flow(true).onEach {
-                    seekBarActionHandler.clickHandleMode =
-                        it ?: Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
                 }.launchIn(activity.lifecycleScope)
             }
         }

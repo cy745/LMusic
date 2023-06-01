@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.compose.screen.guiding
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,19 +18,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.blankj.utilcode.util.ActivityUtils
-import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.lmusic.MainActivity
-import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.utils.SeekBarHandler
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.ui.CLICK_PART_LEFT
 import com.lalilu.ui.CLICK_PART_MIDDLE
+import com.lalilu.ui.CLICK_PART_RIGHT
 import com.lalilu.ui.ClickPart
 import com.lalilu.ui.NewSeekBar
 import com.lalilu.ui.OnSeekBarCancelListener
@@ -59,20 +54,10 @@ fun SeekbarGuidingPage(
     val cancelSeekToPosition = remember { mutableStateOf(false) }
     val expendLibrary = remember { mutableStateOf(false) }
 
-    val seekbarHandlerData = settingsSp.seekBarHandler
     var isGuidingOver by settingsSp.isGuidingOver
-
     val reUpdateDelay = 200L
-    val seekBarHandler = remember {
-        SeekBarHandler(
-            onPlayNext = { delayReUpdate(scope, seekToNext, reUpdateDelay) },
-            onPlayPrevious = { delayReUpdate(scope, seekToPrevious, reUpdateDelay) },
-            onPlayPause = { delayReUpdate(scope, playPause, reUpdateDelay) }
-        )
-    }
 
-    val seekbarHandlerValue by seekbarHandlerData
-    LaunchedEffect(seekbarHandlerValue) {
+    LaunchedEffect(Unit) {
         showLyric.value = false
         playPause.value = false
         seekToNext.value = false
@@ -81,13 +66,6 @@ fun SeekbarGuidingPage(
         seekToPosition.value = false
         cancelSeekToPosition.value = false
         expendLibrary.value = false
-        seekBarHandler.clickHandleMode = seekbarHandlerValue
-    }
-
-    val currentHandlerText = when (seekbarHandlerValue) {
-        0 -> "单击"
-        1 -> "双击"
-        else -> "长按"
     }
 
     val complete: () -> Unit = {
@@ -113,65 +91,48 @@ fun SeekbarGuidingPage(
                     confirmTitle = "跳过",
                     onConfirm = complete
                 ) {
+                    // TODO 修改说明文本
                     """
                     来看看这个神奇的进度条，三种切歌方式任君挑选，选好之后照着下面的提示来体验一下吧，当然你也可以每一种都试一试。
                     """
                 }
             }
             item {
-                Surface(shape = RoundedCornerShape(10.dp)) {
-                    SettingStateSeekBar(
-                        state = seekbarHandlerData,
-                        selection = stringArrayResource(id = R.array.seekbar_handler).toList(),
-                        title = "选一种喜欢的切歌方式吧",
-                        paddingValues = PaddingValues(vertical = 20.dp, horizontal = 20.dp)
+                CheckActionCard(isPassed = seekToPrevious.value) {
+                    Text(
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        text = "[切换至上一首歌曲]: 单击进度条左侧"
                     )
                 }
             }
             item {
-                CheckActionCard(isPassed = seekToPrevious.value) {
-                    Crossfade(targetState = currentHandlerText) {
-                        Text(
-                            fontSize = 14.sp,
-                            lineHeight = 20.sp,
-                            text = "[切换至上一首歌曲]: ${it}进度条左侧"
-                        )
-                    }
-                }
-            }
-            item {
                 CheckActionCard(isPassed = seekToNext.value) {
-                    Crossfade(targetState = currentHandlerText) {
-                        Text(
-                            fontSize = 14.sp,
-                            lineHeight = 20.sp,
-                            text = "[切换至下一首歌曲]: ${it}进度条右侧"
-                        )
-                    }
+                    Text(
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        text = "[切换至下一首歌曲]: 单击进度条右侧"
+                    )
                 }
             }
             item {
                 CheckActionCard(isPassed = playPause.value) {
-                    Crossfade(targetState = seekbarHandlerValue) {
-                        Text(
-                            fontSize = 14.sp,
-                            lineHeight = 20.sp,
-                            text = "[播放/暂停]: 单击进度条${if (it == 0) "中部" else ""}"
-                        )
-                    }
+                    Text(
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        text = "[播放/暂停]: 单击进度条中部"
+                    )
                 }
             }
-            item {
-                CheckActionCard(isPassed = showLyric.value) {
-                    Crossfade(targetState = seekbarHandlerValue) {
-                        Text(
-                            fontSize = 14.sp,
-                            lineHeight = 20.sp,
-                            text = "[展开歌词页]: 长按进度条${if (it == 2) "中部" else ""}"
-                        )
-                    }
-                }
-            }
+//            item {
+//                CheckActionCard(isPassed = showLyric.value) {
+//                    Text(
+//                        fontSize = 14.sp,
+//                        lineHeight = 20.sp,
+//                        text = "[展开歌词页]: 长按进度条中部"
+//                    )
+//                }
+//            }
             item {
                 CheckActionCard(isPassed = seekToPosition.value) {
                     Text(
@@ -246,26 +207,25 @@ fun SeekbarGuidingPage(
                     clickListeners.add(object : OnSeekBarClickListener {
                         override fun onClick(@ClickPart clickPart: Int, action: Int) {
                             HapticUtils.haptic(this@apply)
-                            if (seekBarHandler.clickHandleMode != SeekBarHandler.CLICK_HANDLE_MODE_CLICK) {
-                                seekBarHandler.onPlayPause()
-                                return
+                            when (clickPart) {
+                                CLICK_PART_LEFT -> delayReUpdate(
+                                    scope,
+                                    seekToPrevious,
+                                    reUpdateDelay
+                                )
+
+                                CLICK_PART_MIDDLE -> delayReUpdate(scope, playPause, reUpdateDelay)
+                                CLICK_PART_RIGHT -> delayReUpdate(scope, seekToNext, reUpdateDelay)
+                                else -> {}
                             }
-                            seekBarHandler.handle(clickPart)
                         }
 
                         override fun onLongClick(@ClickPart clickPart: Int, action: Int) {
                             HapticUtils.haptic(this@apply)
-                            if (seekBarHandler.clickHandleMode != SeekBarHandler.CLICK_HANDLE_MODE_LONG_CLICK || clickPart == CLICK_PART_MIDDLE) {
-                                delayReUpdate(scope, showLyric, reUpdateDelay)
-                                return
-                            }
-                            seekBarHandler.handle(clickPart)
                         }
 
                         override fun onDoubleClick(@ClickPart clickPart: Int, action: Int) {
                             HapticUtils.doubleHaptic(this@apply)
-                            if (seekBarHandler.clickHandleMode != SeekBarHandler.CLICK_HANDLE_MODE_DOUBLE_CLICK) return
-                            seekBarHandler.handle(clickPart)
                         }
                     })
                 }

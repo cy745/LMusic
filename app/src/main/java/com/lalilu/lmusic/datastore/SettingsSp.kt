@@ -25,10 +25,6 @@ class SettingsSp(context: Context) : BaseSp() {
         Config.KEY_SETTINGS_LYRIC_GRAVITY,
         Config.DEFAULT_SETTINGS_LYRIC_GRAVITY
     )
-    val seekBarHandler = intSp(
-        Config.KEY_SETTINGS_SEEKBAR_HANDLER,
-        Config.DEFAULT_SETTINGS_SEEKBAR_HANDLER
-    )
     val ignoreAudioFocus = boolSp(
         Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
         Config.DEFAULT_SETTINGS_IGNORE_AUDIO_FOCUS

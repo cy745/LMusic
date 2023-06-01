@@ -6,12 +6,6 @@
         <item>靠右</item>
     </string-array>
 
-    <string-array name="seekbar_handler">
-        <item>单击</item>
-        <item>双击</item>
-        <item>长按</item>
-    </string-array>
-
     <string-array name="dark_mode_options">
         <item>跟随系统</item>
         <item>开启</item>

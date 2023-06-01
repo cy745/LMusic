@@ -2,7 +2,6 @@ package com.lalilu.lmusic
 
 import android.Manifest
 import android.os.Build
-import android.support.v4.media.session.PlaybackStateCompat
 
 object Config {
     const val LAST_PLAYED_ID = "LAST_PLAYED_ID"
@@ -23,7 +22,6 @@ object Config {
     const val KEY_SETTINGS_ENABLE_UNKNOWN_FILTER = "KEY_SETTINGS_ENABLE_UNKNOWN_FILTER"
     const val KEY_SETTINGS_LYRIC_GRAVITY = "KEY_SETTINGS_LYRIC_GRAVITY"
     const val KEY_SETTINGS_LYRIC_TEXT_SIZE = "KEY_SETTINGS_LYRIC_TEXT_SIZE"
-    const val KEY_SETTINGS_SEEKBAR_HANDLER = "KEY_SETTINGS_SEEKBAR_HANDLER"
     const val KEY_SETTINGS_STATUS_LYRIC_ENABLE = "KEY_SETTINGS_STATUS_LYRIC_ENABLE"
     const val KEY_SETTINGS_IGNORE_AUDIO_FOCUS = "KEY_SETTINGS_IGNORE_AUDIO_FOCUS"
     const val KEY_SETTINGS_VOLUME_CONTROL = "KEY_SETTINGS_VOLUME_CONTROL"
@@ -43,7 +41,6 @@ object Config {
     const val DEFAULT_SETTINGS_ENABLE_UNKNOWN_FILTER = true
     const val DEFAULT_SETTINGS_LYRIC_GRAVITY = 1
     const val DEFAULT_SETTINGS_LYRIC_TEXT_SIZE = 16
-    const val DEFAULT_SETTINGS_SEEKBAR_HANDLER = 0
     const val DEFAULT_SETTINGS_STATUS_LYRIC_ENABLE = false
     const val DEFAULT_SETTINGS_IGNORE_AUDIO_FOCUS = false
     const val DEFAULT_SETTINGS_VOLUME_CONTROL = 100
@@ -54,17 +51,6 @@ object Config {
     const val DEFAULT_SETTINGS_AUTO_HIDE_SEEKBAR = false
     const val DEFAULT_SETTINGS_FORCE_HIDE_STATUS_BAR = false
     const val DEFAULT_SETTINGS_KEEP_SCREEN_ON_WHEN_LYRIC_EXPANDED = false
-
-    const val MEDIA_DEFAULT_ACTION = PlaybackStateCompat.ACTION_PLAY or
-            PlaybackStateCompat.ACTION_PLAY_PAUSE or
-            PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
-            PlaybackStateCompat.ACTION_PAUSE or
-            PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-            PlaybackStateCompat.ACTION_STOP or
-            PlaybackStateCompat.ACTION_SEEK_TO or
-            PlaybackStateCompat.ACTION_SET_REPEAT_MODE or
-            PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE
 
     val REQUIRE_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_AUDIO

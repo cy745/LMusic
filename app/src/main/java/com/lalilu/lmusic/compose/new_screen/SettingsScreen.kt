@@ -60,7 +60,6 @@ fun SettingsScreen(
     val ignoreAudioFocus = settingsSp.ignoreAudioFocus
     val enableUnknownFilter = settingsSp.enableUnknownFilter
     val statusBarLyric = settingsSp.enableStatusLyric
-    val seekbarHandler = settingsSp.seekBarHandler
     val lyricGravity = settingsSp.lyricGravity
     val lyricTextSize = settingsSp.lyricTextSize
     val playMode = settingsSp.playMode
@@ -103,11 +102,6 @@ fun SettingsScreen(
                     state = playMode,
                     selection = listOf("列表循环", "单曲循环", "随机播放"),
                     title = "播放模式"
-                )
-                SettingStateSeekBar(
-                    state = seekbarHandler,
-                    selection = stringArrayResource(id = R.array.seekbar_handler).toList(),
-                    titleRes = R.string.preference_player_settings_seekbar_handler
                 )
                 SettingSwitcher(
                     state = enableSystemEq,
