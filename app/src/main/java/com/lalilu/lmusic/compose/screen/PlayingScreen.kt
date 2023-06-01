@@ -52,6 +52,7 @@ import com.lalilu.lmusic.LMusicFlowBus
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
+import com.lalilu.lmusic.compose.component.settings.FileSelectWrapper
 import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.datastore.SettingsSp
@@ -141,10 +142,10 @@ fun PlayingScreen(
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     val iconAlpha1 = animateFloatAsState(
-                        targetValue = if (isEnableBlurEffect) 1f else 0.5f
+                        targetValue = if (isEnableBlurEffect) 1f else 0.5f, label = ""
                     )
                     val iconAlpha2 = animateFloatAsState(
-                        targetValue = if (isDrawTranslation) 1f else 0.5f
+                        targetValue = if (isDrawTranslation) 1f else 0.5f, label = ""
                     )
 
                     Text(
@@ -152,6 +153,16 @@ fun PlayingScreen(
                         text = "",
                         color = Color.White.copy(0.5f)
                     )
+
+                    FileSelectWrapper(state = settingsSp.lyricTypefacePath) { launcher, _ ->
+                        Icon(
+                            modifier = Modifier
+                                .clickable { launcher.launch("font/ttf") },
+                            painter = painterResource(id = R.drawable.ic_text),
+                            contentDescription = "",
+                            tint = Color.White
+                        )
+                    }
 
                     AnimatedContent(
                         targetState = isEnableBlurEffect,

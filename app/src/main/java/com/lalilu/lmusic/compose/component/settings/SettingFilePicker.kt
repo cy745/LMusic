@@ -1,7 +1,9 @@
 package com.lalilu.lmusic.compose.component.settings
 
 import android.content.ContentResolver
+import android.net.Uri
 import android.provider.MediaStore
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -16,8 +18,10 @@ import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -38,6 +42,50 @@ fun SettingFilePicker(
     title: String,
     subTitle: String? = null,
     mimeType: String
+) {
+    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+
+    FileSelectWrapper(state = state) { launcher, fileName ->
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = { launcher.launch(mimeType) })
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Text(
+                    text = title,
+                    color = textColor,
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = fileName.value.takeIf { it.isNotEmpty() } ?: subTitle ?: "",
+                    fontSize = 12.sp,
+                    color = textColor.copy(0.5f)
+                )
+            }
+
+            Icon(
+                painter = painterResource(id = R.drawable.ic_arrow_right_s_line),
+                tint = textColor,
+                contentDescription = ""
+            )
+        }
+    }
+}
+
+@Composable
+fun FileSelectWrapper(
+    state: MutableState<String> = remember { mutableStateOf("") },
+    content: @Composable (
+        pickFileLauncher: ManagedActivityResultLauncher<String, Uri?>,
+        fileNameState: State<String>
+    ) -> Unit
 ) {
     var value by state
     val fileName = remember {
@@ -91,36 +139,5 @@ fun SettingFilePicker(
         }
     }
 
-    val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = { pickFileLauncher.launch(mimeType) })
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
-            Text(
-                text = title,
-                color = textColor,
-                fontSize = 14.sp
-            )
-            Text(
-                text = fileName.value.takeIf { it.isNotEmpty() } ?: subTitle ?: "",
-                fontSize = 12.sp,
-                color = textColor.copy(0.5f)
-            )
-        }
-
-        Icon(
-            painter = painterResource(id = R.drawable.ic_arrow_right_s_line),
-            tint = textColor,
-            contentDescription = ""
-        )
-    }
+    content(pickFileLauncher, fileName)
 }
