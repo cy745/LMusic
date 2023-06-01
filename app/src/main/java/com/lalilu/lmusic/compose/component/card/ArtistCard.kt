@@ -32,17 +32,10 @@ fun ArtistCard(
             .fillMaxWidth()
             .heightIn(min = 48.dp)
             .clickable(onClick = onClick)
-            .padding(start = 10.dp, end = 20.dp),
+            .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(
-            modifier = Modifier.width(48.dp),
-            textAlign = TextAlign.Center,
-            fontSize = 10.sp,
-            color = textColor.copy(alpha = 0.4f),
-            text = "#${artist._id.takeIf { it.length >= 4 }?.take(4) ?: artist._id}"
-        )
         PlayingTipIcon(isPlaying = isPlaying)
         Text(
             modifier = Modifier.weight(1f),

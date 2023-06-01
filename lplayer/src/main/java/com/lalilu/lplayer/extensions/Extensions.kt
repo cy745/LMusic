@@ -2,6 +2,8 @@ package com.lalilu.lplayer.extensions
 
 import android.media.MediaPlayer
 import android.os.CountDownTimer
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.util.LruCache
 import androidx.annotation.IntRange
 
@@ -77,4 +79,8 @@ fun MediaPlayer.fadePause(
     }
     timer.start()
     timers.put(audioSessionId, timer)
+}
+
+fun MediaSessionCompat.isPlaying(): Boolean {
+    return PlaybackStateCompat.STATE_PLAYING == controller.playbackState?.state
 }

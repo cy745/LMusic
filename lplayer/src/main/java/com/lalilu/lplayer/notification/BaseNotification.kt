@@ -20,6 +20,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lplayer.R
+import com.lalilu.lplayer.extensions.isPlaying
 import com.lalilu.lplayer.playback.PlayMode
 import kotlinx.coroutines.runBlocking
 
@@ -96,10 +97,9 @@ abstract class BaseNotification constructor(
         val controller = mediaSession.controller
         val metadata = controller.metadata ?: return null
         val description = metadata.description ?: return null
-        val playbackState = controller.playbackState ?: return null
         val repeatMode = controller.repeatMode
         val shuffleMode = controller.shuffleMode
-        val isPlaying = playbackState.state == PlaybackStateCompat.STATE_PLAYING
+        val isPlaying = mediaSession.isPlaying()
 
         return NotificationCompat.Builder(mContext, channelId)
             .setStyle(style)

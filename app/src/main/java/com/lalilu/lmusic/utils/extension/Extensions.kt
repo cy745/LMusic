@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.GsonUtils
 import com.dirror.lyricviewx.LyricEntry
 import com.google.gson.reflect.TypeToken
+import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +37,21 @@ import kotlinx.coroutines.flow.onEach
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.roundToInt
+
+fun getMimeTypeIconRes(mimeType: String): Int {
+    val strings = mimeType.split("/").toTypedArray()
+    return when (strings[strings.size - 1].uppercase()) {
+        "FLAC" -> R.drawable.ic_flac_line
+        "MPEG", "MP3" -> R.drawable.ic_mp3_line
+        "MP4" -> R.drawable.ic_mp4_line
+        "APE" -> R.drawable.ic_ape_line
+        "DSD" -> R.drawable.ic_dsd_line
+        "DSF", "FFMPEG" -> R.drawable.ic_dsf
+        "WAV", "X-WAV", "EXT-WAV" -> R.drawable.ic_wav_line
+        "OGG" -> R.drawable.ic_ogg
+        else -> R.drawable.ic_mp3_line
+    }
+}
 
 fun Drawable.toBitmap(): Bitmap {
     val w = this.intrinsicWidth

@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.lalilu.R
 import com.lalilu.common.SystemUiUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -146,18 +145,7 @@ fun durationMsToString(duration: Long): String {
 @DrawableRes
 @Composable
 fun mimeTypeToIcon(mimeType: String): Int {
-    return remember(mimeType) {
-        val strings = mimeType.split("/").toTypedArray()
-        when (strings[strings.size - 1].uppercase()) {
-            "FLAC" -> R.drawable.ic_flac_line
-            "MPEG", "MP3" -> R.drawable.ic_mp3_line
-            "MP4" -> R.drawable.ic_mp4_line
-            "APE" -> R.drawable.ic_ape_line
-            "DSD", "DSF" -> R.drawable.ic_dsd_line
-            "WAV", "X-WAV" -> R.drawable.ic_wav_line
-            else -> R.drawable.ic_mp3_line
-        }
-    }
+    return remember(mimeType) { getMimeTypeIconRes(mimeType) }
 }
 
 @Composable

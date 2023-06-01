@@ -31,7 +31,6 @@ import kotlinx.coroutines.cancel
 import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
-
 @Suppress("DEPRECATION")
 abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
@@ -48,7 +47,7 @@ abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>,
         }
     }
 
-    private lateinit var mediaSession: MediaSessionCompat
+    lateinit var mediaSession: MediaSessionCompat
     lateinit var playback: MixPlayback
 
     private val runtime: Runtime<LSong> by inject()
@@ -85,7 +84,6 @@ abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>,
                 }
         }
 
-        notifier.bindMediaSession(mediaSession)
         sessionToken = mediaSession.sessionToken
     }
 
@@ -109,7 +107,7 @@ abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>,
                 registerReceiver(noisyReceiver, noisyReceiverIntentFilter)
                 mediaSession.isActive = true
                 startService()
-                notifier.startForeground { id, notification ->
+                notifier.startForeground(mediaSession) { id, notification ->
                     startForeground(id, notification)
                 }
             }
@@ -135,13 +133,13 @@ abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>,
                 return
             }
         }
-        notifier.update()
+        notifier.update(mediaSession)
     }
 
     override fun onSetPlayMode(playMode: PlayMode) {
         mediaSession.setRepeatMode(playMode.repeatMode)
         mediaSession.setShuffleMode(playMode.shuffleMode)
-        notifier.update()
+        notifier.update(mediaSession)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

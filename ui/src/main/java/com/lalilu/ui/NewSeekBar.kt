@@ -7,14 +7,14 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.annotation.IntDef
 import androidx.core.view.GestureDetectorCompat
-import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
+import androidx.dynamicanimation.animation.springAnimationOf
+import androidx.dynamicanimation.animation.withSpringForceProperties
 import com.blankj.utilcode.util.SizeUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.lalilu.common.SystemUiUtil
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 const val CLICK_PART_UNSPECIFIED = 0
 const val CLICK_PART_LEFT = 1
@@ -138,30 +138,49 @@ class NewSeekBar @JvmOverloads constructor(
 
 
     private val mProgressAnimation: SpringAnimation by lazy {
-        SpringAnimation(this, ProgressFloatProperty(), nowValue).apply {
-            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-            spring.stiffness = SpringForce.STIFFNESS_LOW
+        springAnimationOf(
+            setter = { updateProgress(it, false) },
+            getter = { nowValue },
+            finalPosition = nowValue
+        ).withSpringForceProperties {
+            dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            stiffness = SpringForce.STIFFNESS_LOW
         }
     }
 
     private val mPaddingAnimation: SpringAnimation by lazy {
-        SpringAnimation(this, PaddingFloatProperty(), padding).apply {
-            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-            spring.stiffness = SpringForce.STIFFNESS_LOW
+        springAnimationOf(
+            setter = {
+                padding = it
+                outSideAlpha = (it * 50f).toInt()
+            },
+            getter = { padding },
+            finalPosition = padding
+        ).withSpringForceProperties {
+            dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            stiffness = SpringForce.STIFFNESS_LOW
         }
     }
 
     private val mOutSideAlphaAnimation: SpringAnimation by lazy {
-        SpringAnimation(this, OutSideAlphaFloatProperty(), outSideAlpha.toFloat()).apply {
-            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-            spring.stiffness = SpringForce.STIFFNESS_LOW
+        springAnimationOf(
+            setter = { outSideAlpha = it.toInt() },
+            getter = { outSideAlpha.toFloat() },
+            finalPosition = outSideAlpha.toFloat()
+        ).withSpringForceProperties {
+            dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            stiffness = SpringForce.STIFFNESS_LOW
         }
     }
 
     private val mAlphaAnimation: SpringAnimation by lazy {
-        SpringAnimation(this, AlphaFloatProperty(), 100f).apply {
-            spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-            spring.stiffness = SpringForce.STIFFNESS_LOW
+        springAnimationOf(
+            setter = { alpha = it / 100f },
+            getter = { alpha * 100f },
+            finalPosition = 100f
+        ).withSpringForceProperties {
+            dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            stiffness = SpringForce.STIFFNESS_LOW
         }
     }
 
@@ -302,38 +321,6 @@ class NewSeekBar @JvmOverloads constructor(
     fun animateAlphaTo(value: Float) {
         mAlphaAnimation.cancel()
         mAlphaAnimation.animateToFinalPosition(value)
-    }
-
-    class ProgressFloatProperty :
-        FloatPropertyCompat<NewProgressBar>("progress") {
-        override fun getValue(obj: NewProgressBar): Float = obj.nowValue
-        override fun setValue(obj: NewProgressBar, value: Float) {
-            obj.updateProgress(value, false)
-        }
-    }
-
-    class PaddingFloatProperty :
-        FloatPropertyCompat<NewProgressBar>("padding") {
-        override fun getValue(obj: NewProgressBar): Float = obj.padding
-        override fun setValue(obj: NewProgressBar, value: Float) {
-            obj.padding = value
-            obj.outSideAlpha = (value * 50f).toInt()
-        }
-    }
-
-    class OutSideAlphaFloatProperty :
-        FloatPropertyCompat<NewProgressBar>("outside_alpha") {
-        override fun getValue(obj: NewProgressBar): Float = obj.outSideAlpha.toFloat()
-        override fun setValue(obj: NewProgressBar, value: Float) {
-            obj.outSideAlpha = value.roundToInt()
-        }
-    }
-
-    class AlphaFloatProperty : FloatPropertyCompat<NewProgressBar>("alpha") {
-        override fun getValue(obj: NewProgressBar): Float = obj.alpha * 100f
-        override fun setValue(obj: NewProgressBar, value: Float) {
-            obj.alpha = value / 100f
-        }
     }
 
     init {

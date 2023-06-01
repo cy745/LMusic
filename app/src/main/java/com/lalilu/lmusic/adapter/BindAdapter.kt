@@ -16,6 +16,7 @@ import com.lalilu.common.ColorAnimator.setBgColorFromPalette
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.ui.BlurImageView
 import com.lalilu.lmusic.utils.extension.durationToTime
+import com.lalilu.lmusic.utils.extension.getMimeTypeIconRes
 import com.lalilu.ui.NewProgressBar
 import com.lalilu.ui.appbar.AppbarLayout
 import com.lalilu.ui.appbar.CollapsingLayout
@@ -70,18 +71,7 @@ fun setRoundOutline(imageView: AppCompatImageView, radius: Number) {
 
 @BindingAdapter("iconRec")
 fun iconRec(imageView: ImageView, mimeType: String) {
-    val strings = mimeType.split("/").toTypedArray()
-    imageView.setImageResource(
-        when (strings[strings.size - 1].uppercase()) {
-            "FLAC" -> R.drawable.ic_flac_line
-            "MPEG", "MP3" -> R.drawable.ic_mp3_line
-            "MP4" -> R.drawable.ic_mp4_line
-            "APE" -> R.drawable.ic_ape_line
-            "DSD", "DSF" -> R.drawable.ic_dsd_line
-            "WAV", "X-WAV" -> R.drawable.ic_wav_line
-            else -> R.drawable.ic_mp3_line
-        }
-    )
+    imageView.setImageResource(getMimeTypeIconRes(mimeType))
 }
 
 @BindingAdapter("setDuration")

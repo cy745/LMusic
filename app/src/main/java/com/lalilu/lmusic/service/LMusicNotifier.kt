@@ -18,6 +18,7 @@ import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.utils.extension.getMediaId
 import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.extensions.isPlaying
 import com.lalilu.lplayer.notification.BaseNotification
 import com.lalilu.lplayer.playback.PlayMode
 import kotlinx.coroutines.CoroutineScope
@@ -26,10 +27,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
@@ -48,7 +50,7 @@ class LMusicNotifier constructor(
      */
     private val notificationBuilderFlow = MutableStateFlow<NotificationCompat.Builder?>(null)
     private var notificationLoopJob: Job? = null
-    private var mediaSession: MediaSessionCompat? = null
+
     override suspend fun getBitmapFromData(data: Any?): Bitmap? {
         return mContext.imageLoader.execute(
             ImageRequest.Builder(mContext)
@@ -73,10 +75,6 @@ class LMusicNotifier constructor(
                 PlayMode.Shuffle -> mShufflePlayAction
             }
         )
-    }
-
-    override fun bindMediaSession(mediaSession: MediaSessionCompat) {
-        this.mediaSession = mediaSession
     }
 
     init {
@@ -114,38 +112,28 @@ class LMusicNotifier constructor(
         )
     )
 
-    private fun startLoop() {
+    private fun startLoop(mediaSession: MediaSessionCompat) {
         notificationLoopJob?.cancel()
-        notificationLoopJob = launch {
-            notificationBuilderFlow.flatMapLatest { builder ->
-                val mediaId = mediaSession?.getMediaId()
+        notificationLoopJob = notificationBuilderFlow.flatMapLatest { builder ->
+            val mediaId = mediaSession.getMediaId()
 
-                coverRepo.fetch(mediaId).mapLatest {
-                    builder?.loadCoverAndPalette(mediaSession, it)?.build()
-                }
-            }.combine(lyricRepo.currentLyricSentence) { notification, sentence ->
-                notification?.apply {
-                    tickerText = sentence
-                    flags = if (flags and FLAG_ALWAYS_SHOW_TICKER != FLAG_ALWAYS_SHOW_TICKER) {
-                        flags or FLAG_ALWAYS_SHOW_TICKER
-                    } else {
-                        flags or FLAG_ONLY_UPDATE_TICKER
-                    }
-                }
-            }.combine(settingsSp.enableStatusLyric.flow(true)) { notification, enable ->
-                notification?.apply {
-                    if (enable == true) return@apply
-                    tickerText = null
-                    flags = flags and FLAG_ALWAYS_SHOW_TICKER.inv()
-                    flags = flags and FLAG_ONLY_UPDATE_TICKER.inv()
-                }
+            coverRepo.fetch(mediaId).mapLatest {
+                builder?.loadCoverAndPalette(mediaSession, it)?.build()
             }
-//                .debounce(50)
-                .collectLatest {
-                    statusBarLyric.updateLyric(it?.tickerText?.toString() ?: "")
-                    notificationManager.notify(NOTIFICATION_PLAYER_ID, it)
-                }
+        }.combine(lyricRepo.currentLyricSentence) { notification, sentence ->
+            notification?.setLyricTicker(sentence)
+        }.combine(settingsSp.enableStatusLyric.flow(true)) { notification, enable ->
+            notification?.apply {
+                if (enable == true && mediaSession.isPlaying()) return@apply
+
+                clearLyricTicker()
+            }
         }
+//            .debounce(50)
+            .onEach {
+                statusBarLyric.updateLyric(it?.tickerText?.toString() ?: "")
+                notificationManager.notify(NOTIFICATION_PLAYER_ID, it)
+            }.launchIn(this)
     }
 
     private fun stopLoop() {
@@ -154,17 +142,19 @@ class LMusicNotifier constructor(
         notificationLoopJob = null
     }
 
-    override fun startForeground(callback: (Int, Notification) -> Unit) {
-        val builder = mediaSession?.let {
-            buildMediaNotification(
-                mediaSession = it,
-                channelId = PLAYER_CHANNEL_ID,
-                smallIcon = R.drawable.ic_launcher_icon
-            )?.loadCoverAndPalette(it, null)
-        } ?: return
+    override fun startForeground(
+        mediaSession: MediaSessionCompat,
+        callback: (Int, Notification) -> Unit
+    ) {
+        val builder = buildMediaNotification(
+            mediaSession = mediaSession,
+            channelId = PLAYER_CHANNEL_ID,
+            smallIcon = R.drawable.ic_launcher_icon
+        )?.loadCoverAndPalette(mediaSession, null)
+            ?: return
         callback(NOTIFICATION_PLAYER_ID, builder.build())
         notificationBuilderFlow.tryEmit(builder)
-        startLoop()
+        startLoop(mediaSession)
     }
 
     override fun stopForeground(callback: () -> Unit) {
@@ -172,16 +162,14 @@ class LMusicNotifier constructor(
         callback()
     }
 
-    override fun update() {
+    override fun update(mediaSession: MediaSessionCompat) {
         launch {
             notificationBuilderFlow.emit(
-                mediaSession?.let {
-                    buildMediaNotification(
-                        mediaSession = it,
-                        channelId = PLAYER_CHANNEL_ID,
-                        smallIcon = R.drawable.ic_launcher_icon
-                    )
-                }
+                buildMediaNotification(
+                    mediaSession = mediaSession,
+                    channelId = PLAYER_CHANNEL_ID,
+                    smallIcon = R.drawable.ic_launcher_icon
+                )
             )
         }
     }
@@ -191,8 +179,19 @@ class LMusicNotifier constructor(
         notificationManager.cancel(NOTIFICATION_PLAYER_ID)
     }
 
-    fun destroy() {
-        mediaSession = null
+    private fun Notification.setLyricTicker(text: String?): Notification = apply {
+        this.tickerText = text
+        flags = if (flags and FLAG_ALWAYS_SHOW_TICKER != FLAG_ALWAYS_SHOW_TICKER) {
+            flags or FLAG_ALWAYS_SHOW_TICKER
+        } else {
+            flags or FLAG_ONLY_UPDATE_TICKER
+        }
+    }
+
+    private fun Notification.clearLyricTicker() {
+        tickerText = null
+        flags = flags and FLAG_ALWAYS_SHOW_TICKER.inv()
+        flags = flags and FLAG_ONLY_UPDATE_TICKER.inv()
     }
 
     companion object {
