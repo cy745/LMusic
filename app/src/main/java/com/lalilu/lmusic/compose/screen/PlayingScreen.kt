@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
@@ -62,6 +63,7 @@ import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.playback.Playback
 import com.lalilu.ui.CLICK_PART_LEFT
 import com.lalilu.ui.CLICK_PART_MIDDLE
@@ -281,6 +283,30 @@ fun PlayingScreen(
             fmRecyclerView.setItemViewCacheSize(5)
 
             fmTopPic.palette.observe(activity, this::setPalette)
+
+            maSeekBar.setSwitchToCallback(
+                ContextCompat.getDrawable(activity, R.drawable.ic_shuffle_line)!! to {
+                    settingsSp.playMode.value = PlayMode.Shuffle.value
+                    DynamicTips.push(
+                        title = "随机播放",
+                        subTitle = "随机播放将触发列表重排序"
+                    )
+                },
+                ContextCompat.getDrawable(activity, R.drawable.ic_order_play_line)!! to {
+                    settingsSp.playMode.value = PlayMode.ListRecycle.value
+                    DynamicTips.push(
+                        title = "列表循环",
+                        subTitle = "循环循环循环"
+                    )
+                },
+                ContextCompat.getDrawable(activity, R.drawable.ic_repeat_one_line)!! to {
+                    settingsSp.playMode.value = PlayMode.RepeatOne.value
+                    DynamicTips.push(
+                        title = "单曲循环",
+                        subTitle = "循环循环循环"
+                    )
+                }
+            )
 
             maSeekBar.valueToText = { it.toLong().durationToTime() }
             maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {

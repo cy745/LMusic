@@ -1,87 +1,26 @@
 package com.lalilu.ui
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
+import android.graphics.drawable.Drawable
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
-import androidx.annotation.IntDef
+import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
 import com.blankj.utilcode.util.SizeUtils
-
-const val CURRENT_STATE_UNSPECIFIED = 0
-const val CURRENT_STATE_MIN = 1
-const val CURRENT_STATE_MIDDLE = 2
-const val CURRENT_STATE_MAX = 3
-
-@IntDef(
-    CURRENT_STATE_UNSPECIFIED,
-    CURRENT_STATE_MIN,
-    CURRENT_STATE_MIDDLE,
-    CURRENT_STATE_MAX
-)
-@Retention(AnnotationRetention.SOURCE)
-annotation class CurrentState
-
-interface OnProgressChangeListener {
-    fun onProgressChange(value: Float, fromUser: Boolean)
-}
 
 fun interface OnValueChangeListener {
     fun onValueChange(value: Float)
 }
 
-interface OnProgressToListener {
-    fun onProgressToMax(value: Float, fromUser: Boolean) {}
-    fun onProgressToMin(value: Float, fromUser: Boolean) {}
-    fun onProgressToMiddle(value: Float, fromUser: Boolean) {}
-}
-
 open class NewProgressBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : View(context, attrs) {
-    inner class OnProgressBarProgressToListener : OnProgressChangeListener {
-        @CurrentState
-        private var currentState = 0
-
-        private fun updateCurrentState(@CurrentState state: Int, fromUser: Boolean) {
-            if (currentState == state) return
-            when (state) {
-                CURRENT_STATE_MIN -> progressToListener.forEach {
-                    it.onProgressToMin(nowValue, fromUser)
-                }
-
-                CURRENT_STATE_MAX -> progressToListener.forEach {
-                    it.onProgressToMax(nowValue, fromUser)
-                }
-
-                CURRENT_STATE_MIDDLE -> progressToListener.forEach {
-                    it.onProgressToMiddle(nowValue, fromUser)
-                }
-            }
-            currentState = state
-        }
-
-        override fun onProgressChange(value: Float, fromUser: Boolean) {
-            updateCurrentState(
-                when {
-                    value <= minValue -> CURRENT_STATE_MIN
-                    value >= maxValue -> CURRENT_STATE_MAX
-                    value > minValue && value < maxValue -> CURRENT_STATE_MIDDLE
-                    else -> CURRENT_STATE_UNSPECIFIED
-                }, fromUser
-            )
-        }
-    }
-
-    fun updateProgress(value: Float, fromUser: Boolean = false) {
-        nowValue = value
-        progressChangeListener.forEach { it.onProgressChange(nowValue, fromUser) }
-    }
-
-    val progressChangeListener = ArrayList<OnProgressChangeListener>()
-    val progressToListener = ArrayList<OnProgressToListener>()
-    val onValueChangeListener = HashSet<OnValueChangeListener>()
 
     var bgColor = Color.argb(50, 100, 100, 100)
         set(value) {
@@ -208,12 +147,33 @@ open class NewProgressBar @JvmOverloads constructor(
             invalidate()
         }
 
+    @FloatRange(from = 0.0, to = 1.0)
+    var switchModeProgress: Float = 0f
+        set(value) {
+            if (thumbTabs.isEmpty()) return
+            field = value
+            invalidate()
+        }
+
+    var switchMoveX: Float = 0f
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    val onValueChangeListener = HashSet<OnValueChangeListener>()
+    protected val thumbTabs = ArrayList<Drawable>()
     private var thumbWidth: Float = 0f
     private var maxValueText: String = ""
     private var nowValueText: String = ""
     private var maxValueTextWidth: Float = 0f
     private var nowValueTextWidth: Float = 0f
     private var nowValueTextOffset: Float = 0f
+    private var thumbLeft: Float = 0f
+    private var thumbRight: Float = 0f
+    private val thumbCount: Int
+        get() = if (thumbTabs.size > 0) thumbTabs.size else 3
+
     private var textHeight: Float = SizeUtils.sp2px(18f).toFloat()
     private var textPadding: Long = 40L
     private var pathInside = Path()
@@ -258,20 +218,33 @@ open class NewProgressBar @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        thumbWidth = (nowValue - minValue) / (maxValue - minValue) * (width - padding)
+        val actualWidth = width - padding * 2f
+
+        // 通过Value计算Progress，从而获取滑块应有的宽度
+        thumbWidth = normalize(nowValue, minValue, maxValue) * actualWidth
+        thumbWidth = lerp(thumbWidth, actualWidth / thumbCount, switchModeProgress)
+
         maxValueText = valueToText(maxValue)
         nowValueText = valueToText(nowValue)
         maxValueTextWidth = maxTextPaint.measureText(maxValueText)
         nowValueTextWidth = nowTextPaint.measureText(nowValueText)
 
-        val textCenterHeight = (height + maxTextPaint.textSize) / 2f - 5
+        val textCenterHeight = height / 2f - (maxTextPaint.ascent() + maxTextPaint.descent()) / 2f
         val offsetTemp = nowValueTextWidth + textPadding * 2
 
-        nowValueTextOffset =
-            if (offsetTemp < thumbWidth) thumbWidth else offsetTemp
+        nowValueTextOffset = if (offsetTemp < thumbWidth) thumbWidth else offsetTemp
         nowTextPaint.color = nowTextColor
         maxTextPaint.color = maxTextColor
+
+        nowTextPaint.alpha = lerp(0f, 255f, 1f - switchModeProgress).toInt()
+        maxTextPaint.alpha = nowTextPaint.alpha
         thumbPaint.color = thumbColor
+
+        thumbLeft = padding
+        val switchProgress = normalize(switchMoveX, thumbWidth / 2f, width - thumbWidth / 2f)
+        val switchOffset = lerp(thumbLeft, width - thumbLeft - thumbWidth, switchProgress)
+        thumbLeft = lerp(thumbLeft, switchOffset, switchModeProgress)
+        thumbRight = (thumbLeft + thumbWidth).coerceIn(0f, width.toFloat())
 
         // 截取外部框范围
         canvas.clipPath(pathOutside)
@@ -290,38 +263,78 @@ open class NewProgressBar @JvmOverloads constructor(
         // 绘制背景
         canvas.drawColor(bgColor)
 
-        // 绘制总时长文字
-        canvas.drawText(
-            maxValueText,
-            width - maxValueTextWidth - textPadding,
-            textCenterHeight,
-            maxTextPaint
-        )
+        if (nowTextPaint.alpha != 0) {
+            // 绘制总时长文字
+            canvas.drawText(
+                maxValueText,
+                width - maxValueTextWidth - textPadding,
+                textCenterHeight,
+                maxTextPaint
+            )
+        }
 
         // 绘制进度条滑动块
         canvas.drawRoundRect(
-            padding,
-            padding,
-            thumbWidth,
-            height - padding,
-            radius,
-            radius,
-            thumbPaint
+            thumbLeft, padding,
+            thumbRight, height - padding,
+            radius, radius, thumbPaint
         )
 
-        // 绘制进度时间文字
-        canvas.drawText(
-            nowValueText,
-            nowValueTextOffset - nowValueTextWidth - textPadding,
-            textCenterHeight,
-            nowTextPaint
-        )
+        if (nowTextPaint.alpha != 0) {
+            // 绘制进度时间文字
+            canvas.drawText(
+                nowValueText,
+                nowValueTextOffset - nowValueTextWidth - textPadding,
+                textCenterHeight,
+                nowTextPaint
+            )
+        }
+
+        val switchThumbWidth = width / thumbCount
+        val switchModeAlpha = lerp(0f, 255f, switchModeProgress).toInt()
+        if (switchModeAlpha > 0) {
+            var drawX = 0f
+            for (tab in thumbTabs) {
+                tab.apply {
+                    alpha = switchModeAlpha
+
+                    // 计算Drawable的原始宽高比
+                    val ratio = (intrinsicWidth.toFloat() / intrinsicHeight.toFloat())
+                        .takeIf { it > 0 } ?: 1f
+
+                    val itemHeight = textHeight * 1.2f
+                    val itemWidth = itemHeight * ratio
+
+                    val itemLeft = drawX + (switchThumbWidth - itemWidth) / 2f
+                    val itemTop = (height - itemHeight) / 2f
+
+                    setBounds(
+                        itemLeft.toInt(),
+                        itemTop.toInt(),
+                        (itemLeft + itemWidth).toInt(),
+                        (itemTop + itemHeight).toInt()
+                    )
+                    draw(canvas)
+                }
+                drawX += switchThumbWidth
+            }
+        }
+    }
+
+    private fun normalize(value: Float, min: Float, max: Float): Float {
+        return ((value - min) / (max - min))
+            .coerceIn(0f, 1f)
+    }
+
+    private fun lerp(from: Float, to: Float, fraction: Float): Float {
+        return (from + (to - from) * fraction)
+            .coerceIn(minOf(from, to), maxOf(from, to))
     }
 
     open fun updatePath() {
         rect.set(0f, 0f, width.toFloat(), height.toFloat())
         pathOutside.reset()
-        pathOutside.addRoundRect(rect, radius, radius, Path.Direction.CW)
+        pathOutside.addRoundRect(rect, radius * 1.2f, radius * 1.2f, Path.Direction.CW)
 
         rect.set(padding, padding, width - padding, height - padding)
         pathInside.reset()
@@ -332,6 +345,5 @@ open class NewProgressBar @JvmOverloads constructor(
         val attr = context.obtainStyledAttributes(attrs, R.styleable.NewProgressBar)
         radius = attr.getDimension(R.styleable.NewProgressBar_radius, 30f)
         attr.recycle()
-        progressChangeListener.add(OnProgressBarProgressToListener())
     }
 }

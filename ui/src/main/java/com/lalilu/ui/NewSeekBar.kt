@@ -2,6 +2,7 @@ package com.lalilu.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -114,28 +115,38 @@ class NewSeekBar @JvmOverloads constructor(
     val onTapLeaveListeners = HashSet<OnTapEventListener>()
     val onTapEnterListeners = HashSet<OnTapEventListener>()
     var valueToText: ((Float) -> String)? = null
+    private var switchToCallbacks = ArrayList<Pair<Drawable, () -> Unit>>()
 
     private var moved = false
     private var canceled = true
     private var touching = false
+    private var switchMode = false
 
-    var startValue: Float = nowValue
-    var dataValue: Float = nowValue
-    var sensitivity: Float = 1.3f
+    private var startValue: Float = nowValue
+    private var dataValue: Float = nowValue
+    private var sensitivity: Float = 1.3f
+
+    private var downX: Float = 0f
+    private var downY: Float = 0f
+    private var lastX: Float = 0f
+    private var lastY: Float = 0f
 
     private val cancelScrollListener =
         object : OnSeekBarScrollToThresholdListener(this::cancelThreshold) {
             override fun onScrollToThreshold() {
                 animateValueTo(dataValue)
+                animateSwitchModeProgressTo(0f)
                 cancelListeners.forEach { it.onCancel() }
                 canceled = true
             }
 
             override fun onScrollRecover() {
                 canceled = false
+                if (switchMode) {
+                    animateSwitchModeProgressTo(100f)
+                }
             }
         }
-
 
     private val mProgressAnimation: SpringAnimation by lazy {
         springAnimationOf(
@@ -184,6 +195,17 @@ class NewSeekBar @JvmOverloads constructor(
         }
     }
 
+    private val switchModeAnimation: SpringAnimation by lazy {
+        springAnimationOf(
+            setter = { switchModeProgress = it / 100f },
+            getter = { switchModeProgress * 100f },
+            finalPosition = 100f
+        ).withSpringForceProperties {
+            dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            stiffness = SpringForce.STIFFNESS_LOW
+        }
+    }
+
     override fun valueToText(value: Float): String {
         return valueToText?.invoke(value) ?: TimeUtils.millis2String(value.toLong(), "mm:ss")
     }
@@ -208,10 +230,16 @@ class NewSeekBar @JvmOverloads constructor(
         object : GestureDetector.SimpleOnGestureListener() {
             override fun onDown(e: MotionEvent): Boolean {
                 touching = true
-                canceled = false
                 moved = false
+                canceled = false
+                switchMode = false
                 startValue = nowValue
                 dataValue = nowValue
+                downX = e.x
+                downY = e.y
+                lastX = downX
+                lastY = downY
+
                 animateScaleTo(SizeUtils.dp2px(3f).toFloat())
                 animateOutSideAlphaTo(255f)
                 animateAlphaTo(100f)
@@ -221,50 +249,35 @@ class NewSeekBar @JvmOverloads constructor(
             }
 
             override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                clickListeners.forEach {
-                    it.onClick(checkClickPart(e), e.action)
-                }
+                clickListeners.forEach { it.onClick(checkClickPart(e), e.action) }
                 performClick()
                 return super.onSingleTapConfirmed(e)
             }
 
             override fun onDoubleTap(e: MotionEvent): Boolean {
-                clickListeners.forEach {
-                    it.onDoubleClick(checkClickPart(e), e.action)
-                }
+                clickListeners.forEach { it.onDoubleClick(checkClickPart(e), e.action) }
                 return super.onDoubleTap(e)
             }
 
             override fun onLongPress(e: MotionEvent) {
-                clickListeners.forEach {
-                    it.onLongClick(checkClickPart(e), e.action)
-                }
+                clickListeners.forEach { it.onLongClick(checkClickPart(e), e.action) }
                 animateValueTo(startValue)
-                canceled = true
-            }
-
-            override fun onScroll(
-                downEvent: MotionEvent,
-                moveEvent: MotionEvent,
-                distanceX: Float,
-                distanceY: Float
-            ): Boolean {
-                moved = true
-                updateValueByDelta(-distanceX)
-                scrollListeners.forEach {
-                    it.onScroll((-moveEvent.y).coerceAtLeast(0f))
-                }
-                parent.requestDisallowInterceptTouchEvent(true)
-                return super.onScroll(downEvent, moveEvent, distanceX, distanceY)
+                updateSwitchMoveX(e.x)
+                animateSwitchModeProgressTo(100f)
+                switchMode = true
             }
         })
 
-    fun updateValueByDelta(delta: Float) {
-        if (touching && !canceled) {
+    private fun updateValueByDelta(delta: Float) {
+        if (touching && !canceled && !switchMode) {
             mProgressAnimation.cancel()
             val value = nowValue + delta / width * (maxValue - minValue) * sensitivity
             updateProgress(value, true)
         }
+    }
+
+    fun updateSwitchMoveX(moveX: Float) {
+        switchMoveX = moveX
     }
 
     fun updateValue(value: Float) {
@@ -276,6 +289,21 @@ class NewSeekBar @JvmOverloads constructor(
         dataValue = value
     }
 
+    fun updateProgress(value: Float, fromUser: Boolean = false) {
+        nowValue = value
+    }
+
+    fun setSwitchToCallback(vararg callbackPair: Pair<Drawable, () -> Unit>) {
+        switchToCallbacks.clear()
+        switchToCallbacks.addAll(callbackPair)
+        thumbTabs.clear()
+        thumbTabs.addAll(switchToCallbacks.map { it.first })
+    }
+
+    /**
+     * GestureDetector 没有抬起相关的事件回调，
+     * 在OnTouchView中自行处理抬起相关逻辑
+     */
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         gestureDetector.onTouchEvent(event)
@@ -284,23 +312,69 @@ class NewSeekBar @JvmOverloads constructor(
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_CANCEL -> {
                 onTapLeaveListeners.forEach(OnTapEventListener::onTapEvent)
-                if (moved && !canceled && abs(nowValue - startValue) > minIncrement) {
-                    seekToListeners.forEach { it.onSeekTo(nowValue) }
+
+                if (moved && !canceled) {
+                    if (switchMode) {
+                        val index = getIntervalIndex(
+                            a = 0f,
+                            b = width.toFloat(),
+                            n = switchToCallbacks.size,
+                            x = switchMoveX
+                        )
+                        switchToCallbacks.getOrNull(index)?.second?.invoke()
+                    } else if (abs(nowValue - startValue) > minIncrement) {
+                        seekToListeners.forEach { it.onSeekTo(nowValue) }
+                    }
                 }
                 animateScaleTo(0f)
                 animateOutSideAlphaTo(0f)
+                animateSwitchModeProgressTo(0f)
                 touching = false
                 canceled = false
+                switchMode = false
                 moved = false
+
                 scrollListeners.forEach {
                     if (it is OnSeekBarScrollToThresholdListener) {
                         it.state = THRESHOLD_STATE_UNREACHED
                     }
                 }
+
                 parent.requestDisallowInterceptTouchEvent(false)
+            }
+
+
+            // GestureDetector在OnLongPressed后不会再回调OnScrolled，所以自己处理ACTION_MOVE事件
+            MotionEvent.ACTION_MOVE -> {
+                if (!touching) return true
+
+                val deltaX: Float = event.x - lastX
+                val deltaY: Float = event.y - lastY
+
+                moved = true
+                if (switchMode) {
+                    updateSwitchMoveX(event.x)
+                } else {
+                    updateValueByDelta(deltaX)
+                }
+
+                scrollListeners.forEach { it.onScroll((-event.y).coerceAtLeast(0f)) }
+                parent.requestDisallowInterceptTouchEvent(true)
+
+                lastX = event.x
+                lastY = event.y
             }
         }
         return true
+    }
+
+    private fun getIntervalIndex(a: Float, b: Float, n: Int, x: Float): Int {
+        if (x < a) return 0
+        if (x > b) return n - 1
+
+        val intervalSize = (b - a) / n              // 区间大小
+        val index = ((x - a) / intervalSize).toInt() // 计算区间索引
+        return if (index >= n) n - 1 else index
     }
 
     fun animateOutSideAlphaTo(value: Float) {
@@ -321,6 +395,11 @@ class NewSeekBar @JvmOverloads constructor(
     fun animateAlphaTo(value: Float) {
         mAlphaAnimation.cancel()
         mAlphaAnimation.animateToFinalPosition(value)
+    }
+
+    fun animateSwitchModeProgressTo(value: Float) {
+        switchModeAnimation.cancel()
+        switchModeAnimation.animateToFinalPosition(value)
     }
 
     init {
