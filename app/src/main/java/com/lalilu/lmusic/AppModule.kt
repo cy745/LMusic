@@ -14,6 +14,8 @@ import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmedia.repository.PlaylistRepository
 import com.lalilu.lmedia.repository.impl.HistoryRepositoryImpl
 import com.lalilu.lmedia.repository.impl.PlaylistRepositoryImpl
+import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
+import com.lalilu.lmusic.api.lrcshare.LrcShareApi
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.datastore.TempSp
@@ -41,6 +43,7 @@ import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
+import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
@@ -50,6 +53,7 @@ import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 val AppModule = module {
@@ -111,6 +115,7 @@ val ViewModelModule = module {
     single { HistoryViewModel(get(), get()) }
     single { SongsViewModel(get(), get(), get()) }
     single { SongDetailViewModel(get()) }
+    single { SearchLyricViewModel(androidApplication(), get(), get()) }
 }
 
 val RuntimeModule = module {
@@ -131,4 +136,12 @@ val RuntimeModule = module {
 val ApiModule = module {
     single { GsonConverterFactory.create() }
     single { OkHttpClient.Builder().build() }
+    single {
+        Retrofit.Builder()
+            .client(get())
+            .addConverterFactory(get<GsonConverterFactory>())
+            .baseUrl(LRCSHARE_BASEURL)
+            .build()
+            .create(LrcShareApi::class.java)
+    }
 }

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.common
 
 import kotlin.coroutines.cancellation.CancellationException
 

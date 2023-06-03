@@ -25,7 +25,7 @@ fun SongInformationCard(
 ) {
     Surface(
         modifier = Modifier
-            .padding(20.dp)
+            .padding(horizontal = 20.dp)
             .width(intrinsicSize = IntrinsicSize.Min),
         shape = RoundedCornerShape(20.dp)
     ) {
@@ -43,11 +43,11 @@ fun SongInformationCard(
                 ) {
                     Text(
                         text = "文件类型",
-                        style = MaterialTheme.typography.subtitle1
+                        style = MaterialTheme.typography.subtitle2
                     )
                     Text(
                         text = mimeType,
-                        style = MaterialTheme.typography.subtitle2
+                        style = MaterialTheme.typography.caption
                     )
                 }
             }
@@ -58,11 +58,12 @@ fun SongInformationCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "文件大小", style = MaterialTheme.typography.subtitle1
+                    text = "文件大小",
+                    style = MaterialTheme.typography.subtitle2
                 )
                 Text(
                     text = ConvertUtils.byte2FitMemorySize(song.size),
-                    style = MaterialTheme.typography.subtitle2
+                    style = MaterialTheme.typography.caption
                 )
             }
 
@@ -73,11 +74,12 @@ fun SongInformationCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "添加日期", style = MaterialTheme.typography.subtitle1
+                        text = "添加日期",
+                        style = MaterialTheme.typography.subtitle2
                     )
                     Text(
                         text = SimpleDateFormat.getDateInstance().format(date * 1000L),
-                        style = MaterialTheme.typography.subtitle2
+                        style = MaterialTheme.typography.caption
                     )
                 }
             }
@@ -97,10 +99,12 @@ fun SongInformationCard(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "光盘号", style = MaterialTheme.typography.subtitle1
+                                text = "光盘号",
+                                style = MaterialTheme.typography.subtitle2
                             )
                             Text(
-                                text = disc.toString(), style = MaterialTheme.typography.subtitle2
+                                text = disc.toString(),
+                                style = MaterialTheme.typography.caption
                             )
                         }
                     }
@@ -113,10 +117,12 @@ fun SongInformationCard(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "音轨号", style = MaterialTheme.typography.subtitle1
+                                text = "音轨号",
+                                style = MaterialTheme.typography.subtitle2
                             )
                             Text(
-                                text = track.toString(), style = MaterialTheme.typography.subtitle2
+                                text = track.toString(),
+                                style = MaterialTheme.typography.caption
                             )
                         }
                     }
@@ -131,11 +137,11 @@ fun SongInformationCard(
                 ) {
                     Text(
                         text = "文件位置",
-                        style = MaterialTheme.typography.subtitle1
+                        style = MaterialTheme.typography.subtitle2
                     )
                     Text(
                         text = path,
-                        style = MaterialTheme.typography.subtitle2
+                        style = MaterialTheme.typography.caption
                     )
                 }
             }

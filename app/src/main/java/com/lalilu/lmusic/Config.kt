@@ -4,6 +4,8 @@ import android.Manifest
 import android.os.Build
 
 object Config {
+    const val LRCSHARE_BASEURL = "https://api.lrcshare.com"
+
     const val LAST_PLAYED_ID = "LAST_PLAYED_ID"
     const val LAST_PLAYED_LIST_IDS = "LAST_PLAYED_LIST_IDS"
     const val LAST_PLAYED_POSITION = "LAST_PLAYED_POSITION"

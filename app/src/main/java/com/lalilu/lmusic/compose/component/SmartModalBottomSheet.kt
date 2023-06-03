@@ -87,7 +87,7 @@ object SmartModalBottomSheet {
         val isExpended by remember {
             derivedStateOf { offset < statusBarHeight }
         }
-        val isLandscape by remember {
+        val isLandscape by remember(configuration.orientation) {
             derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
         }
 

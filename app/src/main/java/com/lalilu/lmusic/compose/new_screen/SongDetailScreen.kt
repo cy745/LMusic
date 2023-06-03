@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Chip
@@ -55,6 +56,7 @@ import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.SearchLyricScreenDestination
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.checkActivityIsExist
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -100,6 +102,17 @@ fun SongDetailScreen(
         derivedStateOf {
             return@derivedStateOf 1f - (scrollPosition.value / 500f)
                 .coerceIn(0f, 0.8f)
+        }
+    }
+
+    val intent = remember(song) {
+        Intent().apply {
+            component = ComponentName(
+                "com.xjcheng.musictageditor",
+                "com.xjcheng.musictageditor.SongDetailActivity"
+            )
+            action = "android.intent.action.VIEW"
+            data = song.uri
         }
     }
 
@@ -156,7 +169,8 @@ fun SongDetailScreen(
         SmartContainer.LazyVerticalGrid(
             state = gridState,
             modifier = Modifier.fillMaxSize(),
-            columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 }
+            columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
+            verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
             item {
                 Spacer(modifier = Modifier.height(100.dp))
@@ -202,7 +216,7 @@ fun SongDetailScreen(
                 item {
                     Surface(
                         modifier = Modifier
-                            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
+                            .padding(start = 20.dp, end = 20.dp)
                             .width(intrinsicSize = IntrinsicSize.Min),
                         shape = RoundedCornerShape(20.dp),
                         onClick = {
@@ -242,30 +256,49 @@ fun SongDetailScreen(
             }
 
             item {
-                IconTextButton(
+                Row(
                     modifier = Modifier
-                        .padding(horizontal = 20.dp)
-                        .height(48.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    text = "使用音乐标签编辑信息",
-                    color = Color(0xFF3EA22C),
-                    onClick = {
-                        val intent = Intent().apply {
-                            component = ComponentName(
-                                "com.xjcheng.musictageditor",
-                                "com.xjcheng.musictageditor.SongDetailActivity"
-                            )
-                            action = "android.intent.action.VIEW"
-                            data = song.uri
-                        }
-                        if (context.checkActivityIsExist(intent)) {
-                            context.startActivity(intent)
-                        } else {
-                            Toast.makeText(context, "未安装[音乐标签]", Toast.LENGTH_SHORT)
-                                .show()
-                        }
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(15.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (context.checkActivityIsExist(intent)) {
+                        IconTextButton(
+                            text = "音乐标签编辑",
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            color = Color(0xFF3EA22C),
+                            onClick = {
+                                if (context.checkActivityIsExist(intent)) {
+                                    context.startActivity(intent)
+                                } else {
+                                    Toast.makeText(context, "未安装[音乐标签]", Toast.LENGTH_SHORT)
+                                        .show()
+                                }
+                            }
+                        )
                     }
-                )
+                    IconTextButton(
+                        text = "搜索LrcShare",
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color(0xFF3EA22C),
+                        onClick = {
+                            navigator.navigate(
+                                SearchLyricScreenDestination(
+                                    mediaId = song.id,
+                                    keywords = song.name
+                                )
+                            )
+                        }
+                    )
+                }
             }
 
             item {
