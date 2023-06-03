@@ -7,7 +7,6 @@ import com.lalilu.lplayer.playback.PlayQueue
 class RuntimeQueue(
     private val runtime: Runtime<LSong>
 ) : PlayQueue<LSong> {
-    private var tempList: List<String>? = null
 
     override fun getCurrent(): LSong? {
         return runtime.getPlaying()
@@ -37,15 +36,11 @@ class RuntimeQueue(
 
     override fun shuffle() {
         if (runtime.songsIdsFlow.value.isNotEmpty()) {
-            tempList = runtime.songsIdsFlow.value
-            runtime.update(tempList!!.shuffled())
+            runtime.update(runtime.songsIdsFlow.value.shuffled())
         }
     }
 
     override fun recoverOrder() {
-        if (tempList?.isNotEmpty() == true) {
-            runtime.update(tempList!!)
-            tempList = null
-        }
+
     }
 }
