@@ -3,20 +3,21 @@ package com.lalilu.lmusic.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
-import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.DiffUtil.ItemCallback
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import com.lalilu.R
 import com.lalilu.databinding.ItemPlayingBinding
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.utils.extension.durationToTime
+import com.lalilu.lmusic.utils.extension.getMimeTypeIconRes
 import com.lalilu.lmusic.utils.extension.moveHeadToTail
 import com.lalilu.lmusic.utils.extension.removeAt
 
-abstract class NewAdapter<I : Any, B : ViewDataBinding> constructor(
-    private val layoutId: Int
+abstract class NewAdapter<I : Any, B : ViewBinding> constructor(
+    private val layoutId: Int,
 ) : RecyclerView.Adapter<NewAdapter<I, B>.NewViewHolder>(), View.OnClickListener,
     View.OnLongClickListener {
     protected var data: List<I> = emptyList()
@@ -38,15 +39,6 @@ abstract class NewAdapter<I : Any, B : ViewDataBinding> constructor(
     inner class NewViewHolder constructor(internal val binding: B) :
         RecyclerView.ViewHolder(binding.root)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewViewHolder {
-        return NewViewHolder(
-            DataBindingUtil.inflate(
-                LayoutInflater.from(parent.context),
-                layoutId, parent, false
-            )
-        )
-    }
-
     override fun onBindViewHolder(holder: NewAdapter<I, B>.NewViewHolder, position: Int) {
         val binding = holder.binding
         val item = data[position]
@@ -64,7 +56,7 @@ class NewPlayingAdapter private constructor(
     private val onSwipedRightCallback: OnSwipedRightCallback?,
     private val onDataUpdatedCallback: OnDataUpdatedCallback?,
     private val onItemBoundCallback: OnItemBoundCallback?,
-    private val itemCallback: ItemCallback<LSong>?
+    private val itemCallback: ItemCallback<LSong>?,
 ) : NewAdapter<LSong, ItemPlayingBinding>(R.layout.item_playing) {
 
     private val diffUtilCallbackHelper = itemCallback?.let {
@@ -120,12 +112,27 @@ class NewPlayingAdapter private constructor(
     }
 
     override fun onBind(binding: ItemPlayingBinding, item: LSong, position: Int) {
-        binding.song = item
+        binding.songTitle.text = item.name
+        binding.songSinger.text = item._artist
+        binding.songDuration.text = item.durationMs.durationToTime()
+        binding.songPic.loadCoverForPlaying(item)
+        binding.songPic.setRoundOutline(2)
+        binding.songType.setImageResource(getMimeTypeIconRes(item.mimeType))
         onItemBoundCallback?.onItemBound(binding, item)
     }
 
     override fun getIdFromItem(item: LSong): String {
         return item.id
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewViewHolder {
+        return NewViewHolder(
+            ItemPlayingBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+        )
     }
 
     override fun getItemCount(): Int {
@@ -178,7 +185,7 @@ class NewPlayingAdapter private constructor(
     class DiffUtilCallbackHelper<T : Any>(
         private var oldList: List<T> = emptyList(),
         private var newList: List<T> = emptyList(),
-        private var itemCallback: ItemCallback<T>
+        private var itemCallback: ItemCallback<T>,
     ) : DiffUtil.Callback() {
         fun update(oldList: List<T>, newList: List<T>) {
             this.oldList = oldList
@@ -202,7 +209,7 @@ class NewPlayingAdapter private constructor(
         private var onSwipedRightCallback: OnSwipedRightCallback? = null,
         private var onDataUpdatedCallback: OnDataUpdatedCallback? = null,
         private var onItemBoundCallback: OnItemBoundCallback? = null,
-        private var itemCallback: ItemCallback<LSong>? = null
+        private var itemCallback: ItemCallback<LSong>? = null,
     ) {
         fun setOnClickCB(onClickCallback: OnClickCallback) = apply {
             this.onClickCallback = onClickCallback
@@ -245,7 +252,7 @@ class NewPlayingAdapter private constructor(
 }
 
 class TouchHelper(
-    private val onSwipedCB: OnSwipedCB
+    private val onSwipedCB: OnSwipedCB,
 ) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
     fun interface OnSwipedCB {
         fun onSwiped(position: Int, direction: Int)
@@ -254,7 +261,7 @@ class TouchHelper(
     override fun onMove(
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder,
-        target: RecyclerView.ViewHolder
+        target: RecyclerView.ViewHolder,
     ): Boolean {
         return false
     }

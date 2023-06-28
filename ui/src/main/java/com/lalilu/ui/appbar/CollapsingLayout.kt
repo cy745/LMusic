@@ -384,10 +384,10 @@ class CollapsingLayout @JvmOverloads constructor(
     }
 
     private fun getViewOffsetHelper(view: View): ViewOffsetHelper {
-        var offsetHelper = view.getTag(R.id.view_offset_helper) as ViewOffsetHelper?
+        var offsetHelper = view.tag as? ViewOffsetHelper?
         if (offsetHelper == null) {
             offsetHelper = ViewOffsetHelper(view)
-            view.setTag(R.id.view_offset_helper, offsetHelper)
+            view.tag = offsetHelper
         }
         return offsetHelper
     }

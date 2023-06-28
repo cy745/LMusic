@@ -14,15 +14,20 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ActivityUtils
@@ -35,8 +40,6 @@ import com.lalilu.lmedia.indexer.FilterType
 import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.component.DynamicTips
-import com.lalilu.lmusic.compose.component.SmartBar.SmartBarContent
-import com.lalilu.lmusic.compose.component.SmartFloatBtns.SmartFloatBtnsContent
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.new_screen.LMusicNavHost
 import com.lalilu.lmusic.compose.screen.PlayingScreen
@@ -96,6 +99,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -160,29 +164,54 @@ class MainActivity : AppCompatActivity() {
                     LocalWindowSize provides calculateWindowSizeClass(activity = this),
                     LocalNavigatorHost provides rememberAnimatedNavController(),
                 ) {
+                    val pagerState = rememberPagerState(initialPage = 0)
+
                     Box {
-                        SmartModalBottomSheet.SmartModalBottomSheetContent(
-                            sheetContent = {
-                                LMusicNavHost(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .edgeTransparentForStatusBar(SmartModalBottomSheet.enableFadeEdgeForStatusBar.value)
-                                )
-                                SmartFloatBtnsContent(
-                                    modifier = Modifier.graphicsLayer {
-                                        translationY = -SmartModalBottomSheet.offset * 0.8f
-                                        alpha = SmartModalBottomSheet.offsetHalfPercent
-                                    }
-                                )
-                                SmartBarContent(
-                                    modifier = Modifier.graphicsLayer {
-                                        translationY = -SmartModalBottomSheet.offset * 0.9f
-                                        alpha = SmartModalBottomSheet.offsetHalfPercent
-                                    }
-                                )
-                            },
-                            content = { PlayingScreen(onBackPressHelper = backPressHelper) }
-                        )
+                        HorizontalPager(
+                            state = pagerState,
+                            pageCount = 2,
+                            flingBehavior = PagerDefaults.flingBehavior(
+                                state = pagerState,
+                                lowVelocityAnimationSpec = spring(stiffness = Spring.StiffnessVeryLow)
+                            ),
+                            beyondBoundsPageCount = 2
+                        ) {
+                            when (it) {
+                                0 -> {
+                                    PlayingScreen(onBackPressHelper = backPressHelper)
+                                }
+
+                                1 -> {
+                                    LMusicNavHost(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .edgeTransparentForStatusBar(SmartModalBottomSheet.enableFadeEdgeForStatusBar.value)
+                                    )
+                                }
+                            }
+                        }
+//                        SmartModalBottomSheet.SmartModalBottomSheetContent(
+//                            sheetContent = {
+//                                LMusicNavHost(
+//                                    modifier = Modifier
+//                                        .fillMaxSize()
+//                                        .edgeTransparentForStatusBar(SmartModalBottomSheet.enableFadeEdgeForStatusBar.value)
+//                                )
+//                                SmartFloatBtnsContent(
+//                                    modifier = Modifier.graphicsLayer {
+//                                        translationY = -SmartModalBottomSheet.offset * 0.8f
+//                                        alpha = SmartModalBottomSheet.offsetHalfPercent
+//                                    }
+//                                )
+//                                SmartBarContent(
+//                                    modifier = Modifier.graphicsLayer {
+//                                        translationY = -SmartModalBottomSheet.offset * 0.9f
+//                                        alpha = SmartModalBottomSheet.offsetHalfPercent
+//                                    }
+//                                )
+//                            },
+//                            content = {  }
+//                        )
                         ShowScreen()
                         DynamicTips.Content(modifier = Modifier.align(Alignment.TopCenter))
                     }
@@ -201,7 +230,8 @@ class MainActivity : AppCompatActivity() {
 
             MotionEvent.ACTION_CANCEL,
             MotionEvent.ACTION_POINTER_UP,
-            MotionEvent.ACTION_UP -> {
+            MotionEvent.ACTION_UP,
+            -> {
                 LMusicFlowBus.lastTouchTime.post(lifecycleScope, System.currentTimeMillis())
             }
         }

@@ -43,6 +43,7 @@ import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.R
+import com.lalilu.common.ColorAnimator
 import com.lalilu.common.HapticUtils
 import com.lalilu.common.OnDoubleClickListener
 import com.lalilu.common.SystemUiUtil
@@ -51,6 +52,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.LMusicFlowBus
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
+import com.lalilu.lmusic.adapter.loadCover
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.component.settings.FileSelectWrapper
@@ -59,7 +61,6 @@ import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestina
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.OnBackPressHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -99,7 +100,7 @@ fun PlayingScreen(
     onBackPressHelper: OnBackPressHelper,
     settingsSp: SettingsSp = get(),
     playingVM: PlayingViewModel = get(),
-    navController: NavController = LocalNavigatorHost.current
+    navController: NavController = LocalNavigatorHost.current,
 ) {
     val systemUiController = rememberSystemUiController()
     val keepScreenOnWhenLyricExpanded by settingsSp.keepScreenOnWhenLyricExpanded
@@ -279,10 +280,12 @@ fun PlayingScreen(
 //            })
 
             fmRecyclerView.adapter = adapter
-            fmRecyclerView.layoutManager = calculateExtraLayoutSpace(this.root.context, 500)
             fmRecyclerView.setItemViewCacheSize(5)
 
-            fmTopPic.palette.observe(activity, this::setPalette)
+            fmTopPic.palette.observe(activity) {
+                ColorAnimator.setBgColorFromPalette(it, fmAppbarLayout::setBackgroundColor)
+                ColorAnimator.setBgColorFromPalette(it, maSeekBar::thumbColor::set)
+            }
 
             maSeekBar.setSwitchToCallback(
                 ContextCompat.getDrawable(activity, R.drawable.ic_shuffle_line)!! to {
@@ -381,13 +384,15 @@ fun PlayingScreen(
                 .mapLatest { if (it > 0) root.keepScreenOn = keepScreenOn.value }
                 .launchIn(activity.lifecycleScope)
 
-            playingVM.currentSongs.observe(activity) {
-                adapter.setDiffData(it)
+            playingVM.currentSongs.observe(activity) { songs ->
+                adapter.setDiffData(songs)
             }
 
             playingVM.currentPlaying.observe(activity) {
                 maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
-                song = it
+                fmCollapseLayout.title = it?.name?.takeIf(String::isNotBlank)
+                    ?: activity.getString(R.string.default_slogan)
+                fmTopPic.loadCover(it)
 
                 if (it != null) {
                     DynamicTips.push(

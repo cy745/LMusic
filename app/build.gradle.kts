@@ -8,7 +8,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-android")
-    id("kotlin-kapt")
     id("com.google.devtools.ksp")
 }
 
@@ -50,7 +49,7 @@ android {
     buildFeatures {
         compose = true
         viewBinding = true
-        dataBinding = true
+        buildConfig = true
     }
 
     if (keystoreProps != null) {
@@ -205,6 +204,8 @@ dependencies {
     // Undeclared License
     // 实现边沿渐变透明
     implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
+
+    implementation("com.github.angcyo:DslAdapter:6.0.1")
 
     // Koin for Android
     // https://mvnrepository.com/artifact/io.insert-koin/koin-android

@@ -127,7 +127,7 @@ object SmartContainer {
             modifier = Modifier.fillMaxSize(),
             columns = StaggeredGridCells.Fixed(columns(windowSize.widthSizeClass)),
             contentPadding = contentPadding,
-            verticalArrangement = verticalArrangement,
+//            verticalArrangement = verticalArrangement,
             horizontalArrangement = horizontalArrangement,
             content = content
         )

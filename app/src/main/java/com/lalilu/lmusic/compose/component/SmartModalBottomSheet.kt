@@ -34,16 +34,16 @@ object SmartModalBottomSheet {
         isSkipHalfExpanded = true
     )
     val enableFadeEdgeForStatusBar = mutableStateOf(true)
-    val isVisible = derivedStateOf { scaffoldState.isVisible || scaffoldState.isAnimationRunning }
+    val isVisible = derivedStateOf { scaffoldState.isVisible  }
     val isVisibleFlow = snapshotFlow { isVisible.value }
 
     val offset: Float
-        get() = scaffoldState.offset.value
-    val offsetHalfPercent: Float
-        get() = scaffoldState.progress.watchForOffset(
-            ModalBottomSheetValue.Expanded,
-            ModalBottomSheetValue.Hidden
-        )
+        get() = 0f
+//    val offsetHalfPercent: Float
+//        get() = scaffoldState.progress.watchForOffset(
+//            ModalBottomSheetValue.Expanded,
+//            ModalBottomSheetValue.Hidden
+//        )
 
     fun hide() = scope?.launch { scaffoldState.hide() }
     fun show() = scope?.launch { scaffoldState.show() }
