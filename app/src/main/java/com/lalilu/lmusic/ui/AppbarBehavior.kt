@@ -31,11 +31,11 @@ class AppbarBehavior(
     private var lastMotionY = 0
     private var touchSlop = -1
 
-    lateinit var positionHelper: AppbarProgressHelper
+    lateinit var positionHelper: AppbarStateHelper
 
     private fun ensureHelper(view: CoverAppbar) {
         if (!::positionHelper.isInitialized) {
-            positionHelper = AppbarProgressHelper(view)
+            positionHelper = AppbarStateHelper(view)
         }
     }
 
@@ -180,8 +180,6 @@ class AppbarBehavior(
             }
 
             MotionEvent.ACTION_POINTER_UP -> {
-                println("[Appbar]: ACTION_POINTER_UP")
-
                 val newIndex = if (ev.actionIndex == 0) 1 else 0
                 activePointerId = ev.getPointerId(newIndex)
                 lastMotionY = (ev.getY(newIndex) + 0.5f).toInt()
@@ -197,7 +195,6 @@ class AppbarBehavior(
                     val velocityY = it.getYVelocity(activePointerId)
                     ensureHelper(child)
                     positionHelper.fling(velocityY)
-                    println("[Appbar]: ACTION_UP $velocityY")
 
                     it.recycle()
                     velocityTracker = null
@@ -205,8 +202,6 @@ class AppbarBehavior(
             }
 
             MotionEvent.ACTION_CANCEL -> {
-                println("[Appbar]: ACTION_CANCEL")
-
                 isBeingDragged = false
                 activePointerId = INVALID_POINTER
                 velocityTracker?.let {

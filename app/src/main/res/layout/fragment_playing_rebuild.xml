@@ -20,7 +20,7 @@
             android:layout_height="match_parent"
             android:background="@color/colorPrimaryVariant"
             android:fitsSystemWindows="false"
-            app:aspect_ratio="0.9">
+            app:aspect_ratio="1">
 
             <com.lalilu.lmusic.ui.BlurImageView
                 android:id="@+id/fm_top_pic"

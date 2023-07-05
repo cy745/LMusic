@@ -23,10 +23,10 @@ class CoverAppbar @JvmOverloads constructor(
     var maxAnchorHeight: Int = 0
         private set
     var aspectRatio: Float = 1f
-        private set(value) {
+        set(value) {
             if (field == value) return
             field = value
-            requestLayout()
+            applyAspectRatio(width)
         }
 
     init {
@@ -37,19 +37,19 @@ class CoverAppbar @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if (aspectRatio == 1f) {
-            super.onMeasure(widthMeasureSpec, widthMeasureSpec)
-        } else {
-            val width = MeasureSpec.getSize(widthMeasureSpec).toFloat()
-            val heightMode = MeasureSpec.getMode(heightMeasureSpec)
-            val heightSpec = MeasureSpec.makeMeasureSpec((width / aspectRatio).toInt(), heightMode)
-            super.onMeasure(widthMeasureSpec, heightSpec)
-        }
-        middleAnchorHeight = measuredHeight
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
+        applyAspectRatio(measuredWidth)
+
         maxAnchorHeight = maxOf(
             (parent as? ViewGroup)?.measuredHeight ?: 0,
             MeasureSpec.getSize(heightMeasureSpec)
         )
+    }
+
+    private fun applyAspectRatio(width: Int) {
+        middleAnchorHeight = (width / aspectRatio).toInt()
+        behaviorInternal.positionHelper.onViewLayout()
     }
 
     override fun getBehavior(): CoordinatorLayout.Behavior<*> = behaviorInternal

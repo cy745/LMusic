@@ -1,8 +1,6 @@
 package com.lalilu.lmusic.ui
 
 import android.widget.OverScroller
-import androidx.compose.ui.util.fastAny
-import androidx.core.view.ViewCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.dynamicanimation.animation.springAnimationOf
@@ -10,9 +8,9 @@ import androidx.dynamicanimation.animation.withSpringForceProperties
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-open class AppbarOffsetHelper(protected val appbar: CoverAppbar) {
-    private var layoutTop = 0
-    private var layoutBottom = 0
+open class AppbarOffsetHelper(
+    protected val appbar: CoverAppbar,
+) : AppbarProgressHelper() {
     private var scroller: OverScroller? = null
     private val animator: SpringAnimation by lazy {
         springAnimationOf(
@@ -46,25 +44,28 @@ open class AppbarOffsetHelper(protected val appbar: CoverAppbar) {
     protected open fun setPosition(value: Number) {
         if (position == value) return
         position = value.toInt().coerceIn(minPosition, maxPosition)
-        updateOffset()
+        updateProgress(minPosition, maxPosition, position)
+        updateOffset(position)
     }
 
     open fun onViewLayout() {
-        layoutTop = appbar.top
-        layoutBottom = appbar.bottom
-
-        if (layoutTop != position) {
-            updateOffset()
-            snapIfNeeded()
-        }
+        updateOffsetFromProgress()
+        snapIfNeeded()
     }
 
-    open fun updateOffset() {
-        ViewCompat.offsetTopAndBottom(
-            appbar,
-            position.coerceAtMost(0) - (appbar.top - layoutTop)
-        )
-        appbar.bottom = layoutBottom + position
+    open fun updateOffsetFromProgress() {
+        if (fullProgress == -1f) {
+            updateProgress(minPosition, maxPosition, position)
+        }
+        if (fullProgress != -1f) {
+            position = lerp(minPosition, maxPosition, fullProgress)
+        }
+        updateOffset(position)
+    }
+
+    open fun updateOffset(target: Int) {
+//        ViewCompat.offsetTopAndBottom(appbar, target.coerceAtMost(0) - appbar.top)
+        appbar.bottom = appbar.middleAnchorHeight + target
     }
 
     open fun scrollBy(dy: Int): Int {
@@ -84,7 +85,7 @@ open class AppbarOffsetHelper(protected val appbar: CoverAppbar) {
     }
 
     open fun snapIfNeeded() {
-        if (!anchors.fastAny { it() == position }) {
+        if (!anchors.any { it() == position }) {
             snapBy(position)
         }
     }
@@ -121,5 +122,9 @@ open class AppbarOffsetHelper(protected val appbar: CoverAppbar) {
         )
 
         snapBy(scroller!!.finalY)
+    }
+
+    private fun lerp(start: Int, stop: Int, fraction: Float): Int {
+        return start + ((stop - start) * fraction.toDouble()).roundToInt()
     }
 }
