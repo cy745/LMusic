@@ -21,6 +21,8 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.ui.AppbarBehavior
+import com.lalilu.lmusic.ui.AppbarStateHelper
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.playback.PlayMode
@@ -102,6 +104,15 @@ class PlayingFragment : Fragment() {
             })
             .build()
 
+        val behavior = binding.fmAppbarLayout.behavior as? AppbarBehavior
+        behavior?.apply {
+            positionHelper.addOnStateChangeListener { newState, oldState ->
+                if (newState == AppbarStateHelper.State.EMPTY2 && oldState != AppbarStateHelper.State.EMPTY2) {
+                    HapticUtils.haptic(binding.fmAppbarLayout, HapticUtils.Strength.HAPTIC_STRONG)
+                }
+            }
+        }
+
         binding.fmRecyclerView.adapter = adapter
         binding.fmRecyclerView.setItemViewCacheSize(5)
 
@@ -136,7 +147,8 @@ class PlayingFragment : Fragment() {
         )
 
         binding.maSeekBar.valueToText = { it.toLong().durationToTime() }
-        binding.maSeekBar.scrollListeners.add(object : OnSeekBarScrollToThresholdListener({ 300f }) {
+        binding.maSeekBar.scrollListeners.add(object :
+            OnSeekBarScrollToThresholdListener({ 300f }) {
             override fun onScrollToThreshold() {
                 HapticUtils.haptic(binding.root)
                 SmartModalBottomSheet.show()
@@ -182,7 +194,6 @@ class PlayingFragment : Fragment() {
             binding.fmLyricViewX.updateTime(it.toLong())
             lastTime = now
         })
-
 
 
         val onLeaveEventFlow = callbackFlow {

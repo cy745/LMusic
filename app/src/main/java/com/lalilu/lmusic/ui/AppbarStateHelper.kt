@@ -1,5 +1,8 @@
 package com.lalilu.lmusic.ui
 
+
+typealias OnStateChangeListener = (newState: AppbarStateHelper.State, oldState: AppbarStateHelper.State) -> Unit
+
 open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
 
     sealed class State {
@@ -10,13 +13,19 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
         object EXPENDED : State()
     }
 
-    var dragThreshold: Int = 200
-    var lastState: State = State.NORMAL
+    open var dragThreshold: Int = 120
+    private var lastState: State = State.NORMAL
+    private val stateChangeListeners = hashSetOf<OnStateChangeListener>()
+
+    fun addOnStateChangeListener(listener: OnStateChangeListener) {
+        stateChangeListeners.add(listener)
+    }
 
     var state: State = State.NORMAL
         private set(value) {
             if (field == value) return
             lastState = field
+            stateChangeListeners.forEach { it.invoke(value, field) }
 //            println("[State]: ${lastState::class.simpleName} -> ${value::class.simpleName}")
             field = value
         }

@@ -11,8 +11,13 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
 
-class AppbarBehavior(context: Context?, attrs: AttributeSet?) :
-    CoordinatorLayout.Behavior<CoverAppbar>(context, attrs) {
+class AppbarBehavior(
+    context: Context?, attrs: AttributeSet?,
+) : CoordinatorLayout.Behavior<CoverAppbar>(context, attrs) {
+
+    constructor(appbar: CoverAppbar) : this(appbar.context, null) {
+        ensureHelper(appbar)
+    }
 
     companion object {
         const val INVALID_POINTER = -1
@@ -26,11 +31,11 @@ class AppbarBehavior(context: Context?, attrs: AttributeSet?) :
     private var lastMotionY = 0
     private var touchSlop = -1
 
-    private lateinit var positionHelper: AppbarStateHelper
+    lateinit var positionHelper: AppbarProgressHelper
 
     private fun ensureHelper(view: CoverAppbar) {
         if (!::positionHelper.isInitialized) {
-            positionHelper = AppbarStateHelper(view)
+            positionHelper = AppbarProgressHelper(view)
         }
     }
 
