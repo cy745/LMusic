@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.lalilu.lmusic.ui.CoverAppbar
+            android:id="@+id/fm_appbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimaryVariant"
+            android:fitsSystemWindows="false"
+            app:aspect_ratio="0.9"
+            app:layout_behavior="com.lalilu.lmusic.ui.AppbarBehavior">
+
+            <com.lalilu.lmusic.ui.BlurImageView
+                android:id="@+id/fm_top_pic"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="top"
+                android:fitsSystemWindows="true"
+                app:cp_layout_collapseMode="parallax"
+                app:cp_layout_collapseParallaxMultiplier="0.7" />
+
+            <me.qinc.lib.edgetranslucent.EdgeTransparentView
+                android:id="@+id/fm_edge_transparent_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fitsSystemWindows="true"
+                app:edge_position="top|bottom"
+                app:edge_width="300dp">
+
+                <com.dirror.lyricviewx.LyricViewX
+                    android:id="@+id/fm_lyric_view_x"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha="0"
+                    app:lrcCurrentTextColor="#FFFFFF"
+                    app:lrcHorizontalOffset="-30dp"
+                    app:lrcLabel="暂无歌词"
+                    app:lrcNormalTextColor="#B3B3B3"
+                    app:lrcPadding="32dp"
+                    app:lrcTextGravity="center"
+                    app:lrcTextSize="18dp"
+                    app:lrcTranslateTextScaleValue="0.8" />
+            </me.qinc.lib.edgetranslucent.EdgeTransparentView>
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/fm_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:fitsSystemWindows="false"
+                android:minHeight="?attr/actionBarSize"
+                app:cp_layout_collapseMode="pin"
+                app:title="@string/default_slogan" />
+
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/fm_compose_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fitsSystemWindows="false" />
+        </com.lalilu.lmusic.ui.CoverAppbar>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/fm_recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:paddingBottom="128dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_behavior="com.lalilu.lmusic.ui.RecyclerViewBehavior"
+            tools:listitem="@layout/item_playing" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <com.lalilu.ui.NewSeekBar
+        android:id="@+id/ma_seekBar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginBottom="72dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

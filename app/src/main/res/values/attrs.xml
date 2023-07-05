@@ -21,4 +21,8 @@
     <declare-styleable name="NewProgressBar">
         <attr name="radius" format="dimension" />
     </declare-styleable>
+
+    <declare-styleable name="CoverAppbar">
+        <attr name="aspect_ratio" format="float" />
+    </declare-styleable>
 </resources>

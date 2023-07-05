@@ -219,7 +219,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.gridlayout:gridlayout:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.3.1-rc01")
-    implementation("androidx.dynamicanimation:dynamicanimation:1.1.0-alpha03")
+    implementation("androidx.dynamicanimation:dynamicanimation-ktx:1.0.0-alpha03")
     implementation("androidx.navigation:navigation-compose:${findProperty("navigation_version")}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${findProperty("lifecycle_version")}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${findProperty("lifecycle_version")}")

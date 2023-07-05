@@ -5,51 +5,36 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import androidx.activity.addCallback
-import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerDefaults
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.common.SystemUiUtil
+import com.lalilu.databinding.ActivityMainBinding
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.indexer.FilterType
 import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
-import com.lalilu.lmusic.compose.component.DynamicTips
-import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
-import com.lalilu.lmusic.compose.new_screen.LMusicNavHost
-import com.lalilu.lmusic.compose.screen.PlayingScreen
-import com.lalilu.lmusic.compose.screen.ShowScreen
+import com.lalilu.lmusic.adapter.LibraryFragment
+import com.lalilu.lmusic.adapter.PlayingFragment
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.OnBackPressHelper
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.edgeTransparentForStatusBar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -158,66 +143,82 @@ class MainActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback { this@MainActivity.moveTaskToBack(false) }
         onBackPressedDispatcher.addCallback(backPressHelper)
 
-        setContent {
-            LMusicTheme {
-                CompositionLocalProvider(
-                    LocalWindowSize provides calculateWindowSizeClass(activity = this),
-                    LocalNavigatorHost provides rememberAnimatedNavController(),
-                ) {
-                    val pagerState = rememberPagerState(initialPage = 0)
+        val binding = ActivityMainBinding.inflate(LayoutInflater.from(this), null, false)
+        setContentView(binding.root)
 
-                    Box {
-                        HorizontalPager(
-                            state = pagerState,
-                            pageCount = 2,
-                            flingBehavior = PagerDefaults.flingBehavior(
-                                state = pagerState,
-                                lowVelocityAnimationSpec = spring(stiffness = Spring.StiffnessVeryLow)
-                            ),
-                            beyondBoundsPageCount = 2
-                        ) {
-                            when (it) {
-                                0 -> {
-                                    PlayingScreen(onBackPressHelper = backPressHelper)
-                                }
+        binding.viewPager.adapter = object : FragmentStatePagerAdapter(
+            supportFragmentManager,
+            BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
+        ) {
+            private val fragments = arrayOf(PlayingFragment(), LibraryFragment())
 
-                                1 -> {
-                                    LMusicNavHost(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .edgeTransparentForStatusBar(SmartModalBottomSheet.enableFadeEdgeForStatusBar.value)
-                                    )
-                                }
-                            }
-                        }
-//                        SmartModalBottomSheet.SmartModalBottomSheetContent(
-//                            sheetContent = {
-//                                LMusicNavHost(
-//                                    modifier = Modifier
-//                                        .fillMaxSize()
-//                                        .edgeTransparentForStatusBar(SmartModalBottomSheet.enableFadeEdgeForStatusBar.value)
-//                                )
-//                                SmartFloatBtnsContent(
-//                                    modifier = Modifier.graphicsLayer {
-//                                        translationY = -SmartModalBottomSheet.offset * 0.8f
-//                                        alpha = SmartModalBottomSheet.offsetHalfPercent
-//                                    }
-//                                )
-//                                SmartBarContent(
-//                                    modifier = Modifier.graphicsLayer {
-//                                        translationY = -SmartModalBottomSheet.offset * 0.9f
-//                                        alpha = SmartModalBottomSheet.offsetHalfPercent
-//                                    }
-//                                )
-//                            },
-//                            content = {  }
-//                        )
-                        ShowScreen()
-                        DynamicTips.Content(modifier = Modifier.align(Alignment.TopCenter))
-                    }
-                }
+            override fun getCount(): Int = 2
+
+            override fun getItem(position: Int): Fragment {
+                return fragments.getOrElse(position) { PlayingFragment() }
             }
         }
+
+//        setContent {
+//            LMusicTheme {
+//                CompositionLocalProvider(
+//                    LocalWindowSize provides calculateWindowSizeClass(activity = this),
+//                    LocalNavigatorHost provides rememberAnimatedNavController(),
+//                ) {
+//                    val pagerState = rememberPagerState(initialPage = 0)
+//
+//                    Box {
+//                        HorizontalPager(
+//                            state = pagerState,
+//                            pageCount = 2,
+//                            flingBehavior = PagerDefaults.flingBehavior(
+//                                state = pagerState,
+//                                lowVelocityAnimationSpec = spring(stiffness = Spring.StiffnessVeryLow)
+//                            ),
+//                            beyondBoundsPageCount = 2
+//                        ) {
+//                            when (it) {
+//                                0 -> {
+//                                    PlayingScreen(onBackPressHelper = backPressHelper)
+//                                }
+//
+//                                1 -> {
+//                                    LMusicNavHost(
+//                                        modifier = Modifier
+//                                            .fillMaxSize()
+//                                            .edgeTransparentForStatusBar(SmartModalBottomSheet.enableFadeEdgeForStatusBar.value)
+//                                    )
+//                                }
+//                            }
+//                        }
+////                        SmartModalBottomSheet.SmartModalBottomSheetContent(
+////                            sheetContent = {
+////                                LMusicNavHost(
+////                                    modifier = Modifier
+////                                        .fillMaxSize()
+////                                        .edgeTransparentForStatusBar(SmartModalBottomSheet.enableFadeEdgeForStatusBar.value)
+////                                )
+////                                SmartFloatBtnsContent(
+////                                    modifier = Modifier.graphicsLayer {
+////                                        translationY = -SmartModalBottomSheet.offset * 0.8f
+////                                        alpha = SmartModalBottomSheet.offsetHalfPercent
+////                                    }
+////                                )
+////                                SmartBarContent(
+////                                    modifier = Modifier.graphicsLayer {
+////                                        translationY = -SmartModalBottomSheet.offset * 0.9f
+////                                        alpha = SmartModalBottomSheet.offsetHalfPercent
+////                                    }
+////                                )
+////                            },
+////                            content = {  }
+////                        )
+//                        ShowScreen()
+//                        DynamicTips.Content(modifier = Modifier.align(Alignment.TopCenter))
+//                    }
+//                }
+//            }
+//        }
         volumeControlStream = AudioManager.STREAM_MUSIC
         browser.whenConnected { handleIntent(intent) }
     }
