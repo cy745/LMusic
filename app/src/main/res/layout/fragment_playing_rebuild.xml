@@ -22,14 +22,21 @@
             android:fitsSystemWindows="false"
             app:aspect_ratio="1">
 
-            <com.lalilu.lmusic.ui.BlurImageView
-                android:id="@+id/fm_top_pic"
+            <androidx.constraintlayout.motion.widget.MotionLayout
+                android:id="@+id/motion_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="top"
-                android:fitsSystemWindows="true"
-                app:cp_layout_collapseMode="parallax"
-                app:cp_layout_collapseParallaxMultiplier="0.7" />
+                app:layoutDescription="@xml/fragment_playing_rebuild_scene"
+                app:showPaths="true">
+
+                <com.lalilu.lmusic.ui.BlurImageView
+                    android:id="@+id/fm_top_pic"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="top"
+                    android:fitsSystemWindows="true" />
+            </androidx.constraintlayout.motion.widget.MotionLayout>
+
 
             <me.qinc.lib.edgetranslucent.EdgeTransparentView
                 android:id="@+id/fm_edge_transparent_view"
@@ -80,7 +87,8 @@
             android:paddingBottom="128dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_behavior="com.lalilu.lmusic.ui.RecyclerViewBehavior"
-            tools:listitem="@layout/item_playing" />
+            tools:listitem="@layout/item_playing"
+            tools:visibility="gone" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <com.lalilu.ui.NewSeekBar

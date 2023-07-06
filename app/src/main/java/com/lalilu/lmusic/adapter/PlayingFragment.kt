@@ -111,6 +111,9 @@ class PlayingFragment : Fragment() {
                     HapticUtils.haptic(binding.fmAppbarLayout, HapticUtils.Strength.HAPTIC_STRONG)
                 }
             }
+            positionHelper.addListenerForToMinProgress {
+                binding.motionLayout.progress = it
+            }
         }
 
         binding.fmRecyclerView.adapter = adapter

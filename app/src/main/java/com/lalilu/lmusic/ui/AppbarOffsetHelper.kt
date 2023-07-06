@@ -23,6 +23,8 @@ open class AppbarOffsetHelper(
         }
     }
     private val anchors = listOf(::minPosition::get, ::maxPosition::get, { 0 })
+    private var lastMin = Int.MIN_VALUE
+    private var lastMax = Int.MIN_VALUE
 
     val minPosition: Int
         get() = appbar.minAnchorHeight - appbar.middleAnchorHeight
@@ -50,13 +52,23 @@ open class AppbarOffsetHelper(
 
     open fun onViewLayout() {
         updateOffsetFromProgress()
-        snapIfNeeded()
+
+        // 因为存在其他触发layout的情况，尤其是滑动的情况和MotionLayout的setProgress到达边界的情况，
+        // 所以要区分出是布局的大小发生改变的情况还是子元素自身重新layout的情况
+        if (minPosition != lastMin || maxPosition != lastMax) {
+            snapIfNeeded()
+        }
+
+        lastMin = minPosition
+        lastMax = maxPosition
     }
 
     open fun updateOffsetFromProgress() {
+        // 当progress非有效值时，通过当前的position获取有效的progress
         if (fullProgress == -1f) {
             updateProgress(minPosition, maxPosition, position)
         }
+        // 当progress为有效值时，通过当前的progress获取正常的position
         if (fullProgress != -1f) {
             position = lerp(minPosition, maxPosition, fullProgress)
         }
