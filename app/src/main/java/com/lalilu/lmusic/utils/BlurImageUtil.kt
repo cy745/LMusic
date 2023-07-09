@@ -27,12 +27,11 @@ object BlurImageUtil : CoroutineScope {
         private val sourceBitmap: Bitmap,
         blurRadius: Int = 0,
         private val samplingValue: Int = 400,
-        onCreate: suspend (Bitmap) -> Unit = {}
+        onCreate: suspend (samplingBitmap: Bitmap) -> Unit = {}
     ) {
         private var samplingBitmap: Bitmap? = null
         private var blurBitmap: Bitmap? = null
-        private var bitmapPainter: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
-            .apply { alpha = 0 }
+        private var bitmapPainter: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { alpha = 0 }
         private var sourceRect = Rect()
         private var destRectF = RectF()
         private var blurRect = Rect()
@@ -156,8 +155,11 @@ object BlurImageUtil : CoroutineScope {
         val offsetValue = (height.toFloat() - dest.height()) / 2f * dValue
         val scaleValue = 1 + (height.toFloat() / dest.height() - 1) * aValue
 
+        // 移动至中间
         dest.top += offsetValue
         dest.bottom += offsetValue
+
+        // 元素缩放
         scaleX = scaleValue
         scaleY = scaleValue
     }

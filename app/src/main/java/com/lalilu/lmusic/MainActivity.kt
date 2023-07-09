@@ -13,10 +13,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentStatePagerAdapter
@@ -43,9 +40,6 @@ import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 
 @OptIn(
-    ExperimentalMaterial3WindowSizeClassApi::class,
-    ExperimentalAnimationApi::class,
-    ExperimentalMaterialApi::class,
     ExperimentalCoroutinesApi::class
 )
 class MainActivity : AppCompatActivity() {
@@ -145,6 +139,8 @@ class MainActivity : AppCompatActivity() {
 
         val binding = ActivityMainBinding.inflate(LayoutInflater.from(this), null, false)
         setContentView(binding.root)
+
+        binding.viewPager.pageMargin = 40
 
         binding.viewPager.adapter = object : FragmentStatePagerAdapter(
             supportFragmentManager,

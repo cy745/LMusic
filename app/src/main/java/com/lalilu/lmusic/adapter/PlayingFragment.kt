@@ -112,13 +112,20 @@ class PlayingFragment : Fragment() {
                 }
             }
             positionHelper.addListenerForToMinProgress {
-                binding.motionLayout.progress = it
+                binding.fmTopPic.alpha = it
+            }
+            positionHelper.addListenerForToMaxProgress {
+                binding.fmTopPic.scalePercent = it
+                binding.fmTopPic.blurPercent = it
             }
         }
 
         binding.fmRecyclerView.adapter = adapter
         binding.fmRecyclerView.setItemViewCacheSize(5)
 
+        binding.fmTopPic.aspectRatioLiveData.observe(viewLifecycleOwner) {
+            binding.fmAppbarLayout.aspectRatio = it ?: 1f
+        }
         binding.fmTopPic.palette.observe(viewLifecycleOwner) {
             ColorAnimator.setBgColorFromPalette(it, binding.fmAppbarLayout::setBackgroundColor)
             ColorAnimator.setBgColorFromPalette(it, binding.maSeekBar::thumbColor::set)

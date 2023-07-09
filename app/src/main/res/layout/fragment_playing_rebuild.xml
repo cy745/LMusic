@@ -22,20 +22,27 @@
             android:fitsSystemWindows="false"
             app:aspect_ratio="1">
 
-            <androidx.constraintlayout.motion.widget.MotionLayout
-                android:id="@+id/motion_layout"
+            <com.lalilu.lmusic.ui.BlurImageView
+                android:id="@+id/fm_top_pic"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:layoutDescription="@xml/fragment_playing_rebuild_scene"
-                app:showPaths="true">
+                android:layout_gravity="top"
+                android:fitsSystemWindows="true" />
 
-                <com.lalilu.lmusic.ui.BlurImageView
-                    android:id="@+id/fm_top_pic"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="top"
-                    android:fitsSystemWindows="true" />
-            </androidx.constraintlayout.motion.widget.MotionLayout>
+            <!--            <androidx.constraintlayout.motion.widget.MotionLayout-->
+            <!--                android:id="@+id/motion_layout"-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="match_parent"-->
+            <!--                app:layoutDescription="@xml/fragment_playing_rebuild_scene"-->
+            <!--                app:showPaths="true">-->
+
+            <!--                <com.lalilu.lmusic.ui.BlurImageView-->
+            <!--                    android:id="@+id/fm_top_pic"-->
+            <!--                    android:layout_width="match_parent"-->
+            <!--                    android:layout_height="match_parent"-->
+            <!--                    android:layout_gravity="top"-->
+            <!--                    android:fitsSystemWindows="true" />-->
+            <!--            </androidx.constraintlayout.motion.widget.MotionLayout>-->
 
 
             <me.qinc.lib.edgetranslucent.EdgeTransparentView

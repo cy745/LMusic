@@ -38,10 +38,9 @@ class BlurImageView @JvmOverloads constructor(
     private val imageLayer = ArrayList<BlurImageUtil.BlurImageLayer>()
     private val drawableToDraw = MutableStateFlow<Drawable?>(null)
     private val tempDstRect = RectF()
-    private var maskPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).also {
-        it.color = Color.BLACK
-    }
+    private var maskPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).also { it.color = Color.BLACK }
     var palette = MutableLiveData<Palette?>(null)
+    var aspectRatioLiveData = MutableLiveData(1f)
 
     @IntRange(from = 0, to = 50)
     var blurRadius = 0
@@ -55,6 +54,7 @@ class BlurImageView @JvmOverloads constructor(
         internal set(value) {
             field = value
             blurRadius = (value * MAX_BLUR_RADIUS).roundToInt()
+            maskPaint.alpha = (value * 100f).coerceIn(0f, 255f).toInt()
         }
 
     @FloatRange(from = 0.0, to = 1.0)
@@ -75,20 +75,23 @@ class BlurImageView @JvmOverloads constructor(
         tempDstRect.set(0f, 0f, width.toFloat(), height.toFloat())
 
         if (alpha >= 1f) {
-            imageLayer.forEach { it.drawLayerSource(canvas) }
+            imageLayer.forEach { drawLayerSource(it, canvas) }
         } else {
-            imageLayer.lastOrNull()?.drawLayerSource(canvas)
+            imageLayer.lastOrNull()?.let { drawLayerSource(it, canvas) }
         }
 
         imageLayer.forEach { it.drawBlurImage(canvas) }
 
-        maskPaint.alpha = (blurPercent * 100f).coerceIn(0f, 255f).toInt()
         canvas.drawRect(tempDstRect, maskPaint)
     }
 
-    private fun BlurImageUtil.BlurImageLayer.drawLayerSource(canvas: Canvas) {
-        drawSourceImage(canvas) { source, dest ->
-            dest.set(0f, 0f, width.toFloat(), width.toFloat())
+    private fun drawLayerSource(
+        layer: BlurImageUtil.BlurImageLayer, canvas: Canvas
+    ) {
+        layer.drawSourceImage(canvas) { source, dest ->
+            val aspectRatio = source.width().toFloat() / source.height().toFloat()
+
+            dest.set(0f, 0f, width.toFloat(), width.toFloat() / aspectRatio)
             centerCrop(source, dest, dragPercent)
             scaleTransform(dest, scalePercent)
         }
@@ -141,6 +144,7 @@ class BlurImageView @JvmOverloads constructor(
                 sourceBitmap?.addShadow()?.let { emit(it) }
             }
         }.mapLatest {
+            aspectRatioLiveData.postValue(it.width.toFloat() / it.height.toFloat())
             BlurImageUtil.BlurImageLayer(it, blurRadius) { samplingBitmap ->
                 updatePalette(samplingBitmap)
             }

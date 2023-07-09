@@ -11,17 +11,19 @@ pluginManagement {
         gradlePluginPortal()
         maven("https://maven.aliyun.com/repository/central")
         maven("https://maven.aliyun.com/repository/google")
+        google()
+        mavenCentral()
     }
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven("https://jitpack.io")
-        google()
-        mavenCentral()
         maven("https://maven.aliyun.com/repository/google")
         maven("https://maven.aliyun.com/repository/central")
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
     }
 }
 
