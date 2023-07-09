@@ -4,14 +4,14 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout.AttachedBehavior
 import com.lalilu.R
 
 class CoverAppbar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null,
-) : LinearLayout(context, attrs), AttachedBehavior {
+) : FrameLayout(context, attrs), AttachedBehavior {
     private val behaviorInternal = AppbarBehavior(this)
 
     var minAnchorHeight: Int = TypedValue.applyDimension(

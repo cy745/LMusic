@@ -4,22 +4,22 @@
 
     <ConstraintSet android:id="@+id/start">
         <Constraint
-            android:id="@+id/fm_top_pic"
-            android:layout_width="96dp"
-            android:layout_height="96dp"
+            android:id="@+id/fm_compose_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </ConstraintSet>
 
     <ConstraintSet android:id="@+id/end">
         <Constraint
-            android:id="@+id/fm_top_pic"
+            android:id="@+id/fm_compose_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="100dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent" />
     </ConstraintSet>
 
     <Transition

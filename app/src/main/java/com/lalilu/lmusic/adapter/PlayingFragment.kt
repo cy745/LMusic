@@ -4,6 +4,26 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.with
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +40,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
+import com.lalilu.lmusic.compose.component.settings.FileSelectWrapper
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.ui.AppbarBehavior
 import com.lalilu.lmusic.ui.AppbarStateHelper
@@ -59,6 +80,7 @@ class PlayingFragment : Fragment() {
         return binding.root
     }
 
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -117,6 +139,12 @@ class PlayingFragment : Fragment() {
             positionHelper.addListenerForToMaxProgress {
                 binding.fmTopPic.scalePercent = it
                 binding.fmTopPic.blurPercent = it
+
+                binding.fmLyricViewX.alpha = it
+                binding.fmEdgeTransparentView.alpha = it
+            }
+            positionHelper.addListenerForFullProgress {
+                binding.motionLayout.progress = it
             }
         }
 
@@ -247,6 +275,67 @@ class PlayingFragment : Fragment() {
                     subTitle = "播放中",
                     imageData = it
                 )
+            }
+        }
+
+        binding.fmComposeToolbar.setContent {
+            var isDrawTranslation by settingsSp.isDrawTranslation
+            var isEnableBlurEffect by settingsSp.isEnableBlurEffect
+
+            Box(contentAlignment = Alignment.BottomCenter) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp, vertical = 22.dp),
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    val iconAlpha1 = animateFloatAsState(
+                        targetValue = if (isEnableBlurEffect) 1f else 0.5f, label = ""
+                    )
+                    val iconAlpha2 = animateFloatAsState(
+                        targetValue = if (isDrawTranslation) 1f else 0.5f, label = ""
+                    )
+
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = "",
+                        color = Color.White.copy(0.5f)
+                    )
+
+                    FileSelectWrapper(state = settingsSp.lyricTypefacePath) { launcher, _ ->
+                        Icon(
+                            modifier = Modifier
+                                .clickable { launcher.launch("font/ttf") },
+                            painter = painterResource(id = R.drawable.ic_text),
+                            contentDescription = "",
+                            tint = Color.White
+                        )
+                    }
+
+                    AnimatedContent(
+                        targetState = isEnableBlurEffect,
+                        transitionSpec = { fadeIn() with fadeOut() }, label = ""
+                    ) { enable ->
+                        Icon(
+                            modifier = Modifier
+                                .clickable { isEnableBlurEffect = !enable }
+                                .graphicsLayer { alpha = iconAlpha1.value },
+                            painter = painterResource(id = if (enable) R.drawable.drop_line else R.drawable.blur_off_line),
+                            contentDescription = "",
+                            tint = Color.White
+                        )
+                    }
+
+                    Icon(
+                        modifier = Modifier
+                            .clickable { isDrawTranslation = !isDrawTranslation }
+                            .graphicsLayer { alpha = iconAlpha2.value },
+                        painter = painterResource(id = R.drawable.translate_2),
+                        contentDescription = "",
+                        tint = Color.White
+                    )
+                }
             }
         }
 
