@@ -49,7 +49,7 @@ class CoverAppbar @JvmOverloads constructor(
 
     private fun applyAspectRatio(width: Int) {
         middleAnchorHeight = (width / aspectRatio).toInt()
-        behaviorInternal.positionHelper.onViewLayout()
+        behaviorInternal.positionHelper.onViewLayout(fromOutside = true)
     }
 
     override fun getBehavior(): CoordinatorLayout.Behavior<*> = behaviorInternal

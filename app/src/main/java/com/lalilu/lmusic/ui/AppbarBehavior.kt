@@ -47,7 +47,7 @@ class AppbarBehavior(
         parent.onLayoutChild(child, layoutDirection)
 
         ensureHelper(child)
-        positionHelper.onViewLayout()
+        positionHelper.onViewLayout(fromOutside = false)
         return true
     }
 

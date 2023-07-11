@@ -1,7 +1,11 @@
 package com.lalilu.lmusic.ui
 
 
-typealias OnStateChangeListener = (newState: AppbarStateHelper.State, oldState: AppbarStateHelper.State) -> Unit
+typealias OnStateChangeListener = (
+    newState: AppbarStateHelper.State,
+    oldState: AppbarStateHelper.State,
+    fromUser: Boolean,
+) -> Unit
 
 open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
 
@@ -14,20 +18,24 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
     }
 
     open var dragThreshold: Int = 120
-    private var lastState: State = State.NORMAL
     private val stateChangeListeners = hashSetOf<OnStateChangeListener>()
 
     fun addOnStateChangeListener(listener: OnStateChangeListener) {
         stateChangeListeners.add(listener)
     }
 
+    var lastState: State = State.NORMAL
+        private set
+
     var state: State = State.NORMAL
         private set(value) {
             if (field == value) return
             lastState = field
-            stateChangeListeners.forEach { it.invoke(value, field) }
-//            println("[State]: ${lastState::class.simpleName} -> ${value::class.simpleName}")
             field = value
+            for (listener in stateChangeListeners) {
+                listener.invoke(value, lastState, actionFromUser)
+            }
+//            println("[State]: ${lastState::class.simpleName} -> ${value::class.simpleName}")
         }
 
     override fun setPosition(value: Number) {
@@ -38,7 +46,7 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
     override fun snapBy(position: Int) {
         when (state) {
             State.COLLAPSED, State.EMPTY, State.NORMAL -> {
-                animateTo(calcSnapToOffset(position, minPosition, 0))
+                animateTo(calcSnapToOffset(position, minPosition, middlePosition))
             }
 
             else -> snapIfNeeded()
@@ -58,7 +66,8 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
     open fun checkDampOffset(dy: Int): Int {
         var result = dy
         if (dy < 0) {
-            val percent = 1f - position.toFloat() / dragThreshold.toFloat() * 0.5f
+            val percent =
+                1f - (position.toFloat() - middlePosition.toFloat()) / dragThreshold.toFloat() * 0.5f
             if (percent in 0F..1F) result = (dy * percent).toInt()
         }
         return result
@@ -71,9 +80,9 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
     private fun getStateByPosition(value: Int): State {
         return when (value) {
             in minPosition until (minPosition + dragThreshold) -> State.COLLAPSED
-            in (minPosition + dragThreshold) until -dragThreshold -> State.EMPTY
-            in -dragThreshold until dragThreshold -> State.NORMAL
-            in dragThreshold until (maxPosition - dragThreshold) -> State.EMPTY2
+            in (minPosition + dragThreshold) until (middlePosition - dragThreshold) -> State.EMPTY
+            in (middlePosition - dragThreshold) until (middlePosition + dragThreshold) -> State.NORMAL
+            in (middlePosition + dragThreshold) until (maxPosition - dragThreshold) -> State.EMPTY2
             else -> State.EXPENDED
         }
     }
@@ -81,19 +90,19 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
     private fun getSnapPositionByState(state: State, lastState: State): Int {
         return when (state) {
             State.COLLAPSED -> minPosition
-            State.NORMAL -> 0
+            State.NORMAL -> middlePosition
             State.EXPENDED -> maxPosition
 
             State.EMPTY -> when (lastState) {
-                State.COLLAPSED -> 0
+                State.COLLAPSED -> middlePosition
                 State.NORMAL -> minPosition
-                else -> calcSnapToOffset(position, 0, minPosition)
+                else -> calcSnapToOffset(position, middlePosition, minPosition)
             }
 
             State.EMPTY2 -> when (lastState) {
                 State.NORMAL -> maxPosition
-                State.EXPENDED -> 0
-                else -> calcSnapToOffset(position, 0, maxPosition)
+                State.EXPENDED -> middlePosition
+                else -> calcSnapToOffset(position, middlePosition, maxPosition)
             }
         }
     }

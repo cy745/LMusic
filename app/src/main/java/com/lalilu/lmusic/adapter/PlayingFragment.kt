@@ -128,23 +128,31 @@ class PlayingFragment : Fragment() {
 
         val behavior = binding.fmAppbarLayout.behavior as? AppbarBehavior
         behavior?.apply {
-            positionHelper.addOnStateChangeListener { newState, oldState ->
-                if (newState == AppbarStateHelper.State.EMPTY2 && oldState != AppbarStateHelper.State.EMPTY2) {
+            positionHelper.addOnStateChangeListener { newState, oldState, updateFromUser ->
+                if (
+                    newState == AppbarStateHelper.State.EMPTY2
+                    && oldState != AppbarStateHelper.State.EMPTY2
+                    && updateFromUser
+                ) {
                     HapticUtils.haptic(binding.fmAppbarLayout, HapticUtils.Strength.HAPTIC_STRONG)
                 }
             }
-            positionHelper.addListenerForToMinProgress {
-                binding.fmTopPic.alpha = it
-            }
-            positionHelper.addListenerForToMaxProgress {
-                binding.fmTopPic.scalePercent = it
-                binding.fmTopPic.blurPercent = it
+            positionHelper.addListenerForToMinProgress { progress, fromUser ->
+                if (!fromUser) return@addListenerForToMinProgress
 
-                binding.fmLyricViewX.alpha = it
-                binding.fmEdgeTransparentView.alpha = it
+                binding.fmTopPic.alpha = progress
             }
-            positionHelper.addListenerForFullProgress {
-                binding.motionLayout.progress = it
+            positionHelper.addListenerForToMaxProgress { progress, fromUser ->
+                if (!fromUser) return@addListenerForToMaxProgress
+
+                binding.fmTopPic.scalePercent = progress
+                binding.fmTopPic.blurPercent = progress
+
+                binding.fmLyricViewX.alpha = progress
+                binding.fmEdgeTransparentView.alpha = progress
+            }
+            positionHelper.addListenerForFullProgress { progress, fromUser ->
+                binding.motionLayout.progress = progress
             }
         }
 

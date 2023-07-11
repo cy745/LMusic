@@ -20,16 +20,27 @@ open class AppbarOffsetHelper(
         ).withSpringForceProperties {
             dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
             stiffness = SpringForce.STIFFNESS_LOW
+        }.apply {
+            addEndListener { animation, canceled, value, velocity ->
+                if (!canceled) {
+                    // 任何动画结束后都根据当前位置更新一次进度，并且标记为非用户操作更新
+                    actionFromUser = false
+                    updateProgress(minPosition, middlePosition, maxPosition, position)
+                }
+            }
         }
     }
     private val anchors = listOf(::minPosition::get, ::maxPosition::get, { 0 })
-    private var lastMin = Int.MIN_VALUE
-    private var lastMax = Int.MIN_VALUE
+    private var lastMiddlePosition = 0
+    private var lastMinPosition = 0
+    private var lastMaxPosition = 0
 
     val minPosition: Int
-        get() = appbar.minAnchorHeight - appbar.middleAnchorHeight
+        get() = appbar.minAnchorHeight
     val maxPosition: Int
-        get() = appbar.maxAnchorHeight - appbar.middleAnchorHeight
+        get() = appbar.maxAnchorHeight
+    val middlePosition: Int
+        get() = appbar.middleAnchorHeight
 
     /**
      * 实际控制元素位置的变量
@@ -46,44 +57,33 @@ open class AppbarOffsetHelper(
     protected open fun setPosition(value: Number) {
         if (position == value) return
         position = value.toInt().coerceIn(minPosition, maxPosition)
-        updateProgress(minPosition, maxPosition, position)
+        updateProgress(minPosition, middlePosition, maxPosition, position)
         updateOffset(position)
     }
 
-    open fun onViewLayout() {
-        updateOffsetFromProgress()
+    open fun onViewLayout(fromOutside: Boolean = false) {
+        // 当预想位置和当前位置不一致时进行修正
+        if (appbar.bottom != position) {
+            updateOffset(position)
+        }
 
-        // 因为存在其他触发layout的情况，尤其是滑动的情况和MotionLayout的setProgress到达边界的情况，
-        // 所以要区分出是布局的大小发生改变的情况还是子元素自身重新layout的情况
-        if (minPosition != lastMin || maxPosition != lastMax) {
+        // 标记当前操作是否来自用户操作（部分情况需要排除掉非用户操作带来的进度更新）
+        actionFromUser = !(fromOutside && lastMiddlePosition != middlePosition)
+
+        // 当锚点值发生变化时，尝试贴边
+        if (lastMiddlePosition != middlePosition || lastMinPosition != minPosition || lastMaxPosition != maxPosition) {
             snapIfNeeded()
         }
 
-        lastMin = minPosition
-        lastMax = maxPosition
-    }
-
-    open fun updateOffsetFromProgress() {
-        // 当progress非有效值时，通过当前的position获取有效的progress
-        if (fullProgress == -1f) {
-            updateProgress(minPosition, maxPosition, position)
-        }
-        // 当progress为有效值时，通过当前的progress获取正常的position
-        if (fullProgress != -1f) {
-            position = lerp(minPosition, maxPosition, fullProgress)
-        }
-        updateOffset(position)
+        // 存储旧数据，待下一次用于判断数据是否发生变化
+        lastMiddlePosition = middlePosition
+        lastMaxPosition = minPosition
+        lastMaxPosition = maxPosition
     }
 
     open fun updateOffset(target: Int) {
 //        ViewCompat.offsetTopAndBottom(appbar, target.coerceAtMost(0) - appbar.top)
-        appbar.bottom = appbar.middleAnchorHeight + target
-    }
-
-    open fun scrollBy(dy: Int): Int {
-        val nowPosition = position
-        setPosition(position - dy)
-        return nowPosition - position
+        appbar.bottom = target
     }
 
     open fun animateTo(position: Number) {
@@ -124,6 +124,13 @@ open class AppbarOffsetHelper(
         return target
     }
 
+    open fun scrollBy(dy: Int): Int {
+        val nowPosition = position
+        actionFromUser = true
+        setPosition(position - dy)
+        return nowPosition - position
+    }
+
     open fun fling(velocityY: Float) {
         scroller = scroller ?: OverScroller(appbar.context)
         scroller!!.fling(
@@ -132,11 +139,7 @@ open class AppbarOffsetHelper(
             0, 0,                    // minX / maxX
             minPosition, maxPosition              // minY / maxY
         )
-
+        actionFromUser = true
         snapBy(scroller!!.finalY)
-    }
-
-    private fun lerp(start: Int, stop: Int, fraction: Float): Int {
-        return start + ((stop - start) * fraction.toDouble()).roundToInt()
     }
 }
