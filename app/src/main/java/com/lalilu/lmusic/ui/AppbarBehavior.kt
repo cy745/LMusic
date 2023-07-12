@@ -29,6 +29,7 @@ class AppbarBehavior(
     private var isBeingDragged = false
     private var activePointerId = -1
     private var lastMotionY = 0
+    private var lastMotionX = 0
     private var touchSlop = -1
 
     lateinit var positionHelper: AppbarStateHelper
@@ -135,6 +136,7 @@ class AppbarBehavior(
             }
             val y = ev.getY(pointerIndex).toInt()
             val yDiff = abs(y - lastMotionY)
+            println("[onTouch]: $y $yDiff $lastMotionY $touchSlop")
             if (yDiff > touchSlop) {
                 lastMotionY = y
                 return true
@@ -148,8 +150,11 @@ class AppbarBehavior(
             isBeingDragged = parent.isPointInChildBounds(child, x, y) // && !ignoreTouchEvent(ev)
             if (isBeingDragged) {
                 lastMotionY = y
+                lastMotionX = x
                 activePointerId = ev.getPointerId(0)
                 velocityTracker = velocityTracker ?: VelocityTracker.obtain()
+
+                parent.requestDisallowInterceptTouchEvent(true)
 
                 // There is an animation in progress. Stop it and catch the view.
                 ensureHelper(child)
@@ -170,10 +175,20 @@ class AppbarBehavior(
             MotionEvent.ACTION_MOVE -> {
                 val activePointerIndex = ev.findPointerIndex(activePointerId)
                 if (activePointerIndex == -1) return false
+
+                val x = ev.getY(activePointerIndex).toInt()
                 val y = ev.getY(activePointerIndex).toInt()
+                val dx = lastMotionX - x
                 val dy = lastMotionY - y
                 lastMotionY = y
+                lastMotionX = x
+
                 // We're being dragged so scroll the ABL
+                println("[onTouchEvent]: $y $dy $lastMotionY $touchSlop")
+//                if (abs(dx) > abs(dy) && abs(dx) >= touchSlop) {
+//                    parent.requestDisallowInterceptTouchEvent(false)
+//                    return false
+//                }
 
                 ensureHelper(child)
                 positionHelper.scrollBy(dy)
