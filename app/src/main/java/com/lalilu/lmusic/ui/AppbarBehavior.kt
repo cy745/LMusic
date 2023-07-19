@@ -2,16 +2,19 @@ package com.lalilu.lmusic.ui
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.VelocityTracker
 import android.view.View
 import android.view.ViewConfiguration
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.lalilu.lmusic.compose.LayoutWrapper
+import com.lalilu.lmusic.utils.AccumulatedValue
+import java.lang.ref.WeakReference
 import kotlin.math.abs
 
-class AppbarBehavior(
+open class AppbarBehavior(
     context: Context?, attrs: AttributeSet?,
 ) : CoordinatorLayout.Behavior<CoverAppbar>(context, attrs) {
 
@@ -19,20 +22,19 @@ class AppbarBehavior(
         ensureHelper(appbar)
     }
 
-    companion object {
-        const val INVALID_POINTER = -1
-    }
-
     @ViewCompat.NestedScrollType
     private var lastStartedType = 0
-    private var velocityTracker: VelocityTracker? = null
-    private var isBeingDragged = false
-    private var activePointerId = -1
-    private var lastMotionY = 0
-    private var lastMotionX = 0
+    private var isScrolling = false
     private var touchSlop = -1
+    private val gestureDetector = GestureDetector(context, MyGestureListener())
+    private var parentRef: WeakReference<CoordinatorLayout> = WeakReference(null)
+    private var childRef: WeakReference<CoverAppbar> = WeakReference(null)
 
     lateinit var positionHelper: AppbarStateHelper
+
+    open fun requestDisallowIntercept(value: Boolean) {
+        LayoutWrapper.enableUserScroll.value = !value
+    }
 
     private fun ensureHelper(view: CoverAppbar) {
         if (!::positionHelper.isInitialized) {
@@ -76,7 +78,7 @@ class AppbarBehavior(
         target: View,
         type: Int,
     ) {
-        if ((lastStartedType == ViewCompat.TYPE_TOUCH || type == ViewCompat.TYPE_NON_TOUCH) && !isBeingDragged) {
+        if ((lastStartedType == ViewCompat.TYPE_TOUCH || type == ViewCompat.TYPE_NON_TOUCH) && !isScrolling) {
             ensureHelper(child)
             positionHelper.snapIfNeeded()
         }
@@ -109,7 +111,7 @@ class AppbarBehavior(
         consumed: IntArray,
     ) {
         // 只处理方向向下且Appbar并未被拖住的情况
-        if (dyUnconsumed < 0 && !isBeingDragged) {
+        if (dyUnconsumed < 0 && !isScrolling) {
             ensureHelper(child)
             consumed[1] = positionHelper.scrollBy(dyUnconsumed)
         }
@@ -118,114 +120,92 @@ class AppbarBehavior(
     override fun onInterceptTouchEvent(
         parent: CoordinatorLayout,
         child: CoverAppbar,
-        ev: MotionEvent,
+        ev: MotionEvent
     ): Boolean {
         if (touchSlop < 0) {
             touchSlop = ViewConfiguration.get(parent.context).scaledTouchSlop
         }
 
-        // Shortcut since we're being dragged
-        if (ev.actionMasked == MotionEvent.ACTION_MOVE && isBeingDragged) {
-            if (activePointerId == INVALID_POINTER) {
-                // If we don't have a valid id, the touch down wasn't on content.
-                return false
-            }
-            val pointerIndex = ev.findPointerIndex(activePointerId)
-            if (pointerIndex == -1) {
-                return false
-            }
-            val y = ev.getY(pointerIndex).toInt()
-            val yDiff = abs(y - lastMotionY)
-            println("[onTouch]: $y $yDiff $lastMotionY $touchSlop")
-            if (yDiff > touchSlop) {
-                lastMotionY = y
-                return true
-            }
-        }
-
-        if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
-            activePointerId = INVALID_POINTER
-            val x = ev.x.toInt()
-            val y = ev.y.toInt()
-            isBeingDragged = parent.isPointInChildBounds(child, x, y) // && !ignoreTouchEvent(ev)
-            if (isBeingDragged) {
-                lastMotionY = y
-                lastMotionX = x
-                activePointerId = ev.getPointerId(0)
-                velocityTracker = velocityTracker ?: VelocityTracker.obtain()
-
-                parent.requestDisallowInterceptTouchEvent(true)
-
-                // There is an animation in progress. Stop it and catch the view.
-                ensureHelper(child)
-                positionHelper.cancelAnimation()
-            }
-        }
-        velocityTracker?.addMovement(ev)
-        return false
+        parentRef = WeakReference(parent)
+        childRef = WeakReference(child)
+        return parent.isPointInChildBounds(child, ev.x.toInt(), ev.y.toInt())
     }
 
     override fun onTouchEvent(
         parent: CoordinatorLayout,
         child: CoverAppbar,
-        ev: MotionEvent,
+        ev: MotionEvent
     ): Boolean {
-        var consumeUp = false
+        gestureDetector.onTouchEvent(ev)
+
         when (ev.actionMasked) {
-            MotionEvent.ACTION_MOVE -> {
-                val activePointerIndex = ev.findPointerIndex(activePointerId)
-                if (activePointerIndex == -1) return false
-
-                val x = ev.getY(activePointerIndex).toInt()
-                val y = ev.getY(activePointerIndex).toInt()
-                val dx = lastMotionX - x
-                val dy = lastMotionY - y
-                lastMotionY = y
-                lastMotionX = x
-
-                // We're being dragged so scroll the ABL
-                println("[onTouchEvent]: $y $dy $lastMotionY $touchSlop")
-//                if (abs(dx) > abs(dy) && abs(dx) >= touchSlop) {
-//                    parent.requestDisallowInterceptTouchEvent(false)
-//                    return false
-//                }
-
-                ensureHelper(child)
-                positionHelper.scrollBy(dy)
-            }
-
-            MotionEvent.ACTION_POINTER_UP -> {
-                val newIndex = if (ev.actionIndex == 0) 1 else 0
-                activePointerId = ev.getPointerId(newIndex)
-                lastMotionY = (ev.getY(newIndex) + 0.5f).toInt()
-            }
-
-            MotionEvent.ACTION_UP -> {
-                isBeingDragged = false
-                activePointerId = INVALID_POINTER
-                velocityTracker?.let {
-                    consumeUp = true
-                    it.addMovement(ev)
-                    it.computeCurrentVelocity(1000)
-                    val velocityY = it.getYVelocity(activePointerId)
-                    ensureHelper(child)
-                    positionHelper.fling(velocityY)
-
-                    it.recycle()
-                    velocityTracker = null
-                }
-            }
-
+            MotionEvent.ACTION_POINTER_UP,
+            MotionEvent.ACTION_UP,
             MotionEvent.ACTION_CANCEL -> {
-                isBeingDragged = false
-                activePointerId = INVALID_POINTER
-                velocityTracker?.let {
-                    it.recycle()
-                    velocityTracker = null
-                }
+                isScrolling = false
+                // 当手指抬起，允许父级拦截触摸事件
+                requestDisallowIntercept(false)
+                ensureHelper(child)
+                positionHelper.fling(0f)
             }
         }
-        velocityTracker?.addMovement(ev)
-        return isBeingDragged || consumeUp
+
+        return parent.isPointInChildBounds(child, ev.x.toInt(), ev.y.toInt())
+    }
+
+    private inner class MyGestureListener : GestureDetector.SimpleOnGestureListener() {
+        private var accumulatedValue = AccumulatedValue()
+        private var downX = 0f
+        private var downY = 0f
+
+        override fun onDown(e: MotionEvent): Boolean {
+            downX = e.x
+            downY = e.y
+
+            childRef.get()?.let {
+                ensureHelper(it)
+                positionHelper.cancelAnimation()
+            }
+
+            return true
+        }
+
+        override fun onScroll(
+            e1: MotionEvent,
+            e2: MotionEvent,
+            distanceX: Float,
+            distanceY: Float
+        ): Boolean {
+            if (!isScrolling) {
+                val xDiff = abs(downX - e2.x)
+                val yDiff = abs(downY - e2.y)
+
+                if (xDiff > touchSlop || yDiff > touchSlop) {
+                    isScrolling = true
+
+                    // 当纵向滑动大于横向运动时请求父级不要拦截后续事件
+                    requestDisallowIntercept(yDiff > xDiff)
+                }
+            } else {
+                childRef.get()?.let {
+                    ensureHelper(it)
+                    positionHelper.scrollBy(accumulatedValue.accumulate(distanceY))
+                }
+            }
+            return false
+        }
+
+        override fun onFling(
+            e1: MotionEvent,
+            e2: MotionEvent,
+            velocityX: Float,
+            velocityY: Float
+        ): Boolean {
+            childRef.get()?.let {
+                ensureHelper(it)
+                positionHelper.fling(velocityY)
+            }
+            return true
+        }
     }
 }
