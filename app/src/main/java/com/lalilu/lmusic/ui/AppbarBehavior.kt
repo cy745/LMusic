@@ -128,7 +128,7 @@ open class AppbarBehavior(
 
         parentRef = WeakReference(parent)
         childRef = WeakReference(child)
-        return parent.isPointInChildBounds(child, ev.x.toInt(), ev.y.toInt())
+        return false
     }
 
     override fun onTouchEvent(
