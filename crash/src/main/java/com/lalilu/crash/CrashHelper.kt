@@ -34,6 +34,7 @@ object CrashHelper : Thread.UncaughtExceptionHandler {
     }
 
     fun handleException(e: Throwable) {
+        e.printStackTrace()
         Intent(mContext, CrashActivity::class.java).run {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
             e.toCrashModel().copyTo(this)

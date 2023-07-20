@@ -32,12 +32,12 @@ java {
 
 android {
     namespace = "com.lalilu"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.lalilu.lmusic"
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 42
         versionName = "1.5.4"
 
