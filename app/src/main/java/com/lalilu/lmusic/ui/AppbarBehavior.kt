@@ -9,7 +9,6 @@ import android.view.ViewConfiguration
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.lalilu.lmusic.compose.LayoutWrapper
 import com.lalilu.lmusic.utils.AccumulatedValue
 import java.lang.ref.WeakReference
 import kotlin.math.abs
@@ -24,8 +23,10 @@ open class AppbarBehavior(
 
     @ViewCompat.NestedScrollType
     private var lastStartedType = 0
+    private var isTouching = false
     private var isScrolling = false
     private var touchSlop = -1
+    private var flingVelocityY = 0f
     private val gestureDetector = GestureDetector(context, MyGestureListener())
     private var parentRef: WeakReference<CoordinatorLayout> = WeakReference(null)
     private var childRef: WeakReference<CoverAppbar> = WeakReference(null)
@@ -33,7 +34,7 @@ open class AppbarBehavior(
     lateinit var positionHelper: AppbarStateHelper
 
     open fun requestDisallowIntercept(value: Boolean) {
-        LayoutWrapper.enableUserScroll.value = !value
+//        LayoutWrapper.enableUserScroll.value = !value
     }
 
     private fun ensureHelper(view: CoverAppbar) {
@@ -78,7 +79,7 @@ open class AppbarBehavior(
         target: View,
         type: Int,
     ) {
-        if ((lastStartedType == ViewCompat.TYPE_TOUCH || type == ViewCompat.TYPE_NON_TOUCH) && !isScrolling) {
+        if ((lastStartedType == ViewCompat.TYPE_TOUCH || type == ViewCompat.TYPE_NON_TOUCH) && !isTouching) {
             ensureHelper(child)
             positionHelper.snapIfNeeded()
         }
@@ -111,7 +112,7 @@ open class AppbarBehavior(
         consumed: IntArray,
     ) {
         // 只处理方向向下且Appbar并未被拖住的情况
-        if (dyUnconsumed < 0 && !isScrolling) {
+        if (dyUnconsumed < 0 && !isTouching) {
             ensureHelper(child)
             consumed[1] = positionHelper.scrollBy(dyUnconsumed)
         }
@@ -120,7 +121,7 @@ open class AppbarBehavior(
     override fun onInterceptTouchEvent(
         parent: CoordinatorLayout,
         child: CoverAppbar,
-        ev: MotionEvent
+        ev: MotionEvent,
     ): Boolean {
         if (touchSlop < 0) {
             touchSlop = ViewConfiguration.get(parent.context).scaledTouchSlop
@@ -134,24 +135,29 @@ open class AppbarBehavior(
     override fun onTouchEvent(
         parent: CoordinatorLayout,
         child: CoverAppbar,
-        ev: MotionEvent
+        ev: MotionEvent,
     ): Boolean {
-        gestureDetector.onTouchEvent(ev)
+        if (!parent.isPointInChildBounds(child, ev.x.toInt(), ev.y.toInt())) return false
 
+        gestureDetector.onTouchEvent(ev)
         when (ev.actionMasked) {
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_UP,
-            MotionEvent.ACTION_CANCEL -> {
+            MotionEvent.ACTION_CANCEL,
+            -> {
                 isScrolling = false
+                isTouching = false
                 // 当手指抬起，允许父级拦截触摸事件
                 requestDisallowIntercept(false)
                 ensureHelper(child)
-                positionHelper.fling(0f)
+                if (flingVelocityY == 0f) {
+                    positionHelper.fling(0f)
+                }
             }
         }
-
-        return parent.isPointInChildBounds(child, ev.x.toInt(), ev.y.toInt())
+        return true
     }
+
 
     private inner class MyGestureListener : GestureDetector.SimpleOnGestureListener() {
         private var accumulatedValue = AccumulatedValue()
@@ -159,6 +165,8 @@ open class AppbarBehavior(
         private var downY = 0f
 
         override fun onDown(e: MotionEvent): Boolean {
+            isTouching = true
+            flingVelocityY = 0f
             downX = e.x
             downY = e.y
 
@@ -174,7 +182,7 @@ open class AppbarBehavior(
             e1: MotionEvent?,
             e2: MotionEvent,
             distanceX: Float,
-            distanceY: Float
+            distanceY: Float,
         ): Boolean {
             if (!isScrolling) {
                 val xDiff = abs(downX - e2.x)
@@ -199,10 +207,11 @@ open class AppbarBehavior(
             e1: MotionEvent?,
             e2: MotionEvent,
             velocityX: Float,
-            velocityY: Float
+            velocityY: Float,
         ): Boolean {
             childRef.get()?.let {
                 ensureHelper(it)
+                flingVelocityY = velocityY
                 positionHelper.fling(velocityY)
             }
             return true
