@@ -19,9 +19,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
+import com.lalilu.lmusic.compose.PagerWrapper
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 
@@ -30,7 +32,7 @@ fun RecommendTitle(
     modifier: Modifier = Modifier,
     title: String,
     onClick: () -> Unit = {},
-    extraContent: @Composable RowScope.() -> Unit = {}
+    extraContent: @Composable RowScope.() -> Unit = {},
 ) {
     Row(
         modifier = modifier
@@ -64,12 +66,14 @@ fun RecommendTitle(modifier: Modifier = Modifier, title: String, onClick: () -> 
 
 @Composable
 fun <I> RecommendRow(
+    modifier: Modifier = Modifier,
     items: () -> List<I>,
     getId: (I) -> Any,
-    itemContent: @Composable LazyItemScope.(item: I) -> Unit
+    itemContent: @Composable LazyItemScope.(item: I) -> Unit,
 ) {
     LazyRow(
-        modifier = Modifier
+        modifier = modifier
+            .nestedScroll(PagerWrapper.nestedScrollProp)
             .fillMaxWidth()
             .animateContentSize(animationSpec = SpringSpec(stiffness = Spring.StiffnessLow))
             .recomposeHighlighter(),
