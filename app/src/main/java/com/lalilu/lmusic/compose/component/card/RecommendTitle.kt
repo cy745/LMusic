@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
@@ -71,9 +72,12 @@ fun <I> RecommendRow(
     getId: (I) -> Any,
     itemContent: @Composable LazyItemScope.(item: I) -> Unit,
 ) {
+    val nestedScrollProp = PagerWrapper.nestedScrollConn.value
+        ?: rememberNestedScrollInteropConnection()
+
     LazyRow(
         modifier = modifier
-            .nestedScroll(PagerWrapper.nestedScrollProp)
+            .nestedScroll(nestedScrollProp)
             .fillMaxWidth()
             .animateContentSize(animationSpec = SpringSpec(stiffness = Spring.StiffnessLow))
             .recomposeHighlighter(),

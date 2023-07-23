@@ -1,5 +1,7 @@
 package com.lalilu.lmusic.compose
 
+import android.content.Context
+import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,13 +17,13 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.lalilu.lmusic.utils.AccumulatedValue
 
 /**
  * 由于Compose的HorizontalPager实在过于拉胯，于是使用AndroidView封装了一个简易ViewPager
  */
 object PagerWrapper {
-    private val pagerView = mutableStateOf<ViewPager?>(null)
-    val nestedScrollProp: NestedScrollConnection = MyNestedScrollConnection { pagerView.value }
+    val nestedScrollConn = mutableStateOf<NestedScrollConnection?>(null)
 
     @Composable
     fun Content(
@@ -32,7 +34,7 @@ object PagerWrapper {
 
         AndroidView(
             modifier = Modifier.fillMaxSize(),
-            factory = { ViewPager(it).also(pagerView.component2()) }
+            factory = { MyViewPager(it).also(nestedScrollConn.component2()) }
         ) {
             if (it.adapter !== adapter) {
                 it.adapter = adapter
@@ -40,15 +42,36 @@ object PagerWrapper {
         }
     }
 
-    private class MyNestedScrollConnection(
-        private val pager: () -> ViewPager?,
-    ) : NestedScrollConnection {
-        private var isStarted = false
+    private class MyViewPager @JvmOverloads constructor(
+        context: Context,
+        attrs: AttributeSet? = null
+    ) : ViewPager(context, attrs), NestedScrollConnection {
+        private var accumulatedValueForPre = AccumulatedValue()
+        private var accumulatedValue = AccumulatedValue()
+
+        private var isTouchStarted = false
+        private var startScrollX = Int.MIN_VALUE
+
+        override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+            super.onLayout(changed, l, t, r, b)
+            startScrollX = width
+        }
 
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            if (available.x < 0 && isStarted) {
-                pager()?.fakeDragBy(available.x)
-                return available
+            val intercept = startScrollX != Int.MIN_VALUE
+                    && scrollX < startScrollX
+                    && available.x < 0
+
+            if (intercept) {
+                val deltaX = accumulatedValueForPre.ifAccumulate(available.x)
+
+                return if (scrollX - deltaX >= startScrollX) {
+                    scrollTo(startScrollX, 0)
+                    available.copy(x = available.x - (startScrollX - scrollX))
+                } else {
+                    scrollBy(-accumulatedValueForPre.accumulate(available.x), 0)
+                    available
+                }
             }
             return super.onPreScroll(available, source)
         }
@@ -58,26 +81,35 @@ object PagerWrapper {
             available: Offset,
             source: NestedScrollSource,
         ): Offset {
-            if (available.x > 0 && !isStarted) {
-                isStarted = true
-                pager()?.apply {
-                    if (isFakeDragging) endFakeDrag()
-                    beginFakeDrag()
-                }
+            if (available.x > 0 && !isTouchStarted && startScrollX == Int.MIN_VALUE) {
+                isTouchStarted = true
+                startScrollX = scrollX
             }
 
-            if (available.x > 0 && isStarted) {
-                pager()?.fakeDragBy(available.x)
+            if (available.x > 0) {
+                var targetScrollX = scrollX - accumulatedValue.accumulate(available.x)
+                if (targetScrollX <= 0) {
+                    targetScrollX = 0
+                }
+                scrollTo(targetScrollX, 0)
                 return available
             }
             return super.onPostScroll(consumed, available, source)
         }
 
+        override suspend fun onPreFling(available: Velocity): Velocity {
+            isTouchStarted = false
+            println("[onPreFling]: x: ${available.x}")
+
+            return super.onPreFling(available)
+        }
+
         override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-            isStarted = false
-            pager()?.apply {
-                if (isFakeDragging) endFakeDrag()
-            }
+            isTouchStarted = false
+
+            setCurrentItem(currentItem, true)
+            println("[onPostFling]: x: ${available.x} ${consumed.x}")
+
             return super.onPostFling(consumed, available)
         }
     }

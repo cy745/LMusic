@@ -57,7 +57,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layoutDescription="@xml/fragment_playing_rebuild_scene"
-                app:showPaths="true">
+                app:showPaths="false">
 
                 <!--                <androidx.appcompat.widget.Toolbar-->
                 <!--                    android:id="@+id/fm_toolbar"-->

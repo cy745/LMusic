@@ -13,4 +13,11 @@ class AccumulatedValue {
         accumulated -= intValue
         return intValue
     }
+
+    /**
+     * 提前获取累加后的数据值
+     */
+    fun ifAccumulate(value: Float): Int {
+        return (accumulated + value).toInt()
+    }
 }
