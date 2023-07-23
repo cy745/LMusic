@@ -6,6 +6,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import androidx.compose.animation.core.snap
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -137,7 +138,9 @@ open class AppbarBehavior(
         child: CoverAppbar,
         ev: MotionEvent,
     ): Boolean {
-        if (!parent.isPointInChildBounds(child, ev.x.toInt(), ev.y.toInt())) return false
+        if (ev.actionMasked == MotionEvent.ACTION_DOWN
+            && !parent.isPointInChildBounds(child, ev.x.toInt(), ev.y.toInt())
+        ) return false
 
         gestureDetector.onTouchEvent(ev)
         when (ev.actionMasked) {
@@ -151,7 +154,7 @@ open class AppbarBehavior(
                 requestDisallowIntercept(false)
                 ensureHelper(child)
                 if (flingVelocityY == 0f) {
-                    positionHelper.fling(0f)
+                    positionHelper.snapIfNeeded()
                 }
             }
         }
