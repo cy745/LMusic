@@ -6,6 +6,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.OverScroller
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -40,14 +41,34 @@ object PagerWrapper {
         secondContent: @Composable () -> Unit,
     ) {
         val adapter = remember { MyPagerAdapter(mainContent, secondContent) }
+        val enableBackHandler = remember { mutableStateOf(false) }
+        val targetPosition = remember { mutableStateOf(Int.MIN_VALUE) }
 
         AndroidView(
             modifier = Modifier.fillMaxSize(),
-            factory = { MyViewPager(it).also(nestedScrollConn.component2()) }
-        ) {
-            if (it.adapter !== adapter) {
-                it.adapter = adapter
+            factory = { context ->
+                MyViewPager(context)
+                    .also(nestedScrollConn.component2())
+                    .onPageSelected { position ->
+                        println("onPageSelected $position")
+                        enableBackHandler.value = position != 0
+                    }
             }
+        ) { pager ->
+            if (pager.adapter !== adapter) {
+                pager.adapter = adapter
+            }
+
+            targetPosition.value
+                .takeIf { it != Int.MIN_VALUE }
+                ?.also {
+                    targetPosition.value = Int.MIN_VALUE
+                    pager.setCurrentItem(it, true)
+                }
+        }
+
+        BackHandler(enabled = enableBackHandler.value) {
+            targetPosition.value = 0
         }
     }
 
@@ -62,24 +83,58 @@ object PagerWrapper {
         context: Context,
         attrs: AttributeSet? = null,
     ) : ViewPager(context, attrs), NestedScrollConnection {
-        private var accumulatedValueForPre = AccumulatedValue()
-        private var accumulatedValue = AccumulatedValue()
 
         private var arrivedBound = false
         private var boundOffset = Int.MIN_VALUE
         private var canceledByUser = false
+        private var onPageSelectedCallback: (position: Int) -> Unit = {}
+
+        private val accumulatedValueForPre = AccumulatedValue()
+        private val accumulatedValue = AccumulatedValue()
         private val overScroller by lazy { OverScroller(context) }
 
-        private var animator = springAnimationOf(
-            getter = { scrollX.toFloat() },
-            setter = { scrollTo(it.toInt(), 0) }
-        ).withSpringForceProperties {
-            dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-            stiffness = SpringForce.STIFFNESS_LOW
-        }.apply {
-            addEndListener { _, canceled, _, _ ->
-                if (!canceled) snapIfNeeded()
+        private val animator by lazy {
+            springAnimationOf(
+                getter = { scrollX.toFloat() },
+                setter = { scrollTo(it.toInt(), 0) }
+            ).withSpringForceProperties {
+                dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+                stiffness = SpringForce.STIFFNESS_LOW
+            }.apply {
+                addEndListener { _, canceled, value, _ ->
+                    if (!canceled) {
+                        snapIfNeeded()
+
+                        val closeToLeft = abs(value - 0f) < 1f
+                        val closeToRight = abs(value - boundOffset) < 1f
+                        if (closeToLeft || closeToRight) {
+                            currentItem = if (closeToLeft) 0 else 1
+                        }
+                    }
+                }
             }
+        }
+
+        init {
+            addOnPageChangeListener(object : OnPageChangeListener {
+                override fun onPageScrolled(
+                    position: Int,
+                    positionOffset: Float,
+                    positionOffsetPixels: Int
+                ) {
+                }
+
+                override fun onPageSelected(position: Int) {
+                    onPageSelectedCallback(position)
+                }
+
+                override fun onPageScrollStateChanged(state: Int) {
+                }
+            })
+        }
+
+        fun onPageSelected(action: (position: Int) -> Unit) = apply {
+            onPageSelectedCallback = action
         }
 
         fun snapIfNeeded() {
