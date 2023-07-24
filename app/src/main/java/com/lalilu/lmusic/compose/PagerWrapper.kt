@@ -9,6 +9,7 @@ import android.widget.OverScroller
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -27,6 +28,8 @@ import androidx.dynamicanimation.animation.withSpringForceProperties
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.lalilu.lmusic.utils.AccumulatedValue
+import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.lmusic.utils.extension.rememberIsPad
 import kotlin.math.abs
 
 /**
@@ -73,8 +76,10 @@ object PagerWrapper {
     }
 
     fun Modifier.nestedScrollForPager() = composed {
-        val nestedScrollProp = nestedScrollConn.value
-            ?: rememberNestedScrollInteropConnection()
+        val isPad = LocalWindowSize.current.rememberIsPad()
+        val nestedScrollProp =
+            remember(isPad.value) { nestedScrollConn.value?.takeIf { !isPad.value } }
+                ?: rememberNestedScrollInteropConnection()
 
         this.nestedScroll(connection = nestedScrollProp)
     }
