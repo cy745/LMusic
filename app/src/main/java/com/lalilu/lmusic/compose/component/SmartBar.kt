@@ -50,6 +50,10 @@ object SmartBar {
         ExperimentalComposeUiApi::class
     )
     fun BoxScope.SmartBarContent(modifier: Modifier = Modifier) {
+        LaunchedEffect(Unit) {
+            setMainBar(content = NavBar.content)
+        }
+
         val density = LocalDensity.current
         val backPressDispatcher = LocalOnBackPressedDispatcherOwner.current
         val maskColorUp = animateColorAsState(
@@ -110,7 +114,7 @@ object SmartBar {
     fun setMainBar(
         showMask: Boolean = false,
         showBackground: Boolean = true,
-        content: (@Composable () -> Unit)?
+        content: (@Composable () -> Unit)?,
     ): SmartBar = apply {
         this.showMask.value = showMask
         this.showBackground.value = showBackground
@@ -120,7 +124,7 @@ object SmartBar {
     fun setExtraBar(
         showMask: Boolean = false,
         showBackground: Boolean = true,
-        content: (@Composable () -> Unit)?
+        content: (@Composable () -> Unit)?,
     ): SmartBar = apply {
         this.showMask.value = showMask
         this.showBackground.value = showBackground
@@ -129,7 +133,7 @@ object SmartBar {
 
     private fun setMainBar(
         stackItem: StackItem?,
-        recoverTo: @Composable (() -> Unit)? = null
+        recoverTo: @Composable (() -> Unit)? = null,
     ) = setMainBar(
         showMask = stackItem?.showMask ?: false,
         showBackground = stackItem?.showBackground ?: true,
@@ -138,7 +142,7 @@ object SmartBar {
 
     private fun setExtraBar(
         stackItem: StackItem?,
-        recoverTo: @Composable (() -> Unit)? = null
+        recoverTo: @Composable (() -> Unit)? = null,
     ) = setExtraBar(
         showMask = stackItem?.showMask ?: false,
         showBackground = stackItem?.showBackground ?: true,
@@ -154,7 +158,7 @@ object SmartBar {
         showMask: Boolean = false,
         showBackground: Boolean = true,
         recoverTo: (@Composable () -> Unit)? = null,
-        content: @Composable () -> Unit
+        content: @Composable () -> Unit,
     ) {
         val stackItem = remember {
             StackItem(
@@ -195,7 +199,7 @@ object SmartBar {
         showMask: Boolean = false,
         showBackground: Boolean = true,
         recoverTo: @Composable () -> Unit = NavBar.content,
-        content: @Composable () -> Unit
+        content: @Composable () -> Unit,
     ) {
         val stackItem = remember {
             StackItem(
@@ -236,7 +240,7 @@ object SmartBar {
         val showMask: Boolean = false,
         val showBackground: Boolean = true,
         val key: String = state.hashCode().toString(),
-        val content: @Composable () -> Unit
+        val content: @Composable () -> Unit,
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
