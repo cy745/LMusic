@@ -2,28 +2,37 @@ package com.lalilu.lmusic.compose
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.OverScroller
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.dynamicanimation.animation.SpringForce
+import androidx.dynamicanimation.animation.springAnimationOf
+import androidx.dynamicanimation.animation.withSpringForceProperties
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.lalilu.lmusic.utils.AccumulatedValue
+import kotlin.math.abs
 
 /**
  * 由于Compose的HorizontalPager实在过于拉胯，于是使用AndroidView封装了一个简易ViewPager
  */
 object PagerWrapper {
-    val nestedScrollConn = mutableStateOf<NestedScrollConnection?>(null)
+    private val nestedScrollConn = mutableStateOf<NestedScrollConnection?>(null)
 
     @Composable
     fun Content(
@@ -42,32 +51,83 @@ object PagerWrapper {
         }
     }
 
+    fun Modifier.nestedScrollForPager() = composed {
+        val nestedScrollProp = nestedScrollConn.value
+            ?: rememberNestedScrollInteropConnection()
+
+        this.nestedScroll(connection = nestedScrollProp)
+    }
+
     private class MyViewPager @JvmOverloads constructor(
         context: Context,
-        attrs: AttributeSet? = null
+        attrs: AttributeSet? = null,
     ) : ViewPager(context, attrs), NestedScrollConnection {
         private var accumulatedValueForPre = AccumulatedValue()
         private var accumulatedValue = AccumulatedValue()
 
-        private var isTouchStarted = false
-        private var startScrollX = Int.MIN_VALUE
+        private var arrivedBound = false
+        private var boundOffset = Int.MIN_VALUE
+        private var canceledByUser = false
+        private val overScroller by lazy { OverScroller(context) }
+
+        private var animator = springAnimationOf(
+            getter = { scrollX.toFloat() },
+            setter = { scrollTo(it.toInt(), 0) }
+        ).withSpringForceProperties {
+            dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+            stiffness = SpringForce.STIFFNESS_LOW
+        }.apply {
+            addEndListener { _, canceled, _, _ ->
+                if (!canceled) snapIfNeeded()
+            }
+        }
+
+        fun snapIfNeeded() {
+            val targetOffset = if (scrollX <= boundOffset * 2f / 3f) 0 else boundOffset
+
+            if (scrollX != targetOffset) {
+                animator.animateToFinalPosition(targetOffset.toFloat())
+            }
+        }
+
+        override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+            when (ev.actionMasked) {
+                MotionEvent.ACTION_DOWN -> if (animator.isRunning) {
+                    animator.cancel()
+                    canceledByUser = true
+                }
+
+                MotionEvent.ACTION_MOVE -> if (canceledByUser) {
+                    canceledByUser = false
+                }
+
+                MotionEvent.ACTION_CANCEL,
+                MotionEvent.ACTION_UP,
+                MotionEvent.ACTION_POINTER_UP,
+                -> if (canceledByUser) {
+                    snapIfNeeded()
+                    canceledByUser = false
+                }
+            }
+            return super.onInterceptTouchEvent(ev)
+        }
 
         override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
             super.onLayout(changed, l, t, r, b)
-            startScrollX = width
+            boundOffset = width
         }
 
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            val intercept = startScrollX != Int.MIN_VALUE
-                    && scrollX < startScrollX
+            val intercept = boundOffset != Int.MIN_VALUE
+                    && scrollX < boundOffset
                     && available.x < 0
 
             if (intercept) {
                 val deltaX = accumulatedValueForPre.ifAccumulate(available.x)
 
-                return if (scrollX - deltaX >= startScrollX) {
-                    scrollTo(startScrollX, 0)
-                    available.copy(x = available.x - (startScrollX - scrollX))
+                return if (scrollX - deltaX >= boundOffset) {
+                    scrollTo(boundOffset, 0)
+                    available.copy(x = available.x - (boundOffset - scrollX))
                 } else {
                     scrollBy(-accumulatedValueForPre.accumulate(available.x), 0)
                     available
@@ -81,9 +141,17 @@ object PagerWrapper {
             available: Offset,
             source: NestedScrollSource,
         ): Offset {
-            if (available.x > 0 && !isTouchStarted && startScrollX == Int.MIN_VALUE) {
-                isTouchStarted = true
-                startScrollX = scrollX
+            if (available.x > 0 && !arrivedBound) {
+                arrivedBound = true
+
+                if (boundOffset == Int.MIN_VALUE) {
+                    boundOffset = scrollX
+                }
+            }
+
+            // 若是Fling至边缘，则在到达边缘的时候返回Offset.Zero，此时后续剩余的Velocity速度将不再进行消费
+            if (arrivedBound && source == NestedScrollSource.Fling) {
+                return Offset.Zero
             }
 
             if (available.x > 0) {
@@ -97,19 +165,15 @@ object PagerWrapper {
             return super.onPostScroll(consumed, available, source)
         }
 
-        override suspend fun onPreFling(available: Velocity): Velocity {
-            isTouchStarted = false
-            println("[onPreFling]: x: ${available.x}")
-
-            return super.onPreFling(available)
-        }
-
         override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-            isTouchStarted = false
+            arrivedBound = false
 
-            setCurrentItem(currentItem, true)
-            println("[onPostFling]: x: ${available.x} ${consumed.x}")
-
+            if (abs(available.x) > 0.5f) {
+                overScroller.fling(scrollX, 0, -available.x.toInt(), 0, 0, boundOffset, 0, 0)
+                animator.animateToFinalPosition(overScroller.finalX.toFloat())
+            } else {
+                snapIfNeeded()
+            }
             return super.onPostFling(consumed, available)
         }
     }
