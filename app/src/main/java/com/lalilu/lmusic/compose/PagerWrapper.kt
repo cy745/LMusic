@@ -9,7 +9,9 @@ import android.widget.OverScroller
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -36,7 +38,12 @@ import kotlin.math.abs
  * 由于Compose的HorizontalPager实在过于拉胯，于是使用AndroidView封装了一个简易ViewPager
  */
 object PagerWrapper {
+    val LocalPagerPosition = compositionLocalOf<Int> { error("LocalPagerPosition hasn't not set") }
+
     private val nestedScrollConn = mutableStateOf<NestedScrollConnection?>(null)
+    private val currentPage = mutableStateOf(0)
+    var animateToPage: (Int) -> Unit = {}
+        private set
 
     @Composable
     fun Content(
@@ -44,35 +51,39 @@ object PagerWrapper {
         secondContent: @Composable () -> Unit,
     ) {
         val adapter = remember { MyPagerAdapter(mainContent, secondContent) }
-        val enableBackHandler = remember { mutableStateOf(false) }
-        val targetPosition = remember { mutableStateOf(Int.MIN_VALUE) }
 
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
                 MyViewPager(context)
                     .also(nestedScrollConn.component2())
-                    .onPageSelected { position ->
-                        println("onPageSelected $position")
-                        enableBackHandler.value = position != 0
-                    }
+                    .apply { animateToPage = this::animateToPage }
+                    .onPageSelected { currentPage.value = it }
             }
         ) { pager ->
             if (pager.adapter !== adapter) {
                 pager.adapter = adapter
             }
-
-            targetPosition.value
-                .takeIf { it != Int.MIN_VALUE }
-                ?.also {
-                    targetPosition.value = Int.MIN_VALUE
-                    pager.setCurrentItem(it, true)
-                }
         }
 
-        BackHandler(enabled = enableBackHandler.value) {
-            targetPosition.value = 0
+        BackHandlerForPager(forPage = 1) {
+            animateToPage.invoke(0)
         }
+
+        DisposableEffect(Unit) {
+            onDispose {
+                animateToPage = {}
+            }
+        }
+    }
+
+    @Composable
+    fun BackHandlerForPager(
+        forPage: Int = LocalPagerPosition.current,
+        enable: () -> Boolean = { true },
+        callback: () -> Unit,
+    ) {
+        BackHandler(enabled = currentPage.value == forPage && enable(), onBack = callback)
     }
 
     fun Modifier.nestedScrollForPager() = composed {
@@ -125,7 +136,7 @@ object PagerWrapper {
                 override fun onPageScrolled(
                     position: Int,
                     positionOffset: Float,
-                    positionOffsetPixels: Int
+                    positionOffsetPixels: Int,
                 ) {
                 }
 
@@ -144,6 +155,14 @@ object PagerWrapper {
 
         fun snapIfNeeded() {
             val targetOffset = if (scrollX <= boundOffset * 2f / 3f) 0 else boundOffset
+
+            if (scrollX != targetOffset) {
+                animator.animateToFinalPosition(targetOffset.toFloat())
+            }
+        }
+
+        fun animateToPage(position: Int) {
+            val targetOffset = position * boundOffset
 
             if (scrollX != targetOffset) {
                 animator.animateToFinalPosition(targetOffset.toFloat())
@@ -247,7 +266,17 @@ object PagerWrapper {
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             return ComposeView(container.context)
                 .also(container::addView)
-                .apply { setContent(if (position == 0) mainContent else secondContent) }
+                .apply {
+                    setContent {
+                        CompositionLocalProvider(LocalPagerPosition provides position) {
+                            if (position == 0) {
+                                mainContent()
+                            } else {
+                                secondContent()
+                            }
+                        }
+                    }
+                }
         }
 
         override fun destroyItem(container: ViewGroup, position: Int, obj: Any) {

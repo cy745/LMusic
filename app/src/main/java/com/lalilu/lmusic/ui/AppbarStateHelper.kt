@@ -10,11 +10,11 @@ typealias OnStateChangeListener = (
 open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
 
     sealed class State {
-        object COLLAPSED : State()
-        object EMPTY : State()
-        object NORMAL : State()
-        object EMPTY2 : State()
-        object EXPENDED : State()
+        data object COLLAPSED : State()
+        data object EMPTY : State()
+        data object NORMAL : State()
+        data object EMPTY2 : State()
+        data object EXPENDED : State()
     }
 
     open var dragThreshold: Int = 120
@@ -37,6 +37,12 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
             }
 //            println("[State]: ${lastState::class.simpleName} -> ${value::class.simpleName}")
         }
+
+    open fun animateToState(newState: State) {
+        actionFromUser = true
+        val targetOffset = getSnapPositionByState(newState, state)
+        animateTo(targetOffset)
+    }
 
     override fun setPosition(value: Number) {
         super.setPosition(value)

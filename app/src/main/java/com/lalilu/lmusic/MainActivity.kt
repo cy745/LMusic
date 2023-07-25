@@ -26,7 +26,6 @@ import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.App
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.utils.OnBackPressHelper
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -126,10 +125,8 @@ class MainActivity : AppCompatActivity() {
         SystemUiUtil.immerseNavigationBar(this)
         SystemUiUtil.immersiveCutout(window)
 
-        val backPressHelper = OnBackPressHelper()
         // 注册返回键事件回调
         onBackPressedDispatcher.addCallback { this@MainActivity.moveTaskToBack(false) }
-        onBackPressedDispatcher.addCallback(backPressHelper)
 
         setContent { App.Content(activity = this) }
 
