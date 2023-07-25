@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,8 +31,6 @@ import androidx.dynamicanimation.animation.withSpringForceProperties
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.lalilu.lmusic.utils.AccumulatedValue
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.rememberIsPad
 import kotlin.math.abs
 
 /**
@@ -42,6 +41,8 @@ object PagerWrapper {
 
     private val nestedScrollConn = mutableStateOf<NestedScrollConnection?>(null)
     private val currentPage = mutableStateOf(0)
+    private val pagerExist = mutableStateOf(false)
+
     var animateToPage: (Int) -> Unit = {}
         private set
 
@@ -70,8 +71,13 @@ object PagerWrapper {
             animateToPage.invoke(0)
         }
 
+        SideEffect {
+            pagerExist.value = true
+        }
+
         DisposableEffect(Unit) {
             onDispose {
+                pagerExist.value = false
                 animateToPage = {}
             }
         }
@@ -83,13 +89,15 @@ object PagerWrapper {
         enable: () -> Boolean = { true },
         callback: () -> Unit,
     ) {
-        BackHandler(enabled = currentPage.value == forPage && enable(), onBack = callback)
+        BackHandler(
+            enabled = currentPage.value == forPage && pagerExist.value && enable(),
+            onBack = callback
+        )
     }
 
     fun Modifier.nestedScrollForPager() = composed {
-        val isPad = LocalWindowSize.current.rememberIsPad()
         val nestedScrollProp =
-            remember(isPad.value) { nestedScrollConn.value?.takeIf { !isPad.value } }
+            remember(pagerExist.value) { nestedScrollConn.value?.takeIf { pagerExist.value } }
                 ?: rememberNestedScrollInteropConnection()
 
         this.nestedScroll(connection = nestedScrollProp)
