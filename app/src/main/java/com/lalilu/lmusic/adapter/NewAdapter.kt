@@ -144,6 +144,7 @@ class NewPlayingAdapter private constructor(
     }
 
     override fun onLongClick(v: View?): Boolean {
+        v?.parent?.requestDisallowInterceptTouchEvent(true)
         onLongClickCallback?.onLongClick(v?.tag.toString())
         return true
     }
