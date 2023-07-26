@@ -51,6 +51,7 @@ import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.ui.AppbarBehavior
 import com.lalilu.lmusic.ui.AppbarStateHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
+import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -190,7 +191,7 @@ object Playing {
                 if (navController.currentDestination?.route == ScreenData.SongsDetail.destination.route) {
                     navController.popBackStack()
                 }
-                navController.navigate(SongDetailScreenDestination(it)) {
+                navController.navigate(SongDetailScreenDestination(mediaId = it, fromPlaying = true)) {
                     launchSingleTop = true
                 }
             }
@@ -269,6 +270,7 @@ object Playing {
     }
 
     private fun FragmentPlayingRebuildBinding.initRecyclerView(adapter: NewPlayingAdapter) {
+        fmRecyclerView.layoutManager = calculateExtraLayoutSpace(root.context, 500)
         fmRecyclerView.adapter = adapter
         fmRecyclerView.setItemViewCacheSize(5)
     }

@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -37,7 +39,7 @@ import kotlin.math.abs
  * 由于Compose的HorizontalPager实在过于拉胯，于是使用AndroidView封装了一个简易ViewPager
  */
 object PagerWrapper {
-    val LocalPagerPosition = compositionLocalOf<Int> { error("LocalPagerPosition hasn't not set") }
+    val LocalPagerPosition = compositionLocalOf { -1 }
 
     private val nestedScrollConn = mutableStateOf<NestedScrollConnection?>(null)
     private val currentPage = mutableStateOf(0)
@@ -80,6 +82,23 @@ object PagerWrapper {
                 pagerExist.value = false
                 animateToPage = {}
             }
+        }
+    }
+
+    @Composable
+    fun OnPagerChangeHandler(
+        forPage: Int = LocalPagerPosition.current,
+        enable: () -> Boolean = { true },
+        onPagerChange: suspend (isCurrentPage: Boolean) -> Unit = {},
+    ) {
+        val enabled = remember(pagerExist.value, enable()) {
+            derivedStateOf { pagerExist.value && enable() }
+        }
+
+        LaunchedEffect(enabled.value, currentPage.value) {
+            if (!enabled.value) return@LaunchedEffect
+
+            onPagerChange(currentPage.value == forPage)
         }
     }
 

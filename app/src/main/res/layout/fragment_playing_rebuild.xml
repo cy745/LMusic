@@ -83,7 +83,6 @@
             android:fillViewport="true"
             android:overScrollMode="never"
             android:paddingBottom="128dp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_behavior="com.lalilu.lmusic.ui.RecyclerViewBehavior"
             tools:listitem="@layout/item_playing"
             tools:visibility="gone" />
