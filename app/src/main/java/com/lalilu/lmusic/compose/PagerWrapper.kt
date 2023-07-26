@@ -13,6 +13,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -83,6 +84,13 @@ object PagerWrapper {
                 animateToPage = {}
             }
         }
+    }
+
+    @Composable
+    fun rememberIsCurrentPage(
+        forPage: Int = LocalPagerPosition.current,
+    ): State<Boolean> {
+        return remember { derivedStateOf { pagerExist.value && currentPage.value == forPage } }
     }
 
     @Composable

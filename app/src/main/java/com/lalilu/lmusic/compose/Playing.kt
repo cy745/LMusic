@@ -16,6 +16,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,7 @@ import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingRebuildBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.LMusicFlowBus
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.adapter.loadCover
 import com.lalilu.lmusic.compose.component.DynamicTips
@@ -67,7 +69,11 @@ import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.OnValueChangeListener
 import com.ramcosta.composedestinations.navigation.navigate
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.compose.get
 
@@ -147,7 +153,13 @@ object Playing {
     ) {
         val isDrawTranslation by remember { settingsSp.isDrawTranslation }
         val isEnableBlurEffect by remember { settingsSp.isEnableBlurEffect }
+        val keepScreenOnWhenLyricExpanded by remember { settingsSp.keepScreenOnWhenLyricExpanded }
         val nowState = remember { mutableStateOf<AppbarStateHelper.State?>(null) }
+        val isCurrentPage by PagerWrapper.rememberIsCurrentPage()
+
+        val keepScreenOn = remember {
+            derivedStateOf { keepScreenOnWhenLyricExpanded && isCurrentPage && nowState.value == AppbarStateHelper.State.EXPENDED }
+        }
 
         AndroidViewBinding(factory = { inflater, parent, attachToParent ->
             FragmentPlayingRebuildBinding.inflate(inflater, parent, attachToParent).apply {
@@ -167,6 +179,7 @@ object Playing {
                 }
 
                 bindData(adapter, playingVM, settingsSp)
+                bindEvent(keepScreenOn = { keepScreenOn.value })
             }
         }) {
             fmLyricViewX.setIsDrawTranslation(isDrawTranslation = isDrawTranslation)
@@ -437,6 +450,18 @@ object Playing {
                 fmLyricViewX.setLyricTypeface(path = it)
             }.launchIn(activity.lifecycleScope)
         }
+    }
+
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    private fun FragmentPlayingRebuildBinding.bindEvent(
+        keepScreenOn: () -> Boolean,
+    ) {
+        val activity = root.context.getActivity()!!
+
+        LMusicFlowBus.lastTouchTime.flow()
+            .debounce(10000)
+            .mapLatest { if (it > 0) root.keepScreenOn = keepScreenOn() }
+            .launchIn(activity.lifecycleScope)
     }
 }
 
