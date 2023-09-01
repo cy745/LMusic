@@ -140,7 +140,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-util")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-viewbinding")
-    implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material3:material3-window-size-class")
@@ -209,7 +208,7 @@ dependencies {
     // 实现边沿渐变透明
     implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
 
-    implementation("com.github.angcyo:DslAdapter:6.0.1")
+//    implementation("com.github.angcyo:DslAdapter:6.0.1")
 
     // Koin for Android
     // https://mvnrepository.com/artifact/io.insert-koin/koin-android
@@ -218,11 +217,10 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.2")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.gridlayout:gridlayout:1.0.0")
-    implementation("androidx.recyclerview:recyclerview:1.3.1-rc01")
+    implementation("androidx.recyclerview:recyclerview:1.3.1")
     implementation("androidx.dynamicanimation:dynamicanimation-ktx:1.0.0-alpha03")
     implementation("androidx.navigation:navigation-compose:${findProperty("navigation_version")}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${findProperty("lifecycle_version")}")
