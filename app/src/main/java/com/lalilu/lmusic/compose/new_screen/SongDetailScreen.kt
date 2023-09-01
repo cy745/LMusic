@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowRow
-import com.lalilu.lmusic.compose.PagerWrapper
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -116,11 +115,6 @@ fun SongDetailScreen(
             action = "android.intent.action.VIEW"
             data = song.uri
         }
-    }
-
-    PagerWrapper.BackHandlerForPager(enable = { fromPlaying }) {
-        PagerWrapper.animateToPage(0)
-        navigator.popBackStack()
     }
 
     SmartModalBottomSheet.RegisterForTemporaryDisableFadeEdge()

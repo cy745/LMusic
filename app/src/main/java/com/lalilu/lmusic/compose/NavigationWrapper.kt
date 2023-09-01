@@ -24,10 +24,6 @@ object NavigationWrapper {
         modifier: Modifier = Modifier,
         navController: NavHostController = LocalNavigatorHost.current,
     ) {
-        PagerWrapper.OnPagerChangeHandler { isCurrentPage ->
-            navController.enableOnBackPressed(isCurrentPage)
-        }
-        
         val animateEngine = rememberAnimatedNavHostEngine(
             rootDefaultAnimations = RootNavGraphDefaultAnimations(
                 exitTransition = { ExitTransition.None },

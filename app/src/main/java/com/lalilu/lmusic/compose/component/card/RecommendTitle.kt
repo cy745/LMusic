@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
-import com.lalilu.lmusic.compose.PagerWrapper.nestedScrollForPager
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 
@@ -72,7 +71,6 @@ fun <I> RecommendRow(
 ) {
     LazyRow(
         modifier = modifier
-            .nestedScrollForPager()
             .fillMaxWidth()
             .animateContentSize(animationSpec = SpringSpec(stiffness = Spring.StiffnessLow))
             .recomposeHighlighter(),

@@ -69,8 +69,6 @@ import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.OnValueChangeListener
 import com.ramcosta.composedestinations.navigation.navigate
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.compose.get
@@ -153,10 +151,9 @@ object Playing {
         val isEnableBlurEffect by remember { settingsSp.isEnableBlurEffect }
         val keepScreenOnWhenLyricExpanded by remember { settingsSp.keepScreenOnWhenLyricExpanded }
         val nowState = remember { mutableStateOf<AppbarStateHelper.State?>(null) }
-        val isCurrentPage by PagerWrapper.rememberIsCurrentPage()
 
         val keepScreenOn = remember {
-            derivedStateOf { keepScreenOnWhenLyricExpanded && isCurrentPage && nowState.value == AppbarStateHelper.State.EXPENDED }
+            derivedStateOf { keepScreenOnWhenLyricExpanded && nowState.value == AppbarStateHelper.State.EXPENDED }
         }
 
         AndroidViewBinding(factory = { inflater, parent, attachToParent ->
@@ -186,7 +183,7 @@ object Playing {
             fmLyricViewX.setItemOffsetPercent(0f)
         }
 
-        PagerWrapper.BackHandlerForPager(enable = { nowState.value == AppbarStateHelper.State.EXPENDED }) {
+        BottomSheetWrapper.BackHandler(enable = { nowState.value == AppbarStateHelper.State.EXPENDED }) {
             backPressCallback.invoke(AppbarStateHelper.State.NORMAL)
         }
     }
@@ -198,7 +195,7 @@ object Playing {
     ): NewPlayingAdapter {
         return NewPlayingAdapter.Builder()
             .setOnLongClickCB {
-                PagerWrapper.animateToPage.invoke(1)
+                BottomSheetWrapper.show()
                 if (navController.currentDestination?.route == ScreenData.SongsDetail.destination.route) {
                     navController.popBackStack()
                 }
@@ -338,11 +335,13 @@ object Playing {
             OnSeekBarScrollToThresholdListener({ 300f }) {
             override fun onScrollToThreshold() {
                 HapticUtils.haptic(root)
+                BottomSheetWrapper.show()
                 SmartModalBottomSheet.show()
             }
 
             override fun onScrollRecover() {
                 HapticUtils.haptic(root)
+                BottomSheetWrapper.hide()
                 SmartModalBottomSheet.hide()
             }
         })
