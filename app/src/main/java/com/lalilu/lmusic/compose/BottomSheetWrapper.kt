@@ -3,6 +3,7 @@ package com.lalilu.lmusic.compose
 import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.SpringSpec
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
@@ -10,6 +11,9 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -22,6 +26,7 @@ import androidx.compose.ui.unit.Density
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import kotlinx.coroutines.CoroutineScope
@@ -68,6 +73,22 @@ object BottomSheetWrapper : NavController.OnDestinationChangedListener, NestedSc
             createSheetState(LocalDensity.current)
             navController.removeOnDestinationChangedListener(this)
             navController.addOnDestinationChangedListener(this)
+        }
+
+        val systemUiController = rememberSystemUiController()
+        val isDarkModeNow = isSystemInDarkTheme()
+        val isExpended by remember {
+            derivedStateOf {
+                sheetState.targetValue == ModalBottomSheetValue.Expanded
+                        && sheetState.progress !in 0.05f..0.95f
+            }
+        }
+
+        LaunchedEffect(isExpended, isDarkModeNow) {
+            systemUiController.setStatusBarColor(
+                color = Color.Transparent,
+                darkIcons = isExpended && !isDarkModeNow
+            )
         }
 
         LaunchedEffect(sheetState.isVisible) {
