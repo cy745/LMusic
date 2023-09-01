@@ -25,6 +25,7 @@ import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.App
 import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.helper.LastTouchTimeHelper
 import com.lalilu.lmusic.service.LMusicBrowser
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
@@ -135,18 +136,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        when (ev?.action) {
-            MotionEvent.ACTION_DOWN -> {
-                LMusicFlowBus.lastTouchTime.post(lifecycleScope, -1L)
-            }
-
-            MotionEvent.ACTION_CANCEL,
-            MotionEvent.ACTION_POINTER_UP,
-            MotionEvent.ACTION_UP,
-            -> {
-                LMusicFlowBus.lastTouchTime.post(lifecycleScope, System.currentTimeMillis())
-            }
-        }
+        LastTouchTimeHelper.onDispatchTouchEvent(ev)
         return super.dispatchTouchEvent(ev)
     }
 }

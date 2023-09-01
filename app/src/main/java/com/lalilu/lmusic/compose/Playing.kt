@@ -41,7 +41,6 @@ import com.lalilu.common.HapticUtils
 import com.lalilu.databinding.FragmentPlayingRebuildBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.LMusicFlowBus
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.adapter.loadCover
 import com.lalilu.lmusic.compose.component.DynamicTips
@@ -50,6 +49,7 @@ import com.lalilu.lmusic.compose.component.settings.FileSelectWrapper
 import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.helper.LastTouchTimeHelper
 import com.lalilu.lmusic.ui.AppbarBehavior
 import com.lalilu.lmusic.ui.AppbarStateHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
@@ -71,9 +71,7 @@ import com.lalilu.ui.OnValueChangeListener
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.compose.get
 
@@ -204,7 +202,12 @@ object Playing {
                 if (navController.currentDestination?.route == ScreenData.SongsDetail.destination.route) {
                     navController.popBackStack()
                 }
-                navController.navigate(SongDetailScreenDestination(mediaId = it, fromPlaying = true)) {
+                navController.navigate(
+                    SongDetailScreenDestination(
+                        mediaId = it,
+                        fromPlaying = true
+                    )
+                ) {
                     launchSingleTop = true
                 }
             }
@@ -452,16 +455,14 @@ object Playing {
         }
     }
 
-    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun FragmentPlayingRebuildBinding.bindEvent(
         keepScreenOn: () -> Boolean,
     ) {
         val activity = root.context.getActivity()!!
 
-        LMusicFlowBus.lastTouchTime.flow()
-            .debounce(10000)
-            .mapLatest { if (it > 0) root.keepScreenOn = keepScreenOn() }
-            .launchIn(activity.lifecycleScope)
+        LastTouchTimeHelper.listenToLastTouch(activity.lifecycleScope) {
+            if (it > 0) root.keepScreenOn = keepScreenOn()
+        }
     }
 }
 
