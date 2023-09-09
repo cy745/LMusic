@@ -59,7 +59,6 @@ private val recomposeModifier =
         // as the key is really just to cause the timer to restart every composition).
         LaunchedEffect(totalCompositions[0]) {
             delay(3000)
-            println("[totalCompositions]: ${totalCompositions[0]}")
             totalCompositionsAtLastTimeout.value = totalCompositions[0]
         }
 

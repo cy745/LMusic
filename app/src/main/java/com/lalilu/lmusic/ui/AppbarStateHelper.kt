@@ -9,12 +9,23 @@ typealias OnStateChangeListener = (
 
 open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
 
-    sealed class State {
-        data object COLLAPSED : State()
-        data object EMPTY : State()
-        data object NORMAL : State()
-        data object EMPTY2 : State()
-        data object EXPENDED : State()
+    sealed class State(val value: Int) {
+        data object COLLAPSED : State(0)
+        data object EMPTY : State(1)
+        data object NORMAL : State(2)
+        data object EMPTY2 : State(3)
+        data object EXPENDED : State(4)
+
+        companion object {
+            fun from(value: Int): State = when (value) {
+                0 -> COLLAPSED
+                1 -> EMPTY
+                2 -> NORMAL
+                3 -> EMPTY2
+                4 -> EXPENDED
+                else -> NORMAL
+            }
+        }
     }
 
     open var dragThreshold: Int = 120
@@ -28,15 +39,12 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
         private set
 
     var state: State = State.NORMAL
-        private set(value) {
-            if (field == value) return
-            lastState = field
-            field = value
-            for (listener in stateChangeListeners) {
-                listener.invoke(value, lastState, actionFromUser)
-            }
-//            println("[State]: ${lastState::class.simpleName} -> ${value::class.simpleName}")
-        }
+        private set
+
+    fun restoreState(state: State, lastState: State) {
+        this.state = state
+        this.lastState = lastState
+    }
 
     open fun animateToState(newState: State) {
         actionFromUser = true
@@ -44,8 +52,8 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
         animateTo(targetOffset)
     }
 
-    override fun setPosition(value: Number) {
-        super.setPosition(value)
+    override fun updatePosition(value: Number) {
+        super.updatePosition(value)
         updateStateIfNeeded()
     }
 
@@ -80,7 +88,15 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
     }
 
     private fun updateStateIfNeeded() {
-        state = getStateByPosition(position)
+        val newState = getStateByPosition(position)
+
+        if (newState == state) return
+        lastState = state
+        state = newState
+
+        for (listener in stateChangeListeners) {
+            listener.invoke(state, lastState, actionFromUser)
+        }
     }
 
     private fun getStateByPosition(value: Int): State {

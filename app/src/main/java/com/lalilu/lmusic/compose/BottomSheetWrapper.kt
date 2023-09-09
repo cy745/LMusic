@@ -2,6 +2,7 @@ package com.lalilu.lmusic.compose
 
 import android.os.Bundle
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ExperimentalMaterialApi
@@ -41,7 +42,10 @@ object BottomSheetWrapper : NavController.OnDestinationChangedListener, NestedSc
         sheetState = ModalBottomSheetState(
             initialValue = ModalBottomSheetValue.Hidden,
             density = density,
-            animationSpec = SpringSpec(stiffness = 1000f),
+            animationSpec = SpringSpec(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = 1000f
+            ),
             isSkipHalfExpanded = true,
         )
     }
@@ -55,6 +59,10 @@ object BottomSheetWrapper : NavController.OnDestinationChangedListener, NestedSc
         enable: () -> Boolean = { true },
         callback: () -> Unit,
     ) {
+        if (!BottomSheetWrapper::sheetState.isInitialized) {
+            createSheetState(LocalDensity.current)
+        }
+
         BackHandler(
             enabled = sheetState.isVisible == forVisible() && enable(),
             onBack = callback

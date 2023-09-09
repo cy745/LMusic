@@ -13,24 +13,24 @@ open class AppbarProgressHelper {
     private val zeroToMaxProgressChangeListeners = hashSetOf<OnProgressChangeListener>()
     protected var actionFromUser: Boolean = false
 
-    private var zeroToMaxProgress: Float = INVALID_PROGRESS
-        set(value) {
+    var zeroToMaxProgress: Float = INVALID_PROGRESS
+        private set(value) {
             if (field == value) return
             field = value
             for (listener in zeroToMaxProgressChangeListeners) {
                 listener.invoke(value, actionFromUser)
             }
         }
-    private var zeroToMinProgress: Float = INVALID_PROGRESS
-        set(value) {
+    var zeroToMinProgress: Float = INVALID_PROGRESS
+        private set(value) {
             if (field == value) return
             field = value
             for (listener in zeroToMinProgressChangeListeners) {
                 listener.invoke(value, actionFromUser)
             }
         }
-    protected var fullProgress: Float = INVALID_PROGRESS
-        set(value) {
+    var fullProgress: Float = INVALID_PROGRESS
+        private set(value) {
             if (field == value) return
             field = value
             for (listener in fullProgressChangeListeners) {
@@ -41,11 +41,24 @@ open class AppbarProgressHelper {
     /**
      * 更新进度
      */
-    fun updateProgress(min: Int, middle: Int, max: Int, value: Int) {
+    fun updateProgressByPosition(min: Int, middle: Int, max: Int, value: Int) {
         kotlin.runCatching {
-            zeroToMaxProgress = normalize(value.toFloat(), middle.toFloat(), max.toFloat())
-            zeroToMinProgress = normalize(value.toFloat(), min.toFloat(), middle.toFloat())
-            fullProgress = normalize(value.toFloat(), min.toFloat(), max.toFloat())
+            updateProgress(
+                min = normalize(value.toFloat(), min.toFloat(), middle.toFloat()),
+                max = normalize(value.toFloat(), middle.toFloat(), max.toFloat()),
+                full = normalize(value.toFloat(), min.toFloat(), max.toFloat()),
+            )
+        }
+    }
+
+    /**
+     * 更新进度
+     */
+    fun updateProgress(min: Float, max: Float, full: Float) {
+        kotlin.runCatching {
+            zeroToMaxProgress = max
+            zeroToMinProgress = min
+            fullProgress = full
         }
     }
 

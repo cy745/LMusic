@@ -11,10 +11,10 @@ import kotlin.math.roundToInt
 open class AppbarOffsetHelper(
     protected val appbar: CoverAppbar,
 ) : AppbarProgressHelper() {
-    private var scroller: OverScroller? = null
+    private val scroller: OverScroller by lazy { OverScroller(appbar.context) }
     private val animator: SpringAnimation by lazy {
         springAnimationOf(
-            setter = { setPosition(it.toInt()) },
+            setter = { updatePosition(it.toInt()) },
             getter = { position.toFloat() },
             finalPosition = 0f
         ).withSpringForceProperties {
@@ -25,7 +25,7 @@ open class AppbarOffsetHelper(
                 if (!canceled) {
                     // 任何动画结束后都根据当前位置更新一次进度，并且标记为非用户操作更新
                     actionFromUser = false
-                    updateProgress(minPosition, middlePosition, maxPosition, position)
+                    updateProgressByPosition(minPosition, middlePosition, maxPosition, position)
                 }
             }
         }
@@ -47,17 +47,16 @@ open class AppbarOffsetHelper(
      * [(minHeight - middleHeight) ~ 0 ~ (maxHeight - middleHeight)]
      */
     var position = 0
-        private set
 
     /**
      * 更新当前位置
      *
      * @return 当前位置是否发生变更
      */
-    protected open fun setPosition(value: Number) {
+    protected open fun updatePosition(value: Number) {
         if (position == value) return
         position = value.toInt().coerceIn(minPosition, maxPosition)
-        updateProgress(minPosition, middlePosition, maxPosition, position)
+        updateProgressByPosition(minPosition, middlePosition, maxPosition, position)
         updateOffset(position)
     }
 
@@ -77,7 +76,7 @@ open class AppbarOffsetHelper(
 
         // 存储旧数据，待下一次用于判断数据是否发生变化
         lastMiddlePosition = middlePosition
-        lastMaxPosition = minPosition
+        lastMinPosition = minPosition
         lastMaxPosition = maxPosition
     }
 
@@ -127,19 +126,18 @@ open class AppbarOffsetHelper(
     open fun scrollBy(dy: Int): Int {
         val nowPosition = position
         actionFromUser = true
-        setPosition(position - dy)
+        updatePosition(position - dy)
         return nowPosition - position
     }
 
     open fun fling(velocityY: Float) {
-        scroller = scroller ?: OverScroller(appbar.context)
-        scroller!!.fling(
+        scroller.fling(
             0, position,            // startX / Y
             0, velocityY.roundToInt(),  // velocityX / Y
             0, 0,                    // minX / maxX
             minPosition, maxPosition              // minY / maxY
         )
         actionFromUser = true
-        snapBy(scroller!!.finalY)
+        snapBy(scroller.finalY)
     }
 }

@@ -277,7 +277,8 @@ object Playing {
                 fmEdgeTransparentView.alpha = progress
             }
             positionHelper.addListenerForFullProgress { progress, fromUser ->
-                motionLayout.progress = progress
+                // motionLayout到达progress的[0,1]边界时会触发回调，同时触发界面重新测量
+                motionLayout.progress = progress.coerceIn(0.001f, 0.999f)
             }
         }
     }

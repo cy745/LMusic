@@ -52,6 +52,10 @@
 -dontwarn org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 -dontwarn org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages$Extension
 
+-keep class com.google.gson.reflect.TypeToken
+-keep class * extends com.google.gson.reflect.TypeToken
+-keep public class * implements java.lang.reflect.Type
+
 -keep class com.simple.spiderman.** { *; }
 -keepnames class com.simple.spiderman.** { *; }
 -keep public class * extends android.app.Activity

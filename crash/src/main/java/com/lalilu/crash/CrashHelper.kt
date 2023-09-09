@@ -70,7 +70,7 @@ object CrashHelper : Thread.UncaughtExceptionHandler {
             causeFile = stackTrackElement?.fileName ?: "",
             causeMethod = stackTrackElement?.methodName ?: "",
             causeLine = stackTrackElement?.lineNumber.toString(),
-            stackTrace = sw.toString(),
+            stackTrace = sw.toString().take(4000),
             deviceInfo = deviceInfo,
             buildVersion = buildVersion ?: ""
         )

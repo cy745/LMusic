@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.ui
 
 import android.content.Context
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -10,6 +11,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.lmusic.utils.AccumulatedValue
+import com.lalilu.lmusic.utils.SavedStateHelper
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
@@ -218,5 +220,49 @@ open class AppbarBehavior(
             }
             return true
         }
+    }
+
+    class AppbarBehaviorState(parcelable: Parcelable) : SavedStateHelper(parcelable) {
+        var position: Int = 0
+        var stateInt: Int = 0
+        var lastStateInt: Int = 0
+        var zeroToMaxProgress: Float = 0f
+        var zeroToMinProgress: Float = 0f
+        var fullProgress: Float = 0f
+    }
+
+    override fun onSaveInstanceState(parent: CoordinatorLayout, child: CoverAppbar): Parcelable? {
+        val superState = super.onSaveInstanceState(parent, child)
+        return SavedStateHelper.onSave<AppbarBehaviorState>(superState) {
+            it.position = positionHelper.position
+            it.stateInt = positionHelper.state.value
+            it.lastStateInt = positionHelper.lastState.value
+            it.zeroToMaxProgress = positionHelper.zeroToMaxProgress
+            it.zeroToMinProgress = positionHelper.zeroToMinProgress
+            it.fullProgress = positionHelper.fullProgress
+        }
+    }
+
+    override fun onRestoreInstanceState(
+        parent: CoordinatorLayout,
+        child: CoverAppbar,
+        state: Parcelable
+    ) {
+        val appState = SavedStateHelper.onRestore<AppbarBehaviorState>(state) {
+            positionHelper.position = it.position
+            positionHelper.restoreState(
+                state = AppbarStateHelper.State.from(it.stateInt),
+                lastState = AppbarStateHelper.State.from(it.lastStateInt)
+            )
+
+            child.post {
+                positionHelper.updateProgress(
+                    min = it.zeroToMinProgress,
+                    max = it.zeroToMaxProgress,
+                    full = it.fullProgress
+                )
+            }
+        }
+        super.onRestoreInstanceState(parent, child, appState ?: state)
     }
 }
