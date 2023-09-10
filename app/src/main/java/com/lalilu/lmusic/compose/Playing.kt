@@ -1,31 +1,12 @@
 package com.lalilu.lmusic.compose
 
 import android.view.View
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -45,7 +26,11 @@ import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.adapter.loadCover
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
-import com.lalilu.lmusic.compose.component.settings.FileSelectWrapper
+import com.lalilu.lmusic.compose.component.playing.PlayingToolbarScaffold
+import com.lalilu.lmusic.compose.component.playing.PlayingToolbarScaffoldState
+import com.lalilu.lmusic.compose.component.playing.rememberPlayingToolbarScaffoldState
+import com.lalilu.lmusic.compose.component.playing.sealed.LyricViewToolbar
+import com.lalilu.lmusic.compose.component.playing.sealed.PlayingToolbar
 import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.datastore.SettingsSp
@@ -71,86 +56,24 @@ import com.lalilu.ui.OnValueChangeListener
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
-@OptIn(ExperimentalAnimationApi::class)
 object Playing {
-
-
-    @Composable
-    fun ToolbarContent(settingsSp: SettingsSp) {
-        var isDrawTranslation by settingsSp.isDrawTranslation
-        var isEnableBlurEffect by settingsSp.isEnableBlurEffect
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 40.dp, vertical = 22.dp),
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            val iconAlpha1 = animateFloatAsState(
-                targetValue = if (isEnableBlurEffect) 1f else 0.5f, label = ""
-            )
-            val iconAlpha2 = animateFloatAsState(
-                targetValue = if (isDrawTranslation) 1f else 0.5f, label = ""
-            )
-
-            Text(
-                modifier = Modifier.weight(1f),
-                text = "",
-                color = Color.White.copy(0.5f)
-            )
-
-            FileSelectWrapper(state = settingsSp.lyricTypefacePath) { launcher, _ ->
-                Icon(
-                    modifier = Modifier
-                        .clickable { launcher.launch("font/ttf") },
-                    painter = painterResource(id = R.drawable.ic_text),
-                    contentDescription = "",
-                    tint = Color.White
-                )
-            }
-
-            AnimatedContent(
-                targetState = isEnableBlurEffect,
-                transitionSpec = { fadeIn() with fadeOut() }, label = ""
-            ) { enable ->
-                Icon(
-                    modifier = Modifier
-                        .clickable { isEnableBlurEffect = !enable }
-                        .graphicsLayer { alpha = iconAlpha1.value },
-                    painter = painterResource(id = if (enable) R.drawable.drop_line else R.drawable.blur_off_line),
-                    contentDescription = "",
-                    tint = Color.White
-                )
-            }
-
-            Icon(
-                modifier = Modifier
-                    .clickable { isDrawTranslation = !isDrawTranslation }
-                    .graphicsLayer { alpha = iconAlpha2.value },
-                painter = painterResource(id = R.drawable.translate_2),
-                contentDescription = "",
-                tint = Color.White
-            )
-        }
-    }
-
 
     var backPressCallback: (AppbarStateHelper.State) -> Unit = {}
         private set
 
     @Composable
     fun Content(
-        playingVM: PlayingViewModel = get(),
-        settingsSp: SettingsSp = get(),
+        playingVM: PlayingViewModel = koinInject(),
+        settingsSp: SettingsSp = koinInject(),
         navController: NavController = LocalNavigatorHost.current,
     ) {
         val isDrawTranslation by remember { settingsSp.isDrawTranslation }
         val isEnableBlurEffect by remember { settingsSp.isEnableBlurEffect }
         val keepScreenOnWhenLyricExpanded by remember { settingsSp.keepScreenOnWhenLyricExpanded }
         val nowState = remember { mutableStateOf<AppbarStateHelper.State?>(null) }
+        val playingToolbarScaffoldState = rememberPlayingToolbarScaffoldState()
 
         val keepScreenOn = remember {
             derivedStateOf { keepScreenOnWhenLyricExpanded && nowState.value == AppbarStateHelper.State.EXPENDED }
@@ -161,11 +84,17 @@ object Playing {
                 val adapter = initAdapter(navController, playingVM) {
                     fmRecyclerView.scrollToPosition(0)
                 }
-                initBehavior(nowState)
+                initBehavior(nowState, playingToolbarScaffoldState)
                 initRecyclerView(adapter)
                 initCover()
                 initSeekBar(playingVM, settingsSp)
-                initToolBar { ToolbarContent(settingsSp) }
+                initToolBar {
+                    PlayingToolbarScaffold(
+                        state = playingToolbarScaffoldState,
+                        topContent = { PlayingToolbar() },
+                        bottomContent = { LyricViewToolbar() }
+                    )
+                }
 
                 backPressCallback = {
                     (fmAppbarLayout.behavior as? AppbarBehavior)?.apply {
@@ -249,6 +178,7 @@ object Playing {
 
     private fun FragmentPlayingRebuildBinding.initBehavior(
         nowState: MutableState<AppbarStateHelper.State?>,
+        toolbarState: PlayingToolbarScaffoldState,
     ) {
         val behavior = fmAppbarLayout.behavior as? AppbarBehavior
         behavior?.apply {
@@ -264,6 +194,7 @@ object Playing {
             }
             positionHelper.addListenerForToMinProgress { progress, _ ->
                 fmTopPic.alpha = progress
+                toolbarState.updateProgress(minProgress = progress)
             }
             positionHelper.addListenerForToMaxProgress { progress, _ ->
                 fmTopPic.scalePercent = progress
@@ -271,6 +202,8 @@ object Playing {
 
                 fmLyricViewX.alpha = progress
                 fmEdgeTransparentView.alpha = progress
+
+                toolbarState.updateProgress(maxProgress = progress)
             }
             positionHelper.addListenerForFullProgress { progress, _ ->
                 // motionLayout到达progress的[0,1]边界时会触发回调，同时触发界面重新测量
@@ -403,8 +336,6 @@ object Playing {
 
         playingVM.currentPlaying.observe(activity) {
             maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
-//            binding.fmCollapseLayout.title = it?.name?.takeIf(String::isNotBlank)
-//                ?: activity.getString(R.string.default_slogan)
             fmTopPic.loadCover(it)
 
             if (it != null) {

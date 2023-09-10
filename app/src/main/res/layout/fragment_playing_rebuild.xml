@@ -60,18 +60,10 @@
                 app:layoutDescription="@xml/fragment_playing_rebuild_scene"
                 app:showPaths="false">
 
-                <!--                <androidx.appcompat.widget.Toolbar-->
-                <!--                    android:id="@+id/fm_toolbar"-->
-                <!--                    android:layout_width="match_parent"-->
-                <!--                    android:layout_height="?attr/actionBarSize"-->
-                <!--                    android:fitsSystemWindows="false"-->
-                <!--                    android:minHeight="?attr/actionBarSize"-->
-                <!--                    app:title="@string/default_slogan" />-->
-
                 <androidx.compose.ui.platform.ComposeView
                     android:id="@+id/fm_compose_toolbar"
                     android:layout_width="match_parent"
-                    android:layout_height="100dp"
+                    android:layout_height="120dp"
                     android:fitsSystemWindows="false" />
             </androidx.constraintlayout.motion.widget.MotionLayout>
         </com.lalilu.lmusic.ui.CoverAppbar>

@@ -3,10 +3,12 @@ package com.lalilu.lmusic.ui
 import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout.AttachedBehavior
+import androidx.core.view.children
 import com.lalilu.R
 
 class CoverAppbar @JvmOverloads constructor(
@@ -37,6 +39,10 @@ class CoverAppbar @JvmOverloads constructor(
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
+        this.findChildViewWithId(R.id.fm_compose_toolbar)?.let {
+            minAnchorHeight = it.measuredHeight
+        }
+
         applyHeightWithAspectRatio(measuredWidth)
 
         maxAnchorHeight = maxOf(
@@ -62,4 +68,18 @@ class CoverAppbar @JvmOverloads constructor(
     }
 
     override fun getBehavior(): CoordinatorLayout.Behavior<*> = behaviorInternal
+
+    private fun ViewGroup.findChildViewWithId(id: Int): View? {
+        var result: View? = null
+
+        for (child in children) {
+            when {
+                child.id == id -> result = child
+                child is ViewGroup -> result = child.findChildViewWithId(id)
+            }
+            if (result != null) break
+        }
+
+        return result
+    }
 }
