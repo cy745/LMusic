@@ -46,8 +46,15 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
         this.lastState = lastState
     }
 
+    override fun onViewLayout() {
+        if (appbar.bottom != position && position == INVALID_POSITION) {
+            if (!isValueValidNow()) return
+            updatePosition(getSnapPositionByState(state, lastState))
+        }
+        super.onViewLayout()
+    }
+
     open fun animateToState(newState: State) {
-        actionFromUser = true
         val targetOffset = getSnapPositionByState(newState, state)
         animateTo(targetOffset)
     }
@@ -57,18 +64,19 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
         updateStateIfNeeded()
     }
 
-    override fun snapBy(position: Int) {
+    override fun snapBy(position: Int, fromUser: Boolean) {
         when (state) {
             State.COLLAPSED, State.EMPTY, State.NORMAL -> {
                 animateTo(calcSnapToOffset(position, minPosition, middlePosition))
             }
 
-            else -> snapIfNeeded()
+            else -> snapIfNeeded(fromUser = fromUser)
         }
     }
 
-    override fun snapIfNeeded() {
+    override fun snapIfNeeded(fromUser: Boolean) {
         val targetPosition = getSnapPositionByState(state, lastState)
+        actionFromUser = fromUser
         animateTo(targetPosition)
     }
 

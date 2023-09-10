@@ -6,6 +6,7 @@ typealias OnProgressChangeListener = (progress: Float, fromUser: Boolean) -> Uni
 open class AppbarProgressHelper {
     companion object {
         const val INVALID_PROGRESS = -1f
+        const val INVALID_POSITION = Int.MIN_VALUE
     }
 
     private val fullProgressChangeListeners = hashSetOf<OnProgressChangeListener>()

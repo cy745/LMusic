@@ -262,21 +262,17 @@ object Playing {
                     HapticUtils.haptic(fmAppbarLayout, HapticUtils.Strength.HAPTIC_STRONG)
                 }
             }
-            positionHelper.addListenerForToMinProgress { progress, fromUser ->
-                if (!fromUser) return@addListenerForToMinProgress
-
+            positionHelper.addListenerForToMinProgress { progress, _ ->
                 fmTopPic.alpha = progress
             }
-            positionHelper.addListenerForToMaxProgress { progress, fromUser ->
-                if (!fromUser) return@addListenerForToMaxProgress
-
+            positionHelper.addListenerForToMaxProgress { progress, _ ->
                 fmTopPic.scalePercent = progress
                 fmTopPic.blurPercent = progress
 
                 fmLyricViewX.alpha = progress
                 fmEdgeTransparentView.alpha = progress
             }
-            positionHelper.addListenerForFullProgress { progress, fromUser ->
+            positionHelper.addListenerForFullProgress { progress, _ ->
                 // motionLayout到达progress的[0,1]边界时会触发回调，同时触发界面重新测量
                 motionLayout.progress = progress.coerceIn(0.001f, 0.999f)
             }
@@ -293,7 +289,7 @@ object Playing {
         val activity = root.context.getActivity()!!
 
         fmTopPic.aspectRatioLiveData.observe(activity) {
-            fmAppbarLayout.aspectRatio = it ?: 1f
+            fmAppbarLayout.updateAspectRatio(it ?: 1f)
         }
         fmTopPic.palette.observe(activity) {
             ColorAnimator.setBgColorFromPalette(it, fmAppbarLayout::setBackgroundColor)

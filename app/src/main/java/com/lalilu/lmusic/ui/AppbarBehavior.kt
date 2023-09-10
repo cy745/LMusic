@@ -53,7 +53,7 @@ open class AppbarBehavior(
         parent.onLayoutChild(child, layoutDirection)
 
         ensureHelper(child)
-        positionHelper.onViewLayout(fromOutside = false)
+        positionHelper.onViewLayout()
         return true
     }
 
@@ -83,7 +83,7 @@ open class AppbarBehavior(
     ) {
         if ((lastStartedType == ViewCompat.TYPE_TOUCH || type == ViewCompat.TYPE_NON_TOUCH) && !isTouching) {
             ensureHelper(child)
-            positionHelper.snapIfNeeded()
+            positionHelper.snapIfNeeded(fromUser = true)
         }
     }
 
@@ -155,7 +155,7 @@ open class AppbarBehavior(
                 requestDisallowIntercept(false)
                 ensureHelper(child)
                 if (flingVelocityY == 0f) {
-                    positionHelper.snapIfNeeded()
+                    positionHelper.snapIfNeeded(fromUser = true)
                 }
             }
         }

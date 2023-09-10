@@ -31,9 +31,6 @@ open class AppbarOffsetHelper(
         }
     }
     private val anchors = listOf(::minPosition::get, ::maxPosition::get, { 0 })
-    private var lastMiddlePosition = 0
-    private var lastMinPosition = 0
-    private var lastMaxPosition = 0
 
     val minPosition: Int
         get() = appbar.minAnchorHeight
@@ -46,7 +43,15 @@ open class AppbarOffsetHelper(
      * 实际控制元素位置的变量
      * [(minHeight - middleHeight) ~ 0 ~ (maxHeight - middleHeight)]
      */
-    var position = 0
+    var position = INVALID_POSITION
+
+
+    /**
+     * 根据当前从Appbar获取到的数据判断，当前页面状态是否正常可进行操作
+     */
+    fun isValueValidNow(): Boolean {
+        return !(minPosition >= middlePosition || minPosition >= maxPosition || middlePosition >= maxPosition)
+    }
 
     /**
      * 更新当前位置
@@ -60,24 +65,11 @@ open class AppbarOffsetHelper(
         updateOffset(position)
     }
 
-    open fun onViewLayout(fromOutside: Boolean = false) {
+    open fun onViewLayout() {
         // 当预想位置和当前位置不一致时进行修正
         if (appbar.bottom != position) {
             updateOffset(position)
         }
-
-        // 标记当前操作是否来自用户操作（部分情况需要排除掉非用户操作带来的进度更新）
-        actionFromUser = !(fromOutside && lastMiddlePosition != middlePosition)
-
-        // 当锚点值发生变化时，尝试贴边
-        if (lastMiddlePosition != middlePosition || lastMinPosition != minPosition || lastMaxPosition != maxPosition) {
-            snapIfNeeded()
-        }
-
-        // 存储旧数据，待下一次用于判断数据是否发生变化
-        lastMiddlePosition = middlePosition
-        lastMinPosition = minPosition
-        lastMaxPosition = maxPosition
     }
 
     open fun updateOffset(target: Int) {
@@ -95,14 +87,16 @@ open class AppbarOffsetHelper(
         }
     }
 
-    open fun snapIfNeeded() {
+    open fun snapIfNeeded(fromUser: Boolean) {
         if (!anchors.any { it() == position }) {
-            snapBy(position)
+            actionFromUser = fromUser
+            snapBy(position, fromUser)
         }
     }
 
-    open fun snapBy(position: Int) {
+    open fun snapBy(position: Int, fromUser: Boolean) {
         val target = calcSnapToOffset(position, anchors.map { it() })
+        actionFromUser = fromUser
         animateTo(target)
     }
 
@@ -137,7 +131,6 @@ open class AppbarOffsetHelper(
             0, 0,                    // minX / maxX
             minPosition, maxPosition              // minY / maxY
         )
-        actionFromUser = true
-        snapBy(scroller.finalY)
+        snapBy(scroller.finalY, true)
     }
 }

@@ -14,32 +14,30 @@ class CoverAppbar @JvmOverloads constructor(
 ) : FrameLayout(context, attrs), AttachedBehavior {
     private val behaviorInternal = AppbarBehavior(this)
 
-    var minAnchorHeight: Int = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP, 96f, context.resources.displayMetrics
-    ).toInt()
+    var minAnchorHeight: Int = 0
         private set
     var middleAnchorHeight: Int = 0
         private set
     var maxAnchorHeight: Int = 0
         private set
     var aspectRatio: Float = 1f
-        set(value) {
-            if (field == value) return
-            field = value
-            applyAspectRatio(width)
-        }
+        private set
+
 
     init {
         context.obtainStyledAttributes(attrs, R.styleable.CoverAppbar).run {
             aspectRatio = getFloat(R.styleable.CoverAppbar_aspect_ratio, 1f)
             recycle()
         }
+        minAnchorHeight = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, 96f, context.resources.displayMetrics
+        ).toInt()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
-        applyAspectRatio(measuredWidth)
+        applyHeightWithAspectRatio(measuredWidth)
 
         maxAnchorHeight = maxOf(
             (parent as? ViewGroup)?.measuredHeight ?: 0,
@@ -47,9 +45,20 @@ class CoverAppbar @JvmOverloads constructor(
         )
     }
 
-    private fun applyAspectRatio(width: Int) {
-        middleAnchorHeight = (width / aspectRatio).toInt()
-        behaviorInternal.positionHelper.onViewLayout(fromOutside = true)
+    fun updateAspectRatio(aspectRatio: Float) {
+        if (this.aspectRatio == aspectRatio) return
+        this.aspectRatio = aspectRatio
+        applyHeightWithAspectRatio(width)
+    }
+
+    private fun applyHeightWithAspectRatio(width: Int) {
+        val newHeight = (width / aspectRatio).toInt()
+        if (middleAnchorHeight == newHeight) return
+        middleAnchorHeight = newHeight
+
+        if (behaviorInternal.positionHelper.isValueValidNow()) {
+            behaviorInternal.positionHelper.snapIfNeeded(fromUser = false)
+        }
     }
 
     override fun getBehavior(): CoordinatorLayout.Behavior<*> = behaviorInternal
