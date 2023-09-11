@@ -6,6 +6,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaControllerCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.repository.LMediaRepository
@@ -108,21 +109,25 @@ class LMusicBrowser(
             val lastPlayedIdKey by lastPlayedSp.lastPlayedIdKey
 
             if (songIds.isNotEmpty()) {
-                val songs = songIds.mapNotNull { lMediaRepo.requireSong(mediaId = it) }
-                val song = lMediaRepo.requireSong(mediaId = lastPlayedIdKey)
-                setSongs(songs, song)
+                LMedia.whenReady {
+                    val songs = songIds.mapNotNull { lMediaRepo.requireSong(mediaId = it) }
+                    val song = lMediaRepo.requireSong(mediaId = lastPlayedIdKey)
+                    setSongs(songs, song)
 
-                readyCallback?.invoke()
-                readyCallback = null
+                    readyCallback?.invoke()
+                    readyCallback = null
+                }
                 return
             }
 
 
-            val songs = lMediaRepo.getSongs()
-            setSongs(songs, songs.getOrNull(0))
+            LMedia.whenReady {
+                val songs = lMediaRepo.getSongs()
+                setSongs(songs, songs.getOrNull(0))
 
-            readyCallback?.invoke()
-            readyCallback = null
+                readyCallback?.invoke()
+                readyCallback = null
+            }
         }
     }
 }
