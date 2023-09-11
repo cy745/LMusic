@@ -10,7 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import com.blankj.utilcode.util.ConvertUtils
@@ -55,9 +54,6 @@ import com.lalilu.ui.OnSeekBarClickListener
 import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.OnValueChangeListener
-import com.ramcosta.composedestinations.navigation.navigate
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import org.koin.compose.koinInject
 import kotlin.math.pow
 
@@ -365,29 +361,26 @@ object Playing {
             fmLyricViewX.loadLyric(it?.first, it?.second)
         }
 
-        settingsSp.apply {
-            lyricGravity.flow(true).onEach {
-                when (it ?: Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
-                    0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
-                    1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
-                    2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
-                }
-            }.launchIn(activity.lifecycleScope)
-
-            lyricTextSize.flow(true).onEach {
-                val sp = it ?: Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
-                val textSize = ConvertUtils.sp2px(sp.toFloat()).toFloat()
-                fmLyricViewX.setNormalTextSize(textSize)
-                fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
-            }.launchIn(activity.lifecycleScope)
-
-            lyricTypefacePath.flow(true).onEach {
-                // TODO 排查偶现的字体未加载问题
-                it ?: return@onEach run {
-                    fmLyricViewX.setLyricTypeface(typeface = null)
-                }
+        settingsSp.lyricGravity.flow(true).collectWithLifeCycleOwner(activity) {
+            when (it ?: Config.DEFAULT_SETTINGS_LYRIC_GRAVITY) {
+                0 -> fmLyricViewX.setTextGravity(GRAVITY_LEFT)
+                1 -> fmLyricViewX.setTextGravity(GRAVITY_CENTER)
+                2 -> fmLyricViewX.setTextGravity(GRAVITY_RIGHT)
+            }
+        }
+        settingsSp.lyricTextSize.flow(true).collectWithLifeCycleOwner(activity) {
+            val sp = it ?: Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
+            val textSize = ConvertUtils.sp2px(sp.toFloat()).toFloat()
+            fmLyricViewX.setNormalTextSize(textSize)
+            fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
+        }
+        settingsSp.lyricTypefacePath.flow(true).collectWithLifeCycleOwner(activity) {
+            // TODO 排查偶现的字体未加载问题
+            if (it == null) {
+                fmLyricViewX.setLyricTypeface(typeface = null)
+            } else {
                 fmLyricViewX.setLyricTypeface(path = it)
-            }.launchIn(activity.lifecycleScope)
+            }
         }
     }
 
@@ -396,8 +389,9 @@ object Playing {
     ) {
         val activity = root.context.getActivity()!!
 
-        LastTouchTimeHelper.listenToLastTouch(activity.lifecycleScope) {
-            if (it > 0) root.keepScreenOn = keepScreenOn()
+        LastTouchTimeHelper.listenToLastTouchFlow().collectWithLifeCycleOwner(activity) {
+            if (it <= 0) return@collectWithLifeCycleOwner
+            root.keepScreenOn = keepScreenOn()
         }
     }
 }
