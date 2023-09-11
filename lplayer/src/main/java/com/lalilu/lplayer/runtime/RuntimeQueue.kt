@@ -5,7 +5,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lplayer.playback.PlayQueue
 
 class RuntimeQueue(
-    private val runtime: Runtime<LSong>
+    private val runtime: Runtime<LSong>,
 ) : PlayQueue<LSong> {
 
     override fun getCurrent(): LSong? {
@@ -22,6 +22,10 @@ class RuntimeQueue(
         return runtime.getNextOf(current, true)
     }
 
+    override fun getShuffle(): LSong? {
+        return runtime.getShuffle()
+    }
+
     override fun getById(id: String): LSong? {
         return runtime.getItemById(id)
     }
@@ -34,13 +38,10 @@ class RuntimeQueue(
         runtime.update(playing = item.id)
     }
 
-    override fun shuffle() {
-        if (runtime.songsIdsFlow.value.isNotEmpty()) {
-            runtime.update(runtime.songsIdsFlow.value.shuffled())
-        }
-    }
-
-    override fun recoverOrder() {
-
+    override fun updateQueue() {
+        // TODO 随机、去重复
+//        if (runtime.songsIdsFlow.value.isNotEmpty()) {
+//            runtime.update(runtime.songsIdsFlow.value.shuffled())
+//        }
     }
 }

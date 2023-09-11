@@ -22,7 +22,7 @@ import kotlin.coroutines.CoroutineContext
 @OptIn(ExperimentalCoroutinesApi::class)
 class LMusicRuntime(
     private val lastPlayedSp: LastPlayedSp,
-    private val lMediaRepo: LMediaRepository
+    private val lMediaRepo: LMediaRepository,
 ) : Runtime<LSong>, Runtime.Listener,
     CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
@@ -64,6 +64,12 @@ class LMusicRuntime(
     override fun getNextOf(item: LSong, cycle: Boolean): LSong? {
         val nextId = getNextOf(item.id, cycle) ?: return null
         return lMediaRepo.requireSong(nextId)
+    }
+
+    override fun getShuffle(): LSong? {
+        // TODO 随机，去重复逻辑
+        val index = songsIdsFlow.value.indices.randomOrNull() ?: return null
+        return lMediaRepo.requireSong(songsIdsFlow.value[index])
     }
 
     override fun onSongsUpdate(songsIds: List<String>) {

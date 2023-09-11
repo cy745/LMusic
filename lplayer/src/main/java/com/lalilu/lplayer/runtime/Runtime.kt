@@ -17,6 +17,7 @@ interface Runtime<T> {
     fun getItemById(mediaId: String?): T?
     fun getPreviousOf(item: T, cycle: Boolean): T?
     fun getNextOf(item: T, cycle: Boolean): T?
+    fun getShuffle(): T?
 
 
     /**

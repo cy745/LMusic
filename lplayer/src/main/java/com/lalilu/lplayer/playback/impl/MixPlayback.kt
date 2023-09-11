@@ -17,7 +17,7 @@ class MixPlayback(
     override var playbackListener: Playback.Listener<LSong>? = null,
     override var queue: PlayQueue<LSong>? = null,
     override var player: Player? = null,
-    override var playMode: PlayMode = PlayMode.ListRecycle
+    override var playMode: PlayMode = PlayMode.ListRecycle,
 ) : MediaSessionCompat.Callback(), Playback<LSong>, Playback.Listener<LSong>, Player.Listener {
 
     init {
@@ -79,7 +79,11 @@ class MixPlayback(
     }
 
     override fun onSkipToNext() {
-        val next = queue?.getNext() ?: return
+        val next = when (playMode) {
+            PlayMode.ListRecycle -> queue?.getNext()
+            PlayMode.RepeatOne -> queue?.getNext()
+            PlayMode.Shuffle -> queue?.getShuffle()
+        } ?: return
         val uri = queue?.getUriFromItem(next) ?: return
 
         onPlayInfoUpdate(next, PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, 0L)
@@ -87,7 +91,11 @@ class MixPlayback(
     }
 
     override fun onSkipToPrevious() {
-        val previous = queue?.getPrevious() ?: return
+        val previous = when (playMode) {
+            PlayMode.ListRecycle -> queue?.getPrevious()
+            PlayMode.RepeatOne -> queue?.getPrevious()
+            PlayMode.Shuffle -> queue?.getNext()
+        } ?: return
         val uri = queue?.getUriFromItem(previous) ?: return
 
         onPlayInfoUpdate(previous, PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, 0L)
@@ -226,11 +234,6 @@ class MixPlayback(
     }
 
     override fun onSetPlayMode(playMode: PlayMode) {
-        when (playMode) {
-            PlayMode.Shuffle -> queue?.shuffle()
-            PlayMode.ListRecycle -> queue?.recoverOrder()
-            else -> {}
-        }
         this.playMode = playMode
         playbackListener?.onSetPlayMode(playMode)
     }
@@ -240,6 +243,7 @@ class MixPlayback(
     }
 
     override fun onItemPlay(item: LSong) {
+        queue?.updateQueue()
         playbackListener?.onItemPlay(item)
     }
 
