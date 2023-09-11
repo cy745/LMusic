@@ -83,6 +83,7 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = kotlin.runCatching { signingConfigs["release"] }.getOrNull()
+                ?: signingConfigs.getByName("debug")
             resValue("string", "app_name", "@string/app_name_beta")
 
             matchingFallbacks.add("release")

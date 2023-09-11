@@ -1,4 +1,4 @@
-rootProject.name = "LMusic"
+rootProject.name = "lmusic"
 include(":app")
 include(":ui")
 include(":common")

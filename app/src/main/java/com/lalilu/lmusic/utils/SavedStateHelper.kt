@@ -64,7 +64,7 @@ open class SavedStateHelper : BaseSavedState {
             parcelable: Parcelable?,
             callback: (T) -> Unit
         ): Parcelable? = parcelable
-            ?.let { T::class.java.constructors[0].newInstance(it) as? T }
+            ?.let { T::class.java.getConstructor(Parcelable::class.java).newInstance(it) }
             ?.also(callback)
 
         inline fun <reified T : SavedStateHelper> onRestore(
