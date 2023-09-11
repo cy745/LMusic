@@ -38,10 +38,42 @@ class RuntimeQueue(
         runtime.update(playing = item.id)
     }
 
-    override fun updateQueue() {
-        // TODO 随机、去重复
-//        if (runtime.songsIdsFlow.value.isNotEmpty()) {
-//            runtime.update(runtime.songsIdsFlow.value.shuffled())
-//        }
+    override fun moveToNext(item: LSong) {
+        val newSongs = runtime.songsIdsFlow.value.toMutableList()
+
+        val targetItemIndex = newSongs.indexOf(item.id)
+        if (targetItemIndex != -1) {
+            newSongs.removeAt(targetItemIndex)
+        }
+
+        val playingIndex = runtime.getPlayingId()
+            ?.let { newSongs.indexOf(it) }
+            ?.takeIf { it >= 0 }
+            ?: 0
+
+        // TODO 待验证
+        if (playingIndex + 1 >= newSongs.size) {
+            newSongs.add(item.id)
+        } else {
+            newSongs.add(playingIndex + 1, item.id)
+        }
+        runtime.update(songs = newSongs)
+    }
+
+    override fun moveToPrevious(item: LSong) {
+        val newSongs = runtime.songsIdsFlow.value.toMutableList()
+
+        val targetItemIndex = newSongs.indexOf(item.id)
+        if (targetItemIndex != -1) {
+            newSongs.removeAt(targetItemIndex)
+        }
+
+        val playingIndex = runtime.getPlayingId()
+            ?.let { newSongs.indexOf(it) }
+            ?.takeIf { it >= 0 }
+            ?: 0
+
+        newSongs.add(playingIndex, item.id)
+        runtime.update(songs = newSongs)
     }
 }

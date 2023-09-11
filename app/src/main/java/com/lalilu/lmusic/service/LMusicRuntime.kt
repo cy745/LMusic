@@ -34,6 +34,10 @@ class LMusicRuntime(
     override var listener: Runtime.Listener? = this
     override var timer: Timer? = null
 
+    val shuffleIgnoreHistoryCount = 20
+    val shuffleRetryCount = 5
+
+
     val playingFlow: Flow<LSong?> = playingIdFlow
         .flatMapLatest { lMediaRepo.requireSongFlowById(it) }
 
@@ -67,9 +71,29 @@ class LMusicRuntime(
     }
 
     override fun getShuffle(): LSong? {
-        // TODO 随机，去重复逻辑
-        val index = songsIdsFlow.value.indices.randomOrNull() ?: return null
-        return lMediaRepo.requireSong(songsIdsFlow.value[index])
+        val songIds = songsIdsFlow.value
+        val playingIndex = getPlayingIndex()
+        val endIndex = playingIndex + shuffleIgnoreHistoryCount
+        var targetIndex: Int? = null
+        var retryCount = shuffleRetryCount
+
+        if (songIds.size <= shuffleIgnoreHistoryCount * 2) {
+            while (true) {
+                targetIndex = songIds.indices.randomOrNull() ?: break
+                if (targetIndex != playingIndex || retryCount-- <= 0) break
+            }
+        } else {
+            var targetRange = songIds.indices - playingIndex.rangeTo(endIndex)
+
+            if (endIndex >= songIds.size) {
+                targetRange = targetRange - 0.rangeTo(endIndex - songIds.size)
+            }
+
+            targetIndex = targetRange.randomOrNull()
+        }
+
+        targetIndex ?: return null
+        return lMediaRepo.requireSong(songIds[targetIndex])
     }
 
     override fun onSongsUpdate(songsIds: List<String>) {

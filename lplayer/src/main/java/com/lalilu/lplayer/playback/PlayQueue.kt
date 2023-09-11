@@ -9,7 +9,7 @@ interface PlayQueue<T> {
     fun getShuffle(): T?
     fun getById(id: String): T?
     fun getUriFromItem(item: T): Uri
-
-    fun updateQueue()
+    fun moveToPrevious(item: T)
+    fun moveToNext(item: T)
     fun setCurrent(item: T)
 }
