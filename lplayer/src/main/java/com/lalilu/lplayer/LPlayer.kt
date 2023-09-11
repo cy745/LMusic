@@ -3,7 +3,7 @@ package com.lalilu.lplayer
 import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.lplayer.extensions.AudioFocusHelper
 import com.lalilu.lplayer.playback.impl.LocalPlayer
-import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
 object LPlayer {
@@ -22,7 +22,7 @@ object LPlayer {
             PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE
 
     val module = module {
-        single { LocalPlayer(androidContext()) }
-        single { AudioFocusHelper(androidContext()) }
+        single { LocalPlayer(androidApplication()) }
+        single { AudioFocusHelper(androidApplication()) }
     }
 }
