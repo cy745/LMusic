@@ -54,6 +54,7 @@ import com.lalilu.ui.OnSeekBarClickListener
 import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.OnValueChangeListener
+import com.ramcosta.composedestinations.navigation.navigate
 import org.koin.compose.koinInject
 import kotlin.math.pow
 

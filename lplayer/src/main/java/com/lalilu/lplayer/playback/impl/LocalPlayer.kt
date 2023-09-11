@@ -3,6 +3,7 @@ package com.lalilu.lplayer.playback.impl
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lplayer.extensions.fadePause
 import com.lalilu.lplayer.extensions.fadeStart
 import com.lalilu.lplayer.extensions.getNowVolume
@@ -162,7 +163,7 @@ class LocalPlayer(
     }
 
     override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
-//        ToastUtils.showLong("播放异常：$what $extra")
+        LogUtils.e("播放异常：$what $extra")
         return false
     }
 

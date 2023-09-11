@@ -202,11 +202,6 @@ dependencies {
 
 //    implementation("com.github.angcyo:DslAdapter:6.0.1")
 
-    // Koin for Android
-    // https://mvnrepository.com/artifact/io.insert-koin/koin-android
-    implementation("io.insert-koin:koin-android:${findProperty("koin_version")}")
-    implementation("io.insert-koin:koin-androidx-compose:${findProperty("koin_compose_version")}")
-
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.activity:activity-compose:1.7.2")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
