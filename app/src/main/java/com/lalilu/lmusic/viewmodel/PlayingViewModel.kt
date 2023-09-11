@@ -3,7 +3,6 @@ package com.lalilu.lmusic.viewmodel
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.SettingsSp
@@ -21,21 +20,16 @@ class PlayingViewModel(
     val runtime: LMusicRuntime,
     val browser: LMusicBrowser,
     val settingsSp: SettingsSp,
-    val lyricRepository: LyricRepository
+    val lyricRepository: LyricRepository,
 ) : ViewModel() {
     private val playing = runtime.playingFlow.toState(viewModelScope)
     private val isPlaying = runtime.isPlayingFlow.toState(false, viewModelScope)
-
-    val currentLyric = lyricRepository.currentLyric.asLiveData(viewModelScope.coroutineContext)
-    val currentPosition = runtime.positionFlow.asLiveData(viewModelScope.coroutineContext)
-    val currentPlaying = runtime.playingFlow.asLiveData(viewModelScope.coroutineContext)
-    val currentSongs = runtime.songsFlow.asLiveData(viewModelScope.coroutineContext)
 
     fun play(
         song: LSong,
         songs: List<LSong>? = null,
         playOrPause: Boolean = false,
-        addToNext: Boolean = false
+        addToNext: Boolean = false,
     ) = play(song.id, songs?.map(LSong::id), playOrPause, addToNext)
 
     /**
@@ -50,7 +44,7 @@ class PlayingViewModel(
         mediaId: String,
         mediaIds: List<String>? = null,
         playOrPause: Boolean = false,
-        addToNext: Boolean = false
+        addToNext: Boolean = false,
     ) = viewModelScope.launch {
         if (mediaIds != null) {
             browser.setSongs(mediaIds)

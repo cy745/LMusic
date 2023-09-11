@@ -384,33 +384,33 @@ fun PlayingScreen(
                 .mapLatest { if (it > 0) root.keepScreenOn = keepScreenOn.value }
                 .launchIn(activity.lifecycleScope)
 
-            playingVM.currentSongs.observe(activity) { songs ->
-                adapter.setDiffData(songs)
-            }
+//            playingVM.currentSongs.observe(activity) { songs ->
+//                adapter.setDiffData(songs)
+//            }
 
-            playingVM.currentPlaying.observe(activity) {
-                maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
-                fmCollapseLayout.title = it?.name?.takeIf(String::isNotBlank)
-                    ?: activity.getString(R.string.default_slogan)
-                fmTopPic.loadCover(it)
+//            playingVM.currentPlaying.observe(activity) {
+//                maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
+//                fmCollapseLayout.title = it?.name?.takeIf(String::isNotBlank)
+//                    ?: activity.getString(R.string.default_slogan)
+//                fmTopPic.loadCover(it)
+//
+//                if (it != null) {
+//                    DynamicTips.push(
+//                        title = it.name,
+//                        subTitle = "播放中",
+//                        imageData = it
+//                    )
+//                }
+//            }
 
-                if (it != null) {
-                    DynamicTips.push(
-                        title = it.name,
-                        subTitle = "播放中",
-                        imageData = it
-                    )
-                }
-            }
-
-            playingVM.currentPosition.observe(activity) {
-                maSeekBar.updateValue(it.toFloat())
-            }
-
-            playingVM.currentLyric.observe(activity) {
-                fmLyricViewX.setLyricEntryList(emptyList())
-                fmLyricViewX.loadLyric(it?.first, it?.second)
-            }
+//            playingVM.currentPosition.observe(activity) {
+//                maSeekBar.updateValue(it.toFloat())
+//            }
+//
+//            playingVM.currentLyric.observe(activity) {
+//                fmLyricViewX.setLyricEntryList(emptyList())
+//                fmLyricViewX.loadLyric(it?.first, it?.second)
+//            }
 
             settingsSp.apply {
                 lyricGravity.flow(true).onEach {

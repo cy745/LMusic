@@ -40,6 +40,7 @@ import com.lalilu.lmusic.ui.AppbarBehavior
 import com.lalilu.lmusic.ui.AppbarStateHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
+import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -341,11 +342,13 @@ object Playing {
     ) {
         val activity = root.context.getActivity()!!
 
-        playingVM.currentSongs.observe(activity) { songs ->
-            adapter.setDiffData(songs)
+        playingVM.runtime.songsFlow.collectWithLifeCycleOwner(activity) {
+            adapter.setDiffData(it)
         }
-
-        playingVM.currentPlaying.observe(activity) {
+        playingVM.runtime.positionFlow.collectWithLifeCycleOwner(activity) {
+            maSeekBar.updateValue(it.toFloat())
+        }
+        playingVM.runtime.playingFlow.collectWithLifeCycleOwner(activity) {
             maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
             fmTopPic.loadCover(it)
 
@@ -357,12 +360,7 @@ object Playing {
                 )
             }
         }
-
-        playingVM.currentPosition.observe(activity) {
-            maSeekBar.updateValue(it.toFloat())
-        }
-
-        playingVM.currentLyric.observe(activity) {
+        playingVM.lyricRepository.currentLyric.collectWithLifeCycleOwner(activity) {
             fmLyricViewX.setLyricEntryList(emptyList())
             fmLyricViewX.loadLyric(it?.first, it?.second)
         }

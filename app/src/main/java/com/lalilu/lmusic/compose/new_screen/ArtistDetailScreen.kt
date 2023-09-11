@@ -8,9 +8,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,7 +57,8 @@ fun ArtistDetailScreen(
     val sortFor = remember { "ArtistDetail" }
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
-    val currentPlaying by playingVM.currentPlaying.observeAsState()
+    val currentPlaying by playingVM.runtime.playingFlow.collectAsState(null)
+
     val showSortPanel = remember { mutableStateOf(false) }
     val scrollProgress = remember(gridState) {
         derivedStateOf {
