@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.compose
 
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
@@ -57,6 +58,7 @@ import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.compose.koinInject
+import kotlin.math.pow
 
 object Playing {
 
@@ -180,6 +182,9 @@ object Playing {
         nowState: MutableState<AppbarStateHelper.State?>,
         toolbarState: PlayingToolbarScaffoldState,
     ) {
+        // y = -2 * (x - 0.5) ^ 2 + 0.5
+        val transition: (Float) -> Float = { x -> -2f * (x - 0.5f).pow(2) + 0.5f }
+        val interpolator = AccelerateDecelerateInterpolator()
         val behavior = fmAppbarLayout.behavior as? AppbarBehavior
         behavior?.apply {
             positionHelper.addOnStateChangeListener { newState, oldState, updateFromUser ->
@@ -199,11 +204,17 @@ object Playing {
             positionHelper.addListenerForToMaxProgress { progress, _ ->
                 fmTopPic.scalePercent = progress
                 fmTopPic.blurPercent = progress
-
-                fmLyricViewX.alpha = progress
-                fmEdgeTransparentView.alpha = progress
-
                 toolbarState.updateProgress(maxProgress = progress)
+
+                val floatProgress = transition(progress)
+                val translation = floatProgress * positionHelper.dragThreshold
+                fmTopPic.translationY = translation
+                fmLyricViewX.translationY = translation * 3f
+
+                val interpolation = interpolator.getInterpolation(progress)
+                val progressIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
+                fmLyricViewX.alpha = progressIncrease
+                fmEdgeTransparentView.alpha = progressIncrease
             }
             positionHelper.addListenerForFullProgress { progress, _ ->
                 // motionLayout到达progress的[0,1]边界时会触发回调，同时触发界面重新测量

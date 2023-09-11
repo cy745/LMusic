@@ -24,7 +24,8 @@ class CoverAppbar @JvmOverloads constructor(
         private set
     var aspectRatio: Float = 1f
         private set
-
+    var dragThreshold: Int = 120
+        private set
 
     init {
         context.obtainStyledAttributes(attrs, R.styleable.CoverAppbar).run {

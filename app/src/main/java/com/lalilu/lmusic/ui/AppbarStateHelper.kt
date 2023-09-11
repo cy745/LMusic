@@ -28,8 +28,9 @@ open class AppbarStateHelper(appbar: CoverAppbar) : AppbarOffsetHelper(appbar) {
         }
     }
 
-    open var dragThreshold: Int = 120
     private val stateChangeListeners = hashSetOf<OnStateChangeListener>()
+    val dragThreshold: Int
+        get() = appbar.dragThreshold
 
     fun addOnStateChangeListener(listener: OnStateChangeListener) {
         stateChangeListeners.add(listener)
