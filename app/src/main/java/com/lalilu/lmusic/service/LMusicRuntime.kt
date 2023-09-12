@@ -33,6 +33,7 @@ class LMusicRuntime(
     override val isPlayingFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override var listener: Runtime.Listener? = this
     override var timer: Timer? = null
+    override var getPosition: () -> Long = { 0L }
 
     val shuffleIgnoreHistoryCount = 20
     val shuffleRetryCount = 5

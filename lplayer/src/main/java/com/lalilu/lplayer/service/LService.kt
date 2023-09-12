@@ -11,6 +11,9 @@ import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.lalilu.lmedia.entity.LSong
@@ -32,8 +35,11 @@ import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
 @Suppress("DEPRECATION")
-abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>, CoroutineScope {
+abstract class LService : MediaBrowserServiceCompat(),
+    LifecycleOwner, Playback.Listener<LSong>, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
+    override val lifecycle: Lifecycle get() = registry
+    private val registry by lazy { LifecycleRegistry(this) }
 
     abstract fun getStartIntent(): Intent
     abstract fun getLoopDelay(isPlaying: Boolean): Long
@@ -65,8 +71,9 @@ abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>,
 
     override fun onCreate() {
         super.onCreate()
-
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         if (!this::playback.isInitialized) {
+            runtime.getPosition = localPlayer::getPosition
             playback = MixPlayback(
                 audioFocusHelper = audioFocusHelper,
                 playbackListener = this,
@@ -85,6 +92,7 @@ abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>,
         }
 
         sessionToken = mediaSession.sessionToken
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_START)
     }
 
     override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
@@ -150,19 +158,20 @@ abstract class LService : MediaBrowserServiceCompat(), Playback.Listener<LSong>,
     override fun onGetRoot(
         clientPackageName: String,
         clientUid: Int,
-        rootHints: Bundle?
+        rootHints: Bundle?,
     ): BrowserRoot {
         return BrowserRoot("MAIN", null)
     }
 
     override fun onLoadChildren(
         parentId: String,
-        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
+        result: Result<MutableList<MediaBrowserCompat.MediaItem>>,
     ) {
         result.sendResult(mutableListOf())
     }
 
     override fun onDestroy() {
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         playback.destroy()
         localPlayer.destroy()
 

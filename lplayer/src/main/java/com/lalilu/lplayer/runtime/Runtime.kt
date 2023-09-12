@@ -10,6 +10,7 @@ interface Runtime<T> {
     val positionFlow: MutableStateFlow<Long>
     val isPlayingFlow: MutableStateFlow<Boolean>
 
+    var getPosition: () -> Long
     var listener: Listener?
     var timer: Timer?
 
@@ -25,7 +26,7 @@ interface Runtime<T> {
      */
     fun load(
         songs: List<String> = emptyList(),
-        playing: String?
+        playing: String?,
     ) {
         update(songs)
         if (songs.contains(playing)) {
@@ -85,7 +86,7 @@ interface Runtime<T> {
         if (loopDelay <= 0) return
         timer = Timer().apply {
             schedule(0, loopDelay) {
-                positionFlow.value += loopDelay
+                positionFlow.value = getPosition()
                 listener?.onPositionUpdate(positionFlow.value)
             }
         }

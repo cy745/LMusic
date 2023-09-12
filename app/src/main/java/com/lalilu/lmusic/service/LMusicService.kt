@@ -8,12 +8,11 @@ import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
+import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.AudioFocusHelper
 import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.service.LService
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 
 class LMusicService : LService() {
@@ -29,30 +28,24 @@ class LMusicService : LService() {
 
     override fun onCreate() {
         super.onCreate()
-
-        settingsSp.volumeControl.flow(true)
-            .onEach {
-                it?.let { playback.setMaxVolume(it) }
-            }
-            .launchIn(this)
-
-        settingsSp.enableSystemEq.flow(true)
-            .onEach {
-                eqHelper.setSystemEqEnable(it ?: false)
-            }
-            .launchIn(this)
-
-        settingsSp.playMode.flow(true)
-            .onEach {
-                it?.let { playback.onSetPlayMode(PlayMode.of(it)) }
-            }
-            .launchIn(this)
-
-        settingsSp.ignoreAudioFocus.flow(true)
-            .onEach {
-                AudioFocusHelper.ignoreAudioFocus = it ?: false
-            }
-            .launchIn(this)
+        settingsSp.apply {
+            volumeControl.flow(true)
+                .collectWithLifeCycleOwner(this@LMusicService) {
+                    it?.let { playback.setMaxVolume(it) }
+                }
+            enableSystemEq.flow(true)
+                .collectWithLifeCycleOwner(this@LMusicService) {
+                    eqHelper.setSystemEqEnable(it ?: false)
+                }
+            playMode.flow(true)
+                .collectWithLifeCycleOwner(this@LMusicService) {
+                    it?.let { playback.onSetPlayMode(PlayMode.of(it)) }
+                }
+            ignoreAudioFocus.flow(true)
+                .collectWithLifeCycleOwner(this@LMusicService) {
+                    AudioFocusHelper.ignoreAudioFocus = it ?: false
+                }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
