@@ -1,10 +1,12 @@
 package com.lalilu.lplayer.service
 
+import android.app.Notification
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ServiceInfo
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
@@ -116,7 +118,7 @@ abstract class LService : MediaBrowserServiceCompat(),
                 mediaSession.isActive = true
                 startService()
                 notifier.startForeground(mediaSession) { id, notification ->
-                    startForeground(id, notification)
+                    startForeGround(id, notification)
                 }
             }
 
@@ -187,6 +189,17 @@ abstract class LService : MediaBrowserServiceCompat(),
             startForegroundService(getStartIntent())
         } else {
             startService(getStartIntent())
+        }
+    }
+
+    private fun startForeGround(id: Int, notification: Notification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                id, notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            )
+        } else {
+            startForeground(id, notification)
         }
     }
 
