@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import com.blankj.utilcode.util.ConvertUtils
+import com.blankj.utilcode.util.LogUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
@@ -314,15 +315,8 @@ object Playing {
             HapticUtils.haptic(root)
         })
 
-        var now: Long
-        var lastTime = System.currentTimeMillis()
-
         maSeekBar.onValueChangeListener.add(OnValueChangeListener {
-            now = System.currentTimeMillis()
-            if (lastTime + 50 > now) return@OnValueChangeListener
-
             fmLyricViewX.updateTime(it.toLong())
-            lastTime = now
         })
     }
 
@@ -376,6 +370,7 @@ object Playing {
             fmLyricViewX.setCurrentTextSize(textSize * 1.2f)
         }
         settingsSp.lyricTypefacePath.flow(true).collectWithLifeCycleOwner(activity) {
+            LogUtils.i("lyricPath: $it")
             // TODO 排查偶现的字体未加载问题
             if (it == null) {
                 fmLyricViewX.setLyricTypeface(typeface = null)

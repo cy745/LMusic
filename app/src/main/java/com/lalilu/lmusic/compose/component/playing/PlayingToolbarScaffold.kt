@@ -25,7 +25,7 @@ import com.lalilu.lmusic.utils.extension.rememberFixedStatusBarHeightDp
 fun PlayingToolbarScaffold(
     state: PlayingToolbarScaffoldState = rememberPlayingToolbarScaffoldState(),
     topContent: @Composable ColumnScope.() -> Unit,
-    bottomContent: @Composable ColumnScope.() -> Unit
+    bottomContent: @Composable ColumnScope.() -> Unit,
 ) {
     val showTop by remember { derivedStateOf { state.minProgress.floatValue != 1f } }
     val showBottom by remember { derivedStateOf { state.maxProgress.floatValue != 0f } }
@@ -35,33 +35,35 @@ fun PlayingToolbarScaffold(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.BottomCenter
     ) {
-        if (showTop) {
-            Column(
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .padding(
-                        top = statusBarHeight,
-                        bottom = 12.dp
-                    )
-                    .graphicsLayer { alpha = 1f - state.minProgress.floatValue },
-                content = topContent,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
-            )
-        }
+        Column(
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .padding(
+                    top = statusBarHeight,
+                    bottom = 12.dp
+                )
+                .graphicsLayer {
+                    alpha = 1f - state.minProgress.floatValue
+                    translationY = if (showTop) 0f else Float.MAX_VALUE
+                },
+            content = topContent,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        )
 
-        if (showBottom) {
-            Column(
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .graphicsLayer { alpha = state.maxProgress.floatValue },
-                content = bottomContent,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom
-            )
-        }
+        Column(
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .graphicsLayer {
+                    alpha = state.maxProgress.floatValue
+                    translationY = if (showBottom) 0f else Float.MAX_VALUE
+                },
+            content = bottomContent,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
+        )
     }
 }
 
@@ -71,7 +73,7 @@ class PlayingToolbarScaffoldState {
 
     fun updateProgress(
         minProgress: Float = this.minProgress.floatValue,
-        maxProgress: Float = this.maxProgress.floatValue
+        maxProgress: Float = this.maxProgress.floatValue,
     ) {
         this.minProgress.floatValue = minProgress
         this.maxProgress.floatValue = maxProgress
