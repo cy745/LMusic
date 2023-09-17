@@ -6,13 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.lmedia.wrapper.Taglib
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
 import com.lalilu.lmusic.api.lrcshare.SongResult
 import com.lalilu.lmusic.repository.LMediaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.jaudiotagger.audio.AudioFileIO
-import org.jaudiotagger.tag.FieldKey
 import java.io.File
 
 class SearchLyricViewModel(
@@ -83,10 +82,10 @@ class SearchLyricViewModel(
                     it.copyTo(tempFile.outputStream())
                 }
 
-                val audioFile = AudioFileIO.readAs(tempFile, ext)
-                val tag = audioFile.tag
-                tag.setField(FieldKey.LYRICS, lyric)
-                audioFile.commit()
+                val result = Taglib.writeLyricInto(tempFile.absolutePath, lyric ?: "")
+                if (!result) {
+                    throw RuntimeException("保存失败")
+                }
 
                 val readAndWriteMode = "rw"
                 // 修改完成后将该文件写回到源文件
