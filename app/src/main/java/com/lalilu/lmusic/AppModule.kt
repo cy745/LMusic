@@ -31,9 +31,6 @@ import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.SongCoverFetcher
 import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
 import com.lalilu.lmusic.utils.extension.toBitmap
-import com.lalilu.lmusic.utils.sources.EmbeddedLyricSource
-import com.lalilu.lmusic.utils.sources.LocalLyricSource
-import com.lalilu.lmusic.utils.sources.LyricSourceFactory
 import com.lalilu.lmusic.viewmodel.AlbumsViewModel
 import com.lalilu.lmusic.viewmodel.ArtistsViewModel
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
@@ -127,10 +124,6 @@ val RuntimeModule = module {
     single { CoverRepository(get()) }
     single { LyricRepository(get(), get()) }
     single { LMediaRepository() }
-
-    single { LyricSourceFactory(get(), get()) }
-    single { EmbeddedLyricSource() }
-    single { LocalLyricSource() }
 }
 
 val ApiModule = module {

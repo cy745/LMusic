@@ -3,6 +3,7 @@ package com.lalilu.lmusic
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lplayer.LPlayer
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -24,7 +25,8 @@ class LMusicApp : Application(), ImageLoaderFactory {
                 ViewModelModule,
                 DatabaseModule,
                 RuntimeModule,
-                LPlayer.module
+                LPlayer.module,
+                LMedia.module
             )
         }
     }

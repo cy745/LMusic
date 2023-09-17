@@ -10,7 +10,7 @@ import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.extension.findShowLine
-import com.lalilu.lmusic.utils.sources.LyricSourceFactory
+import com.lalilu.lmedia.repository.LyricSourceFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
