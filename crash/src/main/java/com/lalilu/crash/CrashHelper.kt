@@ -1,7 +1,6 @@
 package com.lalilu.crash
 
-import android.annotation.SuppressLint
-import android.content.Context
+import android.app.Application
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -9,13 +8,12 @@ import java.io.PrintWriter
 import java.io.StringWriter
 
 
-@SuppressLint("StaticFieldLeak")
 object CrashHelper : Thread.UncaughtExceptionHandler {
 
-    private lateinit var mContext: Context
+    private lateinit var mContext: Application
     private lateinit var packageManager: PackageManager
 
-    fun init(context: Context) {
+    fun init(context: Application) {
         mContext = context
         packageManager = context.packageManager
         Thread.setDefaultUncaughtExceptionHandler(this)

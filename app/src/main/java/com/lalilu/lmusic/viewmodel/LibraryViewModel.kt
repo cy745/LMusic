@@ -19,7 +19,7 @@ class LibraryViewModel(
         .toState(emptyList(), viewModelScope)
 
     val dailyRecommends = tempSp.dailyRecommends.flow(true)
-        .flatMapLatest { ids -> LMedia.flowMapBy<LSong>(ids ?: emptyList()) }
+        .flatMapLatest { LMedia.flowMapBy<LSong>(it ?: emptyList()) }
         .toState(emptyList(), viewModelScope)
 
     fun checkOrUpdateToday() {
