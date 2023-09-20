@@ -109,7 +109,7 @@ val ViewModelModule = module {
     single { AlbumsViewModel(get(), get()) }
     single { ArtistsViewModel(get(), get()) }
     single { DictionariesViewModel(get(), get()) }
-    single { HistoryViewModel(get(), get()) }
+    single { HistoryViewModel(get()) }
     single { SongsViewModel(get(), get(), get()) }
     single { SongDetailViewModel(get()) }
     single { SearchLyricViewModel(androidApplication(), get(), get()) }

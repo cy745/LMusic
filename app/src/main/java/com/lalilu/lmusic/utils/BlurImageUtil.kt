@@ -164,6 +164,7 @@ object BlurImageUtil : CoroutineScope {
         scaleY = scaleValue
     }
 
+    // TODO Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 20060 (DefaultDispatch), pid 19982 (ilu.lmusic.beta) 存在线程相关问题
     /**
      * 创建经过Blur处理的Bitmap
      *

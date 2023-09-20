@@ -2,26 +2,24 @@ package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.HistoryRepository
-import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.flatMapLatest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HistoryViewModel(
-    private val historyRepo: HistoryRepository,
-    lMediaRepo: LMediaRepository
+    private val historyRepo: HistoryRepository
 ) : ViewModel() {
     val historyState = historyRepo
         .getHistoriesIdsMapWithLastTime()
-        .mapLatest { map ->
-            map.mapNotNull { entry ->
-                val item = lMediaRepo.requireSong(entry.key) ?: return@mapNotNull null
-                item to entry.value
-            }.sortedByDescending { it.second }
+        .flatMapLatest { map ->
+            val ids = map.toList()
+                .sortedByDescending { it.second }
                 .map { it.first }
+            LMedia.flowMapBy<LSong>(ids)
         }.toState(emptyList(), viewModelScope)
 
     private val historyCountState = historyRepo
