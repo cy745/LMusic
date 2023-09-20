@@ -101,7 +101,7 @@ val DatabaseModule = module {
 
 val ViewModelModule = module {
     single { PlayingViewModel(get(), get(), get(), get()) }
-    single { LibraryViewModel(get(), get()) }
+    single { LibraryViewModel(get()) }
     single { LMediaViewModel(get()) }
     single { PlaylistDetailViewModel(get(), get()) }
     single { PlaylistsViewModel(get(), get()) }
@@ -118,9 +118,9 @@ val ViewModelModule = module {
 val RuntimeModule = module {
     single<Notifier> { LMusicNotifier(androidApplication(), get(), get(), get(), get()) }
     single<Runtime<LSong>> { get<LMusicRuntime>() }
-    single { LMusicRuntime(get(), get()) }
+    single { LMusicRuntime(get()) }
 
-    single { LMusicBrowser(get(), get(), get(), get()) }
+    single { LMusicBrowser(get(), get(), get()) }
     single { CoverRepository(get()) }
     single { LyricRepository(get(), get()) }
     single { LMediaRepository() }

@@ -9,16 +9,13 @@ import androidx.lifecycle.LifecycleOwner
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.LastPlayedSp
-import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lplayer.playback.Playback
 
 class LMusicBrowser(
     private val context: Context,
     private val lastPlayedSp: LastPlayedSp,
-    private val lMediaRepo: LMediaRepository,
     private val runtime: LMusicRuntime
 ) : DefaultLifecycleObserver {
-    private var readyCallback: (() -> Unit)? = null
     private var controller: MediaControllerCompat? = null
     private val browser: MediaBrowserCompat by lazy {
         MediaBrowserCompat(
@@ -43,14 +40,6 @@ class LMusicBrowser(
 
     override fun onStop(owner: LifecycleOwner) {
         browser.disconnect()
-    }
-
-    fun whenConnected(callback: () -> Unit) {
-        if (browser.isConnected && controller != null) {
-            callback()
-            return
-        }
-        readyCallback = callback
     }
 
     fun play() = controller?.transportControls?.play()
@@ -100,33 +89,25 @@ class LMusicBrowser(
 
             // 若当前播放列表不为空，则不尝试提取历史数据填充
             if (!runtime.isEmpty()) {
-                readyCallback?.invoke()
-                readyCallback = null
                 return
             }
 
             val songIds by lastPlayedSp.lastPlayedListIdsKey
             val lastPlayedIdKey by lastPlayedSp.lastPlayedIdKey
 
+            // 存在历史记录
             if (songIds.isNotEmpty()) {
                 LMedia.whenReady {
-                    val songs = songIds.mapNotNull { lMediaRepo.requireSong(mediaId = it) }
-                    val song = lMediaRepo.requireSong(mediaId = lastPlayedIdKey)
+                    val songs = LMedia.mapBy<LSong>(songIds)
+                    val song = LMedia.get<LSong>(lastPlayedIdKey)
                     setSongs(songs, song)
-
-                    readyCallback?.invoke()
-                    readyCallback = null
                 }
                 return
             }
 
-
             LMedia.whenReady {
-                val songs = lMediaRepo.getSongs()
+                val songs = LMedia.get<LSong>()
                 setSongs(songs, songs.getOrNull(0))
-
-                readyCallback?.invoke()
-                readyCallback = null
             }
         }
     }
