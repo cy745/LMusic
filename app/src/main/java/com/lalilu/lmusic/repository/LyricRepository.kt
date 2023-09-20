@@ -42,19 +42,13 @@ class LyricRepository(
         }
     }
 
-    suspend fun hasLyric(song: LSong): Boolean = withContext(Dispatchers.IO) {
-        getLyric(song) != null
-    }
-
-    suspend fun getLyric(song: LSong): Pair<String, String?>? = withContext(Dispatchers.IO) {
-        return@withContext lyricSource.loadLyric(song)
-            ?.takeIf { it.first.isNotEmpty() }
-    }
+    suspend fun hasLyric(song: LSong): Boolean =
+        withContext(Dispatchers.IO) { lyricSource.hasLyric(song) }
 
     val currentLyric: Flow<Pair<String, String?>?> =
         runtime.playingFlow.flatMapLatest { item ->
-            LMedia.getSongFlowById(item?.id)
-                .mapLatest { it?.let { getLyric(it) } }
+            LMedia.getFlow<LSong>(item?.id)
+                .mapLatest { it?.let { lyricSource.loadLyric(it) } }
         }
 
     val currentLyricSentence: Flow<String?> = currentLyric.mapLatest { pair ->

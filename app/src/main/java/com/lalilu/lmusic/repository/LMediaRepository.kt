@@ -4,6 +4,7 @@ import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LDictionary
+import com.lalilu.lmedia.entity.LGenre
 import com.lalilu.lmedia.entity.LSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,33 +17,30 @@ import kotlin.coroutines.CoroutineContext
 class LMediaRepository : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
 
-    val songsFlow = LMedia.getSongsFlow()
-    val artistsFlow = LMedia.getArtistsFlow()
-    val albumsFlow = LMedia.getAlbumsFlow()
-    val genresFlow = LMedia.getGenresFlow()
-    val dictionariesFlow = LMedia.getDictionariesFlow()
+    val songsFlow = LMedia.getFlow<LSong>()
+    val artistsFlow = LMedia.getFlow<LArtist>()
+    val albumsFlow = LMedia.getFlow<LAlbum>()
+    val genresFlow = LMedia.getFlow<LGenre>()
+    val dictionariesFlow = LMedia.getFlow<LDictionary>()
 
-    val allSongsFlow = LMedia.getSongsFlow(false)
-    val allDictionariesFlow = LMedia.getDictionariesFlow(false)
+    val allSongsFlow = LMedia.getFlow<LSong>()
+    val allDictionariesFlow = LMedia.getFlow<LDictionary>()
 
     fun getSongsFlow(num: Int, shuffle: Boolean = false): Flow<List<LSong>> =
-        LMedia.getSongsFlow().mapLatest { it.let { if (shuffle) it.shuffled() else it }.take(num) }
+        LMedia.getFlow<LSong>()
+            .mapLatest { it.let { if (shuffle) it.shuffled() else it }.take(num) }
 
     fun getSongs(num: Int = Int.MAX_VALUE, shuffle: Boolean = false): List<LSong> =
-        LMedia.getSongs().let { if (shuffle) it.shuffled() else it }.take(num)
+        LMedia.get<LSong>().let { if (shuffle) it.shuffled() else it }.take(num)
 
-    fun requireSong(mediaId: String): LSong? =
-        LMedia.getSongOrNull(mediaId)
-
-    fun requireArtist(artistName: String): LArtist? =
-        LMedia.getArtistOrNull(artistName)
-
-    fun requireAlbum(albumId: String): LAlbum? =
-        LMedia.getAlbumOrNull(albumId)
+    fun requireSong(mediaId: String): LSong? = LMedia.get(mediaId)
+    fun requireArtist(artistName: String): LArtist? = LMedia.get(artistName)
+    fun requireAlbum(albumId: String): LAlbum? = LMedia.get(albumId)
 
     fun requireDictionary(dictionaryId: String, blockFilter: Boolean = true): LDictionary? =
-        LMedia.getDictionaryOrNull(dictionaryId, blockFilter)
+        LMedia.get(dictionaryId)
 
     fun requireSongFlowById(mediaId: String?): Flow<LSong?> =
-        LMedia.getSongFlowById(mediaId)
+        LMedia.getFlow(mediaId)
+
 }

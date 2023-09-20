@@ -18,7 +18,6 @@ abstract class BaseFetcher : Fetcher {
 
     open suspend fun fetchForSong(context: Context, song: LSong): InputStream? {
         return fetchAospMetadataCovers(context, song)
-//            ?: fetchExoplayerCover(context, song)
             ?: fetchMediaStoreCovers(context, song)
             ?: song.album?.let { fetchForAlbum(context, it) }
     }
@@ -26,7 +25,6 @@ abstract class BaseFetcher : Fetcher {
     open suspend fun fetchForAlbum(context: Context, album: LAlbum): InputStream? {
         return fetchMediaStoreCovers(context, album)
             ?: fetchAospMetadataCovers(context, album)
-//            ?: fetchExoplayerCover(context, album)
     }
 
     private fun fetchAospMetadataCovers(context: Context, album: LAlbum): InputStream? {
@@ -37,15 +35,6 @@ abstract class BaseFetcher : Fetcher {
         }
         return result
     }
-
-//    private suspend fun fetchExoplayerCover(context: Context, album: LAlbum): InputStream? {
-//        var result: InputStream? = null
-//        for (song in album.songs) {
-//            result = fetchExoplayerCover(context, song)
-//            if (result != null) break
-//        }
-//        return result
-//    }
 
     private fun fetchAospMetadataCovers(context: Context, song: LSong): InputStream? {
         MediaMetadataRetriever().apply {
@@ -59,71 +48,6 @@ abstract class BaseFetcher : Fetcher {
             return embeddedPicture?.let { ByteArrayInputStream(it) }.also { release() }
         }
     }
-
-//    private suspend fun fetchExoplayerCover(context: Context, song: LSong): InputStream? {
-//        val future = MetadataRetriever.retrieveMetadata(context, MediaItem.fromUri(song.uri))
-//
-//        // future.get is a blocking call that makes us spin until the future is done.
-//        // This is bad for a co-routine, as it prevents cancellation and by extension
-//        // messes with the image loading process and causes frustrating bugs.
-//        // To fix this we wrap this around in a withContext call to make it suspend and make
-//        // sure that the runner can do other coroutines.
-//        @Suppress("BlockingMethodInNonBlockingContext")
-//        val tracks =
-//            withContext(Dispatchers.IO) {
-//                try {
-//                    future.get()
-//                } catch (e: Exception) {
-//                    null
-//                }
-//            }
-//
-//        if (tracks == null || tracks.isEmpty) {
-//            // Unrecognized format. This is expected, as ExoPlayer only supports a
-//            // subset of formats.
-//            return null
-//        }
-//
-//        // The metadata extraction process of ExoPlayer results in a dump of all metadata
-//        // it found, which must be iterated through.
-//        val metadata = tracks[0].getFormat(0).metadata
-//
-//        if (metadata == null || metadata.length() == 0) {
-//            // No (parsable) metadata. This is also expected.
-//            return null
-//        }
-//
-//        var stream: ByteArrayInputStream? = null
-//
-//        for (i in 0 until metadata.length()) {
-//            // We can only extract pictures from two tags with this method, ID3v2's APIC or
-//            // Vorbis picture comments.
-//            val pic: ByteArray?
-//            val type: Int
-//
-//            when (val entry = metadata.get(i)) {
-//                is ApicFrame -> {
-//                    pic = entry.pictureData
-//                    type = entry.pictureType
-//                }
-//                is PictureFrame -> {
-//                    pic = entry.pictureData
-//                    type = entry.pictureType
-//                }
-//                else -> continue
-//            }
-//
-//            if (type == MediaMetadata.PICTURE_TYPE_FRONT_COVER) {
-//                LogUtils.d("Front cover found")
-//                stream = ByteArrayInputStream(pic)
-//                break
-//            } else if (stream == null) {
-//                stream = ByteArrayInputStream(pic)
-//            }
-//        }
-//
-//        return stream
-//    }
 
     private suspend fun fetchMediaStoreCovers(context: Context, album: LAlbum): InputStream? {
         val uri = album.coverUri ?: return null

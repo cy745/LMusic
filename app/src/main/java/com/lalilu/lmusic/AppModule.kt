@@ -94,7 +94,7 @@ val DatabaseModule = module {
         PlaylistRepositoryImpl(
             playlistDao = get<LDatabase>().playlistDao(),
             songInPlaylistDao = get<LDatabase>().songInPlaylistDao(),
-            getSongOrNull = LMedia::getSongOrNull
+            getSongOrNull = { LMedia.get<LSong>(it) }
         )
     }
 }
