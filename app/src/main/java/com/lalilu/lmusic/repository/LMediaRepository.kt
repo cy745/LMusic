@@ -18,7 +18,6 @@ class LMediaRepository : CoroutineScope {
     val songsFlow = LMedia.getFlow<LSong>()
     val artistsFlow = LMedia.getFlow<LArtist>()
     val albumsFlow = LMedia.getFlow<LAlbum>()
-    val genresFlow = LMedia.getFlow<LGenre>()
 
     val allSongsFlow = LMedia.getFlow<LSong>()
     val allDictionariesFlow = LMedia.getFlow<LDictionary>()

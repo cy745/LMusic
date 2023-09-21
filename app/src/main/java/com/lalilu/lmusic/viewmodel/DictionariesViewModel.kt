@@ -1,19 +1,22 @@
 package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LDictionary
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.repository.LMediaRepository
+import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class DictionariesViewModel(
     private val settingsSp: SettingsSp,
-    private val lMediaRepo: LMediaRepository
 ) : ViewModel() {
+    val allDictionaries = LMedia.getFlow<LDictionary>(blockFilter = false)
+        .toState(emptyList(), viewModelScope)
 
     fun requireDictionary(dictionaryId: String): LDictionary? =
-        lMediaRepo.requireDictionary(dictionaryId, false)
+        LMedia.get(dictionaryId, false)
 
     fun getBlockedPathsFlow(): Flow<List<String>> {
         return settingsSp.blockedPaths.flow()

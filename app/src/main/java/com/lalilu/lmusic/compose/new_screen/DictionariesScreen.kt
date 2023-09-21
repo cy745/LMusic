@@ -27,21 +27,19 @@ import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.new_screen.destinations.DictionaryDetailScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
-import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalFoundationApi::class)
 @HomeNavGraph
 @Destination
 @Composable
 fun DictionariesScreen(
-    mediaVM: LMediaViewModel = get(),
-    dictionariesVM: DictionariesViewModel = get(),
+    dictionariesVM: DictionariesViewModel = koinInject(),
     navigator: DestinationsNavigator
 ) {
-    val dictionaries by mediaVM.allDictionaries
+    val dictionaries by dictionariesVM.allDictionaries
     val blockedPaths by dictionariesVM.getBlockedPathsFlow().collectAsState(initial = emptyList())
 
     SmartContainer.LazyColumn {

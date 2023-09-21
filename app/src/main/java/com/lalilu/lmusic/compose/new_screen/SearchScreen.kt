@@ -2,7 +2,6 @@ package com.lalilu.lmusic.compose.new_screen
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -56,19 +55,18 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @OptIn(
     ExperimentalFoundationApi::class,
-    ExperimentalAnimationApi::class,
     ExperimentalMaterialApi::class
 )
 @SearchNavGraph(start = true)
 @Destination
 @Composable
 fun SearchScreen(
-    playingVM: PlayingViewModel = get(),
-    searchVM: SearchViewModel = get(),
+    playingVM: PlayingViewModel = koinInject(),
+    searchVM: SearchViewModel = koinInject(),
     navigator: DestinationsNavigator
 ) {
     val context = LocalContext.current

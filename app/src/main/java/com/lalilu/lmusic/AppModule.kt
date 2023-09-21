@@ -105,10 +105,10 @@ val ViewModelModule = module {
     single { LMediaViewModel(get()) }
     single { PlaylistDetailViewModel(get(), get()) }
     single { PlaylistsViewModel(get(), get()) }
-    single { SearchViewModel(get(), get()) }
+    single { SearchViewModel(get()) }
     single { AlbumsViewModel(get(), get()) }
     single { ArtistsViewModel(get(), get()) }
-    single { DictionariesViewModel(get(), get()) }
+    single { DictionariesViewModel(get()) }
     single { HistoryViewModel(get()) }
     single { SongsViewModel(get(), get(), get()) }
     single { SongDetailViewModel(get()) }
