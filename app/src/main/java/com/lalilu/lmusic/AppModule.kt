@@ -5,10 +5,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.room.Room
 import coil.ImageLoader
+import com.blankj.utilcode.util.FileUtils
 import com.lalilu.R
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.database.LDatabase
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.indexer.Filter
+import com.lalilu.lmedia.indexer.FilterGroup
 import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmedia.repository.PlaylistRepository
@@ -136,5 +139,43 @@ val ApiModule = module {
             .baseUrl(LRCSHARE_BASEURL)
             .build()
             .create(LrcShareApi::class.java)
+    }
+}
+
+val FilterModule = module {
+    single<FilterGroup> {
+        val settingSp: SettingsSp = get()
+        val unknownArtistFilter = Filter(
+            flow = settingSp.enableUnknownFilter.flow(true),
+            getter = LSong::_artist::get,
+            targetClass = LSong::class.java,
+            ignoreRule = { flowValue, getterValue ->
+                flowValue == true && getterValue == "<unknown>"
+            }
+        )
+        val durationFilter = Filter(
+            flow = settingSp.durationFilter.flow(true),
+            getter = LSong::durationMs::get,
+            targetClass = LSong::class.java,
+            ignoreRule = { flowValue, getterValue ->
+                getterValue <= (flowValue ?: 15)
+            }
+        )
+        val pathFilter = Filter(
+            flow = settingSp.blockedPaths.flow(true),
+            getter = LSong::pathStr::get,
+            targetClass = LSong::class.java,
+            ignoreRule = { flowValue, getterValue ->
+                if (flowValue.isNullOrEmpty()) return@Filter false
+
+                val path = FileUtils.getDirName(getterValue)
+                    ?.takeIf(String::isNotEmpty)
+                    ?: "Unknown dir"
+                path in flowValue
+            }
+        )
+        FilterGroup.Builder()
+            .add(unknownArtistFilter, durationFilter, pathFilter)
+            .build()
     }
 }
