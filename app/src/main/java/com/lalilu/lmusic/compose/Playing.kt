@@ -3,6 +3,7 @@ package com.lalilu.lmusic.compose
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -17,6 +18,7 @@ import com.blankj.utilcode.util.LogUtils
 import com.dirror.lyricviewx.GRAVITY_CENTER
 import com.dirror.lyricviewx.GRAVITY_LEFT
 import com.dirror.lyricviewx.GRAVITY_RIGHT
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.R
 import com.lalilu.common.ColorAnimator
 import com.lalilu.common.HapticUtils
@@ -70,14 +72,26 @@ object Playing {
         settingsSp: SettingsSp = koinInject(),
         navController: NavController = LocalNavigatorHost.current,
     ) {
+        val systemController = rememberSystemUiController()
         val isDrawTranslation by remember { settingsSp.isDrawTranslation }
         val isEnableBlurEffect by remember { settingsSp.isEnableBlurEffect }
+        val forceHideStatusBar by remember { settingsSp.forceHideStatusBar }
+        val autoHideSeekbar by remember { settingsSp.autoHideSeekbar }
+
         val keepScreenOnWhenLyricExpanded by remember { settingsSp.keepScreenOnWhenLyricExpanded }
         val nowState = remember { mutableStateOf<AppbarStateHelper.State?>(null) }
         val playingToolbarScaffoldState = rememberPlayingToolbarScaffoldState()
+        val isBottomSheetVisible by BottomSheetWrapper.collectBottomSheetIsExpended()
 
-        val keepScreenOn = remember {
+        val keepScreenOn by remember {
             derivedStateOf { keepScreenOnWhenLyricExpanded && nowState.value == AppbarStateHelper.State.EXPENDED }
+        }
+        val hideStatusBar by remember {
+            derivedStateOf { forceHideStatusBar || (autoHideSeekbar && nowState.value == AppbarStateHelper.State.EXPENDED && !isBottomSheetVisible) }
+        }
+
+        LaunchedEffect(hideStatusBar) {
+            systemController.isStatusBarVisible = !hideStatusBar
         }
 
         AndroidViewBinding(factory = { inflater, parent, attachToParent ->
@@ -104,7 +118,7 @@ object Playing {
                 }
 
                 bindData(adapter, playingVM, settingsSp)
-                bindEvent(keepScreenOn = { keepScreenOn.value })
+                bindEvent(keepScreenOn = { keepScreenOn })
             }
         }) {
             fmLyricViewX.setIsDrawTranslation(isDrawTranslation = isDrawTranslation)

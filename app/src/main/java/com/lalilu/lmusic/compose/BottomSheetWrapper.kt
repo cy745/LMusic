@@ -12,6 +12,7 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -54,6 +55,24 @@ object BottomSheetWrapper : NavController.OnDestinationChangedListener, NestedSc
     fun hide() = scope?.launch { sheetState.hide() }
 
     @Composable
+    fun collectBottomSheetIsExpended(): State<Boolean> = remember {
+        derivedStateOf {
+            if (!BottomSheetWrapper::sheetState.isInitialized) return@derivedStateOf false
+
+            if (sheetState.currentValue == sheetState.targetValue && sheetState.progress == 1f) {
+                return@derivedStateOf sheetState.currentValue == ModalBottomSheetValue.Expanded
+            }
+
+            when (sheetState.currentValue) {
+                ModalBottomSheetValue.Hidden -> sheetState.progress >= 0.95f
+                ModalBottomSheetValue.Expanded -> sheetState.progress <= 0.05f
+
+                else -> false
+            }
+        }
+    }
+
+    @Composable
     fun BackHandler(
         forVisible: () -> Boolean = { false },
         enable: () -> Boolean = { true },
@@ -62,9 +81,10 @@ object BottomSheetWrapper : NavController.OnDestinationChangedListener, NestedSc
         if (!BottomSheetWrapper::sheetState.isInitialized) {
             createSheetState(LocalDensity.current)
         }
+        val isVisible by collectBottomSheetIsExpended()
 
         BackHandler(
-            enabled = sheetState.isVisible == forVisible() && enable(),
+            enabled = isVisible == forVisible() && enable(),
             onBack = callback
         )
     }
@@ -85,12 +105,7 @@ object BottomSheetWrapper : NavController.OnDestinationChangedListener, NestedSc
 
         val systemUiController = rememberSystemUiController()
         val isDarkModeNow = isSystemInDarkTheme()
-        val isExpended by remember {
-            derivedStateOf {
-                sheetState.targetValue == ModalBottomSheetValue.Expanded
-                        && sheetState.progress !in 0.05f..0.95f
-            }
-        }
+        val isExpended by collectBottomSheetIsExpended()
 
         LaunchedEffect(isExpended, isDarkModeNow) {
             systemUiController.setStatusBarColor(
@@ -115,7 +130,7 @@ object BottomSheetWrapper : NavController.OnDestinationChangedListener, NestedSc
             mainContent()
         }
 
-        BackHandler(enabled = sheetState.isVisible) {
+        BackHandler(enabled = isExpended) {
             hide()
         }
     }
