@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.lalilu.R
-import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
+import com.lalilu.lmusic.compose.BottomSheetWrapper
 import com.lalilu.lmusic.compose.new_screen.destinations.Destination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
@@ -155,7 +155,7 @@ object NavBar {
             }
         }
 
-        AnimatedContent(targetState = showType) { type ->
+        AnimatedContent(targetState = showType, label = "") { type ->
             if (type == Type.Main) {
                 Row(
                     modifier = Modifier
@@ -201,7 +201,7 @@ object NavBar {
                         ),
                         onClick = {
                             navController.popUpElse {
-                                SmartModalBottomSheet.hide()
+                                BottomSheetWrapper.hide()
                             }
                         }
                     ) {
@@ -223,7 +223,7 @@ object NavBar {
                             backgroundColor = Color(0x25FE4141),
                             contentColor = Color(0xFFFE4141)
                         ),
-                        onClick = { SmartModalBottomSheet.hide() }
+                        onClick = { BottomSheetWrapper.hide() }
                     ) {
                         Text(
                             text = stringResource(id = R.string.dialog_bottom_sheet_navigator_close),

@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.compose.new_screen
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
@@ -34,9 +33,9 @@ import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.repository.FavoriteRepository
+import com.lalilu.lmusic.compose.BottomSheetWrapper
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
-import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.component.base.PlaylistsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.NewPlaylistBar
 import com.lalilu.lmusic.compose.component.card.PlaylistCard
@@ -58,8 +57,7 @@ import org.koin.androidx.compose.get
 
 @OptIn(
     ExperimentalMaterialApi::class,
-    ExperimentalFoundationApi::class,
-    ExperimentalAnimationApi::class
+    ExperimentalFoundationApi::class
 )
 @PlaylistNavGraph(start = true)
 @Destination
@@ -103,7 +101,7 @@ fun PlaylistsScreen(
             }
         )
 
-        BackHandler(creatingPlaylist.value && SmartModalBottomSheet.isVisible.value) {
+        BottomSheetWrapper.BackHandler(enable = { creatingPlaylist.value }) {
             creatingPlaylist.value = false
         }
     }

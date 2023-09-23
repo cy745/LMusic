@@ -28,7 +28,6 @@ import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.adapter.loadCover
 import com.lalilu.lmusic.compose.component.DynamicTips
-import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbarScaffold
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbarScaffoldState
 import com.lalilu.lmusic.compose.component.playing.rememberPlayingToolbarScaffoldState
@@ -38,8 +37,6 @@ import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.helper.LastTouchTimeHelper
-import com.lalilu.ui.appbar.AppbarBehavior
-import com.lalilu.ui.appbar.AppbarStateHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner
@@ -57,6 +54,8 @@ import com.lalilu.ui.OnSeekBarClickListener
 import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.OnValueChangeListener
+import com.lalilu.ui.appbar.AppbarBehavior
+import com.lalilu.ui.appbar.AppbarStateHelper
 import com.ramcosta.composedestinations.navigation.navigate
 import org.koin.compose.koinInject
 import kotlin.math.pow
@@ -290,13 +289,11 @@ object Playing {
             override fun onScrollToThreshold() {
                 HapticUtils.haptic(root)
                 BottomSheetWrapper.show()
-                SmartModalBottomSheet.show()
             }
 
             override fun onScrollRecover() {
                 HapticUtils.haptic(root)
                 BottomSheetWrapper.hide()
-                SmartModalBottomSheet.hide()
             }
         })
 

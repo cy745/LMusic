@@ -1,12 +1,11 @@
 package com.lalilu.lmusic.utils
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
+import com.lalilu.lmusic.compose.BottomSheetWrapper
 
 class SelectHelper<T>(
     defaultState: Boolean = false,
@@ -35,7 +34,7 @@ class SelectHelper<T>(
 
     @Composable
     fun RegisterBackHandler() {
-        BackHandler(isSelecting.value && SmartModalBottomSheet.isVisible.value) {
+        BottomSheetWrapper.BackHandler(enable = { isSelecting.value }) {
             clear()
         }
     }

@@ -42,10 +42,10 @@ import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.Sortable
+import com.lalilu.lmusic.compose.BottomSheetWrapper
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartFloatBtns
-import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.component.base.SongsSelectWrapper
 import com.lalilu.lmusic.compose.component.base.SortPanel
 import com.lalilu.lmusic.compose.component.base.SortPreset
@@ -275,7 +275,8 @@ fun SortPanelWrapper(
             supportSortRules = supportSortRules,
             onClose = { showPanelState.value = false }
         )
-        BackHandler(showPanelState.value && SmartModalBottomSheet.isVisible.value) {
+
+        BottomSheetWrapper.BackHandler(enable = { showPanelState.value }) {
             showPanelState.value = false
         }
     }

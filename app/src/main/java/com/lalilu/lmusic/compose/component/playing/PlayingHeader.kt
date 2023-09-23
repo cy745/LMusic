@@ -56,6 +56,7 @@ fun PlayingHeader(
         ) { text ->
             Text(
                 modifier = Modifier
+                    .wrapContentWidth(Alignment.Start)
                     .basicMarquee(
                         iterations = Int.MAX_VALUE,
                         spacing = MarqueeSpacing(30.dp)

@@ -47,7 +47,6 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
-import com.lalilu.lmusic.compose.component.SmartModalBottomSheet
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 import com.lalilu.lmusic.compose.component.card.SongDetailActionsBar
@@ -117,7 +116,6 @@ fun SongDetailScreen(
         }
     }
 
-    SmartModalBottomSheet.RegisterForTemporaryDisableFadeEdge()
     SmartBar.RegisterExtraBarContent(showActionBar) {
         SongDetailActionsBar(
             isPlaying = { playingVM.isSongPlaying(song.id) },

@@ -4,7 +4,6 @@ import android.view.MotionEvent.ACTION_CANCEL
 import android.view.MotionEvent.ACTION_UP
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxScope
@@ -46,7 +45,7 @@ object SmartBar {
 
     @Composable
     @OptIn(
-        ExperimentalAnimationApi::class, ExperimentalLayoutApi::class,
+        ExperimentalLayoutApi::class,
         ExperimentalComposeUiApi::class
     )
     fun BoxScope.SmartBarContent(modifier: Modifier = Modifier) {
