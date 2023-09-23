@@ -38,8 +38,8 @@ import com.lalilu.lmusic.compose.new_screen.ScreenData
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.helper.LastTouchTimeHelper
-import com.lalilu.lmusic.ui.AppbarBehavior
-import com.lalilu.lmusic.ui.AppbarStateHelper
+import com.lalilu.ui.appbar.AppbarBehavior
+import com.lalilu.ui.appbar.AppbarStateHelper
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner

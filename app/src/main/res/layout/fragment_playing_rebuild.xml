@@ -15,13 +15,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.lalilu.lmusic.ui.CoverAppbar
+        <com.lalilu.ui.appbar.CoverAppbar
             android:id="@+id/fm_appbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/colorPrimaryVariant"
             android:fitsSystemWindows="false"
-            app:aspect_ratio="1">
+            app:aspect_ratio="1"
+            app:min_height_anchor="@id/fm_compose_toolbar">
 
             <com.lalilu.lmusic.ui.BlurImageView
                 android:id="@+id/fm_top_pic"
@@ -66,7 +67,7 @@
                     android:layout_height="120dp"
                     android:fitsSystemWindows="false" />
             </androidx.constraintlayout.motion.widget.MotionLayout>
-        </com.lalilu.lmusic.ui.CoverAppbar>
+        </com.lalilu.ui.appbar.CoverAppbar>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/fm_recyclerView"
@@ -76,7 +77,7 @@
             android:fillViewport="true"
             android:overScrollMode="never"
             android:paddingBottom="128dp"
-            app:layout_behavior="com.lalilu.lmusic.ui.RecyclerViewBehavior"
+            app:layout_behavior="com.lalilu.ui.appbar.RecyclerViewBehavior"
             tools:listitem="@layout/item_playing"
             tools:visibility="gone" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

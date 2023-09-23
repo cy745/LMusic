@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui
+package com.lalilu.ui.appbar
 
 import android.widget.OverScroller
 import androidx.dynamicanimation.animation.SpringAnimation

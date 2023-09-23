@@ -1,5 +1,4 @@
-package com.lalilu.lmusic.utils
-
+package com.lalilu.common
 
 /**
  * 用于动画值传递时进行强制类型转换时的数值修正

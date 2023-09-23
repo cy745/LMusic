@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui
+package com.lalilu.ui.appbar
 
 import android.content.Context
 import android.util.AttributeSet
@@ -9,7 +9,7 @@ import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout.AttachedBehavior
 import androidx.core.view.children
-import com.lalilu.R
+import com.lalilu.ui.R
 
 class CoverAppbar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null,
@@ -27,9 +27,12 @@ class CoverAppbar @JvmOverloads constructor(
     var dragThreshold: Int = 120
         private set
 
+    private var minHeightAnchorId: Int = -1
+
     init {
         context.obtainStyledAttributes(attrs, R.styleable.CoverAppbar).run {
             aspectRatio = getFloat(R.styleable.CoverAppbar_aspect_ratio, 1f)
+            minHeightAnchorId = getResourceId(R.styleable.CoverAppbar_min_height_anchor, -1)
             recycle()
         }
         minAnchorHeight = TypedValue.applyDimension(
@@ -40,7 +43,7 @@ class CoverAppbar @JvmOverloads constructor(
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
-        this.findChildViewWithId(R.id.fm_compose_toolbar)?.let {
+        this.findChildViewWithId(minHeightAnchorId)?.let {
             minAnchorHeight = it.measuredHeight
         }
 

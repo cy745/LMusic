@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui
+package com.lalilu.ui.appbar
 
 import android.content.Context
 import android.os.Parcelable
@@ -10,8 +10,8 @@ import android.view.ViewConfiguration
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.lalilu.lmusic.utils.AccumulatedValue
-import com.lalilu.lmusic.utils.SavedStateHelper
+import com.lalilu.common.AccumulatedValue
+import com.lalilu.common.SavedStateHelper
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 

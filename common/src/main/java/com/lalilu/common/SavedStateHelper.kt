@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.common
 
 import android.os.Parcel
 import android.os.Parcelable

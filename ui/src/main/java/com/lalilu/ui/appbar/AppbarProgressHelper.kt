@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui
+package com.lalilu.ui.appbar
 
 
 typealias OnProgressChangeListener = (progress: Float, fromUser: Boolean) -> Unit

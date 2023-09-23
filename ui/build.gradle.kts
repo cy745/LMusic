@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.lalilu.common"
+    namespace = "com.lalilu.ui"
     compileSdk = 34
 
     defaultConfig {
@@ -33,19 +33,16 @@ android {
 }
 
 dependencies {
-    api(project(":lmedia"))
-
-    // https://github.com/Blankj/AndroidUtilCode/
+    // https://github.com/coil-kt/coil
     // Apache-2.0 License
-    // 安卓工具类库
-    api("com.blankj:utilcodex:1.31.1")
-    api("androidx.core:core-ktx:1.12.0")
-    api("androidx.appcompat:appcompat:1.6.1")
-    api("androidx.palette:palette-ktx:1.0.0")
-    api("androidx.dynamicanimation:dynamicanimation-ktx:1.0.0-alpha03")
+    // 图片加载库
+    api("io.coil-kt:coil:${findProperty("coil_version")}")
+    api("io.coil-kt:coil-compose:${findProperty("coil_version")}")
 
-    // Koin for Android
-    // https://mvnrepository.com/artifact/io.insert-koin/koin-android
-    api("io.insert-koin:koin-android:${findProperty("koin_version")}")
-    api("io.insert-koin:koin-androidx-compose:${findProperty("koin_compose_version")}")
+    api("androidx.gridlayout:gridlayout:1.0.0")
+    api("androidx.constraintlayout:constraintlayout:2.1.4")
+    api("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
+    api("androidx.recyclerview:recyclerview:1.3.1")
+
+    implementation(project(":common"))
 }

@@ -1,5 +1,4 @@
-package com.lalilu.lmusic.ui
-
+package com.lalilu.ui.appbar
 
 typealias OnStateChangeListener = (
     newState: AppbarStateHelper.State,

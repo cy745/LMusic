@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <integer name="sp_key_lyric_settings_text_default_size">9</integer>
-    <integer name="sp_key_lyric_settings_secondary_text_default_size">8</integer>
-    <integer name="sp_key_lyric_settings_translate_text_scale_value_default_size">1</integer>
-    <integer name="sp_key_lyric_settings_lyric_divider_height">28</integer>
-    <integer name="sp_key_lyric_settings_translate_divider_height">5</integer>
-</resources>

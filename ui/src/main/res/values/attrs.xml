@@ -1,101 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="CollapsingLayout_Base" parent="android:Widget">
-        <item name="cp_max_lines">5</item>
-        <item name="cp_title_enable">true</item>
-        <item name="cp_expended_text_color">@android:color/white</item>
-        <item name="cp_collapsed_text_color">@android:color/white</item>
-        <item name="cp_expended_text_size">26sp</item>
-        <item name="cp_collapsed_text_size">18sp</item>
-        <item name="cp_collapsed_title_gravity">start|center_horizontal</item>
-        <item name="cp_expended_title_gravity">start|bottom</item>
-        <item name="cp_expended_text_margin">32dp</item>
-    </style>
-
-    <declare-styleable name="CollapsingLayout">
-        <attr name="cp_title" format="string" />
-        <attr name="cp_title_enable" format="boolean" />
-        <attr name="cp_expended_text_color" format="color" />
-        <attr name="cp_expended_text_size" format="dimension" />
-        <attr name="cp_collapsed_text_color" format="color" />
-        <attr name="cp_collapsed_text_size" format="dimension" />
-        <attr name="cp_expended_text_margin" format="dimension" />
-        <attr name="cp_expended_text_margin_start" format="dimension" />
-        <attr name="cp_expended_text_margin_end" format="dimension" />
-        <attr name="cp_expended_text_margin_top" format="dimension" />
-        <attr name="cp_expended_text_margin_bottom" format="dimension" />
-        <attr name="cp_force_apply_window_inset_top" format="boolean" />
-        <attr name="cp_extra_multiline_height_enabled" format="boolean" />
-        <attr name="cp_toolbar_id" format="reference" />
-        <attr name="cp_max_lines" format="integer" />
-
-        <attr name="cp_collapsed_title_gravity">
-            <flag name="top" value="0x30" />
-            <flag name="bottom" value="0x50" />
-            <flag name="left" value="0x03" />
-            <flag name="right" value="0x05" />
-            <flag name="center_vertical" value="0x10" />
-            <flag name="fill_vertical" value="0x70" />
-            <flag name="center_horizontal" value="0x01" />
-            <flag name="center" value="0x11" />
-            <flag name="start" value="0x00800003" />
-            <flag name="end" value="0x00800005" />
-        </attr>
-
-        <attr name="cp_expended_title_gravity">
-            <flag name="top" value="0x30" />
-            <flag name="bottom" value="0x50" />
-            <flag name="left" value="0x03" />
-            <flag name="right" value="0x05" />
-            <flag name="center_vertical" value="0x10" />
-            <flag name="fill_vertical" value="0x70" />
-            <flag name="center_horizontal" value="0x01" />
-            <flag name="center" value="0x11" />
-            <flag name="start" value="0x00800003" />
-            <flag name="end" value="0x00800005" />
-        </attr>
-    </declare-styleable>
-
-    <declare-styleable name="CollapsingLayout_Layout">
-        <attr name="cp_layout_collapseMode">
-            <enum name="none" value="0" />
-            <enum name="pin" value="1" />
-            <enum name="parallax" value="2" />
-        </attr>
-        <attr name="cp_layout_collapseParallaxMultiplier" format="float" />
-    </declare-styleable>
-
-    <style name="AppbarLayout_Base">
-        <item name="appbar_expanded">true</item>
-    </style>
-
-    <declare-styleable name="AppbarLayout">
-        <attr name="appbar_expanded" format="boolean" />
-        <attr name="android:background" />
-        <attr name="android:keyboardNavigationCluster" />
-        <attr name="android:touchscreenBlocksFocus" />
-    </declare-styleable>
-
-    <declare-styleable name="AppBarLayout_Layout">
-        <attr name="layout_scrollFlags">
-            <flag name="noScroll" value="0x0" />
-            <flag name="scroll" value="0x1" />
-            <flag name="exitUntilCollapsed" value="0x2" />
-            <flag name="enterAlways" value="0x4" />
-            <flag name="enterAlwaysCollapsed" value="0x8" />
-            <flag name="snap" value="0x10" />
-            <flag name="snapMargins" value="0x20" />
-        </attr>
-
-        <attr name="layout_scrollEffect" format="enum">
-            <enum name="none" value="0" />
-            <enum name="compress" value="1" />
-        </attr>
-    </declare-styleable>
-
     <declare-styleable name="NewProgressBar">
         <attr name="radius" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="CoverAppbar">
+        <attr name="aspect_ratio" format="float" />
+        <attr name="min_height_anchor" format="reference" />
     </declare-styleable>
 
     <declare-styleable name="StateSwitcher">
@@ -103,9 +14,4 @@
         <attr name="st_text" format="reference" />
     </declare-styleable>
 
-    <string-array name="st_text_default">
-        <item>左</item>
-        <item>中</item>
-        <item>右</item>
-    </string-array>
 </resources>

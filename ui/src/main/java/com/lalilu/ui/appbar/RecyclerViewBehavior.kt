@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.ui
+package com.lalilu.ui.appbar
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -106,7 +106,5 @@ class RecyclerViewBehavior(context: Context?, attrs: AttributeSet?) :
     private fun resolveGravity(gravity: Int): Int {
         return if (gravity == Gravity.NO_GRAVITY) GravityCompat.START or Gravity.TOP else gravity
     }
-
-    private inline fun <T> Boolean.ifTrue(action: () -> T): T? = if (this) action() else null
 }
 

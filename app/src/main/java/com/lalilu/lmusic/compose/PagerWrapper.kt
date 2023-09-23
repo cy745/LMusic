@@ -33,7 +33,7 @@ import androidx.dynamicanimation.animation.springAnimationOf
 import androidx.dynamicanimation.animation.withSpringForceProperties
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.lalilu.lmusic.utils.AccumulatedValue
+import com.lalilu.common.AccumulatedValue
 import kotlin.math.abs
 
 /**

@@ -144,7 +144,6 @@ dependencies {
     implementation("io.github.raamcosta.compose-destinations:animations-core:${findProperty("compose_destinations_version")}")
     ksp("io.github.raamcosta.compose-destinations:ksp:${findProperty("compose_destinations_version")}")
 
-
     // accompanist
     // https://google.github.io/accompanist
     implementation("com.google.accompanist:accompanist-navigation-animation:${findProperty("accompanist_version")}")
@@ -183,12 +182,6 @@ dependencies {
     // Bitmap的Blur实现库
     implementation("com.github.Commit451:NativeStackBlur:1.0.4")
 
-    // https://github.com/coil-kt/coil
-    // Apache-2.0 License
-    // 图片加载库
-    implementation("io.coil-kt:coil:${findProperty("coil_version")}")
-    implementation("io.coil-kt:coil-compose:${findProperty("coil_version")}")
-
     // https://github.com/Moriafly/LyricViewX
     // GPL-3.0 License
     // 歌词组件
@@ -202,12 +195,7 @@ dependencies {
 
 //    implementation("com.github.angcyo:DslAdapter:6.0.1")
 
-    implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.activity:activity-compose:1.7.2")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.gridlayout:gridlayout:1.0.0")
-    implementation("androidx.recyclerview:recyclerview:1.3.1")
-    implementation("androidx.dynamicanimation:dynamicanimation-ktx:1.0.0-alpha03")
     implementation("androidx.navigation:navigation-compose:${findProperty("navigation_version")}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${findProperty("lifecycle_version")}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${findProperty("lifecycle_version")}")
