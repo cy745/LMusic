@@ -26,6 +26,8 @@ fun FixedLayout(
             val cConstraint = if (isLandscape) constraints.copy(
                 maxHeight = constraints.maxWidth,
                 maxWidth = constraints.maxHeight,
+                minHeight = constraints.minWidth,
+                minWidth = constraints.minHeight
             ) else constraints
 
             val placeable = measurables.map { it.measure(cConstraint) }

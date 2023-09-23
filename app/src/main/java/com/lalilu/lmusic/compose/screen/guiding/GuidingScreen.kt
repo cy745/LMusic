@@ -16,18 +16,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.lalilu.R
+import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
 
 @Composable
 @OptIn(ExperimentalAnimationApi::class)
 fun GuidingScreen(
-    navController: NavHostController = rememberAnimatedNavController()
+    navController: NavHostController = LocalNavigatorHost.current
 ) {
     val windowSize = LocalWindowSize.current
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp +
@@ -91,7 +91,7 @@ fun GuidingScreen(
                         )
                     }
                 }
-                AnimatedNavHost(
+                NavHost(
                     navController = navController,
                     startDestination = GuidingNavGraph.Agreement.name,
                     exitTransition = { ExitTransition.None },

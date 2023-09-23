@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
@@ -30,7 +31,6 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.recomposeHighlighter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -114,21 +114,20 @@ object BottomSheetWrapper : NavController.OnDestinationChangedListener, NestedSc
             )
         }
 
-        LaunchedEffect(sheetState.isVisible) {
-            navController.enableOnBackPressed(sheetState.isVisible)
+        LaunchedEffect(isExpended) {
+            navController.enableOnBackPressed(isExpended)
         }
 
         ModalBottomSheetLayout(
             modifier = Modifier
-                .recomposeHighlighter()
+                .fillMaxSize()
                 .nestedScroll(this),
+            sheetState = sheetState,
             sheetBackgroundColor = MaterialTheme.colors.background,
             scrimColor = Color.Black.copy(alpha = 0.5f),
-            sheetState = sheetState,
-            sheetContent = { secondContent() }
-        ) {
-            mainContent()
-        }
+            sheetContent = { secondContent() },
+            content = { mainContent() }
+        )
 
         BackHandler(enabled = isExpended) {
             hide()

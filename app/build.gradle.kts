@@ -146,7 +146,6 @@ dependencies {
 
     // accompanist
     // https://google.github.io/accompanist
-    implementation("com.google.accompanist:accompanist-navigation-animation:${findProperty("accompanist_version")}")
     implementation("com.google.accompanist:accompanist-systemuicontroller:${findProperty("accompanist_version")}")
     implementation("com.google.accompanist:accompanist-flowlayout:${findProperty("accompanist_version")}")
     implementation("com.google.accompanist:accompanist-permissions:${findProperty("accompanist_version")}")
