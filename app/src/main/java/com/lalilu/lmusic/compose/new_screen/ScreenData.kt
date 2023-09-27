@@ -10,6 +10,7 @@ import com.lalilu.lmusic.compose.new_screen.destinations.ArtistsScreenDestinatio
 import com.lalilu.lmusic.compose.new_screen.destinations.Destination
 import com.lalilu.lmusic.compose.new_screen.destinations.DictionariesScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.DictionaryDetailScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.ExtensionsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.FavouriteScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.HomeScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistDetailScreenDestination
@@ -108,15 +109,21 @@ enum class ScreenData(
         title = R.string.destination_label_song_detail,
         subTitle = R.string.destination_subtitle_song_detail,
         destination = SongDetailScreenDestination
+    ),
+    Extensions(
+        icon = R.drawable.ic_error_warning_line,
+        title = R.string.destination_label_extensions,
+        subTitle = R.string.destination_subtitle_library,
+        destination = ExtensionsScreenDestination
     );
 
     companion object {
         private val routeMap by lazy {
-            values().associateBy { it.destination.baseRoute }
+            values().associateBy { it.destination }
         }
 
-        fun getOrNull(baseRoute: String): ScreenData? {
-            return routeMap[baseRoute]
+        fun getOrNull(destination: Destination): ScreenData? {
+            return routeMap[destination]
         }
     }
 }

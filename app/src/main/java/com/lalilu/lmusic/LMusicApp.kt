@@ -1,6 +1,8 @@
 package com.lalilu.lmusic
 
 import android.app.Application
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.lalilu.lmedia.LMedia
@@ -11,8 +13,8 @@ import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
-class LMusicApp : Application(), ImageLoaderFactory, FilterProvider {
-
+class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelStoreOwner {
+    override val viewModelStore: ViewModelStore = ViewModelStore()
     private val imageLoader: ImageLoader by inject()
     private val filterGroup: FilterGroup by inject()
 

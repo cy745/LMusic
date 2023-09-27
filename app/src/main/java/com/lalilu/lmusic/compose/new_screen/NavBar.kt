@@ -3,7 +3,6 @@ package com.lalilu.lmusic.compose.new_screen
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
@@ -59,6 +58,7 @@ import com.lalilu.lmusic.utils.extension.popUpElse
 import com.lalilu.lmusic.utils.extension.rememberIsPad
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
+import com.ramcosta.composedestinations.utils.destination
 
 object NavBar {
 
@@ -129,17 +129,15 @@ object NavBar {
         }
     }
 
-    @OptIn(ExperimentalAnimationApi::class)
     @Composable
     private fun Content(navController: NavController = LocalNavigatorHost.current) {
         val haptic = LocalHapticFeedback.current
         val destination by navController.appCurrentDestinationAsState()
         val previousDestination = remember(destination) {
-            navController.previousBackStackEntry?.destination?.route
-                ?.substringBefore('/')
-                ?.substringBefore('?')
-                ?.let(ScreenData::getOrNull)
+            val dest = navController.previousBackStackEntry?.destination()
+            (dest as? Destination)?.let { ScreenData.getOrNull(it) }
         }
+
         val configuration = LocalConfiguration.current
         val isPad by LocalWindowSize.current.rememberIsPad()
         val isLandscape = remember(configuration.orientation) {

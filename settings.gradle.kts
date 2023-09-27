@@ -28,3 +28,7 @@ dependencyResolutionManagement {
 }
 
 
+val extFile = File(rootDir, "extension")
+if (extFile.exists() && extFile.isDirectory) {
+    include(":extension")
+}

@@ -28,6 +28,7 @@
     <string name="destination_label_song_detail">歌曲详情</string>
     <string name="destination_label_genres">流派</string>
     <string name="destination_label_dictionaries">文件夹</string>
+    <string name="destination_label_extensions">插件列表</string>
 
     <string name="destination_subtitle_library">各种各样的选项</string>
     <string name="destination_subtitle_artist">所有歌手</string>

@@ -32,6 +32,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
+import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
@@ -43,16 +44,21 @@ import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.DictionariesScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.DirectionDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.ExtensionsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.HistoryScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SettingsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
+import com.lalilu.lmusic.compose.new_screen.destinations.TypedDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.spec.DestinationSpec
+import com.ramcosta.composedestinations.spec.Direction
 import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
@@ -211,6 +217,7 @@ fun HomeScreen(
                         ScreenData.Albums,
                         ScreenData.Artists,
                         ScreenData.Dictionaries,
+                        ScreenData.Extensions,
                         ScreenData.Settings
                     ).forEach {
                         Row(
@@ -228,6 +235,10 @@ fun HomeScreen(
 
                                         ScreenData.Artists -> navigator.navigate(
                                             ArtistsScreenDestination()
+                                        )
+
+                                        ScreenData.Extensions -> navigator.navigate(
+                                            ExtensionsScreenDestination
                                         )
 
                                         ScreenData.Settings -> navigator.navigate(

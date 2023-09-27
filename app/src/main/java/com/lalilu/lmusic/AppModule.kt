@@ -19,6 +19,7 @@ import com.lalilu.lmedia.repository.impl.HistoryRepositoryImpl
 import com.lalilu.lmedia.repository.impl.PlaylistRepositoryImpl
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
+import com.lalilu.lmusic.compose.new_screen.ExtensionsViewModel
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.datastore.TempSp
@@ -116,6 +117,7 @@ val ViewModelModule = module {
     single { SongsViewModel(get(), get(), get()) }
     single { SongDetailViewModel(get()) }
     single { SearchLyricViewModel(androidApplication(), get(), get()) }
+    single { ExtensionsViewModel(androidApplication()) }
 }
 
 val RuntimeModule = module {
