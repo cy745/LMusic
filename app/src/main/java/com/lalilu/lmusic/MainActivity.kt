@@ -12,8 +12,6 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ActivityUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.extension_core.ExtensionManager
@@ -24,8 +22,6 @@ import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.helper.LastTouchTimeHelper
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 
 class MainActivity : AppCompatActivity() {
@@ -66,6 +62,7 @@ class MainActivity : AppCompatActivity() {
         LMedia.initialize(this)
 
         lifecycle.addObserver(browser)
+        lifecycle.addObserver(ExtensionManager)
         SystemUiUtil.immerseNavigationBar(this)
         SystemUiUtil.immersiveCutout(window)
 

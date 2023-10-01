@@ -6,10 +6,10 @@
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="${appName}">
+        android:label="@string/plugin_name">
 
         <meta-data
             android:name="lmusic.extension.class"
-            android:value="${extClass}" />
+            android:value=".Main" />
     </application>
 </manifest>

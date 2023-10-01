@@ -25,11 +25,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
-        manifestPlaceholders += mapOf(
-            "appName" to "AppName",
-            "extClass" to ".Main",
-        )
     }
 
     if (keystoreProps != null) {

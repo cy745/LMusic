@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -25,6 +26,9 @@ class Main : Extension {
     }
 
     override val mainContent: @Composable () -> Unit = {
+        val imageApi =
+            remember { "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis() / 30000}" }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(vertical = 100.dp, horizontal = 20.dp),
@@ -36,15 +40,9 @@ class Main : Extension {
                         .fillMaxWidth()
                         .aspectRatio(16f / 9f),
                     contentScale = ContentScale.Crop,
-                    model = "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis()}",
+                    model = imageApi,
                     contentDescription = ""
                 )
-            }
-            item {
-                Text(stringResource(id = R.string.plugin_name) + " Hello World!")
-            }
-            item {
-                Text(stringResource(id = R.string.plugin_name) + " Hello World!")
             }
             item {
                 Text(stringResource(id = R.string.plugin_name) + " Hello World!")
@@ -53,6 +51,9 @@ class Main : Extension {
     }
 
     override val bannerContent: @Composable () -> Unit = {
+        val imageApi =
+            remember { "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis() / 30000}" }
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -63,7 +64,7 @@ class Main : Extension {
                     .fillMaxWidth()
                     .aspectRatio(16f / 9f),
                 contentScale = ContentScale.Crop,
-                model = "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis()}",
+                model = imageApi,
                 contentDescription = ""
             )
             Row(

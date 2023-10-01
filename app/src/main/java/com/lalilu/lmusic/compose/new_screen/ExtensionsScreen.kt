@@ -17,7 +17,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -58,27 +57,30 @@ fun ExtensionsScreen(
             }
         }
 
-        items(items = results) {
-            when (it) {
+        items(items = results) { extensionResult ->
+            when (extensionResult) {
                 is ExtensionLoadResult.Ready -> {
-                    val tempContext = context.createPackageContext(it.packageName, 0)
-
                     Surface(
                         modifier = Modifier.padding(horizontal = 20.dp),
                         shape = RoundedCornerShape(10.dp),
                         elevation = 1.dp,
                         onClick = {
-                            navigator.navigate(ExtensionHostScreenDestination(packageName = it.packageName))
+                            navigator.navigate(
+                                ExtensionHostScreenDestination(packageName = extensionResult.packageName)
+                            )
                         }
                     ) {
-                        CompositionLocalProvider(LocalContext provides tempContext) {
-                            it.extension!!.bannerContent()
-                        }
+                        extensionResult.Place(
+                            content = extensionResult.extension!!.bannerContent,
+                            errorPlaceHolder = {
+                                Text(text = "LoadError ${extensionResult.packageName}")
+                            },
+                        )
                     }
                 }
 
                 is ExtensionLoadResult.Error -> {
-                    Text(text = "Error: ${it.message}")
+                    Text(text = "Error: ${extensionResult.message}")
                 }
 
                 is ExtensionLoadResult.OutOfDate -> {
