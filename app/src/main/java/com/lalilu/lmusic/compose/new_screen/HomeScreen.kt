@@ -22,7 +22,9 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
-import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
@@ -44,21 +46,17 @@ import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.new_screen.destinations.AlbumsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.ArtistsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.DictionariesScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.DirectionDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.ExtensionsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.HistoryScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SettingsScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.TypedDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.spec.DestinationSpec
-import com.ramcosta.composedestinations.spec.Direction
 import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
@@ -71,6 +69,10 @@ fun HomeScreen(
     playingVM: PlayingViewModel = get(),
     navigator: DestinationsNavigator
 ) {
+    val extensionResult by ExtensionManager
+        .requireExtensionByContent(contentFunc = { it.homeContent })
+        .collectAsState(initial = emptyList())
+
     val haptic = LocalHapticFeedback.current
     val selectHelper = rememberSongsSelectWrapper()
     val itemsCount = remember {
@@ -205,6 +207,8 @@ fun HomeScreen(
                 }
             }
         }
+
+        items(items = extensionResult) { it.apply { Place { extension.homeContent() } } }
 
         item {
             Surface(

@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.core.app.ActivityCompat
 import com.blankj.utilcode.util.ActivityUtils
 import com.lalilu.common.SystemUiUtil
+import com.lalilu.extension_core.ExtensionLoadResult
 import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
@@ -54,9 +55,10 @@ class MainActivity : AppCompatActivity() {
 
         ExtensionManager.extensionsFlow
             .collectWithLifeCycleOwner(this) { list ->
-                list.asSequence()
-                    .filter { it.extension != null }
-                    .onEach { lifecycle.addObserver(it.extension!!) }
+                list.onEach { result ->
+                    (result as? ExtensionLoadResult.Ready)
+                        ?.let { lifecycle.addObserver(it.extension) }
+                }
             }
 
         LMedia.initialize(this)

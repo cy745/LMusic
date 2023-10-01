@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -27,6 +28,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
+@OptIn(ExperimentalCoroutinesApi::class)
 object ExtensionManager : CoroutineScope, LifecycleEventObserver {
     private const val EXTENSION_FEATURE_NAME = "lmusic.extension"
     private const val EXTENSION_META_DATA_CLASS = "lmusic.extension.class"
@@ -54,10 +56,18 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     fun requireExtensionByPackageName(packageName: String): Flow<ExtensionLoadResult?> {
         return extensionsFlow.mapLatest { list ->
-            list.firstOrNull { it.packageName == packageName }
+            list.firstOrNull { it.packageInfo.packageName == packageName }
+        }
+    }
+
+    fun requireExtensionByContent(contentFunc: (Extension) -> @Composable () -> Unit): Flow<List<ExtensionLoadResult.Ready>> {
+        return extensionsFlow.mapLatest { list ->
+            list.mapNotNull { result ->
+                (result as? ExtensionLoadResult.Ready)
+                    ?.takeIf { contentFunc(it.extension) !== EMPTY_CONTENT }
+            }
         }
     }
 
@@ -94,7 +104,6 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
     ): Deferred<ExtensionLoadResult> = scope.async {
         var errorMessage = "Unknown error"
         val appInfo = packageInfo.applicationInfo
-        val versionName = packageInfo.versionName
         val packageName = packageInfo.packageName
 
         val extension = runCatching {
@@ -117,17 +126,13 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
 
         if (extension != null) {
             return@async ExtensionLoadResult.Ready(
-                version = versionName,
-                baseVersion = versionName,
-                packageName = packageName,
+                packageInfo = packageInfo,
                 extension = extension
             )
         }
 
         ExtensionLoadResult.Error(
-            version = versionName,
-            baseVersion = versionName,
-            packageName = packageName,
+            packageInfo = packageInfo,
             message = errorMessage
         )
     }

@@ -66,14 +66,14 @@ fun ExtensionsScreen(
                         elevation = 1.dp,
                         onClick = {
                             navigator.navigate(
-                                ExtensionHostScreenDestination(packageName = extensionResult.packageName)
+                                ExtensionHostScreenDestination(packageName = extensionResult.packageInfo.packageName)
                             )
                         }
                     ) {
                         extensionResult.Place(
-                            content = extensionResult.extension!!.bannerContent,
+                            content = extensionResult.extension.bannerContent,
                             errorPlaceHolder = {
-                                Text(text = "LoadError ${extensionResult.packageName}")
+                                Text(text = "LoadError ${extensionResult.packageInfo.packageName}")
                             },
                         )
                     }
@@ -83,7 +83,7 @@ fun ExtensionsScreen(
                     Text(text = "Error: ${extensionResult.message}")
                 }
 
-                is ExtensionLoadResult.OutOfDate -> {
+                is ExtensionLoadResult.OutOfDated -> {
                     Text(text = "OutOfDate")
                 }
             }

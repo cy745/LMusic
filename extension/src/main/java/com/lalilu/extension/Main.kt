@@ -22,7 +22,26 @@ import com.lalilu.extension_core.Extension
 
 class Main : Extension {
     override val homeContent: @Composable () -> Unit = {
+        val imageApi =
+            remember { "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis() / 30000}" }
 
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            AsyncImage(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(16f / 9f),
+                contentScale = ContentScale.Crop,
+                model = imageApi,
+                contentDescription = ""
+            )
+            Text(stringResource(id = R.string.plugin_name) + " Hello World!")
+        }
     }
 
     override val mainContent: @Composable () -> Unit = {

@@ -1,36 +1,22 @@
 package com.lalilu.extension_core
 
 import android.content.Context
+import android.content.pm.PackageInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
 sealed class ExtensionLoadResult(
-    val version: String,
-    val baseVersion: String,
-    val packageName: String,
-    val extension: Extension? = null
+    val packageInfo: PackageInfo
 ) {
-    class OutOfDate(
-        version: String,
-        baseVersion: String,
-        packageName: String
-    ) : ExtensionLoadResult(version, baseVersion, packageName)
-
-    class Error(
-        version: String,
-        baseVersion: String,
-        packageName: String,
-        val message: String
-    ) : ExtensionLoadResult(version, baseVersion, packageName)
+    class OutOfDated(packageInfo: PackageInfo) : ExtensionLoadResult(packageInfo)
+    class Error(packageInfo: PackageInfo, val message: String) : ExtensionLoadResult(packageInfo)
 
     class Ready(
-        version: String,
-        baseVersion: String,
-        packageName: String,
-        extension: Extension
-    ) : ExtensionLoadResult(version, baseVersion, packageName, extension) {
+        packageInfo: PackageInfo,
+        val extension: Extension
+    ) : ExtensionLoadResult(packageInfo) {
 
         @Composable
         fun Place(
@@ -39,7 +25,7 @@ sealed class ExtensionLoadResult(
             content: @Composable () -> Unit,
         ) {
             val tempContext = remember {
-                runCatching { context.createPackageContext(packageName, 0) }.getOrNull()
+                runCatching { context.createPackageContext(packageInfo.packageName, 0) }.getOrNull()
             }
 
             if (tempContext != null) {
