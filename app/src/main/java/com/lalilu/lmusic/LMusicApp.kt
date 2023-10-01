@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import coil.ImageLoader
 import coil.ImageLoaderFactory
+import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.indexer.FilterGroup
 import com.lalilu.lmedia.indexer.FilterProvider
@@ -23,6 +24,7 @@ class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelSt
 
     override fun onCreate() {
         super.onCreate()
+        ExtensionManager.loadExtensions(this)
         startKoin {
             androidContext(this@LMusicApp)
             modules(

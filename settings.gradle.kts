@@ -5,6 +5,7 @@ include(":common")
 include(":lmedia")
 include(":lplayer")
 include(":crash")
+include(":extension-core")
 
 pluginManagement {
     repositories {

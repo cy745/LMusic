@@ -12,15 +12,18 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ActivityUtils
 import com.lalilu.common.SystemUiUtil
+import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.App
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.helper.LastTouchTimeHelper
 import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
@@ -42,15 +45,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 深色模式控制
-        settingsSp.darkModeOption.flow(true).onEach {
-            AppCompatDelegate.setDefaultNightMode(
-                when (it) {
-                    1 -> MODE_NIGHT_YES
-                    2 -> MODE_NIGHT_NO
-                    else -> MODE_NIGHT_FOLLOW_SYSTEM
-                }
-            )
-        }.launchIn(lifecycleScope)
+        settingsSp.darkModeOption.flow(true)
+            .collectWithLifeCycleOwner(this) {
+                AppCompatDelegate.setDefaultNightMode(
+                    when (it) {
+                        1 -> MODE_NIGHT_YES
+                        2 -> MODE_NIGHT_NO
+                        else -> MODE_NIGHT_FOLLOW_SYSTEM
+                    }
+                )
+            }
+
+        ExtensionManager.extensionsFlow
+            .collectWithLifeCycleOwner(this) { list ->
+                list.asSequence()
+                    .filter { it.extension != null }
+                    .onEach { lifecycle.addObserver(it.extension!!) }
+            }
 
         LMedia.initialize(this)
 

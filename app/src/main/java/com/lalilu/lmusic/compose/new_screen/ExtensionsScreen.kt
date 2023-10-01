@@ -1,68 +1,96 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import android.app.Application
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.content.PackageManagerCompat
 import androidx.lifecycle.ViewModel
-import com.blankj.utilcode.util.GsonUtils
-import com.blankj.utilcode.util.JsonUtils
+import com.lalilu.extension_core.ExtensionLoadResult
+import com.lalilu.extension_core.ExtensionManager
+import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
+import com.lalilu.lmusic.compose.new_screen.destinations.ExtensionHostScreenDestination
+import com.lalilu.lmusic.utils.extension.rememberFixedStatusBarHeightDp
 import com.ramcosta.composedestinations.annotation.Destination
-import org.koin.compose.koinInject
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
+@OptIn(ExperimentalMaterialApi::class)
 @Destination
 @Composable
 fun ExtensionsScreen(
-    vm: ExtensionsViewModel = koinInject()
+    context: Context = LocalContext.current,
+    navigator: DestinationsNavigator
 ) {
-    LaunchedEffect(Unit) {
-        vm.findAllExtensions()
-    }
+    val results by ExtensionManager.extensionsFlow.collectAsState()
+    val statusBarHeight = rememberFixedStatusBarHeightDp()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(10.dp),
-        contentPadding = PaddingValues(20.dp)
+        contentPadding = PaddingValues(vertical = statusBarHeight)
     ) {
-        items(items = vm.resultState) {
-            Text(text = it)
+        item {
+            NavigatorHeader(
+                title = "Extensions",
+                subTitle = "Extensions available in the app"
+            ) {
+                IconButton(onClick = { ExtensionManager.loadExtensions(context) }) {
+                    Icon(Icons.Default.Refresh, "Refresh")
+                }
+            }
+        }
+
+        items(items = results) {
+            when (it) {
+                is ExtensionLoadResult.Ready -> {
+                    val tempContext = context.createPackageContext(it.packageName, 0)
+
+                    Surface(
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        elevation = 1.dp,
+                        onClick = {
+                            navigator.navigate(ExtensionHostScreenDestination(packageName = it.packageName))
+                        }
+                    ) {
+                        CompositionLocalProvider(LocalContext provides tempContext) {
+                            it.extension!!.bannerContent()
+                        }
+                    }
+                }
+
+                is ExtensionLoadResult.Error -> {
+                    Text(text = "Error: ${it.message}")
+                }
+
+                is ExtensionLoadResult.OutOfDate -> {
+                    Text(text = "OutOfDate")
+                }
+            }
         }
     }
 }
 
 class ExtensionsViewModel(
-    context: Context
+    private val context: Application
 ) : ViewModel() {
-    private val packageManager: PackageManager by lazy { context.packageManager }
-    val resultState = mutableStateListOf<String>()
 
-    private val PACKAGE_FLAGS = PackageManager.GET_CONFIGURATIONS or
-            PackageManager.GET_META_DATA or
-            PackageManager.GET_SIGNATURES or
-            (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else 0)
-
-    fun findAllExtensions() {
-        val installedPkgs = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            packageManager.getInstalledPackages(PackageManager.PackageInfoFlags.of(PACKAGE_FLAGS.toLong()))
-        } else {
-            packageManager.getInstalledPackages(PACKAGE_FLAGS)
-        }
-
-        val sharedExtPkgs = installedPkgs
-            .map { it.packageName }
-
-        resultState.clear()
-        resultState.addAll(sharedExtPkgs.map { JsonUtils.formatJson(GsonUtils.toJson(it)) })
-    }
 }

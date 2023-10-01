@@ -33,12 +33,6 @@ android {
 }
 
 dependencies {
-    // https://github.com/coil-kt/coil
-    // Apache-2.0 License
-    // 图片加载库
-    api("io.coil-kt:coil:${findProperty("coil_version")}")
-    api("io.coil-kt:coil-compose:${findProperty("coil_version")}")
-
     api("androidx.gridlayout:gridlayout:1.0.0")
     api("androidx.constraintlayout:constraintlayout:2.1.4")
     api("androidx.coordinatorlayout:coordinatorlayout:1.2.0")

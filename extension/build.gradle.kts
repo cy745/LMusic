@@ -14,6 +14,11 @@ android {
     namespace = "com.lalilu.extension"
     compileSdk = 34
 
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.lalilu.extension"
         minSdk = 21
@@ -56,6 +61,9 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = findProperty("compose_compiler_version").toString()
+    }
 }
 
 configurations {
@@ -66,4 +74,5 @@ configurations {
 
 dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${findProperty("kotlin_version")}")
+    compileOnly(project(":extension-core"))
 }

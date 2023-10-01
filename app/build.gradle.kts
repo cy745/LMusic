@@ -6,8 +6,7 @@ import java.util.TimeZone
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-android")
+    kotlin("android")
     id("com.google.devtools.ksp")
 }
 
@@ -124,21 +123,7 @@ dependencies {
     implementation(project(":ui"))
     implementation(project(":lplayer"))
     implementation(project(":crash"))
-
-    // compose
-    implementation("androidx.compose.compiler:compiler:${findProperty("compose_compiler_version")}")
-    implementation(platform("androidx.compose:compose-bom:${findProperty("compose_bom_version")}"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-util")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-viewbinding")
-    implementation("androidx.compose.foundation:foundation")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material3:material3-window-size-class")
-    implementation("androidx.compose.runtime:runtime-livedata")
-    implementation("androidx.compose.material:material")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-tooling-preview")
+    implementation(project(":extension-core"))
 
     // compose-destinations
     implementation("io.github.raamcosta.compose-destinations:animations-core:${findProperty("compose_destinations_version")}")
