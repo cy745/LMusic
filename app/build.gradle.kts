@@ -124,6 +124,7 @@ dependencies {
     implementation(project(":lplayer"))
     implementation(project(":crash"))
     implementation(project(":extension-core"))
+    ksp(project(":extension-ksp"))
 
     // compose-destinations
     implementation("io.github.raamcosta.compose-destinations:animations-core:${findProperty("compose_destinations_version")}")

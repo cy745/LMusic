@@ -33,6 +33,8 @@ android {
 }
 
 dependencies {
+    api(project(":extension-ksp"))
+
     // https://github.com/coil-kt/coil
     // Apache-2.0 License
     // 图片加载库

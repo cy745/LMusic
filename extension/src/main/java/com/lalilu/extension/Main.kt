@@ -19,7 +19,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.lalilu.extension_core.Extension
+import com.lalilu.extension_ksp.Ext
 
+@Ext
 class Main : Extension {
     override val homeContent: @Composable () -> Unit = {
         val imageApi =

@@ -6,6 +6,7 @@ include(":lmedia")
 include(":lplayer")
 include(":crash")
 include(":extension-core")
+include(":extension-ksp")
 
 pluginManagement {
     repositories {

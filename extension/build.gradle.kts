@@ -4,6 +4,7 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     kotlin("android")
+    id("com.google.devtools.ksp")
 }
 
 val keystoreProps = rootProject.file("keystore.properties")
@@ -70,4 +71,5 @@ configurations {
 dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${findProperty("kotlin_version")}")
     compileOnly(project(":extension-core"))
+    ksp(project(":extension-ksp"))
 }

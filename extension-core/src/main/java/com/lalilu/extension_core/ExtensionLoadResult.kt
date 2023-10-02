@@ -8,15 +8,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
 sealed class ExtensionLoadResult(
+    val className: String,
     val packageInfo: PackageInfo
 ) {
-    class OutOfDated(packageInfo: PackageInfo) : ExtensionLoadResult(packageInfo)
-    class Error(packageInfo: PackageInfo, val message: String) : ExtensionLoadResult(packageInfo)
+    class OutOfDated(
+        className: String,
+        packageInfo: PackageInfo
+    ) : ExtensionLoadResult(className, packageInfo)
+
+    class Error(
+        className: String,
+        packageInfo: PackageInfo,
+        val message: String
+    ) : ExtensionLoadResult(className, packageInfo)
 
     class Ready(
+        className: String,
         packageInfo: PackageInfo,
         val extension: Extension
-    ) : ExtensionLoadResult(packageInfo) {
+    ) : ExtensionLoadResult(className, packageInfo) {
 
         @Composable
         fun Place(
