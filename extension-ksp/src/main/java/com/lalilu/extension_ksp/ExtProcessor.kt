@@ -17,7 +17,12 @@ class ExtProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger
 ) : SymbolProcessor {
-    private val listType = List::class.parameterizedBy(String::class)
+    companion object {
+        private val listType = List::class.parameterizedBy(String::class)
+        val GENERATE_PACKAGE_NAME = "lalilu.extension_ksp"
+        val GENERATE_FILE_NAME = "ExtensionsConstants"
+        val GENERATE_CLASS_NAME = "$GENERATE_PACKAGE_NAME.$GENERATE_FILE_NAME"
+    }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(Ext::class.qualifiedName!!).toList()
@@ -25,8 +30,8 @@ class ExtProcessor(
 
         if (symbols.isEmpty()) return emptyList()
 
-        val packageName = "com.lalilu.extension_ksp"
-        val fileName = "LMusicExtensions"
+        val packageName = GENERATE_PACKAGE_NAME
+        val fileName = GENERATE_FILE_NAME
         val classNames = symbols.map { it.toClassName() }
 
         val propertyValue = "listOf(${classNames.joinToString(",") { "\"$it\"" }})"

@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import com.lalilu.extension_ksp.ExtProcessor
 import dalvik.system.PathClassLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -84,16 +85,16 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
             }
 
             if (!isActive) return@launch
+            val hostExtensions = packageManager.getPackageInfo(context.packageName, PACKAGE_FLAGS)
+                ?.let { loadHostExtensions(this, context, it) }
+                ?: emptyList()
+
+            if (!isActive) return@launch
             val sharedExtensions = installedPackages
                 .asSequence()
                 .filter { it.reqFeatures.orEmpty().any { it.name == EXTENSION_FEATURE_NAME } }
                 .flatMap { loadSharedExtensions(this, context, it) }
                 .toList()
-
-            if (!isActive) return@launch
-            val hostExtensions = packageManager.getPackageInfo(context.packageName, PACKAGE_FLAGS)
-                ?.let { loadHostExtensions(this, context, it) }
-                ?: emptyList()
 
             val result = sharedExtensions.awaitAll() + hostExtensions.awaitAll()
             if (!isActive) return@launch
@@ -143,13 +144,20 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         context: Context,
         packageInfo: PackageInfo
     ): List<Deferred<ExtensionLoadResult>> {
-        val classLoader =
-            PathClassLoader(packageInfo.applicationInfo.sourceDir, null, context.classLoader)
+        return runCatching {
+            val classLoader = ForceClassLoader(
+                forceClassName = arrayOf(ExtProcessor.GENERATE_CLASS_NAME),
+                dexPath = packageInfo.applicationInfo.sourceDir,
+                parent = context.classLoader
+            )
+            val classes = getExtensionListFromMeta(packageInfo).toMutableSet()
+            classes += getExtensionListByReflection(classLoader)
 
-        val classes = getExtensionListFromMeta(packageInfo).toMutableSet()
-        classes += getExtensionListByReflection(classLoader)
-
-        return loadExtensionWithClassLoader(scope, classes.toList(), packageInfo, classLoader)
+            loadExtensionWithClassLoader(scope, classes.toList(), packageInfo, classLoader)
+        }.getOrElse {
+            it.printStackTrace()
+            emptyList()
+        }
     }
 
     private fun loadHostExtensions(
@@ -157,10 +165,14 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         context: Context,
         packageInfo: PackageInfo
     ): List<Deferred<ExtensionLoadResult>> {
-        val classes = getExtensionListByReflection(context.classLoader)
-        val classLoader = context.classLoader
+        return runCatching {
+            val classes = getExtensionListByReflection(context.classLoader)
 
-        return loadExtensionWithClassLoader(scope, classes, packageInfo, classLoader)
+            loadExtensionWithClassLoader(scope, classes, packageInfo, context.classLoader)
+        }.getOrElse {
+            it.printStackTrace()
+            emptyList()
+        }
     }
 
     private fun getExtensionListFromMeta(
@@ -182,13 +194,34 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         classLoader: ClassLoader
     ): List<String> {
         return runCatching {
-            val targetClass = "com.lalilu.extension_ksp.LMusicExtensions"
+            val targetClass = ExtProcessor.GENERATE_CLASS_NAME
             val clazz = Class.forName(targetClass, false, classLoader)
             val method = clazz.getDeclaredMethod("getClasses").apply { isAccessible = true }
             val obj = clazz.getDeclaredConstructor().newInstance()
 
             (method.invoke(obj) as List<*>).mapNotNull { it as? String }
-        }.getOrNull() ?: emptyList()
+        }.getOrElse {
+            it.printStackTrace()
+            emptyList()
+        }
+    }
+
+    private class ForceClassLoader(
+        private vararg val forceClassName: String,
+        dexPath: String,
+        parent: ClassLoader
+    ) : PathClassLoader(dexPath, null, parent) {
+        private val cache = hashMapOf<String, Class<*>>()
+
+        override fun loadClass(name: String, resolve: Boolean): Class<*> {
+            return if (forceClassName.contains(name)) {
+                cache[name]
+                    ?: findClass(name)?.also { cache[name] = it }
+                    ?: throw ClassNotFoundException("Class $name not found")
+            } else {
+                super.loadClass(name, resolve)
+            }
+        }
     }
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
