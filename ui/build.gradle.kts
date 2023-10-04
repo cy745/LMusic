@@ -1,26 +1,19 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    kotlin("android")
 }
 
 android {
     namespace = "com.lalilu.ui"
-    compileSdk = 34
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
 
     defaultConfig {
-        minSdk = 21
+        minSdk = AndroidConfig.MIN_SDK_VERSION
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
-
     buildTypes {
         release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            consumerProguardFiles("proguard-rules.pro")
         }
     }
     compileOptions {
@@ -33,10 +26,10 @@ android {
 }
 
 dependencies {
-    api("androidx.gridlayout:gridlayout:1.0.0")
-    api("androidx.constraintlayout:constraintlayout:2.1.4")
-    api("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
-    api("androidx.recyclerview:recyclerview:1.3.1")
+    api(libs.gridlayout)
+    api(libs.constraintlayout)
+    api(libs.coordinatorlayout)
+    api(libs.recyclerview)
 
     implementation(project(":common"))
 }

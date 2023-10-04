@@ -1,13 +1,3 @@
-rootProject.name = "lmusic"
-include(":app")
-include(":ui")
-include(":common")
-include(":lmedia")
-include(":lplayer")
-include(":crash")
-include(":extension-core")
-include(":extension-ksp")
-
 pluginManagement {
     repositories {
         google()
@@ -29,6 +19,16 @@ dependencyResolutionManagement {
     }
 }
 
+
+rootProject.name = "lmusic"
+include(":app")
+include(":ui")
+include(":common")
+include(":lmedia")
+include(":lplayer")
+include(":crash")
+include(":extension-core")
+include(":extension-ksp")
 
 val extFile = File(rootDir, "extension")
 if (extFile.exists() && extFile.isDirectory) {

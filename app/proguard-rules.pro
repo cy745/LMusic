@@ -72,3 +72,9 @@
 -keep class StatusBarLyric.API.StatusBarLyric { *; }
 
 -printmapping mapping.txt
+
+-keep class kotlin.** { *;}
+-keep class androidx.compose.runtime.** { *;}
+-keep public class com.lalilu.extension_core.Extension { *;}
+-keep public class * extends com.lalilu.extension_core.Extension { *;}
+-keep public class lalilu.extension_ksp.ExtensionsConstants { *;}

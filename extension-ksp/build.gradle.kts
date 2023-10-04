@@ -9,7 +9,7 @@ java {
 }
 
 dependencies {
-    implementation("com.squareup:kotlinpoet:1.14.2")
-    implementation("com.squareup:kotlinpoet-ksp:1.14.2")
-    implementation("com.google.devtools.ksp:symbol-processing-api:${findProperty("ksp_version")}")
+    implementation(libs.kotlinpoet)
+    implementation(libs.kotlinpoet.ksp)
+    implementation(libs.ksp.symbol.api)
 }

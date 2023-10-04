@@ -22,12 +22,12 @@ fun releaseTime(): String = SimpleDateFormat("yyyyMMdd_HHmmZ").run {
 
 android {
     namespace = "com.lalilu"
-    compileSdk = 34
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
 
     defaultConfig {
         applicationId = "com.lalilu.lmusic"
-        minSdk = 21
-        targetSdk = 34
+        minSdk = AndroidConfig.MIN_SDK_VERSION
+        targetSdk = AndroidConfig.TARGET_SDK_VERSION
         versionCode = 42
         versionName = "1.5.4"
 
@@ -105,7 +105,7 @@ android {
         jvmTarget = "17"
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = findProperty("compose_compiler_version").toString()
+        kotlinCompilerExtensionVersion = libs.compose.compiler.get().version.toString()
     }
     packaging {
         resources {
@@ -127,14 +127,12 @@ dependencies {
     ksp(project(":extension-ksp"))
 
     // compose-destinations
-    implementation("io.github.raamcosta.compose-destinations:animations-core:${findProperty("compose_destinations_version")}")
-    ksp("io.github.raamcosta.compose-destinations:ksp:${findProperty("compose_destinations_version")}")
+    implementation(libs.compose.destinations.animations.core)
+    ksp(libs.compose.destinations.ksp)
 
     // accompanist
     // https://google.github.io/accompanist
-    implementation("com.google.accompanist:accompanist-systemuicontroller:${findProperty("accompanist_version")}")
-    implementation("com.google.accompanist:accompanist-flowlayout:${findProperty("accompanist_version")}")
-    implementation("com.google.accompanist:accompanist-permissions:${findProperty("accompanist_version")}")
+    implementation(libs.bundles.accompanist)
 
     // lottie
     // https://mvnrepository.com/artifact/com.airbnb.android/lottie-compose

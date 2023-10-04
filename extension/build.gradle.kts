@@ -13,7 +13,7 @@ val keystoreProps = rootProject.file("keystore.properties")
 
 android {
     namespace = "com.lalilu.extension"
-    compileSdk = 34
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
 
     buildFeatures {
         compose = true
@@ -22,8 +22,8 @@ android {
 
     defaultConfig {
         applicationId = "com.lalilu.extension"
-        minSdk = 21
-        targetSdk = 34
+        minSdk = AndroidConfig.MIN_SDK_VERSION
+        targetSdk = AndroidConfig.TARGET_SDK_VERSION
         versionCode = 1
         versionName = "1.0"
     }
@@ -48,6 +48,11 @@ android {
         release {
             isMinifyEnabled = false
             signingConfig = kotlin.runCatching { signingConfigs["release"] }.getOrNull()
+
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -58,7 +63,7 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = findProperty("compose_compiler_version").toString()
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.version.get()
     }
 }
 
@@ -69,7 +74,7 @@ configurations {
 }
 
 dependencies {
-    compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${findProperty("kotlin_version")}")
+    compileOnly(libs.kotlin.stdlib)
     compileOnly(project(":extension-core"))
     ksp(project(":extension-ksp"))
 }
