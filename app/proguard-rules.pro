@@ -71,10 +71,15 @@
 # 墨 · 状态栏歌词
 -keep class StatusBarLyric.API.StatusBarLyric { *; }
 
--printmapping mapping.txt
+# 为插件保留相应的依赖环境
+-keep class kotlin.** { public protected *; }
+-keep class kotlinx.coroutines.** { public protected *; }
+-keep class androidx.lifecycle.** { public protected *; }
+-keep class androidx.compose.** { public protected *; }
+-keep class coil.compose.** { public protected *; }
 
--keep class kotlin.** { *;}
--keep class androidx.compose.runtime.** { *;}
--keep public class com.lalilu.extension_core.Extension { *;}
--keep public class * extends com.lalilu.extension_core.Extension { *;}
--keep public class lalilu.extension_ksp.ExtensionsConstants { *;}
+-keep class * extends com.lalilu.extension_core.Extension { *; }
+-keep class com.lalilu.extension_core.** { public protected *; }
+-keep class lalilu.extension_ksp.ExtensionsConstants { *;}
+
+-printmapping mapping.txt

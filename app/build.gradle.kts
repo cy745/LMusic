@@ -134,6 +134,13 @@ dependencies {
     // https://google.github.io/accompanist
     implementation(libs.bundles.accompanist)
 
+    implementation(libs.activity.compose)
+    implementation(libs.navigation.compose)
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.lifecycle.livedata.ktx)
+
     // lottie
     // https://mvnrepository.com/artifact/com.airbnb.android/lottie-compose
     implementation("com.airbnb.android:lottie-compose:5.2.0")
@@ -177,11 +184,4 @@ dependencies {
     implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
 
 //    implementation("com.github.angcyo:DslAdapter:6.0.1")
-
-    implementation("androidx.activity:activity-compose:1.7.2")
-    implementation("androidx.navigation:navigation-compose:${findProperty("navigation_version")}")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${findProperty("lifecycle_version")}")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${findProperty("lifecycle_version")}")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${findProperty("lifecycle_version")}")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:${findProperty("lifecycle_version")}")
 }

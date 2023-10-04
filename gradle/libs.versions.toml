@@ -10,11 +10,8 @@ compose_compiler_version = "1.5.2"
 compose_destinations_version = "1.9.52"
 accompanist_version = "0.32.0"
 
-
 kotlinpoet = "1.14.2"
 coil_version = "2.2.2"
-lifecycle_version = "2.6.1"
-navigation_version = "2.7.1"
 utilcodex_version = "1.31.1"
 
 appcompat = "1.6.1"
@@ -26,6 +23,9 @@ constraintlayout = "2.1.4"
 coordinatorlayout = "1.2.0"
 gridlayout = "1.0.0"
 recyclerview = "1.3.1"
+activity-compose = "1.7.2"
+lifecycle_version = "2.6.2"
+navigation_version = "2.7.3"
 
 
 [libraries]
@@ -71,14 +71,6 @@ koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = 
 coil = { module = "io.coil-kt:coil", version.ref = "coil_version" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil_version" }
 
-# thirdparty
-# https://github.com/Blankj/AndroidUtilCode/
-# Apache-2.0 License
-# 安卓工具类库
-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "startup-runtime" }
-utilcodex = { module = "com.blankj:utilcodex", version.ref = "utilcodex_version" }
-
 # androidx
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
@@ -87,11 +79,22 @@ dynamicanimation-ktx = { module = "androidx.dynamicanimation:dynamicanimation-kt
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 coordinatorlayout = { module = "androidx.coordinatorlayout:coordinatorlayout", version.ref = "coordinatorlayout" }
 gridlayout = { module = "androidx.gridlayout:gridlayout", version.ref = "gridlayout" }
+recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
+startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "startup-runtime" }
+lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle_version" }
+lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle_version" }
+lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle_version" }
+lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle_version" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation_version" }
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 
-# others
+# thirdparty / others
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinpoet" }
 ksp-symbol-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp_version" }
+
+# [Apache-2.0 License] 安卓工具类库 https://github.com/Blankj/AndroidUtilCode/
+utilcodex = { module = "com.blankj:utilcodex", version.ref = "utilcodex_version" }
 
 
 [plugins]

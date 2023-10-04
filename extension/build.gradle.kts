@@ -46,7 +46,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             signingConfig = kotlin.runCatching { signingConfigs["release"] }.getOrNull()
 
             proguardFiles(
@@ -64,12 +64,6 @@ android {
     }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.version.get()
-    }
-}
-
-configurations {
-    compileOnly {
-        isCanBeResolved = true
     }
 }
 
