@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import com.lalilu.extension_ksp.ExtProcessor
 import dalvik.system.PathClassLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -33,6 +32,7 @@ import kotlin.coroutines.CoroutineContext
 object ExtensionManager : CoroutineScope, LifecycleEventObserver {
     private const val EXTENSION_FEATURE_NAME = "lmusic.extension"
     private const val EXTENSION_META_DATA_CLASS = "lmusic.extension.class"
+    private const val EXTENSION_SOURCES_CLASS = "lalilu.extension_ksp.ExtensionsConstants"
 
     override val coroutineContext: CoroutineContext = Dispatchers.Default
 
@@ -117,6 +117,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
 
                     clazz.getDeclaredConstructor().newInstance() as? Extension
                 }.getOrElse {
+                    println("""[loadExtensionWithClassLoader] Error: ${it.message}""")
                     it.printStackTrace()
                     errorMessage = it.message ?: it.localizedMessage ?: "Unknown error"
                     null
@@ -145,16 +146,30 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         packageInfo: PackageInfo
     ): List<Deferred<ExtensionLoadResult>> {
         return runCatching {
+            println(
+                """[loadSharedExtensions] Start:
+                    |${packageInfo.packageName}
+                    |${packageInfo.applicationInfo.sourceDir}
+                    |${context.classLoader}
+                """.trimMargin()
+            )
+
             val classLoader = ForceClassLoader(
-                forceClassName = arrayOf(ExtProcessor.GENERATE_CLASS_NAME),
+                forceClassName = arrayOf(EXTENSION_SOURCES_CLASS),
                 dexPath = packageInfo.applicationInfo.sourceDir,
                 parent = context.classLoader
             )
             val classes = getExtensionListFromMeta(packageInfo).toMutableSet()
             classes += getExtensionListByReflection(classLoader)
+            println(
+                """[loadSharedExtensions] Classes:
+                        classes: [${classes.joinToString(",")}]
+                """.trimMargin()
+            )
 
             loadExtensionWithClassLoader(scope, classes.toList(), packageInfo, classLoader)
         }.getOrElse {
+            println("""[loadSharedExtensions] Error: ${it.message}""")
             it.printStackTrace()
             emptyList()
         }
@@ -170,6 +185,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
 
             loadExtensionWithClassLoader(scope, classes, packageInfo, context.classLoader)
         }.getOrElse {
+            println("""[loadHostExtensions] Error: ${it.message}""")
             it.printStackTrace()
             emptyList()
         }
@@ -194,7 +210,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         classLoader: ClassLoader
     ): List<String> {
         return runCatching {
-            val targetClass = ExtProcessor.GENERATE_CLASS_NAME
+            val targetClass = EXTENSION_SOURCES_CLASS
             val clazz = Class.forName(targetClass, false, classLoader)
             val method = clazz.getDeclaredMethod("getClasses").apply { isAccessible = true }
             val obj = clazz.getDeclaredConstructor().newInstance()
@@ -208,7 +224,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
 
     private class ForceClassLoader(
         private vararg val forceClassName: String,
-        dexPath: String,
+        private val dexPath: String,
         parent: ClassLoader
     ) : PathClassLoader(dexPath, null, parent) {
         private val cache = hashMapOf<String, Class<*>>()

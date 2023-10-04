@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.extension_core.EMPTY_CONTENT
 import com.lalilu.extension_core.Extension
-import com.lalilu.extension_ksp.Ext
+import com.lalilu.extension_core.Ext
 
 
 @Ext

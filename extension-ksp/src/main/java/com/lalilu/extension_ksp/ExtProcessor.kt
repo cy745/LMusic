@@ -21,11 +21,13 @@ class ExtProcessor(
         private val listType = List::class.parameterizedBy(String::class)
         val GENERATE_PACKAGE_NAME = "lalilu.extension_ksp"
         val GENERATE_FILE_NAME = "ExtensionsConstants"
-        val GENERATE_CLASS_NAME = "$GENERATE_PACKAGE_NAME.$GENERATE_FILE_NAME"
+
+        // 需手动修改与extension_core的保持一致
+        private val TARGET_ANNOTATION = "com.lalilu.extension_core.Ext"
     }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver.getSymbolsWithAnnotation(Ext::class.qualifiedName!!).toList()
+        val symbols = resolver.getSymbolsWithAnnotation(TARGET_ANNOTATION).toList()
             .filterIsInstance<KSClassDeclaration>()
 
         if (symbols.isEmpty()) return emptyList()
