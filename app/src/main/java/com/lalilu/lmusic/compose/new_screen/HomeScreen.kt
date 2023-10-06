@@ -183,7 +183,7 @@ fun HomeScreen(
                             .padding(bottom = 5.dp),
                         fixedHeight = { true },
                         isSelected = { selectHelper.selectedItems.any { it.id == item.id } },
-                        hasLyric = playingVM.lyricRepository.rememberHasLyric(song = item),
+                        hasLyric = playingVM.lyricRepository.rememberHasLyric(playable = item),
                         onEnterSelect = { selectHelper.onSelected(item) },
                         isPlaying = { playingVM.isSongPlaying(item.id) },
                         onClick = {

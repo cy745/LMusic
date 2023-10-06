@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.lalilu.R
+import com.lalilu.common.base.Playable
 import com.lalilu.databinding.ItemPlayingBinding
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.utils.extension.durationToTime
@@ -42,26 +43,38 @@ abstract class NewAdapter<I : Any, B : ViewBinding> constructor(
     override fun onBindViewHolder(holder: NewAdapter<I, B>.NewViewHolder, position: Int) {
         val binding = holder.binding
         val item = data[position]
-        binding.root.tag = getIdFromItem(item)
+        binding.root.tag = item
         binding.root.setOnClickListener(this)
         binding.root.setOnLongClickListener(this)
         onBind(binding, item, position)
     }
 }
 
-class NewPlayingAdapter private constructor(
-    private val onClickCallback: OnClickCallback?,
-    private val onLongClickCallback: OnLongClickCallback?,
-    private val onSwipedLeftCallback: OnSwipedLeftCallback?,
-    private val onSwipedRightCallback: OnSwipedRightCallback?,
-    private val onDataUpdatedCallback: OnDataUpdatedCallback?,
-    private val onItemBoundCallback: OnItemBoundCallback?,
-    private val itemCallback: ItemCallback<LSong>?,
-) : NewAdapter<LSong, ItemPlayingBinding>(R.layout.item_playing) {
+enum class ViewEvent {
+    OnClick, OnLongClick, OnSwipeLeft, OnSwipeRight, OnBind
+}
 
-    private val diffUtilCallbackHelper = itemCallback?.let {
-        DiffUtilCallbackHelper(itemCallback = it)
-    }
+fun interface OnViewEvent<T> {
+    fun onViewEvent(event: ViewEvent, item: T)
+}
+
+fun interface OnItemBoundCallback<T> {
+    fun onItemBound(binding: ItemPlayingBinding, item: T)
+}
+
+fun interface OnDataUpdatedCallback {
+    fun onDataUpdated(needScrollToTop: Boolean)
+}
+
+class NewPlayingAdapter private constructor(
+    private val onViewEvent: OnViewEvent<Playable>?,
+    private val onItemBoundCallback: OnItemBoundCallback<Playable>?,
+    private val onDataUpdatedCallback: OnDataUpdatedCallback?,
+    private val itemCallback: ItemCallback<Playable>?,
+) : NewAdapter<Playable, ItemPlayingBinding>(R.layout.item_playing) {
+
+    private val diffUtilCallbackHelper =
+        itemCallback?.let { DiffUtilCallbackHelper(itemCallback = it) }
     private val touchHelper = TouchHelper { position, direction ->
         val item = data.getOrNull(position) ?: return@TouchHelper
 
@@ -78,8 +91,8 @@ class NewPlayingAdapter private constructor(
         }
 
         when (direction) {
-            ItemTouchHelper.LEFT -> onSwipedLeftCallback?.onSwipedLeft(item)
-            ItemTouchHelper.RIGHT -> onSwipedRightCallback?.onSwipedRight(item)
+            ItemTouchHelper.LEFT -> onViewEvent?.onViewEvent(ViewEvent.OnSwipeLeft, item)
+            ItemTouchHelper.RIGHT -> onViewEvent?.onViewEvent(ViewEvent.OnSwipeRight, item)
         }
     }
 
@@ -87,42 +100,23 @@ class NewPlayingAdapter private constructor(
         ItemTouchHelper(touchHelper).attachToRecyclerView(recyclerView)
     }
 
-    fun interface OnClickCallback {
-        fun onClick(id: String)
-    }
 
-    fun interface OnLongClickCallback {
-        fun onLongClick(id: String)
-    }
-
-    fun interface OnSwipedLeftCallback {
-        fun onSwipedLeft(item: LSong): Boolean
-    }
-
-    fun interface OnSwipedRightCallback {
-        fun onSwipedRight(item: LSong): Boolean
-    }
-
-    fun interface OnDataUpdatedCallback {
-        fun onDataUpdated(needScrollToTop: Boolean)
-    }
-
-    fun interface OnItemBoundCallback {
-        fun onItemBound(binding: ItemPlayingBinding, item: LSong)
-    }
-
-    override fun onBind(binding: ItemPlayingBinding, item: LSong, position: Int) {
-        binding.songTitle.text = item.name
-        binding.songSinger.text = item._artist
+    override fun onBind(binding: ItemPlayingBinding, item: Playable, position: Int) {
+        binding.songTitle.text = item.title
+        binding.songSinger.text = item.subTitle
         binding.songDuration.text = item.durationMs.durationToTime()
-        binding.songPic.loadCoverForPlaying(item)
         binding.songPic.setRoundOutline(2)
-        binding.songType.setImageResource(getMimeTypeIconRes(item.mimeType))
+        binding.songPic.loadCoverForPlaying(item)
+
+        if (item is LSong) {
+            binding.songType.setImageResource(getMimeTypeIconRes(item.mimeType))
+        }
+
         onItemBoundCallback?.onItemBound(binding, item)
     }
 
-    override fun getIdFromItem(item: LSong): String {
-        return item.id
+    override fun getIdFromItem(item: Playable): String {
+        return item.mediaId
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewViewHolder {
@@ -140,16 +134,16 @@ class NewPlayingAdapter private constructor(
     }
 
     override fun onClick(v: View?) {
-        onClickCallback?.onClick(v?.tag.toString())
+        (v?.tag as? Playable)?.let { onViewEvent?.onViewEvent(ViewEvent.OnClick, it) }
     }
 
     override fun onLongClick(v: View?): Boolean {
         v?.parent?.requestDisallowInterceptTouchEvent(true)
-        onLongClickCallback?.onLongClick(v?.tag.toString())
+        (v?.tag as? Playable)?.let { onViewEvent?.onViewEvent(ViewEvent.OnLongClick, it) }
         return true
     }
 
-    fun setDiffData(list: List<LSong>) {
+    fun setDiffData(list: List<Playable>) {
         var needScrollToTop = false
         if (itemCallback == null || diffUtilCallbackHelper == null) {
             data = list
@@ -160,12 +154,12 @@ class NewPlayingAdapter private constructor(
         var oldList = data
         if (list.isNotEmpty() && oldList.isNotEmpty()) {
             // 排除播放上一首的情况
-            if (oldList.lastOrNull()?.id == list[0].id) {
+            if (oldList.lastOrNull()?.mediaId == list[0].mediaId) {
                 needScrollToTop = true
             } else {
                 // 预先将头部部分差异进行转移
                 // 通过比对第一个元素的id来判断是否需要转移
-                val size = oldList.indexOfFirst { it.id == list[0].id }
+                val size = oldList.indexOfFirst { it.mediaId == list[0].mediaId }
                 if (size > 0) {
                     oldList = oldList.moveHeadToTail(size)
 
@@ -204,49 +198,30 @@ class NewPlayingAdapter private constructor(
     }
 
     class Builder(
-        private var onClickCallback: OnClickCallback? = null,
-        private var onLongClickCallback: OnLongClickCallback? = null,
-        private var onSwipedLeftCallback: OnSwipedLeftCallback? = null,
-        private var onSwipedRightCallback: OnSwipedRightCallback? = null,
+        private var onViewEvent: OnViewEvent<Playable>? = null,
+        private var onItemBoundCallback: OnItemBoundCallback<Playable>? = null,
         private var onDataUpdatedCallback: OnDataUpdatedCallback? = null,
-        private var onItemBoundCallback: OnItemBoundCallback? = null,
-        private var itemCallback: ItemCallback<LSong>? = null,
+        private var itemCallback: ItemCallback<Playable>? = null,
     ) {
-        fun setOnClickCB(onClickCallback: OnClickCallback) = apply {
-            this.onClickCallback = onClickCallback
+        fun setViewEvent(onViewEvent: OnViewEvent<Playable>) = apply {
+            this.onViewEvent = onViewEvent
         }
 
-        fun setOnLongClickCB(onLongClickCallback: OnLongClickCallback) = apply {
-            this.onLongClickCallback = onLongClickCallback
-        }
-
-        fun setOnSwipedLeftCB(onSwipedLeftCallback: OnSwipedLeftCallback) = apply {
-            this.onSwipedLeftCallback = onSwipedLeftCallback
-        }
-
-        fun setOnSwipedRightCB(onSwipedRightCallback: OnSwipedRightCallback) = apply {
-            this.onSwipedRightCallback = onSwipedRightCallback
+        fun setOnItemBoundCB(onItemBoundCallback: OnItemBoundCallback<Playable>) = apply {
+            this.onItemBoundCallback = onItemBoundCallback
         }
 
         fun setOnDataUpdatedCB(onDataUpdatedCallback: OnDataUpdatedCallback) = apply {
             this.onDataUpdatedCallback = onDataUpdatedCallback
         }
 
-        fun setOnItemBoundCB(onItemBoundCallback: OnItemBoundCallback) = apply {
-            this.onItemBoundCallback = onItemBoundCallback
-        }
-
-        fun setItemCallback(itemCallback: ItemCallback<LSong>) = apply {
+        fun setItemCallback(itemCallback: ItemCallback<Playable>) = apply {
             this.itemCallback = itemCallback
         }
 
         fun build() = NewPlayingAdapter(
-            onClickCallback,
-            onLongClickCallback,
-            onSwipedLeftCallback,
-            onSwipedRightCallback,
-            onDataUpdatedCallback,
-            onItemBoundCallback,
+            onViewEvent,
+            onItemBoundCallback, onDataUpdatedCallback,
             itemCallback
         )
     }

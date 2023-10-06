@@ -8,17 +8,17 @@ import coil.load
 import coil.util.CoilUtils.dispose
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
-import com.lalilu.lmedia.entity.LSong
+import com.lalilu.common.base.Playable
 import com.lalilu.lmusic.ui.BlurImageView
 
-fun BlurImageView.loadCover(song: LSong?) {
-    song ?: run {
+fun BlurImageView.loadCover(item: Playable?) {
+    item ?: run {
         clearImage()
         return
     }
     val samplingTo = width
 
-    load(song) {
+    load(item.imageSource) {
         if (samplingTo > 0) size(samplingTo)
         allowHardware(false)
         target(
@@ -28,15 +28,15 @@ fun BlurImageView.loadCover(song: LSong?) {
     }
 }
 
-fun AppCompatImageView.loadCoverForPlaying(song: LSong?) {
-    song ?: run {
+fun AppCompatImageView.loadCoverForPlaying(item: Playable?) {
+    item ?: run {
         setImageDrawable(null)
         return
     }
     val samplingTo = width
 
     dispose(this)
-    load(song) {
+    load(item.imageSource) {
         if (samplingTo > 0) size(samplingTo)
         placeholder(R.drawable.ic_music_line_bg_64dp)
         error(R.drawable.ic_music_line_bg_64dp)

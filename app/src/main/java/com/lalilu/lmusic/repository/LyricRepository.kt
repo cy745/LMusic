@@ -6,6 +6,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.dirror.lyricviewx.LyricUtil
+import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.service.LMusicRuntime
@@ -32,18 +33,20 @@ class LyricRepository(
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     @Composable
-    fun rememberHasLyric(song: LSong): State<Boolean> {
+    fun rememberHasLyric(playable: Playable): State<Boolean> {
         return remember { mutableStateOf(false) }.also { state ->
-            LaunchedEffect(song) {
+            LaunchedEffect(playable) {
                 if (isActive) {
-                    state.value = hasLyric(song)
+                    state.value = hasLyric(playable)
                 }
             }
         }
     }
 
-    suspend fun hasLyric(song: LSong): Boolean =
-        withContext(Dispatchers.IO) { lyricSource.hasLyric(song) }
+    suspend fun hasLyric(song: Playable): Boolean = withContext(Dispatchers.IO) {
+        if (song !is LSong) return@withContext false
+        lyricSource.hasLyric(song)
+    }
 
     val currentLyric: Flow<Pair<String, String?>?> =
         runtime.playingFlow.flatMapLatest { item ->

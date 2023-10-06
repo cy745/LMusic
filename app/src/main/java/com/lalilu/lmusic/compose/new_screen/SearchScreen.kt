@@ -119,7 +119,7 @@ fun SearchScreen(
                     .animateItemPlacement()
                     .padding(bottom = 5.dp),
                 isSelected = { selectHelper.selectedItems.any { it.id == item.id } },
-                hasLyric = playingVM.lyricRepository.rememberHasLyric(song = item),
+                hasLyric = playingVM.lyricRepository.rememberHasLyric(playable = item),
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     navigator.navigate(SongDetailScreenDestination(item.id))

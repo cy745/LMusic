@@ -22,10 +22,11 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.R
 import com.lalilu.common.ColorAnimator
 import com.lalilu.common.HapticUtils
+import com.lalilu.common.base.Playable
 import com.lalilu.databinding.FragmentPlayingRebuildBinding
-import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.Config
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
+import com.lalilu.lmusic.adapter.ViewEvent
 import com.lalilu.lmusic.adapter.loadCover
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbarScaffold
@@ -137,54 +138,52 @@ object Playing {
         onScrollToTop: () -> Unit = {},
     ): NewPlayingAdapter {
         return NewPlayingAdapter.Builder()
-            .setOnLongClickCB {
-                BottomSheetWrapper.show()
-                if (navController.currentDestination?.route == ScreenData.SongsDetail.destination.route) {
-                    navController.popBackStack()
-                }
-                navController.navigate(
-                    SongDetailScreenDestination(
-                        mediaId = it,
-                        fromPlaying = true
-                    )
-                ) {
-                    launchSingleTop = true
-                }
-            }
-            .setOnClickCB {
-                playingVM.play(
-                    mediaId = it,
-                    playOrPause = true
-                )
-            }
-            .setOnSwipedLeftCB {
-                DynamicTips.push(
-                    title = it.name,
-                    subTitle = "下一首播放",
-                    imageData = it
-                )
-                playingVM.browser.addToNext(it.id)
-            }
-            .setOnSwipedRightCB {
-                playingVM.browser.removeById(it.id)
-            }
-            .setOnDataUpdatedCB { needScrollToTop ->
-                if (needScrollToTop) {
-                    onScrollToTop()
+            .setViewEvent { event, item ->
+                when (event) {
+                    ViewEvent.OnClick -> playingVM.play(mediaId = item.mediaId, playOrPause = true)
+                    ViewEvent.OnLongClick -> {
+                        BottomSheetWrapper.show()
+                        if (navController.currentDestination?.route == ScreenData.SongsDetail.destination.route) {
+                            navController.popBackStack()
+                        }
+                        navController.navigate(
+                            SongDetailScreenDestination(
+                                mediaId = item.mediaId,
+                                fromPlaying = true
+                            )
+                        ) {
+                            launchSingleTop = true
+                        }
+                    }
+
+                    ViewEvent.OnSwipeLeft -> {
+                        DynamicTips.push(
+                            title = item.title,
+                            subTitle = "下一首播放",
+                            imageData = item.imageSource
+                        )
+                        playingVM.browser.addToNext(item.mediaId)
+                    }
+
+                    ViewEvent.OnSwipeRight -> playingVM.browser.removeById(item.mediaId)
+                    ViewEvent.OnBind -> {
+
+                    }
                 }
             }
+            .setOnDataUpdatedCB { needScrollToTop -> if (needScrollToTop) onScrollToTop() }
             .setOnItemBoundCB { binding, item ->
                 playingVM.requireLyric(item) {
                     binding.songLrc.visibility = if (it) View.VISIBLE else View.INVISIBLE
                 }
             }
-            .setItemCallback(object : DiffUtil.ItemCallback<LSong>() {
-                override fun areItemsTheSame(oldItem: LSong, newItem: LSong): Boolean =
-                    oldItem.id == newItem.id
+            .setItemCallback(object : DiffUtil.ItemCallback<Playable>() {
+                override fun areItemsTheSame(oldItem: Playable, newItem: Playable): Boolean =
+                    oldItem.mediaId == newItem.mediaId
 
-                override fun areContentsTheSame(oldItem: LSong, newItem: LSong): Boolean =
-                    oldItem.id == newItem.id &&
-                            oldItem.name == newItem.name &&
+                override fun areContentsTheSame(oldItem: Playable, newItem: Playable): Boolean =
+                    oldItem.mediaId == newItem.mediaId &&
+                            oldItem.title == newItem.title &&
                             oldItem.durationMs == newItem.durationMs
             })
             .build()

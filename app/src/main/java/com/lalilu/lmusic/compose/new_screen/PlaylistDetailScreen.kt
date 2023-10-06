@@ -100,7 +100,7 @@ fun PlaylistDetailScreen(
                 ) { isDragging ->
                     SongCard(
                         song = { item },
-                        hasLyric = playingVM.lyricRepository.rememberHasLyric(song = item),
+                        hasLyric = playingVM.lyricRepository.rememberHasLyric(playable = item),
                         onClick = {
                             if (selector.isSelecting.value) {
                                 selector.onSelected(item)
