@@ -3,6 +3,7 @@ package com.lalilu.lmusic
 import android.app.Application
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import coil.Coil
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.lalilu.extension_core.ExtensionManager
@@ -38,5 +39,9 @@ class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelSt
                 LMedia.module
             )
         }
+
+        // 插件端可能会比宿主更快使用ImageLoader，而插件端的context无法用于创建ImageLoader会导致闪退，
+        // 故宿主端提前初始化ImageLoader避免插件端进行初始化
+        Coil.imageLoader(this)
     }
 }
