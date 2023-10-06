@@ -5,7 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import com.lalilu.lmedia.entity.LSong
+import com.lalilu.common.base.Playable
 import com.lalilu.lplayer.extensions.AudioFocusHelper
 import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.playback.PlayQueue
@@ -14,11 +14,12 @@ import com.lalilu.lplayer.playback.Player
 
 class MixPlayback(
     private val audioFocusHelper: AudioFocusHelper,
-    override var playbackListener: Playback.Listener<LSong>? = null,
-    override var queue: PlayQueue<LSong>? = null,
+    override var playbackListener: Playback.Listener<Playable>? = null,
+    override var queue: PlayQueue<Playable>? = null,
     override var player: Player? = null,
     override var playMode: PlayMode = PlayMode.ListRecycle,
-) : MediaSessionCompat.Callback(), Playback<LSong>, Playback.Listener<LSong>, Player.Listener {
+) : MediaSessionCompat.Callback(), Playback<Playable>, Playback.Listener<Playable>,
+    Player.Listener {
 
     init {
         player?.listener = this
@@ -131,7 +132,7 @@ class MixPlayback(
         }
     }
 
-    private var tempNextItem: LSong? = null
+    private var tempNextItem: Playable? = null
 
     override fun preloadNextItem() {
         tempNextItem = when (playMode) {
@@ -241,7 +242,7 @@ class MixPlayback(
         }
     }
 
-    override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
+    override fun onPlayInfoUpdate(item: Playable?, playbackState: Int, position: Long) {
         playbackListener?.onPlayInfoUpdate(item, playbackState, position)
     }
 
@@ -254,11 +255,11 @@ class MixPlayback(
         playbackListener?.onPlayerCreated(id)
     }
 
-    override fun onItemPlay(item: LSong) {
+    override fun onItemPlay(item: Playable) {
         playbackListener?.onItemPlay(item)
     }
 
-    override fun onItemPause(item: LSong) {
+    override fun onItemPause(item: Playable) {
         playbackListener?.onItemPause(item)
     }
 }

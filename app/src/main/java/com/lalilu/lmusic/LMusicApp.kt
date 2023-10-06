@@ -32,7 +32,6 @@ class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelSt
                 AppModule,
                 ApiModule,
                 ViewModelModule,
-                DatabaseModule,
                 RuntimeModule,
                 FilterModule,
                 LPlayer.module,

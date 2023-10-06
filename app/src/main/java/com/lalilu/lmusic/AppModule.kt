@@ -3,20 +3,12 @@ package com.lalilu.lmusic
 import StatusBarLyric.API.StatusBarLyric
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
-import androidx.room.Room
 import coil.ImageLoader
 import com.blankj.utilcode.util.FileUtils
 import com.lalilu.R
-import com.lalilu.lmedia.LMedia
-import com.lalilu.lmedia.database.LDatabase
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
-import com.lalilu.lmedia.repository.FavoriteRepository
-import com.lalilu.lmedia.repository.HistoryRepository
-import com.lalilu.lmedia.repository.PlaylistRepository
-import com.lalilu.lmedia.repository.impl.HistoryRepositoryImpl
-import com.lalilu.lmedia.repository.impl.PlaylistRepositoryImpl
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
 import com.lalilu.lmusic.compose.new_screen.ExtensionsViewModel
@@ -81,25 +73,6 @@ val AppModule = module {
             }
             .transitionFactory(CrossfadeTransitionFactory())
             .build()
-    }
-}
-
-val DatabaseModule = module {
-    single {
-        Room.databaseBuilder(androidApplication(), LDatabase::class.java, "lmedia_database.db")
-            .fallbackToDestructiveMigration()
-            .build()
-    }
-
-    single<HistoryRepository> { HistoryRepositoryImpl(get<LDatabase>().historyDao()) }
-    single<PlaylistRepository> { get<PlaylistRepositoryImpl>() }
-    single<FavoriteRepository> { get<PlaylistRepositoryImpl>() }
-    single {
-        PlaylistRepositoryImpl(
-            playlistDao = get<LDatabase>().playlistDao(),
-            songInPlaylistDao = get<LDatabase>().songInPlaylistDao(),
-            getSongOrNull = { LMedia.get<LSong>(it) }
-        )
     }
 }
 

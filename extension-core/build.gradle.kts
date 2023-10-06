@@ -33,6 +33,8 @@ android {
 }
 
 dependencies {
+    api(project(":lmedia"))
+
     api(libs.coil)
     api(libs.coil.compose)
 

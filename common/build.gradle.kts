@@ -25,13 +25,12 @@ android {
 }
 
 dependencies {
-    api(project(":lmedia"))
-
     api(libs.utilcodex)
     api(libs.appcompat)
     api(libs.core.ktx)
     api(libs.palette.ktx)
     api(libs.dynamicanimation.ktx)
+    api(libs.media)
 
     api(libs.koin.android)
     api(libs.koin.compose)

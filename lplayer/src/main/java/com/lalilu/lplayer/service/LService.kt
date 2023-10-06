@@ -18,7 +18,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
-import com.lalilu.lmedia.entity.LSong
+import com.lalilu.common.base.Playable
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.AudioFocusHelper
 import com.lalilu.lplayer.notification.Notifier
@@ -38,7 +38,7 @@ import kotlin.coroutines.CoroutineContext
 
 @Suppress("DEPRECATION")
 abstract class LService : MediaBrowserServiceCompat(),
-    LifecycleOwner, Playback.Listener<LSong>, CoroutineScope {
+    LifecycleOwner, Playback.Listener<Playable>, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
     override val lifecycle: Lifecycle get() = registry
     private val registry by lazy { LifecycleRegistry(this) }
@@ -58,7 +58,7 @@ abstract class LService : MediaBrowserServiceCompat(),
     lateinit var mediaSession: MediaSessionCompat
     lateinit var playback: MixPlayback
 
-    private val runtime: Runtime<LSong> by inject()
+    private val runtime: Runtime<Playable> by inject()
     private val notifier: Notifier by inject()
     private val localPlayer: LocalPlayer by inject()
     private val audioFocusHelper: AudioFocusHelper by inject()
@@ -97,14 +97,14 @@ abstract class LService : MediaBrowserServiceCompat(),
         registry.handleLifecycleEvent(Lifecycle.Event.ON_START)
     }
 
-    override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
+    override fun onPlayInfoUpdate(item: Playable?, playbackState: Int, position: Long) {
         val isPlaying = playback.player?.isPlaying ?: false
 
-        runtime.update(playing = item?.id)
+        runtime.update(playing = item?.mediaId)
         runtime.update(isPlaying = isPlaying)
         runtime.updatePosition(startPosition = position, loopDelay = getLoopDelay(isPlaying))
 
-        mediaSession.setMetadata(item?.metadataCompat)
+        mediaSession.setMetadata(item?.metaDataCompat)
         mediaSession.setPlaybackState(
             PlaybackStateCompat.Builder()
                 .setActions(LPlayer.MEDIA_DEFAULT_ACTION)
@@ -169,6 +169,14 @@ abstract class LService : MediaBrowserServiceCompat(),
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>,
     ) {
+//        val description = MediaDescriptionCompat.Builder()
+//            .setTitle("")
+//            .build()
+//        val mediaItem = MediaBrowserCompat.MediaItem(
+//            description,
+//            MediaBrowserCompat.MediaItem.FLAG_BROWSABLE or MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+//        )
+//        result.sendResult(mutableListOf(mediaItem))
         result.sendResult(mutableListOf())
     }
 

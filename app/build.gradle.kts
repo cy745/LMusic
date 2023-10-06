@@ -183,5 +183,5 @@ dependencies {
     // 实现边沿渐变透明
     implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
 
-//    implementation("com.github.angcyo:DslAdapter:6.0.1")
+    debugImplementation("com.github.getActivity:Logcat:11.8")
 }
