@@ -26,23 +26,30 @@ sealed class ExtensionLoadResult(
         className: String,
         packageInfo: PackageInfo,
         val extension: Extension
-    ) : ExtensionLoadResult(className, packageInfo) {
+    ) : ExtensionLoadResult(className, packageInfo)
 
-        @Composable
-        fun Place(
-            context: Context = LocalContext.current,
-            errorPlaceHolder: @Composable () -> Unit = {},
-            content: @Composable () -> Unit,
-        ) {
-            val tempContext = remember {
-                runCatching { context.createPackageContext(packageInfo.packageName, 0) }.getOrNull()
-            }
+    @Composable
+    fun Place(
+        context: Context = LocalContext.current,
+        contentKey: String,
+        errorPlaceHolder: @Composable () -> Unit = {},
+    ) {
+        if (this !is Ready) {
+            errorPlaceHolder()
+            return
+        }
 
-            if (tempContext != null) {
-                CompositionLocalProvider(LocalContext provides tempContext, content = content)
-            } else {
-                errorPlaceHolder()
-            }
+        val tempContext = remember(context) {
+            runCatching { context.createPackageContext(packageInfo.packageName, 0) }.getOrNull()
+        }
+        val content = remember(contentKey) {
+            extension.getContentMap()[contentKey]?.takeIf { it !== EMPTY_CONTENT }
+        }
+
+        if (tempContext != null && content != null) {
+            CompositionLocalProvider(LocalContext provides tempContext, content = content)
+        } else {
+            errorPlaceHolder()
         }
     }
 }

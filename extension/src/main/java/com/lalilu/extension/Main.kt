@@ -23,7 +23,16 @@ import com.lalilu.extension_core.Ext
 
 @Ext
 class Main : Extension {
-    override val homeContent: @Composable () -> Unit = {
+
+    override fun getContentMap(): Map<String, @Composable () -> Unit> {
+        return mapOf(
+            "home" to this.homeContent,
+            "main" to this.mainContent,
+            "banner" to this.bannerContent,
+        )
+    }
+
+    private val homeContent: @Composable () -> Unit = {
         val imageApi =
             remember { "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis() / 30000}" }
 
@@ -46,7 +55,7 @@ class Main : Extension {
         }
     }
 
-    override val mainContent: @Composable () -> Unit = {
+    private val mainContent: @Composable () -> Unit = {
         val imageApi =
             remember { "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis() / 30000}" }
 
@@ -71,7 +80,7 @@ class Main : Extension {
         }
     }
 
-    override val bannerContent: @Composable () -> Unit = {
+    private val bannerContent: @Composable () -> Unit = {
         val imageApi =
             remember { "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis() / 30000}" }
 

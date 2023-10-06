@@ -18,19 +18,15 @@ fun ExtensionHostScreen(
         .requireExtensionByPackageName(packageName)
         .collectAsState(null)
 
-    extensionResult?.let { it as? ExtensionLoadResult.Ready }?.apply {
-        Place(
-            content = extension.mainContent,
-            errorPlaceHolder = {
-                Text(text = "LoadError ${packageInfo.packageName}")
-            },
-        )
-    } ?: run {
-        val message = when (extensionResult) {
-            is ExtensionLoadResult.Error -> (extensionResult as ExtensionLoadResult.Error).message
-            is ExtensionLoadResult.OutOfDated -> "Extension $packageName is out of dated."
-            else -> "Extension $packageName is not found."
-        }
-        Text(text = message)
-    }
+    extensionResult?.Place(
+        contentKey = "main",
+        errorPlaceHolder = {
+            val message = when (extensionResult) {
+                is ExtensionLoadResult.Error -> (extensionResult as ExtensionLoadResult.Error).message
+                is ExtensionLoadResult.OutOfDated -> "Extension $packageName is out of dated."
+                else -> "Extension $packageName is not found."
+            }
+            Text(text = message)
+        },
+    )
 }

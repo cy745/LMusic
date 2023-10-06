@@ -71,7 +71,7 @@ fun ExtensionsScreen(
                         }
                     ) {
                         extensionResult.Place(
-                            content = extensionResult.extension.bannerContent,
+                            contentKey = "banner",
                             errorPlaceHolder = {
                                 Text(text = "LoadError ${extensionResult.packageInfo.packageName}")
                             },

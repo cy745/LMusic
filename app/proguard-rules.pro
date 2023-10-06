@@ -20,37 +20,15 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+-dontwarn org.bouncycastle.**
+-dontwarn org.conscrypt.**
+-dontwarn org.openjsse.**
+
+-dontwarn org.jetbrains.kotlin.compiler.**
+-dontwarn org.jetbrains.kotlin.diagnostics.**
+
 # retrofit 使用的所有bean都不可以混淆
 -keep  class com.lalilu.lmusic.apis.bean.** { *; }
-
-# jaudiotagger release打包后可能会出现MP3格式无法读取歌词的问题
--keep class org.jaudiotagger.tag.** { *; }
-
--dontwarn org.jaudiotagger.**
--dontwarn java.awt.Graphics2D
--dontwarn java.awt.Image
--dontwarn java.awt.geom.AffineTransform
--dontwarn java.awt.image.BufferedImage
--dontwarn java.awt.image.ImageObserver
--dontwarn java.awt.image.RenderedImage
--dontwarn javax.imageio.ImageIO
--dontwarn javax.imageio.ImageWriter
--dontwarn javax.imageio.stream.ImageInputStream
--dontwarn javax.imageio.stream.ImageOutputStream
-
--dontwarn org.bouncycastle.jsse.BCSSLParameters
--dontwarn org.bouncycastle.jsse.BCSSLSocket
--dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
--dontwarn org.conscrypt.Conscrypt$Version
--dontwarn org.conscrypt.Conscrypt
--dontwarn org.conscrypt.ConscryptHostnameVerifier
--dontwarn org.openjsse.javax.net.ssl.SSLParameters
--dontwarn org.openjsse.javax.net.ssl.SSLSocket
--dontwarn org.openjsse.net.ssl.OpenJSSE
-
--dontwarn org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
--dontwarn org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
--dontwarn org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages$Extension
 
 -keep class com.google.gson.reflect.TypeToken
 -keep class * extends com.google.gson.reflect.TypeToken
@@ -71,15 +49,18 @@
 # 墨 · 状态栏歌词
 -keep class StatusBarLyric.API.StatusBarLyric { *; }
 
-# 为插件保留相应的依赖环境
+# 为插件保留相应的依赖环境（既不混淆也不去除未使用的类）
 -keep class kotlin.** { public protected *; }
 -keep class kotlinx.coroutines.** { public protected *; }
 -keep class androidx.lifecycle.** { public protected *; }
 -keep class androidx.compose.** { public protected *; }
 -keep class coil.compose.** { public protected *; }
-
--keep class * extends com.lalilu.extension_core.Extension { *; }
 -keep class com.lalilu.extension_core.** { public protected *; }
+
+-keepclassmembers class * implements com.lalilu.extension_core.Extension {
+    <init>(...);
+    com.lalilu.extension_core.Extension *;
+}
 -keep class lalilu.extension_ksp.ExtensionsConstants { *;}
 
 -printmapping mapping.txt

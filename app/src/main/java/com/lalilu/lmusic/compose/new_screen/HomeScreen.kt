@@ -70,7 +70,7 @@ fun HomeScreen(
     navigator: DestinationsNavigator
 ) {
     val extensionResult by ExtensionManager
-        .requireExtensionByContent(contentFunc = { it.homeContent })
+        .requireExtensionByContentKey(contentKey = "home")
         .collectAsState(initial = emptyList())
 
     val haptic = LocalHapticFeedback.current
@@ -208,7 +208,7 @@ fun HomeScreen(
             }
         }
 
-        items(items = extensionResult) { it.apply { Place { extension.homeContent() } } }
+        items(items = extensionResult) { it.apply { Place(contentKey = "home") } }
 
         item {
             Surface(

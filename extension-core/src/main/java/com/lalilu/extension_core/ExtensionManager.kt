@@ -8,7 +8,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -63,11 +62,14 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         }
     }
 
-    fun requireExtensionByContent(contentFunc: (Extension) -> @Composable () -> Unit): Flow<List<ExtensionLoadResult.Ready>> {
+    fun requireExtensionByContentKey(contentKey: String): Flow<List<ExtensionLoadResult.Ready>> {
         return extensionsFlow.mapLatest { list ->
             list.mapNotNull { result ->
                 (result as? ExtensionLoadResult.Ready)
-                    ?.takeIf { contentFunc(it.extension) !== EMPTY_CONTENT }
+                    ?.takeIf {
+                        val content = it.extension.getContentMap()[contentKey]
+                        content != null && content !== EMPTY_CONTENT
+                    }
             }
         }
     }
@@ -146,26 +148,12 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         packageInfo: PackageInfo
     ): List<Deferred<ExtensionLoadResult>> {
         return runCatching {
-            println(
-                """[loadSharedExtensions] Start:
-                    |${packageInfo.packageName}
-                    |${packageInfo.applicationInfo.sourceDir}
-                    |${context.classLoader}
-                """.trimMargin()
-            )
-
-            val classLoader = ForceClassLoader(
-                forceClassName = arrayOf(EXTENSION_SOURCES_CLASS),
+            val classLoader = ExtensionClassLoader(
                 dexPath = packageInfo.applicationInfo.sourceDir,
                 parent = context.classLoader
             )
             val classes = getExtensionListFromMeta(packageInfo).toMutableSet()
             classes += getExtensionListByReflection(classLoader)
-            println(
-                """[loadSharedExtensions] Classes:
-                        classes: [${classes.joinToString(",")}]
-                """.trimMargin()
-            )
 
             loadExtensionWithClassLoader(scope, classes.toList(), packageInfo, classLoader)
         }.getOrElse {
@@ -222,22 +210,15 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         }
     }
 
-    private class ForceClassLoader(
-        private vararg val forceClassName: String,
-        private val dexPath: String,
+    private class ExtensionClassLoader(
+        dexPath: String,
         parent: ClassLoader
     ) : PathClassLoader(dexPath, null, parent) {
-        private val cache = hashMapOf<String, Class<*>>()
-
-        override fun loadClass(name: String, resolve: Boolean): Class<*> {
-            return if (forceClassName.contains(name)) {
-                cache[name]
-                    ?: findClass(name)?.also { cache[name] = it }
-                    ?: throw ClassNotFoundException("Class $name not found")
-            } else {
-                super.loadClass(name, resolve)
+        override fun loadClass(name: String, resolve: Boolean): Class<*> =
+            runCatching { findClass(name) }.getOrElse {
+                if (name == EXTENSION_SOURCES_CLASS) throw ClassNotFoundException("$EXTENSION_SOURCES_CLASS not exist in the Extension, try load classList by getExtensionListFromMeta()")
+                else super.loadClass(name, resolve)
             }
-        }
     }
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {

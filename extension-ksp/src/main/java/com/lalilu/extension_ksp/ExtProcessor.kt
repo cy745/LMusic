@@ -7,8 +7,8 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
@@ -36,12 +36,16 @@ class ExtProcessor(
         val fileName = GENERATE_FILE_NAME
         val classNames = symbols.map { it.toClassName() }
 
-        val propertyValue = "listOf(${classNames.joinToString(",") { "\"$it\"" }})"
-        val property = PropertySpec.builder("classes", listType)
-            .initializer(propertyValue)
+        val listValue = "listOf(${classNames.joinToString(",") { "\"$it\"" }})"
+
+        val function = FunSpec.builder("getClasses")
+            .addKdoc("Get all extensions' className from this library")
+            .addCode("return $listValue")
+            .returns(listType)
             .build()
+
         val classType = TypeSpec.classBuilder(fileName)
-            .addProperty(property)
+            .addFunction(function)
             .build()
 
         FileSpec.builder(packageName, fileName)

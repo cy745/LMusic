@@ -30,12 +30,12 @@
 -keep,allowoptimization class androidx.lifecycle.** { public protected *; }
 -keep,allowoptimization class androidx.compose.** { public protected *; }
 -keep,allowoptimization class coil.compose.** { public protected *; }
+-keep,allowoptimization class com.lalilu.extension_core.** { public protected *; }
 
-# 插件依赖则固定不混淆
--keep class com.lalilu.extension_core.** { public protected *; }
--keep class * extends com.lalilu.extension_core.Extension { *; }
+-keepclassmembers class * implements com.lalilu.extension_core.Extension {
+    <init>(...);
+    com.lalilu.extension_core.Extension *;
+}
 -keep class lalilu.extension_ksp.ExtensionsConstants { *;}
 
-# 复用宿主的mapping，避免混淆后名称和宿主的某个类的名称冲突
--applymapping ../app/mapping.txt
 -printmapping mapping.txt

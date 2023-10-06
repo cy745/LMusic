@@ -10,14 +10,17 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lalilu.extension_core.EMPTY_CONTENT
 import com.lalilu.extension_core.Extension
 import com.lalilu.extension_core.Ext
 
 
 @Ext
 class ExtDailyRecommend : Extension {
-    override val homeContent: @Composable () -> Unit = {
+    override fun getContentMap(): Map<String, @Composable () -> Unit> {
+        return mapOf("home" to this.homeContent)
+    }
+
+    private val homeContent: @Composable () -> Unit = {
         Surface(
             shape = RoundedCornerShape(15.dp),
             elevation = 1.dp,
@@ -35,6 +38,4 @@ class ExtDailyRecommend : Extension {
             }
         }
     }
-    override val mainContent: @Composable () -> Unit = EMPTY_CONTENT
-    override val bannerContent: @Composable () -> Unit = EMPTY_CONTENT
 }
