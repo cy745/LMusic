@@ -1,6 +1,9 @@
 package com.lalilu.lplayer.playback.impl
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
 import com.blankj.utilcode.util.LogUtils
@@ -10,6 +13,7 @@ import com.lalilu.lplayer.extensions.getNowVolume
 import com.lalilu.lplayer.extensions.setMaxVolume
 import com.lalilu.lplayer.playback.Player
 import java.io.IOException
+import java.net.URLDecoder
 
 
 class LocalPlayer(
@@ -33,6 +37,13 @@ class LocalPlayer(
     fun bindPlayer(player: MediaPlayer) {
         player.setOnPreparedListener(this@LocalPlayer)
         player.setOnCompletionListener(this@LocalPlayer)
+        player.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+                .build()
+        )
         onLPlayerCreated(player.audioSessionId)
     }
 
@@ -41,11 +52,19 @@ class LocalPlayer(
             this.startWhenReady = startWhenReady
             val oldPlayer = player
 
+            // TODO 待解决Player切换时的各种问题
             isPlaying = false
             isStopped = false
             player = MediaPlayer().also { bindPlayer(it) }
             player?.reset()
-            player?.setDataSource(context, uri)
+            if (uri.scheme == "content" || uri.scheme == "file") {
+                player?.setDataSource(context, uri)
+            } else {
+                // url 的长度可能会超长导致异常
+                val url = URLDecoder.decode(uri.toString(), "UTF-8")
+                player?.setDataSource(url)
+            }
+
             player?.prepareAsync()
 
             oldPlayer?.fadePause(duration = 800L) {
@@ -57,8 +76,9 @@ class LocalPlayer(
             }
         } catch (e: IOException) {
             onLStop()
-            println("播放失败：歌曲文件不存在")
+            println("播放失败：歌曲文件异常: ${e.message}")
         } catch (e: Exception) {
+            println("播放失败：未知异常: ${e.message}")
             onLStop()
         }
     }

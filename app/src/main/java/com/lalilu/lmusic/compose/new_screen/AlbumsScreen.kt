@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
@@ -130,7 +131,9 @@ fun AlbumsScreen(
                 callback = {
                     if (currentPlaying != null) {
                         scope.launch {
-                            val index = albums.indexOfFirst { it.id == currentPlaying?.album?.id }
+                            val index = albums.indexOfFirst {
+                                it.id == (currentPlaying as? LSong)?.album?.id
+                            }
                             if (index in 0..gridState.layoutInfo.totalItemsCount) {
                                 gridState.scrollToItem(index)
                             }

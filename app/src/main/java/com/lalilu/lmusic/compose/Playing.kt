@@ -343,21 +343,21 @@ object Playing {
     ) {
         val activity = root.context.getActivity()!!
 
-        playingVM.runtime.songsFlow.collectWithLifeCycleOwner(activity) {
+        playingVM.runtime.playableFlow.collectWithLifeCycleOwner(activity) {
             adapter.setDiffData(it)
         }
         playingVM.runtime.positionFlow.collectWithLifeCycleOwner(activity) {
             maSeekBar.updateValue(it.toFloat())
         }
-        playingVM.runtime.playingFlow.collectWithLifeCycleOwner(activity) {
-            maSeekBar.maxValue = it?.durationMs?.toFloat() ?: 0f
-            fmTopPic.loadCover(it)
+        playingVM.runtime.playingFlow.collectWithLifeCycleOwner(activity) { playable ->
+            maSeekBar.maxValue = playable?.durationMs?.takeIf { it > 0f }?.toFloat() ?: 0f
+            fmTopPic.loadCover(playable)
 
-            if (it != null) {
+            if (playable != null) {
                 DynamicTips.push(
-                    title = it.name,
+                    title = playable.title,
                     subTitle = "播放中",
-                    imageData = it
+                    imageData = playable.imageSource
                 )
             }
         }

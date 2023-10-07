@@ -18,8 +18,8 @@ fun PlayingToolbar(
     val defaultSloganStr = stringResource(id = R.string.default_slogan)
 
     PlayingHeader(
-        title = { song?.name?.takeIf(String::isNotBlank) ?: defaultSloganStr },
-        subTitle = { song?._artist ?: defaultSloganStr },
-        isPlaying = { song?.let { playingVM.isSongPlaying(mediaId = it.id) } ?: false }
+        title = { song?.title?.takeIf(String::isNotBlank) ?: defaultSloganStr },
+        subTitle = { song?.subTitle ?: defaultSloganStr },
+        isPlaying = { song?.let { playingVM.isSongPlaying(mediaId = it.mediaId) } ?: false }
     )
 }

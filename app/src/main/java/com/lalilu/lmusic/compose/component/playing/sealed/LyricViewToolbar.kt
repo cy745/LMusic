@@ -60,7 +60,7 @@ fun LyricViewToolbar(
                 .padding(start = 10.dp, end = 10.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            text = song?.name ?: stringResource(id = R.string.default_slogan),
+            text = song?.title ?: stringResource(id = R.string.default_slogan),
             color = Color.White.copy(0.5f)
         )
 

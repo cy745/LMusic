@@ -1,18 +1,20 @@
 package com.lalilu.lmusic.service
 
+import com.lalilu.common.base.Playable
+import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.utils.extension.moveHeadToTailWithSearch
+import com.lalilu.lplayer.runtime.PlayableRuntime
 import com.lalilu.lplayer.runtime.Runtime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import java.util.Timer
+import kotlinx.coroutines.flow.flowOf
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -21,47 +23,58 @@ import kotlin.coroutines.CoroutineContext
 @OptIn(ExperimentalCoroutinesApi::class)
 class LMusicRuntime(
     private val lastPlayedSp: LastPlayedSp
-) : Runtime<LSong>, Runtime.Listener, CoroutineScope {
+) : PlayableRuntime(), Runtime.Listener, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
-
-    override val songsIdsFlow: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
-    override val playingIdFlow: MutableStateFlow<String?> = MutableStateFlow(null)
-    override val positionFlow: MutableStateFlow<Long> = MutableStateFlow(0L)
-    override val isPlayingFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override var listener: Runtime.Listener? = this
-    override var timer: Timer? = null
-    override var getPosition: () -> Long = { 0L }
 
     private val shuffleIgnoreHistoryCount = 20
     private val shuffleRetryCount = 5
 
-    val playingFlow: Flow<LSong?> = playingIdFlow.flatMapLatest { LMedia.getFlow(it) }
-    val songsFlow = songsIdsFlow.combine(playingIdFlow) { ids, id ->
-        id ?: return@combine ids
-        ids.moveHeadToTailWithSearch(id) { a, b -> a == b }
-    }.flatMapLatest { LMedia.flowMapBy<LSong>(it) }
+    val playingFlow: Flow<Playable?> = playingIdFlow.flatMapLatest { mediaId ->
+        LMedia.getFlow<LSong>(mediaId).flatMapLatest temp@{ playable ->
+            if (playable != null || mediaId == null) return@temp flowOf(playable)
 
-    override fun getItemById(mediaId: String?): LSong? {
+            ExtensionManager.requireProviderFlowFromExtensions()
+                .flatMapLatest { providers ->
+                    providers.firstOrNull { it.isSupported(mediaId) }
+                        ?.getPlayableFlowByMediaId(mediaId)
+                        ?: flowOf(null)
+                }
+        }
+    }
+
+    val playableFlow: Flow<List<Playable>> = songsIdsFlow
+        .combine(playingIdFlow) { ids, id ->
+            id ?: return@combine ids
+            ids.moveHeadToTailWithSearch(id) { a, b -> a == b }
+        }
+        .flatMapLatest { mediaIds ->
+            val extensionResult = ExtensionManager.requireProviderFlowFromExtensions()
+                .flatMapLatest { providers ->
+                    val flows = providers.map { it.getPlayableFlowByMediaIds(mediaIds) }
+                    combine(flows) { it.toList().flatten() }
+                }
+
+            val lMediaResult = LMedia.flowMapBy<LSong>(mediaIds)
+
+            combine(extensionResult, lMediaResult) { flowResult ->
+                flowResult.toList()
+                    .flatten()
+                    .filter { mediaIds.indexOf(it.mediaId) >= 0 }
+                    .sortedBy { mediaIds.indexOf(it.mediaId) }
+            }
+        }
+
+    override fun getItemById(mediaId: String?): Playable? {
         mediaId ?: return null
-        return LMedia.get(mediaId)
+
+        return ExtensionManager
+            .requireProviderFromExtensions()
+            .firstNotNullOfOrNull { it.getPlayableByMediaId(mediaId) }
+            ?: LMedia.get<LSong>(mediaId)
     }
 
-    override fun getPlaying(): LSong? {
-        val mediaId = getPlayingId() ?: return null
-        return LMedia.get(mediaId)
-    }
-
-    override fun getPreviousOf(item: LSong, cycle: Boolean): LSong? {
-        val previousId = getPreviousOf(item.id, cycle) ?: return null
-        return LMedia.get(previousId)
-    }
-
-    override fun getNextOf(item: LSong, cycle: Boolean): LSong? {
-        val nextId = getNextOf(item.id, cycle) ?: return null
-        return LMedia.get(nextId)
-    }
-
-    override fun getShuffle(): LSong? {
+    override fun getShuffle(): Playable? {
         val songIds = songsIdsFlow.value
         val playingIndex = getPlayingIndex()
         val endIndex = playingIndex + shuffleIgnoreHistoryCount
@@ -84,7 +97,7 @@ class LMusicRuntime(
         }
 
         targetIndex ?: return null
-        return LMedia.get(songIds[targetIndex])
+        return getItemById(songIds[targetIndex])
     }
 
     override fun onSongsUpdate(songsIds: List<String>) {

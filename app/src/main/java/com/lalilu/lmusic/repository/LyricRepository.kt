@@ -50,7 +50,7 @@ class LyricRepository(
 
     val currentLyric: Flow<Pair<String, String?>?> =
         runtime.playingFlow.flatMapLatest { item ->
-            LMedia.getFlow<LSong>(item?.id)
+            LMedia.getFlow<LSong>(item?.mediaId)
                 .mapLatest { it?.let { lyricSource.loadLyric(it) } }
         }
 

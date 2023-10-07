@@ -34,6 +34,7 @@ android {
 
 dependencies {
     api(project(":lmedia"))
+    api(project(":common"))
 
     api(libs.coil)
     api(libs.coil.compose)

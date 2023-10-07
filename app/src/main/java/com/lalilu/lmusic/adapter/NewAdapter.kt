@@ -221,7 +221,8 @@ class NewPlayingAdapter private constructor(
 
         fun build() = NewPlayingAdapter(
             onViewEvent,
-            onItemBoundCallback, onDataUpdatedCallback,
+            onItemBoundCallback,
+            onDataUpdatedCallback,
             itemCallback
         )
     }

@@ -40,6 +40,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Music"
+        android:usesCleartextTraffic="true"
         tools:ignore="AllowBackup,UnusedAttribute">
 
         <meta-data

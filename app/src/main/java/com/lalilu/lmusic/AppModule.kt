@@ -6,6 +6,7 @@ import androidx.core.graphics.drawable.toDrawable
 import coil.ImageLoader
 import com.blankj.utilcode.util.FileUtils
 import com.lalilu.R
+import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
@@ -95,7 +96,7 @@ val ViewModelModule = module {
 
 val RuntimeModule = module {
     single<Notifier> { LMusicNotifier(androidApplication(), get(), get(), get(), get()) }
-    single<Runtime<LSong>> { get<LMusicRuntime>() }
+    single<Runtime<Playable>> { get<LMusicRuntime>() }
     single { LMusicRuntime(get()) }
 
     single { LMusicBrowser(get(), get(), get()) }

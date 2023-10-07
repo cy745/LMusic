@@ -43,7 +43,7 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
-import com.lalilu.lmedia.entity.LSong
+import com.lalilu.common.base.Playable
 import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
@@ -72,7 +72,7 @@ fun ShowScreen(
                 .fillMaxSize()
                 .background(color = Color.DarkGray)
         ) {
-            BlurImageBg(song = song)
+            BlurImageBg(playable = song)
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -81,7 +81,7 @@ fun ShowScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                ImageCover(song = song)
+                ImageCover(playable = song)
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -90,7 +90,7 @@ fun ShowScreen(
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    SongDetailPanel(song = song)
+                    SongDetailPanel(playable = song)
                     ControlPanel(playingVM)
                 }
             }
@@ -99,7 +99,7 @@ fun ShowScreen(
 }
 
 @Composable
-fun RowScope.ImageCover(song: LSong?) {
+fun RowScope.ImageCover(playable: Playable?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -113,7 +113,7 @@ fun RowScope.ImageCover(song: LSong?) {
         ) {
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(context = LocalContext.current)
-                    .data(song)
+                    .data(playable?.imageSource)
                     .size(SizeUtils.dp2px(256f))
                     .crossfade(true)
                     .build(),
@@ -142,14 +142,14 @@ fun RowScope.ImageCover(song: LSong?) {
 }
 
 @Composable
-fun BoxScope.BlurImageBg(song: LSong?) {
+fun BoxScope.BlurImageBg(playable: Playable?) {
 
     AsyncImage(
         modifier = Modifier
             .fillMaxSize()
             .align(Alignment.Center),
         model = ImageRequest.Builder(LocalContext.current)
-            .data(song)
+            .data(playable?.imageSource)
             .size(SizeUtils.dp2px(128f))
             .transformations(BlurTransformation(LocalContext.current, 25f, 4f))
             .crossfade(true)
@@ -166,9 +166,9 @@ fun BoxScope.BlurImageBg(song: LSong?) {
 
 @Composable
 fun SongDetailPanel(
-    song: LSong?
+    playable: Playable?
 ) {
-    if (song == null) {
+    if (playable == null) {
         Text(
             text = "歌曲读取失败",
             color = Color.White,
@@ -181,17 +181,17 @@ fun SongDetailPanel(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(
-            text = song.name,
+            text = playable.title,
             color = Color.White,
             fontSize = 24.sp
         )
         Text(
-            text = song._artist,
+            text = playable.subTitle,
             color = Color.White,
             fontSize = 16.sp
         )
         Text(
-            text = song._albumTitle,
+            text = playable.subTitle,
             color = Color.White,
             fontSize = 12.sp
         )

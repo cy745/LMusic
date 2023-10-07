@@ -119,7 +119,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":common"))
     implementation(project(":ui"))
     implementation(project(":lplayer"))
     implementation(project(":crash"))

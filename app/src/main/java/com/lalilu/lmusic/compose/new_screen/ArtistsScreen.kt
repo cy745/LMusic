@@ -117,7 +117,7 @@ fun ArtistsScreen(
                             for (i in startIndex until artists.value.size) {
                                 if (i == startIndex) continue
 
-                                if (currentPlaying!!.artists.any { it.name == artists.value[i].name }) {
+                                if (currentPlaying!!.subTitle.contains(artists.value[i].name)) {
                                     targetIndex = i
                                     break
                                 }
@@ -126,7 +126,7 @@ fun ArtistsScreen(
                             // 若无法往后找到，则从头开始找
                             if (targetIndex == -1) {
                                 targetIndex = artists.value.indexOfFirst { artist ->
-                                    currentPlaying!!.artists.any { it.name == artist.name }
+                                    currentPlaying!!.subTitle.contains(artist.name)
                                 }
                             }
 

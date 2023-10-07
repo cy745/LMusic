@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import com.lalilu.common.base.Playable
 import dalvik.system.PathClassLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -71,6 +72,19 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
                         content != null && content !== EMPTY_CONTENT
                     }
             }
+        }
+    }
+
+    fun requireProviderFromExtensions(): List<Provider> {
+        return extensionsFlow.value
+            .mapNotNull { it as? ExtensionLoadResult.Ready }
+            .mapNotNull { it.extension.getPlayableProvider() }
+    }
+
+    fun requireProviderFlowFromExtensions(): Flow<List<Provider>> {
+        return extensionsFlow.mapLatest { list ->
+            list.mapNotNull { it as? ExtensionLoadResult.Ready }
+                .mapNotNull { it.extension.getPlayableProvider() }
         }
     }
 

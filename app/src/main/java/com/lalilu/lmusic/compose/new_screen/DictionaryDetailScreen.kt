@@ -141,7 +141,7 @@ fun DictionaryDetailScreen(
                                 if (!skip) {
                                     index += 1
                                 }
-                                val tempIndex = list.indexOfFirst { it.id == currentPlaying!!.id }
+                                val tempIndex = list.indexOfFirst { it.id == currentPlaying!!.mediaId }
                                 if (tempIndex != -1) {
                                     index += tempIndex
                                     gridState.scrollToItem(index)

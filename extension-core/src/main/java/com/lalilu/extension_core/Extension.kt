@@ -8,6 +8,10 @@ import androidx.lifecycle.LifecycleOwner
 
 @Keep
 interface Extension : LifecycleEventObserver {
+
+    @Keep
+    fun getPlayableProvider(): Provider? = null
+
     /**
      * 注册自定义的界面供宿主访问调用
      */
