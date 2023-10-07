@@ -49,13 +49,14 @@ class LMusicRuntime(
             ids.moveHeadToTailWithSearch(id) { a, b -> a == b }
         }
         .flatMapLatest { mediaIds ->
+            val lMediaResult = LMedia.flowMapBy<LSong>(mediaIds)
             val extensionResult = ExtensionManager.requireProviderFlowFromExtensions()
-                .flatMapLatest { providers ->
+                .flatMapLatest temp@{ providers ->
+                    if (providers.isEmpty()) return@temp flowOf<List<Playable>>(emptyList())
+
                     val flows = providers.map { it.getPlayableFlowByMediaIds(mediaIds) }
                     combine(flows) { it.toList().flatten() }
                 }
-
-            val lMediaResult = LMedia.flowMapBy<LSong>(mediaIds)
 
             combine(extensionResult, lMediaResult) { flowResult ->
                 flowResult.toList()
@@ -68,10 +69,9 @@ class LMusicRuntime(
     override fun getItemById(mediaId: String?): Playable? {
         mediaId ?: return null
 
-        return ExtensionManager
+        return LMedia.get<LSong>(mediaId) ?: ExtensionManager
             .requireProviderFromExtensions()
             .firstNotNullOfOrNull { it.getPlayableByMediaId(mediaId) }
-            ?: LMedia.get<LSong>(mediaId)
     }
 
     override fun getShuffle(): Playable? {

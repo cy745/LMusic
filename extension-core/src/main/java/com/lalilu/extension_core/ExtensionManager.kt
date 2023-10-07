@@ -83,7 +83,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
 
     fun requireProviderFlowFromExtensions(): Flow<List<Provider>> {
         return extensionsFlow.mapLatest { list ->
-            list.mapNotNull { it as? ExtensionLoadResult.Ready }
+            list.filterIsInstance<ExtensionLoadResult.Ready>()
                 .mapNotNull { it.extension.getPlayableProvider() }
         }
     }
