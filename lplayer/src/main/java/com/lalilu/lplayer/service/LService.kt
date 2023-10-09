@@ -44,7 +44,6 @@ abstract class LService : MediaBrowserServiceCompat(),
     private val registry by lazy { LifecycleRegistry(this) }
 
     abstract fun getStartIntent(): Intent
-    abstract fun getLoopDelay(isPlaying: Boolean): Long
 
     private val sessionActivityPendingIntent by lazy {
         packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
@@ -102,7 +101,7 @@ abstract class LService : MediaBrowserServiceCompat(),
 
         runtime.update(playing = item?.mediaId)
         runtime.update(isPlaying = isPlaying)
-        runtime.updatePosition(startPosition = position, loopDelay = getLoopDelay(isPlaying))
+        runtime.updatePosition(startPosition = position, isPlaying = isPlaying)
 
         mediaSession.setMetadata(item?.metaDataCompat)
         mediaSession.setPlaybackState(

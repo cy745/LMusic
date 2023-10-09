@@ -1,5 +1,10 @@
 package com.lalilu.lplayer.runtime
 
+import com.lalilu.lplayer.extensions.add
+import com.lalilu.lplayer.extensions.getNextOf
+import com.lalilu.lplayer.extensions.getPreviousOf
+import com.lalilu.lplayer.extensions.move
+import com.lalilu.lplayer.extensions.removeAt
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.Timer
 import kotlin.concurrent.schedule
@@ -28,7 +33,7 @@ interface Runtime<T> {
         songs: List<String> = emptyList(),
         playing: String?,
     ) {
-        update(songs)
+        update(songs = songs)
         if (songs.contains(playing)) {
             update(playing = playing)
         }
@@ -78,14 +83,14 @@ interface Runtime<T> {
     fun getPreviousOf(mediaId: String?, cycle: Boolean): String? =
         songsIdsFlow.value.getPreviousOf(mediaId, cycle)
 
-    fun updatePosition(startPosition: Long, loopDelay: Long = 0) {
+    fun updatePosition(startPosition: Long, isPlaying: Boolean) {
         timer?.cancel()
         positionFlow.value = startPosition
         listener?.onPositionUpdate(positionFlow.value)
 
-        if (loopDelay <= 0) return
+        if (!isPlaying) return
         timer = Timer().apply {
-            schedule(0, loopDelay) {
+            schedule(0, 50L) {
                 positionFlow.value = getPosition()
                 listener?.onPositionUpdate(positionFlow.value)
             }
@@ -97,33 +102,5 @@ interface Runtime<T> {
         fun onSongsUpdate(songsIds: List<String>) {}
         fun onPositionUpdate(position: Long) {}
         fun onIsPlayingUpdate(isPlaying: Boolean) {}
-    }
-
-    fun <T> List<T>.getNextOf(item: T, cycle: Boolean = false): T? {
-        val nextIndex = indexOf(item) + 1
-        return getOrNull(if (cycle) nextIndex % size else nextIndex)
-    }
-
-
-    fun <T> List<T>.getPreviousOf(item: T, cycle: Boolean = false): T? {
-        var previousIndex = indexOf(item) - 1
-        if (previousIndex < 0 && cycle) {
-            previousIndex = size - 1
-        }
-        return getOrNull(previousIndex)
-    }
-
-    fun <T : Any> List<T>.move(from: Int, to: Int): List<T> = toMutableList().apply {
-        val targetIndex = if (from < to) to else to + 1
-        val temp = removeAt(from)
-        add(targetIndex, temp)
-    }
-
-    fun <T : Any> List<T>.add(index: Int = -1, item: T): List<T> = toMutableList().apply {
-        if (index == -1) add(item) else add(index, item)
-    }
-
-    fun <T : Any> List<T>.removeAt(index: Int): List<T> = toMutableList().apply {
-        removeAt(index)
     }
 }

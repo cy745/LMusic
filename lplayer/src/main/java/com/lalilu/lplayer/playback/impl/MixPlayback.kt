@@ -11,6 +11,7 @@ import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.playback.PlayQueue
 import com.lalilu.lplayer.playback.Playback
 import com.lalilu.lplayer.playback.Player
+import com.lalilu.lplayer.playback.PlayerEvent
 
 class MixPlayback(
     private val audioFocusHelper: AudioFocusHelper,
@@ -23,6 +24,8 @@ class MixPlayback(
 
     init {
         player?.listener = this
+        player?.couldPlayNow =
+            { audioFocusHelper.request() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED }
         audioFocusHelper.onPlay = ::onPlay
         audioFocusHelper.onPause = ::onPause
         audioFocusHelper.isPlaying = { player?.isPlaying ?: false }
@@ -141,11 +144,6 @@ class MixPlayback(
             PlayMode.Shuffle -> queue?.getShuffle()
         } ?: return
         val uri = queue?.getUriFromItem(tempNextItem!!) ?: return
-
-        if (playMode == PlayMode.Shuffle) {
-            queue?.moveToPrevious(item = tempNextItem!!)
-        }
-
         player?.preloadNext(uri)
     }
 
@@ -159,86 +157,91 @@ class MixPlayback(
         handleCustomAction(action)
     }
 
-    override fun requestAudioFocus(): Boolean {
-        return audioFocusHelper.request() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-    }
-
-    override fun onLPlayerCreated(id: Any) {
-        onPlayerCreated(id)
-    }
-
-    override fun onLStart() {
-        val current = queue?.getCurrent()
-        current?.let { onItemPlay(it) }
-        onPlayInfoUpdate(
-            current,
-            PlaybackStateCompat.STATE_PLAYING,
-            player?.getPosition() ?: 0L
-        )
-        preloadNextItem()
-    }
-
-    override fun onLStop() {
-        audioFocusHelper.abandon()
-
-        onPlayInfoUpdate(
-            item = queue?.getCurrent(),
-            playbackState = PlaybackStateCompat.STATE_STOPPED,
-            position = 0L
-        )
-    }
-
-    override fun onLPlay() {
-        onPlayInfoUpdate(
-            item = queue?.getCurrent(),
-            playbackState = PlaybackStateCompat.STATE_PLAYING,
-            position = player?.getPosition() ?: 0L
-        )
-    }
-
-    override fun onLPause() {
-        val current = queue?.getCurrent()
-        current?.let { onItemPause(it) }
-
-        onPlayInfoUpdate(
-            item = queue?.getCurrent(),
-            playbackState = PlaybackStateCompat.STATE_PAUSED,
-            position = player?.getPosition() ?: 0L
-        )
-    }
-
-    override fun onLSeekTo(newDurationMs: Number) {
-        onPlayInfoUpdate(
-            queue?.getCurrent(),
-            PlaybackStateCompat.STATE_PLAYING,
-            newDurationMs.toLong()
-        )
-    }
-
-    override fun onLPrepared() {
-    }
-
-    override fun onLCompletion(skipToNext: Boolean) {
-        // 单曲循环模式
-        if (playMode == PlayMode.RepeatOne) {
-            val current = queue?.getCurrent() ?: return
-            val uri = queue?.getUriFromItem(current) ?: return
-
-            onPlayInfoUpdate(current, PlaybackStateCompat.STATE_BUFFERING, 0L)
-            onPlayFromUri(uri, null)
-            return
-        }
-
-        if (skipToNext) {
-            onSkipToNext()
-        } else {
-            if (tempNextItem != null) {
+    override fun onPlayerEvent(event: PlayerEvent) {
+        when (event) {
+            PlayerEvent.OnPlay -> {
                 onPlayInfoUpdate(
-                    item = tempNextItem,
+                    item = queue?.getCurrent(),
                     playbackState = PlaybackStateCompat.STATE_PLAYING,
                     position = player?.getPosition() ?: 0L
                 )
             }
+
+            PlayerEvent.OnStart -> {
+                val current = queue?.getCurrent()
+                current?.let { onItemPlay(it) }
+                onPlayInfoUpdate(
+                    current,
+                    PlaybackStateCompat.STATE_PLAYING,
+                    player?.getPosition() ?: 0L
+                )
+                preloadNextItem()
+            }
+
+            PlayerEvent.OnPause -> {
+                val current = queue?.getCurrent()
+                current?.let { onItemPause(it) }
+
+                onPlayInfoUpdate(
+                    item = current,
+                    playbackState = PlaybackStateCompat.STATE_PAUSED,
+                    position = player?.getPosition() ?: 0L
+                )
+            }
+
+            PlayerEvent.OnStop -> {
+                audioFocusHelper.abandon()
+
+                onPlayInfoUpdate(
+                    item = queue?.getCurrent(),
+                    playbackState = PlaybackStateCompat.STATE_STOPPED,
+                    position = 0L
+                )
+            }
+
+            is PlayerEvent.OnCompletion -> {
+                // 单曲循环模式
+                if (playMode == PlayMode.RepeatOne) {
+                    val current = queue?.getCurrent() ?: return
+                    val uri = queue?.getUriFromItem(current) ?: return
+
+                    onPlayInfoUpdate(current, PlaybackStateCompat.STATE_BUFFERING, 0L)
+                    onPlayFromUri(uri, null)
+                    return
+                }
+
+                // 若Player未完成预加载，即无法直接播放下一首，则进行Playback的切换下一首流程
+                if (!event.nextItemReady) {
+                    onSkipToNext()
+                    return
+                }
+                if (tempNextItem != null) {
+                    if (playMode == PlayMode.Shuffle) {
+                        queue?.moveToPrevious(item = tempNextItem!!)
+                    }
+                    onPlayInfoUpdate(
+                        item = tempNextItem,
+                        playbackState = PlaybackStateCompat.STATE_PLAYING,
+                        position = player?.getPosition() ?: 0L
+                    )
+                }
+            }
+
+            is PlayerEvent.OnSeekTo -> {
+                onPlayInfoUpdate(
+                    queue?.getCurrent(),
+                    PlaybackStateCompat.STATE_PLAYING,
+                    event.newDurationMs.toLong()
+                )
+            }
+
+            is PlayerEvent.OnCreated -> {
+                onPlayerCreated(event.playerId)
+            }
+
+            PlayerEvent.OnPrepared -> {}
+            PlayerEvent.OnNextPrepared -> {}
+            is PlayerEvent.OnError -> {}
         }
     }
 

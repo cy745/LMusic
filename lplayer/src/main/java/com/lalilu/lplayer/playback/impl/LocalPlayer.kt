@@ -3,17 +3,18 @@ package com.lalilu.lplayer.playback.impl
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioManager
-import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Build
 import com.blankj.utilcode.util.LogUtils
+import com.lalilu.lplayer.extensions.PlayerVolumeHelper
 import com.lalilu.lplayer.extensions.fadePause
 import com.lalilu.lplayer.extensions.fadeStart
-import com.lalilu.lplayer.extensions.getNowVolume
+import com.lalilu.lplayer.extensions.loadSource
 import com.lalilu.lplayer.extensions.setMaxVolume
 import com.lalilu.lplayer.playback.Player
+import com.lalilu.lplayer.playback.PlayerEvent
 import java.io.IOException
-import java.net.URLDecoder
 
 
 class LocalPlayer(
@@ -21,10 +22,11 @@ class LocalPlayer(
 ) : Player, Player.Listener,
     MediaPlayer.OnPreparedListener,
     MediaPlayer.OnCompletionListener,
-    MediaPlayer.OnErrorListener {
+    MediaPlayer.OnErrorListener,
+    MediaPlayer.OnBufferingUpdateListener {
     private var player: MediaPlayer? = null
         get() {
-            field = field ?: MediaPlayer().also { bindPlayer(it) }
+            field = field ?: newPlayer().also { bindPlayer(it) }
             return field
         }
 
@@ -32,11 +34,14 @@ class LocalPlayer(
     override var isPlaying: Boolean = false
     override var isPrepared: Boolean = false
     override var isStopped: Boolean = true
-    private var startWhenReady: Boolean = false
+    override var couldPlayNow: () -> Boolean = { true }
 
-    fun bindPlayer(player: MediaPlayer) {
-        player.setOnPreparedListener(this@LocalPlayer)
-        player.setOnCompletionListener(this@LocalPlayer)
+    private var startWhenReady: Boolean = false
+    private var nextPlayer: MediaPlayer? = null
+    private var bufferedPercent: Float = 0f
+
+    private fun newPlayer(): MediaPlayer {
+        val player = if (Build.VERSION.SDK_INT >= 34) MediaPlayer(context) else MediaPlayer()
         player.setAudioAttributes(
             AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -44,7 +49,14 @@ class LocalPlayer(
                 .setLegacyStreamType(AudioManager.STREAM_MUSIC)
                 .build()
         )
-        onLPlayerCreated(player.audioSessionId)
+        return player
+    }
+
+    private fun bindPlayer(player: MediaPlayer) {
+        player.setOnPreparedListener(this@LocalPlayer)
+        player.setOnCompletionListener(this@LocalPlayer)
+        player.setOnBufferingUpdateListener(this@LocalPlayer)
+        onPlayerEvent(PlayerEvent.OnCreated(player.audioSessionId))
     }
 
     override fun load(uri: Uri, startWhenReady: Boolean) {
@@ -52,19 +64,11 @@ class LocalPlayer(
             this.startWhenReady = startWhenReady
             val oldPlayer = player
 
-            // TODO 待解决Player切换时的各种问题
             isPlaying = false
             isStopped = false
-            player = MediaPlayer().also { bindPlayer(it) }
+            player = newPlayer().also { bindPlayer(it) }
             player?.reset()
-            if (uri.scheme == "content" || uri.scheme == "file") {
-                player?.setDataSource(context, uri)
-            } else {
-                // url 的长度可能会超长导致异常
-                val url = URLDecoder.decode(uri.toString(), "UTF-8")
-                player?.setDataSource(url)
-            }
-
+            player?.loadSource(context, uri)
             player?.prepareAsync()
 
             oldPlayer?.fadePause(duration = 800L) {
@@ -75,34 +79,36 @@ class LocalPlayer(
                 }
             }
         } catch (e: IOException) {
-            onLStop()
             println("播放失败：歌曲文件异常: ${e.message}")
+            onPlayerEvent(PlayerEvent.OnError(e))
+            onPlayerEvent(PlayerEvent.OnStop)
         } catch (e: Exception) {
             println("播放失败：未知异常: ${e.message}")
-            onLStop()
+            onPlayerEvent(PlayerEvent.OnError(e))
+            onPlayerEvent(PlayerEvent.OnStop)
         }
     }
 
     override fun play() {
         if (isPrepared) {
-            // 请求音频焦点，失败则取消播放
-            if (!requestAudioFocus()) return
+            // 判断当前是否可以播放
+            if (!couldPlayNow()) return
 
             if (!isPlaying) {
                 isPlaying = true
                 isStopped = false
                 player?.fadeStart()
-                onLStart()
+                onPlayerEvent(PlayerEvent.OnStart)
             }
         }
-        onLPlay()
+        onPlayerEvent(PlayerEvent.OnPlay)
     }
 
     override fun pause() {
         isPlaying = false
         isStopped = false
         player?.fadePause()
-        onLPause()
+        onPlayerEvent(PlayerEvent.OnPause)
     }
 
     override fun stop() {
@@ -115,12 +121,12 @@ class LocalPlayer(
             release()
         }
         player = null
-        onLStop()
+        onPlayerEvent(PlayerEvent.OnStop)
     }
 
     override fun seekTo(durationMs: Number) {
         player?.seekTo(durationMs.toInt())
-        onLSeekTo(durationMs)
+        onPlayerEvent(PlayerEvent.OnSeekTo(durationMs))
     }
 
     override fun destroy() {
@@ -128,30 +134,37 @@ class LocalPlayer(
         listener = null
     }
 
-    private var nextPlayer: MediaPlayer? = null
-
     override fun preloadNext(uri: Uri) {
         // 创建MediaPlayer，异步加载数据，并且在加载完成后调用setNextMediaPlayer方法
-        MediaPlayer().apply {
-            setDataSource(context, uri)
+        newPlayer().apply {
+            loadSource(context, uri)
             setOnPreparedListener {
                 nextPlayer = this
                 player?.setNextMediaPlayer(this)
+                onPlayerEvent(PlayerEvent.OnNextPrepared)
             }
             prepareAsync()
         }
     }
 
-    override fun requestAudioFocus(): Boolean {
-        return listener?.requestAudioFocus() ?: true
-    }
-
-    override fun onLPlayerCreated(id: Any) {
-        listener?.onLPlayerCreated(id)
-    }
-
     override fun getPosition(): Long {
         return player?.currentPosition?.toLong() ?: 0L
+    }
+
+    override fun getDuration(): Long {
+        return player?.duration?.toLong() ?: 0L
+    }
+
+    override fun getBufferedPosition(): Long {
+        return (getDuration() * bufferedPercent).toLong()
+    }
+
+    override fun getVolume(): Int {
+        return PlayerVolumeHelper.getNowVolume(player!!.audioSessionId).toInt()
+    }
+
+    override fun getMaxVolume(): Int {
+        return PlayerVolumeHelper.getMaxVolume().toInt()
     }
 
     override fun setMaxVolume(volume: Int) {
@@ -159,7 +172,7 @@ class LocalPlayer(
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
-        onLPrepared()
+        onPlayerEvent(PlayerEvent.OnPrepared)
         isPrepared = true
         if (startWhenReady) {
             play()
@@ -169,16 +182,16 @@ class LocalPlayer(
     override fun onCompletion(mp: MediaPlayer?) {
         val readyForNext = nextPlayer != null
         if (readyForNext) {
-            val volume = getNowVolume(player!!.audioSessionId)
+            val volume = PlayerVolumeHelper.getNowVolume(player!!.audioSessionId)
+            player?.reset()
+            player?.release()
+
             player = nextPlayer
+            player?.also { bindPlayer(it) }
             player?.setVolume(volume, volume)
             player?.start()
-            player?.apply {
-                setOnPreparedListener(this@LocalPlayer)
-                setOnCompletionListener(this@LocalPlayer)
-            }
         }
-        onLCompletion(skipToNext = !readyForNext)
+        onPlayerEvent(PlayerEvent.OnCompletion(readyForNext))
         nextPlayer = null
     }
 
@@ -187,31 +200,11 @@ class LocalPlayer(
         return false
     }
 
-    override fun onLStart() {
-        listener?.onLStart()
+    override fun onPlayerEvent(event: PlayerEvent) {
+        listener?.onPlayerEvent(event)
     }
 
-    override fun onLStop() {
-        listener?.onLStop()
-    }
-
-    override fun onLPlay() {
-        listener?.onLPlay()
-    }
-
-    override fun onLPause() {
-        listener?.onLPause()
-    }
-
-    override fun onLSeekTo(newDurationMs: Number) {
-        listener?.onLSeekTo(newDurationMs)
-    }
-
-    override fun onLPrepared() {
-        listener?.onLPrepared()
-    }
-
-    override fun onLCompletion(skipToNext: Boolean) {
-        listener?.onLCompletion(skipToNext)
+    override fun onBufferingUpdate(mp: MediaPlayer?, percent: Int) {
+        bufferedPercent = percent / 100f
     }
 }

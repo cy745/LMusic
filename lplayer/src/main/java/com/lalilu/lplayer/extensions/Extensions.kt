@@ -1,25 +1,45 @@
 package com.lalilu.lplayer.extensions
 
+import android.content.Context
 import android.media.MediaPlayer
+import android.net.Uri
 import android.os.CountDownTimer
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.LruCache
 import androidx.annotation.IntRange
+import java.net.URLDecoder
 
-private var maxVolume: Float = 1f
-private val timers = LruCache<Int, CountDownTimer>(3)
-private val nowVolumes = LruCache<Int, Float>(3)
+object PlayerVolumeHelper {
+    private var maxVolume: Float = 1f
+    private val timers = LruCache<Int, CountDownTimer>(5)
+    private val nowVolumes = LruCache<Int, Float>(5)
 
-private fun lerp(start: Float, stop: Float, fraction: Float): Float =
-    (1f - fraction) * start + fraction * stop
+    fun getMaxVolume(): Float = maxVolume
+    fun getNowVolume(id: Int): Float = minOf(nowVolumes[id] ?: 0f, maxVolume)
 
-fun getNowVolume(id: Int): Float = minOf(nowVolumes[id] ?: 0f, maxVolume)
+    fun updateMaxVolume(maxVolume: Float) {
+        this.maxVolume = maxVolume
+    }
+
+    fun updateNowVolume(id: Int, volume: Float) {
+        nowVolumes.put(id, volume)
+    }
+
+    fun cancelTimer(id: Int) {
+        timers[id]?.cancel()
+    }
+
+    fun addTimer(id: Int, timer: CountDownTimer) {
+        timers.put(id, timer)
+    }
+}
 
 fun MediaPlayer.setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
-    maxVolume = (volume / 100f).coerceIn(0f, 1f)
-    nowVolumes.put(audioSessionId, maxVolume)
-    val temp = getNowVolume(audioSessionId)
+    val maxVolume = (volume / 100f).coerceIn(0f, 1f)
+    PlayerVolumeHelper.updateMaxVolume(maxVolume)
+    PlayerVolumeHelper.updateNowVolume(audioSessionId, maxVolume)
+    val temp = PlayerVolumeHelper.getNowVolume(audioSessionId)
     setVolume(temp, temp)
 }
 
@@ -27,8 +47,8 @@ fun MediaPlayer.fadeStart(
     duration: Long = 500L,
     onFinished: () -> Unit = {}
 ) = synchronized(this) {
-    timers[audioSessionId]?.cancel()
-    val startValue = getNowVolume(audioSessionId)
+    PlayerVolumeHelper.cancelTimer(audioSessionId)
+    val startValue = PlayerVolumeHelper.getNowVolume(audioSessionId)
     setVolume(startValue, startValue)
 
     // 当前未播放，则开始播放
@@ -36,38 +56,41 @@ fun MediaPlayer.fadeStart(
 
     val timer = object : CountDownTimer(duration, duration / 10L) {
         override fun onTick(millisUntilFinished: Long) {
-            val fraction = 1f - millisUntilFinished * 1.0f / duration
-            val volume = lerp(startValue, maxVolume, fraction)
-            nowVolumes.put(audioSessionId, volume.coerceIn(0f, maxVolume))
+            val maxVolume = PlayerVolumeHelper.getMaxVolume()
+            val fraction = 1f - (millisUntilFinished * 1.0f / duration)
+            val volume = lerp(startValue, maxVolume, fraction).coerceIn(0f, maxVolume)
 
-            val temp = getNowVolume(audioSessionId)
-            this@fadeStart.setVolume(temp, temp)
+            PlayerVolumeHelper.updateNowVolume(audioSessionId, volume)
+            val temp = PlayerVolumeHelper.getNowVolume(audioSessionId)
+            setVolume(temp, temp)
         }
 
         override fun onFinish() {
+            val maxVolume = PlayerVolumeHelper.getMaxVolume()
             setVolume(maxVolume, maxVolume)
             onFinished()
         }
     }
     timer.start()
-    timers.put(audioSessionId, timer)
+    PlayerVolumeHelper.addTimer(audioSessionId, timer)
 }
 
 fun MediaPlayer.fadePause(
     duration: Long = 500L,
     onFinished: () -> Unit = {}
 ) = synchronized(this) {
-    timers[audioSessionId]?.cancel()
+    PlayerVolumeHelper.cancelTimer(audioSessionId)
 
-    val startValue = getNowVolume(audioSessionId)
+    val startValue = PlayerVolumeHelper.getNowVolume(audioSessionId)
 
     val timer = object : CountDownTimer(duration, duration / 10L) {
         override fun onTick(millisUntilFinished: Long) {
-            val fraction = 1f - millisUntilFinished * 1.0f / duration
-            val volume = lerp(startValue, 0f, fraction)
-            nowVolumes.put(audioSessionId, volume.coerceIn(0f, maxVolume))
+            val maxVolume = PlayerVolumeHelper.getMaxVolume()
+            val fraction = 1f - (millisUntilFinished * 1.0f / duration)
+            val volume = lerp(startValue, 0f, fraction).coerceIn(0f, maxVolume)
 
-            val temp = getNowVolume(audioSessionId)
+            PlayerVolumeHelper.updateNowVolume(audioSessionId, volume)
+            val temp = PlayerVolumeHelper.getNowVolume(audioSessionId)
             setVolume(temp, temp)
         }
 
@@ -78,9 +101,49 @@ fun MediaPlayer.fadePause(
         }
     }
     timer.start()
-    timers.put(audioSessionId, timer)
+    PlayerVolumeHelper.addTimer(audioSessionId, timer)
+}
+
+fun MediaPlayer.loadSource(context: Context, uri: Uri) {
+    if (uri.scheme == "content" || uri.scheme == "file") {
+        setDataSource(context, uri)
+    } else {
+        // url 的长度可能会超长导致异常
+        val url = URLDecoder.decode(uri.toString(), "UTF-8")
+        setDataSource(url)
+    }
 }
 
 fun MediaSessionCompat.isPlaying(): Boolean {
     return PlaybackStateCompat.STATE_PLAYING == controller.playbackState?.state
+}
+
+private fun lerp(start: Float, stop: Float, fraction: Float): Float =
+    (1f - fraction) * start + fraction * stop
+
+fun <T> List<T>.getNextOf(item: T, cycle: Boolean = false): T? {
+    val nextIndex = indexOf(item) + 1
+    return getOrNull(if (cycle) nextIndex % size else nextIndex)
+}
+
+fun <T> List<T>.getPreviousOf(item: T, cycle: Boolean = false): T? {
+    var previousIndex = indexOf(item) - 1
+    if (previousIndex < 0 && cycle) {
+        previousIndex = size - 1
+    }
+    return getOrNull(previousIndex)
+}
+
+fun <T : Any> List<T>.move(from: Int, to: Int): List<T> = toMutableList().apply {
+    val targetIndex = if (from < to) to else to + 1
+    val temp = removeAt(from)
+    add(targetIndex, temp)
+}
+
+fun <T : Any> List<T>.add(index: Int = -1, item: T): List<T> = toMutableList().apply {
+    if (index == -1) add(item) else add(index, item)
+}
+
+fun <T : Any> List<T>.removeAt(index: Int): List<T> = toMutableList().apply {
+    removeAt(index)
 }
