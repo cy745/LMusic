@@ -56,7 +56,7 @@ class PlayingViewModel(
 
         when {
             mediaId == runtime.getPlayingId() && playOrPause -> {
-                browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
+                browser.playOrPause()
             }
 
             else -> {

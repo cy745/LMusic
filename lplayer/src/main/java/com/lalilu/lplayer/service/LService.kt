@@ -28,18 +28,10 @@ import com.lalilu.lplayer.playback.impl.LocalPlayer
 import com.lalilu.lplayer.playback.impl.MixPlayback
 import com.lalilu.lplayer.runtime.Runtime
 import com.lalilu.lplayer.runtime.RuntimeQueue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import org.koin.android.ext.android.inject
-import kotlin.coroutines.CoroutineContext
 
 @Suppress("DEPRECATION")
-abstract class LService : MediaBrowserServiceCompat(),
-    LifecycleOwner, Playback.Listener<Playable>, CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
+abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.Listener<Playable> {
     override val lifecycle: Lifecycle get() = registry
     private val registry by lazy { LifecycleRegistry(this) }
 
@@ -54,8 +46,8 @@ abstract class LService : MediaBrowserServiceCompat(),
         }
     }
 
-    lateinit var mediaSession: MediaSessionCompat
-    lateinit var playback: MixPlayback
+    private lateinit var mediaSession: MediaSessionCompat
+    protected lateinit var playback: MixPlayback
 
     private val runtime: Runtime<Playable> by inject()
     private val notifier: Notifier by inject()
@@ -75,12 +67,12 @@ abstract class LService : MediaBrowserServiceCompat(),
         registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         if (!this::playback.isInitialized) {
             runtime.getPosition = localPlayer::getPosition
-            playback = MixPlayback(
-                audioFocusHelper = audioFocusHelper,
-                playbackListener = this,
-                queue = RuntimeQueue(runtime),
+            playback = MixPlayback.apply {
+                setAudioFocusHelper(audioFocusHelper)
+                playbackListener = this@LService
+                queue = RuntimeQueue(runtime)
                 player = localPlayer
-            )
+            }
         }
 
         if (!this::mediaSession.isInitialized) {
@@ -183,11 +175,6 @@ abstract class LService : MediaBrowserServiceCompat(),
         registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         playback.destroy()
         localPlayer.destroy()
-
-        // 服务被结束后取消本协程作用域
-        if (coroutineContext[Job] != null) {
-            this.cancel()
-        }
         super.onDestroy()
     }
 

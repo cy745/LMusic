@@ -12,23 +12,33 @@ import com.lalilu.lplayer.playback.PlayQueue
 import com.lalilu.lplayer.playback.Playback
 import com.lalilu.lplayer.playback.Player
 import com.lalilu.lplayer.playback.PlayerEvent
+import com.lalilu.lplayer.extensions.PlayerAction
 
-class MixPlayback(
-    private val audioFocusHelper: AudioFocusHelper,
-    override var playbackListener: Playback.Listener<Playable>? = null,
-    override var queue: PlayQueue<Playable>? = null,
-    override var player: Player? = null,
-    override var playMode: PlayMode = PlayMode.ListRecycle,
-) : MediaSessionCompat.Callback(), Playback<Playable>, Playback.Listener<Playable>,
-    Player.Listener {
+object MixPlayback : MediaSessionCompat.Callback(), Playback<Playable>,
+    Playback.Listener<Playable>, Player.Listener {
+    private var audioFocusHelper: AudioFocusHelper? = null
+    override var playbackListener: Playback.Listener<Playable>? = null
+    override var queue: PlayQueue<Playable>? = null
+    override var playMode: PlayMode = PlayMode.ListRecycle
+    override var player: Player? = null
+        set(value) {
+            field = value
+            value ?: return
+            value.listener = this
+            value.couldPlayNow = {
+                audioFocusHelper == null || audioFocusHelper?.request() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+            }
+        }
 
-    init {
-        player?.listener = this
-        player?.couldPlayNow =
-            { audioFocusHelper.request() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED }
+    fun setAudioFocusHelper(audioFocusHelper: AudioFocusHelper) {
+        this.audioFocusHelper = audioFocusHelper
         audioFocusHelper.onPlay = ::onPlay
         audioFocusHelper.onPause = ::onPause
         audioFocusHelper.isPlaying = { player?.isPlaying ?: false }
+    }
+
+    override fun readyToUse(): Boolean {
+        return queue != null && player != null
     }
 
     override fun onSetShuffleMode(shuffleMode: Int) {
@@ -118,23 +128,6 @@ class MixPlayback(
         player?.stop()
     }
 
-    override fun onCustomActionIn(action: Playback.PlaybackAction?) {
-        when (action) {
-            Playback.PlaybackAction.PlayPause -> {
-                if (player?.isPlaying == true) onPause() else onPlay()
-            }
-
-            Playback.PlaybackAction.ReloadAndPlay -> {
-                player?.isPrepared = false
-                onPlay()
-            }
-
-            null -> {
-
-            }
-        }
-    }
-
     private var tempNextItem: Playable? = null
 
     override fun preloadNextItem() {
@@ -154,7 +147,27 @@ class MixPlayback(
     }
 
     override fun onCustomAction(action: String?, extras: Bundle?) {
-        handleCustomAction(action)
+        action ?: return
+
+        val customAction = PlayerAction.of(action) ?: return
+        handleCustomAction(customAction)
+    }
+
+    override fun handleCustomAction(action: PlayerAction.CustomAction) {
+        when (action) {
+            PlayerAction.PlayOrPause -> {
+                player ?: return
+                if (player!!.isPlaying) onPause() else onPlay()
+            }
+
+            PlayerAction.ReloadAndPlay -> {
+                player ?: return
+                player?.isPrepared = false
+                onPlay()
+            }
+
+            else -> Unit
+        }
     }
 
     override fun onPlayerEvent(event: PlayerEvent) {
@@ -190,7 +203,7 @@ class MixPlayback(
             }
 
             PlayerEvent.OnStop -> {
-                audioFocusHelper.abandon()
+                audioFocusHelper?.abandon()
 
                 onPlayInfoUpdate(
                     item = queue?.getCurrent(),

@@ -301,7 +301,7 @@ object Playing {
                 HapticUtils.haptic(root)
                 when (clickPart) {
                     CLICK_PART_LEFT -> playingVM.browser.skipToPrevious()
-                    CLICK_PART_MIDDLE -> playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
+                    CLICK_PART_MIDDLE -> playingVM.browser.playOrPause()
                     CLICK_PART_RIGHT -> playingVM.browser.skipToNext()
                     else -> {
                     }

@@ -3,20 +3,20 @@ package com.lalilu.lmusic.service
 import android.content.ComponentName
 import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.session.MediaControllerCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.LastPlayedSp
-import com.lalilu.lplayer.playback.Playback
+import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.extensions.action
 
 class LMusicBrowser(
     private val context: Context,
     private val lastPlayedSp: LastPlayedSp,
     private val runtime: LMusicRuntime
 ) : DefaultLifecycleObserver {
-    private var controller: MediaControllerCompat? = null
     private val browser: MediaBrowserCompat by lazy {
         MediaBrowserCompat(
             context,
@@ -42,15 +42,13 @@ class LMusicBrowser(
         browser.disconnect()
     }
 
-    fun play() = controller?.transportControls?.play()
-    fun pause() = controller?.transportControls?.pause()
-    fun skipToNext() = controller?.transportControls?.skipToNext()
-    fun skipToPrevious() = controller?.transportControls?.skipToPrevious()
-    fun playById(id: String) = controller?.transportControls?.playFromMediaId(id, null)
-    fun seekTo(position: Number) = controller?.transportControls?.seekTo(position.toLong())
-    fun sendCustomAction(action: Playback.PlaybackAction) {
-        controller?.transportControls?.sendCustomAction(action.name, null)
-    }
+    fun play() = PlayerAction.Play.action()
+    fun pause() = PlayerAction.Pause.action()
+    fun playOrPause() = PlayerAction.PlayOrPause.action()
+    fun skipToNext() = PlayerAction.SkipToNext.action()
+    fun skipToPrevious() = PlayerAction.SkipToPrevious.action()
+    fun playById(id: String) = PlayerAction.PlayById(id).action()
+    fun seekTo(position: Number) = PlayerAction.SeekTo(position.toLong()).action()
 
     fun addToNext(mediaId: String): Boolean {
         val nowIndex = runtime.indexOfSong(mediaId = mediaId)
@@ -81,11 +79,10 @@ class LMusicBrowser(
         }
     }
 
-    private inner class ConnectionCallback(
-        val context: Context
-    ) : MediaBrowserCompat.ConnectionCallback() {
+    private inner class ConnectionCallback(val context: Context) :
+        MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
-            controller = MediaControllerCompat(context, browser.sessionToken)
+            LogUtils.i("MediaBrowser connected")
 
             // 若当前播放列表不为空，则不尝试提取历史数据填充
             if (!runtime.isEmpty()) {

@@ -219,7 +219,7 @@ fun ControlPanel(
         IconToggleButton(
             checked = isPlaying.value,
             onCheckedChange = {
-                playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
+                playingVM.browser.playOrPause()
             }
         ) {
             Image(
