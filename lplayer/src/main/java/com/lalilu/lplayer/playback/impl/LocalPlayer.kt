@@ -148,11 +148,11 @@ class LocalPlayer(
     }
 
     override fun getPosition(): Long {
-        return player?.currentPosition?.toLong() ?: 0L
+        return runCatching { player?.currentPosition?.toLong() }.getOrNull() ?: 0L
     }
 
     override fun getDuration(): Long {
-        return player?.duration?.toLong() ?: 0L
+        return runCatching { player?.duration?.toLong() }.getOrNull() ?: 0L
     }
 
     override fun getBufferedPosition(): Long {

@@ -40,9 +40,11 @@ object PlayerVolumeHelper {
 
 fun MediaPlayer.setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
     val maxVolume = (volume / 100f).coerceIn(0f, 1f)
+    val sessionId = audioSessionId
+
     PlayerVolumeHelper.updateMaxVolume(maxVolume)
-    PlayerVolumeHelper.updateNowVolume(audioSessionId, maxVolume)
-    val temp = PlayerVolumeHelper.getNowVolume(audioSessionId)
+    PlayerVolumeHelper.updateNowVolume(sessionId, maxVolume)
+    val temp = PlayerVolumeHelper.getNowVolume(sessionId)
     setVolume(temp, temp)
 }
 
@@ -50,8 +52,10 @@ fun MediaPlayer.fadeStart(
     duration: Long = 500L,
     onFinished: () -> Unit = {}
 ) = synchronized(this) {
-    PlayerVolumeHelper.cancelTimer(audioSessionId)
-    val startValue = PlayerVolumeHelper.getNowVolume(audioSessionId)
+    val sessionId = audioSessionId
+    PlayerVolumeHelper.cancelTimer(sessionId)
+
+    val startValue = PlayerVolumeHelper.getNowVolume(sessionId)
     setVolume(startValue, startValue)
 
     // 当前未播放，则开始播放
@@ -63,28 +67,29 @@ fun MediaPlayer.fadeStart(
             val fraction = 1f - (millisUntilFinished * 1.0f / duration)
             val volume = lerp(startValue, maxVolume, fraction).coerceIn(0f, maxVolume)
 
-            PlayerVolumeHelper.updateNowVolume(audioSessionId, volume)
-            val temp = PlayerVolumeHelper.getNowVolume(audioSessionId)
-            setVolume(temp, temp)
+            PlayerVolumeHelper.updateNowVolume(sessionId, volume)
+            val temp = PlayerVolumeHelper.getNowVolume(sessionId)
+
+            runCatching { setVolume(temp, temp) }.getOrElse { cancel() }
         }
 
         override fun onFinish() {
             val maxVolume = PlayerVolumeHelper.getMaxVolume()
-            setVolume(maxVolume, maxVolume)
+            runCatching { setVolume(maxVolume, maxVolume) }.getOrElse { cancel() }
             onFinished()
         }
     }
     timer.start()
-    PlayerVolumeHelper.addTimer(audioSessionId, timer)
+    PlayerVolumeHelper.addTimer(sessionId, timer)
 }
 
 fun MediaPlayer.fadePause(
     duration: Long = 500L,
     onFinished: () -> Unit = {}
 ) = synchronized(this) {
-    PlayerVolumeHelper.cancelTimer(audioSessionId)
-
-    val startValue = PlayerVolumeHelper.getNowVolume(audioSessionId)
+    val sessionId = audioSessionId
+    PlayerVolumeHelper.cancelTimer(sessionId)
+    val startValue = PlayerVolumeHelper.getNowVolume(sessionId)
 
     val timer = object : CountDownTimer(duration, duration / 10L) {
         override fun onTick(millisUntilFinished: Long) {
@@ -92,9 +97,10 @@ fun MediaPlayer.fadePause(
             val fraction = 1f - (millisUntilFinished * 1.0f / duration)
             val volume = lerp(startValue, 0f, fraction).coerceIn(0f, maxVolume)
 
-            PlayerVolumeHelper.updateNowVolume(audioSessionId, volume)
-            val temp = PlayerVolumeHelper.getNowVolume(audioSessionId)
-            setVolume(temp, temp)
+            PlayerVolumeHelper.updateNowVolume(sessionId, volume)
+            val temp = PlayerVolumeHelper.getNowVolume(sessionId)
+
+            runCatching { setVolume(temp, temp) }.getOrElse { cancel() }
         }
 
         override fun onFinish() {
@@ -104,7 +110,7 @@ fun MediaPlayer.fadePause(
         }
     }
     timer.start()
-    PlayerVolumeHelper.addTimer(audioSessionId, timer)
+    PlayerVolumeHelper.addTimer(sessionId, timer)
 }
 
 fun MediaPlayer.loadSource(context: Context, uri: Uri) {
