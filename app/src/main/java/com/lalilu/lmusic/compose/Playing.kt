@@ -45,7 +45,7 @@ import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.playback.PlayMode
-import com.lalilu.lplayer.playback.Playback
+import com.lalilu.lplayer.runtime.NewRuntime
 import com.lalilu.ui.CLICK_PART_LEFT
 import com.lalilu.ui.CLICK_PART_MIDDLE
 import com.lalilu.ui.CLICK_PART_RIGHT
@@ -346,7 +346,7 @@ object Playing {
         playingVM.runtime.playableFlow.collectWithLifeCycleOwner(activity) {
             adapter.setDiffData(it)
         }
-        playingVM.runtime.positionFlow.collectWithLifeCycleOwner(activity) {
+        NewRuntime.info.positionFlow.collectWithLifeCycleOwner(activity) {
             maSeekBar.updateValue(it.toFloat())
         }
         playingVM.runtime.playingFlow.collectWithLifeCycleOwner(activity) { playable ->

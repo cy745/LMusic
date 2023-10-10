@@ -26,8 +26,8 @@ import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.playback.Playback
 import com.lalilu.lplayer.playback.impl.LocalPlayer
 import com.lalilu.lplayer.playback.impl.MixPlayback
+import com.lalilu.lplayer.runtime.NewRuntime
 import com.lalilu.lplayer.runtime.Runtime
-import com.lalilu.lplayer.runtime.RuntimeQueue
 import org.koin.android.ext.android.inject
 
 @Suppress("DEPRECATION")
@@ -49,7 +49,7 @@ abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.
     private lateinit var mediaSession: MediaSessionCompat
     protected lateinit var playback: MixPlayback
 
-    private val runtime: Runtime<Playable> by inject()
+    private val runtime: Runtime<Playable> = NewRuntime
     private val notifier: Notifier by inject()
     private val localPlayer: LocalPlayer by inject()
     private val audioFocusHelper: AudioFocusHelper by inject()
@@ -66,11 +66,11 @@ abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.
         super.onCreate()
         registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         if (!this::playback.isInitialized) {
-            runtime.getPosition = localPlayer::getPosition
+            runtime.info.getPosition = localPlayer::getPosition
             playback = MixPlayback.apply {
                 setAudioFocusHelper(audioFocusHelper)
                 playbackListener = this@LService
-                queue = RuntimeQueue(runtime)
+                queue = runtime.queue
                 player = localPlayer
             }
         }
@@ -91,9 +91,9 @@ abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.
     override fun onPlayInfoUpdate(item: Playable?, playbackState: Int, position: Long) {
         val isPlaying = playback.player?.isPlaying ?: false
 
-        runtime.update(playing = item?.mediaId)
-        runtime.update(isPlaying = isPlaying)
-        runtime.updatePosition(startPosition = position, isPlaying = isPlaying)
+        runtime.queue.setCurrentId(id = item?.mediaId)
+        runtime.info.updateIsPlaying(isPlaying)
+        runtime.info.updatePosition(startPosition = position, isPlaying = isPlaying)
 
         mediaSession.setMetadata(item?.metaDataCompat)
         mediaSession.setPlaybackState(

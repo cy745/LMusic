@@ -4,7 +4,7 @@ import com.lalilu.lplayer.extensions.PlayerAction
 
 interface Playback<T> {
     var playbackListener: Listener<T>?
-    var queue: PlayQueue<T>?
+    var queue: UpdatableQueue<T>?
     var player: Player?
     var playMode: PlayMode
 

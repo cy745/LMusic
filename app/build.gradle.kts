@@ -120,7 +120,6 @@ android {
 
 dependencies {
     implementation(project(":ui"))
-    implementation(project(":lplayer"))
     implementation(project(":crash"))
     implementation(project(":extension-core"))
     ksp(project(":extension-ksp"))

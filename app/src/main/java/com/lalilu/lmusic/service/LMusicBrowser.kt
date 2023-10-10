@@ -11,11 +11,12 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.extensions.action
+import com.lalilu.lplayer.extensions.getNextOf
+import com.lalilu.lplayer.runtime.NewRuntime
 
 class LMusicBrowser(
     private val context: Context,
     private val lastPlayedSp: LastPlayedSp,
-    private val runtime: LMusicRuntime
 ) : DefaultLifecycleObserver {
     private val browser: MediaBrowserCompat by lazy {
         MediaBrowserCompat(
@@ -31,7 +32,10 @@ class LMusicBrowser(
     }
 
     fun setSongs(mediaIds: List<String>, mediaId: String? = null) {
-        runtime.load(songs = mediaIds, playing = mediaId)
+        NewRuntime.queue.setIds(mediaIds)
+        if (mediaIds.contains(mediaId)) {
+            NewRuntime.queue.setCurrentId(mediaId)
+        }
     }
 
     override fun onStart(owner: LifecycleOwner) {
@@ -51,28 +55,31 @@ class LMusicBrowser(
     fun seekTo(position: Number) = PlayerAction.SeekTo(position.toLong()).action()
 
     fun addToNext(mediaId: String): Boolean {
-        val nowIndex = runtime.indexOfSong(mediaId = mediaId)
-        val currentIndex = runtime.getPlayingIndex()
+        val nowIndex = NewRuntime.queue.items.indexOf(mediaId)
+        val currentIndex = NewRuntime.queue.items.indexOf(NewRuntime.queue.playingId)
         if (currentIndex >= 0 && (currentIndex == nowIndex || (currentIndex + 1) == nowIndex))
             return false
 
         if (nowIndex >= 0) {
-            runtime.move(nowIndex, currentIndex)
+            NewRuntime.queue.moveByIndex(nowIndex, currentIndex)
         } else {
-            runtime.add(currentIndex + 1, mediaId)
+            NewRuntime.queue.addToIndex(currentIndex + 1, mediaId)
         }
         return true
     }
 
     fun removeById(mediaId: String): Boolean {
         return try {
-            if (mediaId == runtime.getPlayingId()) {
-                runtime.getNextOf(runtime.getPlayingId(), true)?.let {
-                    runtime.update(it)
+            val playingId = NewRuntime.queue.playingId
+
+            if (mediaId == playingId) {
+                val nextId = NewRuntime.queue.items.getNextOf(playingId, true)
+                nextId?.let {
+                    NewRuntime.queue.setCurrentId(it)
                     playById(it)
                 }
             }
-            runtime.remove(mediaId)
+            NewRuntime.queue.removeById(mediaId)
             true
         } catch (e: Exception) {
             false
@@ -85,7 +92,7 @@ class LMusicBrowser(
             LogUtils.i("MediaBrowser connected")
 
             // 若当前播放列表不为空，则不尝试提取历史数据填充
-            if (!runtime.isEmpty()) {
+            if (NewRuntime.queue.items.isNotEmpty()) {
                 return
             }
 

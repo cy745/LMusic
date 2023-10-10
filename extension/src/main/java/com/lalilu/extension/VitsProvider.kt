@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.mapLatest
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class VitsProvider : Provider {
-    private val sentence = MutableStateFlow(
+object VitsProvider : Provider {
+    val sentence = MutableStateFlow(
         listOf(
             VitsSentence(
                 mediaId = "vits_1",

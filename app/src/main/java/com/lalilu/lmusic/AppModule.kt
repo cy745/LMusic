@@ -6,7 +6,6 @@ import androidx.core.graphics.drawable.toDrawable
 import coil.ImageLoader
 import com.blankj.utilcode.util.FileUtils
 import com.lalilu.R
-import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
@@ -19,9 +18,9 @@ import com.lalilu.lmusic.datastore.TempSp
 import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.repository.LyricRepository
+import com.lalilu.lmusic.service.ExtendRuntime
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.service.LMusicNotifier
-import com.lalilu.lmusic.service.LMusicRuntime
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
@@ -42,7 +41,6 @@ import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import com.lalilu.lplayer.notification.Notifier
-import com.lalilu.lplayer.runtime.Runtime
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
@@ -96,12 +94,10 @@ val ViewModelModule = module {
 
 val RuntimeModule = module {
     single<Notifier> { LMusicNotifier(androidApplication(), get(), get(), get(), get()) }
-    single<Runtime<Playable>> { get<LMusicRuntime>() }
-    single { LMusicRuntime(get()) }
-
-    single { LMusicBrowser(get(), get(), get()) }
+    single { ExtendRuntime(get()) }
+    single { LMusicBrowser(get(), get()) }
     single { CoverRepository(get()) }
-    single { LyricRepository(get(), get()) }
+    single { LyricRepository(get()) }
     single { LMediaRepository() }
 }
 
