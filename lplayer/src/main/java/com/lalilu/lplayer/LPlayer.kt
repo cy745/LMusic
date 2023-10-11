@@ -3,6 +3,7 @@ package com.lalilu.lplayer
 import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.common.base.Playable
 import com.lalilu.lplayer.extensions.AudioFocusHelper
+import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.playback.Playback
 import com.lalilu.lplayer.playback.impl.LocalPlayer
 import com.lalilu.lplayer.playback.impl.MixPlayback
@@ -28,8 +29,8 @@ object LPlayer {
             PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE
 
     val playback: Playback<Playable> by lazy { MixPlayback() }
-    val runtime: Runtime<Playable> by lazy { LRuntime() }
-    val controller: LController by lazy { LController(playback) }
+    val runtime: Runtime<Playable> by lazy { LRuntime { playback.playMode == PlayMode.ListRecycle } }
+    val controller: LController by lazy { LController(playback, runtime.queue) }
 
     val module = module {
         single { LocalPlayer(androidApplication()) }

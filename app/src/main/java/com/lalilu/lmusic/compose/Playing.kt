@@ -45,6 +45,7 @@ import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.extensions.QueueAction
 import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.ui.CLICK_PART_LEFT
 import com.lalilu.ui.CLICK_PART_MIDDLE
@@ -162,7 +163,7 @@ object Playing {
                             subTitle = "下一首播放",
                             imageData = item.imageSource
                         )
-                        playingVM.browser.addToNext(item.mediaId)
+                        QueueAction.AddToNext(item.mediaId).action()
                     }
 
                     ViewEvent.OnSwipeRight -> playingVM.browser.removeById(item.mediaId)

@@ -104,7 +104,7 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
         val uri = queue?.getUriFromItem(next) ?: return
 
         if (playMode == PlayMode.Shuffle) {
-            queue?.moveToPrevious(item = next)
+            queue?.moveToPrevious(id = next.mediaId)
         }
 
         onPlayInfoUpdate(next, PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, 0L)
@@ -231,7 +231,7 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
                 }
                 if (tempNextItem != null) {
                     if (playMode == PlayMode.Shuffle) {
-                        queue?.moveToPrevious(item = tempNextItem!!)
+                        queue?.moveToPrevious(id = tempNextItem!!.mediaId)
                     }
                     onPlayInfoUpdate(
                         item = tempNextItem,

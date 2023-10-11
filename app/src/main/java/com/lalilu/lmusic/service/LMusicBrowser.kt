@@ -10,8 +10,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
-import com.lalilu.lplayer.extensions.action
-import com.lalilu.lplayer.extensions.getNextOf
+import com.lalilu.lplayer.extensions.QueueAction
 
 class LMusicBrowser(
     private val context: Context,
@@ -24,17 +23,6 @@ class LMusicBrowser(
             MediaBrowserCompat.ConnectionCallback(),
             null
         )
-    }
-
-    fun setSongs(songs: List<LSong>, song: LSong? = null) {
-        setSongs(mediaIds = songs.map { it.id }, mediaId = song?.id)
-    }
-
-    fun setSongs(mediaIds: List<String>, mediaId: String? = null) {
-        LPlayer.runtime.queue.setIds(mediaIds)
-        if (mediaIds.contains(mediaId)) {
-            LPlayer.runtime.queue.setCurrentId(mediaId)
-        }
     }
 
     override fun onStart(owner: LifecycleOwner) {
@@ -53,42 +41,33 @@ class LMusicBrowser(
     fun skipToPrevious() = PlayerAction.SkipToPrevious.action()
     fun playById(id: String) = PlayerAction.PlayById(id).action()
     fun seekTo(position: Number) = PlayerAction.SeekTo(position.toLong()).action()
-
-    fun addToNext(mediaId: String): Boolean {
-        val nowIndex = LPlayer.runtime.queue.items.indexOf(mediaId)
-        val currentIndex = LPlayer.runtime.queue.items.indexOf(LPlayer.runtime.queue.playingId)
-        if (currentIndex >= 0 && (currentIndex == nowIndex || (currentIndex + 1) == nowIndex))
-            return false
-
-        if (nowIndex >= 0) {
-            LPlayer.runtime.queue.moveByIndex(nowIndex, currentIndex)
-        } else {
-            LPlayer.runtime.queue.addToIndex(currentIndex + 1, mediaId)
-        }
-        return true
-    }
-
+    fun addToNext(mediaId: String): Boolean = QueueAction.AddToNext(mediaId).action()
     fun removeById(mediaId: String): Boolean {
         return try {
-            val playingId = LPlayer.runtime.queue.playingId
+            val playingId = LPlayer.runtime.queue.getCurrentId()
 
             if (mediaId == playingId) {
-                val nextId = LPlayer.runtime.queue.items.getNextOf(playingId, true)
-                nextId?.let {
-                    LPlayer.runtime.queue.setCurrentId(it)
-                    playById(it)
-                }
+                LPlayer.runtime.queue.getNextId()
+                    ?.run { PlayerAction.SkipToNext.action() }
             }
-            LPlayer.runtime.queue.removeById(mediaId)
+            QueueAction.Remove(mediaId).action()
             true
         } catch (e: Exception) {
             false
         }
     }
 
+    fun setSongs(mediaIds: List<String>, mediaId: String? = null) {
+        val queue = LPlayer.runtime.queue
+        queue.setIds(mediaIds)
+        if (mediaIds.contains(mediaId)) {
+            queue.setCurrentId(mediaId)
+        }
+    }
+
     private fun reloadItems() {
         // 若当前播放列表不为空，则不尝试提取历史数据填充
-        if (LPlayer.runtime.queue.items.isNotEmpty()) {
+        if (LPlayer.runtime.queue.getIds().isNotEmpty()) {
             return
         }
 
@@ -103,7 +82,7 @@ class LMusicBrowser(
 
         LMedia.whenReady {
             val songs = LMedia.get<LSong>()
-            setSongs(songs, songs.getOrNull(0))
+            setSongs(mediaIds = songs.map { it.id }, mediaId = songs.getOrNull(0)?.id)
         }
     }
 }

@@ -55,7 +55,7 @@ class PlayingViewModel(
         }
 
         when {
-            mediaId == LPlayer.runtime.queue.playingId && playOrPause -> {
+            mediaId == LPlayer.runtime.queue.getCurrentId() && playOrPause -> {
                 browser.playOrPause()
             }
 

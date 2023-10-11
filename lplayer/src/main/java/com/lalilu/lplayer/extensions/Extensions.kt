@@ -8,10 +8,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.LruCache
 import androidx.annotation.IntRange
-import com.lalilu.lplayer.LPlayer
 import java.net.URLDecoder
-
-fun PlayerAction.action(): Boolean = LPlayer.controller.doAction(this)
 
 object PlayerVolumeHelper {
     private var maxVolume: Float = 1f

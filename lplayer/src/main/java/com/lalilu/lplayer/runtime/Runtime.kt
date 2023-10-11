@@ -1,14 +1,14 @@
 package com.lalilu.lplayer.runtime
 
 import com.lalilu.common.base.Playable
-import com.lalilu.lplayer.playback.IdBaseQueue
+import com.lalilu.lplayer.playback.UpdatableQueue
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.Timer
 import kotlin.concurrent.schedule
 
 interface Runtime<T> {
     val info: RuntimeInfo
-    val queue: IdBaseQueue<T>
+    val queue: UpdatableQueue<T>
     var source: ItemSource<T>?
 }
 
