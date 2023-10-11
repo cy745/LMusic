@@ -20,15 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.extensions.action
-import com.lalilu.lplayer.runtime.NewRuntime
+import kotlinx.coroutines.flow.Flow
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    sentences: Flow<List<VitsSentence>>,
+) {
     val imageApi =
         remember { "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis() / 30000}" }
-    val sentence by VitsProvider.sentence.collectAsState(emptyList())
+    val sentence by sentences.collectAsState(emptyList())
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -52,8 +55,8 @@ fun MainScreen() {
                     Text(text = it.subTitle, style = MaterialTheme.typography.subtitle2)
                     Text(text = it.targetUri.toString(), style = MaterialTheme.typography.body2)
                     TextButton(onClick = {
-                        NewRuntime.queue.setCurrentId(it.mediaId)
-                        NewRuntime.queue.setIds(sentence.map { it.mediaId })
+                        LPlayer.runtime.queue.setCurrentId(it.mediaId)
+                        LPlayer.runtime.queue.setIds(sentence.map { it.mediaId })
                         PlayerAction.PlayById(it.mediaId).action()
                     }) {
                         Text(text = "播放")

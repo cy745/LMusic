@@ -11,7 +11,6 @@ import android.os.Build
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import com.lalilu.common.base.Playable
 import dalvik.system.PathClassLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -77,14 +76,14 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
 
     fun requireProviderFromExtensions(): List<Provider> {
         return extensionsFlow.value
-            .mapNotNull { it as? ExtensionLoadResult.Ready }
-            .mapNotNull { it.extension.getPlayableProvider() }
+            .filterIsInstance<ExtensionLoadResult.Ready>()
+            .mapNotNull { runCatching { it.extension.getProvider() }.getOrNull() }
     }
 
     fun requireProviderFlowFromExtensions(): Flow<List<Provider>> {
         return extensionsFlow.mapLatest { list ->
             list.filterIsInstance<ExtensionLoadResult.Ready>()
-                .mapNotNull { it.extension.getPlayableProvider() }
+                .mapNotNull { runCatching { it.extension.getProvider() }.getOrNull() }
         }
     }
 
@@ -123,7 +122,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         scope: CoroutineScope,
         classes: List<String>,
         packageInfo: PackageInfo,
-        classLoader: ClassLoader
+        classLoader: ClassLoader,
     ): List<Deferred<ExtensionLoadResult>> {
         return classes.map { className ->
             scope.async {
@@ -159,7 +158,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
     private fun loadSharedExtensions(
         scope: CoroutineScope,
         context: Context,
-        packageInfo: PackageInfo
+        packageInfo: PackageInfo,
     ): List<Deferred<ExtensionLoadResult>> {
         return runCatching {
             val classLoader = ExtensionClassLoader(
@@ -180,7 +179,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
     private fun loadHostExtensions(
         scope: CoroutineScope,
         context: Context,
-        packageInfo: PackageInfo
+        packageInfo: PackageInfo,
     ): List<Deferred<ExtensionLoadResult>> {
         return runCatching {
             val classes = getExtensionListByReflection(context.classLoader)
@@ -194,7 +193,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
     }
 
     private fun getExtensionListFromMeta(
-        packageInfo: PackageInfo
+        packageInfo: PackageInfo,
     ): List<String> {
         val packageName = packageInfo.packageName
         val appInfo = packageInfo.applicationInfo
@@ -209,7 +208,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
     }
 
     private fun getExtensionListByReflection(
-        classLoader: ClassLoader
+        classLoader: ClassLoader,
     ): List<String> {
         return runCatching {
             val targetClass = EXTENSION_SOURCES_CLASS
@@ -226,7 +225,7 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
 
     private class ExtensionClassLoader(
         dexPath: String,
-        parent: ClassLoader
+        parent: ClassLoader,
     ) : PathClassLoader(dexPath, null, parent) {
         override fun loadClass(name: String, resolve: Boolean): Class<*> =
             runCatching { findClass(name) }.getOrElse {
