@@ -29,7 +29,7 @@ object LPlayer {
 
     val playback: Playback<Playable> by lazy { MixPlayback() }
     val runtime: Runtime<Playable> by lazy { LRuntime() }
-    val controller: LController by lazy { LController { playback } }
+    val controller: LController by lazy { LController(playback) }
 
     val module = module {
         single { LocalPlayer(androidApplication()) }

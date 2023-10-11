@@ -5,11 +5,10 @@ import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.playback.Playback
 
 class LController(
-    private val playbackFunc: () -> Playback<Playable>,
+    private val playback: Playback<Playable>,
 ) {
 
     fun doAction(action: PlayerAction): Boolean {
-        val playback = playbackFunc()
         if (!playback.readyToUse()) return false
 
         playback.apply {

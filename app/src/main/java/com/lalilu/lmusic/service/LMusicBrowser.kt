@@ -5,7 +5,6 @@ import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.LastPlayedSp
@@ -22,7 +21,7 @@ class LMusicBrowser(
         MediaBrowserCompat(
             context,
             ComponentName(context, LMusicService::class.java),
-            ConnectionCallback(context),
+            MediaBrowserCompat.ConnectionCallback(),
             null
         )
     }
@@ -40,6 +39,7 @@ class LMusicBrowser(
 
     override fun onStart(owner: LifecycleOwner) {
         browser.connect()
+        reloadItems()
     }
 
     override fun onStop(owner: LifecycleOwner) {
@@ -86,33 +86,24 @@ class LMusicBrowser(
         }
     }
 
-    private inner class ConnectionCallback(val context: Context) :
-        MediaBrowserCompat.ConnectionCallback() {
-        override fun onConnected() {
-            LogUtils.i("MediaBrowser connected")
+    private fun reloadItems() {
+        // 若当前播放列表不为空，则不尝试提取历史数据填充
+        if (LPlayer.runtime.queue.items.isNotEmpty()) {
+            return
+        }
 
-            // 若当前播放列表不为空，则不尝试提取历史数据填充
-            if (LPlayer.runtime.queue.items.isNotEmpty()) {
-                return
-            }
+        val songIds by lastPlayedSp.lastPlayedListIdsKey
+        val lastPlayedIdKey by lastPlayedSp.lastPlayedIdKey
 
-            val songIds by lastPlayedSp.lastPlayedListIdsKey
-            val lastPlayedIdKey by lastPlayedSp.lastPlayedIdKey
+        // 存在历史记录
+        if (songIds.isNotEmpty()) {
+            setSongs(songIds, lastPlayedIdKey)
+            return
+        }
 
-            // 存在历史记录
-            if (songIds.isNotEmpty()) {
-                LMedia.whenReady {
-                    val songs = LMedia.mapBy<LSong>(songIds)
-                    val song = LMedia.get<LSong>(lastPlayedIdKey)
-                    setSongs(songs, song)
-                }
-                return
-            }
-
-            LMedia.whenReady {
-                val songs = LMedia.get<LSong>()
-                setSongs(songs, songs.getOrNull(0))
-            }
+        LMedia.whenReady {
+            val songs = LMedia.get<LSong>()
+            setSongs(songs, songs.getOrNull(0))
         }
     }
 }
