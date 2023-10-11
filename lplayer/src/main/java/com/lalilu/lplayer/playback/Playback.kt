@@ -1,19 +1,22 @@
 package com.lalilu.lplayer.playback
 
+import android.support.v4.media.session.MediaSessionCompat
+import com.lalilu.lplayer.extensions.AudioFocusHelper
 import com.lalilu.lplayer.extensions.PlayerAction
 
-interface Playback<T> {
-    var playbackListener: Listener<T>?
-    var queue: UpdatableQueue<T>?
-    var player: Player?
-    var playMode: PlayMode
+abstract class Playback<T> : MediaSessionCompat.Callback() {
+    abstract var audioFocusHelper: AudioFocusHelper?
+    abstract var playbackListener: Listener<T>?
+    abstract var queue: UpdatableQueue<T>?
+    abstract var player: Player?
+    abstract var playMode: PlayMode
 
-    fun readyToUse(): Boolean
-    fun changeToPlayer(changeTo: Player)
-    fun setMaxVolume(volume: Int)
-    fun preloadNextItem()
-    fun destroy()
-    fun handleCustomAction(action: PlayerAction.CustomAction)
+    abstract fun readyToUse(): Boolean
+    abstract fun changeToPlayer(changeTo: Player)
+    abstract fun setMaxVolume(volume: Int)
+    abstract fun preloadNextItem()
+    abstract fun destroy()
+    abstract fun handleCustomAction(action: PlayerAction.CustomAction)
 
     interface Listener<T> {
         fun onPlayInfoUpdate(item: T?, playbackState: Int, position: Long)

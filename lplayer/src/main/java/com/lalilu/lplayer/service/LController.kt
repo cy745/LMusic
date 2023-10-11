@@ -1,22 +1,28 @@
 package com.lalilu.lplayer.service
 
+import com.lalilu.common.base.Playable
 import com.lalilu.lplayer.extensions.PlayerAction
-import com.lalilu.lplayer.playback.impl.MixPlayback
+import com.lalilu.lplayer.playback.Playback
 
-object LController {
+class LController(
+    private val playbackFunc: () -> Playback<Playable>,
+) {
 
     fun doAction(action: PlayerAction): Boolean {
-        if (!MixPlayback.readyToUse()) return false
+        val playback = playbackFunc()
+        if (!playback.readyToUse()) return false
 
-        when (action) {
-            PlayerAction.Play -> MixPlayback.onPlay()
-            PlayerAction.Pause -> MixPlayback.onPause()
-            PlayerAction.SkipToNext -> MixPlayback.onSkipToNext()
-            PlayerAction.SkipToPrevious -> MixPlayback.onSkipToPrevious()
-            is PlayerAction.PlayById -> MixPlayback.onPlayFromMediaId(action.mediaId, null)
-            is PlayerAction.SeekTo -> MixPlayback.onSeekTo(action.positionMs)
-            is PlayerAction.CustomAction -> MixPlayback.onCustomAction(action.name, null)
-            else -> return false
+        playback.apply {
+            when (action) {
+                PlayerAction.Play -> onPlay()
+                PlayerAction.Pause -> onPause()
+                PlayerAction.SkipToNext -> onSkipToNext()
+                PlayerAction.SkipToPrevious -> onSkipToPrevious()
+                is PlayerAction.PlayById -> onPlayFromMediaId(action.mediaId, null)
+                is PlayerAction.SeekTo -> onSeekTo(action.positionMs)
+                is PlayerAction.CustomAction -> onCustomAction(action.name, null)
+                else -> return false
+            }
         }
         return true
     }

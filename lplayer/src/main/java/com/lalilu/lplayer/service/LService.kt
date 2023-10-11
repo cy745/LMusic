@@ -25,8 +25,6 @@ import com.lalilu.lplayer.notification.Notifier
 import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.playback.Playback
 import com.lalilu.lplayer.playback.impl.LocalPlayer
-import com.lalilu.lplayer.playback.impl.MixPlayback
-import com.lalilu.lplayer.runtime.NewRuntime
 import com.lalilu.lplayer.runtime.Runtime
 import org.koin.android.ext.android.inject
 
@@ -47,9 +45,9 @@ abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.
     }
 
     private lateinit var mediaSession: MediaSessionCompat
-    protected lateinit var playback: MixPlayback
+    protected lateinit var playback: Playback<Playable>
 
-    private val runtime: Runtime<Playable> = NewRuntime
+    private val runtime: Runtime<Playable> = LPlayer.runtime
     private val notifier: Notifier by inject()
     private val localPlayer: LocalPlayer by inject()
     private val audioFocusHelper: AudioFocusHelper by inject()
@@ -67,8 +65,8 @@ abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.
         registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         if (!this::playback.isInitialized) {
             runtime.info.getPosition = localPlayer::getPosition
-            playback = MixPlayback.apply {
-                setAudioFocusHelper(audioFocusHelper)
+            playback = LPlayer.playback.apply {
+                audioFocusHelper = this@LService.audioFocusHelper
                 playbackListener = this@LService
                 queue = runtime.queue
                 player = localPlayer

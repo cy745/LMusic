@@ -1,28 +1,42 @@
 package com.lalilu.extension_core
 
-import androidx.annotation.Keep
 import com.lalilu.common.base.Playable
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 
 /**
- * @TODO 待确定，非最终结构
+ * 宿主端需要随时能获取到插件端的内容，
+ * 并且插件端需要能主动更新自己提供的内容，所以使用Flow进行串联
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 interface Provider {
 
+    /**
+     * 用于外部判断是否此Provider是否适用于该传入的ID
+     */
     fun isSupported(mediaId: String): Boolean
 
     /**
-     * 插件端若需要进行播放，需要将自己的内容提供给宿主端，
-     * 宿主端需要能通过mediaId获取到插件提供的内容，以便进行播放
-     *
-     * @param mediaId String 由插件端定义并提供的媒体内容的ID，
-     *
-     * NOTE: 需要确保该ID全局唯一，否则可能造成播放内容混乱
+     * 传入Id，获取指定的Playable
      */
-    @Keep
-    fun getPlayableByMediaId(mediaId: String): Playable?
+    fun getById(mediaId: String): Playable?
 
-    fun getPlayableFlowByMediaId(mediaId: String): Flow<Playable?>
+    /**
+     * 传入Id，获取指定的Playable
+     */
+    fun getFlowById(mediaId: String): Flow<Playable?>
 
-    fun getPlayableFlowByMediaIds(mediaIds: List<String>): Flow<List<Playable>>
+    /**
+     * 传入一系列Id，获取List<Playable>
+     *
+     * NOTE: 可重写以简化获取List的逻辑
+     */
+    fun getFlowByIds(mediaIds: List<String>): Flow<List<Playable>> {
+        val flowList = mediaIds.map { getFlowById(it) }
+        return flowOf(flowList)
+            .flatMapLatest { list -> combine(list) { songs -> songs.mapNotNull { it } } }
+    }
 }

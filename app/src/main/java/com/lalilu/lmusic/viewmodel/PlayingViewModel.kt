@@ -11,7 +11,7 @@ import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.ExtendRuntime
 import com.lalilu.lmusic.service.LMusicBrowser
 import com.lalilu.lmusic.utils.extension.toState
-import com.lalilu.lplayer.runtime.NewRuntime
+import com.lalilu.lplayer.LPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -24,7 +24,7 @@ class PlayingViewModel(
     val lyricRepository: LyricRepository,
 ) : ViewModel() {
     private val playing = runtime.playingFlow.toState(viewModelScope)
-    private val isPlaying = NewRuntime.info.isPlayingFlow.toState(false, viewModelScope)
+    private val isPlaying = LPlayer.runtime.info.isPlayingFlow.toState(false, viewModelScope)
 
     fun play(
         song: LSong,
@@ -55,7 +55,7 @@ class PlayingViewModel(
         }
 
         when {
-            mediaId == NewRuntime.queue.playingId && playOrPause -> {
+            mediaId == LPlayer.runtime.queue.playingId && playOrPause -> {
                 browser.playOrPause()
             }
 

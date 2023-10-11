@@ -3,23 +3,28 @@ package com.lalilu.lplayer.playback.impl
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.lalilu.common.base.Playable
 import com.lalilu.lplayer.extensions.AudioFocusHelper
+import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.playback.Playback
 import com.lalilu.lplayer.playback.Player
 import com.lalilu.lplayer.playback.PlayerEvent
-import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.playback.UpdatableQueue
 
-object MixPlayback : MediaSessionCompat.Callback(), Playback<Playable>,
-    Playback.Listener<Playable>, Player.Listener {
-    private var audioFocusHelper: AudioFocusHelper? = null
-    override var playbackListener: Playback.Listener<Playable>? = null
+class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Listener {
+    override var playbackListener: Listener<Playable>? = null
     override var queue: UpdatableQueue<Playable>? = null
-    override var playMode: PlayMode = PlayMode.ListRecycle
+    override var audioFocusHelper: AudioFocusHelper? = null
+        set(value) {
+            field = value
+            value ?: return
+            value.onPlay = ::onPlay
+            value.onPause = ::onPause
+            value.isPlaying = { player?.isPlaying ?: false }
+        }
+
     override var player: Player? = null
         set(value) {
             field = value
@@ -29,24 +34,22 @@ object MixPlayback : MediaSessionCompat.Callback(), Playback<Playable>,
                 audioFocusHelper == null || audioFocusHelper?.request() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
             }
         }
-
-    fun setAudioFocusHelper(audioFocusHelper: AudioFocusHelper) {
-        this.audioFocusHelper = audioFocusHelper
-        audioFocusHelper.onPlay = ::onPlay
-        audioFocusHelper.onPause = ::onPause
-        audioFocusHelper.isPlaying = { player?.isPlaying ?: false }
-    }
+    override var playMode: PlayMode = PlayMode.ListRecycle
+        set(value) {
+            field = value
+            onSetPlayMode(value)
+        }
 
     override fun readyToUse(): Boolean {
         return queue != null && player != null
     }
 
     override fun onSetShuffleMode(shuffleMode: Int) {
-        onSetPlayMode(PlayMode.of(playMode.repeatMode, shuffleMode))
+        playMode = PlayMode.of(playMode.repeatMode, shuffleMode)
     }
 
     override fun onSetRepeatMode(repeatMode: Int) {
-        onSetPlayMode(PlayMode.of(repeatMode, playMode.shuffleMode))
+        playMode = PlayMode.of(repeatMode, playMode.shuffleMode)
     }
 
     override fun changeToPlayer(changeTo: Player) {
@@ -165,8 +168,6 @@ object MixPlayback : MediaSessionCompat.Callback(), Playback<Playable>,
                 player?.isPrepared = false
                 onPlay()
             }
-
-            else -> Unit
         }
     }
 
@@ -263,7 +264,6 @@ object MixPlayback : MediaSessionCompat.Callback(), Playback<Playable>,
     }
 
     override fun onSetPlayMode(playMode: PlayMode) {
-        this.playMode = playMode
         playbackListener?.onSetPlayMode(playMode)
     }
 

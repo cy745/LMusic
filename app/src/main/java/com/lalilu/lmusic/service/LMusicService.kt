@@ -36,7 +36,7 @@ class LMusicService : LService() {
                 }
             playMode.flow(true)
                 .collectWithLifeCycleOwner(this@LMusicService) {
-                    it?.let { playback.onSetPlayMode(PlayMode.of(it)) }
+                    it?.let { playback.playMode = PlayMode.of(it) }
                 }
             ignoreAudioFocus.flow(true)
                 .collectWithLifeCycleOwner(this@LMusicService) {

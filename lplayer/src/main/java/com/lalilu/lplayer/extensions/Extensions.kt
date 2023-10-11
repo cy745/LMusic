@@ -8,10 +8,10 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.LruCache
 import androidx.annotation.IntRange
-import com.lalilu.lplayer.service.LController
+import com.lalilu.lplayer.LPlayer
 import java.net.URLDecoder
 
-fun PlayerAction.action(): Boolean = LController.doAction(this)
+fun PlayerAction.action(): Boolean = LPlayer.controller.doAction(this)
 
 object PlayerVolumeHelper {
     private var maxVolume: Float = 1f
@@ -50,7 +50,7 @@ fun MediaPlayer.setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
 
 fun MediaPlayer.fadeStart(
     duration: Long = 500L,
-    onFinished: () -> Unit = {}
+    onFinished: () -> Unit = {},
 ) = synchronized(this) {
     val sessionId = audioSessionId
     PlayerVolumeHelper.cancelTimer(sessionId)
@@ -85,7 +85,7 @@ fun MediaPlayer.fadeStart(
 
 fun MediaPlayer.fadePause(
     duration: Long = 500L,
-    onFinished: () -> Unit = {}
+    onFinished: () -> Unit = {},
 ) = synchronized(this) {
     val sessionId = audioSessionId
     PlayerVolumeHelper.cancelTimer(sessionId)

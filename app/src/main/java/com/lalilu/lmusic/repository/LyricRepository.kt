@@ -11,7 +11,7 @@ import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.LyricSourceFactory
 import com.lalilu.lmusic.utils.extension.findShowLine
-import com.lalilu.lplayer.runtime.NewRuntime
+import com.lalilu.lplayer.LPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,10 +27,10 @@ import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class LyricRepository(
-    private val lyricSource: LyricSourceFactory
+    private val lyricSource: LyricSourceFactory,
 ) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-    val runtime = NewRuntime
+    val runtime = LPlayer.runtime
 
     @Composable
     fun rememberHasLyric(playable: Playable): State<Boolean> {

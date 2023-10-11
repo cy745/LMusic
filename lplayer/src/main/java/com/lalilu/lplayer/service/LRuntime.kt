@@ -1,16 +1,20 @@
-package com.lalilu.lplayer.runtime
+package com.lalilu.lplayer.service
 
 import android.net.Uri
 import com.lalilu.common.base.Playable
+import com.lalilu.lplayer.playback.IdBaseQueue
+import com.lalilu.lplayer.runtime.ItemSource
+import com.lalilu.lplayer.runtime.Runtime
+import com.lalilu.lplayer.runtime.RuntimeInfo
 
-object NewRuntime : Runtime<Playable> {
+class LRuntime internal constructor() : Runtime<Playable> {
     override var source: ItemSource<Playable>? = null
     override val info: RuntimeInfo = RuntimeInfo()
     override val queue: IdBaseQueue<Playable> = RuntimeQueueWithInfo(info) { source }
 
     private class RuntimeQueueWithInfo(
         private val info: RuntimeInfo,
-        private val source: () -> ItemSource<Playable>?
+        private val source: () -> ItemSource<Playable>?,
     ) : IdBaseQueue<Playable>() {
         override var playingId: String?
             get() = info.playingIdFlow.value
