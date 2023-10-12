@@ -53,7 +53,7 @@ fun AlbumsScreen(
     settingsSp: SettingsSp = get(),
     playingVM: PlayingViewModel = get(),
     albumsVM: AlbumsViewModel = get(),
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
 ) {
     val albums by albumsVM.albums
     val currentPlaying by playingVM.runtime.playingFlow.collectAsState(null)
@@ -183,12 +183,18 @@ fun AlbumsScreen(
                     }
                 }
             }
-            items(items = albums, key = { it.id }, contentType = { LAlbum::class }) {
+            items(items = albums, key = { it.id }, contentType = { LAlbum::class }) { item ->
                 AlbumCard(
-                    album = { it },
-                    isPlaying = { playingVM.isAlbumPlaying(it.id) },
+                    album = { item },
+                    isPlaying = {
+                        playingVM.isItemPlaying { playing ->
+                            playing.let { it as? LSong }
+                                ?.let { it.album?.id == item.id }
+                                ?: false
+                        }
+                    },
                     showTitle = { showTitleState.value },
-                    onClick = { navigator.navigate(AlbumDetailScreenDestination(it.id)) }
+                    onClick = { navigator.navigate(AlbumDetailScreenDestination(item.id)) }
                 )
             }
         }

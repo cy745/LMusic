@@ -44,17 +44,18 @@ import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.common.base.Playable
-import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.playback.PlayMode
 import org.koin.androidx.compose.get
 
 @Composable
 fun ShowScreen(
-    playingVM: PlayingViewModel = get()
+    playingVM: PlayingViewModel = get(),
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
@@ -166,7 +167,7 @@ fun BoxScope.BlurImageBg(playable: Playable?) {
 
 @Composable
 fun SongDetailPanel(
-    playable: Playable?
+    playable: Playable?,
 ) {
     if (playable == null) {
         Text(
@@ -200,7 +201,7 @@ fun SongDetailPanel(
 
 @Composable
 fun ControlPanel(
-    playingVM: PlayingViewModel = get()
+    playingVM: PlayingViewModel = get(),
 ) {
     val isPlaying = LPlayer.runtime.info.isPlayingFlow.collectAsState(false)
     var playMode by playingVM.settingsSp.playMode
@@ -209,7 +210,7 @@ fun ControlPanel(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        IconButton(onClick = { playingVM.browser.play() }) {
+        IconButton(onClick = { PlayerAction.SkipToPrevious.action() }) {
             Image(
                 painter = painterResource(id = R.drawable.ic_skip_previous_line),
                 contentDescription = "skip_back",
@@ -219,7 +220,7 @@ fun ControlPanel(
         IconToggleButton(
             checked = isPlaying.value,
             onCheckedChange = {
-                playingVM.browser.playOrPause()
+                PlayerAction.PlayOrPause.action()
             }
         ) {
             Image(
@@ -230,7 +231,7 @@ fun ControlPanel(
                 modifier = Modifier.size(28.dp)
             )
         }
-        IconButton(onClick = { playingVM.browser.skipToNext() }) {
+        IconButton(onClick = { PlayerAction.SkipToNext.action() }) {
             Image(
                 painter = painterResource(id = R.drawable.ic_skip_next_line),
                 contentDescription = "skip_forward",

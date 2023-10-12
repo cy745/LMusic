@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowRow
+import com.lalilu.common.base.Playable
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -66,6 +67,7 @@ import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.lalilu.lmusic.viewmodel.SongDetailViewModel
+import com.lalilu.lplayer.extensions.QueueAction
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.androidx.compose.get
@@ -118,7 +120,7 @@ fun SongDetailScreen(
 
     SmartBar.RegisterExtraBarContent(showActionBar) {
         SongDetailActionsBar(
-            isPlaying = { playingVM.isSongPlaying(song.id) },
+            isPlaying = { playingVM.isItemPlaying(song.id, Playable::mediaId) },
             getIsLiked = { isLiked },
             onIsLikedChange = {
                 if (it) playlistsVM.addToFavorite(song) else playlistsVM.removeFromFavorite(song)
@@ -132,7 +134,7 @@ fun SongDetailScreen(
                     subTitle = "下一首播放",
                     imageData = song
                 )
-                playingVM.browser.addToNext(song.id)
+                QueueAction.AddToNext(song.mediaId).action()
             },
             onPlayOrPause = {
                 playingVM.play(

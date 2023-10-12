@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.compose.new_screen
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
+import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.GroupRule
@@ -72,7 +72,7 @@ fun SongsScreen(
     songsVM: SongsViewModel = get(),
     playingVM: PlayingViewModel = get(),
     historyVM: HistoryViewModel = get(),
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
 ) {
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
@@ -158,7 +158,8 @@ fun SongsScreen(
                                 if (!skip) {
                                     index += 1
                                 }
-                                val tempIndex = list.indexOfFirst { it.id == currentPlaying!!.mediaId }
+                                val tempIndex =
+                                    list.indexOfFirst { it.id == currentPlaying!!.mediaId }
                                 if (tempIndex != -1) {
                                     index += tempIndex
                                     gridState.scrollToItem(index)
@@ -196,11 +197,11 @@ fun SongsScreen(
             state = gridState,
             songsState = songsState,
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
-            isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
+            isItemPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) },
             onClickItem = {
                 playingVM.play(
-                    song = it,
-                    songs = songsState.values.flatten(),
+                    mediaId = it.mediaId,
+                    mediaIds = songsState.values.flatten().map(Playable::mediaId),
                     playOrPause = true
                 )
             },
@@ -254,7 +255,7 @@ fun SortPanelWrapper(
     supportGroupRules: () -> List<GroupRule>,
     supportSortRules: () -> List<SortRule>,
     supportOrderRules: () -> List<OrderRule>,
-    content: @Composable (sortRuleStr: State<String>) -> Unit
+    content: @Composable (sortRuleStr: State<String>) -> Unit,
 ) {
     val sortRule = settingsSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
     val orderRule = settingsSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.Normal.name)
@@ -295,7 +296,7 @@ fun SongListWrapper(
     isItemPlaying: (LSong) -> Boolean = { false },
     showPrefixContent: () -> Boolean = { false },
     prefixContent: @Composable (item: LSong) -> Unit = {},
-    headerContent: LazyGridScope.() -> Unit
+    headerContent: LazyGridScope.() -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
 

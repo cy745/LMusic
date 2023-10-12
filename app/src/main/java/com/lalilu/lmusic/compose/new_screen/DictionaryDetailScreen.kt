@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
+import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
@@ -46,7 +47,7 @@ fun DictionaryDetailScreen(
     playingVM: PlayingViewModel = get(),
     dictionariesVM: DictionariesViewModel = get(),
     historyVM: HistoryViewModel = get(),
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
 ) {
     val dictionary = dictionariesVM.requireDictionary(dictionaryId) ?: run {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -141,7 +142,8 @@ fun DictionaryDetailScreen(
                                 if (!skip) {
                                     index += 1
                                 }
-                                val tempIndex = list.indexOfFirst { it.id == currentPlaying!!.mediaId }
+                                val tempIndex =
+                                    list.indexOfFirst { it.id == currentPlaying!!.mediaId }
                                 if (tempIndex != -1) {
                                     index += tempIndex
                                     gridState.scrollToItem(index)
@@ -178,13 +180,13 @@ fun DictionaryDetailScreen(
         SongListWrapper(
             state = gridState,
             songsState = songsState,
-            isItemPlaying = { playingVM.isSongPlaying(mediaId = it.id) },
+            isItemPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) },
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
             onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
             onClickItem = {
                 playingVM.play(
-                    song = it,
-                    songs = songsState.values.flatten(),
+                    mediaId = it.mediaId,
+                    mediaIds = songsState.values.flatten().map(Playable::mediaId),
                     playOrPause = true
                 )
             },

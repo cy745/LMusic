@@ -34,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
+import com.lalilu.common.base.Playable
 import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -143,7 +144,7 @@ fun HomeScreen(
                             addToNext = true
                         )
                     },
-                    isPlaying = { playingVM.isSongPlaying(it.id) }
+                    isPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) }
                 )
             }
         }
@@ -185,15 +186,15 @@ fun HomeScreen(
                         isSelected = { selectHelper.selectedItems.any { it.id == item.id } },
                         hasLyric = playingVM.lyricRepository.rememberHasLyric(playable = item),
                         onEnterSelect = { selectHelper.onSelected(item) },
-                        isPlaying = { playingVM.isSongPlaying(item.id) },
+                        isPlaying = { playingVM.isItemPlaying(item.id, Playable::mediaId) },
                         onClick = {
                             if (selectHelper.isSelecting.value) {
                                 selectHelper.onSelected(item)
                             } else {
                                 historyVM.requiteHistoryList {
                                     playingVM.play(
-                                        song = item,
-                                        songs = it,
+                                        mediaId = item.mediaId,
+                                        mediaIds = it.map(Playable::mediaId),
                                         playOrPause = true
                                     )
                                 }

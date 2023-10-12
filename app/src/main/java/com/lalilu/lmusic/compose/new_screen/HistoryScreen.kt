@@ -27,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
+import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartFloatBtns
@@ -48,7 +49,7 @@ import org.koin.androidx.compose.get
 fun HistoryScreen(
     historyVM: HistoryViewModel = get(),
     playingVM: PlayingViewModel = get(),
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
 ) {
     val haptic = LocalHapticFeedback.current
     val songs by historyVM.historyState
@@ -109,15 +110,15 @@ fun HistoryScreen(
                     duration = { item.durationMs },
                     hasLyric = { hasLyric.value },
                     imageData = { item },
-                    isPlaying = { playingVM.isSongPlaying(item.id) },
+                    isPlaying = { playingVM.isItemPlaying(item.id, Playable::mediaId) },
                     onClick = {
                         if (selector.isSelecting.value) {
                             selector.onSelected(item)
                         } else {
                             historyVM.requiteHistoryList {
                                 playingVM.play(
-                                    song = item,
-                                    songs = it,
+                                    mediaId = item.mediaId,
+                                    mediaIds = it.map(Playable::mediaId),
                                     playOrPause = true
                                 )
                             }

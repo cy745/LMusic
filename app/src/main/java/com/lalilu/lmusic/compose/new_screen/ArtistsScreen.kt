@@ -14,6 +14,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LArtist
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
@@ -42,7 +43,7 @@ fun ArtistsScreen(
     artistIdsText: String? = null,
     playingVM: PlayingViewModel = get(),
     artistsVM: ArtistsViewModel = get(),
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
 ) {
     val artists = artistsVM.artists
     val scope = rememberCoroutineScope()
@@ -177,7 +178,13 @@ fun ArtistsScreen(
                     index = index,
                     artistName = item.name,
                     songCount = item.requireItemsCount(),
-                    isPlaying = { playingVM.isArtistPlaying(item.name) },
+                    isPlaying = {
+                        playingVM.isItemPlaying { playing ->
+                            playing.let { it as? LSong }
+                                ?.let { song -> song.artists.any { it.name == item.name } }
+                                ?: false
+                        }
+                    },
                     onClick = { navigator.navigate(ArtistDetailScreenDestination(item.name)) }
                 )
             }

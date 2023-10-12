@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
+import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LPlaylist
@@ -67,7 +68,7 @@ import org.koin.compose.koinInject
 fun SearchScreen(
     playingVM: PlayingViewModel = koinInject(),
     searchVM: SearchViewModel = koinInject(),
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -125,7 +126,7 @@ fun SearchScreen(
                     navigator.navigate(SongDetailScreenDestination(item.id))
                 },
                 onEnterSelect = { selectHelper.onSelected(item) },
-                isPlaying = { playingVM.isSongPlaying(mediaId = item.id) },
+                isPlaying = { playingVM.isItemPlaying(item.id, Playable::mediaId) },
                 onClick = {
                     if (selectHelper.isSelecting.value) {
                         selectHelper.onSelected(item)
@@ -210,11 +211,17 @@ fun SearchScreen(
                     )
                 }
             }
-        ) {
+        ) { item ->
             ArtistCard(
-                artist = it,
-                isPlaying = { playingVM.isArtistPlaying(it.name) },
-                onClick = { navigator.navigate(ArtistDetailScreenDestination(artistName = it.name)) }
+                artist = item,
+                isPlaying = {
+                    playingVM.isItemPlaying { playing ->
+                        playing.let { it as? LSong }
+                            ?.let { song -> song.artists.any { it.name == item.name } }
+                            ?: false
+                    }
+                },
+                onClick = { navigator.navigate(ArtistDetailScreenDestination(artistName = item.name)) }
             )
         }
 

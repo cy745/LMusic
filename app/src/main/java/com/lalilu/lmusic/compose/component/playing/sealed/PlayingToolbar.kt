@@ -5,6 +5,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import com.lalilu.R
+import com.lalilu.common.base.Playable
 import com.lalilu.lmusic.compose.component.playing.PlayingHeader
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import org.koin.compose.koinInject
@@ -12,7 +13,7 @@ import org.koin.compose.koinInject
 
 @Composable
 fun PlayingToolbar(
-    playingVM: PlayingViewModel = koinInject()
+    playingVM: PlayingViewModel = koinInject(),
 ) {
     val song by playingVM.runtime.playingFlow.collectAsState(null)
     val defaultSloganStr = stringResource(id = R.string.default_slogan)
@@ -20,6 +21,8 @@ fun PlayingToolbar(
     PlayingHeader(
         title = { song?.title?.takeIf(String::isNotBlank) ?: defaultSloganStr },
         subTitle = { song?.subTitle ?: defaultSloganStr },
-        isPlaying = { song?.let { playingVM.isSongPlaying(mediaId = it.mediaId) } ?: false }
+        isPlaying = {
+            song?.let { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) } ?: false
+        }
     )
 }

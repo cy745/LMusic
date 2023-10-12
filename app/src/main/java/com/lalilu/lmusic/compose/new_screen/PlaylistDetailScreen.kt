@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
+import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -42,7 +43,7 @@ fun PlaylistDetailScreen(
     playingVM: PlayingViewModel = get(),
     playlistsVM: PlaylistsViewModel = get(),
     playlistDetailVM: PlaylistDetailViewModel = get(),
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
 ) {
     val haptic = LocalHapticFeedback.current
     val playlist = playlistDetailVM.playlist
@@ -106,8 +107,8 @@ fun PlaylistDetailScreen(
                                 selector.onSelected(item)
                             } else {
                                 playingVM.play(
-                                    song = item,
-                                    songs = playlistDetailVM.songs,
+                                    mediaId = item.mediaId,
+                                    mediaIds = playlistDetailVM.songs.map(Playable::mediaId),
                                     playOrPause = true
                                 )
                             }
@@ -118,7 +119,7 @@ fun PlaylistDetailScreen(
                             navigator.navigate(SongDetailScreenDestination(item.id))
                         },
                         onEnterSelect = { selector.onSelected(item) },
-                        isPlaying = { playingVM.isSongPlaying(item.id) },
+                        isPlaying = { playingVM.isItemPlaying(item.id, Playable::mediaId) },
                         isSelected = { isDragging || selector.selectedItems.any { it.id == item.id } }
                     )
                 }
