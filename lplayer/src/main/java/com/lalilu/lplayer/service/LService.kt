@@ -170,6 +170,7 @@ abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.
     }
 
     override fun onDestroy() {
+        runtime.info.updatePosition(startPosition = 0, isPlaying = false)
         registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         playback.destroy()
         localPlayer.destroy()

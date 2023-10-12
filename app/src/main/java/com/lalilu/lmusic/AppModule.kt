@@ -19,7 +19,7 @@ import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.ExtendRuntime
-import com.lalilu.lmusic.service.LMusicBrowser
+import com.lalilu.lmusic.service.LMusicServiceConnector
 import com.lalilu.lmusic.service.LMusicNotifier
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
@@ -76,7 +76,7 @@ val AppModule = module {
 }
 
 val ViewModelModule = module {
-    single { PlayingViewModel(get(), get(), get(), get()) }
+    single { PlayingViewModel(get(), get(), get()) }
     single { LibraryViewModel(get()) }
     single { LMediaViewModel(get()) }
     single { PlaylistDetailViewModel(get(), get()) }
@@ -95,7 +95,7 @@ val ViewModelModule = module {
 val RuntimeModule = module {
     single<Notifier> { LMusicNotifier(androidApplication(), get(), get(), get(), get()) }
     single { ExtendRuntime(get()) }
-    single { LMusicBrowser(get(), get()) }
+    single { LMusicServiceConnector(get(), get()) }
     single { CoverRepository(get()) }
     single { LyricRepository(get()) }
     single { LMediaRepository() }

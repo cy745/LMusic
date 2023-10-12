@@ -8,7 +8,7 @@ import com.lalilu.lplayer.playback.UpdatableQueue
 
 class LController(
     private val playback: Playback<Playable>,
-    private val queue: UpdatableQueue<Playable>
+    private val queue: UpdatableQueue<Playable>,
 ) {
     fun doAction(action: PlayerAction): Boolean {
         if (!playback.readyToUse()) return false
@@ -32,7 +32,14 @@ class LController(
         when (action) {
             QueueAction.Clear -> queue.setIds(emptyList())
             QueueAction.Shuffle -> queue.setIds(queue.getIds().shuffled())
-            is QueueAction.Remove -> queue.remove(action.id)
+            is QueueAction.Remove -> {
+                val mediaId = action.id
+                if (queue.getCurrentId() == mediaId) {
+                    playback.onSkipToNext()
+                }
+                queue.remove(mediaId)
+            }
+
             is QueueAction.AddToNext -> {
                 val mediaId = action.id
                 if (mediaId == queue.getCurrentId()) return false
@@ -44,6 +51,9 @@ class LController(
                 }
                 return false
             }
+
+            is QueueAction.UpdatePlaying -> queue.setCurrentId(action.id)
+            is QueueAction.UpdateList -> queue.setIds(action.ids)
         }
         return true
     }

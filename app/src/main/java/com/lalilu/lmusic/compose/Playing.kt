@@ -45,6 +45,7 @@ import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.extensions.QueueAction
 import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.ui.CLICK_PART_LEFT
@@ -166,7 +167,7 @@ object Playing {
                         QueueAction.AddToNext(item.mediaId).action()
                     }
 
-                    ViewEvent.OnSwipeRight -> playingVM.browser.removeById(item.mediaId)
+                    ViewEvent.OnSwipeRight -> QueueAction.Remove(item.mediaId).action()
                     ViewEvent.OnBind -> {
 
                     }
@@ -301,9 +302,9 @@ object Playing {
             override fun onClick(@ClickPart clickPart: Int, action: Int) {
                 HapticUtils.haptic(root)
                 when (clickPart) {
-                    CLICK_PART_LEFT -> playingVM.browser.skipToPrevious()
-                    CLICK_PART_MIDDLE -> playingVM.browser.playOrPause()
-                    CLICK_PART_RIGHT -> playingVM.browser.skipToNext()
+                    CLICK_PART_LEFT -> PlayerAction.SkipToPrevious.action()
+                    CLICK_PART_MIDDLE -> PlayerAction.PlayOrPause.action()
+                    CLICK_PART_RIGHT -> PlayerAction.SkipToNext.action()
                     else -> {
                     }
                 }
@@ -319,7 +320,7 @@ object Playing {
         })
 
         maSeekBar.seekToListeners.add(OnSeekBarSeekToListener { value ->
-            playingVM.browser.seekTo(value)
+            PlayerAction.SeekTo(value.toLong()).action()
         })
 
         maSeekBar.cancelListeners.add(OnSeekBarCancelListener {
