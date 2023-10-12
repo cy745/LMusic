@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
-import com.lalilu.lplayer.extensions.action
 import kotlinx.coroutines.flow.Flow
 
 @Composable

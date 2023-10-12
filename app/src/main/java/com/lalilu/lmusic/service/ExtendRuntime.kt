@@ -7,7 +7,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.utils.extension.moveHeadToTailWithSearch
 import com.lalilu.lplayer.LPlayer
-import com.lalilu.lplayer.runtime.PlayableSource
+import com.lalilu.lplayer.runtime.ItemSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,51 +25,58 @@ class ExtendRuntime(
 ) : CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO
-    val playingFlow: Flow<Playable?> = LPlayer.runtime.info.playingIdFlow.flatMapLatest { mediaId ->
-        LMedia.getFlow<LSong>(mediaId).flatMapLatest temp@{ playable ->
-            if (mediaId == null) return@temp flowOf(playable)
-            if (playable != null) return@temp flowOf(playable)
-
-            ExtensionManager.requireProviderFlowFromExtensions()
-                .flatMapLatest { providers ->
-                    providers.firstOrNull { it.isSupported(mediaId) }
-                        ?.getFlowById(mediaId)
-                        ?: flowOf(null)
-                }
-        }
-    }
-
-    val playableFlow: Flow<List<Playable>> = LPlayer.runtime.info.itemsFlow
-        .combine(LPlayer.runtime.info.playingIdFlow) { ids, id ->
-            id ?: return@combine ids
-            ids.moveHeadToTailWithSearch(id) { a, b -> a == b }
-        }
-        .flatMapLatest { mediaIds ->
-            val lMediaResult = LMedia.flowMapBy<LSong>(mediaIds)
-            val extensionResult = ExtensionManager.requireProviderFlowFromExtensions()
-                .flatMapLatest temp@{ providers ->
-                    if (providers.isEmpty()) return@temp flowOf<List<Playable>>(emptyList())
-
-                    val flows = providers.map { it.getFlowByIds(mediaIds) }
-                    combine(flows) { it.toList().flatten() }
-                }
-
-            combine(extensionResult, lMediaResult) { flowResult ->
-                flowResult.toList()
-                    .flatten()
-                    .filter { mediaIds.indexOf(it.mediaId) >= 0 }
-                    .sortedBy { mediaIds.indexOf(it.mediaId) }
-            }
-        }
+    val playingFlow: Flow<Playable?> = LPlayer.runtime.info.playingFlow
 
     init {
-        LPlayer.runtime.source = PlayableSource { mediaId ->
-            LMedia.get<LSong>(mediaId) ?: ExtensionManager
-                .requireProviderFromExtensions()
-                .firstNotNullOfOrNull { it.getById(mediaId) }
+        LPlayer.runtime.source = object : ItemSource<Playable> {
+            override fun getById(id: String): Playable? {
+                return LMedia.get<LSong>(id) ?: ExtensionManager
+                    .requireProviderFromExtensions()
+                    .firstNotNullOfOrNull { it.getById(id) }
+            }
+
+            override fun flowMapId(idFlow: Flow<String?>): Flow<Playable?> =
+                idFlow.flatMapLatest { mediaId ->
+                    LMedia.getFlow<LSong>(mediaId)
+                        .flatMapLatest temp@{ playable ->
+                            if (mediaId == null) return@temp flowOf(playable)
+                            if (playable != null) return@temp flowOf(playable)
+
+                            ExtensionManager.requireProviderFlowFromExtensions()
+                                .flatMapLatest { providers ->
+                                    providers.firstOrNull { it.isSupported(mediaId) }
+                                        ?.getFlowById(mediaId)
+                                        ?: flowOf(null)
+                                }
+                        }
+                }
+
+
+            override fun flowMapIds(idsFlow: Flow<List<String>>): Flow<List<Playable>> = idsFlow
+                .combine(LPlayer.runtime.info.playingIdFlow) { ids, id ->
+                    id ?: return@combine ids
+                    ids.moveHeadToTailWithSearch(id) { a, b -> a == b }
+                }
+                .flatMapLatest { mediaIds ->
+                    val lMediaResult = LMedia.flowMapBy<LSong>(mediaIds)
+                    val extensionResult = ExtensionManager.requireProviderFlowFromExtensions()
+                        .flatMapLatest temp@{ providers ->
+                            if (providers.isEmpty()) return@temp flowOf<List<Playable>>(emptyList())
+
+                            val flows = providers.map { it.getFlowByIds(mediaIds) }
+                            combine(flows) { it.toList().flatten() }
+                        }
+
+                    combine(extensionResult, lMediaResult) { flowResult ->
+                        flowResult.toList()
+                            .flatten()
+                            .filter { mediaIds.indexOf(it.mediaId) >= 0 }
+                            .sortedBy { mediaIds.indexOf(it.mediaId) }
+                    }
+                }
         }
 
-        LPlayer.runtime.info.itemsFlow
+        LPlayer.runtime.info.idsFlow
             .onEach { lastPlayedSp.lastPlayedListIdsKey.set(it) }
             .launchIn(this)
 

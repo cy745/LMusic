@@ -345,7 +345,7 @@ object Playing {
     ) {
         val activity = root.context.getActivity()!!
 
-        playingVM.runtime.playableFlow.collectWithLifeCycleOwner(activity) {
+        LPlayer.runtime.info.listFlow.collectWithLifeCycleOwner(activity) {
             adapter.setDiffData(it)
         }
         LPlayer.runtime.info.positionFlow.collectWithLifeCycleOwner(activity) {
