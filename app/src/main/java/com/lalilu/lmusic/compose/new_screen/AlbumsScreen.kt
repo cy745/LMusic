@@ -37,6 +37,7 @@ import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.AlbumsViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.LPlayer
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
@@ -56,7 +57,7 @@ fun AlbumsScreen(
     navigator: DestinationsNavigator,
 ) {
     val albums by albumsVM.albums
-    val currentPlaying by playingVM.runtime.playingFlow.collectAsState(null)
+    val currentPlaying by LPlayer.runtime.info.playingFlow.collectAsState(null)
 
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyStaggeredGridState()

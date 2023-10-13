@@ -8,6 +8,7 @@ import com.lalilu.R
 import com.lalilu.common.base.Playable
 import com.lalilu.lmusic.compose.component.playing.PlayingHeader
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.LPlayer
 import org.koin.compose.koinInject
 
 
@@ -15,7 +16,7 @@ import org.koin.compose.koinInject
 fun PlayingToolbar(
     playingVM: PlayingViewModel = koinInject(),
 ) {
-    val song by playingVM.runtime.playingFlow.collectAsState(null)
+    val song by LPlayer.runtime.info.playingFlow.collectAsState(null)
     val defaultSloganStr = stringResource(id = R.string.default_slogan)
 
     PlayingHeader(

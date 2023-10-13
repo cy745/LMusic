@@ -351,7 +351,7 @@ object Playing {
         LPlayer.runtime.info.positionFlow.collectWithLifeCycleOwner(activity) {
             maSeekBar.updateValue(it.toFloat())
         }
-        playingVM.runtime.playingFlow.collectWithLifeCycleOwner(activity) { playable ->
+        LPlayer.runtime.info.playingFlow.collectWithLifeCycleOwner(activity) { playable ->
             maSeekBar.maxValue = playable?.durationMs?.takeIf { it > 0f }?.toFloat() ?: 0f
             fmTopPic.loadCover(playable)
 

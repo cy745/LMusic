@@ -37,6 +37,7 @@ import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
+import com.lalilu.lplayer.LPlayer
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
@@ -59,7 +60,7 @@ fun AlbumDetailScreen(
         return
     }
 
-    val currentPlaying by playingVM.runtime.playingFlow.collectAsState(null)
+    val currentPlaying by LPlayer.runtime.info.playingFlow.collectAsState(null)
     val scope = rememberCoroutineScope()
     val showSortPanel = remember { mutableStateOf(false) }
     val songsState by songsVM.songsState

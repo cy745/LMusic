@@ -28,6 +28,7 @@ import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDesti
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.ArtistsViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.LPlayer
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
@@ -49,7 +50,7 @@ fun ArtistsScreen(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val showPanelState = remember { mutableStateOf(false) }
-    val currentPlaying by playingVM.runtime.playingFlow.collectAsState(null)
+    val currentPlaying by LPlayer.runtime.info.playingFlow.collectAsState(null)
 
     val scrollProgress = remember(listState) {
         derivedStateOf {

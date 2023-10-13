@@ -66,7 +66,7 @@ fun ShowScreen(
     }
 
     if (visible) {
-        val song by playingVM.runtime.playingFlow.collectAsState(null)
+        val song by LPlayer.runtime.info.playingFlow.collectAsState(null)
 
         Box(
             modifier = Modifier

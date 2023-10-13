@@ -28,6 +28,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.compose.component.settings.FileSelectWrapper
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.LPlayer
 import org.koin.compose.koinInject
 
 @Composable
@@ -37,7 +38,7 @@ fun LyricViewToolbar(
 ) {
     var isDrawTranslation by settingsSp.isDrawTranslation
     var isEnableBlurEffect by settingsSp.isEnableBlurEffect
-    val song by playingVM.runtime.playingFlow.collectAsState(null)
+    val song by LPlayer.runtime.info.playingFlow.collectAsState(null)
 
     Row(
         modifier = Modifier

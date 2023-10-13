@@ -34,6 +34,7 @@ import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
+import com.lalilu.lplayer.LPlayer
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
@@ -59,7 +60,7 @@ fun DictionaryDetailScreen(
     val sortFor = remember { "DictionaryDetail" }
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
-    val currentPlaying by playingVM.runtime.playingFlow.collectAsState(null)
+    val currentPlaying by LPlayer.runtime.info.playingFlow.collectAsState(null)
 
     val showSortPanel = remember { mutableStateOf(false) }
     val scrollProgress = remember(gridState) {
