@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
 import com.lalilu.common.base.Playable
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.GroupRule
@@ -61,7 +62,7 @@ import com.lalilu.lplayer.LPlayer
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @HomeNavGraph
 @Destination
@@ -70,9 +71,9 @@ fun SongsScreen(
     title: String = "全部歌曲",
     sortFor: String = Sortable.SORT_FOR_SONGS,
     mediaIdsText: String? = null,
-    songsVM: SongsViewModel = get(),
-    playingVM: PlayingViewModel = get(),
-    historyVM: HistoryViewModel = get(),
+    songsVM: SongsViewModel = singleViewModel(),
+    playingVM: PlayingViewModel = singleViewModel(),
+    historyVM: HistoryViewModel = singleViewModel(),
     navigator: DestinationsNavigator,
 ) {
     val scope = rememberCoroutineScope()
@@ -250,7 +251,7 @@ fun SongsScreen(
 @Composable
 fun SortPanelWrapper(
     sortFor: String,
-    settingsSp: SettingsSp = get(),
+    settingsSp: SettingsSp = koinInject(),
     showPanelState: MutableState<Boolean> = remember { mutableStateOf(false) },
     supportSortPresets: () -> List<SortPreset>,
     supportGroupRules: () -> List<GroupRule>,

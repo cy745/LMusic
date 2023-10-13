@@ -44,6 +44,7 @@ import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.common.base.Playable
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
@@ -51,11 +52,11 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.playback.PlayMode
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @Composable
 fun ShowScreen(
-    playingVM: PlayingViewModel = get(),
+    playingVM: PlayingViewModel = koinInject(),
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
@@ -201,7 +202,7 @@ fun SongDetailPanel(
 
 @Composable
 fun ControlPanel(
-    playingVM: PlayingViewModel = get(),
+    playingVM: PlayingViewModel = singleViewModel(),
 ) {
     val isPlaying = LPlayer.runtime.info.isPlayingFlow.collectAsState(false)
     var playMode by playingVM.settingsSp.playMode

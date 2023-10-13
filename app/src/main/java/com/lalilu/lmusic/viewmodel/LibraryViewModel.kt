@@ -2,6 +2,7 @@ package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.TempSp
@@ -15,6 +16,10 @@ import java.util.Calendar
 class LibraryViewModel(
     private val tempSp: TempSp
 ) : ViewModel() {
+    val extensionResult = ExtensionManager
+        .requireExtensionByContentKey(contentKey = "home")
+        .toState(emptyList(), viewModelScope)
+
     val recentlyAdded = LMedia.getFlow<LSong>().mapLatest { it.take(15) }
         .toState(emptyList(), viewModelScope)
 

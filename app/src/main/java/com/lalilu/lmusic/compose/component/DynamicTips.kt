@@ -29,7 +29,7 @@ import com.lalilu.R
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import kotlinx.coroutines.*
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 import kotlin.coroutines.CoroutineContext
 
 object DynamicTips : CoroutineScope {
@@ -46,11 +46,10 @@ object DynamicTips : CoroutineScope {
         this@DynamicTips.imageData.value = imageData
     }
 
-    @OptIn(ExperimentalAnimationApi::class)
     @Composable
     fun Content(
         modifier: Modifier = Modifier,
-        settingsSp: SettingsSp = get()
+        settingsSp: SettingsSp = koinInject()
     ) {
         val enableDynamicTips by settingsSp.enableDynamicTips
 

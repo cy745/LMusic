@@ -14,6 +14,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
 import com.lalilu.common.base.Playable
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -32,7 +33,6 @@ import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
-import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalFoundationApi::class)
 @PlaylistNavGraph
@@ -40,9 +40,9 @@ import org.koin.androidx.compose.get
 @Composable
 fun PlaylistDetailScreen(
     playlistId: Long,
-    playingVM: PlayingViewModel = get(),
-    playlistsVM: PlaylistsViewModel = get(),
-    playlistDetailVM: PlaylistDetailViewModel = get(),
+    playingVM: PlayingViewModel = singleViewModel(),
+    playlistsVM: PlaylistsViewModel = singleViewModel(),
+    playlistDetailVM: PlaylistDetailViewModel = singleViewModel(),
     navigator: DestinationsNavigator,
 ) {
     val haptic = LocalHapticFeedback.current

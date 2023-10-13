@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
 import com.lalilu.common.base.Playable
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartFloatBtns
@@ -40,15 +41,14 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalFoundationApi::class)
 @HomeNavGraph
 @Destination
 @Composable
 fun HistoryScreen(
-    historyVM: HistoryViewModel = get(),
-    playingVM: PlayingViewModel = get(),
+    historyVM: HistoryViewModel = singleViewModel(),
+    playingVM: PlayingViewModel = singleViewModel(),
     navigator: DestinationsNavigator,
 ) {
     val haptic = LocalHapticFeedback.current

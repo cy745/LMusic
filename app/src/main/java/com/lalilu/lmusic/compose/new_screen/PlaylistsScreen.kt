@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.compose.new_screen
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.repository.FavoriteRepository
 import com.lalilu.lmusic.compose.BottomSheetWrapper
@@ -53,7 +53,6 @@ import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
-import org.koin.androidx.compose.get
 
 @OptIn(
     ExperimentalMaterialApi::class,
@@ -64,8 +63,8 @@ import org.koin.androidx.compose.get
 @Composable
 fun PlaylistsScreen(
     idsText: String? = null,
-    playlistsVM: PlaylistsViewModel = get(),
-    navigator: DestinationsNavigator
+    playlistsVM: PlaylistsViewModel = singleViewModel(),
+    navigator: DestinationsNavigator,
 ) {
     val idsToAdd = idsText.getIds()
 

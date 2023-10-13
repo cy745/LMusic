@@ -45,6 +45,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.common.base.Playable
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -70,7 +71,6 @@ import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lplayer.extensions.QueueAction
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination
@@ -78,9 +78,9 @@ import org.koin.androidx.compose.get
 fun SongDetailScreen(
     mediaId: String,
     fromPlaying: Boolean = false,
-    playingVM: PlayingViewModel = get(),
-    playlistsVM: PlaylistsViewModel = get(),
-    songDetailVM: SongDetailViewModel = get(),
+    playingVM: PlayingViewModel = singleViewModel(),
+    playlistsVM: PlaylistsViewModel = singleViewModel(),
+    songDetailVM: SongDetailViewModel = singleViewModel(),
     navigator: DestinationsNavigator,
 ) {
     LaunchedEffect(Unit) {

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
 import com.lalilu.common.base.Playable
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
@@ -41,16 +42,15 @@ import com.lalilu.lplayer.LPlayer
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.get
 
 @Destination
 @Composable
 fun AlbumDetailScreen(
     albumId: String,
-    playingVM: PlayingViewModel = get(),
-    historyVM: HistoryViewModel = get(),
-    mediaVM: LMediaViewModel = get(),
-    songsVM: SongsViewModel = get(),
+    playingVM: PlayingViewModel = singleViewModel(),
+    historyVM: HistoryViewModel = singleViewModel(),
+    mediaVM: LMediaViewModel = singleViewModel(),
+    songsVM: SongsViewModel = singleViewModel(),
     navigator: DestinationsNavigator,
 ) {
     val album = mediaVM.requireAlbum(albumId) ?: run {

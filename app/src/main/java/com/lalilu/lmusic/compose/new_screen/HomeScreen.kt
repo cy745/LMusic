@@ -7,10 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,7 +22,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -35,12 +34,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import com.lalilu.common.base.Playable
-import com.lalilu.extension_core.ExtensionManager
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.RecommendCard
-import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.compose.component.card.SongCard
@@ -53,26 +50,25 @@ import com.lalilu.lmusic.compose.new_screen.destinations.SettingsScreenDestinati
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.viewmodel.ExtensionsViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @HomeNavGraph(start = true)
 @Destination
 @Composable
 fun HomeScreen(
-    vm: LibraryViewModel = get(),
-    historyVM: HistoryViewModel = get(),
-    playingVM: PlayingViewModel = get(),
-    navigator: DestinationsNavigator
+    vm: LibraryViewModel = singleViewModel(),
+    historyVM: HistoryViewModel = singleViewModel(),
+    playingVM: PlayingViewModel = singleViewModel(),
+    extensionsVM: ExtensionsViewModel = singleViewModel(),
+    navigator: DestinationsNavigator,
 ) {
-    val extensionResult by ExtensionManager
-        .requireExtensionByContentKey(contentKey = "home")
-        .collectAsState(initial = emptyList())
+    val extensionResult by extensionsVM.extensionWithHomeContent
 
     val haptic = LocalHapticFeedback.current
     val selectHelper = rememberSongsSelectWrapper()
@@ -87,29 +83,8 @@ fun HomeScreen(
         vm.checkOrUpdateToday()
     }
 
-    SmartContainer.LazyColumn {
-        item {
-            Text(
-                modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 10.dp)
-                    .fillMaxWidth(),
-                text = "每日推荐",
-                style = MaterialTheme.typography.h6,
-                color = dayNightTextColor()
-            )
-        }
-        item {
-            RecommendRow(
-                items = { vm.dailyRecommends.value },
-                getId = { it.id }
-            ) {
-                RecommendCard2(
-                    item = { it },
-                    contentModifier = Modifier.size(width = 250.dp, height = 250.dp),
-                    onClick = { navigator.navigate(SongDetailScreenDestination(it.id)) }
-                )
-            }
-        }
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        items(items = extensionResult) { it.apply { Place(contentKey = "home") } }
 
         item {
             RecommendTitle(
@@ -208,8 +183,6 @@ fun HomeScreen(
                 }
             }
         }
-
-        items(items = extensionResult) { it.apply { Place(contentKey = "home") } }
 
         item {
             Surface(

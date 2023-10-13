@@ -7,7 +7,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -41,18 +40,17 @@ import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.ramcosta.composedestinations.annotation.Destination
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 
 @SuppressLint("PrivateApi")
-@OptIn(ExperimentalFoundationApi::class)
 @HomeNavGraph
 @Destination
 @Composable
 fun SettingsScreen(
-    eqHelper: EQHelper = get(),
-    settingsSp: SettingsSp = get(),
-    statusBarLyricExt: StatusBarLyric = get()
+    eqHelper: EQHelper = koinInject(),
+    settingsSp: SettingsSp = koinInject(),
+    statusBarLyricExt: StatusBarLyric = koinInject(),
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current

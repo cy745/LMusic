@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
 import com.lalilu.common.base.Playable
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
@@ -38,16 +39,15 @@ import com.lalilu.lplayer.LPlayer
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.get
 
 @Destination
 @Composable
 fun DictionaryDetailScreen(
     dictionaryId: String,
-    songsVM: SongsViewModel = get(),
-    playingVM: PlayingViewModel = get(),
-    dictionariesVM: DictionariesViewModel = get(),
-    historyVM: HistoryViewModel = get(),
+    songsVM: SongsViewModel = singleViewModel(),
+    playingVM: PlayingViewModel = singleViewModel(),
+    dictionariesVM: DictionariesViewModel = singleViewModel(),
+    historyVM: HistoryViewModel = singleViewModel(),
     navigator: DestinationsNavigator,
 ) {
     val dictionary = dictionariesVM.requireDictionary(dictionaryId) ?: run {

@@ -3,6 +3,7 @@ package com.lalilu.lmusic
 import StatusBarLyric.API.StatusBarLyric
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.ViewModelStoreOwner
 import coil.ImageLoader
 import com.blankj.utilcode.util.FileUtils
 import com.lalilu.R
@@ -11,15 +12,14 @@ import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
-import com.lalilu.lmusic.compose.new_screen.ExtensionsViewModel
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.datastore.TempSp
 import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.repository.LyricRepository
-import com.lalilu.lmusic.service.LMusicServiceConnector
 import com.lalilu.lmusic.service.LMusicNotifier
+import com.lalilu.lmusic.service.LMusicServiceConnector
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
@@ -29,6 +29,7 @@ import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.lmusic.viewmodel.AlbumsViewModel
 import com.lalilu.lmusic.viewmodel.ArtistsViewModel
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
+import com.lalilu.lmusic.viewmodel.ExtensionsViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -43,11 +44,13 @@ import com.lalilu.lplayer.notification.Notifier
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 val AppModule = module {
+    single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
     single { SettingsSp(androidApplication()) }
     single { LastPlayedSp(androidApplication()) }
     single { TempSp(androidApplication()) }
@@ -75,20 +78,20 @@ val AppModule = module {
 }
 
 val ViewModelModule = module {
-    single { PlayingViewModel(get(), get()) }
-    single { LibraryViewModel(get()) }
-    single { LMediaViewModel(get()) }
-    single { PlaylistDetailViewModel(get(), get()) }
-    single { PlaylistsViewModel(get(), get()) }
-    single { SearchViewModel(get()) }
-    single { AlbumsViewModel(get(), get()) }
-    single { ArtistsViewModel(get(), get()) }
-    single { DictionariesViewModel(get()) }
-    single { HistoryViewModel(get()) }
-    single { SongsViewModel(get(), get(), get()) }
-    single { SongDetailViewModel(get()) }
-    single { SearchLyricViewModel(androidApplication(), get(), get()) }
-    single { ExtensionsViewModel(androidApplication()) }
+    viewModelOf(::PlayingViewModel)
+    viewModelOf(::LMediaViewModel)
+    viewModelOf(::PlaylistDetailViewModel)
+    viewModelOf(::PlaylistsViewModel)
+    viewModelOf(::SearchViewModel)
+    viewModelOf(::AlbumsViewModel)
+    viewModelOf(::ArtistsViewModel)
+    viewModelOf(::DictionariesViewModel)
+    viewModelOf(::HistoryViewModel)
+    viewModelOf(::SongsViewModel)
+    viewModelOf(::SongDetailViewModel)
+    viewModelOf(::SearchLyricViewModel)
+    viewModelOf(::ExtensionsViewModel)
+    viewModelOf(::LibraryViewModel)
 }
 
 val RuntimeModule = module {

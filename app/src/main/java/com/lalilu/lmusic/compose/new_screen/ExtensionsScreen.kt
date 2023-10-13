@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.compose.new_screen
 
-import android.app.Application
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import com.lalilu.extension_core.ExtensionLoadResult
 import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
@@ -36,7 +34,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 @Composable
 fun ExtensionsScreen(
     context: Context = LocalContext.current,
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
 ) {
     val results by ExtensionManager.extensionsFlow.collectAsState()
     val statusBarHeight = rememberFixedStatusBarHeightDp()
@@ -66,7 +64,7 @@ fun ExtensionsScreen(
                         elevation = 1.dp,
                         onClick = {
                             navigator.navigate(
-                                ExtensionHostScreenDestination(packageName = extensionResult.packageInfo.packageName)
+                                ExtensionHostScreenDestination(className = extensionResult.className)
                             )
                         }
                     ) {
@@ -89,10 +87,4 @@ fun ExtensionsScreen(
             }
         }
     }
-}
-
-class ExtensionsViewModel(
-    private val context: Application
-) : ViewModel() {
-
 }

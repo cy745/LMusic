@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.api.lrcshare.SongResult
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -47,15 +48,14 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.get
 
 @Destination
 @Composable
 fun SearchLyricScreen(
     mediaId: String,
     keywords: String,
-    searchLyricVM: SearchLyricViewModel = get(),
-    navigator: DestinationsNavigator
+    searchLyricVM: SearchLyricViewModel = singleViewModel(),
+    navigator: DestinationsNavigator,
 ) {
     val scope = rememberCoroutineScope { Dispatchers.Main }
     val showSearchBar = remember { mutableStateOf(true) }
@@ -131,7 +131,7 @@ fun LyricCard(
     caption: String,
     imageData: Any?,
     selected: () -> Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val color: Color by animateColorAsState(
         targetValue = if (selected()) contentColorFor(backgroundColor = MaterialTheme.colors.background)

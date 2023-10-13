@@ -24,11 +24,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.lalilu.common.SystemUiUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import kotlin.math.roundToInt
 
 fun NavController.canPopUp(): Boolean {
@@ -280,3 +283,7 @@ fun rememberIsPadLandScape(): State<Boolean> {
         derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && isPad }
     }
 }
+
+@Composable
+inline fun <reified T : ViewModel> singleViewModel(): T =
+    koinViewModel(viewModelStoreOwner = koinInject())

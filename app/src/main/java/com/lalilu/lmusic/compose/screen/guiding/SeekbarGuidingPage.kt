@@ -38,11 +38,11 @@ import com.lalilu.ui.OnSeekBarSeekToListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @Composable
 fun SeekbarGuidingPage(
-    settingsSp: SettingsSp = get()
+    settingsSp: SettingsSp = koinInject()
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()

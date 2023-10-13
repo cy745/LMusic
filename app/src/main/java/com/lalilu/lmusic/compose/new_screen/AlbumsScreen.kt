@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.compose.new_screen
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
@@ -41,9 +41,9 @@ import com.lalilu.lplayer.LPlayer
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
-@OptIn(ExperimentalFoundationApi::class)
+
 @HomeNavGraph
 @Destination
 @Composable
@@ -51,9 +51,9 @@ fun AlbumsScreen(
     title: String = "全部专辑",
     sortFor: String = Sortable.SORT_FOR_ALBUMS,
     albumIdsText: String? = null,
-    settingsSp: SettingsSp = get(),
-    playingVM: PlayingViewModel = get(),
-    albumsVM: AlbumsViewModel = get(),
+    settingsSp: SettingsSp = koinInject(),
+    playingVM: PlayingViewModel = singleViewModel(),
+    albumsVM: AlbumsViewModel = singleViewModel(),
     navigator: DestinationsNavigator,
 ) {
     val albums by albumsVM.albums

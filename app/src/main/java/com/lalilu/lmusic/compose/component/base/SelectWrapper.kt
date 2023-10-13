@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
@@ -23,7 +24,6 @@ import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.ramcosta.composedestinations.navigation.navigate
 import okhttp3.internal.toImmutableList
-import org.koin.androidx.compose.get
 
 /**
  * 将选择歌曲时展开对应的选择工具栏的逻辑封装，
@@ -66,7 +66,7 @@ fun PlaylistsSelectWrapper(
     isAddingSongs: Boolean = false,
     songsToAdd: List<String> = emptyList(),
     selector: SelectHelper<LPlaylist> = rememberSelectState(),
-    playlistsVM: PlaylistsViewModel = get(),
+    playlistsVM: PlaylistsViewModel = singleViewModel(),
     extraActionsContent: @Composable (SelectHelper<LPlaylist>) -> Unit = {},
     content: @Composable (SelectHelper<LPlaylist>) -> Unit
 ) {
