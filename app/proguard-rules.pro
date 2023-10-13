@@ -56,6 +56,9 @@
 -keep class androidx.compose.** { public protected *; }
 -keep class coil.compose.** { public protected *; }
 -keep class com.lalilu.extension_core.** { public protected *; }
+-keep class com.lalilu.common.** { public protected *; }
+-keep class com.lalilu.lplayer.** { public protected *; }
+-keep class android.support.v4.media.** { public protected *; }
 
 -keepclassmembers class * implements com.lalilu.extension_core.Extension {
     <init>(...);
