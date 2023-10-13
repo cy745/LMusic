@@ -62,6 +62,10 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         }
     }
 
+    fun requireExtensionByClassName(className: String): Flow<ExtensionLoadResult?> {
+        return extensionsFlow.mapLatest { list -> list.firstOrNull { it.className == className } }
+    }
+
     fun requireExtensionByContentKey(contentKey: String): Flow<List<ExtensionLoadResult.Ready>> {
         return extensionsFlow.mapLatest { list ->
             list.mapNotNull { result ->

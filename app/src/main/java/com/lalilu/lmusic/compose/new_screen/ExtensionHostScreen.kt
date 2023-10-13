@@ -12,10 +12,10 @@ import com.ramcosta.composedestinations.annotation.Destination
 @Destination
 @Composable
 fun ExtensionHostScreen(
-    packageName: String
+    className: String
 ) {
     val extensionResult by ExtensionManager
-        .requireExtensionByPackageName(packageName)
+        .requireExtensionByClassName(className)
         .collectAsState(null)
 
     extensionResult?.Place(
@@ -23,8 +23,8 @@ fun ExtensionHostScreen(
         errorPlaceHolder = {
             val message = when (extensionResult) {
                 is ExtensionLoadResult.Error -> (extensionResult as ExtensionLoadResult.Error).message
-                is ExtensionLoadResult.OutOfDated -> "Extension $packageName is out of dated."
-                else -> "Extension $packageName is not found."
+                is ExtensionLoadResult.OutOfDated -> "Extension $className is out of dated."
+                else -> "Extension $className is not found."
             }
             Text(text = message)
         },

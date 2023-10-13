@@ -1,18 +1,30 @@
 package com.lalilu.extension
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.lalilu.common.base.Playable
@@ -76,27 +88,54 @@ class Main : Extension, Provider {
 
     private val bannerContent: @Composable () -> Unit = {
         val imageApi =
-            remember { "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis() / 30000}" }
+            remember { mutableStateOf("https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis() / 30000}") }
+        val showBar = remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
+                .animateContentSize()
         ) {
-            AsyncImage(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(16f / 9f),
-                contentScale = ContentScale.Crop,
-                model = imageApi,
-                contentDescription = ""
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
+                    .aspectRatio(16f / 9f)
             ) {
-                Text(text = stringResource(id = R.string.plugin_name) + " " + BuildConfig.VERSION_NAME)
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    model = imageApi.value,
+                    contentDescription = ""
+                )
+                IconButton(
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                    onClick = { showBar.value = !showBar.value }
+                ) {
+                    Icon(imageVector = Icons.Default.ArrowDropDown, "")
+                }
+            }
+
+            AnimatedVisibility(visible = showBar.value) {
+                Row(
+                    modifier = Modifier
+                        .background(MaterialTheme.colors.surface)
+                        .fillMaxWidth()
+                        .padding(15.dp),
+                    horizontalArrangement = Arrangement.spacedBy(15.dp)
+                ) {
+                    IconButton(onClick = { }) {
+                        Text(text = "#${BuildConfig.VERSION_NAME}")
+                    }
+                    IconButton(
+                        onClick = {
+                            imageApi.value =
+                                "https://api.sretna.cn/layout/pc.php?seed=${System.currentTimeMillis()}"
+                        }
+                    ) {
+                        Text(text = "CHANGE")
+                    }
+                }
             }
         }
     }
