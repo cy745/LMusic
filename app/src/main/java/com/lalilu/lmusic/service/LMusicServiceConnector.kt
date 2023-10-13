@@ -40,7 +40,10 @@ class LMusicServiceConnector(
     }
 
     init {
-        initLPlayer()
+        launch {
+            reloadItems()
+            initLPlayer()
+        }
     }
 
     override fun onStart(owner: LifecycleOwner) {
