@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.lalilu.common.base.Playable
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.repository.LyricRepository
-import com.lalilu.lmusic.service.ExtendRuntime
 import com.lalilu.lmusic.utils.extension.toState
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
@@ -18,12 +17,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PlayingViewModel(
-    val runtime: ExtendRuntime,
     val settingsSp: SettingsSp,
     val lyricRepository: LyricRepository,
 ) : ViewModel() {
-    private val playing = runtime.playingFlow.toState(viewModelScope)
-    private val isPlaying = LPlayer.runtime.info.isPlayingFlow.toState(false, viewModelScope)
+    val playing = LPlayer.runtime.info.playingFlow.toState(viewModelScope)
+    val isPlaying = LPlayer.runtime.info.isPlayingFlow.toState(false, viewModelScope)
 
     /**
      * 综合播放操作
