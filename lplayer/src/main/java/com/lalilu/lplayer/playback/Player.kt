@@ -8,6 +8,7 @@ interface Player {
     var isPlaying: Boolean
     var isStopped: Boolean
     var couldPlayNow: () -> Boolean
+    var handleNetUrl: (String) -> String
 
     fun play()
     fun pause()

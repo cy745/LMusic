@@ -39,27 +39,39 @@ import kotlinx.coroutines.flow.mapLatest
 @OptIn(ExperimentalCoroutinesApi::class)
 @Ext
 class Main : Extension, Provider {
+    private val baseUrl = "https://frp-gas.top:55244/voice/bert-vits2"
+    private val baseParams = mapOf(
+        "id" to "0",
+        "format" to "wav",
+        "length" to "1.2",
+        "noisew" to "0.9"
+    )
+
+    private fun getUrlWithText(text: String): String {
+        val list = baseParams.toList() + ("text" to text)
+        return "$baseUrl?${list.joinToString(separator = "&") { "${it.first}=${it.second}" }}"
+    }
 
     private val sentences = MutableStateFlow(
         listOf(
             VitsSentence(
                 mediaId = "vits_1",
-                title = "影娱安利",
-                subTitle = "utf-8",
+                title = "稻香",
+                subTitle = "周杰伦",
                 imageSource = "https://api.sretna.cn/layout/pc.php",
-                targetUri = Uri.parse("http://192.168.1.159:23456/voice/bert-vits2?text=影娱安利不停歇！投稿得20万！ 本视频参加过 [ 星动安利大作战·春日篇 ] 活动，该活动已结束~&id=0&format=wav&length=1.2&noisew=0.9")
+                targetUri = Uri.parse(getUrlWithText(Constants.lyric1))
             ),
             VitsSentence(
                 mediaId = "vits_2",
-                title = "无限",
-                subTitle = "无限，21年的电影，这都23年了还今年最震撼",
-                targetUri = Uri.parse("http://192.168.1.159:23456/voice/bert-vits2?text=无限，21年的电影，这都23年了还今年最震撼&id=0&length=1.2&noisew=0.9")
+                title = "星晴",
+                subTitle = "周杰伦",
+                targetUri = Uri.parse(getUrlWithText(Constants.lyric2))
             ),
             VitsSentence(
                 mediaId = "vits_3",
-                title = "好莱坞",
-                subTitle = "现在好莱坞动作大片质量确实不行了，以前老片子故事  演技  场面都是顶级，现在就剩场面了",
-                targetUri = Uri.parse("http://192.168.1.159:23456/voice/bert-vits2?text=现在好莱坞动作大片质量确实不行了，以前老片子故事  演技  场面都是顶级，现在就剩场面了&id=0&length=1.2&noisew=0.9")
+                title = "再别康桥",
+                subTitle = "徐志摩",
+                targetUri = Uri.parse(getUrlWithText(Constants.lyric3))
             )
         )
     )
@@ -102,12 +114,12 @@ class Main : Extension, Provider {
                     .fillMaxWidth()
                     .aspectRatio(16f / 9f)
             ) {
-                AsyncImage(
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    model = imageApi.value,
-                    contentDescription = ""
-                )
+//                AsyncImage(
+//                    modifier = Modifier.fillMaxSize(),
+//                    contentScale = ContentScale.Crop,
+//                    model = imageApi.value,
+//                    contentDescription = ""
+//                )
                 IconButton(
                     modifier = Modifier.align(Alignment.BottomEnd),
                     onClick = { showBar.value = !showBar.value }

@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.utils.extension
 
+import android.app.Application
 import android.content.ContentUris
 import android.content.Context
 import android.content.ContextWrapper
@@ -23,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.GsonUtils
+import com.blankj.utilcode.util.LogUtils
 import com.dirror.lyricviewx.LyricEntry
 import com.google.gson.reflect.TypeToken
 import com.lalilu.R
@@ -32,6 +34,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
 import kotlin.math.roundToInt
 
 fun getMimeTypeIconRes(mimeType: String): Int {
@@ -322,4 +329,19 @@ fun Long.durationToTime(): String {
     val second = this / 1000 % 60
     return if (hour > 0L) "%02d:%02d:%02d".format(hour, minute, second)
     else "%02d:%02d".format(minute, second)
+}
+
+fun Application.ignoreSSLVerification() {
+    val array = arrayOf<X509TrustManager>(object : X509TrustManager {
+        override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+        override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+        override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+    })
+
+    runCatching {
+        val context = SSLContext.getInstance("TLS")
+        context.init(null, array, SecureRandom())
+        HttpsURLConnection.setDefaultSSLSocketFactory(context.socketFactory)
+        LogUtils.i("[IGNORE SSL VERIFICATION]")
+    }
 }

@@ -52,7 +52,6 @@ fun MainScreen(
                 Column {
                     Text(text = it.title, style = MaterialTheme.typography.subtitle1)
                     Text(text = it.subTitle, style = MaterialTheme.typography.subtitle2)
-                    Text(text = it.targetUri.toString(), style = MaterialTheme.typography.body2)
                     TextButton(onClick = {
                         LPlayer.runtime.queue.setCurrentId(it.mediaId)
                         LPlayer.runtime.queue.setIds(sentence.map { it.mediaId })

@@ -27,4 +27,5 @@ android {
 
 dependencies {
     implementation(project(":common"))
+    implementation("com.github.cy745:AndroidVideoCache:2.7.2")
 }

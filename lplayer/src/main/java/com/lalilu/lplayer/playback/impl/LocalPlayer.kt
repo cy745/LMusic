@@ -35,7 +35,7 @@ class LocalPlayer(
     override var isPrepared: Boolean = false
     override var isStopped: Boolean = true
     override var couldPlayNow: () -> Boolean = { true }
-
+    override var handleNetUrl: (String) -> String = { it }
     private var startWhenReady: Boolean = false
     private var nextPlayer: MediaPlayer? = null
     private var bufferedPercent: Float = 0f
@@ -68,7 +68,7 @@ class LocalPlayer(
             isStopped = false
             player = newPlayer().also { bindPlayer(it) }
             player?.reset()
-            player?.loadSource(context, uri)
+            player?.loadSource(context, uri, handleNetUrl)
             player?.prepareAsync()
 
             oldPlayer?.fadePause(duration = 800L) {
@@ -137,7 +137,7 @@ class LocalPlayer(
     override fun preloadNext(uri: Uri) {
         // 创建MediaPlayer，异步加载数据，并且在加载完成后调用setNextMediaPlayer方法
         newPlayer().apply {
-            loadSource(context, uri)
+            loadSource(context, uri, handleNetUrl)
             setOnPreparedListener {
                 nextPlayer = this
                 player?.setNextMediaPlayer(this)

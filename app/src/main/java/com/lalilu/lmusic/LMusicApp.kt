@@ -10,6 +10,7 @@ import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.indexer.FilterGroup
 import com.lalilu.lmedia.indexer.FilterProvider
+import com.lalilu.lmusic.utils.extension.ignoreSSLVerification
 import com.lalilu.lplayer.LPlayer
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -25,6 +26,7 @@ class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelSt
 
     override fun onCreate() {
         super.onCreate()
+        ignoreSSLVerification()
         ExtensionManager.loadExtensions(this)
         startKoin {
             androidContext(this@LMusicApp)

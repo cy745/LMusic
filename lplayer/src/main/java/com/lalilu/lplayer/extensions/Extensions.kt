@@ -8,6 +8,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.LruCache
 import androidx.annotation.IntRange
+import com.blankj.utilcode.util.LogUtils
 import java.net.URLDecoder
 
 object PlayerVolumeHelper {
@@ -110,13 +111,18 @@ fun MediaPlayer.fadePause(
     PlayerVolumeHelper.addTimer(sessionId, timer)
 }
 
-fun MediaPlayer.loadSource(context: Context, uri: Uri) {
+fun MediaPlayer.loadSource(context: Context, uri: Uri, handleNetUrl: (String) -> String = { it }) {
     if (uri.scheme == "content" || uri.scheme == "file") {
         setDataSource(context, uri)
     } else {
         // url 的长度可能会超长导致异常
         val url = URLDecoder.decode(uri.toString(), "UTF-8")
-        setDataSource(url)
+        val proxyUrl = handleNetUrl(url)
+
+        if (url != proxyUrl) {
+            LogUtils.i("MediaPlayer: cacheProxy", "url: $url, proxyUrl: $proxyUrl")
+        }
+        setDataSource(proxyUrl)
     }
 }
 

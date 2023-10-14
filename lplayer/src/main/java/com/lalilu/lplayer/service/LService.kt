@@ -18,6 +18,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import com.danikula.videocache.HttpProxyCacheServer
 import com.lalilu.common.base.Playable
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.AudioFocusHelper
@@ -48,6 +49,7 @@ abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.
     protected lateinit var playback: Playback<Playable>
 
     private val runtime: Runtime<Playable> = LPlayer.runtime
+    private val proxy: HttpProxyCacheServer by inject()
     private val notifier: Notifier by inject()
     private val localPlayer: LocalPlayer by inject()
     private val audioFocusHelper: AudioFocusHelper by inject()
@@ -65,6 +67,7 @@ abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.
         registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         if (!this::playback.isInitialized) {
             runtime.info.getPosition = localPlayer::getPosition
+            localPlayer.handleNetUrl = { proxy.getProxyUrl(it) }
             playback = LPlayer.playback.apply {
                 audioFocusHelper = this@LService.audioFocusHelper
                 playbackListener = this@LService
