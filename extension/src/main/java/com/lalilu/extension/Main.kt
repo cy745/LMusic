@@ -114,12 +114,12 @@ class Main : Extension, Provider {
                     .fillMaxWidth()
                     .aspectRatio(16f / 9f)
             ) {
-//                AsyncImage(
-//                    modifier = Modifier.fillMaxSize(),
-//                    contentScale = ContentScale.Crop,
-//                    model = imageApi.value,
-//                    contentDescription = ""
-//                )
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    model = imageApi.value,
+                    contentDescription = ""
+                )
                 IconButton(
                     modifier = Modifier.align(Alignment.BottomEnd),
                     onClick = { showBar.value = !showBar.value }

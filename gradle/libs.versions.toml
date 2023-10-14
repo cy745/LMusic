@@ -11,7 +11,7 @@ compose_destinations_version = "1.9.52"
 accompanist_version = "0.32.0"
 
 kotlinpoet = "1.14.2"
-coil_version = "2.2.2"
+coil_version = "2.4.0"
 utilcodex_version = "1.31.1"
 
 # androidx
