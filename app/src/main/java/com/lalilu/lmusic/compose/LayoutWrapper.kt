@@ -26,17 +26,19 @@ object LayoutWrapper {
             derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
         }
 
-        if (isPad) {
-            DrawerWrapper.Content(
-                mainContent = playingContent,
-                secondContent = libraryContent
-            )
-        } else {
-            FixedLayout {
-                BottomSheetWrapper.Content(
+        DialogWrapper.Content {
+            if (isPad) {
+                DrawerWrapper.Content(
                     mainContent = playingContent,
                     secondContent = libraryContent
                 )
+            } else {
+                FixedLayout {
+                    BottomSheetWrapper.Content(
+                        mainContent = playingContent,
+                        secondContent = libraryContent
+                    )
+                }
             }
         }
 
