@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
 import com.lalilu.extension_core.ExtensionManager
@@ -38,9 +39,9 @@ import org.koin.java.KoinJavaComponent.inject
 
 @Ext
 class ExtOrderController : Extension {
-    override fun getContentMap(): Map<String, @Composable () -> Unit> = mapOf(
-        "banner" to { HomeEntry() },
-        "main" to { Content() }
+    override fun getContentMap(): Map<String, @Composable (Map<String, String>) -> Unit> = mapOf(
+        Content.COMPONENT_CATEGORY to { HomeEntry() },
+        Content.COMPONENT_MAIN to { Content() },
     )
 
     @Composable
@@ -105,7 +106,7 @@ class ExtOrderController : Extension {
     class OrderViewModel : ViewModel() {
         val data = OrderSp.orderList
         val extensionResult = ExtensionManager
-            .requireExtensionByContentKey(contentKey = "home")
+            .requireExtensionByContentKey(contentKey = Content.COMPONENT_HOME)
             .combine(data.flow(true)) { extensions, orderList ->
                 extensions.sortedBy {
                     orderList?.indexOf(it.className)?.takeIf { it != -1 } ?: Int.MAX_VALUE

@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import com.lalilu.common.base.Playable
+import com.lalilu.extension_core.Content
 import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
@@ -50,7 +51,6 @@ import com.lalilu.lmusic.compose.new_screen.destinations.SettingsScreenDestinati
 import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
-import com.lalilu.lmusic.viewmodel.ExtensionsViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -65,10 +65,9 @@ fun HomeScreen(
     vm: LibraryViewModel = singleViewModel(),
     historyVM: HistoryViewModel = singleViewModel(),
     playingVM: PlayingViewModel = singleViewModel(),
-    extensionsVM: ExtensionsViewModel = singleViewModel(),
     navigator: DestinationsNavigator,
 ) {
-    val extensionResult by extensionsVM.extensionWithHomeContent
+    val extensionResult by vm.extensionResult
 
     val haptic = LocalHapticFeedback.current
     val selectHelper = rememberSongsSelectWrapper()
@@ -84,7 +83,7 @@ fun HomeScreen(
     }
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(items = extensionResult) { it.apply { Place(contentKey = "home") } }
+        items(items = extensionResult) { it.apply { Place(contentKey = Content.COMPONENT_HOME) } }
 
         item {
             RecommendTitle(

@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
@@ -24,9 +25,10 @@ import com.ramcosta.composedestinations.navigation.navigate
 
 @Ext
 class ExtDailyRecommend : Extension {
-    override fun getContentMap(): Map<String, @Composable () -> Unit> = mapOf(
-        "home" to { Content() }
-    )
+    override fun getContentMap(): Map<String, @Composable (Map<String, String>) -> Unit> =
+        mapOf(
+            Content.COMPONENT_HOME to { Content() }
+        )
 
     @Composable
     private fun Content(

@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.lalilu.common.base.Playable
+import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
 import com.lalilu.extension_core.Provider
@@ -76,13 +77,12 @@ class Main : Extension, Provider {
         )
     )
 
-    override fun getContentMap(): Map<String, @Composable () -> Unit> {
-        return mapOf(
-            "home" to this.bannerContent,
-            "main" to { MainScreen(sentences) },
-            "banner" to this.bannerContent,
+    override fun getContentMap(): Map<String, @Composable (Map<String, String>) -> Unit> =
+        mapOf(
+            Content.COMPONENT_HOME to { bannerContent() },
+            Content.COMPONENT_CATEGORY to { bannerContent() },
+            Content.COMPONENT_MAIN to { MainScreen(sentences) },
         )
-    }
 
     override fun getProvider(): Provider = this
 

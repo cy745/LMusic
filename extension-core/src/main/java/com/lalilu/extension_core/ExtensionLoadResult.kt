@@ -32,6 +32,7 @@ sealed class ExtensionLoadResult(
     fun Place(
         context: Context = LocalContext.current,
         contentKey: String,
+        params: Map<String, String> = emptyMap(),
         errorPlaceHolder: @Composable () -> Unit = {},
     ) {
         if (this !is Ready) {
@@ -47,7 +48,7 @@ sealed class ExtensionLoadResult(
         }
 
         if (tempContext != null && content != null) {
-            CompositionLocalProvider(LocalContext provides tempContext, content = content)
+            CompositionLocalProvider(LocalContext provides tempContext) { content(params) }
         } else {
             errorPlaceHolder()
         }

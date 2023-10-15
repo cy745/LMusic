@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.ExtensionLoadResult
 import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
@@ -69,7 +70,7 @@ fun ExtensionsScreen(
                         }
                     ) {
                         extensionResult.Place(
-                            contentKey = "banner",
+                            contentKey = Content.COMPONENT_CATEGORY,
                             errorPlaceHolder = {
                                 Text(text = "LoadError ${extensionResult.packageInfo.packageName}")
                             },

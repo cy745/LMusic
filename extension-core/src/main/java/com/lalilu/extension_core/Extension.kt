@@ -21,7 +21,7 @@ interface Extension : LifecycleEventObserver {
      * 注册自定义的界面供宿主访问调用
      */
     @Keep
-    fun getContentMap(): Map<String, @Composable () -> Unit>
+    fun getContentMap(): Map<String, @Composable (Map<String, String>) -> Unit>
 
     /**
      * 监听宿主Activity的状态变化
