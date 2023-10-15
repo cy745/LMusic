@@ -9,6 +9,7 @@ compose_bom_version = "2023.10.00"
 compose_compiler_version = "1.5.3"
 compose_destinations_version = "1.9.52"
 accompanist_version = "0.32.0"
+voyager = "1.0.0-rc07"
 
 kotlinpoet = "1.14.2"
 coil_version = "2.4.0"
@@ -54,6 +55,12 @@ compose-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 
 compose-destinations-animations-core = { module = "io.github.raamcosta.compose-destinations:animations-core", version.ref = "compose_destinations_version" }
 compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "compose_destinations_version" }
+voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
+voyager-bottomSheetNavigator = { module = "cafe.adriel.voyager:voyager-bottom-sheet-navigator", version.ref = "voyager" }
+voyager-tabNavigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
+voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
+voyager-androidx = { module = "cafe.adriel.voyager:voyager-androidx", version.ref = "voyager" }
+voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
 
 accompanist-flowlayout = { module = "com.google.accompanist:accompanist-flowlayout", version.ref = "accompanist_version" }
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist_version" }
@@ -123,4 +130,11 @@ compose = [
     "compose-material3-window-size",
     "compose-runtime-livedata",
 ]
-
+voyager = [
+    "voyager-navigator",
+    "voyager-bottomSheetNavigator",
+    "voyager-tabNavigator",
+    "voyager-transitions",
+    "voyager-androidx",
+    "voyager-koin"
+]

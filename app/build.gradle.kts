@@ -127,6 +127,7 @@ dependencies {
     // compose-destinations
     implementation(libs.compose.destinations.animations.core)
     ksp(libs.compose.destinations.ksp)
+    implementation(libs.bundles.voyager)
 
     // accompanist
     // https://google.github.io/accompanist
