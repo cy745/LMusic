@@ -67,6 +67,8 @@ abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.
         registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         if (!this::playback.isInitialized) {
             runtime.info.getPosition = localPlayer::getPosition
+            runtime.info.getDuration = localPlayer::getDuration
+            runtime.info.getBufferedPosition = localPlayer::getBufferedPosition
             localPlayer.handleNetUrl = { proxy.getProxyUrl(it) }
             playback = LPlayer.playback.apply {
                 audioFocusHelper = this@LService.audioFocusHelper

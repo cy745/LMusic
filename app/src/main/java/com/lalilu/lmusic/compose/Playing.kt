@@ -348,11 +348,16 @@ object Playing {
         LPlayer.runtime.info.listFlow.collectWithLifeCycleOwner(activity) {
             adapter.setDiffData(it)
         }
+        LPlayer.runtime.info.durationFlow.collectWithLifeCycleOwner(activity) {
+            maSeekBar.maxValue = it.takeIf { it > 0f }?.toFloat() ?: 0f
+        }
         LPlayer.runtime.info.positionFlow.collectWithLifeCycleOwner(activity) {
             maSeekBar.updateValue(it.toFloat())
         }
         LPlayer.runtime.info.playingFlow.collectWithLifeCycleOwner(activity) { playable ->
-            maSeekBar.maxValue = playable?.durationMs?.takeIf { it > 0f }?.toFloat() ?: 0f
+            val duration = playable?.durationMs?.takeIf { it > 0f }?.toFloat()
+            if (duration != null) maSeekBar.maxValue = duration
+            
             fmTopPic.loadCover(playable)
 
             if (playable != null) {

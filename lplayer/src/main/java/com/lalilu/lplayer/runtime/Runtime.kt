@@ -32,7 +32,9 @@ class RuntimeInfo<T>(source: Flow<ItemSource<T>?>) {
     val durationFlow: MutableStateFlow<Long> = MutableStateFlow(0)
     val bufferedPositionFlow: MutableStateFlow<Long> = MutableStateFlow(0)
 
-    var getPosition: () -> Long = { 0 }
+    var getPosition: () -> Long = { 0L }
+    var getDuration: () -> Long = { 0L }
+    var getBufferedPosition: () -> Long = { 0L }
     private var timer: Timer? = null
 
     fun updateIsPlaying(isPlaying: Boolean) {
@@ -47,6 +49,8 @@ class RuntimeInfo<T>(source: Flow<ItemSource<T>?>) {
         timer = Timer().apply {
             schedule(0, 50L) {
                 positionFlow.value = getPosition()
+                durationFlow.value = getDuration()
+                bufferedPositionFlow.value = getBufferedPosition()
             }
         }
     }
