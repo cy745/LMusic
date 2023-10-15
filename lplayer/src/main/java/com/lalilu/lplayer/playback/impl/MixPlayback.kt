@@ -136,7 +136,7 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
     override fun preloadNextItem() {
         tempNextItem = when (playMode) {
             PlayMode.ListRecycle -> queue?.getNext()
-            PlayMode.RepeatOne -> queue?.getNext()
+            PlayMode.RepeatOne -> queue?.getCurrent()
             PlayMode.Shuffle -> queue?.getShuffle()
         } ?: return
         val uri = queue?.getUriFromItem(tempNextItem!!) ?: return
@@ -214,31 +214,49 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
             }
 
             is PlayerEvent.OnCompletion -> {
-                // 单曲循环模式
-                if (playMode == PlayMode.RepeatOne) {
-                    val current = queue?.getCurrent() ?: return
-                    val uri = queue?.getUriFromItem(current) ?: return
+                val current = queue?.getCurrent()
+                val currentUri = current?.let { queue?.getUriFromItem(it) }
+                val isPreloadedCurrent = current?.mediaId == tempNextItem?.mediaId
 
-                    onPlayInfoUpdate(current, PlaybackStateCompat.STATE_BUFFERING, 0L)
-                    onPlayFromUri(uri, null)
+                // 若Player未完成预加载，即无法直接播放下一首，则进行Playback的切换下一首流程
+                if (!event.nextItemReady || tempNextItem == null) {
+                    player?.resetPreloadNext()
+                    // 若当前处于单曲播放模式，且预加载的歌曲非当前歌曲则需要重新加载并播放
+                    if (playMode == PlayMode.RepeatOne
+                        && !isPreloadedCurrent
+                        && current != null
+                        && currentUri != null
+                    ) {
+                        onPlayInfoUpdate(current, PlaybackStateCompat.STATE_BUFFERING, 0L)
+                        onPlayFromUri(currentUri, null)
+                    } else {
+                        // 否则切换下一首
+                        onSkipToNext()
+                    }
                     return
                 }
 
-                // 若Player未完成预加载，即无法直接播放下一首，则进行Playback的切换下一首流程
-                if (!event.nextItemReady) {
+                // 非单曲循环模式但预加载的元素却是当前正在播放元素
+                if (playMode != PlayMode.RepeatOne && isPreloadedCurrent) {
+                    player?.resetPreloadNext()
                     onSkipToNext()
                     return
                 }
-                if (tempNextItem != null) {
-                    if (playMode == PlayMode.Shuffle) {
-                        queue?.moveToPrevious(id = tempNextItem!!.mediaId)
-                    }
-                    onPlayInfoUpdate(
-                        item = tempNextItem,
-                        playbackState = PlaybackStateCompat.STATE_PLAYING,
-                        position = player?.getPosition() ?: 0L
-                    )
+
+                // 若当前播放模式为随机播放，将该预加载的元素移动至对应位置
+                if (playMode == PlayMode.Shuffle) {
+                    queue?.moveToPrevious(id = tempNextItem!!.mediaId)
                 }
+
+                // 播放已成功预加载的元素
+                player?.confirmPreloadNext()
+                onItemPlay(tempNextItem!!)
+                onPlayInfoUpdate(
+                    item = tempNextItem,
+                    playbackState = PlaybackStateCompat.STATE_PLAYING,
+                    position = player?.getPosition() ?: 0L
+                )
+                preloadNextItem()
             }
 
             is PlayerEvent.OnSeekTo -> {

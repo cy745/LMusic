@@ -17,7 +17,10 @@ object PlayerVolumeHelper {
     private val nowVolumes = LruCache<Int, Float>(5)
 
     fun getMaxVolume(): Float = maxVolume
-    fun getNowVolume(id: Int): Float = minOf(nowVolumes[id] ?: 0f, maxVolume)
+    fun getNowVolume(id: Int): Float {
+        val volume = nowVolumes.get(id) ?: maxVolume.also { nowVolumes.put(id, it) }
+        return minOf(volume, maxVolume)
+    }
 
     fun updateMaxVolume(maxVolume: Float) {
         this.maxVolume = maxVolume
@@ -73,6 +76,7 @@ fun MediaPlayer.fadeStart(
 
         override fun onFinish() {
             val maxVolume = PlayerVolumeHelper.getMaxVolume()
+            PlayerVolumeHelper.updateNowVolume(sessionId, maxVolume)
             runCatching { setVolume(maxVolume, maxVolume) }.getOrElse { cancel() }
             onFinished()
         }
@@ -102,7 +106,8 @@ fun MediaPlayer.fadePause(
         }
 
         override fun onFinish() {
-            setVolume(0f, 0f)
+            PlayerVolumeHelper.updateNowVolume(sessionId, 0f)
+            runCatching { setVolume(0f, 0f) }.getOrElse { cancel() }
             if (isPlaying) pause()
             onFinished()
         }

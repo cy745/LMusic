@@ -37,8 +37,10 @@ class LocalPlayer(
     override var couldPlayNow: () -> Boolean = { true }
     override var handleNetUrl: (String) -> String = { it }
     private var startWhenReady: Boolean = false
-    private var nextPlayer: MediaPlayer? = null
     private var bufferedPercent: Float = 0f
+
+    private var nextPlayer: MediaPlayer? = null         // 准备好播放下一首的player
+    private var preloadingPlayer: MediaPlayer? = null   // 正在预加载的player
 
     private fun newPlayer(): MediaPlayer {
         val player = if (Build.VERSION.SDK_INT >= 34) MediaPlayer(context) else MediaPlayer()
@@ -56,6 +58,7 @@ class LocalPlayer(
         player.setOnPreparedListener(this@LocalPlayer)
         player.setOnCompletionListener(this@LocalPlayer)
         player.setOnBufferingUpdateListener(this@LocalPlayer)
+        player.setOnErrorListener(this@LocalPlayer)
         onPlayerEvent(PlayerEvent.OnCreated(player.audioSessionId))
     }
 
@@ -135,16 +138,48 @@ class LocalPlayer(
     }
 
     override fun preloadNext(uri: Uri) {
-        // 创建MediaPlayer，异步加载数据，并且在加载完成后调用setNextMediaPlayer方法
-        newPlayer().apply {
-            loadSource(context, uri, handleNetUrl)
-            setOnPreparedListener {
-                nextPlayer = this
-                player?.setNextMediaPlayer(this)
-                onPlayerEvent(PlayerEvent.OnNextPrepared)
+        nextPlayer = null
+
+        // 若未加载成功，则取消并重置复用该player
+        if (preloadingPlayer != null) {
+            preloadingPlayer?.reset()
+        } else {
+            preloadingPlayer = newPlayer().apply {
+                setOnPreparedListener {
+                    nextPlayer = this
+                    preloadingPlayer = null
+                    player?.setNextMediaPlayer(this)
+                    onPlayerEvent(PlayerEvent.OnNextPrepared)
+                }
             }
+        }
+
+        // 异步加载数据
+        preloadingPlayer!!.apply {
+            loadSource(context, uri, handleNetUrl)
             prepareAsync()
         }
+    }
+
+    override fun confirmPreloadNext() {
+        val audioSessionId = player?.audioSessionId
+        val volume = audioSessionId?.let { PlayerVolumeHelper.getNowVolume(it) }
+        player?.reset()
+        player?.release()
+
+        player = nextPlayer
+        player?.also { bindPlayer(it) }
+        volume?.let { player?.setVolume(it, it) }
+
+        nextPlayer = null
+    }
+
+    override fun resetPreloadNext() {
+        player?.setNextMediaPlayer(null)
+
+        // 取消播放该预加载元素，此时将已经加载好的Player重新复用，使其用来加载需要预加载的元素
+        preloadingPlayer = nextPlayer
+        nextPlayer = null
     }
 
     override fun getPosition(): Long {
@@ -181,18 +216,7 @@ class LocalPlayer(
 
     override fun onCompletion(mp: MediaPlayer?) {
         val readyForNext = nextPlayer != null
-        if (readyForNext) {
-            val volume = PlayerVolumeHelper.getNowVolume(player!!.audioSessionId)
-            player?.reset()
-            player?.release()
-
-            player = nextPlayer
-            player?.also { bindPlayer(it) }
-            player?.setVolume(volume, volume)
-            player?.start()
-        }
         onPlayerEvent(PlayerEvent.OnCompletion(readyForNext))
-        nextPlayer = null
     }
 
     override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {

@@ -21,6 +21,8 @@ interface Player {
      */
     fun load(uri: Uri, startWhenReady: Boolean)
     fun preloadNext(uri: Uri)
+    fun confirmPreloadNext()        // 确认当前歌曲播放完成，可以播放下一首
+    fun resetPreloadNext()          // 重置预加载的下一首歌曲
 
     fun getPosition(): Long
     fun getDuration(): Long
