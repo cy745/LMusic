@@ -2,6 +2,7 @@ package com.lalilu.lmusic.compose
 
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -11,7 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.LogUtils
@@ -34,11 +34,9 @@ import com.lalilu.lmusic.compose.component.playing.PlayingToolbarScaffoldState
 import com.lalilu.lmusic.compose.component.playing.rememberPlayingToolbarScaffoldState
 import com.lalilu.lmusic.compose.component.playing.sealed.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.sealed.PlayingToolbar
-import com.lalilu.lmusic.compose.new_screen.ScreenData
-import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
+import com.lalilu.lmusic.compose.new_screen.SongDetailScreen
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.helper.LastTouchTimeHelper
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner
 import com.lalilu.lmusic.utils.extension.durationToTime
@@ -59,7 +57,6 @@ import com.lalilu.ui.OnSeekBarSeekToListener
 import com.lalilu.ui.OnValueChangeListener
 import com.lalilu.ui.appbar.AppbarBehavior
 import com.lalilu.ui.appbar.AppbarStateHelper
-import com.ramcosta.composedestinations.navigation.navigate
 import org.koin.compose.koinInject
 import kotlin.math.pow
 
@@ -71,8 +68,7 @@ object Playing {
     @Composable
     fun Content(
         playingVM: PlayingViewModel = koinInject(),
-        settingsSp: SettingsSp = koinInject(),
-        navController: NavController = LocalNavigatorHost.current,
+        settingsSp: SettingsSp = koinInject()
     ) {
         val systemController = rememberSystemUiController()
         val isDrawTranslation by remember { settingsSp.isDrawTranslation }
@@ -83,7 +79,9 @@ object Playing {
         val keepScreenOnWhenLyricExpanded by remember { settingsSp.keepScreenOnWhenLyricExpanded }
         val nowState = remember { mutableStateOf<AppbarStateHelper.State?>(null) }
         val playingToolbarScaffoldState = rememberPlayingToolbarScaffoldState()
-        val isBottomSheetVisible by BottomSheetWrapper.collectBottomSheetIsExpended()
+        val isBottomSheetVisible by remember {
+            derivedStateOf { NavigationWrapper.navigator?.isVisible ?: false }
+        }
 
         val keepScreenOn by remember {
             derivedStateOf { keepScreenOnWhenLyricExpanded && nowState.value == AppbarStateHelper.State.EXPENDED }
@@ -98,13 +96,11 @@ object Playing {
 
         AndroidViewBinding(factory = { inflater, parent, attachToParent ->
             FragmentPlayingRebuildBinding.inflate(inflater, parent, attachToParent).apply {
-                val adapter = initAdapter(navController, playingVM) {
-                    fmRecyclerView.scrollToPosition(0)
-                }
+                val adapter = initAdapter(playingVM) { fmRecyclerView.scrollToPosition(0) }
                 initBehavior(nowState, playingToolbarScaffoldState)
                 initRecyclerView(adapter)
                 initCover()
-                initSeekBar(playingVM, settingsSp)
+                initSeekBar(settingsSp)
                 initToolBar {
                     PlayingToolbarScaffold(
                         state = playingToolbarScaffoldState,
@@ -129,13 +125,12 @@ object Playing {
             fmLyricViewX.setItemOffsetPercent(0f)
         }
 
-        BottomSheetWrapper.BackHandler(enable = { nowState.value == AppbarStateHelper.State.EXPENDED }) {
+        BackHandler(enabled = nowState.value == AppbarStateHelper.State.EXPENDED) {
             backPressCallback.invoke(AppbarStateHelper.State.NORMAL)
         }
     }
 
     private fun FragmentPlayingRebuildBinding.initAdapter(
-        navController: NavController,
         playingVM: PlayingViewModel,
         onScrollToTop: () -> Unit = {},
     ): NewPlayingAdapter {
@@ -144,18 +139,8 @@ object Playing {
                 when (event) {
                     ViewEvent.OnClick -> playingVM.play(mediaId = item.mediaId, playOrPause = true)
                     ViewEvent.OnLongClick -> {
-                        BottomSheetWrapper.show()
-                        if (navController.currentDestination?.route == ScreenData.SongsDetail.destination.route) {
-                            navController.popBackStack()
-                        }
-                        navController.navigate(
-                            SongDetailScreenDestination(
-                                mediaId = item.mediaId,
-                                fromPlaying = true
-                            )
-                        ) {
-                            launchSingleTop = true
-                        }
+                        NavigationWrapper.navigator?.showSingle(SongDetailScreen(item.mediaId))
+                        NavigationWrapper.navigator?.show()
                     }
 
                     ViewEvent.OnSwipeLeft -> {
@@ -255,7 +240,6 @@ object Playing {
     }
 
     private fun FragmentPlayingRebuildBinding.initSeekBar(
-        playingVM: PlayingViewModel,
         settingsSp: SettingsSp,
     ) {
         maSeekBar.setSwitchToCallback(
@@ -289,12 +273,12 @@ object Playing {
             OnSeekBarScrollToThresholdListener({ 300f }) {
             override fun onScrollToThreshold() {
                 HapticUtils.haptic(root)
-                BottomSheetWrapper.show()
+                NavigationWrapper.navigator?.show()
             }
 
             override fun onScrollRecover() {
                 HapticUtils.haptic(root)
-                BottomSheetWrapper.hide()
+                NavigationWrapper.navigator?.hide()
             }
         })
 
@@ -357,7 +341,7 @@ object Playing {
         LPlayer.runtime.info.playingFlow.collectWithLifeCycleOwner(activity) { playable ->
             val duration = playable?.durationMs?.takeIf { it > 0f }?.toFloat()
             if (duration != null) maSeekBar.maxValue = duration
-            
+
             fmTopPic.loadCover(playable)
 
             if (playable != null) {

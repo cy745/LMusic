@@ -2,6 +2,7 @@ package com.lalilu.lmusic.compose.component
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -24,7 +25,7 @@ fun CustomTransition(
         content = content,
         transition = {
             fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + slideInVertically { 100 } togetherWith
-                    fadeOut(animationSpec = spring(stiffness = Spring.StiffnessHigh))
+                    fadeOut(tween(0))
         }
     )
 }

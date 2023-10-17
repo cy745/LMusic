@@ -29,11 +29,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
+import com.lalilu.R
 import com.lalilu.common.base.Playable
-import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.compose.ScreenInfo
+import com.lalilu.lmusic.compose.TabScreen
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.SearchInputBar
@@ -43,32 +45,31 @@ import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.compose.component.card.SongCard
-import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.AlbumsScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.ArtistsScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.SongsScreenDestination
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.lmusic.utils.extension.json
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
+
+object SearchScreen : TabScreen {
+    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
+        title = R.string.screen_title_search,
+        icon = R.drawable.ic_search_2_line
+    )
+
+    @Composable
+    override fun Content() {
+        SearchScreen()
+    }
+}
 
 @OptIn(
     ExperimentalFoundationApi::class,
     ExperimentalMaterialApi::class
 )
-@SearchNavGraph(start = true)
-@Destination
 @Composable
-fun SearchScreen(
+private fun SearchScreen(
     playingVM: PlayingViewModel = koinInject(),
     searchVM: SearchViewModel = koinInject(),
-    navigator: DestinationsNavigator,
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -104,13 +105,13 @@ fun SearchScreen(
             getContentType = { LSong::class },
             onClickHeader = {
                 if (searchVM.songsResult.value.isNotEmpty()) {
-                    navigator.navigate(
-                        SongsScreenDestination(
-                            title = "[${keyword.value}]\n歌曲搜索结果",
-                            sortFor = "SearchResult",
-                            mediaIdsText = searchVM.songsResult.value.map(LSong::id).json()
-                        )
-                    )
+//                    navigator.navigate(
+//                        SongsScreenDestination(
+//                            title = "[${keyword.value}]\n歌曲搜索结果",
+//                            sortFor = "SearchResult",
+//                            mediaIdsText = searchVM.songsResult.value.map(LSong::id).json()
+//                        )
+//                    )
                 }
             }
         ) { item ->
@@ -123,7 +124,7 @@ fun SearchScreen(
                 hasLyric = playingVM.lyricRepository.rememberHasLyric(playable = item),
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    navigator.navigate(SongDetailScreenDestination(item.id))
+//                    navigator.navigate(SongDetailScreenDestination(item.id))
                 },
                 onEnterSelect = { selectHelper.onSelected(item) },
                 isPlaying = { playingVM.isItemPlaying(item.id, Playable::mediaId) },
@@ -143,13 +144,13 @@ fun SearchScreen(
 
         val onAlbumHeaderClick = {
             if (searchVM.albumsResult.value.isNotEmpty()) {
-                navigator.navigate(
-                    AlbumsScreenDestination(
-                        title = "[${keyword.value}]\n专辑搜索结果",
-                        sortFor = "SearchResultForAlbum",
-                        albumIdsText = searchVM.albumsResult.value.map(LAlbum::id).json()
-                    )
-                )
+//                navigator.navigate(
+//                    AlbumsScreenDestination(
+//                        title = "[${keyword.value}]\n专辑搜索结果",
+//                        sortFor = "SearchResultForAlbum",
+//                        albumIdsText = searchVM.albumsResult.value.map(LAlbum::id).json()
+//                    )
+//                )
             }
         }
 
@@ -172,7 +173,10 @@ fun SearchScreen(
             }
         }
         item(key = "AlbumItems") {
-            AnimatedContent(targetState = searchVM.albumsResult.value.isNotEmpty()) { show ->
+            AnimatedContent(
+                targetState = searchVM.albumsResult.value.isNotEmpty(),
+                label = ""
+            ) { show ->
                 if (show) {
                     RecommendRow(
                         items = { searchVM.albumsResult.value },
@@ -184,7 +188,7 @@ fun SearchScreen(
                             height = { 100.dp },
                             item = { it },
                             onClick = {
-                                navigator.navigate(AlbumDetailScreenDestination(albumId = it.id))
+//                                navigator.navigate(AlbumDetailScreenDestination(albumId = it.id))
                             }
                         )
                     }
@@ -202,13 +206,13 @@ fun SearchScreen(
             getContentType = { LArtist::class },
             onClickHeader = {
                 if (searchVM.artistsResult.value.isNotEmpty()) {
-                    navigator.navigate(
-                        ArtistsScreenDestination(
-                            title = "[${keyword.value}]\n艺术家搜索结果",
-                            sortFor = "SearchResultForArtist",
-                            artistIdsText = searchVM.artistsResult.value.map(LArtist::name).json()
-                        )
-                    )
+//                    navigator.navigate(
+//                        ArtistsScreenDestination(
+//                            title = "[${keyword.value}]\n艺术家搜索结果",
+//                            sortFor = "SearchResultForArtist",
+//                            artistIdsText = searchVM.artistsResult.value.map(LArtist::name).json()
+//                        )
+//                    )
                 }
             }
         ) { item ->
@@ -221,7 +225,9 @@ fun SearchScreen(
                             ?: false
                     }
                 },
-                onClick = { navigator.navigate(ArtistDetailScreenDestination(artistName = item.name)) }
+                onClick = {
+//                    navigator.navigate(ArtistDetailScreenDestination(artistName = item.name))
+                }
             )
         }
 
@@ -234,7 +240,7 @@ fun SearchScreen(
         ) {
             Surface(
                 onClick = {
-                    navigator.navigate(PlaylistDetailScreenDestination(playlistId = it._id))
+//                    navigator.navigate(PlaylistDetailScreenDestination(playlistId = it._id))
                 }
             ) {
                 Text(

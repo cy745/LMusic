@@ -150,6 +150,30 @@ class BottomSheetNavigator internal constructor(
         }
     }
 
+    fun pushTab(screen: Screen) {
+        if (items.size <= 1) {
+            push(screen)
+            return
+        }
+
+        val firstItem = items.firstOrNull()
+        popUntil { it == firstItem }
+
+        if (screen != firstItem) {
+            replace(screen)
+        }
+    }
+
+    fun showSingle(screen: Screen) {
+        val lastItem = lastItemOrNull
+
+        if (lastItem == null || lastItem::class.java != screen::class.java) {
+            push(screen)
+        } else {
+            replace(screen)
+        }
+    }
+
     fun show(screen: Screen? = null) {
         coroutineScope.launch {
             if (screen != null && screen !== navigator.lastItemOrNull) {

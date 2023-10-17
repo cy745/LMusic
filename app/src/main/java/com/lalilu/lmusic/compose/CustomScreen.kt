@@ -10,7 +10,12 @@ interface CustomScreen : Screen {
     fun getScreenInfo(): ScreenInfo? = null
 }
 
+interface TabScreen : CustomScreen {
+    override fun getScreenInfo(): ScreenInfo
+}
+
 data class ScreenInfo(
     @StringRes val title: Int,
     @DrawableRes val icon: Int? = null,
+    val immerseStatusBar: Boolean = true,
 )
