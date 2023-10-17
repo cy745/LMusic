@@ -6,11 +6,34 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import com.lalilu.R
+import com.lalilu.lmusic.compose.CustomScreen
+import com.lalilu.lmusic.compose.ScreenInfo
 import kotlin.system.exitProcess
 
+class AgreementScreen(
+    private val nextScreen: Screen
+) : CustomScreen {
+
+    override fun getScreenInfo(): ScreenInfo = ScreenInfo(title = R.string.screen_title_agreement)
+
+    @Composable
+    override fun Content() {
+        AgreementPage(
+            nextScreen = nextScreen
+        )
+    }
+}
+
 @Composable
-fun AgreementPage(navController: NavController) {
+private fun AgreementPage(
+    nextScreen: Screen,
+    navigator: Navigator = LocalNavigator.currentOrThrow
+) {
     LazyColumn(
         modifier = Modifier
             .padding(horizontal = 20.dp)
@@ -19,7 +42,7 @@ fun AgreementPage(navController: NavController) {
         item {
             ActionCard(
                 onReject = { exitProcess(0) },
-                onConfirm = { GuidingNavGraph.Agreement.getNext()?.navigate(navController) }
+                onConfirm = { navigator.push(nextScreen) }
             ) {
                 """
             使用本应用的用户应知晓以下内容：

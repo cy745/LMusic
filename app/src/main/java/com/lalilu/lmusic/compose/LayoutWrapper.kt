@@ -12,14 +12,11 @@ import com.lalilu.lmusic.compose.screen.ShowScreen
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
 
+
 object LayoutWrapper {
 
     @Composable
-    fun Content(
-        windowSize: WindowSizeClass = LocalWindowSize.current,
-        playingContent: @Composable () -> Unit,
-        libraryContent: @Composable () -> Unit,
-    ) {
+    fun Content(windowSize: WindowSizeClass = LocalWindowSize.current) {
         val configuration = LocalConfiguration.current
         val isPad by windowSize.rememberIsPad()
         val isLandscape by remember(configuration.orientation) {
@@ -27,18 +24,8 @@ object LayoutWrapper {
         }
 
         DialogWrapper.Content {
-            if (isPad) {
-                DrawerWrapper.Content(
-                    mainContent = playingContent,
-                    secondContent = libraryContent
-                )
-            } else {
-                FixedLayout {
-                    BottomSheetWrapper.Content(
-                        mainContent = playingContent,
-                        secondContent = libraryContent
-                    )
-                }
+            FixedLayout {
+                NavigationWrapper.Content()
             }
         }
 

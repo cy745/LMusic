@@ -7,7 +7,6 @@ ksp_version = "1.9.10-1.0.13"
 koin_version = "3.5.0"
 compose_bom_version = "2023.10.00"
 compose_compiler_version = "1.5.3"
-compose_destinations_version = "1.9.52"
 accompanist_version = "0.32.0"
 voyager = "1.0.0-rc07"
 
@@ -53,8 +52,6 @@ compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata
 compose-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 
-compose-destinations-animations-core = { module = "io.github.raamcosta.compose-destinations:animations-core", version.ref = "compose_destinations_version" }
-compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "compose_destinations_version" }
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
 voyager-bottomSheetNavigator = { module = "cafe.adriel.voyager:voyager-bottom-sheet-navigator", version.ref = "voyager" }
 voyager-tabNavigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
@@ -132,7 +129,6 @@ compose = [
 ]
 voyager = [
     "voyager-navigator",
-    "voyager-bottomSheetNavigator",
     "voyager-tabNavigator",
     "voyager-transitions",
     "voyager-androidx",

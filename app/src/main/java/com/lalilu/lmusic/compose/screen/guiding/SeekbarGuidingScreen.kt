@@ -22,8 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.blankj.utilcode.util.ActivityUtils
+import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.lmusic.MainActivity
+import com.lalilu.lmusic.compose.CustomScreen
+import com.lalilu.lmusic.compose.ScreenInfo
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.ui.CLICK_PART_LEFT
@@ -40,8 +43,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+object SeekbarGuidingScreen : CustomScreen {
+    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
+        title = R.string.screen_title_guiding
+    )
+
+    @Composable
+    override fun Content() {
+        SeekbarGuidingPage()
+    }
+}
+
 @Composable
-fun SeekbarGuidingPage(
+private fun SeekbarGuidingPage(
     settingsSp: SettingsSp = koinInject()
 ) {
     val context = LocalContext.current

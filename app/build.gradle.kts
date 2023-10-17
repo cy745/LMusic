@@ -124,9 +124,6 @@ dependencies {
     implementation(project(":extension-core"))
     ksp(project(":extension-ksp"))
 
-    // compose-destinations
-    implementation(libs.compose.destinations.animations.core)
-    ksp(libs.compose.destinations.ksp)
     implementation(libs.bundles.voyager)
 
     // accompanist

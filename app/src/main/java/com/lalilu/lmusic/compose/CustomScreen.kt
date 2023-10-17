@@ -1,0 +1,16 @@
+package com.lalilu.lmusic.compose
+
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import cafe.adriel.voyager.core.screen.Screen
+
+interface CustomScreen : Screen {
+    fun getExtraContent(): (@Composable () -> Unit)? = null
+    fun getScreenInfo(): ScreenInfo? = null
+}
+
+data class ScreenInfo(
+    @StringRes val title: Int,
+    @DrawableRes val icon: Int? = null,
+)
