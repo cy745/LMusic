@@ -4,8 +4,13 @@ import StatusBarLyric.API.StatusBarLyric
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.ViewModelStoreOwner
+import coil.EventListener
 import coil.ImageLoader
+import coil.request.ErrorResult
+import coil.request.ImageRequest
 import com.blankj.utilcode.util.FileUtils
+import com.blankj.utilcode.util.LogUtils
+import com.lalilu.BuildConfig
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Filter
@@ -73,6 +78,21 @@ val AppModule = module {
                 add(SongCoverKeyer())
             }
             .transitionFactory(CrossfadeTransitionFactory())
+            .error(R.drawable.ic_music_2_line_100dp)
+            .eventListener(object : EventListener {
+                override fun onError(request: ImageRequest, result: ErrorResult) {
+                    if (BuildConfig.DEBUG) {
+                        LogUtils.w("[ImageLoader]:onError", request.data, result.throwable.message)
+                        result.throwable.printStackTrace()
+                    }
+                }
+
+                override fun onCancel(request: ImageRequest) {
+                    if (BuildConfig.DEBUG) {
+                        LogUtils.w("[ImageLoader]:onCancel", request)
+                    }
+                }
+            })
             .build()
     }
 }
