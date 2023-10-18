@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.viewmodel
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.LMedia
@@ -22,7 +23,8 @@ import kotlinx.coroutines.flow.mapLatest
 class SearchViewModel(
     playlistRepo: PlaylistRepository,
 ) : ViewModel() {
-    val keywordStr = MutableStateFlow("")
+    val keyword = mutableStateOf("")
+    private val keywordStr = MutableStateFlow("")
     private val keywords = keywordStr.debounce(200).mapLatest {
         if (it.isEmpty()) return@mapLatest emptyList()
         it.trim().uppercase().split(' ')

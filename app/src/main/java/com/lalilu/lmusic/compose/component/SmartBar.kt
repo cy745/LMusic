@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.lalilu.lmusic.compose.new_screen.NavBar
 import com.lalilu.lmusic.utils.extension.measureHeight
 
 object SmartBar {
@@ -49,9 +48,9 @@ object SmartBar {
         ExperimentalComposeUiApi::class
     )
     fun BoxScope.SmartBarContent(modifier: Modifier = Modifier) {
-        LaunchedEffect(Unit) {
-            setMainBar(content = NavBar.content)
-        }
+//        LaunchedEffect(Unit) {
+//            setMainBar(content = NavBar.content)
+//        }
 
         val density = LocalDensity.current
         val backPressDispatcher = LocalOnBackPressedDispatcherOwner.current
@@ -197,7 +196,7 @@ object SmartBar {
         showState: State<Boolean>,
         showMask: Boolean = false,
         showBackground: Boolean = true,
-        recoverTo: @Composable () -> Unit = NavBar.content,
+        recoverTo: @Composable () -> Unit = { },
         content: @Composable () -> Unit,
     ) {
         val stackItem = remember {

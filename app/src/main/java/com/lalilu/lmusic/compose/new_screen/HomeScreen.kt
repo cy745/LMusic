@@ -29,6 +29,7 @@ import com.lalilu.extension_core.Content
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.ScreenInfo
 import com.lalilu.lmusic.compose.TabScreen
+import com.lalilu.lmusic.compose.component.LLazyColumn
 import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendRow
@@ -62,18 +63,14 @@ private fun HomeScreen(
 
     val haptic = LocalHapticFeedback.current
     val selectHelper = rememberSongsSelectWrapper()
-    val itemsCount = remember {
-        derivedStateOf { historyVM.historyState.value.size.coerceIn(0, 5) }
-    }
-    val itemsHeight = animateDpAsState(
-        itemsCount.value * 85.dp
-    )
+    val itemsCount = remember { derivedStateOf { historyVM.historyState.value.size.coerceIn(0, 5) } }
+    val itemsHeight = animateDpAsState(itemsCount.value * 85.dp, label = "")
 
     LaunchedEffect(Unit) {
         vm.checkOrUpdateToday()
     }
 
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
+    LLazyColumn(modifier = Modifier.fillMaxSize()) {
         items(items = extensionResult) { it.apply { Place(contentKey = Content.COMPONENT_HOME) } }
 
         item {

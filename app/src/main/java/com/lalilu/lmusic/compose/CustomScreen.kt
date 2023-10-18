@@ -14,6 +14,8 @@ interface TabScreen : CustomScreen {
     override fun getScreenInfo(): ScreenInfo
 }
 
+interface DialogScreen : CustomScreen
+
 data class ScreenInfo(
     @StringRes val title: Int,
     @DrawableRes val icon: Int? = null,

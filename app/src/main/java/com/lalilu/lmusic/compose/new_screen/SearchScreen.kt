@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,9 +21,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -36,8 +34,7 @@ import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.ScreenInfo
 import com.lalilu.lmusic.compose.TabScreen
-import com.lalilu.lmusic.compose.component.SmartBar
-import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.lmusic.compose.component.LLazyColumn
 import com.lalilu.lmusic.compose.component.base.SearchInputBar
 import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.ArtistCard
@@ -46,9 +43,9 @@ import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
-import org.koin.compose.koinInject
 
 object SearchScreen : TabScreen {
     override fun getScreenInfo(): ScreenInfo = ScreenInfo(
@@ -56,10 +53,25 @@ object SearchScreen : TabScreen {
         icon = R.drawable.ic_search_2_line
     )
 
+    override fun getExtraContent(): @Composable () -> Unit = {
+        SearchBar()
+    }
+
     @Composable
     override fun Content() {
         SearchScreen()
     }
+}
+
+@Composable
+fun SearchBar(
+    searchVM: SearchViewModel = singleViewModel(),
+) {
+    SearchInputBar(
+        value = searchVM.keyword,
+        onValueChange = { searchVM.searchFor(it) },
+        onSubmit = { searchVM.searchFor(it) }
+    )
 }
 
 @OptIn(
@@ -68,27 +80,12 @@ object SearchScreen : TabScreen {
 )
 @Composable
 private fun SearchScreen(
-    playingVM: PlayingViewModel = koinInject(),
-    searchVM: SearchViewModel = koinInject(),
+    playingVM: PlayingViewModel = singleViewModel(),
+    searchVM: SearchViewModel = singleViewModel(),
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val keyword = remember { mutableStateOf(searchVM.keywordStr.value) }
-    val showSearchBar = remember { mutableStateOf(true) }
     val selectHelper = rememberSongsSelectWrapper()
-
-    SmartBar.RegisterExtraBarContent(showSearchBar) {
-        SearchInputBar(
-            value = keyword,
-            onSubmit = {
-                searchVM.searchFor(keyword.value)
-            }
-        )
-    }
-
-    LaunchedEffect(keyword.value) {
-        searchVM.searchFor(keyword.value)
-    }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -96,7 +93,9 @@ private fun SearchScreen(
         }
     }
 
-    SmartContainer.LazyColumn {
+    LLazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
         searchItem(
             name = "歌曲",
             showCount = 5,

@@ -6,6 +6,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.lmusic.compose.component.BottomSheetNavigator
 import com.lalilu.lmusic.compose.component.CustomTransition
 import com.lalilu.lmusic.compose.component.navigate.NavigationBar
+import com.lalilu.lmusic.compose.component.navigate.NavigationSmartBar
 import com.lalilu.lmusic.compose.new_screen.HomeScreen
 import com.lalilu.lmusic.compose.new_screen.SearchScreen
 import com.lalilu.lmusic.utils.extension.LocalPaddingValue
@@ -50,7 +52,7 @@ object NavigationWrapper {
             ),
             sheetContent = { bottomSheetNavigator ->
                 navigator = bottomSheetNavigator
-                val currentPaddingValue by remember { mutableStateOf(PaddingValues(0.dp)) }
+                val currentPaddingValue = remember { mutableStateOf(PaddingValues(0.dp)) }
                 val currentScreen by remember { derivedStateOf { bottomSheetNavigator.lastItemOrNull as? CustomScreen } }
                 val customScreenInfo by remember { derivedStateOf { currentScreen?.getScreenInfo() } }
 
@@ -68,11 +70,19 @@ object NavigationWrapper {
                             it.Content()
                         }
                     }
-                    NavigationBar(
-                        modifier = Modifier.align(Alignment.BottomCenter),
-                        tabScreens = { listOf(HomeScreen, SearchScreen) },
+                    NavigationSmartBar(
+                        modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter),
+                        measureHeightState = currentPaddingValue,
                         navigator = bottomSheetNavigator
-                    )
+                    ) { modifier ->
+                        NavigationBar(
+                            modifier = modifier.align(Alignment.BottomCenter),
+                            tabScreens = { listOf(HomeScreen, SearchScreen) },
+                            navigator = bottomSheetNavigator
+                        )
+                    }
                 }
             },
             content = { Playing.Content() }
