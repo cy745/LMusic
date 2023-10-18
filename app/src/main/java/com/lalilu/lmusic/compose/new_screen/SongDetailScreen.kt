@@ -41,11 +41,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.screen.ScreenKey
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.common.base.Playable
-import com.lalilu.lmusic.utils.extension.singleViewModel
+import com.lalilu.lmusic.compose.CustomScreen
 import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
@@ -54,36 +55,38 @@ import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 import com.lalilu.lmusic.compose.component.card.SongDetailActionsBar
 import com.lalilu.lmusic.compose.component.card.SongInformationCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.SearchLyricScreenDestination
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.checkActivityIsExist
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
-import com.lalilu.lmusic.utils.extension.idsText
 import com.lalilu.lmusic.utils.extension.rememberScrollPosition
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lplayer.extensions.QueueAction
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+
+data class SongDetailScreen(
+    private val mediaId: String
+) : CustomScreen {
+    override val key: ScreenKey = "${super.key}:$mediaId"
+
+    @Composable
+    override fun Content() {
+        DetailScreen(mediaId = mediaId)
+    }
+}
 
 @OptIn(ExperimentalMaterialApi::class)
-@Destination
 @Composable
-fun SongDetailScreen(
+private fun DetailScreen(
     mediaId: String,
-    fromPlaying: Boolean = false,
     playingVM: PlayingViewModel = singleViewModel(),
     playlistsVM: PlaylistsViewModel = singleViewModel(),
     songDetailVM: SongDetailViewModel = singleViewModel(),
-    navigator: DestinationsNavigator,
 ) {
-    LaunchedEffect(Unit) {
+    LaunchedEffect(mediaId) {
         songDetailVM.updateMediaId(mediaId)
     }
 
@@ -126,7 +129,7 @@ fun SongDetailScreen(
                 if (it) playlistsVM.addToFavorite(song) else playlistsVM.removeFromFavorite(song)
             },
             onAddSongToPlaylist = {
-                navigator.navigate(PlaylistsScreenDestination(idsText = listOf(song).idsText()))
+//                navigator.navigate(PlaylistsScreenDestination(idsText = listOf(song).idsText()))
             },
             onSetSongToNext = {
                 DynamicTips.push(
@@ -185,9 +188,9 @@ fun SongDetailScreen(
                             song.artists.forEach {
                                 Chip(
                                     onClick = {
-                                        navigator.navigate(
-                                            ArtistDetailScreenDestination(artistName = it.name)
-                                        )
+//                                        navigator.navigate(
+//                                            ArtistDetailScreenDestination(artistName = it.name)
+//                                        )
                                     },
                                     colors = ChipDefaults.outlinedChipColors(),
                                 ) {
@@ -221,7 +224,7 @@ fun SongDetailScreen(
                             .width(intrinsicSize = IntrinsicSize.Min),
                         shape = RoundedCornerShape(20.dp),
                         onClick = {
-                            navigator.navigate(AlbumDetailScreenDestination(it.id))
+//                            navigator.navigate(AlbumDetailScreenDestination(it.id))
                         }
                     ) {
                         Row(
@@ -291,12 +294,12 @@ fun SongDetailScreen(
                         shape = RoundedCornerShape(10.dp),
                         color = Color(0xFF3EA22C),
                         onClick = {
-                            navigator.navigate(
-                                SearchLyricScreenDestination(
-                                    mediaId = song.id,
-                                    keywords = song.name
-                                )
-                            )
+//                            navigator.navigate(
+//                                SearchLyricScreenDestination(
+//                                    mediaId = song.id,
+//                                    keywords = song.name
+//                                )
+//                            )
                         }
                     )
                 }

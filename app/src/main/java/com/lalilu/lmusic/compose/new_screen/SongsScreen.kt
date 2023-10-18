@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,7 +44,7 @@ import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.Sortable
-import com.lalilu.lmusic.compose.BottomSheetWrapper
+import com.lalilu.lmusic.compose.CustomScreen
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartFloatBtns
@@ -52,20 +53,27 @@ import com.lalilu.lmusic.compose.component.base.SortPanel
 import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import com.lalilu.lplayer.LPlayer
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
-@HomeNavGraph
-@Destination
+class SongsScreen(
+    private val mediaIds: String? = null,
+) : CustomScreen {
+
+    @Composable
+    override fun Content() {
+        SongsScreen(
+            mediaIdsText = mediaIds
+        )
+    }
+}
+
 @Composable
 fun SongsScreen(
     title: String = "全部歌曲",
@@ -74,7 +82,6 @@ fun SongsScreen(
     songsVM: SongsViewModel = singleViewModel(),
     playingVM: PlayingViewModel = singleViewModel(),
     historyVM: HistoryViewModel = singleViewModel(),
-    navigator: DestinationsNavigator,
 ) {
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
@@ -207,7 +214,9 @@ fun SongsScreen(
                     playOrPause = true
                 )
             },
-            onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
+            onLongClickItem = {
+//                navigator.navigate(SongDetailScreenDestination(mediaId = it.id))
+            },
             showPrefixContent = { sortRuleStr.value == SortRule.TrackNumber.name || sortRuleStr.value == SortRule.PlayCount.name },
             prefixContent = { item ->
                 var icon = -1
@@ -279,7 +288,7 @@ fun SortPanelWrapper(
             onClose = { showPanelState.value = false }
         )
 
-        BottomSheetWrapper.BackHandler(enable = { showPanelState.value }) {
+        BackHandler(enabled = showPanelState.value) {
             showPanelState.value = false
         }
     }

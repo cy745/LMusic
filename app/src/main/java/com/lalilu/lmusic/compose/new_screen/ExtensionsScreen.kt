@@ -25,17 +25,12 @@ import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.ExtensionLoadResult
 import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.new_screen.destinations.ExtensionHostScreenDestination
 import com.lalilu.lmusic.utils.extension.rememberFixedStatusBarHeightDp
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 @OptIn(ExperimentalMaterialApi::class)
-@Destination
 @Composable
 fun ExtensionsScreen(
     context: Context = LocalContext.current,
-    navigator: DestinationsNavigator,
 ) {
     val results by ExtensionManager.extensionsFlow.collectAsState()
     val statusBarHeight = rememberFixedStatusBarHeightDp()
@@ -64,9 +59,9 @@ fun ExtensionsScreen(
                         shape = RoundedCornerShape(10.dp),
                         elevation = 1.dp,
                         onClick = {
-                            navigator.navigate(
-                                ExtensionHostScreenDestination(className = extensionResult.className)
-                            )
+//                            navigator.navigate(
+//                                ExtensionHostScreenDestination(className = extensionResult.className)
+//                            )
                         }
                     ) {
                         extensionResult.Place(

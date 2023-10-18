@@ -29,18 +29,14 @@ import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmusic.compose.component.SmartFloatBtns
 import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
 import com.lalilu.lplayer.LPlayer
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 
-@Destination
 @Composable
 fun DictionaryDetailScreen(
     dictionaryId: String,
@@ -48,7 +44,6 @@ fun DictionaryDetailScreen(
     playingVM: PlayingViewModel = singleViewModel(),
     dictionariesVM: DictionariesViewModel = singleViewModel(),
     historyVM: HistoryViewModel = singleViewModel(),
-    navigator: DestinationsNavigator,
 ) {
     val dictionary = dictionariesVM.requireDictionary(dictionaryId) ?: run {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -183,7 +178,9 @@ fun DictionaryDetailScreen(
             songsState = songsState,
             isItemPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) },
             hasLyricState = { playingVM.requireHasLyricState(item = it) },
-            onLongClickItem = { navigator.navigate(SongDetailScreenDestination(mediaId = it.id)) },
+            onLongClickItem = {
+//                navigator.navigate(SongDetailScreenDestination(mediaId = it.id))
+            },
             onClickItem = {
                 playingVM.play(
                     mediaId = it.mediaId,

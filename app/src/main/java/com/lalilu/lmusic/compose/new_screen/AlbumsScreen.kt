@@ -32,20 +32,15 @@ import com.lalilu.lmusic.compose.component.SmartFloatBtns
 import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.AlbumCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.new_screen.destinations.AlbumDetailScreenDestination
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.AlbumsViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 
-@HomeNavGraph
-@Destination
 @Composable
 fun AlbumsScreen(
     title: String = "全部专辑",
@@ -54,7 +49,6 @@ fun AlbumsScreen(
     settingsSp: SettingsSp = koinInject(),
     playingVM: PlayingViewModel = singleViewModel(),
     albumsVM: AlbumsViewModel = singleViewModel(),
-    navigator: DestinationsNavigator,
 ) {
     val albums by albumsVM.albums
     val currentPlaying by LPlayer.runtime.info.playingFlow.collectAsState(null)
@@ -195,7 +189,9 @@ fun AlbumsScreen(
                         }
                     },
                     showTitle = { showTitleState.value },
-                    onClick = { navigator.navigate(AlbumDetailScreenDestination(item.id)) }
+                    onClick = {
+//                        navigator.navigate(AlbumDetailScreenDestination(item.id))
+                    }
                 )
             }
         }

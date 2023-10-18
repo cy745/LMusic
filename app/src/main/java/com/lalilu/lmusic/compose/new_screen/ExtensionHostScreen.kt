@@ -7,10 +7,8 @@ import androidx.compose.runtime.getValue
 import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.ExtensionLoadResult
 import com.lalilu.extension_core.ExtensionManager
-import com.ramcosta.composedestinations.annotation.Destination
 
 
-@Destination
 @Composable
 fun ExtensionHostScreen(
     className: String,

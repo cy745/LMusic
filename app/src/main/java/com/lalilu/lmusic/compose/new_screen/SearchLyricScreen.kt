@@ -44,18 +44,14 @@ import com.lalilu.lmusic.compose.component.card.SearchInputBar
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Destination
 @Composable
 fun SearchLyricScreen(
     mediaId: String,
     keywords: String,
     searchLyricVM: SearchLyricViewModel = singleViewModel(),
-    navigator: DestinationsNavigator,
 ) {
     val scope = rememberCoroutineScope { Dispatchers.Main }
     val showSearchBar = remember { mutableStateOf(true) }
@@ -77,9 +73,9 @@ fun SearchLyricScreen(
             },
             onChecked = {
                 searchLyricVM.saveLyricInto(selectedId.value, mediaId) {
-                    scope.launch {
-                        navigator.popBackStack()
-                    }
+//                    scope.launch {
+//                        navigator.popBackStack()
+//                    }
                 }
             }
         )

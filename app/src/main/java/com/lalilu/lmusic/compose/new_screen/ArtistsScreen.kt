@@ -25,18 +25,13 @@ import com.lalilu.lmusic.compose.component.SmartFloatBtns
 import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.ArtistCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.new_screen.destinations.ArtistDetailScreenDestination
 import com.lalilu.lmusic.utils.extension.getIds
 import com.lalilu.lmusic.viewmodel.ArtistsViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
-@HomeNavGraph
-@Destination
 @Composable
 fun ArtistsScreen(
     title: String = "所有艺术家",
@@ -44,7 +39,6 @@ fun ArtistsScreen(
     artistIdsText: String? = null,
     playingVM: PlayingViewModel = singleViewModel(),
     artistsVM: ArtistsViewModel = singleViewModel(),
-    navigator: DestinationsNavigator,
 ) {
     val artists = artistsVM.artists
     val scope = rememberCoroutineScope()
@@ -186,7 +180,9 @@ fun ArtistsScreen(
                                 ?: false
                         }
                     },
-                    onClick = { navigator.navigate(ArtistDetailScreenDestination(item.name)) }
+                    onClick = {
+//                        navigator.navigate(ArtistDetailScreenDestination(item.name))
+                    }
                 )
             }
         }

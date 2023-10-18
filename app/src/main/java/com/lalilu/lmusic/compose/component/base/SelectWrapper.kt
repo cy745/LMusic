@@ -12,17 +12,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
-import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
-import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistsScreenDestination
 import com.lalilu.lmusic.utils.SelectHelper
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.extension.idsText
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
-import com.ramcosta.composedestinations.navigation.navigate
 import okhttp3.internal.toImmutableList
 
 /**
@@ -35,8 +31,6 @@ fun SongsSelectWrapper(
     extraActionsContent: @Composable (SelectHelper<LSong>) -> Unit = {},
     content: @Composable (SelectHelper<LSong>) -> Unit
 ) {
-    val navController = LocalNavigatorHost.current
-
     SelectWrapper(
         selector = selector,
         extraActionsContent = {
@@ -44,7 +38,7 @@ fun SongsSelectWrapper(
                 text = "添加到歌单",
                 color = Color(0xFF3EA22C),
                 onClick = {
-                    navController.navigate(PlaylistsScreenDestination(it.selectedItems.idsText()))
+//                    navController.navigate(PlaylistsScreenDestination(it.selectedItems.idsText()))
                 }
             )
             extraActionsContent(it)

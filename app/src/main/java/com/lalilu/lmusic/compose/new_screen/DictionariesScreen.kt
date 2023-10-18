@@ -24,20 +24,14 @@ import com.blankj.utilcode.util.ConvertUtils
 import com.lalilu.R
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.new_screen.destinations.DictionaryDetailScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalFoundationApi::class)
-@HomeNavGraph
-@Destination
 @Composable
 fun DictionariesScreen(
     dictionariesVM: DictionariesViewModel = koinInject(),
-    navigator: DestinationsNavigator
 ) {
     val dictionaries by dictionariesVM.allDictionaries
     val blockedPaths by dictionariesVM.getBlockedPathsFlow().collectAsState(initial = emptyList())
@@ -53,7 +47,7 @@ fun DictionariesScreen(
                     .fillMaxWidth()
                     .combinedClickable(
                         onClick = {
-                            navigator.navigate(DictionaryDetailScreenDestination(dictionaryId = item.id))
+//                            navigator.navigate(DictionaryDetailScreenDestination(dictionaryId = item.id))
                         },
                         onLongClick = {
                             if (blockedPaths.contains(item.path)) {

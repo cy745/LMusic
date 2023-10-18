@@ -9,18 +9,14 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.component.card.RecommendRow
-import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
-import com.ramcosta.composedestinations.navigation.navigate
 
 
 @Ext
@@ -33,7 +29,6 @@ class ExtDailyRecommend : Extension {
     @Composable
     private fun Content(
         vm: LibraryViewModel = singleViewModel(),
-        navigator: NavController = LocalNavigatorHost.current,
     ) {
         Column {
             Text(
@@ -52,7 +47,7 @@ class ExtDailyRecommend : Extension {
                     item = { it },
                     contentModifier = Modifier.size(width = 250.dp, height = 250.dp),
                     onClick = {
-                        navigator.navigate(SongDetailScreenDestination(it.id))
+//                        navigator.navigate(SongDetailScreenDestination(it.id))
                     }
                 )
             }

@@ -22,12 +22,9 @@ import com.lalilu.lmusic.compose.component.base.IconButton
 import com.lalilu.lmusic.compose.component.base.SongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import okhttp3.internal.toImmutableList
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
@@ -35,15 +32,12 @@ import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
 @OptIn(ExperimentalFoundationApi::class)
-@PlaylistNavGraph
-@Destination
 @Composable
 fun PlaylistDetailScreen(
     playlistId: Long,
     playingVM: PlayingViewModel = singleViewModel(),
     playlistsVM: PlaylistsViewModel = singleViewModel(),
     playlistDetailVM: PlaylistDetailViewModel = singleViewModel(),
-    navigator: DestinationsNavigator,
 ) {
     val haptic = LocalHapticFeedback.current
     val playlist = playlistDetailVM.playlist
@@ -116,7 +110,7 @@ fun PlaylistDetailScreen(
                         dragModifier = Modifier.detectReorder(dragState),
                         onLongClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            navigator.navigate(SongDetailScreenDestination(item.id))
+//                            navigator.navigate(SongDetailScreenDestination(item.id))
                         },
                         onEnterSelect = { selector.onSelected(item) },
                         isPlaying = { playingVM.isItemPlaying(item.id, Playable::mediaId) },

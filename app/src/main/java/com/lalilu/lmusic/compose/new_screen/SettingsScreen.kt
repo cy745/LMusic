@@ -30,7 +30,6 @@ import com.lalilu.common.CustomRomUtils
 import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
-import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.component.settings.SettingCategory
 import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
 import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
@@ -39,13 +38,10 @@ import com.lalilu.lmusic.compose.component.settings.SettingSwitcher
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.ramcosta.composedestinations.annotation.Destination
 import org.koin.compose.koinInject
 
 
 @SuppressLint("PrivateApi")
-@HomeNavGraph
-@Destination
 @Composable
 fun SettingsScreen(
     eqHelper: EQHelper = koinInject(),
@@ -78,9 +74,9 @@ fun SettingsScreen(
     SmartContainer.LazyStaggeredVerticalGrid(
         columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
     ) {
-        item {
-            NavigatorHeader(route = ScreenData.Settings)
-        }
+//        item {
+//            NavigatorHeader(route = ScreenData.Settings)
+//        }
 
         item {
             SettingCategory(

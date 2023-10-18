@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -30,25 +31,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
-import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.repository.FavoriteRepository
-import com.lalilu.lmusic.compose.BottomSheetWrapper
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.PlaylistsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.NewPlaylistBar
 import com.lalilu.lmusic.compose.component.card.PlaylistCard
-import com.lalilu.lmusic.compose.new_screen.destinations.FavouriteScreenDestination
-import com.lalilu.lmusic.compose.new_screen.destinations.PlaylistDetailScreenDestination
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.utils.extension.getIds
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.utils.rememberSelectState
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -58,13 +54,10 @@ import org.burnoutcrew.reorderable.reorderable
     ExperimentalMaterialApi::class,
     ExperimentalFoundationApi::class
 )
-@PlaylistNavGraph(start = true)
-@Destination
 @Composable
 fun PlaylistsScreen(
     idsText: String? = null,
-    playlistsVM: PlaylistsViewModel = singleViewModel(),
-    navigator: DestinationsNavigator,
+    playlistsVM: PlaylistsViewModel = singleViewModel()
 ) {
     val idsToAdd = idsText.getIds()
 
@@ -80,7 +73,7 @@ fun PlaylistsScreen(
         defaultState = idsToAdd.isNotEmpty(),
         onExitSelect = {
             if (idsToAdd.isNotEmpty()) {
-                navigator.navigateUp()
+//                navigator.navigateUp()
             }
         }
     )
@@ -100,7 +93,7 @@ fun PlaylistsScreen(
             }
         )
 
-        BottomSheetWrapper.BackHandler(enable = { creatingPlaylist.value }) {
+        BackHandler(enabled = creatingPlaylist.value) {
             creatingPlaylist.value = false
         }
     }
@@ -183,11 +176,11 @@ fun PlaylistsScreen(
                                 }
 
                                 item._id == FavoriteRepository.FAVORITE_PLAYLIST_ID -> {
-                                    navigator.navigate(FavouriteScreenDestination)
+//                                    navigator.navigate(FavouriteScreenDestination)
                                 }
 
                                 else -> {
-                                    navigator.navigate(PlaylistDetailScreenDestination(item._id))
+//                                    navigator.navigate(PlaylistDetailScreenDestination(item._id))
                                 }
                             }
                         },

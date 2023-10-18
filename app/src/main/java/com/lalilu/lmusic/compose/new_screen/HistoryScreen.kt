@@ -35,21 +35,15 @@ import com.lalilu.lmusic.compose.component.SmartFloatBtns
 import com.lalilu.lmusic.compose.component.base.SongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.new_screen.destinations.SongDetailScreenDestination
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
-@HomeNavGraph
-@Destination
 @Composable
 fun HistoryScreen(
     historyVM: HistoryViewModel = singleViewModel(),
     playingVM: PlayingViewModel = singleViewModel(),
-    navigator: DestinationsNavigator,
 ) {
     val haptic = LocalHapticFeedback.current
     val songs by historyVM.historyState
@@ -126,7 +120,7 @@ fun HistoryScreen(
                     },
                     onLongClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        navigator.navigate(SongDetailScreenDestination(mediaId = item.id))
+//                        navigator.navigate(SongDetailScreenDestination(mediaId = item.id))
                     },
                     onEnterSelect = { selector.onSelected(item) },
                     isSelected = { selector.selectedItems.any { it.id == item.id } },
