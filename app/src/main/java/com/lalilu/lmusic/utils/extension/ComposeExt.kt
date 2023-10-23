@@ -227,7 +227,9 @@ fun rememberScrollPosition(
     return remember {
         derivedStateOf {
             val index = state.firstVisibleItemIndex
-            itemsHeight[index] = state.layoutInfo.visibleItemsInfo[index].size.height
+
+            itemsHeight[index] =
+                state.layoutInfo.visibleItemsInfo.getOrNull(index)?.size?.height ?: 0
             val sumHeight = (0 until index)
                 .mapNotNull { itemsHeight[it] }
                 .fold(0f) { total, item -> total + item }
@@ -249,7 +251,8 @@ fun rememberScrollPosition(
     return remember {
         derivedStateOf {
             val index = state.firstVisibleItemIndex
-            itemsHeight[index] = state.layoutInfo.visibleItemsInfo[index].size
+
+            itemsHeight[index] = state.layoutInfo.visibleItemsInfo.getOrNull(index)?.size ?: 0
             val sumHeight = (0 until index)
                 .mapNotNull { itemsHeight[it] }
                 .fold(0f) { total, item -> total + item }
