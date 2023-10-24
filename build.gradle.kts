@@ -5,3 +5,13 @@ plugins {
     alias(libs.plugins.kotlin) apply false
     alias(libs.plugins.ksp) apply false
 }
+
+gradle.taskGraph.whenReady {
+    allTasks.onEach {
+        // 避免ksp类型任务被跳过
+        if (it.name == "kspDebugKotlin") {
+            it.setOnlyIf { true }
+            it.outputs.upToDateWhen { false }
+        }
+    }
+}
