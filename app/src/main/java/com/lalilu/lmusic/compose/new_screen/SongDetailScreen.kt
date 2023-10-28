@@ -3,19 +3,25 @@ package com.lalilu.lmusic.compose.new_screen
 import android.content.ComponentName
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Chip
 import androidx.compose.material.ChipDefaults
@@ -24,85 +30,142 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.ScreenKey
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.google.accompanist.flowlayout.FlowRow
-import com.lalilu.common.base.Playable
-import com.lalilu.lmusic.compose.CustomScreen
-import com.lalilu.lmusic.compose.component.DynamicTips
-import com.lalilu.lmusic.compose.component.SmartBar
-import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.R
+import com.lalilu.lmedia.LMedia
+import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.compose.DynamicScreen
+import com.lalilu.lmusic.compose.NavigationWrapper
+import com.lalilu.lmusic.compose.ScreenAction
+import com.lalilu.lmusic.compose.ScreenInfo
+import com.lalilu.lmusic.compose.component.LLazyColumn
+import com.lalilu.lmusic.compose.component.base.IconButton
+import com.lalilu.lmusic.compose.component.base.IconCheckButton
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
-import com.lalilu.lmusic.compose.component.card.SongDetailActionsBar
 import com.lalilu.lmusic.compose.component.card.SongInformationCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
+import com.lalilu.lmusic.compose.presenter.DetailScreenAction
+import com.lalilu.lmusic.compose.presenter.DetailScreenIsPlayingPresenter
+import com.lalilu.lmusic.compose.presenter.DetailScreenLikeBtnPresenter
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.checkActivityIsExist
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.lmusic.utils.extension.rememberScrollPosition
-import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.utils.recomposeHighlighter
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
-import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lplayer.extensions.QueueAction
 
 data class SongDetailScreen(
     private val mediaId: String
-) : CustomScreen {
+) : DynamicScreen() {
     override val key: ScreenKey = "${super.key}:$mediaId"
+
+    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
+        title = R.string.screen_title_song_detail
+    )
 
     @Composable
     override fun Content() {
-        DetailScreen(mediaId = mediaId)
+        val song = LMedia.getFlow<LSong>(id = mediaId)
+            .collectAsState(initial = null)
+
+        RegisterActions {
+            listOf(
+                ScreenAction.StaticAction(
+                    title = R.string.button_set_song_to_next,
+                    color = Color.Cyan,
+                    onAction = { QueueAction.AddToNext(mediaId).action() }
+                ),
+                ScreenAction.ComposeAction {
+                    val state = DetailScreenLikeBtnPresenter(mediaId)
+
+                    IconCheckButton(
+                        modifier = Modifier
+                            .recomposeHighlighter()
+                            .fillMaxHeight()
+                            .aspectRatio(4f / 3f),
+                        shape = RectangleShape,
+                        getIsChecked = { state.isLiked },
+                        onCheckedChange = { state.onAction(if (it) DetailScreenAction.Like else DetailScreenAction.UnLike) },
+                        checkedColor = MaterialTheme.colors.primary,
+                        checkedIconRes = R.drawable.ic_heart_3_fill,
+                        normalIconRes = R.drawable.ic_heart_3_line
+                    )
+                },
+                ScreenAction.ComposeAction {
+                    val state = DetailScreenIsPlayingPresenter(mediaId)
+
+                    AnimatedContent(
+                        modifier = Modifier
+                            .recomposeHighlighter()
+                            .fillMaxHeight()
+                            .aspectRatio(3f / 2f),
+                        targetState = state.isPlaying,
+                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        label = ""
+                    ) { isPlaying ->
+                        val icon =
+                            if (isPlaying) R.drawable.ic_pause_line else R.drawable.ic_play_line
+                        IconButton(
+                            modifier = Modifier.fillMaxSize(),
+                            color = Color(0xFF006E7C),
+                            shape = RectangleShape,
+                            text = stringResource(id = R.string.text_button_play),
+                            icon = painterResource(id = icon),
+                            onClick = { state.onAction(DetailScreenAction.PlayPause) }
+                        )
+                    }
+                },
+            )
+        }
+
+        DetailScreen(
+            mediaId = { mediaId },
+            getSong = { song.value }
+        )
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun DetailScreen(
-    mediaId: String,
-    playingVM: PlayingViewModel = singleViewModel(),
-    playlistsVM: PlaylistsViewModel = singleViewModel(),
-    songDetailVM: SongDetailViewModel = singleViewModel(),
+    mediaId: () -> String,
+    getSong: () -> LSong?
 ) {
-    LaunchedEffect(mediaId) {
-        songDetailVM.updateMediaId(mediaId)
-    }
-
     val context = LocalContext.current
-    val song = songDetailVM.song.collectAsState(initial = null).value
+    val song = getSong()
+
     if (song == null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = "[Error]加载失败 #$mediaId")
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "[Error]加载失败 #${mediaId()}")
         }
         return
     }
 
-    val showActionBar = remember { mutableStateOf(true) }
-    val isLiked by playlistsVM.checkIsFavorite(song).collectAsState(initial = false)
-    val gridState = rememberLazyGridState()
-    val scrollPosition = rememberScrollPosition(state = gridState)
+    val listState = rememberLazyListState()
+    val scrollPosition = rememberScrollPosition(state = listState)
     val bgAlpha = remember {
         derivedStateOf {
             return@derivedStateOf 1f - (scrollPosition.value / 500f)
@@ -121,34 +184,6 @@ private fun DetailScreen(
         }
     }
 
-    SmartBar.RegisterExtraBarContent(showActionBar) {
-        SongDetailActionsBar(
-            isPlaying = { playingVM.isItemPlaying(song.id, Playable::mediaId) },
-            getIsLiked = { isLiked },
-            onIsLikedChange = {
-                if (it) playlistsVM.addToFavorite(song) else playlistsVM.removeFromFavorite(song)
-            },
-            onAddSongToPlaylist = {
-//                navigator.navigate(PlaylistsScreenDestination(idsText = listOf(song).idsText()))
-            },
-            onSetSongToNext = {
-                DynamicTips.push(
-                    title = song.name,
-                    subTitle = "下一首播放",
-                    imageData = song
-                )
-                QueueAction.AddToNext(song.mediaId).action()
-            },
-            onPlayOrPause = {
-                playingVM.play(
-                    mediaId = song.id,
-                    addToNext = true,
-                    playOrPause = true
-                )
-            }
-        )
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -157,40 +192,38 @@ private fun DetailScreen(
     ) {
         AsyncImage(
             modifier = Modifier
-                .recomposeHighlighter()
                 .fillMaxWidth()
+                .aspectRatio(1f)
                 .edgeTransparent(position = EDGE_BOTTOM, percent = 1.5f)
-                .graphicsLayer {
-                    alpha = bgAlpha.value
-                },
-            model = ImageRequest.Builder(LocalContext.current)
+                .graphicsLayer { alpha = bgAlpha.value },
+            model = ImageRequest.Builder(context)
                 .data(song)
                 .crossfade(true)
                 .build(),
-            contentScale = ContentScale.FillWidth,
+            contentScale = ContentScale.Crop,
             contentDescription = ""
         )
-        SmartContainer.LazyVerticalGrid(
-            state = gridState,
-            modifier = Modifier.fillMaxSize(),
-            columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
+
+        LLazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .recomposeHighlighter(),
             verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
             item {
-                Spacer(modifier = Modifier.height(100.dp))
+                Spacer(modifier = Modifier.height(150.dp))
             }
 
             item {
                 NavigatorHeader(
                     title = song.name,
                     columnExtraContent = {
-                        FlowRow(mainAxisSpacing = 8.dp) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             song.artists.forEach {
                                 Chip(
                                     onClick = {
-//                                        navigator.navigate(
-//                                            ArtistDetailScreenDestination(artistName = it.name)
-//                                        )
+                                        NavigationWrapper.navigator
+                                            ?.showSingle(ArtistDetailScreen(artistName = it.name))
                                     },
                                     colors = ChipDefaults.outlinedChipColors(),
                                 ) {
@@ -206,25 +239,16 @@ private fun DetailScreen(
                             }
                         }
                     }
-                ) {
-//                    IconButton(onClick = { }) {
-//                        Icon(
-//                            painter = painterResource(id = R.drawable.ic_fullscreen_line),
-//                            contentDescription = "查看图片"
-//                        )
-//                    }
-                }
+                )
             }
 
             song.album?.let {
                 item {
                     Surface(
-                        modifier = Modifier
-                            .padding(start = 20.dp, end = 20.dp)
-                            .width(intrinsicSize = IntrinsicSize.Min),
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp),
                         shape = RoundedCornerShape(20.dp),
                         onClick = {
-//                            navigator.navigate(AlbumDetailScreenDestination(it.id))
+                            NavigationWrapper.navigator?.showSingle(AlbumDetailScreen(albumId = it.id))
                         }
                     ) {
                         Row(
@@ -294,19 +318,22 @@ private fun DetailScreen(
                         shape = RoundedCornerShape(10.dp),
                         color = Color(0xFF3EA22C),
                         onClick = {
-//                            navigator.navigate(
-//                                SearchLyricScreenDestination(
-//                                    mediaId = song.id,
-//                                    keywords = song.name
-//                                )
-//                            )
+                            NavigationWrapper.navigator?.showSingle(
+                                SearchLyricScreen(
+                                    mediaId = song.id,
+                                    keywords = song.name
+                                )
+                            )
                         }
                     )
                 }
             }
 
             item {
-                SongInformationCard(song = song)
+                SongInformationCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    song = song
+                )
             }
         }
     }

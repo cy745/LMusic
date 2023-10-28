@@ -2,6 +2,7 @@ package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.BaseMatchable
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.BaseSortStrategy
@@ -14,7 +15,6 @@ import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmedia.repository.HistoryRepository
 import com.lalilu.lmusic.datastore.BaseSp
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -28,22 +28,15 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SongsViewModel(
-    settingsSp: SettingsSp,
-    lMediaRepo: LMediaRepository,
+    private val settingsSp: SettingsSp,
     private val historyRepo: HistoryRepository
 ) : ViewModel() {
-    private val showAllItem: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val songIdsFlow: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
-    private val songsSource = showAllItem
-        .flatMapLatest { if (it) lMediaRepo.allSongsFlow else lMediaRepo.songsFlow }
-        .flatMapLatest { songs ->
-            songIdsFlow.mapLatest {
-                if (it.isEmpty()) return@mapLatest songs
-                songs.filter { song -> song.id in it }
-            }
-        }
+    private val songsSource = songIdsFlow.flatMapLatest {
+        if (it.isEmpty()) LMedia.getFlow<LSong>() else LMedia.flowMapBy<LSong>(it)
+    }
 
-    val searcher = ItemsBaseSearcher(songsSource)
+    private val searcher = ItemsBaseSearcher(songsSource)
     private val sorter = object : ItemsBaseSorter<LSong>(searcher.output, settingsSp) {
         override fun obtainStrategy(): SortStrategy<LSong> = object : BaseSortStrategy<LSong>() {
             override fun sortWithFlow(
@@ -81,14 +74,12 @@ class SongsViewModel(
 
     fun updateBySongs(
         songs: List<LSong>,
-        showAll: Boolean = false,
         sortFor: String = Sortable.SORT_FOR_SONGS,
         supportSortRules: List<SortRule>? = null,
         supportGroupRules: List<GroupRule>? = null,
         supportOrderRules: List<OrderRule>? = null
     ) = updateByIds(
         songIds = songs.map { it.id },
-        showAll = showAll,
         sortFor = sortFor,
         supportSortRules = supportSortRules,
         supportGroupRules = supportGroupRules,
@@ -97,13 +88,11 @@ class SongsViewModel(
 
     fun updateByIds(
         songIds: List<String>,
-        showAll: Boolean = false,
         sortFor: String = Sortable.SORT_FOR_SONGS,
         supportSortRules: List<SortRule>? = null,
         supportGroupRules: List<GroupRule>? = null,
         supportOrderRules: List<OrderRule>? = null
     ) = viewModelScope.launch {
-        showAllItem.value = showAll
         songIdsFlow.value = songIds
         sorter.updateSortFor(
             sortFor = sortFor,

@@ -43,8 +43,8 @@ import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
 import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
-import com.lalilu.lmusic.viewmodel.SongDetailViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
+import com.lalilu.lmusic.viewmodel.TempViewModel
 import com.lalilu.lplayer.notification.Notifier
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
@@ -108,10 +108,10 @@ val ViewModelModule = module {
     viewModelOf(::DictionariesViewModel)
     viewModelOf(::HistoryViewModel)
     viewModelOf(::SongsViewModel)
-    viewModelOf(::SongDetailViewModel)
     viewModelOf(::SearchLyricViewModel)
     viewModelOf(::ExtensionsViewModel)
     viewModelOf(::LibraryViewModel)
+    viewModelOf(::TempViewModel)
 }
 
 val RuntimeModule = module {
