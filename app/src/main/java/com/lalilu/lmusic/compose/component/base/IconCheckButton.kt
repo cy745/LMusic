@@ -18,12 +18,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 
 @Composable
 fun IconCheckButton(
     modifier: Modifier = Modifier,
+    shape: Shape = CircleShape,
     checkedColor: Color = MaterialTheme.colors.primary,
     @DrawableRes checkedIconRes: Int,
     @DrawableRes normalIconRes: Int,
@@ -34,16 +36,18 @@ fun IconCheckButton(
     val isChecked = getIsChecked()
     val pressedState = interactionSource.collectIsPressedAsState()
     val iconColor by animateColorAsState(
-        if (isChecked) checkedColor else dayNightTextColor(0.3f)
+        targetValue = if (isChecked) checkedColor else dayNightTextColor(0.3f),
+        label = ""
     )
     val scaleValue by animateFloatAsState(
         animationSpec = SpringSpec(dampingRatio = Spring.DampingRatioMediumBouncy),
-        targetValue = if (pressedState.value) 1.1f else 1f
+        targetValue = if (pressedState.value) 1.1f else 1f,
+        label = ""
     )
 
     Surface(
         modifier = modifier.scale(scaleValue),
-        shape = CircleShape,
+        shape = shape,
         color = iconColor.copy(0.15f)
     ) {
         IconToggleButton(

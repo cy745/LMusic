@@ -21,10 +21,11 @@ import java.text.SimpleDateFormat
 
 @Composable
 fun SongInformationCard(
+    modifier: Modifier = Modifier,
     song: LSong
 ) {
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 20.dp)
             .width(intrinsicSize = IntrinsicSize.Min),
         shape = RoundedCornerShape(20.dp)

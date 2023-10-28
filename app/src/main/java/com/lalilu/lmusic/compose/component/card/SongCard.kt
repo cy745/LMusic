@@ -113,8 +113,7 @@ fun SongCard(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(horizontal = 10.dp)
-            .clip(RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(2.dp))
             .background(color = bgColor)
             .combinedClickable(
                 interactionSource = interactionSource,
@@ -122,7 +121,7 @@ fun SongCard(
                 onClick = onClick,
                 onLongClick = onLongClick
             )
-            .padding(vertical = 8.dp, horizontal = 10.dp),
+            .padding(vertical = 8.dp, horizontal = 15.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(20.dp)
     ) {
