@@ -39,6 +39,7 @@ object NavigationWrapper {
     @Composable
     fun Content(
         modifier: Modifier = Modifier,
+        baseContent: @Composable () -> Unit
     ) {
         BottomSheetNavigator(
             defaultScreen = HomeScreen,
@@ -85,7 +86,7 @@ object NavigationWrapper {
                     }
                 }
             },
-            content = { Playing.Content() }
+            content = { baseContent() }
         )
     }
 }

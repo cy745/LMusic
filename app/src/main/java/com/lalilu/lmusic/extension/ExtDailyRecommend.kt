@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
+import com.lalilu.lmusic.GlobalNavigator
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -21,10 +22,9 @@ import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
 @Ext
 class ExtDailyRecommend : Extension {
-    override fun getContentMap(): Map<String, @Composable (Map<String, String>) -> Unit> =
-        mapOf(
-            Content.COMPONENT_HOME to { Content() }
-        )
+    override fun getContentMap(): Map<String, @Composable (Map<String, String>) -> Unit> = mapOf(
+        Content.COMPONENT_HOME to { Content() }
+    )
 
     @Composable
     private fun Content(
@@ -46,9 +46,7 @@ class ExtDailyRecommend : Extension {
                 RecommendCard2(
                     item = { it },
                     contentModifier = Modifier.size(width = 250.dp, height = 250.dp),
-                    onClick = {
-//                        navigator.navigate(SongDetailScreenDestination(it.id))
-                    }
+                    onClick = { GlobalNavigator.goToDetailOf(mediaId = it.id) }
                 )
             }
         }

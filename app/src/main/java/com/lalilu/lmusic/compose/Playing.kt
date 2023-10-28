@@ -25,6 +25,7 @@ import com.lalilu.common.HapticUtils
 import com.lalilu.common.base.Playable
 import com.lalilu.databinding.FragmentPlayingRebuildBinding
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.GlobalNavigator
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.adapter.ViewEvent
 import com.lalilu.lmusic.adapter.loadCover
@@ -139,7 +140,10 @@ object Playing {
                 when (event) {
                     ViewEvent.OnClick -> playingVM.play(mediaId = item.mediaId, playOrPause = true)
                     ViewEvent.OnLongClick -> {
-                        NavigationWrapper.navigator?.showSingle(SongDetailScreen(item.mediaId))
+                        GlobalNavigator.goToDetailOf(
+                            navigator = NavigationWrapper.navigator,
+                            mediaId = item.mediaId
+                        )
                         NavigationWrapper.navigator?.show()
                     }
 

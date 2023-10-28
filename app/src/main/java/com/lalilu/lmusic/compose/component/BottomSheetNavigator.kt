@@ -231,3 +231,11 @@ internal fun BottomSheetNavigatorBackHandler(
         }
     }
 }
+
+@Composable
+fun BackHandler(
+    navigator: BottomSheetNavigator = LocalBottomSheetNavigator.current,
+    onBack: () -> Unit
+) {
+    BackHandler(enabled = navigator.isVisible, onBack = onBack)
+}

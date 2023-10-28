@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import com.lalilu.lmusic.compose.component.FixedLayout
+import com.lalilu.lmusic.compose.new_screen.HomeScreen
 import com.lalilu.lmusic.compose.screen.ShowScreen
 import com.lalilu.lmusic.utils.extension.LocalWindowSize
 import com.lalilu.lmusic.utils.extension.rememberIsPad
@@ -24,8 +25,15 @@ object LayoutWrapper {
         }
 
         DialogWrapper.Content {
-            FixedLayout {
-                NavigationWrapper.Content()
+            if (isPad) {
+                DrawerWrapper.Content(
+                    mainContent = { Playing.Content() },
+                    secondContent = { HomeScreen.Content() }
+                )
+            } else {
+                FixedLayout {
+                    NavigationWrapper.Content { Playing.Content() }
+                }
             }
         }
 

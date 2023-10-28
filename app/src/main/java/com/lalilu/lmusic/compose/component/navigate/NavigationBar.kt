@@ -11,13 +11,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -33,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -43,6 +46,8 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.R
 import com.lalilu.lmusic.compose.CustomScreen
+import com.lalilu.lmusic.compose.DynamicScreen
+import com.lalilu.lmusic.compose.ScreenAction
 import com.lalilu.lmusic.compose.TabScreen
 import com.lalilu.lmusic.compose.component.BottomSheetNavigator
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
@@ -62,6 +67,9 @@ fun NavigationBar(
     val previousTitle by remember {
         derivedStateOf { previousInfo?.title ?: R.string.bottom_sheet_navigate_back }
     }
+    val screenActions by remember {
+        derivedStateOf { (currentScreen as? DynamicScreen)?.actions ?: emptyList() }
+    }
 
     AnimatedContent(
         modifier = modifier.fillMaxWidth(),
@@ -77,6 +85,7 @@ fun NavigationBar(
         } else {
             NavigateCommonBar(
                 previousTitle = { previousTitle },
+                screenActions = { screenActions },
                 navigator = navigator
             )
         }
@@ -94,13 +103,13 @@ fun NavigateTabBar(
         modifier = modifier
             .clickable(enabled = false) {}
             .height(52.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 5.dp),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         tabScreens().forEach {
             NavigateItem(
+                modifier = Modifier.weight(1f),
                 titleRes = { it.getScreenInfo().title },
                 iconRes = { it.getScreenInfo().icon ?: R.drawable.ic_close_line },
                 isSelected = { currentScreen() === it },
@@ -114,24 +123,23 @@ fun NavigateTabBar(
 fun NavigateCommonBar(
     modifier: Modifier = Modifier,
     previousTitle: () -> Int,
+    screenActions: () -> List<ScreenAction>,
     navigator: BottomSheetNavigator
 ) {
     Row(
         modifier = modifier
             .clickable(enabled = false) {}
             .height(52.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         val contentColor =
             contentColorFor(backgroundColor = MaterialTheme.colors.background)
         TextButton(
-            contentPadding = PaddingValues(start = 8.dp, end = 16.dp),
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = contentColor
-            ),
+            modifier = Modifier.fillMaxHeight(),
+            shape = RectangleShape,
+            contentPadding = PaddingValues(start = 20.dp, end = 28.dp),
+            colors = ButtonDefaults.textButtonColors(contentColor = contentColor),
             onClick = {
                 if (navigator.items.size == 1) {
                     navigator.hide()
@@ -145,24 +153,78 @@ fun NavigateCommonBar(
                 contentDescription = "backButtonIcon",
                 colorFilter = ColorFilter.tint(color = contentColor)
             )
-            Text(
-                text = stringResource(id = previousTitle()),
-                fontSize = 14.sp
-            )
+            AnimatedContent(targetState = previousTitle(), label = "") {
+                Text(
+                    text = stringResource(id = it),
+                    fontSize = 14.sp
+                )
+            }
         }
 
-        TextButton(
-            contentPadding = PaddingValues(horizontal = 20.dp),
-            colors = ButtonDefaults.textButtonColors(
-                backgroundColor = Color(0x25FE4141),
-                contentColor = Color(0xFFFE4141)
-            ),
-            onClick = { navigator.hide() }
-        ) {
-            Text(
-                text = stringResource(id = R.string.bottom_sheet_navigate_close),
-                fontSize = 14.sp
-            )
+        AnimatedContent(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+            targetState = screenActions(), label = ""
+        ) { actions ->
+            LazyRow(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                items(items = actions) {
+                    if (it is ScreenAction.ComposeAction) {
+                        it.content.invoke()
+                        return@items
+                    }
+
+                    if (it is ScreenAction.StaticAction) {
+                        TextButton(
+                            modifier = Modifier.fillMaxHeight(),
+                            shape = RectangleShape,
+                            contentPadding = PaddingValues(horizontal = 20.dp),
+                            colors = ButtonDefaults.textButtonColors(
+                                backgroundColor = it.color.copy(alpha = 0.15f),
+                                contentColor = it.color
+                            ),
+                            onClick = it.onAction
+                        ) {
+                            if (it.icon != null) {
+                                Image(
+                                    modifier = Modifier.size(20.dp),
+                                    painter = painterResource(id = it.icon),
+                                    contentDescription = stringResource(id = it.title),
+                                    colorFilter = ColorFilter.tint(color = it.color)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                            }
+                            Text(
+                                text = stringResource(id = it.title),
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+
+                if (actions.isEmpty()) {
+                    item {
+                        TextButton(
+                            modifier = Modifier.fillMaxHeight(),
+                            shape = RectangleShape,
+                            contentPadding = PaddingValues(start = 20.dp, end = 28.dp),
+                            colors = ButtonDefaults.textButtonColors(
+                                backgroundColor = Color(0x25FE4141),
+                                contentColor = Color(0xFFFE4141)
+                            ),
+                            onClick = { navigator.hide() }
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.bottom_sheet_navigate_close),
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -170,6 +232,7 @@ fun NavigateCommonBar(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NavigateItem(
+    modifier: Modifier = Modifier,
     titleRes: () -> Int,
     iconRes: () -> Int,
     isSelected: () -> Boolean = { false },
@@ -179,16 +242,20 @@ fun NavigateItem(
     unSelectedColor: Color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
 ) {
     val titleValue = stringResource(id = titleRes())
-    val iconTintColor = animateColorAsState(if (isSelected()) baseColor else unSelectedColor)
-    val backgroundColor by animateColorAsState(if (isSelected()) baseColor.copy(alpha = 0.12f) else Color.Transparent)
+    val iconTintColor = animateColorAsState(
+        targetValue = if (isSelected()) baseColor else unSelectedColor,
+        label = ""
+    )
+//    val backgroundColor by animateColorAsState(
+//        targetValue = if (isSelected()) baseColor.copy(alpha = 0.12f) else Color.Transparent,
+//        label = ""
+//    )
 
     Surface(
-        color = backgroundColor,
+        color = Color.Transparent,
         onClick = onClick,
-        shape = CircleShape,
-        modifier = Modifier
-            .size(48.dp)
-            .aspectRatio(1f)
+        shape = RectangleShape,
+        modifier = modifier
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
