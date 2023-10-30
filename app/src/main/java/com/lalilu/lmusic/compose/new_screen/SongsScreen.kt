@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.rememberScreenModel
 import com.lalilu.R
 import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.entity.LSong
@@ -67,7 +70,6 @@ import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
-import com.lalilu.lmusic.viewmodel.TempViewModel
 import org.koin.compose.koinInject
 
 private val defaultSortPresets = listOf(
@@ -99,6 +101,13 @@ private val defaultOrderRules = listOf(
     OrderRule.Shuffle
 )
 
+class TempScreenModel : ScreenModel {
+    val isFastJumping = mutableStateOf(false)
+    val isSelecting = mutableStateOf(false)
+    val selectedItems = mutableStateOf<List<Any>>(emptyList())
+    val showSortPanel = mutableStateOf(false)
+}
+
 data class SongsScreen(
     private val title: String? = null,
     private val mediaIds: List<String> = emptyList()
@@ -111,9 +120,9 @@ data class SongsScreen(
 
     @Composable
     override fun Content() {
-        val tempVM: TempViewModel = singleViewModel()
         val playingVM: PlayingViewModel = singleViewModel()
         val historyVM: HistoryViewModel = singleViewModel()
+        val tempSM: TempScreenModel = rememberScreenModel { TempScreenModel() }
 
         val listState: LazyListState = rememberLazyListState()
         val scrollHelper = rememberLazyListScrollToHelper(listState = listState)
@@ -124,7 +133,7 @@ data class SongsScreen(
                     title = R.string.screen_action_sort,
                     icon = R.drawable.ic_sort_desc,
                     color = Color(0xFF1793FF),
-                    onAction = { tempVM.showSortPanel.value = true }
+                    onAction = { tempSM.showSortPanel.value = true }
                 ),
                 ScreenAction.StaticAction(
                     title = R.string.screen_action_locate_playing_item,
@@ -141,10 +150,8 @@ data class SongsScreen(
         Songs(
             mediaIds = mediaIds,
             listState = listState,
+            tempSM = tempSM,
             scrollToHelper = scrollHelper,
-            showPrefixContent = { sortRuleStr ->
-                sortRuleStr.value == SortRule.TrackNumber.name || sortRuleStr.value == SortRule.PlayCount.name
-            },
             headerContent = {
                 item {
                     NavigatorHeader(
@@ -195,13 +202,15 @@ fun DynamicScreen.Songs(
     supportOrderRules: List<OrderRule> = defaultOrderRules,
     listState: LazyListState = rememberLazyListState(),
     scrollToHelper: LazyListScrollToHelper = rememberLazyListScrollToHelper(listState),
-    songsVM: SongsViewModel = singleViewModel(),
-    playingVM: PlayingViewModel = singleViewModel(),
-    tempVM: TempViewModel = singleViewModel(),
-    showPrefixContent: (sortRuleStr: State<String>) -> Boolean = { false },
+    tempSM: TempScreenModel = rememberScreenModel { TempScreenModel() },
+    showPrefixContent: (sortRuleStr: State<String>) -> Boolean = { it.value == SortRule.TrackNumber.name || it.value == SortRule.PlayCount.name },
     prefixContent: @Composable (item: LSong, sortRuleStr: State<String>) -> Unit = { _, _ -> },
     headerContent: LazyListScope.(State<Map<GroupIdentity, List<LSong>>>) -> Unit = {}
 ) {
+    val songsVM: SongsViewModel = singleViewModel()
+    val playingVM: PlayingViewModel = singleViewModel()
+    val songsState by songsVM.songsState
+
     LaunchedEffect(mediaIds) {
         songsVM.updateByIds(
             songIds = mediaIds,
@@ -212,22 +221,20 @@ fun DynamicScreen.Songs(
         )
     }
 
-    val songsState by songsVM.songsState
-
     HeaderJumperWrapper(
         items = { songsState.keys },
-        isVisible = tempVM.isFastJumping,
+        isVisible = tempSM.isFastJumping,
         scrollToHelper = scrollToHelper
     ) { scrollHelper, headerJumperWrapperVisible ->
         SelectPanelWrapper(
             selector = rememberItemSelectHelper(
-                isSelecting = tempVM.isSelecting,
-                selected = tempVM.selectedItems
+                isSelecting = tempSM.isSelecting,
+                selected = tempSM.selectedItems
             )
         ) { selector ->
             SortPanelWrapper(
                 sortFor = sortFor,
-                showPanelState = tempVM.showSortPanel,
+                showPanelState = tempSM.showSortPanel,
                 supportSortPresets = { supportSortPresets },
                 supportGroupRules = { supportGroupRules },
                 supportOrderRules = { supportOrderRules },
@@ -295,7 +302,7 @@ fun DynamicScreen.SortPanelWrapper(
 }
 
 @Composable
-private fun DynamicScreen.SelectPanelWrapper(
+fun DynamicScreen.SelectPanelWrapper(
     selector: ItemSelectHelper = rememberItemSelectHelper(),
     content: @Composable (selector: ItemSelectHelper) -> Unit,
 ) {
