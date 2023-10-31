@@ -12,7 +12,7 @@ import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.SortStrategy
 import com.lalilu.lmedia.extension.Sortable
-import com.lalilu.lmedia.repository.HistoryRepository
+import com.lalilu.lmusic.repository.HistoryRepository
 import com.lalilu.lmusic.datastore.BaseSp
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.toState

@@ -9,17 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.lalilu.R
-import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartBar
 import com.lalilu.lmusic.utils.SelectHelper
-import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.utils.rememberSelectState
-import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
-import okhttp3.internal.toImmutableList
 
 /**
  * 将选择歌曲时展开对应的选择工具栏的逻辑封装，
@@ -41,64 +35,6 @@ fun SongsSelectWrapper(
 //                    navController.navigate(PlaylistsScreenDestination(it.selectedItems.idsText()))
                 }
             )
-            extraActionsContent(it)
-        },
-        content = content
-    )
-}
-
-@Composable
-fun rememberSongsSelectWrapper(
-    selector: SelectHelper<LSong> = rememberSelectState(),
-): SelectHelper<LSong> {
-    SongsSelectWrapper(selector = selector) {}
-    return selector
-}
-
-@Composable
-fun PlaylistsSelectWrapper(
-    isAddingSongs: Boolean = false,
-    songsToAdd: List<String> = emptyList(),
-    selector: SelectHelper<LPlaylist> = rememberSelectState(),
-    playlistsVM: PlaylistsViewModel = singleViewModel(),
-    extraActionsContent: @Composable (SelectHelper<LPlaylist>) -> Unit = {},
-    content: @Composable (SelectHelper<LPlaylist>) -> Unit
-) {
-    SelectWrapper(
-        selector = selector,
-        getTipsText = {
-            if (isAddingSongs) {
-                "${songsToAdd.size}首歌 -> ${it.selectedItems.size}歌单"
-            } else {
-                "已选择: ${it.selectedItems.size}"
-            }
-        },
-        extraActionsContent = {
-            if (isAddingSongs) {
-                IconTextButton(
-                    text = "确认保存",
-                    color = Color(0xFF3EA22C),
-                    onClick = {
-                        if (it.selectedItems.isNotEmpty()) {
-                            playlistsVM.addSongsIntoPlaylists(
-                                pIds = it.selectedItems.map(LPlaylist::_id),
-                                mediaIds = songsToAdd
-                            )
-                            it.clear()
-                        }
-                    }
-                )
-            } else {
-                IconButton(
-                    color = Color(0xFFFE4141),
-                    icon = painterResource(id = R.drawable.ic_delete_bin_6_line),
-                    text = "Delete",
-                    onClick = {
-                        playlistsVM.removePlaylists(it.selectedItems.toImmutableList())
-                        it.clear()
-                    }
-                )
-            }
             extraActionsContent(it)
         },
         content = content

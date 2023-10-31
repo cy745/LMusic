@@ -2,10 +2,10 @@ package com.lalilu.lmusic.service
 
 import android.content.Intent
 import com.lalilu.common.base.Playable
-import com.lalilu.lmedia.entity.HISTORY_TYPE_SONG
-import com.lalilu.lmedia.entity.LHistory
-import com.lalilu.lmedia.repository.HistoryRepository
+import com.lalilu.lmusic.repository.HistoryRepository
 import com.lalilu.lmusic.Config
+import com.lalilu.lmusic.datastore.HISTORY_TYPE_SONG
+import com.lalilu.lmusic.datastore.LHistory
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner

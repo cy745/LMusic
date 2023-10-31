@@ -10,9 +10,21 @@
     <string name="screen_title_guiding">操作引导教程</string>
     <string name="screen_title_home">首页</string>
     <string name="screen_title_search">搜索</string>
+    <string name="screen_title_settings">设置</string>
+    <string name="screen_title_songs">歌曲</string>
+    <string name="screen_title_albums">专辑</string>
+    <string name="screen_title_artists">艺术家</string>
+    <string name="screen_title_playlist">歌单</string>
+    <string name="screen_title_song_detail">歌曲详情</string>
+    <string name="screen_title_artist_detail">歌手详情</string>
+    <string name="screen_title_album_detail">专辑详情</string>
 
     <string name="bottom_sheet_navigate_back">返回</string>
     <string name="bottom_sheet_navigate_close">关闭</string>
+
+    <string name="screen_action_sort">排序</string>
+    <string name="screen_action_locate_playing_item">定位当前播放歌曲</string>
+
 
     <string name="audio_type">音频格式</string>
     <string name="default_slogan">LMusic…</string>

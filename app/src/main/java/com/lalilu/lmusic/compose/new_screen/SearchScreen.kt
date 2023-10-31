@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Chip
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -30,13 +29,13 @@ import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
 import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.entity.LArtist
-import com.lalilu.lmedia.entity.LPlaylist
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmusic.GlobalNavigator
+import com.lalilu.lmusic.compose.DynamicScreen
 import com.lalilu.lmusic.compose.ScreenInfo
 import com.lalilu.lmusic.compose.TabScreen
 import com.lalilu.lmusic.compose.component.LLazyColumn
 import com.lalilu.lmusic.compose.component.base.SearchInputBar
-import com.lalilu.lmusic.compose.component.base.rememberSongsSelectWrapper
 import com.lalilu.lmusic.compose.component.card.ArtistCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.card.RecommendRow
@@ -47,18 +46,17 @@ import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 
-object SearchScreen : TabScreen {
+object SearchScreen : DynamicScreen(), TabScreen {
+
     override fun getScreenInfo(): ScreenInfo = ScreenInfo(
         title = R.string.screen_title_search,
         icon = R.drawable.ic_search_2_line
     )
 
-    override fun getExtraContent(): @Composable () -> Unit = {
-        SearchBar()
-    }
-
     @Composable
     override fun Content() {
+        RegisterExtraContent { SearchBar() }
+
         SearchScreen()
     }
 }
@@ -79,13 +77,12 @@ fun SearchBar(
     ExperimentalMaterialApi::class
 )
 @Composable
-private fun SearchScreen(
+private fun DynamicScreen.SearchScreen(
     playingVM: PlayingViewModel = singleViewModel(),
     searchVM: SearchViewModel = singleViewModel(),
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val selectHelper = rememberSongsSelectWrapper()
 
     DisposableEffect(Unit) {
         onDispose {
@@ -93,56 +90,54 @@ private fun SearchScreen(
         }
     }
 
-    LLazyColumn(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        searchItem(
-            name = "歌曲",
-            showCount = 5,
-            getId = { it.id },
-            items = searchVM.songsResult.value,
-            getContentType = { LSong::class },
-            onClickHeader = {
-                if (searchVM.songsResult.value.isNotEmpty()) {
-//                    navigator.navigate(
-//                        SongsScreenDestination(
-//                            title = "[${keyword.value}]\n歌曲搜索结果",
-//                            sortFor = "SearchResult",
-//                            mediaIdsText = searchVM.songsResult.value.map(LSong::id).json()
-//                        )
-//                    )
-                }
-            }
-        ) { item ->
-            SongCard(
-                song = { item },
-                modifier = Modifier
-                    .animateItemPlacement()
-                    .padding(bottom = 5.dp),
-                isSelected = { selectHelper.selectedItems.any { it.id == item.id } },
-                hasLyric = playingVM.lyricRepository.rememberHasLyric(playable = item),
-                onLongClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-//                    navigator.navigate(SongDetailScreenDestination(item.id))
-                },
-                onEnterSelect = { selectHelper.onSelected(item) },
-                isPlaying = { playingVM.isItemPlaying(item.id, Playable::mediaId) },
-                onClick = {
-                    if (selectHelper.isSelecting.value) {
-                        selectHelper.onSelected(item)
-                    } else {
-                        playingVM.play(
-                            mediaId = item.id,
-                            addToNext = true,
-                            playOrPause = true
+    SelectPanelWrapper { selector ->
+        LLazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            searchItem(
+                name = "歌曲",
+                showCount = 5,
+                getId = { it.id },
+                items = searchVM.songsResult.value,
+                getContentType = { LSong::class },
+                onClickHeader = {
+                    if (searchVM.songsResult.value.isNotEmpty()) {
+                        GlobalNavigator.showSongs(
+                            title = "[${searchVM.keyword.value}]\n歌曲搜索结果",
+                            mediaIds = searchVM.songsResult.value.map { it.mediaId }
                         )
                     }
                 }
-            )
-        }
+            ) { item ->
+                SongCard(
+                    song = { item },
+                    modifier = Modifier
+                        .animateItemPlacement()
+                        .padding(bottom = 5.dp),
+                    isSelected = { selector.isSelected(item) },
+                    hasLyric = playingVM.lyricRepository.rememberHasLyric(playable = item),
+                    onLongClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        GlobalNavigator.goToDetailOf(mediaId = item.id)
+                    },
+                    onEnterSelect = { selector.onSelect(item) },
+                    isPlaying = { playingVM.isItemPlaying(item.id, Playable::mediaId) },
+                    onClick = {
+                        if (selector.isSelecting()) {
+                            selector.onSelect(item)
+                        } else {
+                            playingVM.play(
+                                mediaId = item.id,
+                                addToNext = true,
+                                playOrPause = true
+                            )
+                        }
+                    }
+                )
+            }
 
-        val onAlbumHeaderClick = {
-            if (searchVM.albumsResult.value.isNotEmpty()) {
+            val onAlbumHeaderClick = {
+                if (searchVM.albumsResult.value.isNotEmpty()) {
 //                navigator.navigate(
 //                    AlbumsScreenDestination(
 //                        title = "[${keyword.value}]\n专辑搜索结果",
@@ -150,61 +145,61 @@ private fun SearchScreen(
 //                        albumIdsText = searchVM.albumsResult.value.map(LAlbum::id).json()
 //                    )
 //                )
+                }
             }
-        }
 
-        item(key = "AlbumHeader") {
-            RecommendTitle(
-                title = "专辑",
-                modifier = Modifier.height(64.dp),
-                onClick = onAlbumHeaderClick
-            ) {
-                AnimatedVisibility(visible = searchVM.albumsResult.value.isNotEmpty()) {
-                    Chip(
-                        onClick = onAlbumHeaderClick,
-                    ) {
-                        Text(
-                            text = "${searchVM.albumsResult.value.size} 条结果",
-                            style = MaterialTheme.typography.caption,
-                        )
+            item(key = "AlbumHeader") {
+                RecommendTitle(
+                    title = "专辑",
+                    modifier = Modifier.height(64.dp),
+                    onClick = onAlbumHeaderClick
+                ) {
+                    AnimatedVisibility(visible = searchVM.albumsResult.value.isNotEmpty()) {
+                        Chip(
+                            onClick = onAlbumHeaderClick,
+                        ) {
+                            Text(
+                                text = "${searchVM.albumsResult.value.size} 条结果",
+                                style = MaterialTheme.typography.caption,
+                            )
+                        }
                     }
                 }
             }
-        }
-        item(key = "AlbumItems") {
-            AnimatedContent(
-                targetState = searchVM.albumsResult.value.isNotEmpty(),
-                label = ""
-            ) { show ->
-                if (show) {
-                    RecommendRow(
-                        items = { searchVM.albumsResult.value },
-                        getId = { it.id }
-                    ) {
-                        RecommendCardForAlbum(
-                            modifier = Modifier.animateItemPlacement(),
-                            width = { 100.dp },
-                            height = { 100.dp },
-                            item = { it },
-                            onClick = {
+            item(key = "AlbumItems") {
+                AnimatedContent(
+                    targetState = searchVM.albumsResult.value.isNotEmpty(),
+                    label = ""
+                ) { show ->
+                    if (show) {
+                        RecommendRow(
+                            items = { searchVM.albumsResult.value },
+                            getId = { it.id }
+                        ) {
+                            RecommendCardForAlbum(
+                                modifier = Modifier.animateItemPlacement(),
+                                width = { 100.dp },
+                                height = { 100.dp },
+                                item = { it },
+                                onClick = {
 //                                navigator.navigate(AlbumDetailScreenDestination(albumId = it.id))
-                            }
-                        )
+                                }
+                            )
+                        }
+                    } else {
+                        Text(modifier = Modifier.padding(20.dp), text = "无匹配专辑")
                     }
-                } else {
-                    Text(modifier = Modifier.padding(20.dp), text = "无匹配专辑")
                 }
             }
-        }
 
-        searchItem(
-            name = "艺术家",
-            showCount = 5,
-            getId = { it.id },
-            items = searchVM.artistsResult.value,
-            getContentType = { LArtist::class },
-            onClickHeader = {
-                if (searchVM.artistsResult.value.isNotEmpty()) {
+            searchItem(
+                name = "艺术家",
+                showCount = 5,
+                getId = { it.id },
+                items = searchVM.artistsResult.value,
+                getContentType = { LArtist::class },
+                onClickHeader = {
+                    if (searchVM.artistsResult.value.isNotEmpty()) {
 //                    navigator.navigate(
 //                        ArtistsScreenDestination(
 //                            title = "[${keyword.value}]\n艺术家搜索结果",
@@ -212,42 +207,21 @@ private fun SearchScreen(
 //                            artistIdsText = searchVM.artistsResult.value.map(LArtist::name).json()
 //                        )
 //                    )
-                }
-            }
-        ) { item ->
-            ArtistCard(
-                artist = item,
-                isPlaying = {
-                    playingVM.isItemPlaying { playing ->
-                        playing.let { it as? LSong }
-                            ?.let { song -> song.artists.any { it.name == item.name } }
-                            ?: false
                     }
-                },
-                onClick = {
+                }
+            ) { item ->
+                ArtistCard(
+                    artist = item,
+                    isPlaying = {
+                        playingVM.isItemPlaying { playing ->
+                            playing.let { it as? LSong }
+                                ?.let { song -> song.artists.any { it.name == item.name } }
+                                ?: false
+                        }
+                    },
+                    onClick = {
 //                    navigator.navigate(ArtistDetailScreenDestination(artistName = item.name))
-                }
-            )
-        }
-
-        searchItem(
-            name = "歌单",
-            showCount = 5,
-            getId = { it.id },
-            items = searchVM.playlistResult.value,
-            getContentType = { LPlaylist::class }
-        ) {
-            Surface(
-                onClick = {
-//                    navigator.navigate(PlaylistDetailScreenDestination(playlistId = it._id))
-                }
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                        .animateItemPlacement(),
-                    text = it.name
+                    }
                 )
             }
         }

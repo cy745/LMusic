@@ -4,6 +4,7 @@ import StatusBarLyric.API.StatusBarLyric
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.room.Room
 import coil.EventListener
 import coil.ImageLoader
 import coil.request.ErrorResult
@@ -17,10 +18,13 @@ import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
+import com.lalilu.lmusic.datastore.LDatabase
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.datastore.TempSp
 import com.lalilu.lmusic.repository.CoverRepository
+import com.lalilu.lmusic.repository.HistoryRepository
+import com.lalilu.lmusic.repository.HistoryRepositoryImpl
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicNotifier
@@ -39,12 +43,9 @@ import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.lalilu.lmusic.viewmodel.PlaylistDetailViewModel
-import com.lalilu.lmusic.viewmodel.PlaylistsViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.lalilu.lmusic.viewmodel.SongsViewModel
-import com.lalilu.lmusic.viewmodel.TempViewModel
 import com.lalilu.lplayer.notification.Notifier
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
@@ -95,13 +96,17 @@ val AppModule = module {
             })
             .build()
     }
+    single {
+        Room.databaseBuilder(androidApplication(), LDatabase::class.java, "lmedia.db")
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+    single<HistoryRepository> { HistoryRepositoryImpl(get<LDatabase>().historyDao()) }
 }
 
 val ViewModelModule = module {
     viewModelOf(::PlayingViewModel)
     viewModelOf(::LMediaViewModel)
-    viewModelOf(::PlaylistDetailViewModel)
-    viewModelOf(::PlaylistsViewModel)
     viewModelOf(::SearchViewModel)
     viewModelOf(::AlbumsViewModel)
     viewModelOf(::ArtistsViewModel)
@@ -111,7 +116,6 @@ val ViewModelModule = module {
     viewModelOf(::SearchLyricViewModel)
     viewModelOf(::ExtensionsViewModel)
     viewModelOf(::LibraryViewModel)
-    viewModelOf(::TempViewModel)
 }
 
 val RuntimeModule = module {
