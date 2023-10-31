@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lalilu.common.base.BaseSp
 import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
 import com.lalilu.extension_core.ExtensionManager
-import com.lalilu.lmusic.datastore.BaseSp
 import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -97,10 +97,11 @@ class ExtOrderController : Extension {
 
     object OrderSp : BaseSp() {
         private val context: Application by inject(Application::class.java)
-        override val sp: SharedPreferences by lazy {
-            context.getSharedPreferences("OrderSp", Application.MODE_PRIVATE)
+        override fun obtainSourceSp(): SharedPreferences {
+            return context.getSharedPreferences("OrderSp", Application.MODE_PRIVATE)
         }
-        val orderList = stringListSp("OrderList")
+
+        val orderList = obtainList<String>("OrderList")
     }
 
     class OrderViewModel : ViewModel() {

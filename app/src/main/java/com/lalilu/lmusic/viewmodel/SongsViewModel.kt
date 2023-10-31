@@ -13,7 +13,7 @@ import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.SortStrategy
 import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmusic.repository.HistoryRepository
-import com.lalilu.lmusic.datastore.BaseSp
+import com.lalilu.common.base.BaseSp
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -147,7 +147,7 @@ open class ItemsBaseSorter<T : Sortable>(
     private val sortForFlow: MutableStateFlow<String> = MutableStateFlow(Sortable.SORT_FOR_SONGS)
 
     private val sortRuleFlow: Flow<SortRule> = sortForFlow.flatMapLatest { sortFor ->
-        sp.stringSp("${sortFor}_SORT_RULE")
+        sp.obtain<String>("${sortFor}_SORT_RULE")
             .flow(true)
             .flatMapLatest { str ->
                 supportSortRuleFlow.mapLatest { list ->
@@ -156,7 +156,7 @@ open class ItemsBaseSorter<T : Sortable>(
             }
     }
     private val orderRuleFlow: Flow<OrderRule> = sortForFlow.flatMapLatest { sortFor ->
-        sp.stringSp("${sortFor}_ORDER_RULE")
+        sp.obtain<String>("${sortFor}_ORDER_RULE")
             .flow(true)
             .flatMapLatest { str ->
                 supportOrderRuleFlow.mapLatest { list ->
@@ -165,7 +165,7 @@ open class ItemsBaseSorter<T : Sortable>(
             }
     }
     private val groupRuleFlow: Flow<GroupRule> = sortForFlow.flatMapLatest { sortFor ->
-        sp.stringSp("${sortFor}_GROUP_RULE")
+        sp.obtain<String>("${sortFor}_GROUP_RULE")
             .flow(true)
             .flatMapLatest { str ->
                 supportGroupRuleFlow.mapLatest { list ->

@@ -278,9 +278,9 @@ fun DynamicScreen.SortPanelWrapper(
     supportOrderRules: () -> List<OrderRule>,
     content: @Composable (sortRuleStr: State<String>) -> Unit,
 ) {
-    val sortRule = settingsSp.stringSp("${sortFor}_SORT_RULE", SortRule.Normal.name)
-    val orderRule = settingsSp.stringSp("${sortFor}_ORDER_RULE", OrderRule.Normal.name)
-    val groupRule = settingsSp.stringSp("${sortFor}_GROUP_RULE", GroupRule.Normal.name)
+    val sortRule = settingsSp.obtain<String>("${sortFor}_SORT_RULE", SortRule.Normal.name)
+    val orderRule = settingsSp.obtain<String>("${sortFor}_ORDER_RULE", OrderRule.Normal.name)
+    val groupRule = settingsSp.obtain<String>("${sortFor}_GROUP_RULE", GroupRule.Normal.name)
 
     RegisterMainContent(
         showMask = { true },

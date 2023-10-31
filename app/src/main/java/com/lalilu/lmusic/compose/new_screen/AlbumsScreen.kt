@@ -69,7 +69,7 @@ private fun DynamicScreen.AlbumsScreen(
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyStaggeredGridState()
     val showSortPanel = remember { mutableStateOf(false) }
-    val showTitleState = settingsSp.boolSp("show_album_title", true)
+    val showTitleState = settingsSp.obtain<Boolean>("show_album_title", true)
 
     val supportSortPresets = remember {
         listOf(

@@ -33,9 +33,10 @@ android {
 }
 
 dependencies {
-    api(project(":lmedia"))
     api(project(":common"))
+    api(project(":lmedia"))
     api(project(":lplayer"))
+    api(project(":lplaylist"))
 
     api(libs.coil)
     api(libs.coil.compose)

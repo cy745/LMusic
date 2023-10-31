@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id("kotlinx-serialization")
     kotlin("android")
 }
 
@@ -25,6 +26,8 @@ android {
 }
 
 dependencies {
+    api(libs.kotlinx.serialization.json)
+
     api(libs.utilcodex)
     api(libs.appcompat)
     api(libs.core.ktx)

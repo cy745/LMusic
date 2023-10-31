@@ -6,6 +6,12 @@ plugins {
     alias(libs.plugins.ksp) apply false
 }
 
+buildscript {
+    dependencies {
+        classpath(libs.kotlin.serialization)
+    }
+}
+
 gradle.taskGraph.whenReady {
     allTasks.onEach {
         // 避免ksp类型任务被跳过

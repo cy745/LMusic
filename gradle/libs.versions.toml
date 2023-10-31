@@ -3,6 +3,7 @@ agp_version = "8.2.0-alpha13"
 kotlin_version = "1.9.10"
 coroutines_version = "1.7.3"
 ksp_version = "1.9.10-1.0.13"
+serialization_json_version = "1.6.0"
 
 koin_version = "3.5.0"
 compose_bom_version = "2023.10.00"
@@ -34,8 +35,10 @@ media = "1.7.0-alpha01"
 [libraries]
 # kotlin
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin_version" }
-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines_version" }
-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines_version" }
+kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin_version" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines_version" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines_version" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization_json_version" }
 
 # compose
 compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose_compiler_version" }
@@ -112,7 +115,7 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp_version" }
 
 
 [bundles]
-common = ["kotlin-stdlib", "coroutines-core", "coroutines-android"]
+common = ["kotlin-stdlib", "kotlinx-coroutines-core", "kotlinx-coroutines-android"]
 accompanist = ["accompanist-flowlayout", "accompanist-permissions", "accompanist-systemuicontroller"]
 compose-debug = ["compose-tooling", "compose-tooling-preview"]
 compose = [
