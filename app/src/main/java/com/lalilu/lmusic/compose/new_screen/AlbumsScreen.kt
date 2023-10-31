@@ -20,13 +20,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
-import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.Sortable
+import com.lalilu.lmusic.compose.DynamicScreen
+import com.lalilu.lmusic.compose.ScreenInfo
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartFloatBtns
 import com.lalilu.lmusic.compose.component.base.SortPreset
@@ -34,15 +35,27 @@ import com.lalilu.lmusic.compose.component.card.AlbumCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.getIds
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.AlbumsViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+object AlbumsScreen : DynamicScreen() {
+    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
+        title = R.string.screen_title_albums,
+        icon = R.drawable.ic_album_fill
+    )
+
+    @Composable
+    override fun Content() {
+        AlbumsScreen()
+    }
+}
 
 @Composable
-fun AlbumsScreen(
+private fun DynamicScreen.AlbumsScreen(
     title: String = "全部专辑",
     sortFor: String = Sortable.SORT_FOR_ALBUMS,
     albumIdsText: String? = null,

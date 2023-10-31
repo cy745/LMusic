@@ -21,9 +21,6 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,52 +33,67 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
-import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.api.lrcshare.SongResult
-import com.lalilu.lmusic.compose.component.SmartBar
-import com.lalilu.lmusic.compose.component.SmartContainer
+import com.lalilu.lmusic.compose.DynamicScreen
+import com.lalilu.lmusic.compose.ScreenInfo
+import com.lalilu.lmusic.compose.component.LLazyColumn
 import com.lalilu.lmusic.compose.component.card.SearchInputBar
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
+import com.lalilu.lmusic.compose.presenter.SearchLyricAction
+import com.lalilu.lmusic.compose.presenter.SearchLyricPresenter
+import com.lalilu.lmusic.compose.presenter.SearchLyricState
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+
+data class SearchLyricScreen(
+    private val mediaId: String,
+    private val keywords: String? = null
+) : DynamicScreen() {
+
+    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
+        title = R.string.preference_lyric_settings
+    )
+
+    @Composable
+    override fun Content() {
+        val state = SearchLyricPresenter.presentState()
+
+        LaunchedEffect(Unit) {
+            if (state.mediaId != mediaId) {
+                state.onAction(SearchLyricAction.UpdateMediaId(mediaId))
+            }
+
+            if (keywords.isNullOrBlank()) return@LaunchedEffect
+            state.onAction(SearchLyricAction.SearchFor(keywords))
+        }
+
+        RegisterExtraContent {
+            SearchInputBar(
+                value = keywords ?: "",
+                onSearchFor = { SearchLyricPresenter.onAction(SearchLyricAction.SearchFor(it)) },
+                onChecked = {
+                    SearchLyricPresenter.onAction(
+                        SearchLyricAction.SaveFor(
+                            selectedId = state.selectedId,
+                            mediaId = state.mediaId
+                        )
+                    )
+                }
+            )
+        }
+
+        SearchLyric(state = state)
+    }
+}
+
 
 @Composable
-fun SearchLyricScreen(
-    mediaId: String,
-    keywords: String,
-    searchLyricVM: SearchLyricViewModel = singleViewModel(),
+private fun SearchLyric(
+    state: SearchLyricState,
+    searchLyricVM: SearchLyricViewModel = singleViewModel()
 ) {
-    val scope = rememberCoroutineScope { Dispatchers.Main }
-    val showSearchBar = remember { mutableStateOf(true) }
-    val selectedId = remember { mutableStateOf(-1) }
-
-    LaunchedEffect(Unit) {
-        // 若历史搜索的ID和当前ID不一致，则触发一次搜索
-        if (searchLyricVM.lastSearchMediaId.value != mediaId) {
-            searchLyricVM.searchFor(keywords)
-        }
-        searchLyricVM.lastSearchMediaId.value = mediaId
-    }
-
-    SmartBar.RegisterExtraBarContent(showState = showSearchBar) {
-        SearchInputBar(
-            value = keywords,
-            onSearchFor = {
-                searchLyricVM.searchFor(it)
-            },
-            onChecked = {
-                searchLyricVM.saveLyricInto(selectedId.value, mediaId) {
-//                    scope.launch {
-//                        navigator.popBackStack()
-//                    }
-                }
-            }
-        )
-    }
-
-    SmartContainer.LazyColumn(
+    LLazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
         item {
@@ -110,8 +122,8 @@ fun SearchLyricScreen(
                     subTitle = it.artist,
                     caption = it.album ?: "",
                     imageData = it.cover,
-                    selected = { selectedId.value == it.id },
-                    onClick = { selectedId.value = it.id }
+                    selected = { state.selectedId == it.id },
+                    onClick = { state.onAction(SearchLyricAction.UpdateSelectedId(it.id)) }
                 )
             }
         }

@@ -8,13 +8,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.lalilu.R
 import com.lalilu.extension_core.Content
+import com.lalilu.lmusic.compose.DynamicScreen
 import com.lalilu.lmusic.compose.ScreenInfo
 import com.lalilu.lmusic.compose.TabScreen
 import com.lalilu.lmusic.compose.component.LLazyColumn
 import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
-object HomeScreen : TabScreen {
+object HomeScreen : DynamicScreen(), TabScreen {
     override fun getScreenInfo(): ScreenInfo = ScreenInfo(
         title = R.string.screen_title_home,
         icon = R.drawable.ic_loader_line
@@ -40,7 +41,7 @@ private fun HomeScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         items(items = extensionResult) {
-            it.apply { Place(contentKey = Content.COMPONENT_HOME) }
+            it.Place(contentKey = Content.COMPONENT_HOME)
         }
     }
 }

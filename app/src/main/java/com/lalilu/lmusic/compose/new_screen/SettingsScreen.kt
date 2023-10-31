@@ -28,6 +28,8 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.R
 import com.lalilu.common.CustomRomUtils
 import com.lalilu.lmusic.GuidingActivity
+import com.lalilu.lmusic.compose.CustomScreen
+import com.lalilu.lmusic.compose.ScreenInfo
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.base.IconTextButton
 import com.lalilu.lmusic.compose.component.settings.SettingCategory
@@ -40,10 +42,22 @@ import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
 import org.koin.compose.koinInject
 
+object SettingsScreen : CustomScreen {
+    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
+        title = R.string.screen_title_settings,
+        icon = R.drawable.ic_settings_4_line
+    )
+
+    @Composable
+    override fun Content() {
+        SettingsScreen()
+    }
+}
+
 
 @SuppressLint("PrivateApi")
 @Composable
-fun SettingsScreen(
+private fun SettingsScreen(
     eqHelper: EQHelper = koinInject(),
     settingsSp: SettingsSp = koinInject(),
     statusBarLyricExt: StatusBarLyric = koinInject(),

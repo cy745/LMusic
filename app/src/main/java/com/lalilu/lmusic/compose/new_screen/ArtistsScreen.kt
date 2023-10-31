@@ -13,27 +13,41 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.lalilu.R
-import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
 import com.lalilu.lmedia.extension.Sortable
+import com.lalilu.lmusic.compose.DynamicScreen
+import com.lalilu.lmusic.compose.ScreenInfo
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartFloatBtns
 import com.lalilu.lmusic.compose.component.base.SortPreset
 import com.lalilu.lmusic.compose.component.card.ArtistCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.utils.extension.getIds
+import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.ArtistsViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
 import kotlinx.coroutines.launch
 
+object ArtistsScreen : DynamicScreen() {
+    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
+        title = R.string.screen_title_artists,
+        icon = R.drawable.ic_user_line
+    )
+
+    @Composable
+    override fun Content() {
+        ArtistsScreen()
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ArtistsScreen(
+private fun DynamicScreen.ArtistsScreen(
     title: String = "所有艺术家",
     sortFor: String = Sortable.SORT_FOR_ARTISTS,
     artistIdsText: String? = null,
