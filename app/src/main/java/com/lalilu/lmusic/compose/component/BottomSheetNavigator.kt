@@ -160,7 +160,7 @@ class BottomSheetNavigator internal constructor(
         popUntil { it == firstItem }
 
         if (screen != firstItem) {
-            replace(screen)
+            push(screen)
         }
     }
 
