@@ -62,8 +62,8 @@ class LMusicServiceConnector(
             return
         }
 
-        val songIds = lastPlayedSp.lastPlayedListIdsKey.get()
-        val lastPlayedIdKey = lastPlayedSp.lastPlayedIdKey.get()
+        val songIds = lastPlayedSp.lastPlayedListIdsKey.value
+        val lastPlayedIdKey = lastPlayedSp.lastPlayedIdKey.value
 
         // 存在历史记录
         if (songIds.isNotEmpty()) {
@@ -130,19 +130,19 @@ class LMusicServiceConnector(
 
         launch {
             LPlayer.runtime.info.idsFlow.collectLatest {
-                lastPlayedSp.lastPlayedListIdsKey.set(it)
+                lastPlayedSp.lastPlayedListIdsKey.value = it
             }
         }
 
         launch {
             LPlayer.runtime.info.playingIdFlow.collectLatest {
-                lastPlayedSp.lastPlayedIdKey.set(it)
+                lastPlayedSp.lastPlayedIdKey.value = it ?: ""
             }
         }
 
         launch {
             LPlayer.runtime.info.positionFlow.collectLatest {
-                lastPlayedSp.lastPlayedPositionKey.set(it)
+                lastPlayedSp.lastPlayedPositionKey.value = it
             }
         }
     }

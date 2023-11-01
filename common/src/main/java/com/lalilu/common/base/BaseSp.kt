@@ -7,16 +7,16 @@ import android.os.Looper
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
+import com.blankj.utilcode.util.GsonUtils
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 abstract class BaseSp {
     protected abstract fun obtainSourceSp(): SharedPreferences
+    private val mapTypeClazz by lazy { mapOf<String, Any>()::class.java }
 
     val spMap = LinkedHashMap<String, SpItem<out Any>>()
     val sp: SharedPreferences by lazy { obtainSourceSp() }
@@ -31,11 +31,11 @@ abstract class BaseSp {
     }
 
     fun backup(): String {
-        return Json.encodeToString(sp.all)
+        return GsonUtils.toJson(sp.all)
     }
 
     fun restore(json: String) {
-        val map = Json.decodeFromString<Map<String, Any>>(json)
+        val map = GsonUtils.fromJson(json, mapTypeClazz)
 
         sp.edit {
             for ((key, value) in map) {
@@ -54,22 +54,25 @@ abstract class BaseSp {
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : Any> obtain(
         key: String,
-        defaultValue: T = obtainDefaultValue()
-    ): SpItem<T> = spMap.getOrPut(key) { SpItem(key, defaultValue, sp) } as SpItem<T>
+        defaultValue: T = obtainDefaultValue(),
+        autoSave: Boolean = true,
+    ): SpItem<T> = spMap.getOrPut(key) { SpItem(key, autoSave, defaultValue, sp) } as SpItem<T>
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : Any> obtainList(
         key: String,
-        defaultValue: List<T> = emptyList()
+        defaultValue: List<T> = emptyList(),
+        autoSave: Boolean = true,
     ): SpListItem<T> =
-        spMap.getOrPut(key) { SpListItem.obtain(key, defaultValue, sp) } as SpListItem<T>
+        spMap.getOrPut(key) { SpListItem.obtain(key, autoSave, defaultValue, sp) } as SpListItem<T>
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : Any> obtainSet(
         key: String,
-        defaultValue: List<T> = emptyList()
+        defaultValue: List<T> = emptyList(),
+        autoSave: Boolean = true,
     ): SpSetItem<T> =
-        spMap.getOrPut(key) { SpSetItem.obtain(key, defaultValue, sp) } as SpSetItem<T>
+        spMap.getOrPut(key) { SpSetItem.obtain(key, autoSave, defaultValue, sp) } as SpSetItem<T>
 
     inline fun <reified T> obtainDefaultValue(): T {
         return when (T::class) {
@@ -86,6 +89,7 @@ abstract class BaseSp {
 @Suppress("UNCHECKED_CAST")
 open class SpItem<T : Any>(
     val key: String,
+    private val autoSave: Boolean = true,
     private val defaultValue: T,
     private val sp: SharedPreferences
 ) : MutableState<T> {
@@ -116,42 +120,32 @@ open class SpItem<T : Any>(
 
             val oldValue = state!!.value
             state!!.value = value
-            if (oldValue != value) {
+            if (oldValue != value && autoSave) {
                 set(value)
             }
         }
 
     override fun component1(): T = this.value
     override fun component2(): (T) -> Unit = { this.value = it }
-
-    operator fun setValue(thisObj: Any?, property: KProperty<*>, value: T) {
-        this.value = value
-    }
-
+    operator fun setValue(thisObj: Any?, property: KProperty<*>, v: T) = run { value = v }
     operator fun getValue(thisObj: Any?, property: KProperty<*>): T = this.value
 
-    fun update() {
-        this.value = get()
-    }
+    protected fun get(): T = sp.getValue(defaultValue::class, key, defaultValue)
+    protected fun set(value: T?) = sp.setValue(defaultValue::class, key, value)
 
-    fun get(): T {
-        return getValue(sp, defaultValue::class, key, defaultValue)
-    }
-
-    fun set(value: T?) {
-        setValue(sp, defaultValue::class, key, value)
-    }
+    fun update() = run { value = get() }
+    fun save() = set(value)
 
     fun flow(requireCurrentValue: Boolean = true): Flow<T?> {
         return callbackFlow {
             val listener = OnSharedPreferenceChangeListener { spParams, keyParam ->
                 if (keyParam == key) {
-                    val newValue = getValue(spParams, defaultValue::class, keyParam, defaultValue)
+                    val newValue = spParams.getValue(defaultValue::class, keyParam, defaultValue)
                     trySend(newValue)
                 }
             }.also {
                 if (requireCurrentValue) {
-                    val newValue = getValue(sp, defaultValue::class, key, defaultValue)
+                    val newValue = sp.getValue(defaultValue::class, key, defaultValue)
                     trySend(newValue)
                 }
                 sp.registerOnSharedPreferenceChangeListener(it)
@@ -164,12 +158,11 @@ open class SpItem<T : Any>(
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected open fun <T : Any> getValue(
-        sp: SharedPreferences,
-        clazz: KClass<T>,
+    open fun <T> SharedPreferences.getValue(
+        clazz: KClass<out T & Any>,
         key: String,
         defaultValue: Any
-    ): T = sp.run {
+    ): T {
         return when (clazz) {
             Int::class -> getInt(key, defaultValue as Int)
             Float::class -> getFloat(key, defaultValue as Float)
@@ -180,12 +173,7 @@ open class SpItem<T : Any>(
         } as T
     }
 
-    protected open fun <T : Any> setValue(
-        sp: SharedPreferences,
-        clazz: KClass<T>,
-        key: String,
-        value: Any?
-    ) = sp.apply {
+    open fun <T> SharedPreferences.setValue(clazz: KClass<out T & Any>, key: String, value: Any?) {
         edit {
             when (clazz) {
                 Int::class -> putInt(key, value?.let { it as Int } ?: -1)
@@ -203,70 +191,60 @@ open class SpItem<T : Any>(
 @Suppress("UNCHECKED_CAST")
 open class SpListItem<K : Any>(
     key: String,
-    val defaultClazz: KClass<K>,
+    autoSave: Boolean,
+    defaultClazz: KClass<K>,
     defaultValue: List<K>,
     sp: SharedPreferences
-) : SpItem<List<K>>(key, defaultValue, sp) {
+) : SpItem<List<K>>(key, autoSave, defaultValue, sp) {
+    private val mapTypeClazz by lazy { GsonUtils.getListType(defaultClazz.java) }
 
     open fun remove(item: K) {
-        set(value.minus(item))
+        value = value.minus(item)
     }
 
     open fun remove(items: Collection<K>) {
-        set(value.minus(items.toSet()))
+        value = value.minus(items.toSet())
     }
 
     open fun add(item: K) {
-        set(value.plus(item))
+        value = value.plus(item)
     }
 
     open fun add(items: Collection<K>) {
-        set(value.plus(items))
+        value = value.plus(items)
     }
 
-    override fun <T : Any> getValue(
-        sp: SharedPreferences,
-        clazz: KClass<T>,
+    override fun <T> SharedPreferences.getValue(
+        clazz: KClass<out T & Any>,
         key: String,
         defaultValue: Any
     ): T {
-        val string = sp.getString(key, "")?.takeIf { it.isNotBlank() } ?: return emptyList<K>() as T
-        return when (defaultClazz) {
-            Int::class -> Json.decodeFromString<List<Int>>(string)
-            Float::class -> Json.decodeFromString<List<Float>>(string)
-            String::class -> Json.decodeFromString<List<String>>(string)
-            Boolean::class -> Json.decodeFromString<List<Boolean>>(string)
-            Long::class -> Json.decodeFromString<List<Long>>(string)
-            else -> throw IllegalArgumentException("No Matching Type Defined.")
-        } as T
+        val string = getString(key, "")?.takeIf { it.isNotBlank() } ?: return defaultValue as T
+        return (GsonUtils.fromJson(string, mapTypeClazz) ?: defaultValue) as T
     }
 
-    override fun <T : Any> setValue(
-        sp: SharedPreferences,
-        clazz: KClass<T>,
+    override fun <T> SharedPreferences.setValue(
+        clazz: KClass<out T & Any>,
         key: String,
         value: Any?
-    ): SharedPreferences {
-        val string = when (defaultClazz) {
-            Int::class -> Json.encodeToString(value as List<Int>)
-            Float::class -> Json.encodeToString(value as List<Float>)
-            String::class -> Json.encodeToString(value as List<String>)
-            Boolean::class -> Json.encodeToString(value as List<Boolean>)
-            Long::class -> Json.encodeToString(value as List<Long>)
-            else -> throw IllegalArgumentException("No Matching Type Defined.")
-        }.takeIf { it.isNotBlank() }
-
-        return super.setValue(sp, String::class, key, string)
+    ) {
+        val string = GsonUtils.toJson(value).takeIf { it.isNotBlank() }
+        edit {
+            putString(key, string)
+            commit()
+        }
     }
 
     companion object {
         inline fun <reified T : Any> obtain(
             key: String,
+            autoSave: Boolean = true,
             defaultValue: List<T> = emptyList(),
             sp: SharedPreferences
         ): SpListItem<T> {
             return SpListItem(
                 key = key,
+                autoSave = autoSave,
                 defaultValue = defaultValue,
                 defaultClazz = T::class,
                 sp = sp
@@ -277,35 +255,38 @@ open class SpListItem<K : Any>(
 
 class SpSetItem<T : Any>(
     key: String,
+    autoSave: Boolean,
     defaultClazz: KClass<T>,
     defaultValue: List<T>,
     sp: SharedPreferences
-) : SpListItem<T>(key, defaultClazz, defaultValue, sp) {
+) : SpListItem<T>(key, autoSave, defaultClazz, defaultValue, sp) {
 
     override fun remove(item: T) {
-        set(value.toSet().minus(item).toList())
+        value = value.toSet().minus(item).toList()
     }
 
     override fun remove(items: Collection<T>) {
-        set(value.toSet().minus(items.toSet()).toList())
+        value = value.toSet().minus(items.toSet()).toList()
     }
 
     override fun add(item: T) {
-        set(value.toSet().plus(item).toList())
+        value = value.toSet().plus(item).toList()
     }
 
     override fun add(items: Collection<T>) {
-        set(value.toSet().plus(items).toList())
+        value = value.toSet().plus(items).toList()
     }
 
     companion object {
         inline fun <reified T : Any> obtain(
             key: String,
+            autoSave: Boolean = true,
             defaultValue: List<T> = emptyList(),
             sp: SharedPreferences
         ): SpSetItem<T> {
             return SpSetItem(
                 key = key,
+                autoSave = autoSave,
                 defaultValue = defaultValue,
                 defaultClazz = T::class,
                 sp = sp

@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // 判断是否已完成初次启动时的用户引导
-        val isGuidingOver = settingsSp.isGuidingOver.get()
+        val isGuidingOver = settingsSp.isGuidingOver.value
         val isPermissionsGranted = ActivityCompat.checkSelfPermission(this, REQUIRE_PERMISSIONS)
         if (!isGuidingOver || isPermissionsGranted != PackageManager.PERMISSION_GRANTED) {
             ActivityUtils.startActivity(GuidingActivity::class.java)

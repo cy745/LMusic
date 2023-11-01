@@ -51,7 +51,7 @@ class LMusicService : LService() {
             LPlayer.ACTION_SET_REPEAT_MODE -> {
                 val playMode = extras?.getInt(PlayMode.KEY)?.takeIf { it in 0..2 }
 
-                playMode?.let { settingsSp.playMode.set(it) }
+                playMode?.let { settingsSp.playMode.value = it }
             }
         }
         return super.onStartCommand(intent, flags, startId)
