@@ -80,7 +80,6 @@ class ExtHistory : Extension {
                     song = { item },
                     fixedHeight = { true },
                     isSelected = { false },
-                    hasLyric = playingVM.lyricRepository.rememberHasLyric(playable = item),
                     onEnterSelect = { },
                     isPlaying = { playingVM.isItemPlaying { it.mediaId == item.id } },
                     onClick = {

@@ -94,15 +94,13 @@ fun HistoryScreen(
                 key = { it.id },
                 contentType = { LSong::class }
             ) { item ->
-                val hasLyric = playingVM.requireHasLyricState(item)
                 SongCard(
                     modifier = Modifier.animateItemPlacement(),
                     dragModifier = Modifier,
                     title = { item.name },
                     subTitle = { item._artist },
-                    mimeType = { item.mimeType },
                     duration = { item.durationMs },
-                    hasLyric = { hasLyric.value },
+                    sticker = { item.sticker },
                     imageData = { item },
                     isPlaying = { playingVM.isItemPlaying(item.id, Playable::mediaId) },
                     onClick = {

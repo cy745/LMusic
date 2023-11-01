@@ -42,7 +42,6 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import com.lalilu.R
 import com.lalilu.common.base.Playable
-import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
@@ -148,6 +147,7 @@ data class SongsScreen(
         }
 
         Songs(
+            showAll = true,
             mediaIds = mediaIds,
             listState = listState,
             tempSM = tempSM,
@@ -164,14 +164,9 @@ data class SongsScreen(
                 var icon = -1
                 var text = ""
                 when (sortRuleStr.value) {
-                    SortRule.TrackNumber.name -> {
-                        icon = R.drawable.ic_music_line
-                        text = item.track.toString()
-                    }
-
                     SortRule.PlayCount.name -> {
                         icon = R.drawable.headphone_fill
-                        text = historyVM.requiteHistoryCountById(item.id).toString()
+                        text = historyVM.requiteHistoryCountById(item.mediaId).toString()
                     }
                 }
                 if (icon != -1) {
@@ -195,6 +190,7 @@ data class SongsScreen(
 @Composable
 fun DynamicScreen.Songs(
     mediaIds: List<String>,
+    showAll: Boolean = false,
     sortFor: String = Sortable.SORT_FOR_SONGS,
     supportSortPresets: List<SortPreset> = defaultSortPresets,
     supportGroupRules: List<GroupRule> = defaultGroupRules,
@@ -204,8 +200,9 @@ fun DynamicScreen.Songs(
     scrollToHelper: LazyListScrollToHelper = rememberLazyListScrollToHelper(listState),
     tempSM: TempScreenModel = rememberScreenModel { TempScreenModel() },
     showPrefixContent: (sortRuleStr: State<String>) -> Boolean = { it.value == SortRule.TrackNumber.name || it.value == SortRule.PlayCount.name },
-    prefixContent: @Composable (item: LSong, sortRuleStr: State<String>) -> Unit = { _, _ -> },
-    headerContent: LazyListScope.(State<Map<GroupIdentity, List<LSong>>>) -> Unit = {}
+    prefixContent: @Composable (item: Playable, sortRuleStr: State<String>) -> Unit = { _, _ -> },
+    headerContent: LazyListScope.(State<Map<GroupIdentity, List<Playable>>>) -> Unit = {},
+    footerContent: LazyListScope.(State<Map<GroupIdentity, List<Playable>>>) -> Unit = {}
 ) {
     val songsVM: SongsViewModel = singleViewModel()
     val playingVM: PlayingViewModel = singleViewModel()
@@ -215,6 +212,7 @@ fun DynamicScreen.Songs(
         songsVM.updateByIds(
             songIds = mediaIds,
             sortFor = sortFor,
+            showAll = showAll,
             supportSortRules = supportSortRules,
             supportOrderRules = supportOrderRules,
             supportGroupRules = supportGroupRules,
@@ -245,11 +243,12 @@ fun DynamicScreen.Songs(
                     itemsMap = songsState,
                     scrollToHelper = { scrollHelper },
                     itemSelectHelper = { selector },
-                    hasLyricState = { playingVM.requireHasLyricState(item = it) },
-                    isItemPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) },
+                    hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
+                    isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
                     onHeaderClick = { headerJumperWrapperVisible.value = true },
                     showPrefixContent = { showPrefixContent(sortRuleStr) },
                     headerContent = { headerContent(songsVM.songsState) },
+                    footerContent = { footerContent(songsVM.songsState) },
                     prefixContent = { prefixContent(it, sortRuleStr) },
                     onClickItem = {
                         playingVM.play(
@@ -259,7 +258,7 @@ fun DynamicScreen.Songs(
                         )
                     },
                     onLongClickItem = {
-                        NavigationWrapper.navigator?.showSingle(SongDetailScreen(mediaId = it.id))
+                        NavigationWrapper.navigator?.showSingle(SongDetailScreen(mediaId = it.mediaId))
                     },
                 )
             }
@@ -381,15 +380,16 @@ private fun SongListWrapper(
     state: LazyListState = rememberLazyListState(),
     itemSelectHelper: () -> ItemSelectHelper? = { null },
     scrollToHelper: () -> LazyListScrollToHelper? = { null },
-    itemsMap: Map<GroupIdentity, List<LSong>>,
-    hasLyricState: (LSong) -> State<Boolean>,
-    onClickItem: (LSong) -> Unit = {},
-    onLongClickItem: (LSong) -> Unit = {},
+    itemsMap: Map<GroupIdentity, List<Playable>>,
+    onClickItem: (Playable) -> Unit = {},
+    onLongClickItem: (Playable) -> Unit = {},
     onHeaderClick: (Any) -> Unit = {},
-    isItemPlaying: (LSong) -> Boolean = { false },
+    hasLyric: (Playable) -> Boolean = { false },
+    isItemPlaying: (Playable) -> Boolean = { false },
     showPrefixContent: () -> Boolean = { false },
-    prefixContent: @Composable (item: LSong) -> Unit = {},
+    prefixContent: @Composable (item: Playable) -> Unit = {},
     headerContent: LazyListScope.() -> Unit,
+    footerContent: LazyListScope.() -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
 
@@ -439,16 +439,15 @@ private fun SongListWrapper(
                 }
             }
 
-            scrollHelper?.doRecord(list.map { it.id })
+            scrollHelper?.doRecord(list.map { it.mediaId })
             items(
                 items = list,
-                key = { it.id },
-                contentType = { LSong::class }
+                key = { it.mediaId },
+                contentType = { Playable::class }
             ) { item ->
                 SongCard(
                     song = { item },
                     modifier = Modifier.animateItemPlacement(),
-                    hasLyric = hasLyricState(item),
                     onClick = {
                         if (selector?.isSelecting() == true) {
                             selector.onSelect(item)
@@ -464,6 +463,7 @@ private fun SongListWrapper(
                     isSelected = { selector?.isSelected(item) ?: false },
                     isPlaying = { isItemPlaying(item) },
                     showPrefix = showPrefixContent,
+                    hasLyric = { hasLyric(item) },
                     prefixContent = { modifier ->
                         Row(
                             modifier = modifier
@@ -480,5 +480,7 @@ private fun SongListWrapper(
             }
         }
         scrollHelper?.endRecord()
+
+        footerContent()
     }
 }

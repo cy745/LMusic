@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.common.base.Playable
+import com.lalilu.common.base.Sticker
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.LyricSourceFactory
@@ -44,6 +45,7 @@ class LyricRepository(
     }
 
     suspend fun hasLyric(song: Playable): Boolean = withContext(Dispatchers.IO) {
+        if (song.sticker.contains(Sticker.HasLyricSticker)) return@withContext true
         if (song !is LSong) return@withContext false
         lyricSource.hasLyric(song)
     }

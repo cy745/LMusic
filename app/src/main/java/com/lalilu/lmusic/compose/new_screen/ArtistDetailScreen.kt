@@ -7,8 +7,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +25,6 @@ import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LMediaViewModel
-import com.lalilu.lmusic.viewmodel.SongsViewModel
 
 data class ArtistDetailScreen(
     private val artistName: String
@@ -47,7 +44,6 @@ data class ArtistDetailScreen(
 private fun DynamicScreen.ArtistDetail(
     artistName: String,
     mediaVM: LMediaViewModel = singleViewModel(),
-    songsVM: SongsViewModel = singleViewModel(),
     historyVM: HistoryViewModel = singleViewModel(),
 ) {
     val artist = mediaVM.requireArtist(artistName) ?: run {
@@ -59,9 +55,6 @@ private fun DynamicScreen.ArtistDetail(
     val sortFor = remember { "ArtistDetail" }
     val listState = rememberLazyListState()
 
-    val showSortPanel = remember { mutableStateOf(false) }
-
-    val songsState by songsVM.songsState
     val supportSortPresets = remember {
         listOf(
             SortPreset.SortByAddTime,
@@ -111,7 +104,7 @@ private fun DynamicScreen.ArtistDetail(
             item {
                 NavigatorHeader(
                     title = artist.name,
-                    subTitle = "共 ${songsState.values.flatten().size} 首歌曲，总时长 ${
+                    subTitle = "共 ${it.value.values.flatten().size} 首歌曲，总时长 ${
                         artist.requireItemsDuration().durationToTime()
                     }"
                 )
@@ -121,14 +114,9 @@ private fun DynamicScreen.ArtistDetail(
             var icon = -1
             var text = ""
             when (sortRuleStr.value) {
-                SortRule.TrackNumber.name -> {
-                    icon = R.drawable.ic_music_line
-                    text = item.track.toString()
-                }
-
                 SortRule.PlayCount.name -> {
                     icon = R.drawable.headphone_fill
-                    text = historyVM.requiteHistoryCountById(item.id).toString()
+                    text = historyVM.requiteHistoryCountById(item.mediaId).toString()
                 }
             }
             if (icon != -1) {

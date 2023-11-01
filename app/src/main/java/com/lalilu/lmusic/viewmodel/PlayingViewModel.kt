@@ -1,7 +1,7 @@
 package com.lalilu.lmusic.viewmodel
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.common.base.Playable
@@ -67,13 +67,12 @@ class PlayingViewModel(
         }
     }
 
-    fun requireHasLyricState(item: Playable): MutableState<Boolean> {
-        return mutableStateOf(false).also {
-            viewModelScope.launch {
-                if (isActive) {
-                    it.value = lyricRepository.hasLyric(item)
-                }
-            }
+    private val hasLyricList = mutableStateMapOf<String, Boolean>()
+    fun requireHasLyric(item: Playable): SnapshotStateMap<String, Boolean> {
+        viewModelScope.launch {
+            if (!isActive) return@launch
+            hasLyricList[item.mediaId] = lyricRepository.hasLyric(item)
         }
+        return hasLyricList
     }
 }

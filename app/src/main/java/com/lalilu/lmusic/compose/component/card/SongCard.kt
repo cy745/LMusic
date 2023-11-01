@@ -22,9 +22,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +41,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
-import com.lalilu.lmedia.entity.LSong
+import com.lalilu.common.base.Playable
+import com.lalilu.common.base.Sticker
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.dayNightTextColorFilter
 import com.lalilu.lmusic.utils.extension.durationMsToString
@@ -53,15 +52,15 @@ import com.lalilu.lmusic.utils.extension.mimeTypeToIcon
 fun SongCard(
     modifier: Modifier = Modifier,
     dragModifier: Modifier = Modifier,
-    song: () -> LSong,
+    song: () -> Playable,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
     onEnterSelect: () -> Unit = {},
+    hasLyric: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
     isSelected: () -> Boolean = { false },
     showPrefix: () -> Boolean = { false },
     fixedHeight: () -> Boolean = { false },
-    hasLyric: State<Boolean> = remember { mutableStateOf(false) },
     prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     val item = remember { song() }
@@ -69,19 +68,19 @@ fun SongCard(
     SongCard(
         modifier = modifier,
         dragModifier = dragModifier,
-        title = { item.name },
-        subTitle = { item._artist },
-        mimeType = { item.mimeType },
+        title = { item.title },
+        subTitle = { item.subTitle },
         duration = { item.durationMs },
-        hasLyric = { hasLyric.value },
+        sticker = { item.sticker },
         imageData = { item },
         onClick = onClick,
         onLongClick = onLongClick,
         onEnterSelect = onEnterSelect,
-        fixedHeight = fixedHeight,
+        hasLyric = hasLyric,
         isPlaying = isPlaying,
         isSelected = isSelected,
         showPrefix = showPrefix,
+        fixedHeight = fixedHeight,
         prefixContent = prefixContent
     )
 }
@@ -93,8 +92,8 @@ fun SongCard(
     dragModifier: Modifier = Modifier,
     title: () -> String,
     subTitle: () -> String,
-    mimeType: () -> String,
     duration: () -> Long,
+    sticker: () -> List<Sticker>,
     imageData: () -> Any?,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
@@ -107,7 +106,10 @@ fun SongCard(
     prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val bgColor by animateColorAsState(if (isSelected()) dayNightTextColor(0.15f) else Color.Transparent)
+    val bgColor by animateColorAsState(
+        targetValue = if (isSelected()) dayNightTextColor(0.15f) else Color.Transparent,
+        label = ""
+    )
 
     Row(
         modifier = modifier
@@ -129,13 +131,29 @@ fun SongCard(
             modifier = Modifier.weight(1f),
             title = title,
             subTitle = subTitle,
-            mimeType = mimeType,
             duration = duration,
-            hasLyric = hasLyric,
             isPlaying = isPlaying,
             showPrefix = showPrefix,
             fixedHeight = fixedHeight,
-            prefixContent = prefixContent
+            prefixContent = prefixContent,
+            stickerContent = {
+                HasLyricIcon(
+                    hasLyric = hasLyric,
+                    fixedHeight = fixedHeight
+                )
+
+                val stickers = remember { sticker() }
+                stickers.firstOrNull { it is Sticker.ExtSticker }?.let {
+                    Image(
+                        painter = painterResource(id = mimeTypeToIcon(mimeType = it.name)),
+                        contentDescription = "MediaType Icon",
+                        colorFilter = dayNightTextColorFilter(0.9f),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .aspectRatio(1f)
+                    )
+                }
+            }
         )
         SongCardImage(
             modifier = dragModifier,
@@ -152,12 +170,11 @@ fun SongCardContent(
     modifier: Modifier = Modifier,
     title: () -> String,
     subTitle: () -> String,
-    mimeType: () -> String,
     duration: () -> Long,
     fixedHeight: () -> Boolean = { false },
-    hasLyric: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
     showPrefix: () -> Boolean = { false },
+    stickerContent: @Composable RowScope.() -> Unit = {},
     prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     Column(
@@ -177,18 +194,7 @@ fun SongCardContent(
                 color = dayNightTextColor(),
                 style = MaterialTheme.typography.subtitle1
             )
-            HasLyricIcon(
-                hasLyric = hasLyric,
-                fixedHeight = fixedHeight
-            )
-            Image(
-                painter = painterResource(id = mimeTypeToIcon(mimeType = mimeType())),
-                contentDescription = "MediaType Icon",
-                colorFilter = dayNightTextColorFilter(0.9f),
-                modifier = Modifier
-                    .size(20.dp)
-                    .aspectRatio(1f)
-            )
+            stickerContent()
         }
         Row(
             modifier = Modifier

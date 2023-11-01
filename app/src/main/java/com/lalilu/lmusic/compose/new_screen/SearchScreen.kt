@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,26 +20,21 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
-import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.GlobalNavigator
 import com.lalilu.lmusic.compose.DynamicScreen
 import com.lalilu.lmusic.compose.ScreenInfo
 import com.lalilu.lmusic.compose.TabScreen
-import com.lalilu.lmusic.compose.component.LLazyColumn
 import com.lalilu.lmusic.compose.component.base.SearchInputBar
 import com.lalilu.lmusic.compose.component.card.ArtistCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
-import com.lalilu.lmusic.compose.component.card.SongCard
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.utils.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -82,7 +76,6 @@ private fun DynamicScreen.SearchScreen(
     searchVM: SearchViewModel = singleViewModel(),
 ) {
     val context = LocalContext.current
-    val haptic = LocalHapticFeedback.current
 
     DisposableEffect(Unit) {
         onDispose {
@@ -90,52 +83,26 @@ private fun DynamicScreen.SearchScreen(
         }
     }
 
-    SelectPanelWrapper { selector ->
-        LLazyColumn(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            searchItem(
-                name = "歌曲",
-                showCount = 5,
-                getId = { it.id },
-                items = searchVM.songsResult.value,
-                getContentType = { LSong::class },
-                onClickHeader = {
-                    if (searchVM.songsResult.value.isNotEmpty()) {
-                        GlobalNavigator.showSongs(
-                            title = "[${searchVM.keyword.value}]\n歌曲搜索结果",
-                            mediaIds = searchVM.songsResult.value.map { it.mediaId }
-                        )
-                    }
-                }
-            ) { item ->
-                SongCard(
-                    song = { item },
-                    modifier = Modifier
-                        .animateItemPlacement()
-                        .padding(bottom = 5.dp),
-                    isSelected = { selector.isSelected(item) },
-                    hasLyric = playingVM.lyricRepository.rememberHasLyric(playable = item),
-                    onLongClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        GlobalNavigator.goToDetailOf(mediaId = item.id)
-                    },
-                    onEnterSelect = { selector.onSelect(item) },
-                    isPlaying = { playingVM.isItemPlaying(item.id, Playable::mediaId) },
+    Songs(
+        mediaIds = searchVM.songsResult.value.take(5).map { it.mediaId },
+        sortFor = "SearchResult",
+        headerContent = {
+            item(key = "Song_Header") {
+                RecommendTitle(
+                    modifier = Modifier.height(64.dp),
+                    title = "歌曲",
                     onClick = {
-                        if (selector.isSelecting()) {
-                            selector.onSelect(item)
-                        } else {
-                            playingVM.play(
-                                mediaId = item.id,
-                                addToNext = true,
-                                playOrPause = true
+                        if (searchVM.songsResult.value.isNotEmpty()) {
+                            GlobalNavigator.showSongs(
+                                title = "[${searchVM.keyword.value}]\n歌曲搜索结果",
+                                mediaIds = searchVM.songsResult.value.map { it.mediaId }
                             )
                         }
                     }
                 )
             }
-
+        },
+        footerContent = {
             val onAlbumHeaderClick = {
                 if (searchVM.albumsResult.value.isNotEmpty()) {
 //                navigator.navigate(
@@ -225,7 +192,7 @@ private fun DynamicScreen.SearchScreen(
                 )
             }
         }
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterialApi::class)

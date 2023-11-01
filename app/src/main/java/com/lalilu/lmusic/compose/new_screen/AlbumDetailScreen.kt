@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupRule
 import com.lalilu.lmedia.extension.OrderRule
 import com.lalilu.lmedia.extension.SortRule
@@ -132,12 +133,12 @@ private fun DynamicScreen.AlbumDetail(
             when (sortRuleStr.value) {
                 SortRule.TrackNumber.name -> {
                     icon = R.drawable.ic_music_line
-                    text = item.track.toString()
+                    text = if (item is LSong) item.track.toString() else ""
                 }
 
                 SortRule.PlayCount.name -> {
                     icon = R.drawable.headphone_fill
-                    text = historyVM.requiteHistoryCountById(item.id).toString()
+                    text = historyVM.requiteHistoryCountById(item.mediaId).toString()
                 }
             }
             if (icon != -1) {

@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.viewmodel
 
+import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.LMedia
@@ -14,6 +15,7 @@ import com.lalilu.lmedia.extension.SortStrategy
 import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lmusic.repository.HistoryRepository
 import com.lalilu.common.base.BaseSp
+import com.lalilu.common.base.Playable
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,9 +33,16 @@ class SongsViewModel(
     private val settingsSp: SettingsSp,
     private val historyRepo: HistoryRepository
 ) : ViewModel() {
+    private val showAllFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val songIdsFlow: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
-    private val songsSource = songIdsFlow.flatMapLatest {
-        if (it.isEmpty()) LMedia.getFlow<LSong>() else LMedia.flowMapBy<LSong>(it)
+    private val songsSource = songIdsFlow.flatMapLatest { mediaIds ->
+        showAllFlow.flatMapLatest { showAll ->
+            if (mediaIds.isEmpty() && showAll) {
+                LMedia.getFlow<LSong>()
+            } else {
+                LMedia.flowMapBy<LSong>(mediaIds)
+            }
+        }
     }
 
     private val searcher = ItemsBaseSearcher(songsSource)
@@ -70,30 +79,19 @@ class SongsViewModel(
         }
     }
 
-    val songsState = sorter.output.toState(emptyMap(), viewModelScope)
-
-    fun updateBySongs(
-        songs: List<LSong>,
-        sortFor: String = Sortable.SORT_FOR_SONGS,
-        supportSortRules: List<SortRule>? = null,
-        supportGroupRules: List<GroupRule>? = null,
-        supportOrderRules: List<OrderRule>? = null
-    ) = updateByIds(
-        songIds = songs.map { it.id },
-        sortFor = sortFor,
-        supportSortRules = supportSortRules,
-        supportGroupRules = supportGroupRules,
-        supportOrderRules = supportOrderRules
-    )
+    val songsState: State<Map<GroupIdentity, List<Playable>>> =
+        sorter.output.toState(emptyMap(), viewModelScope)
 
     fun updateByIds(
         songIds: List<String>,
+        showAll: Boolean = false,
         sortFor: String = Sortable.SORT_FOR_SONGS,
         supportSortRules: List<SortRule>? = null,
         supportGroupRules: List<GroupRule>? = null,
         supportOrderRules: List<OrderRule>? = null
     ) = viewModelScope.launch {
         songIdsFlow.value = songIds
+        showAllFlow.value = showAll
         sorter.updateSortFor(
             sortFor = sortFor,
             supportSortRules = supportSortRules,
