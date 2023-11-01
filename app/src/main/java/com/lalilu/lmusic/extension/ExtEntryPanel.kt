@@ -26,6 +26,7 @@ import com.lalilu.lmusic.compose.new_screen.AlbumsScreen
 import com.lalilu.lmusic.compose.new_screen.ArtistsScreen
 import com.lalilu.lmusic.compose.new_screen.SettingsScreen
 import com.lalilu.lmusic.compose.new_screen.SongsScreen
+import com.lalilu.lmusic.compose.screen.PlaylistScreen
 import com.lalilu.lmusic.utils.extension.dayNightTextColor
 
 @Ext
@@ -41,6 +42,7 @@ class ExtEntryPanel : Extension {
                 SongsScreen(),
                 ArtistsScreen,
                 AlbumsScreen,
+                PlaylistScreen,
                 SettingsScreen,
             )
         }

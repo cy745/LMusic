@@ -104,7 +104,7 @@ abstract class DynamicScreen : CustomScreen {
     }
 
     @Composable
-    protected fun RegisterExtraContent(
+    fun RegisterExtraContent(
         isVisible: MutableState<Boolean> = remember { mutableStateOf(true) },
         showMask: () -> Boolean = { false },
         showBackground: () -> Boolean = { true },

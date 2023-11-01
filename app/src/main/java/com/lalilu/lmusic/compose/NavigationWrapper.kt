@@ -28,6 +28,7 @@ import com.lalilu.lmusic.compose.component.navigate.NavigationBar
 import com.lalilu.lmusic.compose.component.navigate.NavigationSmartBar
 import com.lalilu.lmusic.compose.new_screen.HomeScreen
 import com.lalilu.lmusic.compose.new_screen.SearchScreen
+import com.lalilu.lmusic.compose.screen.PlaylistScreen
 import com.lalilu.lmusic.utils.extension.LocalPaddingValue
 
 
@@ -80,7 +81,7 @@ object NavigationWrapper {
                     ) { modifier ->
                         NavigationBar(
                             modifier = modifier.align(Alignment.BottomCenter),
-                            tabScreens = { listOf(HomeScreen, SearchScreen) },
+                            tabScreens = { listOf(HomeScreen, PlaylistScreen, SearchScreen) },
                             navigator = bottomSheetNavigator
                         )
                     }
