@@ -11,11 +11,12 @@ repositories {
 
 dependencies {
     implementation("org.ow2.asm:asm-util:9.2")
+    implementation("org.ow2.asm:asm-commons:9.2")
     implementation("com.android.tools.build:gradle-api:8.2.0-rc02")
 }
 
 gradlePlugin {
-    plugins.create("RegisterPlugin") {
+    plugins.register("RegisterPlugin") {
         id = "com.lalilu.register"
         implementationClass = "com.lalilu.register.RegisterPlugin"
     }
