@@ -1,23 +1,16 @@
 package com.lalilu.register
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.gradle.work.ChangeType
-import org.gradle.work.Incremental
-import org.gradle.work.InputChanges
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
@@ -38,28 +31,13 @@ import javax.inject.Inject
  * 复制修改自 b7woreo/TraceX 的仓库
  * https://github.com/b7woreo/TraceX/blob/main/gradle-plugin/src/main/java/tracex/TraceClassVisitor.kt
  */
-@CacheableTask
 abstract class InjectTransformTask : DefaultTask() {
 
-    @get:Internal
+    @get:InputFiles
     abstract val allJars: ListProperty<RegularFile>
 
-    @get:Internal
+    @get:InputFiles
     abstract val allDirectories: ListProperty<Directory>
-
-    @get:InputFiles
-    @get:Classpath
-    @get:Incremental
-    val allJarsFileCollection: ConfigurableFileCollection by lazy {
-        project.files(allJars)
-    }
-
-    @get:InputFiles
-    @get:Classpath
-    @get:Incremental
-    val allDirectoriesFileCollection: ConfigurableFileCollection by lazy {
-        project.files(allDirectories)
-    }
 
     @get:OutputDirectory
     abstract val intermediate: DirectoryProperty
@@ -71,30 +49,30 @@ abstract class InjectTransformTask : DefaultTask() {
     abstract val workerExecutor: WorkerExecutor
 
     @TaskAction
-    fun transform(inputChanges: InputChanges) {
+    fun transform() {
         val workQueue = workerExecutor.noIsolation()
 
-        val changedJars = inputChanges.getFileChanges(allJarsFileCollection)
-        val changedClasses = inputChanges.getFileChanges(allDirectoriesFileCollection)
         val intermediateFile = intermediate.get().asFile
+        // 删除所有中间产物
+        intermediateFile.deleteRecursively()
 
-        changedJars.forEach { changedJar ->
+        allJars.get().forEach { jar ->
             workQueue.submit(TransformJar::class.java) {
                 rootDir.set(project.rootDir)
-                source.set(changedJar.file)
-                normalizedPath.set(changedJar.normalizedPath)
-                changeType.set(changedJar.changeType)
+                source.set(jar.asFile)
+                normalizedPath.set(jar.asFile.normalize().path)
                 intermediate.set(intermediateFile)
             }
         }
 
-        changedClasses.forEach { changedClass ->
-            workQueue.submit(TransformClass::class.java) {
-                rootDir.set(project.rootDir)
-                source.set(changedClass.file)
-                normalizedPath.set(changedClass.normalizedPath)
-                changeType.set(changedClass.changeType)
-                intermediate.set(intermediateFile)
+        allDirectories.get().forEach { directory ->
+            directory.asFile.allFiles { classFile ->
+                workQueue.submit(TransformClass::class.java) {
+                    rootDir.set(project.rootDir)
+                    source.set(classFile)
+                    normalizedPath.set(classFile.toRelativeString(directory.asFile))
+                    intermediate.set(intermediateFile)
+                }
             }
         }
 
@@ -139,9 +117,6 @@ abstract class InjectTransformTask : DefaultTask() {
         protected val normalizedPath: String
             get() = parameters.normalizedPath.get()
 
-        protected val changeType: ChangeType
-            get() = parameters.changeType.get()
-
         protected val intermediate: File
             get() = parameters.intermediate.get().asFile
 
@@ -150,24 +125,8 @@ abstract class InjectTransformTask : DefaultTask() {
         protected abstract fun transform()
 
         final override fun execute() {
-            println("[$changeType] $source($normalizedPath) -> $destination")
-
-            when (changeType) {
-                ChangeType.ADDED -> {
-                    transform()
-                }
-
-                ChangeType.MODIFIED -> {
-                    destination.deleteRecursively()
-                    transform()
-                }
-
-                ChangeType.REMOVED -> {
-                    destination.deleteRecursively()
-                }
-
-                else -> {}
-            }
+            destination.deleteRecursively()
+            transform()
         }
 
         protected fun includeFileInTransform(relativePath: String): Boolean {
@@ -204,7 +163,6 @@ abstract class InjectTransformTask : DefaultTask() {
             val rootDir: DirectoryProperty
             val source: RegularFileProperty
             val normalizedPath: Property<String>
-            val changeType: Property<ChangeType>
             val intermediate: DirectoryProperty
         }
     }
