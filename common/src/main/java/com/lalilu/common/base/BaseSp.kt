@@ -210,6 +210,10 @@ open class SpListItem<K : Any>(
         value = value.plus(item)
     }
 
+    open fun add(index: Int, item: K) {
+        value = value.toMutableList().apply { add(index, item) }
+    }
+
     open fun add(items: Collection<K>) {
         value = value.plus(items)
     }

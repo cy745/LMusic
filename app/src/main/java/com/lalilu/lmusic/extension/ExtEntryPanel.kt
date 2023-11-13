@@ -26,7 +26,7 @@ import com.lalilu.lmusic.compose.new_screen.AlbumsScreen
 import com.lalilu.lmusic.compose.new_screen.ArtistsScreen
 import com.lalilu.lmusic.compose.new_screen.SettingsScreen
 import com.lalilu.lmusic.compose.new_screen.SongsScreen
-import com.lalilu.lmusic.compose.screen.PlaylistScreen
+import com.lalilu.lplaylist.screen.PlaylistScreen
 import com.lalilu.component.extension.dayNightTextColor
 
 @Ext

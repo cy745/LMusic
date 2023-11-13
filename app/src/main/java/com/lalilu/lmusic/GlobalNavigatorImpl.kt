@@ -1,5 +1,6 @@
 package com.lalilu.lmusic
 
+import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.base.BottomSheetNavigator
 import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.lmusic.compose.NavigationWrapper
@@ -35,5 +36,10 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
                 mediaIds = mediaIds
             )
         )
+    }
+
+    override fun navigateTo(screen: Screen, navigator: BottomSheetNavigator?) {
+        val nav = navigator ?: NavigationWrapper.navigator ?: return
+        nav.showSingle(screen)
     }
 }

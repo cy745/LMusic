@@ -1,4 +1,4 @@
-package com.lalilu.lplaylist
+package com.lalilu.lplaylist.entity
 
 data class LPlaylist(
     val id: String,

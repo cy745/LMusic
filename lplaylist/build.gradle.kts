@@ -7,9 +7,11 @@ android {
     namespace = "com.lalilu.lplaylist"
     compileSdk = AndroidConfig.COMPILE_SDK_VERSION
 
+    buildFeatures {
+        compose = true
+    }
     defaultConfig {
         minSdk = AndroidConfig.MIN_SDK_VERSION
-
     }
     buildTypes {
         release {
@@ -23,8 +25,11 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.version.get()
+    }
 }
 
 dependencies {
-    implementation(project(":common"))
+    implementation(project(":component"))
 }

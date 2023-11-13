@@ -30,7 +30,7 @@ import com.lalilu.lmusic.compose.component.navigate.NavigationBar
 import com.lalilu.lmusic.compose.component.navigate.NavigationSmartBar
 import com.lalilu.lmusic.compose.new_screen.HomeScreen
 import com.lalilu.lmusic.compose.new_screen.SearchScreen
-import com.lalilu.lmusic.compose.screen.PlaylistScreen
+import com.lalilu.lplaylist.screen.PlaylistScreen
 
 
 @OptIn(ExperimentalMaterialApi::class)
