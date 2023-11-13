@@ -93,7 +93,7 @@ abstract class DynamicScreen : CustomScreen {
         private set
 
     @Composable
-    protected fun RegisterActions(actionList: () -> List<ScreenAction>) {
+    fun RegisterActions(actionList: () -> List<ScreenAction>) {
         LaunchedEffect(Unit) {
             actions = actionList()
         }
