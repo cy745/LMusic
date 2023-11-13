@@ -4,17 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.lalilu.extension_core"
+    namespace = "com.lalilu.lhistory"
     compileSdk = AndroidConfig.COMPILE_SDK_VERSION
 
     buildFeatures {
         compose = true
     }
-
     defaultConfig {
         minSdk = AndroidConfig.MIN_SDK_VERSION
     }
-
     buildTypes {
         release {
             consumerProguardFiles("proguard-rules.pro")
@@ -33,18 +31,5 @@ android {
 }
 
 dependencies {
-    api(project(":common"))
-    api(project(":lmedia"))
-    api(project(":lplayer"))
-    api(project(":lplaylist"))
-    api(project(":lhistory"))
-
-    api(libs.coil)
-    api(libs.coil.compose)
-
-    // compose
-    api(libs.compose.compiler)
-    api(platform(libs.compose.bom))
-    api(libs.bundles.compose)
-    debugApi(libs.bundles.compose.debug)
+    implementation(project(":component"))
 }
