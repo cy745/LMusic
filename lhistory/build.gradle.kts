@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     kotlin("android")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -12,6 +13,10 @@ android {
     }
     defaultConfig {
         minSdk = AndroidConfig.MIN_SDK_VERSION
+
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
     }
     buildTypes {
         release {
@@ -31,5 +36,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.room.ktx)
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
+
     implementation(project(":component"))
 }

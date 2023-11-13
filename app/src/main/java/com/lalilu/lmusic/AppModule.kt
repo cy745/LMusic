@@ -20,13 +20,10 @@ import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
-import com.lalilu.lmusic.datastore.LDatabase
 import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.datastore.TempSp
 import com.lalilu.lmusic.repository.CoverRepository
-import com.lalilu.lmusic.repository.HistoryRepository
-import com.lalilu.lmusic.repository.HistoryRepositoryImpl
 import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicNotifier
@@ -99,12 +96,6 @@ val AppModule = module {
             })
             .build()
     }
-    single {
-        Room.databaseBuilder(androidApplication(), LDatabase::class.java, "lmedia.db")
-            .fallbackToDestructiveMigration()
-            .build()
-    }
-    single<HistoryRepository> { HistoryRepositoryImpl(get<LDatabase>().historyDao()) }
 }
 
 val ViewModelModule = module {

@@ -1,6 +1,7 @@
-package com.lalilu.lmusic.datastore
+package com.lalilu.lhistory.repository
 
 import androidx.room.*
+import com.lalilu.lhistory.entity.LHistory
 import kotlinx.coroutines.flow.Flow
 
 @Dao

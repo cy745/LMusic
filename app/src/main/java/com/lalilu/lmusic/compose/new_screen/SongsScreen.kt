@@ -25,10 +25,10 @@ import com.lalilu.lmedia.extension.ListActionPreset
 import com.lalilu.lmedia.extension.OrderRuleStatic
 import com.lalilu.lmedia.extension.SortRuleStatic
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.impl.SortRuleLastPlayTime
-import com.lalilu.lmusic.impl.SortRulePlayCount
-import com.lalilu.lmusic.impl.SortRulePresetLastPlayTime
-import com.lalilu.lmusic.impl.SortRulePresetPlayedTimes
+import com.lalilu.lhistory.SortRuleLastPlayTime
+import com.lalilu.lhistory.SortRulePlayCount
+import com.lalilu.lhistory.SortRulePresetLastPlayTime
+import com.lalilu.lhistory.SortRulePresetPlayedTimes
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 

@@ -1,8 +1,7 @@
-package com.lalilu.lmusic.repository
+package com.lalilu.lhistory.repository
 
 import com.lalilu.common.toCachedFlow
-import com.lalilu.lmusic.datastore.HistoryDao
-import com.lalilu.lmusic.datastore.LHistory
+import com.lalilu.lhistory.entity.LHistory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

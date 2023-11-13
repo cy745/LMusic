@@ -1,6 +1,6 @@
-package com.lalilu.lmusic.repository
+package com.lalilu.lhistory.repository
 
-import com.lalilu.lmusic.datastore.LHistory
+import com.lalilu.lhistory.entity.LHistory
 import kotlinx.coroutines.flow.Flow
 
 interface HistoryRepository {

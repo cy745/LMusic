@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lhistory.utils
 
 import android.net.Uri
 import androidx.room.TypeConverter

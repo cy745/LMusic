@@ -1,10 +1,11 @@
-package com.lalilu.lmusic.datastore
+package com.lalilu.lhistory.repository
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.lalilu.lmusic.utils.DateConverter
-import com.lalilu.lmusic.utils.UriConverter
+import com.lalilu.lhistory.entity.LHistory
+import com.lalilu.lhistory.utils.DateConverter
+import com.lalilu.lhistory.utils.UriConverter
 
 @Database(
     version = 1,

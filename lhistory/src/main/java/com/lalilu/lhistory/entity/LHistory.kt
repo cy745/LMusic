@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.datastore
+package com.lalilu.lhistory.entity
 
 import androidx.annotation.IntDef
 import androidx.room.ColumnInfo

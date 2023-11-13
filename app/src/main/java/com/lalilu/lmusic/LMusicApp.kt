@@ -8,6 +8,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.lalilu.component.ComponentModule
 import com.lalilu.extension_core.ExtensionManager
+import com.lalilu.lhistory.HistoryModule
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.indexer.FilterGroup
 import com.lalilu.lmedia.indexer.FilterProvider
@@ -40,6 +41,7 @@ class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelSt
                 FilterModule,
                 PlaylistModule,
                 ComponentModule,
+                HistoryModule,
                 LPlayer.module,
                 LMedia.module
             )

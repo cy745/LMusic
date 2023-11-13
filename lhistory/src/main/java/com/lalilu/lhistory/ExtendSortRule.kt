@@ -1,10 +1,10 @@
-package com.lalilu.lmusic.impl
+package com.lalilu.lhistory
 
 import com.lalilu.component.R
+import com.lalilu.lhistory.repository.HistoryRepository
 import com.lalilu.lmedia.extension.ListActionPreset
 import com.lalilu.lmedia.extension.SortRuleDynamic
 import com.lalilu.lmedia.extension.Sortable
-import com.lalilu.lmusic.repository.HistoryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import org.koin.java.KoinJavaComponent
