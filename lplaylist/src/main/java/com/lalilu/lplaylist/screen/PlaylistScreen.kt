@@ -13,29 +13,40 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.rememberScreenModel
 import com.lalilu.component.LLazyColumn
-import com.lalilu.component.R
+import com.lalilu.component.SelectPanelWrapper
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.TabScreen
+import com.lalilu.component.extension.rememberItemSelectHelper
+import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.component.PlaylistCard
 import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.repository.PlaylistSp
 import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 import org.koin.compose.koinInject
+import com.lalilu.component.R as ComponentR
 
+class PlaylistScreenModel : ScreenModel {
+    val isSelecting = mutableStateOf(false)
+    val selectedItems = mutableStateOf<List<Any>>(emptyList())
+}
 
 data object PlaylistScreen : DynamicScreen(), TabScreen {
     override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = com.lalilu.lmedia.R.string.sort_rule_title,
-        icon = R.drawable.ic_play_list_fill
+        title = R.string.playlist_screen_title,
+        icon = ComponentR.drawable.ic_play_list_fill
     )
 
     @Composable
@@ -49,7 +60,9 @@ data object PlaylistScreen : DynamicScreen(), TabScreen {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DynamicScreen.PlaylistScreen(
-    sp: PlaylistSp = koinInject()
+    sp: PlaylistSp = koinInject(),
+    playlistSM: PlaylistScreenModel = rememberScreenModel { PlaylistScreenModel() },
+    navigator: GlobalNavigator = koinInject()
 ) {
     val playlist = sp.obtainList<LPlaylist>("Playlist", autoSave = false)
     val state = rememberReorderableLazyListState(
@@ -65,7 +78,8 @@ private fun DynamicScreen.PlaylistScreen(
         },
         canDragOver = { draggedOver, _ ->
             playlist.value.any { it.id == draggedOver.key }
-        }
+        },
+        onDragEnd = { _, _ -> playlist.save() }
     )
 
     DisposableEffect(Unit) {
@@ -74,60 +88,78 @@ private fun DynamicScreen.PlaylistScreen(
         }
     }
 
-    LLazyColumn(
-        state = state.listState,
-        modifier = Modifier
-            .fillMaxSize()
-            .reorderable(state)
-            .detectReorderAfterLongPress(state)
-    ) {
-        item {
-            Row(
-                modifier = Modifier
-                    .statusBarsPadding()
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Playlist")
+    SelectPanelWrapper(
+        selector = rememberItemSelectHelper(
+            isSelecting = playlistSM.isSelecting,
+            selected = playlistSM.selectedItems
+        )
+    ) { selectHelper ->
+        LLazyColumn(
+            state = state.listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .reorderable(state)
+        ) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Playlist")
 
-                IconButton(
-                    onClick = {
-                        val id = System.currentTimeMillis().toString()
-                        playlist.add(
-                            index = 0,
-                            item = LPlaylist(
-                                id = System.currentTimeMillis().toString(),
-                                title = "Playlist_$id",
-                                subTitle = "",
-                                coverUri = "",
-                                mediaIds = emptyList()
+                    IconButton(
+                        onClick = {
+                            val id = System.currentTimeMillis().toString()
+                            playlist.add(
+                                index = 0,
+                                item = LPlaylist(
+                                    id = System.currentTimeMillis().toString(),
+                                    title = "Playlist_$id",
+                                    subTitle = "",
+                                    coverUri = "",
+                                    mediaIds = emptyList()
+                                )
                             )
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(ComponentR.drawable.ic_add_line),
+                            contentDescription = null
                         )
                     }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_add_line),
-                        contentDescription = null
-                    )
                 }
             }
-        }
-        items(
-            items = playlist.value,
-            key = { it.id },
-            contentType = { LPlaylist::class.java }
-        ) {
-            ReorderableItem(
-                defaultDraggingModifier = Modifier.animateItemPlacement(),
-                state = state,
-                key = it.id
-            ) { isDragging ->
-                PlaylistCard(
-                    playlist = it,
-                    isDragging = { isDragging }
-                )
+
+            items(
+                items = playlist.value,
+                key = { it.id },
+                contentType = { LPlaylist::class.java }
+            ) { playlist ->
+                ReorderableItem(
+                    defaultDraggingModifier = Modifier.animateItemPlacement(),
+                    state = state,
+                    key = playlist.id
+                ) { isDragging ->
+                    PlaylistCard(
+                        playlist = playlist,
+                        draggingModifier = Modifier.detectReorder(state),
+                        isDragging = { isDragging },
+                        isSelected = { selectHelper.isSelected(playlist) },
+                        isSelecting = { selectHelper.isSelecting.value },
+                        onClick = {
+                            if (selectHelper.isSelecting()) {
+                                selectHelper.onSelect(playlist)
+                            } else {
+                                navigator.navigateTo(PlaylistDetailScreen(playlistId = playlist.id))
+                            }
+                        },
+                        onLongClick = { selectHelper.onSelect(playlist) }
+                    )
+                }
             }
         }
     }

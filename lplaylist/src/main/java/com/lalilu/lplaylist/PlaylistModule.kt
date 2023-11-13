@@ -8,5 +8,5 @@ import org.koin.dsl.module
 
 val PlaylistModule = module {
     single { PlaylistSp(androidApplication()) }
-    single<PlaylistRepository> { PlaylistRepositoryImpl() }
+    single<PlaylistRepository> { PlaylistRepositoryImpl(get()) }
 }
