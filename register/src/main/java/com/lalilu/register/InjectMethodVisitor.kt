@@ -31,7 +31,7 @@ class InjectMethodVisitor(
                 "L$managerAsmClassName;"
             )
 
-            mv.visitLdcInsn(itemAsmClassName) //类名
+            mv.visitLdcInsn(classInfo.className) //类名
 
             when {
                 // 若为单例对象，则直接获取单例

@@ -3,6 +3,7 @@ package com.lalilu.register
 import java.io.Serializable
 
 open class RegisterConfig : Serializable {
+    var enable: Boolean = false
     var registerInfoList: List<Map<String, String>> = arrayListOf()
 
     fun convertRegisterInfo(): List<RegisterInfo> {

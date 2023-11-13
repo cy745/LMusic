@@ -1,3 +1,4 @@
+import com.lalilu.register.RegisterConfig
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -122,6 +123,18 @@ android {
     }
 }
 
+registerPlugin {
+    enable = false
+    registerInfoList = listOf(
+        mapOf(
+            RegisterConfig.TARGET_MANAGER_CLASS to "com.lalilu.component.SortRuleManager",
+            RegisterConfig.BASE_INTERFACE to "com.lalilu.lmedia.extension.ListAction",
+            RegisterConfig.REGISTER_METHOD to "register",
+            RegisterConfig.REGISTER_METHOD_CLASS to "com.lalilu.component.SortRuleManager",
+        )
+    )
+}
+
 dependencies {
     implementation(project(":ui"))
     implementation(project(":crash"))
@@ -147,13 +160,6 @@ dependencies {
     // https://github.com/Block-Network/StatusBarApiExample
     // 墨 · 状态栏歌词 API
     implementation("com.github.577fkj:StatusBarApiExample:v2.0")
-
-    // https://github.com/aclassen/ComposeReorderable
-    // https://mvnrepository.com/artifact/org.burnoutcrew.composereorderable/reorderable
-    // Apache-2.0 license
-    // Compose的拖动排序组件
-    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
-    // 0.9.2对LazyColumn的ContentPadding存在偏移的bug
 
     // https://gitee.com/simplepeng/SpiderMan
     // Apache-2.0 License

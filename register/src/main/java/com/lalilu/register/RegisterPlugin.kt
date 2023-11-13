@@ -22,6 +22,11 @@ class RegisterPlugin : Plugin<Project> {
         val config = project.extensions.findByName(extensionName) as? RegisterConfig
         requireNotNull(config) { "RegisterConfig hasn't been initialized." }
 
+        if (!config.enable) {
+            println("RegisterConfig is not enable.")
+            return
+        }
+
         val androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
         println("RegisterPlugin: ${androidComponents.pluginVersion}")
 
