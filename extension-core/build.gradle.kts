@@ -38,6 +38,8 @@ dependencies {
     api(project(":lplayer"))
     api(project(":lplaylist"))
     api(project(":lhistory"))
+    api(project(":lartist"))
+    api(project(":lalbum"))
 
     api(libs.coil)
     api(libs.coil.compose)
