@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils.coil
+package com.lalilu.component.extension
 
 import android.util.LruCache
 import androidx.palette.graphics.Palette

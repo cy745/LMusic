@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.card
+package com.lalilu.lartist.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

@@ -71,6 +71,8 @@ import com.lalilu.lmusic.utils.extension.checkActivityIsExist
 import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import com.lalilu.component.extension.rememberScrollPosition
+import com.lalilu.lalbum.screen.AlbumDetailScreen
+import com.lalilu.lartist.screen.ArtistDetailScreen
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lplayer.extensions.QueueAction
 

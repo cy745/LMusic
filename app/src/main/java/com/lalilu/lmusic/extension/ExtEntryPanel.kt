@@ -22,12 +22,13 @@ import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
 import com.lalilu.lmusic.compose.NavigationWrapper
-import com.lalilu.lmusic.compose.new_screen.AlbumsScreen
-import com.lalilu.lmusic.compose.new_screen.ArtistsScreen
+import com.lalilu.lalbum.screen.AlbumsScreen
+import com.lalilu.lartist.screen.ArtistsScreen
 import com.lalilu.lmusic.compose.new_screen.SettingsScreen
 import com.lalilu.lmusic.compose.new_screen.SongsScreen
 import com.lalilu.lplaylist.screen.PlaylistScreen
 import com.lalilu.component.extension.dayNightTextColor
+import com.lalilu.lhistory.screen.HistoryScreen
 
 @Ext
 class ExtEntryPanel : Extension {
@@ -40,9 +41,10 @@ class ExtEntryPanel : Extension {
         val screenEntry = remember {
             listOf(
                 SongsScreen(),
-                ArtistsScreen,
-                AlbumsScreen,
+                ArtistsScreen(),
+                AlbumsScreen(),
                 PlaylistScreen,
+                HistoryScreen,
                 SettingsScreen,
             )
         }

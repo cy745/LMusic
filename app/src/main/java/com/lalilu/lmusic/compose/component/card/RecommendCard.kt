@@ -33,7 +33,7 @@ import com.airbnb.lottie.compose.*
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.utils.coil.requirePalette
+import com.lalilu.component.extension.requirePalette
 import com.lalilu.component.extension.dayNightTextColor
 
 @Composable

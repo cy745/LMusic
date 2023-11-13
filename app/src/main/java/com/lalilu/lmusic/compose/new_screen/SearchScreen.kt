@@ -32,7 +32,7 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.TabScreen
 import com.lalilu.lmusic.compose.component.base.SearchInputBar
-import com.lalilu.lmusic.compose.component.card.ArtistCard
+import com.lalilu.lartist.component.ArtistCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle

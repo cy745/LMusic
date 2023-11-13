@@ -4,7 +4,6 @@ import StatusBarLyric.API.StatusBarLyric
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.room.Room
 import coil.EventListener
 import coil.ImageLoader
 import coil.request.ErrorResult
@@ -34,8 +33,8 @@ import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.SongCoverFetcher
 import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
 import com.lalilu.lmusic.utils.extension.toBitmap
-import com.lalilu.lmusic.viewmodel.AlbumsViewModel
-import com.lalilu.lmusic.viewmodel.ArtistsViewModel
+import com.lalilu.lalbum.viewModel.AlbumsViewModel
+import com.lalilu.lartist.viewModel.ArtistsViewModel
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.ExtensionsViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel

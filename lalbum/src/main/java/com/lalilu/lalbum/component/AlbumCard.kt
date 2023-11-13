@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.card
+package com.lalilu.lalbum.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -36,10 +36,10 @@ import androidx.compose.ui.unit.sp
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.lalilu.R
+import com.lalilu.component.R as ComponentR
 import com.lalilu.component.card.PlayingTipIcon
 import com.lalilu.lmedia.entity.LAlbum
-import com.lalilu.lmusic.utils.coil.requirePalette
+import com.lalilu.component.extension.requirePalette
 import com.lalilu.component.extension.dayNightTextColor
 
 
@@ -166,8 +166,8 @@ fun AlbumCoverCard(
                     },
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(imageData())
-                    .placeholder(R.drawable.ic_music_2_line_100dp)
-                    .error(R.drawable.ic_music_2_line_100dp)
+                    .placeholder(ComponentR.drawable.ic_music_2_line_100dp)
+                    .error(ComponentR.drawable.ic_music_2_line_100dp)
                     .crossfade(true)
                     .requirePalette { palette = it }
                     .build(),
