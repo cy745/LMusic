@@ -25,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
-import com.lalilu.lmusic.utils.extension.singleViewModel
+import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.compose.component.settings.FileSelectWrapper
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.viewmodel.PlayingViewModel

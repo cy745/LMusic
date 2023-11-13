@@ -22,7 +22,7 @@ import com.lalilu.lmusic.compose.App
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.helper.LastTouchTimeHelper
 import com.lalilu.lmusic.service.LMusicServiceConnector
-import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner
+import com.lalilu.component.extension.collectWithLifeCycleOwner
 import org.koin.android.ext.android.inject
 
 class MainActivity : AppCompatActivity() {

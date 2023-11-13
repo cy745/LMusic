@@ -20,7 +20,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.component.extension.dayNightTextColor
 
 @Composable
 fun IconCheckButton(

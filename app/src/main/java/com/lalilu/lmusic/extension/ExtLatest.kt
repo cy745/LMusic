@@ -12,11 +12,11 @@ import com.lalilu.common.base.Playable
 import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
-import com.lalilu.lmusic.GlobalNavigator
+import com.lalilu.lmusic.GlobalNavigatorImpl
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
-import com.lalilu.lmusic.utils.extension.singleViewModel
+import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
@@ -54,7 +54,7 @@ class ExtLatest : Extension {
                 width = { 100.dp },
                 height = { 100.dp },
                 modifier = Modifier.animateItemPlacement(),
-                onClick = { GlobalNavigator.goToDetailOf(mediaId = it.id) },
+                onClick = { GlobalNavigatorImpl.goToDetailOf(mediaId = it.id) },
                 isPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) },
                 onClickButton = {
                     playingVM.play(

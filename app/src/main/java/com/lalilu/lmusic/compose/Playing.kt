@@ -25,7 +25,7 @@ import com.lalilu.common.HapticUtils
 import com.lalilu.common.base.Playable
 import com.lalilu.databinding.FragmentPlayingRebuildBinding
 import com.lalilu.lmusic.Config
-import com.lalilu.lmusic.GlobalNavigator
+import com.lalilu.lmusic.GlobalNavigatorImpl
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.adapter.ViewEvent
 import com.lalilu.lmusic.adapter.loadCover
@@ -35,11 +35,10 @@ import com.lalilu.lmusic.compose.component.playing.PlayingToolbarScaffoldState
 import com.lalilu.lmusic.compose.component.playing.rememberPlayingToolbarScaffoldState
 import com.lalilu.lmusic.compose.component.playing.sealed.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.sealed.PlayingToolbar
-import com.lalilu.lmusic.compose.new_screen.SongDetailScreen
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.helper.LastTouchTimeHelper
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
-import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner
+import com.lalilu.component.extension.collectWithLifeCycleOwner
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -140,9 +139,9 @@ object Playing {
                 when (event) {
                     ViewEvent.OnClick -> playingVM.play(mediaId = item.mediaId, playOrPause = true)
                     ViewEvent.OnLongClick -> {
-                        GlobalNavigator.goToDetailOf(
+                        GlobalNavigatorImpl.goToDetailOf(
+                            mediaId = item.mediaId,
                             navigator = NavigationWrapper.navigator,
-                            mediaId = item.mediaId
                         )
                         NavigationWrapper.navigator?.show()
                     }

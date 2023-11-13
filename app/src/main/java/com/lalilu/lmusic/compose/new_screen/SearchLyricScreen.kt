@@ -34,16 +34,16 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmusic.api.lrcshare.SongResult
-import com.lalilu.lmusic.compose.DynamicScreen
-import com.lalilu.lmusic.compose.ScreenInfo
-import com.lalilu.lmusic.compose.component.LLazyColumn
+import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.LLazyColumn
 import com.lalilu.lmusic.compose.component.card.SearchInputBar
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
 import com.lalilu.lmusic.compose.presenter.SearchLyricAction
 import com.lalilu.lmusic.compose.presenter.SearchLyricPresenter
 import com.lalilu.lmusic.compose.presenter.SearchLyricState
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
-import com.lalilu.lmusic.utils.extension.singleViewModel
+import com.lalilu.component.extension.dayNightTextColor
+import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 
 data class SearchLyricScreen(

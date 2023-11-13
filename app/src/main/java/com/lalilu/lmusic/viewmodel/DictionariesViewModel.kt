@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LDictionary
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.utils.extension.toState
+import com.lalilu.component.extension.toState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

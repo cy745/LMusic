@@ -52,14 +52,14 @@ import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.compose.DynamicScreen
+import com.lalilu.component.base.DynamicScreen
 import com.lalilu.lmusic.compose.NavigationWrapper
-import com.lalilu.lmusic.compose.ScreenAction
-import com.lalilu.lmusic.compose.ScreenInfo
-import com.lalilu.lmusic.compose.component.LLazyColumn
-import com.lalilu.lmusic.compose.component.base.IconButton
+import com.lalilu.component.base.ScreenAction
+import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.LLazyColumn
+import com.lalilu.component.IconButton
 import com.lalilu.lmusic.compose.component.base.IconCheckButton
-import com.lalilu.lmusic.compose.component.base.IconTextButton
+import com.lalilu.component.IconTextButton
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 import com.lalilu.lmusic.compose.component.card.SongInformationCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
@@ -68,9 +68,9 @@ import com.lalilu.lmusic.compose.presenter.DetailScreenIsPlayingPresenter
 import com.lalilu.lmusic.compose.presenter.DetailScreenLikeBtnPresenter
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.checkActivityIsExist
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
-import com.lalilu.lmusic.utils.extension.rememberScrollPosition
+import com.lalilu.component.extension.rememberScrollPosition
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lplayer.extensions.QueueAction
 

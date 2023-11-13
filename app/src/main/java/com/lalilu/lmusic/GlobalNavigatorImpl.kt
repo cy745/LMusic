@@ -1,34 +1,35 @@
 package com.lalilu.lmusic
 
+import com.lalilu.component.base.BottomSheetNavigator
+import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.lmusic.compose.NavigationWrapper
-import com.lalilu.lmusic.compose.component.BottomSheetNavigator
 import com.lalilu.lmusic.compose.new_screen.SongDetailScreen
 import com.lalilu.lmusic.compose.new_screen.SongsScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.CoroutineContext
 
-object GlobalNavigator : CoroutineScope {
+object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
 
     /**
      * 跳转至某元素的详情页
      */
-    fun goToDetailOf(
-        navigator: BottomSheetNavigator? = NavigationWrapper.navigator,
-        mediaId: String
+    override fun goToDetailOf(
+        mediaId: String,
+        navigator: BottomSheetNavigator?,
     ) {
-        navigator ?: return
-        navigator.showSingle(SongDetailScreen(mediaId = mediaId))
+        val nav = navigator ?: NavigationWrapper.navigator ?: return
+        nav.showSingle(SongDetailScreen(mediaId = mediaId))
     }
 
-    fun showSongs(
+    override fun showSongs(
         mediaIds: List<String>,
-        title: String? = null,
-        navigator: BottomSheetNavigator? = NavigationWrapper.navigator,
+        title: String?,
+        navigator: BottomSheetNavigator?,
     ) {
-        navigator ?: return
-        navigator.showSingle(
+        val nav = navigator ?: NavigationWrapper.navigator ?: return
+        nav.showSingle(
             SongsScreen(
                 title = title,
                 mediaIds = mediaIds

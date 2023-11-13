@@ -28,10 +28,10 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.R
 import com.lalilu.common.CustomRomUtils
 import com.lalilu.lmusic.GuidingActivity
-import com.lalilu.lmusic.compose.CustomScreen
-import com.lalilu.lmusic.compose.ScreenInfo
+import com.lalilu.component.base.CustomScreen
+import com.lalilu.component.base.ScreenInfo
 import com.lalilu.lmusic.compose.component.SmartContainer
-import com.lalilu.lmusic.compose.component.base.IconTextButton
+import com.lalilu.component.IconTextButton
 import com.lalilu.lmusic.compose.component.settings.SettingCategory
 import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
 import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
@@ -141,7 +141,7 @@ private fun SettingsScreen(
 
         item {
             SettingCategory(
-                iconRes = R.drawable.ic_lrc_fill,
+                iconRes = com.lalilu.component.R.drawable.ic_lrc_fill,
                 titleRes = R.string.preference_lyric_settings
             ) {
                 if (RomUtils.isMeizu() || statusBarLyricExt.hasEnable() || CustomRomUtils.isFlyme) {

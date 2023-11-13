@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component
+package com.lalilu.component.extension
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.offset

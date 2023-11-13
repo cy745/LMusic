@@ -13,6 +13,8 @@ import com.blankj.utilcode.util.FileUtils
 import com.blankj.utilcode.util.LogUtils
 import com.lalilu.BuildConfig
 import com.lalilu.R
+import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
@@ -45,11 +47,11 @@ import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
-import com.lalilu.lmusic.viewmodel.SongsViewModel
 import com.lalilu.lplayer.notification.Notifier
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -57,6 +59,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 val AppModule = module {
     single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
+    single<GlobalNavigator> { GlobalNavigatorImpl }
     single { SettingsSp(androidApplication()) }
     single { LastPlayedSp(androidApplication()) }
     single { TempSp(androidApplication()) }
@@ -106,13 +109,13 @@ val AppModule = module {
 
 val ViewModelModule = module {
     viewModelOf(::PlayingViewModel)
+    viewModel<IPlayingViewModel> { get<PlayingViewModel>() }
     viewModelOf(::LMediaViewModel)
     viewModelOf(::SearchViewModel)
     viewModelOf(::AlbumsViewModel)
     viewModelOf(::ArtistsViewModel)
     viewModelOf(::DictionariesViewModel)
     viewModelOf(::HistoryViewModel)
-    viewModelOf(::SongsViewModel)
     viewModelOf(::SearchLyricViewModel)
     viewModelOf(::ExtensionsViewModel)
     viewModelOf(::LibraryViewModel)

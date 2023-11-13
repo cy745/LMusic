@@ -7,8 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.lalilu.common.base.Playable
-import com.lalilu.lmusic.compose.UiAction
-import com.lalilu.lmusic.compose.UiState
+import com.lalilu.component.base.UiAction
+import com.lalilu.component.base.UiState
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

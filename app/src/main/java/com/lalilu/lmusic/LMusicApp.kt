@@ -6,12 +6,14 @@ import androidx.lifecycle.ViewModelStoreOwner
 import coil.Coil
 import coil.ImageLoader
 import coil.ImageLoaderFactory
+import com.lalilu.component.ComponentModule
 import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.indexer.FilterGroup
 import com.lalilu.lmedia.indexer.FilterProvider
 import com.lalilu.lmusic.utils.extension.ignoreSSLVerification
 import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplaylist.PlaylistModule
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -36,6 +38,8 @@ class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelSt
                 ViewModelModule,
                 RuntimeModule,
                 FilterModule,
+                PlaylistModule,
+                ComponentModule,
                 LPlayer.module,
                 LMedia.module
             )

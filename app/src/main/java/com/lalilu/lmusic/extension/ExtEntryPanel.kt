@@ -27,7 +27,7 @@ import com.lalilu.lmusic.compose.new_screen.ArtistsScreen
 import com.lalilu.lmusic.compose.new_screen.SettingsScreen
 import com.lalilu.lmusic.compose.new_screen.SongsScreen
 import com.lalilu.lmusic.compose.screen.PlaylistScreen
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.component.extension.dayNightTextColor
 
 @Ext
 class ExtEntryPanel : Extension {
@@ -63,9 +63,9 @@ class ExtEntryPanel : Extension {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        if (info.icon != null) {
+                        info.icon?.let { icon ->
                             Icon(
-                                painter = painterResource(id = info.icon),
+                                painter = painterResource(id = icon),
                                 contentDescription = stringResource(id = info.title),
                                 tint = dayNightTextColor(0.7f)
                             )

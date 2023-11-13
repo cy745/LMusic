@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component
+package com.lalilu.component.base
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler

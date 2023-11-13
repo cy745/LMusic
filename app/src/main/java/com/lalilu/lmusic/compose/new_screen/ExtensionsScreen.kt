@@ -25,7 +25,7 @@ import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.ExtensionLoadResult
 import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.utils.extension.rememberFixedStatusBarHeightDp
+import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

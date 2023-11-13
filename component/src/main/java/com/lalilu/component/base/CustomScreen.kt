@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose
+package com.lalilu.component.base
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -11,11 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import cafe.adriel.voyager.core.screen.Screen
-import com.lalilu.lmusic.compose.component.BackHandler
 import kotlinx.coroutines.CoroutineScope
-
-typealias Compose = @Composable () -> Unit
-typealias ComposeN = Compose?
 
 /**
  * 定义一个页面的信息

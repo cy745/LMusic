@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.card
+package com.lalilu.component.card
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally

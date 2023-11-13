@@ -1,10 +1,11 @@
-package com.lalilu.lmusic.compose.component.base
+package com.lalilu.component
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,82 +33,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.flowlayout.FlowRow
-import com.lalilu.R
-import com.lalilu.lmedia.extension.GroupRule
-import com.lalilu.lmedia.extension.OrderRule
-import com.lalilu.lmedia.extension.SortRule
-
-
-enum class SortPreset(
-    val titleRes: Int,
-    val sortRule: SortRule = SortRule.Normal,
-    val orderRule: OrderRule = OrderRule.Normal,
-    val groupRule: GroupRule = GroupRule.Normal
-) {
-    SortByAddTime(
-        titleRes = R.string.sort_preset_by_add_time,
-        sortRule = SortRule.CreateTime,
-        groupRule = GroupRule.CreateTime
-    ),
-    SortByModifyTime(
-        titleRes = R.string.sort_preset_by_modify_time,
-        sortRule = SortRule.ModifyTime,
-        groupRule = GroupRule.ModifyTime
-    ),
-    SortByTitle(
-        titleRes = R.string.sort_preset_by_title,
-        sortRule = SortRule.Title,
-        groupRule = GroupRule.PinYinFirstLetter
-    ),
-    SortByDuration(
-        titleRes = R.string.sort_preset_by_song_duration,
-        sortRule = SortRule.ItemsDuration
-    ),
-    SortByPlayedTimes(
-        titleRes = R.string.sort_preset_by_played_times,
-        sortRule = SortRule.PlayCount
-    ),
-    SortByLastPlayTime(
-        titleRes = R.string.sort_preset_by_last_play_time,
-        sortRule = SortRule.LastPlayTime
-    ),
-    SortByItemCount(
-        titleRes = R.string.sort_preset_by_item_count,
-        sortRule = SortRule.ItemsCount
-    ),
-    SortByDiskAndTrackNumber(
-        titleRes = R.string.sort_preset_by_disk_and_track,
-        sortRule = SortRule.TrackNumber,
-        groupRule = GroupRule.DiskNumber
-    );
-
-    companion object {
-        fun from(sortRule: SortRule, groupRule: GroupRule): SortPreset? =
-            from(sortRule.name, groupRule.name)
-
-        fun from(sortRule: String, groupRule: String): SortPreset? =
-            values().firstOrNull { it.sortRule.name == sortRule && it.groupRule.name == groupRule }
-    }
-}
+import com.lalilu.lmedia.extension.GroupAction
+import com.lalilu.lmedia.extension.ListAction
+import com.lalilu.lmedia.extension.ListActionPreset
+import com.lalilu.lmedia.extension.OrderAction
+import com.lalilu.lmedia.extension.SortAction
 
 /**
  * 将元素的分类分组和顺序设置功能统一成一个SortPanel组件
  */
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SortPanel(
     sortRule: MutableState<String>,
     orderRule: MutableState<String>,
     groupRule: MutableState<String>,
-    supportSortPresets: () -> List<SortPreset>,
-    supportGroupRules: () -> List<GroupRule>,
-    supportSortRules: () -> List<SortRule>,
-    supportOrderRules: () -> List<OrderRule>,
+    supportListAction: () -> List<ListAction>,
     onClose: () -> Unit = {}
 ) {
+    val presets by remember { derivedStateOf { supportListAction().filterIsInstance(ListActionPreset::class.java) } }
     val sortPreset = remember {
-        derivedStateOf { SortPreset.from(sortRule.value, groupRule.value) }
+        derivedStateOf {
+            presets.firstOrNull {
+                it.sortAction::class.java.name == sortRule.value &&
+                        it.orderAction::class.java.name == orderRule.value &&
+                        it.groupAction::class.java.name == groupRule.value
+            }
+        }
     }
     val showAdvancedOptions = remember { mutableStateOf(false) }
 
@@ -124,29 +76,28 @@ fun SortPanel(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(20.dp),
-            targetState = showAdvancedOptions.value
+            targetState = showAdvancedOptions.value,
+            label = ""
         ) { advance ->
             if (advance) {
                 SongCardSortPanel(
                     sortRule = sortRule,
                     orderRule = orderRule,
                     groupRule = groupRule,
-                    supportGroupRules = supportGroupRules,
-                    supportSortRules = supportSortRules,
-                    supportOrderRules = supportOrderRules,
+                    supportListAction = supportListAction,
                     onAdvanceCancel = { showAdvancedOptions.value = false },
                     onClose = onClose
                 )
             } else {
                 PresetSortPanel(
                     sortPreset = sortPreset,
-                    supportSortPresets = supportSortPresets,
+                    supportSortPresets = { presets },
                     onClose = onClose,
                     onAdvance = { showAdvancedOptions.value = true },
                     onUpdateSortPreset = {
-                        sortRule.value = it.sortRule.name
-                        orderRule.value = it.orderRule.name
-                        groupRule.value = it.groupRule.name
+                        sortRule.value = it.sortAction::class.java.name
+                        orderRule.value = it.orderAction::class.java.name
+                        groupRule.value = it.groupAction::class.java.name
                     }
                 )
             }
@@ -157,9 +108,9 @@ fun SortPanel(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PresetSortPanel(
-    sortPreset: State<SortPreset?>,
-    supportSortPresets: () -> List<SortPreset>,
-    onUpdateSortPreset: (SortPreset) -> Unit,
+    sortPreset: State<ListActionPreset?>,
+    supportSortPresets: () -> List<ListActionPreset>,
+    onUpdateSortPreset: (ListActionPreset) -> Unit,
     onClose: () -> Unit = {},
     onAdvance: () -> Unit = {}
 ) {
@@ -240,18 +191,17 @@ fun PresetSortPanel(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun SongCardSortPanel(
     sortRule: MutableState<String>,
     groupRule: MutableState<String>,
     orderRule: MutableState<String>,
-    supportGroupRules: () -> List<GroupRule>,
-    supportSortRules: () -> List<SortRule>,
-    supportOrderRules: () -> List<OrderRule>,
+    supportListAction: () -> List<ListAction>,
     onAdvanceCancel: () -> Unit = {},
     onClose: () -> Unit = {}
 ) {
+    val actions = remember { supportListAction() }
     val colors = ChipDefaults.filterChipColors(
         selectedBackgroundColor = Color(0xFF029DF3),
         selectedContentColor = Color.White,
@@ -265,17 +215,20 @@ fun SongCardSortPanel(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        supportSortRules()
+        actions.filterIsInstance(SortAction::class.java)
             .takeIf { it.isNotEmpty() }
-            ?.let { rules ->
+            ?.let { listActions ->
                 Text(text = "排序依据", style = MaterialTheme.typography.caption)
-                FlowRow(mainAxisSpacing = 8.dp, crossAxisSpacing = 8.dp) {
-                    rules.forEach { item ->
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listActions.forEach { item ->
                         FilterChip(
                             modifier = Modifier.height(36.dp),
                             shape = RoundedCornerShape(5.dp),
-                            onClick = { sortRule.value = item.name },
-                            selected = item.name == sortRule.value,
+                            onClick = { sortRule.value = item::class.java.name },
+                            selected = item::class.java.name == sortRule.value,
                             colors = colors
                         ) {
                             Text(text = stringResource(id = item.titleRes))
@@ -283,18 +236,20 @@ fun SongCardSortPanel(
                     }
                 }
             }
-
-        supportGroupRules()
+        actions.filterIsInstance(GroupAction::class.java)
             .takeIf { it.isNotEmpty() }
-            ?.let { rules ->
+            ?.let { listActions ->
                 Text(text = "分组依据", style = MaterialTheme.typography.caption)
-                FlowRow(mainAxisSpacing = 8.dp, crossAxisSpacing = 8.dp) {
-                    rules.forEach { item ->
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listActions.forEach { item ->
                         FilterChip(
                             modifier = Modifier.height(36.dp),
                             shape = RoundedCornerShape(5.dp),
-                            onClick = { groupRule.value = item.name },
-                            selected = item.name == groupRule.value,
+                            onClick = { groupRule.value = item::class.java.name },
+                            selected = item::class.java.name == groupRule.value,
                             colors = colors
                         ) {
                             Text(text = stringResource(id = item.titleRes))
@@ -302,19 +257,20 @@ fun SongCardSortPanel(
                     }
                 }
             }
-
-
-        supportOrderRules()
+        actions.filterIsInstance(OrderAction::class.java)
             .takeIf { it.isNotEmpty() }
-            ?.let { rules ->
+            ?.let { listActions ->
                 Text(text = "排序顺序", style = MaterialTheme.typography.caption)
-                FlowRow(mainAxisSpacing = 8.dp, crossAxisSpacing = 8.dp) {
-                    rules.forEach { item ->
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listActions.forEach { item ->
                         FilterChip(
                             modifier = Modifier.height(36.dp),
                             shape = RoundedCornerShape(5.dp),
-                            onClick = { orderRule.value = item.name },
-                            selected = item.name == orderRule.value,
+                            onClick = { orderRule.value = item::class.java.name },
+                            selected = item::class.java.name == orderRule.value,
                             colors = colors
                         ) {
                             Text(text = stringResource(id = item.titleRes))

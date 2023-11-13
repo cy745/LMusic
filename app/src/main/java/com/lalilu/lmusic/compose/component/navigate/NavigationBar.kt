@@ -45,12 +45,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.R
-import com.lalilu.lmusic.compose.CustomScreen
-import com.lalilu.lmusic.compose.DynamicScreen
-import com.lalilu.lmusic.compose.ScreenAction
-import com.lalilu.lmusic.compose.TabScreen
-import com.lalilu.lmusic.compose.component.BottomSheetNavigator
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.component.base.CustomScreen
+import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.ScreenAction
+import com.lalilu.component.base.TabScreen
+import com.lalilu.component.base.BottomSheetNavigator
+import com.lalilu.component.extension.dayNightTextColor
 
 @Composable
 fun NavigationBar(
@@ -188,10 +188,10 @@ fun NavigateCommonBar(
                             ),
                             onClick = it.onAction
                         ) {
-                            if (it.icon != null) {
+                            it.icon?.let { icon ->
                                 Image(
                                     modifier = Modifier.size(20.dp),
-                                    painter = painterResource(id = it.icon),
+                                    painter = painterResource(id = icon),
                                     contentDescription = stringResource(id = it.title),
                                     colorFilter = ColorFilter.tint(color = it.color)
                                 )

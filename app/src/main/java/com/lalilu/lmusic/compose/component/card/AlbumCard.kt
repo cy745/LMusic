@@ -37,9 +37,10 @@ import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
+import com.lalilu.component.card.PlayingTipIcon
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmusic.utils.coil.requirePalette
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.component.extension.dayNightTextColor
 
 
 @Composable

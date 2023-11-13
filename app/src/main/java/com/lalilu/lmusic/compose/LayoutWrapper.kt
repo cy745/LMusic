@@ -10,8 +10,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import com.lalilu.lmusic.compose.component.FixedLayout
 import com.lalilu.lmusic.compose.new_screen.HomeScreen
 import com.lalilu.lmusic.compose.screen.ShowScreen
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.rememberIsPad
+import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.extension.rememberIsPad
 
 
 object LayoutWrapper {

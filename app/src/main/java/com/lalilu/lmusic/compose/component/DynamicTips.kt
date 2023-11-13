@@ -27,7 +27,7 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.lalilu.R
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.component.extension.dayNightTextColor
 import kotlinx.coroutines.*
 import org.koin.compose.koinInject
 import kotlin.coroutines.CoroutineContext

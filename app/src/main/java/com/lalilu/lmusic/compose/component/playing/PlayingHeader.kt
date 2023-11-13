@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.lalilu.lmusic.compose.component.card.PlayingTipIcon
+import com.lalilu.component.card.PlayingTipIcon
 import com.lalilu.lmusic.utils.extension.slideTransition
 
 @OptIn(ExperimentalFoundationApi::class)

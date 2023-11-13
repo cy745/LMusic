@@ -24,19 +24,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
+import com.lalilu.component.Songs
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.GlobalNavigator
-import com.lalilu.lmusic.compose.DynamicScreen
-import com.lalilu.lmusic.compose.ScreenInfo
-import com.lalilu.lmusic.compose.TabScreen
+import com.lalilu.lmusic.GlobalNavigatorImpl
+import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.base.TabScreen
 import com.lalilu.lmusic.compose.component.base.SearchInputBar
 import com.lalilu.lmusic.compose.component.card.ArtistCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.lmusic.utils.extension.singleViewModel
+import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 
@@ -86,6 +87,7 @@ private fun DynamicScreen.SearchScreen(
     Songs(
         mediaIds = searchVM.songsResult.value.take(5).map { it.mediaId },
         sortFor = "SearchResult",
+        supportListAction = { emptyList() },
         headerContent = {
             item(key = "Song_Header") {
                 RecommendTitle(
@@ -93,7 +95,7 @@ private fun DynamicScreen.SearchScreen(
                     title = "歌曲",
                     onClick = {
                         if (searchVM.songsResult.value.isNotEmpty()) {
-                            GlobalNavigator.showSongs(
+                            GlobalNavigatorImpl.showSongs(
                                 title = "[${searchVM.keyword.value}]\n歌曲搜索结果",
                                 mediaIds = searchVM.songsResult.value.map { it.mediaId }
                             )

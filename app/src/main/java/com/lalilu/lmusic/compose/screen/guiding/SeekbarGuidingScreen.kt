@@ -25,8 +25,8 @@ import com.blankj.utilcode.util.ActivityUtils
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.lmusic.MainActivity
-import com.lalilu.lmusic.compose.CustomScreen
-import com.lalilu.lmusic.compose.ScreenInfo
+import com.lalilu.component.base.CustomScreen
+import com.lalilu.component.base.ScreenInfo
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.ui.CLICK_PART_LEFT

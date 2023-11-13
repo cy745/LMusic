@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils.extension
+package com.lalilu.component.extension
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-
 
 /**
  * 将Flow转换为State
@@ -40,7 +39,6 @@ fun <T> Flow<T>.toMutableState(scope: CoroutineScope): MutableState<T?> {
         this.onEach { state.value = it }.launchIn(scope)
     }
 }
-
 
 /**
  * 将Flow转换为MutableState

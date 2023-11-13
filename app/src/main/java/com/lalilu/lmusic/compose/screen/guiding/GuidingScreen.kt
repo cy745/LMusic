@@ -48,10 +48,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.Navigator
 import com.lalilu.R
-import com.lalilu.lmusic.compose.CustomScreen
+import com.lalilu.component.base.CustomScreen
 import com.lalilu.lmusic.compose.component.CustomTransition
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.rememberIsPad
+import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.extension.rememberIsPad
 
 @Composable
 @OptIn(ExperimentalAnimationApi::class)

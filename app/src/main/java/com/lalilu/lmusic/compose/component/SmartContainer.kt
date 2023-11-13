@@ -23,7 +23,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lalilu.common.SystemUiUtil
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.component.base.LocalWindowSize
 
 object SmartContainer {
 

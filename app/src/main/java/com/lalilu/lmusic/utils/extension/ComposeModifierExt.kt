@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lalilu.component.extension.rememberFixedStatusBarHeight
 
 /**
  * 在布局元素时获取其测量好的宽高并通过callback返回给调用方

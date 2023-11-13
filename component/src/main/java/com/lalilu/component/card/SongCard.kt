@@ -1,20 +1,27 @@
-package com.lalilu.lmusic.compose.component.card
+package com.lalilu.component.card
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideTextStyle
@@ -26,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -35,18 +41,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.lalilu.R
 import com.lalilu.common.base.Playable
 import com.lalilu.common.base.Sticker
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
-import com.lalilu.lmusic.utils.extension.dayNightTextColorFilter
-import com.lalilu.lmusic.utils.extension.durationMsToString
-import com.lalilu.lmusic.utils.extension.mimeTypeToIcon
+import com.lalilu.component.R
+import com.lalilu.component.extension.dayNightTextColor
+import com.lalilu.component.extension.dayNightTextColorFilter
+import com.lalilu.component.extension.durationMsToString
+import com.lalilu.component.extension.mimeTypeToIcon
 
 @Composable
 fun SongCard(
@@ -178,7 +185,7 @@ fun SongCardContent(
     prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     Column(
-        modifier = modifier.fillMaxHeight(),
+        modifier = modifier.wrapContentHeight(),
         verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically)
     ) {
         Row(
@@ -277,36 +284,55 @@ fun SongCardImage(
     }
 }
 
+
+@Preview(showBackground = true)
 @Composable
-fun HasLyricIcon(
-    hasLyric: () -> Boolean = { false },
-    fixedHeight: () -> Boolean = { false }
-) {
-    if (fixedHeight()) {
-        AnimatedVisibility(
-            visible = hasLyric(),
-            enter = fadeIn() + slideInHorizontally(),
-            exit = fadeOut() + slideOutHorizontally()
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_lrc_fill),
-                contentDescription = "Lyric Icon",
-                colorFilter = dayNightTextColorFilter(0.9f),
-                modifier = Modifier
-                    .size(20.dp)
-                    .aspectRatio(1f)
-            )
-        }
-    } else {
-        val alpha by animateFloatAsState(targetValue = if (hasLyric()) 1f else 0f)
-        Image(
-            painter = painterResource(id = R.drawable.ic_lrc_fill),
-            contentDescription = "Lyric Icon",
-            colorFilter = dayNightTextColorFilter(0.9f),
-            modifier = Modifier
-                .size(20.dp)
-                .aspectRatio(1f)
-                .alpha(alpha)
+private fun SongCardPreview() {
+    SongCard(
+        title = { "歌いましょう鳴らしましょう" },
+        subTitle = { "MyGO!!!!!" },
+        duration = { 189999L },
+        hasLyric = { true },
+        sticker = { emptyList() },
+        imageData = { "https://api.sretna.cn/layout/pc.php" }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SongCardPreviewMulti() {
+    Column {
+        SongCard(
+            title = { "测试" },
+            subTitle = { "测试" },
+            duration = { 159999L },
+            hasLyric = { true },
+            sticker = { emptyList() },
+            imageData = { "https://api.sretna.cn/layout/pc.php" }
+        )
+        SongCard(
+            title = { "测试" },
+            subTitle = { "测试" },
+            duration = { 159999L },
+            hasLyric = { true },
+            sticker = { emptyList() },
+            imageData = { "https://api.sretna.cn/layout/pc.php" }
+        )
+        SongCard(
+            title = { "测试" },
+            subTitle = { "测试" },
+            duration = { 159999L },
+            hasLyric = { true },
+            sticker = { emptyList() },
+            imageData = { "https://api.sretna.cn/layout/pc.php" }
+        )
+        SongCard(
+            title = { "测试" },
+            subTitle = { "测试" },
+            duration = { 159999L },
+            hasLyric = { true },
+            sticker = { emptyList() },
+            imageData = { "https://api.sretna.cn/layout/pc.php" }
         )
     }
 }

@@ -1,111 +1,36 @@
 package com.lalilu.lmusic.compose.new_screen
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Chip
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import com.lalilu.R
-import com.lalilu.common.base.Playable
-import com.lalilu.lmedia.extension.GroupIdentity
-import com.lalilu.lmedia.extension.GroupRule
-import com.lalilu.lmedia.extension.OrderRule
-import com.lalilu.lmedia.extension.SortRule
-import com.lalilu.lmedia.extension.Sortable
-import com.lalilu.lmusic.compose.DynamicScreen
-import com.lalilu.lmusic.compose.NavigationWrapper
-import com.lalilu.lmusic.compose.ScreenAction
-import com.lalilu.lmusic.compose.ScreenInfo
-import com.lalilu.lmusic.compose.component.ItemSelectHelper
-import com.lalilu.lmusic.compose.component.LLazyColumn
-import com.lalilu.lmusic.compose.component.LazyListScrollToHelper
-import com.lalilu.lmusic.compose.component.base.IconTextButton
-import com.lalilu.lmusic.compose.component.base.SortPanel
-import com.lalilu.lmusic.compose.component.base.SortPreset
-import com.lalilu.lmusic.compose.component.card.SongCard
+import com.lalilu.component.Songs
+import com.lalilu.component.SongsScreenModel
+import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.ScreenAction
+import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.extension.rememberLazyListScrollToHelper
+import com.lalilu.component.extension.singleViewModel
+import com.lalilu.lmedia.extension.GroupRuleStatic
+import com.lalilu.lmedia.extension.ListActionPreset
+import com.lalilu.lmedia.extension.OrderRuleStatic
+import com.lalilu.lmedia.extension.SortRuleStatic
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.compose.component.rememberItemSelectHelper
-import com.lalilu.lmusic.compose.component.rememberLazyListScrollToHelper
-import com.lalilu.lmusic.compose.component.rememberStickyHelper
-import com.lalilu.lmusic.compose.component.stickyHeaderExtent
-import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.utils.extension.rememberFixedStatusBarHeightDp
-import com.lalilu.lmusic.utils.extension.singleViewModel
+import com.lalilu.lmusic.impl.SortRuleLastPlayTime
+import com.lalilu.lmusic.impl.SortRulePlayCount
+import com.lalilu.lmusic.impl.SortRulePresetLastPlayTime
+import com.lalilu.lmusic.impl.SortRulePresetPlayedTimes
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.lalilu.lmusic.viewmodel.SongsViewModel
-import org.koin.compose.koinInject
-
-private val defaultSortPresets = listOf(
-    SortPreset.SortByAddTime,
-    SortPreset.SortByTitle,
-    SortPreset.SortByLastPlayTime,
-    SortPreset.SortByPlayedTimes,
-    SortPreset.SortByDuration
-)
-private val defaultSortRules = listOf(
-    SortRule.Normal,
-    SortRule.Title,
-    SortRule.CreateTime,
-    SortRule.ModifyTime,
-    SortRule.ItemsDuration,
-    SortRule.PlayCount,
-    SortRule.LastPlayTime
-)
-private val defaultGroupRules = listOf(
-    GroupRule.Normal,
-    GroupRule.CreateTime,
-    GroupRule.ModifyTime,
-    GroupRule.PinYinFirstLetter,
-    GroupRule.TitleFirstLetter
-)
-private val defaultOrderRules = listOf(
-    OrderRule.Normal,
-    OrderRule.Reverse,
-    OrderRule.Shuffle
-)
-
-class TempScreenModel : ScreenModel {
-    val isFastJumping = mutableStateOf(false)
-    val isSelecting = mutableStateOf(false)
-    val selectedItems = mutableStateOf<List<Any>>(emptyList())
-    val showSortPanel = mutableStateOf(false)
-}
 
 data class SongsScreen(
     private val title: String? = null,
@@ -121,7 +46,7 @@ data class SongsScreen(
     override fun Content() {
         val playingVM: PlayingViewModel = singleViewModel()
         val historyVM: HistoryViewModel = singleViewModel()
-        val tempSM: TempScreenModel = rememberScreenModel { TempScreenModel() }
+        val songsSM: SongsScreenModel = rememberScreenModel { SongsScreenModel() }
 
         val listState: LazyListState = rememberLazyListState()
         val scrollHelper = rememberLazyListScrollToHelper(listState = listState)
@@ -132,7 +57,7 @@ data class SongsScreen(
                     title = R.string.screen_action_sort,
                     icon = R.drawable.ic_sort_desc,
                     color = Color(0xFF1793FF),
-                    onAction = { tempSM.showSortPanel.value = true }
+                    onAction = { songsSM.showSortPanel.value = true }
                 ),
                 ScreenAction.StaticAction(
                     title = R.string.screen_action_locate_playing_item,
@@ -150,8 +75,47 @@ data class SongsScreen(
             showAll = true,
             mediaIds = mediaIds,
             listState = listState,
-            tempSM = tempSM,
+            songsSM = songsSM,
             scrollToHelper = scrollHelper,
+            supportListAction = {
+                listOf(
+                    // 部分预设
+                    ListActionPreset.SortByAddTime,
+                    ListActionPreset.SortByModifyTime,
+                    ListActionPreset.SortByTitle,
+                    ListActionPreset.SortByDuration,
+                    SortRulePresetLastPlayTime,
+                    SortRulePresetPlayedTimes,
+
+                    // SortRule
+                    SortRuleStatic.Normal,
+                    SortRuleStatic.CreateTime,
+                    SortRuleStatic.Title,
+                    SortRuleStatic.SubTitle,
+                    SortRuleStatic.ItemsDuration,
+                    SortRuleStatic.ContentType,
+                    SortRuleStatic.ModifyTime,
+                    SortRulePlayCount,
+                    SortRuleLastPlayTime,
+
+                    // GroupRule
+                    GroupRuleStatic.Normal,
+                    GroupRuleStatic.CreateTime,
+                    GroupRuleStatic.ModifyTime,
+                    GroupRuleStatic.TitleFirstLetter,
+                    GroupRuleStatic.SubTitleFirstLetter,
+                    GroupRuleStatic.PinYinFirstLetter,
+
+                    // OrderRule
+                    OrderRuleStatic.Normal,
+                    OrderRuleStatic.Reverse,
+                    OrderRuleStatic.Shuffle
+                )
+            },
+            showPrefixContent = {
+                it.value == SortRuleStatic.TrackNumber::class.java.name ||
+                        it.value == SortRulePlayCount::class.java.name
+            },
             headerContent = {
                 item {
                     NavigatorHeader(
@@ -164,7 +128,7 @@ data class SongsScreen(
                 var icon = -1
                 var text = ""
                 when (sortRuleStr.value) {
-                    SortRule.PlayCount.name -> {
+                    SortRulePlayCount::class.java.name -> {
                         icon = R.drawable.headphone_fill
                         text = historyVM.requiteHistoryCountById(item.mediaId).toString()
                     }
@@ -184,303 +148,5 @@ data class SongsScreen(
                 }
             }
         )
-    }
-}
-
-@Composable
-fun DynamicScreen.Songs(
-    mediaIds: List<String>,
-    showAll: Boolean = false,
-    sortFor: String = Sortable.SORT_FOR_SONGS,
-    supportSortPresets: List<SortPreset> = defaultSortPresets,
-    supportGroupRules: List<GroupRule> = defaultGroupRules,
-    supportSortRules: List<SortRule> = defaultSortRules,
-    supportOrderRules: List<OrderRule> = defaultOrderRules,
-    listState: LazyListState = rememberLazyListState(),
-    scrollToHelper: LazyListScrollToHelper = rememberLazyListScrollToHelper(listState),
-    tempSM: TempScreenModel = rememberScreenModel { TempScreenModel() },
-    showPrefixContent: (sortRuleStr: State<String>) -> Boolean = { it.value == SortRule.TrackNumber.name || it.value == SortRule.PlayCount.name },
-    prefixContent: @Composable (item: Playable, sortRuleStr: State<String>) -> Unit = { _, _ -> },
-    headerContent: LazyListScope.(State<Map<GroupIdentity, List<Playable>>>) -> Unit = {},
-    footerContent: LazyListScope.(State<Map<GroupIdentity, List<Playable>>>) -> Unit = {}
-) {
-    val songsVM: SongsViewModel = singleViewModel()
-    val playingVM: PlayingViewModel = singleViewModel()
-    val songsState by songsVM.songsState
-
-    LaunchedEffect(mediaIds) {
-        songsVM.updateByIds(
-            songIds = mediaIds,
-            sortFor = sortFor,
-            showAll = showAll,
-            supportSortRules = supportSortRules,
-            supportOrderRules = supportOrderRules,
-            supportGroupRules = supportGroupRules,
-        )
-    }
-
-    HeaderJumperWrapper(
-        items = { songsState.keys },
-        isVisible = tempSM.isFastJumping,
-        scrollToHelper = scrollToHelper
-    ) { scrollHelper, headerJumperWrapperVisible ->
-        SelectPanelWrapper(
-            selector = rememberItemSelectHelper(
-                isSelecting = tempSM.isSelecting,
-                selected = tempSM.selectedItems
-            )
-        ) { selector ->
-            SortPanelWrapper(
-                sortFor = sortFor,
-                showPanelState = tempSM.showSortPanel,
-                supportSortPresets = { supportSortPresets },
-                supportGroupRules = { supportGroupRules },
-                supportOrderRules = { supportOrderRules },
-                supportSortRules = { supportSortRules }
-            ) { sortRuleStr ->
-                SongListWrapper(
-                    state = listState,
-                    itemsMap = songsState,
-                    scrollToHelper = { scrollHelper },
-                    itemSelectHelper = { selector },
-                    hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
-                    isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
-                    onHeaderClick = { headerJumperWrapperVisible.value = true },
-                    showPrefixContent = { showPrefixContent(sortRuleStr) },
-                    headerContent = { headerContent(songsVM.songsState) },
-                    footerContent = { footerContent(songsVM.songsState) },
-                    prefixContent = { prefixContent(it, sortRuleStr) },
-                    onClickItem = {
-                        playingVM.play(
-                            mediaId = it.mediaId,
-                            mediaIds = songsState.values.flatten().map(Playable::mediaId),
-                            playOrPause = true
-                        )
-                    },
-                    onLongClickItem = {
-                        NavigationWrapper.navigator?.showSingle(SongDetailScreen(mediaId = it.mediaId))
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun DynamicScreen.SortPanelWrapper(
-    sortFor: String,
-    settingsSp: SettingsSp = koinInject(),
-    showPanelState: MutableState<Boolean>,
-    supportSortPresets: () -> List<SortPreset>,
-    supportGroupRules: () -> List<GroupRule>,
-    supportSortRules: () -> List<SortRule>,
-    supportOrderRules: () -> List<OrderRule>,
-    content: @Composable (sortRuleStr: State<String>) -> Unit,
-) {
-    val sortRule = settingsSp.obtain<String>("${sortFor}_SORT_RULE", SortRule.Normal.name)
-    val orderRule = settingsSp.obtain<String>("${sortFor}_ORDER_RULE", OrderRule.Normal.name)
-    val groupRule = settingsSp.obtain<String>("${sortFor}_GROUP_RULE", GroupRule.Normal.name)
-
-    RegisterMainContent(
-        showMask = { true },
-        showBackground = { false },
-        isVisible = showPanelState
-    ) {
-        SortPanel(
-            sortRule = sortRule,
-            orderRule = orderRule,
-            groupRule = groupRule,
-            supportSortPresets = supportSortPresets,
-            supportGroupRules = supportGroupRules,
-            supportOrderRules = supportOrderRules,
-            supportSortRules = supportSortRules,
-            onClose = { showPanelState.value = false }
-        )
-    }
-    content(sortRule)
-}
-
-@Composable
-fun DynamicScreen.SelectPanelWrapper(
-    selector: ItemSelectHelper = rememberItemSelectHelper(),
-    content: @Composable (selector: ItemSelectHelper) -> Unit,
-) {
-    RegisterMainContent(
-        isVisible = selector.isSelecting,
-        onBackPressed = { selector.clear() }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            IconTextButton(
-                text = "取消",
-                color = Color(0xFF006E7C),
-                onClick = { selector.clear() }
-            )
-            Text(text = "已选择: ${selector.selected.value.size}")
-        }
-    }
-
-    content(selector)
-}
-
-
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
-@Composable
-private fun DynamicScreen.HeaderJumperWrapper(
-    items: () -> Collection<GroupIdentity>,
-    scrollToHelper: LazyListScrollToHelper,
-    isVisible: MutableState<Boolean>,
-    content: @Composable (LazyListScrollToHelper, MutableState<Boolean>) -> Unit,
-) {
-    RegisterMainContent(
-        isVisible = isVisible,
-        showMask = { true },
-        showBackground = { false }
-    ) {
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(state = rememberScrollState())
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally)
-        ) {
-            items().forEach { key ->
-                Chip(
-                    modifier = Modifier,
-                    onClick = {
-                        scrollToHelper.scrollToItem(key)
-                        isVisible.value = false
-                    }
-                ) {
-                    Text(
-                        style = MaterialTheme.typography.h6,
-                        text = when (key) {
-                            is GroupIdentity.Time -> key.time
-                            is GroupIdentity.DiskNumber -> key.number.toString()
-                            is GroupIdentity.FirstLetter -> key.letter
-                            else -> ""
-                        }
-                    )
-                }
-            }
-        }
-    }
-    content(scrollToHelper, isVisible)
-}
-
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
-@Composable
-private fun SongListWrapper(
-    state: LazyListState = rememberLazyListState(),
-    itemSelectHelper: () -> ItemSelectHelper? = { null },
-    scrollToHelper: () -> LazyListScrollToHelper? = { null },
-    itemsMap: Map<GroupIdentity, List<Playable>>,
-    onClickItem: (Playable) -> Unit = {},
-    onLongClickItem: (Playable) -> Unit = {},
-    onHeaderClick: (Any) -> Unit = {},
-    hasLyric: (Playable) -> Boolean = { false },
-    isItemPlaying: (Playable) -> Boolean = { false },
-    showPrefixContent: () -> Boolean = { false },
-    prefixContent: @Composable (item: Playable) -> Unit = {},
-    headerContent: LazyListScope.() -> Unit,
-    footerContent: LazyListScope.() -> Unit,
-) {
-    val haptic = LocalHapticFeedback.current
-
-    val scrollHelper = remember { scrollToHelper() }
-    val selector = remember { itemSelectHelper() }
-    val stickyHelper = rememberStickyHelper(
-        listState = state,
-        contentType = { GroupIdentity::class }
-    )
-
-    LLazyColumn(
-        modifier = Modifier,
-        state = state,
-        contentPadding = PaddingValues(top = rememberFixedStatusBarHeightDp()),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        headerContent()
-        scrollHelper?.startRecord()
-
-        for ((key, list) in itemsMap) {
-            var skip = key == GroupIdentity.None
-            skip = skip || (key is GroupIdentity.DiskNumber && key.number < 0)
-
-            if (!skip) {
-                scrollHelper?.doRecord(key)
-                stickyHeaderExtent(
-                    helper = stickyHelper,
-                    key = { key }
-                ) {
-                    Chip(
-                        modifier = Modifier
-                            .animateItemPlacement()
-                            .offsetWithHelper()
-                            .zIndexWithHelper(),
-                        onClick = { onHeaderClick(key) }
-                    ) {
-                        Text(
-                            style = MaterialTheme.typography.h6,
-                            text = when (key) {
-                                is GroupIdentity.Time -> key.time
-                                is GroupIdentity.DiskNumber -> key.number.toString()
-                                is GroupIdentity.FirstLetter -> key.letter
-                                else -> ""
-                            }
-                        )
-                    }
-                }
-            }
-
-            scrollHelper?.doRecord(list.map { it.mediaId })
-            items(
-                items = list,
-                key = { it.mediaId },
-                contentType = { Playable::class }
-            ) { item ->
-                SongCard(
-                    song = { item },
-                    modifier = Modifier.animateItemPlacement(),
-                    onClick = {
-                        if (selector?.isSelecting() == true) {
-                            selector.onSelect(item)
-                        } else {
-                            onClickItem(item)
-                        }
-                    },
-                    onLongClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onLongClickItem(item)
-                    },
-                    onEnterSelect = { selector?.onSelect(item) },
-                    isSelected = { selector?.isSelected(item) ?: false },
-                    isPlaying = { isItemPlaying(item) },
-                    showPrefix = showPrefixContent,
-                    hasLyric = { hasLyric(item) },
-                    prefixContent = { modifier ->
-                        Row(
-                            modifier = modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colors.surface)
-                                .padding(start = 4.dp, end = 5.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                            prefixContent(item)
-                        }
-                    }
-                )
-            }
-        }
-        scrollHelper?.endRecord()
-
-        footerContent()
     }
 }

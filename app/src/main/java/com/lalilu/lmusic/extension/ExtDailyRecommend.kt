@@ -12,11 +12,11 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
-import com.lalilu.lmusic.GlobalNavigator
+import com.lalilu.lmusic.GlobalNavigatorImpl
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.component.card.RecommendRow
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
-import com.lalilu.lmusic.utils.extension.singleViewModel
+import com.lalilu.component.extension.dayNightTextColor
+import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
 
@@ -46,7 +46,7 @@ class ExtDailyRecommend : Extension {
                 RecommendCard2(
                     item = { it },
                     contentModifier = Modifier.size(width = 250.dp, height = 250.dp),
-                    onClick = { GlobalNavigator.goToDetailOf(mediaId = it.id) }
+                    onClick = { GlobalNavigatorImpl.goToDetailOf(mediaId = it.id) }
                 )
             }
         }

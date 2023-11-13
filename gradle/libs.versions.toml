@@ -10,6 +10,7 @@ compose_bom_version = "2023.10.00"
 compose_compiler_version = "1.5.3"
 accompanist_version = "0.32.0"
 voyager = "1.0.0-rc07"
+lottie-compose = "5.2.0"
 
 kotlinpoet = "1.14.2"
 coil_version = "2.4.0"
@@ -55,6 +56,7 @@ compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata
 compose-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie-compose" }
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
 voyager-bottomSheetNavigator = { module = "cafe.adriel.voyager:voyager-bottom-sheet-navigator", version.ref = "voyager" }
 voyager-tabNavigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }

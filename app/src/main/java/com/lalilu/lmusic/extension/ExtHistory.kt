@@ -21,14 +21,14 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import com.lalilu.common.base.Playable
+import com.lalilu.component.card.SongCard
 import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.GlobalNavigator
+import com.lalilu.lmusic.GlobalNavigatorImpl
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
-import com.lalilu.lmusic.compose.component.card.SongCard
-import com.lalilu.lmusic.utils.extension.singleViewModel
+import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
@@ -93,7 +93,7 @@ class ExtHistory : Extension {
                     },
                     onLongClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        GlobalNavigator.goToDetailOf(mediaId = item.id)
+                        GlobalNavigatorImpl.goToDetailOf(mediaId = item.id)
                     }
                 )
             }

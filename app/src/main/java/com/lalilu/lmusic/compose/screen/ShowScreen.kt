@@ -44,10 +44,10 @@ import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.common.base.Playable
-import com.lalilu.lmusic.utils.extension.singleViewModel
+import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.utils.coil.BlurTransformation
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.rememberIsPad
+import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.extension.rememberIsPad
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction

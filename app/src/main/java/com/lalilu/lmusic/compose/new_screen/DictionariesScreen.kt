@@ -24,7 +24,7 @@ import com.blankj.utilcode.util.ConvertUtils
 import com.lalilu.R
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import org.koin.compose.koinInject
 

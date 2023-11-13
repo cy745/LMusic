@@ -8,7 +8,7 @@ import com.lalilu.lmusic.datastore.HISTORY_TYPE_SONG
 import com.lalilu.lmusic.datastore.LHistory
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
-import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner
+import com.lalilu.component.extension.collectWithLifeCycleOwner
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.AudioFocusHelper
 import com.lalilu.lplayer.playback.PlayMode

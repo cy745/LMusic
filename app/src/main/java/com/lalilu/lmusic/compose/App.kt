@@ -6,7 +6,7 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import com.lalilu.lmusic.LMusicTheme
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.component.base.LocalWindowSize
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 object App {

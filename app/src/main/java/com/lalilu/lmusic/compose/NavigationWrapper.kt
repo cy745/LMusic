@@ -22,14 +22,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.lalilu.lmusic.compose.component.BottomSheetNavigator
+import com.lalilu.component.base.CustomScreen
+import com.lalilu.component.base.LocalPaddingValue
+import com.lalilu.component.base.BottomSheetNavigator
 import com.lalilu.lmusic.compose.component.CustomTransition
 import com.lalilu.lmusic.compose.component.navigate.NavigationBar
 import com.lalilu.lmusic.compose.component.navigate.NavigationSmartBar
 import com.lalilu.lmusic.compose.new_screen.HomeScreen
 import com.lalilu.lmusic.compose.new_screen.SearchScreen
 import com.lalilu.lmusic.compose.screen.PlaylistScreen
-import com.lalilu.lmusic.utils.extension.LocalPaddingValue
 
 
 @OptIn(ExperimentalMaterialApi::class)

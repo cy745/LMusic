@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FE4141</color>
+    <color name="colorPrimaryVariant">#FF444444</color>
+    <color name="colorOnPrimary">#D9D9D9</color>
+    <color name="ic_launcher_background">#FE4141</color>
+
+    <color name="gray_400">#FFBDBDBD</color>
+    <color name="gray_600">#FF757575</color>
+
+    <color name="daynight_1">#FFFFFFFF</color>
+    <color name="daynight_0.4">#FFBDBDBD</color>
+    <color name="daynight_0.6">#FF757575</color>
+    <color name="daynight_0">#FF000000</color>
+
+    <color name="item_selected_bg">#D1D1D1</color>
+    <color name="edit_text_bg">#0D000000</color>
+
+    <color name="bottom_sheet_bg">#F4F4F4</color>
+    <color name="bottom_sheet_divider">#E1E1E1</color>
+    <color name="bottom_sheet_card_bg">#FFFFFF</color>
+    <color name="bottom_sheet_button_close_bg">#25FE4141</color>
+    <color name="song_detail_add_song_to_playlist_button_bg">#25006E7C</color>
+
+    <color name="activity_window_bg">#F4F4F4</color>
+
+    <color name="gray_scale_1">#FFF8F9FA</color>
+    <color name="gray_scale_2">#FFE9ECEF</color>
+    <color name="gray_scale_3">#FFDEE2E6</color>
+    <color name="gray_scale_4">#FFCED4DA</color>
+    <color name="gray_scale_5">#FFADB5BD</color>
+    <color name="gray_scale_6">#FF6C757D</color>
+    <color name="gray_scale_7">#FF495057</color>
+    <color name="gray_scale_8">#FF343A40</color>
+    <color name="gray_scale_9">#FF212529</color>
+
+</resources>

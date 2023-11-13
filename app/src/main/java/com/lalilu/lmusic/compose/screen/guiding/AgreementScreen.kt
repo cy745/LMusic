@@ -11,8 +11,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.lalilu.R
-import com.lalilu.lmusic.compose.CustomScreen
-import com.lalilu.lmusic.compose.ScreenInfo
+import com.lalilu.component.base.CustomScreen
+import com.lalilu.component.base.ScreenInfo
 import kotlin.system.exitProcess
 
 class AgreementScreen(

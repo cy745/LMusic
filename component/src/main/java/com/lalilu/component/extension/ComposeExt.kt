@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.utils.extension
+package com.lalilu.component.extension
 
 import android.content.res.Configuration
 import androidx.annotation.DrawableRes
@@ -25,51 +25,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.lalilu.common.SystemUiUtil
+import com.lalilu.component.R
+import com.lalilu.component.base.LocalWindowSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import kotlin.math.roundToInt
-
-fun NavController.canPopUp(): Boolean {
-    return previousBackStackEntry != null
-}
-
-fun NavController.popUpElse(elseDo: () -> Unit) {
-    if (canPopUp()) this.navigateUp() else elseDo()
-}
-
-/**
- * 递归清除返回栈
- */
-fun NavController.clearBackStack() {
-    if (popBackStack()) clearBackStack()
-}
-
-/**
- * @param to    目标导航位置
- *
- * 指定导航起点位置和目标位置
- */
-fun NavController.navigateSingleTop(
-    to: String,
-) {
-    // 若目标路径与当前路径相同时不进行导航
-    // TODO 现无法判断带有参数的路径，需要实现从路径中提取参数并比对的逻辑
-    if (this.currentBackStackEntry?.destination?.route == to) return
-
-    navigate(to) {
-        popUpTo(graph.findStartDestination().id) {
-            inclusive = false
-            saveState = true
-        }
-        launchSingleTop = true
-        restoreState = true
-    }
-}
 
 @Composable
 fun rememberStatusBarHeight(): Float {
@@ -142,13 +105,40 @@ fun Color.toColorFilter(): ColorFilter {
 
 @Composable
 fun durationMsToString(duration: Long): String {
-    return remember(duration) { duration.durationToTime() }
+    return remember(duration) {
+        duration.run {
+            val hour = this / 3600000
+            val minute = this / 60000 % 60
+            val second = this / 1000 % 60
+            if (hour > 0L) "%02d:%02d:%02d".format(hour, minute, second)
+            else "%02d:%02d".format(minute, second)
+        }
+    }
 }
 
 @DrawableRes
 @Composable
 fun mimeTypeToIcon(mimeType: String): Int {
-    return remember(mimeType) { getMimeTypeIconRes(mimeType) }
+    return remember(mimeType) {
+        val strings = mimeType.split("/").toTypedArray()
+        when (strings[strings.size - 1].uppercase()) {
+            "FLAC" -> R.drawable.ic_flac_line
+            "MPEG", "MP3" -> R.drawable.ic_mp3_line
+            "MP4" -> R.drawable.ic_mp4_line
+            "APE" -> R.drawable.ic_ape_line
+            "DSD" -> R.drawable.ic_dsd_line
+            "DSF", "FFMPEG" -> R.drawable.ic_dsf
+            "WAV", "X-WAV", "EXT-WAV" -> R.drawable.ic_wav_line
+            "OGG" -> R.drawable.ic_ogg
+            else -> R.drawable.ic_mp3_line
+        }
+    }
+}
+
+fun <T> List<T>.calcAverage(numToCalc: (T) -> Number): Float {
+    return this.fold(0f) { acc, t ->
+        acc + numToCalc(t).toFloat()
+    } / this.size
 }
 
 @Composable
@@ -159,7 +149,7 @@ fun <T> buildScrollToItemAction(
     scope: CoroutineScope = rememberCoroutineScope()
 ): () -> Unit {
     // 获取当前可见元素的平均高度
-    fun getHeightAverage() = state.layoutInfo.visibleItemsInfo.average { it.size.height }
+    fun getHeightAverage() = state.layoutInfo.visibleItemsInfo.calcAverage { it.size.height }
 
     // 获取精确的位移量（只能对可见元素获取）
     fun getTargetOffset(index: Int) =

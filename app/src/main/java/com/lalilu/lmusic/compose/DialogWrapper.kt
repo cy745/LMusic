@@ -8,7 +8,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.lalilu.lmusic.compose.component.BottomSheetNavigator
+import com.lalilu.component.base.BottomSheetNavigator
 import com.lalilu.lmusic.compose.component.CustomTransition
 
 @OptIn(ExperimentalMaterialApi::class)

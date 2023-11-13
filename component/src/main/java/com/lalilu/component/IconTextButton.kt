@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.base
+package com.lalilu.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.interaction.MutableInteractionSource

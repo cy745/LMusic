@@ -126,28 +126,23 @@ dependencies {
     implementation(project(":ui"))
     implementation(project(":crash"))
     implementation(project(":extension-core"))
+    implementation(project(":component"))
     ksp(project(":extension-ksp"))
 
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
 
-    implementation(libs.bundles.voyager)
-
     // accompanist
     // https://google.github.io/accompanist
     implementation(libs.bundles.accompanist)
 
-    implementation(libs.activity.compose)
     implementation(libs.navigation.compose)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.livedata.ktx)
 
-    // lottie
-    // https://mvnrepository.com/artifact/com.airbnb.android/lottie-compose
-    implementation("com.airbnb.android:lottie-compose:5.2.0")
 
     // https://github.com/Block-Network/StatusBarApiExample
     // 墨 · 状态栏歌词 API

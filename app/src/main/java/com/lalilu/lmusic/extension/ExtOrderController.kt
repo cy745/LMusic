@@ -27,7 +27,7 @@ import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
 import com.lalilu.extension_core.ExtensionManager
-import com.lalilu.lmusic.utils.extension.toState
+import com.lalilu.component.extension.toState
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ReorderableItem

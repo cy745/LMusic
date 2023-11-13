@@ -33,8 +33,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
-import com.lalilu.lmusic.compose.DynamicScreen
-import com.lalilu.lmusic.compose.component.BottomSheetNavigator
+import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.BottomSheetNavigator
 import com.lalilu.lmusic.utils.extension.measureHeight
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)

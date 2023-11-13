@@ -34,7 +34,7 @@ import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.utils.coil.requirePalette
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.component.extension.dayNightTextColor
 
 @Composable
 fun RecommendCardForAlbum(

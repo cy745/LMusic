@@ -6,7 +6,7 @@ import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.repository.LMediaRepository
-import com.lalilu.lmusic.utils.extension.toState
+import com.lalilu.component.extension.toState
 
 
 class LMediaViewModel(

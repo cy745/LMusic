@@ -3,7 +3,7 @@ package com.lalilu.lmusic.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.extension_core.ExtensionManager
-import com.lalilu.lmusic.utils.extension.toState
+import com.lalilu.component.extension.toState
 
 class ExtensionsViewModel : ViewModel() {
     val extensionWithHomeContent = ExtensionManager

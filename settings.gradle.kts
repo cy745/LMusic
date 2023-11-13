@@ -30,6 +30,7 @@ include(":lplaylist")
 include(":crash")
 include(":extension-core")
 include(":extension-ksp")
+include(":component")
 includeBuild("register")
 
 val extFile = File(rootDir, "extension")

@@ -15,8 +15,8 @@ import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.lalilu.R
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
-import com.lalilu.lmusic.compose.CustomScreen
-import com.lalilu.lmusic.compose.ScreenInfo
+import com.lalilu.component.base.CustomScreen
+import com.lalilu.component.base.ScreenInfo
 import kotlin.system.exitProcess
 
 class PermissionsScreen(
