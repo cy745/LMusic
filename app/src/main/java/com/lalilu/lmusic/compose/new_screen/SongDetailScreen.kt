@@ -50,16 +50,20 @@ import cafe.adriel.voyager.core.screen.ScreenKey
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.R
-import com.lalilu.lmedia.LMedia
-import com.lalilu.lmedia.entity.LSong
+import com.lalilu.component.IconButton
+import com.lalilu.component.IconTextButton
+import com.lalilu.component.LLazyColumn
 import com.lalilu.component.base.DynamicScreen
-import com.lalilu.lmusic.compose.NavigationWrapper
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
-import com.lalilu.component.LLazyColumn
-import com.lalilu.component.IconButton
+import com.lalilu.component.extension.dayNightTextColor
+import com.lalilu.component.extension.rememberScrollPosition
+import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.lalbum.screen.AlbumDetailScreen
+import com.lalilu.lartist.screen.ArtistDetailScreen
+import com.lalilu.lmedia.LMedia
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.base.IconCheckButton
-import com.lalilu.component.IconTextButton
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 import com.lalilu.lmusic.compose.component.card.SongInformationCard
 import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
@@ -68,13 +72,10 @@ import com.lalilu.lmusic.compose.presenter.DetailScreenIsPlayingPresenter
 import com.lalilu.lmusic.compose.presenter.DetailScreenLikeBtnPresenter
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.checkActivityIsExist
-import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.extension.edgeTransparent
-import com.lalilu.component.extension.rememberScrollPosition
-import com.lalilu.lalbum.screen.AlbumDetailScreen
-import com.lalilu.lartist.screen.ArtistDetailScreen
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lplayer.extensions.QueueAction
+import org.koin.compose.koinInject
 
 data class SongDetailScreen(
     private val mediaId: String
@@ -153,6 +154,7 @@ private fun DetailScreen(
     mediaId: () -> String,
     getSong: () -> LSong?
 ) {
+    val navigator: GlobalNavigator = koinInject()
     val context = LocalContext.current
     val song = getSong()
 
@@ -223,10 +225,7 @@ private fun DetailScreen(
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             song.artists.forEach {
                                 Chip(
-                                    onClick = {
-                                        NavigationWrapper.navigator
-                                            ?.showSingle(ArtistDetailScreen(artistName = it.name))
-                                    },
+                                    onClick = { navigator.navigateTo(ArtistDetailScreen(artistName = it.name)) },
                                     colors = ChipDefaults.outlinedChipColors(),
                                 ) {
                                     Text(
@@ -249,9 +248,7 @@ private fun DetailScreen(
                     Surface(
                         modifier = Modifier.padding(start = 20.dp, end = 20.dp),
                         shape = RoundedCornerShape(20.dp),
-                        onClick = {
-                            NavigationWrapper.navigator?.showSingle(AlbumDetailScreen(albumId = it.id))
-                        }
+                        onClick = { navigator.navigateTo(AlbumDetailScreen(albumId = it.id)) }
                     ) {
                         Row(
                             modifier = Modifier
@@ -320,7 +317,7 @@ private fun DetailScreen(
                         shape = RoundedCornerShape(10.dp),
                         color = Color(0xFF3EA22C),
                         onClick = {
-                            NavigationWrapper.navigator?.showSingle(
+                            navigator.navigateTo(
                                 SearchLyricScreen(
                                     mediaId = song.id,
                                     keywords = song.name

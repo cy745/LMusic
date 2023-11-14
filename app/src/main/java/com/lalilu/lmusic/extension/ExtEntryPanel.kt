@@ -21,14 +21,15 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.Ext
 import com.lalilu.extension_core.Extension
-import com.lalilu.lmusic.compose.NavigationWrapper
 import com.lalilu.lalbum.screen.AlbumsScreen
 import com.lalilu.lartist.screen.ArtistsScreen
 import com.lalilu.lmusic.compose.new_screen.SettingsScreen
 import com.lalilu.lmusic.compose.new_screen.SongsScreen
 import com.lalilu.lplaylist.screen.PlaylistScreen
 import com.lalilu.component.extension.dayNightTextColor
+import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.lhistory.screen.HistoryScreen
+import org.koin.compose.koinInject
 
 @Ext
 class ExtEntryPanel : Extension {
@@ -38,6 +39,8 @@ class ExtEntryPanel : Extension {
 
     @Composable
     private fun HomeContent() {
+        val navigator: GlobalNavigator = koinInject()
+
         val screenEntry = remember {
             listOf(
                 SongsScreen(),
@@ -60,7 +63,7 @@ class ExtEntryPanel : Extension {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { NavigationWrapper.navigator?.showSingle(entry) }
+                            .clickable { navigator.navigateTo(entry) }
                             .padding(horizontal = 20.dp, vertical = 15.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(20.dp)
