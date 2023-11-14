@@ -53,6 +53,7 @@ val LocalBottomSheetNavigator: ProvidableCompositionLocal<BottomSheetNavigator> 
 fun BottomSheetNavigator(
     modifier: Modifier = Modifier,
     hideOnBackPress: Boolean = true,
+    resetOnHide: Boolean = false,
     ignoreFlingNestedScroll: Boolean = false,
     defaultScreen: Screen = HiddenBottomSheetScreen,
     scrimColor: Color = ModalBottomSheetDefaults.scrimColor,
@@ -101,7 +102,14 @@ fun BottomSheetNavigator(
 
     Navigator(defaultScreen, onBackPressed = null, key = key) { navigator ->
         val bottomSheetNavigator = remember(navigator, sheetState, coroutineScope) {
-            BottomSheetNavigator(navigator, sheetState, coroutineScope)
+            BottomSheetNavigator(
+                keepScreenCount = 1,
+                resetOnHide = resetOnHide,
+                navigator = navigator,
+                sheetState = sheetState,
+                defaultScreen = defaultScreen,
+                coroutineScope = coroutineScope
+            )
         }
 
         hideBottomSheet = bottomSheetNavigator::hide
@@ -132,7 +140,10 @@ fun BottomSheetNavigator(
 
 @OptIn(ExperimentalMaterialApi::class)
 class BottomSheetNavigator internal constructor(
+    val keepScreenCount: Int = 1,
+    private val resetOnHide: Boolean = false,
     private val navigator: Navigator,
+    private val defaultScreen: Screen,
     private val sheetState: ModalBottomSheetState,
     private val coroutineScope: CoroutineScope
 ) : Stack<Screen> by navigator {
@@ -164,13 +175,23 @@ class BottomSheetNavigator internal constructor(
         }
     }
 
-    fun showSingle(screen: Screen) {
+    fun showSingle(screen: Screen, replaceAllWhenInvisible: Boolean = false) {
         val lastItem = lastItemOrNull
 
-        if (lastItem == null || lastItem::class.java != screen::class.java) {
-            push(screen)
+        if (!isVisible && replaceAllWhenInvisible) {
+            replaceAll(screen)
         } else {
-            replace(screen)
+            if (lastItem == null || lastItem::class.java != screen::class.java) {
+                push(screen)
+            } else {
+                replace(screen)
+            }
+        }
+
+        if (!isVisible) {
+            coroutineScope.launch {
+                sheetState.show()
+            }
         }
     }
 
@@ -187,6 +208,9 @@ class BottomSheetNavigator internal constructor(
         coroutineScope.launch {
             if (isVisible) {
                 sheetState.hide()
+            } else if (resetOnHide && sheetState.targetValue == ModalBottomSheetValue.Hidden) {
+                // Swipe down - sheetState is already hidden here so `isVisible` is false
+                replaceAll(defaultScreen)
             }
         }
     }
@@ -215,13 +239,13 @@ private object HiddenBottomSheetScreen : Screen {
 
 @ExperimentalMaterialApi
 @Composable
-internal fun BottomSheetNavigatorBackHandler(
+fun BottomSheetNavigatorBackHandler(
     navigator: BottomSheetNavigator,
     hideOnBackPress: Boolean
 ) {
     BackHandler(enabled = navigator.isVisible) {
         // 若当前只剩一个页面，则不清空元素了
-        if (navigator.items.size == 1) {
+        if (navigator.items.size <= navigator.keepScreenCount) {
             navigator.hide()
             return@BackHandler
         }
