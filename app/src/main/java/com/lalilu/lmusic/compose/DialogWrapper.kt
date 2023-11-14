@@ -26,6 +26,7 @@ object DialogWrapper {
         BottomSheetNavigator(
             modifier = modifier.fillMaxSize(),
             resetOnHide = true,
+            visibleWhenShow = true,
             scrimColor = Color.Black.copy(alpha = 0.5f),
             sheetBackgroundColor = MaterialTheme.colors.background,
             animationSpec = SpringSpec(

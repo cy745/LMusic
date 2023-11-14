@@ -54,6 +54,7 @@ fun BottomSheetNavigator(
     modifier: Modifier = Modifier,
     hideOnBackPress: Boolean = true,
     resetOnHide: Boolean = false,
+    visibleWhenShow: Boolean = false,
     ignoreFlingNestedScroll: Boolean = false,
     defaultScreen: Screen = HiddenBottomSheetScreen,
     scrimColor: Color = ModalBottomSheetDefaults.scrimColor,
@@ -104,6 +105,7 @@ fun BottomSheetNavigator(
         val bottomSheetNavigator = remember(navigator, sheetState, coroutineScope) {
             BottomSheetNavigator(
                 keepScreenCount = 1,
+                visibleWhenShow = visibleWhenShow,
                 resetOnHide = resetOnHide,
                 navigator = navigator,
                 sheetState = sheetState,
@@ -141,6 +143,7 @@ fun BottomSheetNavigator(
 @OptIn(ExperimentalMaterialApi::class)
 class BottomSheetNavigator internal constructor(
     val keepScreenCount: Int = 1,
+    private val visibleWhenShow: Boolean = false,
     private val resetOnHide: Boolean = false,
     private val navigator: Navigator,
     private val defaultScreen: Screen,
@@ -151,6 +154,15 @@ class BottomSheetNavigator internal constructor(
     val isVisible: Boolean by derivedStateOf {
         if (sheetState.currentValue == sheetState.targetValue && sheetState.progress == 1f) {
             return@derivedStateOf sheetState.currentValue == ModalBottomSheetValue.Expanded
+        }
+
+        if (visibleWhenShow) {
+            return@derivedStateOf when (sheetState.currentValue) {
+                ModalBottomSheetValue.Hidden -> sheetState.progress >= 0.05f
+                ModalBottomSheetValue.Expanded -> sheetState.progress <= 0.95f
+
+                else -> false
+            }
         }
 
         when (sheetState.currentValue) {
