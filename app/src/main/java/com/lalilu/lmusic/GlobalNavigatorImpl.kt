@@ -1,8 +1,8 @@
 package com.lalilu.lmusic
 
 import cafe.adriel.voyager.core.screen.Screen
-import com.lalilu.component.base.BottomSheetNavigator
 import com.lalilu.component.base.DialogScreen
+import com.lalilu.component.navigation.SheetNavigator
 import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.lmusic.compose.DialogWrapper
 import com.lalilu.lmusic.compose.NavigationWrapper
@@ -20,7 +20,7 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
      */
     override fun goToDetailOf(
         mediaId: String,
-        navigator: BottomSheetNavigator?,
+        navigator: SheetNavigator?,
     ) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
         nav.showSingle(SongDetailScreen(mediaId = mediaId))
@@ -29,7 +29,7 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
     override fun showSongs(
         mediaIds: List<String>,
         title: String?,
-        navigator: BottomSheetNavigator?,
+        navigator: SheetNavigator?,
     ) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
         nav.showSingle(
@@ -40,7 +40,10 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
         )
     }
 
-    override fun navigateTo(screen: Screen, navigator: BottomSheetNavigator?) {
+    override fun navigateTo(
+        screen: Screen,
+        navigator: SheetNavigator?
+    ) {
         val nav = navigator
             ?: (if (screen is DialogScreen) DialogWrapper.navigator else NavigationWrapper.navigator)
             ?: return

@@ -1,7 +1,6 @@
 package com.lalilu.component.navigation
 
 import cafe.adriel.voyager.core.screen.Screen
-import com.lalilu.component.base.BottomSheetNavigator
 
 interface GlobalNavigator {
 
@@ -10,7 +9,7 @@ interface GlobalNavigator {
      */
     fun goToDetailOf(
         mediaId: String,
-        navigator: BottomSheetNavigator? = null
+        navigator: SheetNavigator? = null
     )
 
     /**
@@ -19,11 +18,11 @@ interface GlobalNavigator {
     fun showSongs(
         mediaIds: List<String>,
         title: String? = null,
-        navigator: BottomSheetNavigator? = null
+        navigator: SheetNavigator? = null
     )
 
     fun navigateTo(
         screen: Screen,
-        navigator: BottomSheetNavigator? = null
+        navigator: SheetNavigator? = null
     )
 }

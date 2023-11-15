@@ -22,9 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.lalilu.component.base.BottomSheetNavigatorLayout
 import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.LocalPaddingValue
-import com.lalilu.component.base.BottomSheetNavigator
+import com.lalilu.component.navigation.SheetNavigator
+import com.lalilu.component.base.SideSheetNavigatorLayout
 import com.lalilu.lmusic.compose.component.CustomTransition
 import com.lalilu.lmusic.compose.component.navigate.NavigationBar
 import com.lalilu.lmusic.compose.component.navigate.NavigationSmartBar
@@ -35,61 +37,88 @@ import com.lalilu.lplaylist.screen.PlaylistScreen
 
 @OptIn(ExperimentalMaterialApi::class)
 object NavigationWrapper {
-    var navigator: BottomSheetNavigator? by mutableStateOf(null)
+    var navigator: SheetNavigator? by mutableStateOf(null)
         private set
 
     @Composable
     fun Content(
         modifier: Modifier = Modifier,
+        forPad: Boolean = false,
         baseContent: @Composable () -> Unit
     ) {
-        BottomSheetNavigator(
-            defaultScreen = HomeScreen,
-            ignoreFlingNestedScroll = true,
-            modifier = modifier.fillMaxSize(),
-            scrimColor = Color.Black.copy(alpha = 0.5f),
-            sheetBackgroundColor = MaterialTheme.colors.background,
-            animationSpec = SpringSpec(
-                dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = 1000f
-            ),
-            sheetContent = { bottomSheetNavigator ->
-                navigator = bottomSheetNavigator
-                val currentPaddingValue = remember { mutableStateOf(PaddingValues(0.dp)) }
-                val currentScreen by remember { derivedStateOf { bottomSheetNavigator.lastItemOrNull as? CustomScreen } }
-                val customScreenInfo by remember { derivedStateOf { currentScreen?.getScreenInfo() } }
-
-                ImmerseStatusBar(
-                    enable = { customScreenInfo?.immerseStatusBar == true },
-                    isExpended = { bottomSheetNavigator.isVisible }
-                )
-
-                Box(modifier = Modifier.fillMaxSize()) {
-                    CustomTransition(
-                        modifier = Modifier.fillMaxSize(),
-                        navigator = bottomSheetNavigator.getNavigator()
-                    ) {
-                        CompositionLocalProvider(LocalPaddingValue provides currentPaddingValue) {
-                            it.Content()
-                        }
-                    }
-                    NavigationSmartBar(
-                        modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter),
-                        measureHeightState = currentPaddingValue,
-                        navigator = bottomSheetNavigator
-                    ) { modifier ->
-                        NavigationBar(
-                            modifier = modifier.align(Alignment.BottomCenter),
-                            tabScreens = { listOf(HomeScreen, PlaylistScreen, SearchScreen) },
-                            navigator = bottomSheetNavigator
-                        )
-                    }
+        if (forPad) {
+            SideSheetNavigatorLayout(
+                modifier = modifier.fillMaxSize(),
+                scrimColor = Color.Black.copy(alpha = 0.5f),
+                sheetBackgroundColor = MaterialTheme.colors.background,
+                animationSpec = SpringSpec(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = 1000f
+                ),
+                sheetContent = { sheetNavigator ->
+                    navigator = sheetNavigator
+                    SheetContent(modifier, sheetNavigator)
                 }
-            },
-            content = { baseContent() }
+            ) {
+                baseContent()
+            }
+        } else {
+            BottomSheetNavigatorLayout(
+                defaultScreen = HomeScreen,
+                ignoreFlingNestedScroll = true,
+                modifier = modifier.fillMaxSize(),
+                scrimColor = Color.Black.copy(alpha = 0.5f),
+                sheetBackgroundColor = MaterialTheme.colors.background,
+                animationSpec = SpringSpec(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = 1000f
+                ),
+                sheetContent = { sheetNavigator ->
+                    navigator = sheetNavigator
+                    SheetContent(modifier, sheetNavigator)
+                },
+                content = { baseContent() }
+            )
+        }
+    }
+
+    @Composable
+    private fun SheetContent(
+        modifier: Modifier,
+        sheetNavigator: SheetNavigator
+    ) {
+        val currentPaddingValue = remember { mutableStateOf(PaddingValues(0.dp)) }
+        val currentScreen by remember { derivedStateOf { sheetNavigator.lastItemOrNull as? CustomScreen } }
+        val customScreenInfo by remember { derivedStateOf { currentScreen?.getScreenInfo() } }
+
+        ImmerseStatusBar(
+            enable = { customScreenInfo?.immerseStatusBar == true },
+            isExpended = { sheetNavigator.isVisible }
         )
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            CustomTransition(
+                modifier = Modifier.fillMaxSize(),
+                navigator = sheetNavigator.getNavigator()
+            ) {
+                CompositionLocalProvider(LocalPaddingValue provides currentPaddingValue) {
+                    it.Content()
+                }
+            }
+            NavigationSmartBar(
+                modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter),
+                measureHeightState = currentPaddingValue,
+                navigator = sheetNavigator
+            ) { modifier ->
+                NavigationBar(
+                    modifier = modifier.align(Alignment.BottomCenter),
+                    tabScreens = { listOf(HomeScreen, PlaylistScreen, SearchScreen) },
+                    navigator = sheetNavigator
+                )
+            }
+        }
     }
 }
 

@@ -25,10 +25,10 @@ object LayoutWrapper {
         }
 
         DialogWrapper.Content {
-            if (isPad) {
+            if (isPad && isLandscape) {
                 DrawerWrapper.Content(
                     mainContent = { Playing.Content() },
-                    secondContent = { HomeScreen.Content() }
+                    secondContent = { NavigationWrapper.Content(forPad = true) { HomeScreen.Content() } }
                 )
             } else {
                 FixedLayout {

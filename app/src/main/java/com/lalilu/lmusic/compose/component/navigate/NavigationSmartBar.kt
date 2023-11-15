@@ -34,7 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
 import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.BottomSheetNavigator
+import com.lalilu.component.navigation.SheetNavigator
 import com.lalilu.lmusic.utils.extension.measureHeight
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
@@ -42,7 +42,7 @@ import com.lalilu.lmusic.utils.extension.measureHeight
 fun NavigationSmartBar(
     modifier: Modifier = Modifier,
     measureHeightState: MutableState<PaddingValues>,
-    navigator: BottomSheetNavigator,
+    navigator: SheetNavigator,
     content: @Composable (Modifier) -> Unit
 ) {
     val density = LocalDensity.current

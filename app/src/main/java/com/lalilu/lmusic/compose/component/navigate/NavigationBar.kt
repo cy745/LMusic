@@ -49,14 +49,14 @@ import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.TabScreen
-import com.lalilu.component.base.BottomSheetNavigator
+import com.lalilu.component.navigation.SheetNavigator
 import com.lalilu.component.extension.dayNightTextColor
 
 @Composable
 fun NavigationBar(
     modifier: Modifier = Modifier,
     tabScreens: () -> List<TabScreen>,
-    navigator: BottomSheetNavigator,
+    navigator: SheetNavigator,
 ) {
     val currentScreen by remember { derivedStateOf { navigator.lastItemOrNull } }
     val isCurrentTabScreen by remember { derivedStateOf { currentScreen as? TabScreen != null } }
@@ -97,7 +97,7 @@ fun NavigateTabBar(
     modifier: Modifier = Modifier,
     currentScreen: () -> Screen?,
     tabScreens: () -> List<TabScreen>,
-    navigator: BottomSheetNavigator
+    navigator: SheetNavigator
 ) {
     Row(
         modifier = modifier
@@ -124,7 +124,7 @@ fun NavigateCommonBar(
     modifier: Modifier = Modifier,
     previousTitle: () -> Int,
     screenActions: () -> List<ScreenAction>,
-    navigator: BottomSheetNavigator
+    navigator: SheetNavigator
 ) {
     Row(
         modifier = modifier

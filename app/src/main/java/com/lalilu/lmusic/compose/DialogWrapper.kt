@@ -9,13 +9,14 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.lalilu.component.base.BottomSheetNavigator
+import com.lalilu.component.base.BottomSheetNavigatorLayout
 import com.lalilu.component.base.BottomSheetNavigatorBackHandler
+import com.lalilu.component.navigation.SheetNavigator
 import com.lalilu.lmusic.compose.component.CustomTransition
 
 @OptIn(ExperimentalMaterialApi::class)
 object DialogWrapper {
-    var navigator: BottomSheetNavigator? = null
+    var navigator: SheetNavigator? = null
         private set
 
     @Composable
@@ -23,7 +24,7 @@ object DialogWrapper {
         modifier: Modifier = Modifier,
         content: @Composable () -> Unit
     ) {
-        BottomSheetNavigator(
+        BottomSheetNavigatorLayout(
             modifier = modifier.fillMaxSize(),
             resetOnHide = true,
             visibleWhenShow = true,
