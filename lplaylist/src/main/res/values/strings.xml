@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="playlist_screen_title">Playlist</string>
+    <string name="playlist_action_add_to_playlist">Add to playlist</string>
+    <string name="playlist_action_add_to_favorites">Add to favorites</string>
 </resources>

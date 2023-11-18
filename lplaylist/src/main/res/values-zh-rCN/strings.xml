@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="playlist_screen_title">歌单</string>
+    <string name="playlist_action_add_to_playlist">添加至歌单</string>
+    <string name="playlist_action_add_to_favorites">添加至我喜欢</string>
 </resources>
