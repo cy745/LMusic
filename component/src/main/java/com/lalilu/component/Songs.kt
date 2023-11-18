@@ -1,20 +1,34 @@
 package com.lalilu.component
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Chip
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -24,7 +38,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import com.lalilu.common.base.BaseSp
@@ -32,6 +51,7 @@ import com.lalilu.common.base.Playable
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.extension.ItemSelectHelper
 import com.lalilu.component.extension.LazyListScrollToHelper
+import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.extension.rememberItemSelectHelper
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.component.extension.singleViewModel
@@ -60,6 +80,7 @@ fun DynamicScreen.Songs(
     sortFor: String = Sortable.SORT_FOR_SONGS,
     listState: LazyListState = rememberLazyListState(),
     supportListAction: () -> List<ListAction>,
+    selectActions: () -> List<SelectAction> = { emptyList() },
     scrollToHelper: LazyListScrollToHelper = rememberLazyListScrollToHelper(listState),
     songsSM: SongsScreenModel = rememberScreenModel { SongsScreenModel() },
     showPrefixContent: (sortRuleStr: State<String>) -> Boolean = { it.value == SortRuleStatic.TrackNumber::class.java.name },
@@ -87,6 +108,7 @@ fun DynamicScreen.Songs(
         scrollToHelper = scrollToHelper
     ) { scrollHelper, headerJumperWrapperVisible ->
         SelectPanelWrapper(
+            selectActions = selectActions,
             selector = rememberItemSelectHelper(
                 isSelecting = songsSM.isSelecting,
                 selected = songsSM.selectedItems
@@ -164,7 +186,9 @@ fun DynamicScreen.SortPanelWrapper(
 
 @Composable
 fun DynamicScreen.SelectPanelWrapper(
+    modifier: Modifier = Modifier,
     selector: ItemSelectHelper = rememberItemSelectHelper(),
+    selectActions: () -> List<SelectAction> = { emptyList() },
     content: @Composable (selector: ItemSelectHelper) -> Unit,
 ) {
     RegisterMainContent(
@@ -172,18 +196,71 @@ fun DynamicScreen.SelectPanelWrapper(
         onBackPressed = { selector.clear() }
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 5.dp),
+            modifier = modifier
+                .clickable(enabled = false) {}
+                .height(52.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            IconTextButton(
-                text = "取消",
-                color = Color(0xFF006E7C),
+            TextButton(
+                modifier = Modifier.fillMaxHeight(),
+                shape = RectangleShape,
+                contentPadding = PaddingValues(start = 16.dp, end = 24.dp),
+                colors = ButtonDefaults.textButtonColors(
+                    backgroundColor = Color(0x2F006E7C),
+                    contentColor = Color(0xFF006E7C)
+                ),
                 onClick = { selector.clear() }
-            )
-            Text(text = "已选择: ${selector.selected.value.size}")
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_close_line),
+                    contentDescription = "cancelButton",
+                    colorFilter = ColorFilter.tint(color = Color(0xFF006E7C))
+                )
+                Text(
+                    text = "取消 [${selector.selected.value.size}]",
+                    fontSize = 14.sp
+                )
+            }
+
+            LazyRow(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                items(items = selectActions()) {
+                    if (it is SelectAction.ComposeAction) {
+                        it.content.invoke(selector)
+                        return@items
+                    }
+
+                    if (it is SelectAction.StaticAction) {
+                        TextButton(
+                            modifier = Modifier.fillMaxHeight(),
+                            shape = RectangleShape,
+                            contentPadding = PaddingValues(horizontal = 20.dp),
+                            colors = ButtonDefaults.textButtonColors(
+                                backgroundColor = it.color.copy(alpha = 0.15f),
+                                contentColor = it.color
+                            ),
+                            onClick = { it.onAction(selector) }
+                        ) {
+                            it.icon?.let { icon ->
+                                Image(
+                                    modifier = Modifier.size(20.dp),
+                                    painter = painterResource(id = icon),
+                                    contentDescription = stringResource(id = it.title),
+                                    colorFilter = ColorFilter.tint(color = it.color)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                            }
+                            Text(
+                                text = stringResource(id = it.title),
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
