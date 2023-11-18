@@ -7,6 +7,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import com.lalilu.component.R
 
 data class ItemSelectHelper(
     val isSelecting: MutableState<Boolean>,
@@ -51,13 +52,33 @@ fun rememberItemSelectHelper(
  * 定义针对选择器可执行的动作
  */
 sealed interface SelectAction {
-    data class StaticAction(
-        @StringRes val title: Int,
-        @DrawableRes val icon: Int? = null,
-        @StringRes val info: Int? = null,
-        val color: Color = Color.Transparent,
-        val onAction: (ItemSelectHelper) -> Unit
-    ) : SelectAction
+    sealed class StaticAction(
+        @StringRes open val title: Int,
+        @DrawableRes open val icon: Int? = null,
+        @StringRes open val info: Int? = null,
+        open val color: Color = Color.Transparent,
+        open val onAction: (ItemSelectHelper) -> Unit
+    ) : SelectAction {
+        data class SelectAll(val getAll: () -> List<Any>) : StaticAction(
+            title = R.string.select_action_title_select_all,
+            color = Color(0xFF1F5AC0),
+            onAction = { it.selected.value = getAll() }
+        )
+
+        data object ClearAll : StaticAction(
+            title = R.string.select_action_title_clear_all,
+            color = Color(0xFFDF9323),
+            onAction = { it.selected.value = emptyList() }
+        )
+
+        data class Custom(
+            override val title: Int,
+            override val icon: Int? = null,
+            override val info: Int? = null,
+            override val color: Color = Color.Transparent,
+            override val onAction: (ItemSelectHelper) -> Unit
+        ) : StaticAction(title, icon, info, color, onAction)
+    }
 
     data class ComposeAction(
         val content: @Composable (ItemSelectHelper) -> Unit

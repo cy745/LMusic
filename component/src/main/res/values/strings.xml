@@ -8,4 +8,7 @@
     <string name="sort_preset_by_song_duration">歌曲时长</string>
     <string name="sort_preset_by_item_count">元素个数</string>
     <string name="sort_preset_by_disk_and_track">碟号&amp;音轨号</string>
+
+    <string name="select_action_title_select_all">全选</string>
+    <string name="select_action_title_clear_all">清空</string>
 </resources>

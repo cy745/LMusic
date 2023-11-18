@@ -1,6 +1,5 @@
 package com.lalilu.component
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -80,7 +79,7 @@ fun DynamicScreen.Songs(
     sortFor: String = Sortable.SORT_FOR_SONGS,
     listState: LazyListState = rememberLazyListState(),
     supportListAction: () -> List<ListAction>,
-    selectActions: () -> List<SelectAction> = { emptyList() },
+    selectActions: (getAll: () -> List<Any>) -> List<SelectAction> = { emptyList() },
     scrollToHelper: LazyListScrollToHelper = rememberLazyListScrollToHelper(listState),
     songsSM: SongsScreenModel = rememberScreenModel { SongsScreenModel() },
     showPrefixContent: (sortRuleStr: State<String>) -> Boolean = { it.value == SortRuleStatic.TrackNumber::class.java.name },
@@ -108,7 +107,7 @@ fun DynamicScreen.Songs(
         scrollToHelper = scrollToHelper
     ) { scrollHelper, headerJumperWrapperVisible ->
         SelectPanelWrapper(
-            selectActions = selectActions,
+            selectActions = { selectActions { songsState.values.flatten() } },
             selector = rememberItemSelectHelper(
                 isSelecting = songsSM.isSelecting,
                 selected = songsSM.selectedItems
