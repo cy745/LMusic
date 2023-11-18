@@ -42,14 +42,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import kotlin.math.roundToInt
 
-class ModalSideSheetState {
-    var isVisible: Boolean by mutableStateOf(false)
+class ModalSideSheetState(
+    initialState: Boolean = false
+) {
+    var isVisible: Boolean by mutableStateOf(initialState)
 }
 
 @Composable
-fun rememberModalSideSheetState(): ModalSideSheetState {
+fun rememberModalSideSheetState(
+    initialState: Boolean = false
+): ModalSideSheetState {
     return remember {
-        ModalSideSheetState()
+        ModalSideSheetState(
+            initialState = initialState
+        )
     }
 }
 
