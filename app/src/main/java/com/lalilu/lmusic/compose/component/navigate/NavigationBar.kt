@@ -139,7 +139,7 @@ fun NavigateCommonBar(
         TextButton(
             modifier = Modifier.fillMaxHeight(),
             shape = RectangleShape,
-            contentPadding = PaddingValues(start = 20.dp, end = 28.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 24.dp),
             colors = ButtonDefaults.textButtonColors(contentColor = contentColor),
             onClick = {
                 if (navigator.items.size == 1) {
