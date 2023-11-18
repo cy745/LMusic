@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -41,12 +42,27 @@ object TabWrapper {
         SearchScreen
     )
 
+    private var screenToShow: TabScreen? = null
+
+    /**
+     * 延迟显示某页面,避免因重组而丢失该显示页面的事件
+     */
+    fun postScreen(tabScreen: TabScreen) {
+        screenToShow = tabScreen
+    }
+
     @Composable
     fun Content() {
         val currentPaddingValue = remember { mutableStateOf(PaddingValues(0.dp)) }
 
         TabNavigator(tab = HomeScreen) { tabNavigator ->
             navigator = tabNavigator
+
+            // 显示待显示的页面
+            if (!currentComposer.skipping && screenToShow != null) {
+                tabNavigator.current = screenToShow!!
+                screenToShow = null
+            }
 
             Box(modifier = Modifier.fillMaxSize()) {
                 AnimatedContent(
