@@ -18,6 +18,7 @@ import com.lalilu.component.SongsScreenModel
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmedia.extension.GroupRuleStatic
@@ -31,6 +32,7 @@ import com.lalilu.lhistory.SortRulePresetLastPlayTime
 import com.lalilu.lhistory.SortRulePresetPlayedTimes
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplaylist.PlaylistActions
 
 data class SongsScreen(
     private val title: String? = null,
@@ -77,6 +79,14 @@ data class SongsScreen(
             listState = listState,
             songsSM = songsSM,
             scrollToHelper = scrollHelper,
+            selectActions = { getAll ->
+                listOf(
+                    SelectAction.StaticAction.SelectAll(getAll = getAll),
+                    SelectAction.StaticAction.ClearAll,
+                    PlaylistActions.addToPlaylistAction,
+                    PlaylistActions.addToFavorite,
+                )
+            },
             supportListAction = {
                 listOf(
                     // 部分预设
