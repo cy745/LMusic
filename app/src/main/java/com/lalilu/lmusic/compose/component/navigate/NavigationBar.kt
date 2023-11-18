@@ -49,18 +49,19 @@ import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.TabScreen
-import com.lalilu.component.navigation.SheetNavigator
 import com.lalilu.component.extension.dayNightTextColor
+import com.lalilu.component.navigation.SheetNavigator
 
 @Composable
 fun NavigationBar(
     modifier: Modifier = Modifier,
     tabScreens: () -> List<TabScreen>,
+    currentScreen: () -> Screen?,
     navigator: SheetNavigator,
 ) {
-    val currentScreen by remember { derivedStateOf { navigator.lastItemOrNull } }
-    val isCurrentTabScreen by remember { derivedStateOf { currentScreen as? TabScreen != null } }
-    val previousScreen by remember(currentScreen) {
+    val screen by remember { derivedStateOf { currentScreen() } }
+    val isCurrentTabScreen by remember { derivedStateOf { screen as? TabScreen != null } }
+    val previousScreen by remember(screen) {
         derivedStateOf { navigator.items.getOrNull(navigator.size - 2) as? CustomScreen }
     }
     val previousInfo by remember { derivedStateOf { previousScreen?.getScreenInfo() } }
@@ -68,19 +69,19 @@ fun NavigationBar(
         derivedStateOf { previousInfo?.title ?: R.string.bottom_sheet_navigate_back }
     }
     val screenActions by remember {
-        derivedStateOf { (currentScreen as? DynamicScreen)?.actions ?: emptyList() }
+        derivedStateOf { (screen as? DynamicScreen)?.actions ?: emptyList() }
     }
 
     AnimatedContent(
         modifier = modifier.fillMaxWidth(),
         targetState = isCurrentTabScreen,
-        label = ""
+        label = "NavigateBarTransform"
     ) { tabScreenNow ->
         if (tabScreenNow) {
             NavigateTabBar(
-                currentScreen = { currentScreen },
                 tabScreens = tabScreens,
-                navigator = navigator
+                currentScreen = { screen },
+                onSelectTab = { navigator.pushTab(it) }
             )
         } else {
             NavigateCommonBar(
@@ -97,7 +98,7 @@ fun NavigateTabBar(
     modifier: Modifier = Modifier,
     currentScreen: () -> Screen?,
     tabScreens: () -> List<TabScreen>,
-    navigator: SheetNavigator
+    onSelectTab: (TabScreen) -> Unit = {}
 ) {
     Row(
         modifier = modifier
@@ -113,7 +114,7 @@ fun NavigateTabBar(
                 titleRes = { it.getScreenInfo().title },
                 iconRes = { it.getScreenInfo().icon ?: R.drawable.ic_close_line },
                 isSelected = { currentScreen() === it },
-                onClick = { navigator.pushTab(it) }
+                onClick = { onSelectTab(it) }
             )
         }
     }
@@ -165,7 +166,8 @@ fun NavigateCommonBar(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
-            targetState = screenActions(), label = ""
+            targetState = screenActions(),
+            label = "ExtraActions"
         ) { actions ->
             LazyRow(
                 modifier = Modifier.fillMaxSize(),

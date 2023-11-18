@@ -86,7 +86,7 @@ object TabWrapper {
                         .fillMaxWidth()
                         .align(Alignment.BottomCenter),
                     measureHeightState = currentPaddingValue,
-                    screen = { tabNavigator.current }
+                    currentScreen = { tabNavigator.current }
                 ) { modifier ->
                     NavigateTabBar(
                         modifier = modifier

@@ -110,11 +110,12 @@ object NavigationWrapper {
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter),
                 measureHeightState = currentPaddingValue,
-                navigator = sheetNavigator
+                currentScreen = { currentScreen }
             ) { modifier ->
                 NavigationBar(
                     modifier = modifier.align(Alignment.BottomCenter),
-                    tabScreens = { listOf(HomeScreen, PlaylistScreen, SearchScreen) },
+                    tabScreens = { TabWrapper.tabScreen },
+                    currentScreen = { currentScreen },
                     navigator = sheetNavigator
                 )
             }

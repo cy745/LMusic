@@ -33,8 +33,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
+import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.navigation.SheetNavigator
 import com.lalilu.lmusic.utils.extension.measureHeight
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
@@ -42,15 +42,15 @@ import com.lalilu.lmusic.utils.extension.measureHeight
 fun NavigationSmartBar(
     modifier: Modifier = Modifier,
     measureHeightState: MutableState<PaddingValues>,
-    navigator: SheetNavigator,
+    currentScreen: () -> Screen?,
     content: @Composable (Modifier) -> Unit
 ) {
     val density = LocalDensity.current
     val backPressDispatcher = LocalOnBackPressedDispatcherOwner.current
 
-    val currentScreen by remember { derivedStateOf { navigator.lastItemOrNull as? DynamicScreen } }
-    val mainContent by remember { derivedStateOf { currentScreen?.mainContentStack?.lastOrNull() } }
-    val extraContent by remember { derivedStateOf { currentScreen?.extraContentStack?.lastOrNull() } }
+    val screen by remember { derivedStateOf { currentScreen() as? DynamicScreen } }
+    val mainContent by remember { derivedStateOf { screen?.mainContentStack?.lastOrNull() } }
+    val extraContent by remember { derivedStateOf { screen?.extraContentStack?.lastOrNull() } }
 
     val isShowMask by remember { derivedStateOf { mainContent?.showMask ?: false } }
     val isShowBackground by remember { derivedStateOf { mainContent?.showBackground ?: true } }
