@@ -7,15 +7,17 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
-import com.lalilu.lmusic.compose.component.FixedLayout
-import com.lalilu.lmusic.compose.new_screen.HomeScreen
-import com.lalilu.lmusic.compose.screen.ShowScreen
+import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.compositionUniqueId
+import com.lalilu.component.base.HiddenBottomSheetScreen
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.extension.rememberIsPad
-
+import com.lalilu.lmusic.compose.screen.ShowScreen
 
 object LayoutWrapper {
 
+    @OptIn(InternalVoyagerApi::class)
     @Composable
     fun Content(windowSize: WindowSizeClass = LocalWindowSize.current) {
         val configuration = LocalConfiguration.current
@@ -23,17 +25,29 @@ object LayoutWrapper {
         val isLandscape by remember(configuration.orientation) {
             derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
         }
+        val defaultScreen = remember { HiddenBottomSheetScreen }
 
         DialogWrapper.Content {
-            if (isPad && isLandscape) {
+            // 共用Navigator避免切换时导致导航栈丢失
+            Navigator(
+                defaultScreen,
+                onBackPressed = null,
+                key = compositionUniqueId()
+            ) { navigator ->
                 DrawerWrapper.Content(
-                    mainContent = { Playing.Content() },
-                    secondContent = { NavigationWrapper.Content(forPad = true) { HomeScreen.Content() } }
+                    isPad = { isPad },
+                    isLandscape = { isLandscape },
+                    mainContent = {
+                        Playing.Content()
+                    },
+                    secondContent = {
+                        NavigationWrapper.Content(
+                            navigator = navigator,
+                            defaultScreen = defaultScreen,
+                            forPad = { isPad && isLandscape }
+                        )
+                    }
                 )
-            } else {
-                FixedLayout {
-                    NavigationWrapper.Content { Playing.Content() }
-                }
             }
         }
 
