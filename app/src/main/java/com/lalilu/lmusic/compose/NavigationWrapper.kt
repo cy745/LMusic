@@ -196,7 +196,7 @@ object NavigationWrapper {
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter),
                 measureHeightState = currentPaddingValue,
-                currentScreen = { currentScreen }
+                currentScreen = { navigator?.lastItemOrNull }
             ) { modifier ->
                 NavigationBar(
                     modifier = modifier.align(Alignment.BottomCenter),
