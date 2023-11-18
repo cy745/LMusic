@@ -64,27 +64,27 @@ private fun DynamicScreen.PlaylistScreen(
     playlistSM: PlaylistScreenModel = rememberScreenModel { PlaylistScreenModel() },
     navigator: GlobalNavigator = koinInject()
 ) {
-    val playlist = sp.obtainList<LPlaylist>("Playlist", autoSave = false)
+    val playlists = sp.obtainList<LPlaylist>("Playlist", autoSave = false)
     val state = rememberReorderableLazyListState(
         maxScrollPerFrame = 200.dp,
         onMove = { from, to ->
-            val toIndex = playlist.value.indexOfFirst { it.id == to.key }
-            val fromIndex = playlist.value.indexOfFirst { it.id == from.key }
+            val toIndex = playlists.value.indexOfFirst { it.id == to.key }
+            val fromIndex = playlists.value.indexOfFirst { it.id == from.key }
             if (toIndex < 0 || fromIndex < 0) return@rememberReorderableLazyListState
 
-            playlist.value = playlist.value.toMutableList().apply {
+            playlists.value = playlists.value.toMutableList().apply {
                 add(toIndex, removeAt(fromIndex))
             }
         },
         canDragOver = { draggedOver, _ ->
-            playlist.value.any { it.id == draggedOver.key }
+            playlists.value.any { it.id == draggedOver.key }
         },
-        onDragEnd = { _, _ -> playlist.save() }
+        onDragEnd = { _, _ -> playlists.save() }
     )
 
     DisposableEffect(Unit) {
         onDispose {
-            playlist.save()
+            playlists.save()
         }
     }
 
@@ -112,19 +112,7 @@ private fun DynamicScreen.PlaylistScreen(
                     Text("Playlist")
 
                     IconButton(
-                        onClick = {
-                            val id = System.currentTimeMillis().toString()
-                            playlist.add(
-                                index = 0,
-                                item = LPlaylist(
-                                    id = System.currentTimeMillis().toString(),
-                                    title = "Playlist_$id",
-                                    subTitle = "",
-                                    coverUri = "",
-                                    mediaIds = emptyList()
-                                )
-                            )
-                        }
+                        onClick = { navigator.navigateTo(PlaylistCreateScreen()) }
                     ) {
                         Icon(
                             painter = painterResource(ComponentR.drawable.ic_add_line),
@@ -135,7 +123,7 @@ private fun DynamicScreen.PlaylistScreen(
             }
 
             items(
-                items = playlist.value,
+                items = playlists.value,
                 key = { it.id },
                 contentType = { LPlaylist::class.java }
             ) { playlist ->
