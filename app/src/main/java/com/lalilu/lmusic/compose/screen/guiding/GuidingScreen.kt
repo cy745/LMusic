@@ -132,7 +132,9 @@ fun GuidingScreen() {
                     )
                 ) { navigator ->
                     navigatorState.value = navigator
-                    CustomTransition(navigator) {
+                    CustomTransition(
+                        navigator = navigator
+                    ) {
                         it.Content()
                     }
                 }
