@@ -2,8 +2,6 @@ package com.lalilu.component.base
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetDefaults
@@ -20,75 +18,64 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.Stack
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.navigator.compositionUniqueId
 import com.lalilu.component.navigation.LocalSheetNavigator
 import com.lalilu.component.navigation.SheetNavigator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
-@OptIn(InternalVoyagerApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SideSheetNavigatorLayout(
     modifier: Modifier = Modifier,
+    navigator: Navigator,
     hideOnBackPress: Boolean = true,
-    defaultScreen: Screen = HiddenSideSheetScreen,
+    defaultIsVisible: Boolean = false,
     scrimColor: Color = ModalBottomSheetDefaults.scrimColor,
     sheetShape: Shape = MaterialTheme.shapes.large,
     sheetElevation: Dp = ModalBottomSheetDefaults.Elevation,
     sheetBackgroundColor: Color = MaterialTheme.colors.surface,
     sheetContentColor: Color = contentColorFor(sheetBackgroundColor),
     animationSpec: AnimationSpec<Float> = SwipeableDefaults.AnimationSpec,
-    key: String = compositionUniqueId(),
     sheetContent: @Composable (SheetNavigator) -> Unit = { CurrentScreen() },
     content: @Composable (SheetNavigator) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val sheetState = rememberModalSideSheetState()
+    val sheetState = rememberModalSideSheetState(
+        initialState = defaultIsVisible
+    )
 
-    Navigator(defaultScreen, onBackPressed = null, key = key) { navigator ->
-        val sheetNavigator = remember(navigator, sheetState, coroutineScope) {
-            SideSheetNavigator(
-                navigator = navigator,
-                sheetState = sheetState,
-                coroutineScope = coroutineScope
-            )
-        }
-
-        CompositionLocalProvider(
-            LocalSheetNavigator provides sheetNavigator
-        ) {
-            ModalSideSheetLayout(
-                modifier = modifier,
-                alignment = Alignment.CenterStart,
-                scrimColor = scrimColor,
-                sheetShape = sheetShape,
-                sheetState = sheetState,
-                animationSpec = animationSpec,
-                sheetElevation = sheetElevation,
-                sheetBackgroundColor = sheetBackgroundColor,
-                sheetContentColor = sheetContentColor,
-                sheetContent = {
-                    SideSheetNavigatorBackHandler(sheetNavigator, hideOnBackPress)
-                    sheetContent(sheetNavigator)
-                },
-                content = { content(sheetNavigator) }
-            )
-        }
+    val sheetNavigator = remember(navigator, sheetState, coroutineScope) {
+        SideSheetNavigator(
+            navigator = navigator,
+            sheetState = sheetState,
+            coroutineScope = coroutineScope
+        )
     }
-}
 
-private object HiddenSideSheetScreen : Screen {
-
-    @Composable
-    override fun Content() {
-        Spacer(modifier = Modifier.height(1.dp))
+    CompositionLocalProvider(
+        LocalSheetNavigator provides sheetNavigator
+    ) {
+        ModalSideSheetLayout(
+            modifier = modifier,
+            alignment = Alignment.CenterStart,
+            scrimColor = scrimColor,
+            sheetShape = sheetShape,
+            sheetState = sheetState,
+            animationSpec = animationSpec,
+            sheetElevation = sheetElevation,
+            sheetBackgroundColor = sheetBackgroundColor,
+            sheetContentColor = sheetContentColor,
+            sheetContent = {
+                SideSheetNavigatorBackHandler(sheetNavigator, hideOnBackPress)
+                sheetContent(sheetNavigator)
+            },
+            content = { content(sheetNavigator) }
+        )
     }
 }
 

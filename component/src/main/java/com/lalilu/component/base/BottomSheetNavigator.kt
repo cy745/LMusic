@@ -16,26 +16,20 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.Stack
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.navigator.compositionUniqueId
 import com.lalilu.component.navigation.LocalSheetNavigator
 import com.lalilu.component.navigation.SheetNavigator
 import kotlinx.coroutines.CoroutineScope
@@ -44,15 +38,15 @@ import kotlinx.coroutines.launch
 typealias BottomSheetNavigatorContent = @Composable (bottomSheetNavigator: BottomSheetNavigator) -> Unit
 
 @SuppressLint("UnnecessaryComposedModifier")
-@OptIn(InternalVoyagerApi::class)
 @ExperimentalMaterialApi
 @Composable
 fun BottomSheetNavigatorLayout(
     modifier: Modifier = Modifier,
+    navigator: Navigator,
     hideOnBackPress: Boolean = true,
     resetOnHide: Boolean = false,
     visibleWhenShow: Boolean = false,
-    ignoreFlingNestedScroll: Boolean = false,
+    defaultIsVisible: Boolean = false,
     defaultScreen: Screen = HiddenBottomSheetScreen,
     scrimColor: Color = ModalBottomSheetDefaults.scrimColor,
     sheetShape: Shape = MaterialTheme.shapes.large,
@@ -62,77 +56,51 @@ fun BottomSheetNavigatorLayout(
     sheetGesturesEnabled: Boolean = true,
     skipHalfExpanded: Boolean = true,
     animationSpec: AnimationSpec<Float> = SwipeableDefaults.AnimationSpec,
-    key: String = compositionUniqueId(),
     sheetContent: BottomSheetNavigatorContent = { CurrentScreen() },
     content: BottomSheetNavigatorContent
 ) {
-    var hideBottomSheet: (() -> Unit)? = null
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        confirmValueChange = { state ->
-            if (state == ModalBottomSheetValue.Hidden) {
-                hideBottomSheet?.invoke()
-            }
-            true
-        },
+        initialValue = ModalBottomSheetValue.Hidden, // initialValue 不可动态修改,重组时与预取效果不符
         skipHalfExpanded = skipHalfExpanded,
         animationSpec = animationSpec
     )
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPostScroll(
-                consumed: Offset,
-                available: Offset,
-                source: NestedScrollSource,
-            ): Offset {
-                if (source == NestedScrollSource.Fling) {
-                    if (sheetState.progress == 1f || sheetState.progress == 0f) {
-                        // 消费剩余的所有Fling运动
-                        return available
-                    }
-                }
 
-                return super.onPostScroll(consumed, available, source)
-            }
+    // 只能重组时取值后判断状态进行更新,且需要避免该参数变化触发不必要的重组
+    LaunchedEffect(Unit) {
+        when {
+            defaultIsVisible && sheetState.currentValue == ModalBottomSheetValue.Hidden -> sheetState.show()
+            !defaultIsVisible && sheetState.currentValue == ModalBottomSheetValue.Expanded -> sheetState.hide()
         }
     }
 
-    Navigator(defaultScreen, onBackPressed = null, key = key) { navigator ->
-        val bottomSheetNavigator = remember(navigator, sheetState, coroutineScope) {
-            BottomSheetNavigator(
-                visibleWhenShow = visibleWhenShow,
-                resetOnHide = resetOnHide,
-                navigator = navigator,
-                sheetState = sheetState,
-                defaultScreen = defaultScreen,
-                coroutineScope = coroutineScope
-            )
-        }
+    val bottomSheetNavigator = remember {
+        BottomSheetNavigator(
+            visibleWhenShow = visibleWhenShow,
+            resetOnHide = resetOnHide,
+            navigator = navigator,
+            sheetState = sheetState,
+            defaultScreen = defaultScreen,
+            coroutineScope = coroutineScope
+        )
+    }
 
-        hideBottomSheet = bottomSheetNavigator::hide
-
-        CompositionLocalProvider(LocalSheetNavigator provides bottomSheetNavigator) {
-            ModalBottomSheetLayout(
-                modifier = modifier.composed {
-                    if (ignoreFlingNestedScroll) this.nestedScroll(nestedScrollConnection) else this
-                },
-                scrimColor = scrimColor,
-                sheetState = sheetState,
-                sheetShape = sheetShape,
-                sheetElevation = sheetElevation,
-                sheetBackgroundColor = sheetBackgroundColor,
-                sheetContentColor = sheetContentColor,
-                sheetGesturesEnabled = sheetGesturesEnabled,
-                sheetContent = {
-                    BottomSheetNavigatorBackHandler(bottomSheetNavigator, hideOnBackPress)
-                    sheetContent(bottomSheetNavigator)
-                },
-                content = {
-                    content(bottomSheetNavigator)
-                }
-            )
-        }
+    CompositionLocalProvider(LocalSheetNavigator provides bottomSheetNavigator) {
+        ModalBottomSheetLayout(
+            modifier = modifier,
+            scrimColor = scrimColor,
+            sheetState = sheetState,
+            sheetShape = sheetShape,
+            sheetElevation = sheetElevation,
+            sheetBackgroundColor = sheetBackgroundColor,
+            sheetContentColor = sheetContentColor,
+            sheetGesturesEnabled = sheetGesturesEnabled,
+            sheetContent = {
+                BottomSheetNavigatorBackHandler(bottomSheetNavigator, hideOnBackPress)
+                sheetContent(bottomSheetNavigator)
+            },
+            content = { content(bottomSheetNavigator) }
+        )
     }
 }
 
@@ -204,7 +172,7 @@ class BottomSheetNavigator internal constructor(
 
     override fun show(screen: Screen?) {
         coroutineScope.launch {
-            if (screen != null && screen !== navigator.lastItemOrNull) {
+            if (screen != null && screen !== lastItemOrNull) {
                 replaceAll(screen)
             }
             sheetState.show()
@@ -225,17 +193,9 @@ class BottomSheetNavigator internal constructor(
     override fun getNavigator(): Navigator {
         return navigator
     }
-
-    @Composable
-    fun saveableState(
-        key: String,
-        content: @Composable () -> Unit
-    ) {
-        navigator.saveableState(key, content = content)
-    }
 }
 
-private object HiddenBottomSheetScreen : Screen {
+object HiddenBottomSheetScreen : Screen {
 
     @Composable
     override fun Content() {
