@@ -10,7 +10,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.lalilu.component.navigation.BackHandler
 import kotlinx.coroutines.CoroutineScope
 
@@ -61,8 +65,27 @@ data class ScreenBarComponent(
     }
 }
 
-interface TabScreen : CustomScreen {
+interface CustomScreen : Screen {
+    fun getScreenInfo(): ScreenInfo? = null
+}
+
+interface TabScreen : CustomScreen, Tab {
     override fun getScreenInfo(): ScreenInfo
+
+    override val options: TabOptions
+        @Composable
+        get() {
+            val screenInfo = getScreenInfo()
+            val titleRes = screenInfo.title
+            val iconRes = screenInfo.icon
+            requireNotNull(iconRes) { "TabScreen's screenInfo must have nonNull iconRes." }
+
+            return TabOptions(
+                index = UShort.MIN_VALUE,
+                title = stringResource(id = titleRes),
+                icon = painterResource(id = iconRes)
+            )
+        }
 }
 
 interface DialogScreen : CustomScreen
@@ -74,10 +97,6 @@ interface UiPresenter<T : UiState> : CoroutineScope {
     @Composable
     fun presentState(): T
     fun onAction(action: UiAction)
-}
-
-interface CustomScreen : Screen {
-    fun getScreenInfo(): ScreenInfo? = null
 }
 
 abstract class DynamicScreen : CustomScreen {
