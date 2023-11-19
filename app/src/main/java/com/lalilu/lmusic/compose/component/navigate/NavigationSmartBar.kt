@@ -14,11 +14,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.MaterialTheme
@@ -26,18 +25,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.lmusic.utils.extension.measureHeight
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun NavigationSmartBar(
     modifier: Modifier = Modifier,
@@ -47,6 +49,7 @@ fun NavigationSmartBar(
 ) {
     val density = LocalDensity.current
     val backPressDispatcher = LocalOnBackPressedDispatcherOwner.current
+    val measureMainHeightState = remember { mutableStateOf(PaddingValues(0.dp)) }
 
     val screen by remember { derivedStateOf { currentScreen() as? DynamicScreen } }
     val mainContent by remember { derivedStateOf { screen?.mainContentStack?.lastOrNull() } }
@@ -103,30 +106,36 @@ fun NavigationSmartBar(
             content = { it?.content?.invoke() }
         )
 
+        if (extraContent != null) {
+            Spacer(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .consumeWindowInsets(measureMainHeightState.value)
+                    .imePadding()
+            )
+        }
+
         AnimatedContent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .measureHeight { _, height ->
+                    measureMainHeightState.value =
+                        PaddingValues(bottom = density.run { height.toDp() })
+                }
+                .navigationBarsPadding(),
             transitionSpec = {
                 slideIntoContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Up,
                     animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
                 ) togetherWith slideOutOfContainer(towards = AnimatedContentTransitionScope.SlideDirection.Down)
             },
-//            contentAlignment = Alignment.BottomCenter,
-            targetState = WindowInsets.isImeVisible to mainContent,
+            contentAlignment = Alignment.BottomCenter,
+            targetState = mainContent,
             label = ""
-        ) { pair ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .navigationBarsPadding()
-                    .imePadding()
-            ) {
-                when {
-                    pair.first -> Unit
-                    pair.second != null -> pair.second!!.content.invoke()
-                    else -> content(Modifier.fillMaxWidth())
-                }
-            }
+        ) { item ->
+            item?.content?.invoke()
+                ?: content(Modifier.fillMaxWidth())
         }
     }
 }
