@@ -29,7 +29,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="top"
-                android:fitsSystemWindows="true" />
+                android:fitsSystemWindows="true"
+                android:visibility="invisible" />
+
+            <com.lalilu.lmusic.ui.ShaderView
+                android:id="@+id/fm_shader_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
             <me.qinc.lib.edgetranslucent.EdgeTransparentView
                 android:id="@+id/fm_edge_transparent_view"
