@@ -1,6 +1,6 @@
 package com.lalilu.lmusic.ui.shadertoy
 
-import android.opengl.GLES32
+import android.opengl.GLES30
 import android.opengl.Matrix
 
 /**
@@ -23,12 +23,13 @@ class Shader(
     val viewMatrix = FloatArray(16)
     val projectionMatrix = FloatArray(16)
 
-    val textureResolution: FloatArray =
-        floatArrayOf(screenWidth.toFloat(), screenHeight.toFloat(), 0f)
+    val textureResolution: FloatArray = floatArrayOf(0f, 0f, 0f)
     var textureId: Int = 0
         private set
-    private var fboId: Int = 0
-    private var programId: Int = 0
+    var fboId: Int = 0
+        private set
+    var programId: Int = 0
+        private set
 
     fun onCreate(commonContent: String) {
         if (programId == 0) {
@@ -59,23 +60,23 @@ class Shader(
         Matrix.setIdentityM(projectionMatrix, 0)
     }
 
-    fun draw(context: ShaderToyContext, action: () -> Unit) {
-        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, fboId)
+    fun draw(context: ShaderToyContext, fboId: Int = this.fboId, action: () -> Unit) {
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, fboId)
 
         // 设置背景颜色
-        GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT)
-        GLES32.glClearColor(0f, 0f, 0f, 1f)
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
+        GLES30.glClearColor(0f, 0f, 0f, 1f)
 
         // 应用GL程序
-        GLES32.glUseProgram(programId)
+        GLES30.glUseProgram(programId)
 
-        GLES32.glUniformMatrix4fv(ShaderUtils.mUMatrixLocation, 1, false, mvpMatrix, 0)
+        GLES30.glUniformMatrix4fv(ShaderUtils.mUMatrixLocation, 1, false, mvpMatrix, 0)
         ShaderUtils.bindUniformVariable(context)
         ShaderUtils.drawVertex(action)
 
         // 重置
-        // GLES32.glBindVertexArray(0)
-        // GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, 0)
-        // GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, 0)
+        // GLES30.glBindVertexArray(0)
+        // GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
+        // GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
     }
 }

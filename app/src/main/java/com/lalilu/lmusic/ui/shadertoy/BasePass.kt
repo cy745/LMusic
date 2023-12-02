@@ -1,6 +1,6 @@
 package com.lalilu.lmusic.ui.shadertoy
 
-import android.opengl.GLES32
+import android.opengl.GLES30
 
 
 open class BasePass(
@@ -10,20 +10,22 @@ open class BasePass(
     internal var channel2: ShaderToyPass? = null,
     internal var channel3: ShaderToyPass? = null
 ) : ShaderToyPass {
+    private val iChannelResolution = FloatArray(12)
+
     override fun init(commonContent: String) {
-        shader.onCreate(commonContent)
         channel0?.init(commonContent)
         channel1?.init(commonContent)
         channel2?.init(commonContent)
         channel3?.init(commonContent)
+        shader.onCreate(commonContent)
     }
 
     override fun update(context: ShaderToyContext, screenWidth: Int, screenHeight: Int) {
-        shader.onSizeChange(context, screenWidth, screenHeight)
         channel0?.update(context, screenWidth, screenHeight)
         channel1?.update(context, screenWidth, screenHeight)
         channel2?.update(context, screenWidth, screenHeight)
         channel3?.update(context, screenWidth, screenHeight)
+        shader.onSizeChange(context, screenWidth, screenHeight)
     }
 
     override fun draw(context: ShaderToyContext) {
@@ -39,48 +41,57 @@ open class BasePass(
         shader.draw(context) {
             channel0?.output()?.let {
                 context.tryBindTexture { count ->
-                    GLES32.glActiveTexture(GLES32.GL_TEXTURE0 + count)      // GL_TEXTUREx
-                    GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, it.getTexture())    // textureId
-                    GLES32.glUniform1i(ShaderUtils.iChannel0Location, count)       // x
-                    GLES32.glUniform3fv(
-                        ShaderUtils.iChannelResolutionLocation, 1,
-                        it.getTextureResolution(), 0
-                    )
+                    GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + count)      // GL_TEXTUREx
+                    GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, it.getTexture())    // textureId
+                    GLES30.glUniform1i(ShaderUtils.iChannel0Location, count)       // x
+                    it.getTextureResolution().let {
+                        iChannelResolution[0] = it[0]
+                        iChannelResolution[1] = it[1]
+                        iChannelResolution[2] = it[2]
+                    }
                 }
             }
             channel1?.output()?.let {
                 context.tryBindTexture { count ->
-                    GLES32.glActiveTexture(GLES32.GL_TEXTURE0 + count)
-                    GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, it.getTexture())
-                    GLES32.glUniform1i(ShaderUtils.iChannel1Location, count)
-                    GLES32.glUniform3fv(
-                        ShaderUtils.iChannelResolutionLocation, 1,
-                        it.getTextureResolution(), 1
-                    )
+                    GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + count)
+                    GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, it.getTexture())
+                    GLES30.glUniform1i(ShaderUtils.iChannel1Location, count)
+                    it.getTextureResolution().let {
+                        iChannelResolution[3] = it[0]
+                        iChannelResolution[4] = it[1]
+                        iChannelResolution[5] = it[2]
+                    }
                 }
             }
             channel2?.output()?.let {
                 context.tryBindTexture { count ->
-                    GLES32.glActiveTexture(GLES32.GL_TEXTURE0 + count)
-                    GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, it.getTexture())
-                    GLES32.glUniform1i(ShaderUtils.iChannel2Location, count)
-                    GLES32.glUniform3fv(
-                        ShaderUtils.iChannelResolutionLocation, 1,
-                        it.getTextureResolution(), 2
-                    )
+                    GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + count)
+                    GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, it.getTexture())
+                    GLES30.glUniform1i(ShaderUtils.iChannel2Location, count)
+                    it.getTextureResolution().let {
+                        iChannelResolution[6] = it[0]
+                        iChannelResolution[7] = it[1]
+                        iChannelResolution[8] = it[2]
+                    }
                 }
             }
             channel3?.output()?.let {
                 context.tryBindTexture { count ->
-                    GLES32.glActiveTexture(GLES32.GL_TEXTURE0 + count)
-                    GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, it.getTexture())
-                    GLES32.glUniform1i(ShaderUtils.iChannel3Location, count)
-                    GLES32.glUniform3fv(
-                        ShaderUtils.iChannelResolutionLocation, 1,
-                        it.getTextureResolution(), 3
-                    )
+                    GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + count)
+                    GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, it.getTexture())
+                    GLES30.glUniform1i(ShaderUtils.iChannel3Location, count)
+                    it.getTextureResolution().let {
+                        iChannelResolution[9] = it[0]
+                        iChannelResolution[10] = it[1]
+                        iChannelResolution[11] = it[2]
+                    }
                 }
             }
+            GLES30.glUniform3fv(
+                ShaderUtils.iChannelResolutionLocation, 4,
+                iChannelResolution, 0
+            )
+            onDraw(context)
         }
     }
 }

@@ -38,5 +38,7 @@ interface ShaderToyPass {
     fun init(commonContent: String = "") {}
     fun update(context: ShaderToyContext, screenWidth: Int, screenHeight: Int) {}
     fun draw(context: ShaderToyContext) {}
+
+    fun onDraw(context: ShaderToyContext) {}
     fun output(): ShaderToyChannel? = null
 }

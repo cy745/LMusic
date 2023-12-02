@@ -1,7 +1,7 @@
 package com.lalilu.lmusic.ui.shadertoy
 
 import android.graphics.Bitmap
-import android.opengl.GLES32
+import android.opengl.GLES30
 import android.opengl.GLUtils
 import android.util.Log
 import com.blankj.utilcode.util.Utils
@@ -37,10 +37,10 @@ object ShaderUtils {
 
     // 纹理坐标
     private val textureData = floatArrayOf(
-        1f, 0f, 0.0f,   // top right
         0f, 0f, 0.0f,   // top left
-        1f, 1f, 0.0f,   // bottom right
+        1f, 0f, 0.0f,   // top right
         0f, 1f, 0.0f,   // bottom left
+        1f, 1f, 0.0f,   // bottom right
     )
 
     private const val COORDS_PER_VERTEX = 3 //每一次取点的时候取几个点
@@ -78,41 +78,41 @@ object ShaderUtils {
     }
 
     fun bindUniformVariable(context: ShaderToyContext) {
-        GLES32.glUniform1f(iTimeLocation, context.iTime)
-        GLES32.glUniform1i(iFrameLocation, context.iFrame)
-        GLES32.glUniform1f(iFrameRateLocation, context.iFrameRate)
-        GLES32.glUniform4fv(iMouseLocation, 1, context.mMouse, 0)
-        GLES32.glUniform3fv(iResolutionLocation, 1, context.mResolution, 0)
+        GLES30.glUniform1f(iTimeLocation, context.iTime)
+        GLES30.glUniform1i(iFrameLocation, context.iFrame)
+        GLES30.glUniform1f(iFrameRateLocation, context.iFrameRate)
+        GLES30.glUniform4fv(iMouseLocation, 1, context.mMouse, 0)
+        GLES30.glUniform3fv(iResolutionLocation, 1, context.mResolution, 0)
     }
 
-    fun drawVertex(action: () -> Unit) {
+    fun drawVertex(action: () -> Unit = {}) {
         action()
 
-        GLES32.glEnableVertexAttribArray(mavPositionLocation)
-        GLES32.glEnableVertexAttribArray(mafPositionLocation)
+        GLES30.glEnableVertexAttribArray(mavPositionLocation)
+        GLES30.glEnableVertexAttribArray(mafPositionLocation)
 
         //设置顶点位置值
-        GLES32.glVertexAttribPointer(
+        GLES30.glVertexAttribPointer(
             mavPositionLocation,
             COORDS_PER_VERTEX,
-            GLES32.GL_FLOAT,
+            GLES30.GL_FLOAT,
             false,
             vertexStride,
             vertexBuffer
         )
-        GLES32.glVertexAttribPointer(
+        GLES30.glVertexAttribPointer(
             mafPositionLocation,
             COORDS_PER_VERTEX,
-            GLES32.GL_FLOAT,
+            GLES30.GL_FLOAT,
             false,
             vertexStride,
             textureBuffer
         )
 
-        GLES32.glDrawArrays(GLES32.GL_TRIANGLE_STRIP, 0, vertexCount)
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, vertexCount)
 
-        GLES32.glDisableVertexAttribArray(mavPositionLocation)
-        GLES32.glDisableVertexAttribArray(mafPositionLocation)
+        GLES30.glDisableVertexAttribArray(mavPositionLocation)
+        GLES30.glDisableVertexAttribArray(mafPositionLocation)
     }
 
     /**
@@ -123,26 +123,26 @@ object ShaderUtils {
     fun createProgram(vertexCode: String, fragmentCode: String): Int {
         // 创建GL程序
         // Create the GL program
-        val programId = GLES32.glCreateProgram()
+        val programId = GLES30.glCreateProgram()
 
         // 加载、编译vertex shader和fragment shader
         // Load and compile vertex shader and fragment shader
-        val vertexShader = GLES32.glCreateShader(GLES32.GL_VERTEX_SHADER)
-        val fragmentShader = GLES32.glCreateShader(GLES32.GL_FRAGMENT_SHADER)
-        GLES32.glShaderSource(vertexShader, vertexCode)
-        GLES32.glShaderSource(fragmentShader, fragmentCode)
-        GLES32.glCompileShader(vertexShader)
-        GLES32.glCompileShader(fragmentShader)
-        checkGLError { "Shader create error" }
+        val vertexShader = GLES30.glCreateShader(GLES30.GL_VERTEX_SHADER)
+        val fragmentShader = GLES30.glCreateShader(GLES30.GL_FRAGMENT_SHADER)
+        GLES30.glShaderSource(vertexShader, vertexCode)
+        GLES30.glShaderSource(fragmentShader, fragmentCode)
+        GLES30.glCompileShader(vertexShader)
+        GLES30.glCompileShader(fragmentShader)
+        checkGLError { "Shader create error" + fragmentCode }
 
         // 将shader程序附着到GL程序上
         // Attach the compiled shaders to the GL program
-        GLES32.glAttachShader(programId, vertexShader)
-        GLES32.glAttachShader(programId, fragmentShader)
+        GLES30.glAttachShader(programId, vertexShader)
+        GLES30.glAttachShader(programId, fragmentShader)
 
         // 链接GL程序
         // Link the GL program
-        GLES32.glLinkProgram(programId)
+        GLES30.glLinkProgram(programId)
 
         checkGLError()
         return programId
@@ -155,33 +155,33 @@ object ShaderUtils {
      */
     fun createTexture(width: Int, height: Int): Int {
         val texture = IntArray(1)
-        GLES32.glGenTextures(1, texture, 0)
-        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, texture[0])
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D,
-            GLES32.GL_TEXTURE_WRAP_S,
-            GLES32.GL_CLAMP_TO_EDGE
+        GLES30.glGenTextures(1, texture, 0)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0])
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_WRAP_S,
+            GLES30.GL_CLAMP_TO_EDGE
         )
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D,
-            GLES32.GL_TEXTURE_WRAP_T,
-            GLES32.GL_CLAMP_TO_EDGE
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_WRAP_T,
+            GLES30.GL_CLAMP_TO_EDGE
         )
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D,
-            GLES32.GL_TEXTURE_MIN_FILTER,
-            GLES32.GL_NEAREST
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_MIN_FILTER,
+            GLES30.GL_NEAREST
         )
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D,
-            GLES32.GL_TEXTURE_MAG_FILTER,
-            GLES32.GL_NEAREST
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_MAG_FILTER,
+            GLES30.GL_NEAREST
         )
-        GLES32.glTexImage2D(
-            GLES32.GL_TEXTURE_2D, 0,
-            GLES32.GL_RGBA, width, height, 0,
-            GLES32.GL_RGBA,
-            GLES32.GL_UNSIGNED_BYTE,
+        GLES30.glTexImage2D(
+            GLES30.GL_TEXTURE_2D, 0,
+            GLES30.GL_RGBA, width, height, 0,
+            GLES30.GL_RGBA,
+            GLES30.GL_UNSIGNED_BYTE,
             null,
         )
 
@@ -197,29 +197,29 @@ object ShaderUtils {
      */
     fun createTexture(bitmap: Bitmap): Int {
         val texture = IntArray(1)
-        GLES32.glGenTextures(1, texture, 0)
-        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, texture[0])
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D,
-            GLES32.GL_TEXTURE_WRAP_S,
-            GLES32.GL_CLAMP_TO_EDGE
+        GLES30.glGenTextures(1, texture, 0)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0])
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_WRAP_S,
+            GLES30.GL_CLAMP_TO_EDGE
         )
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D,
-            GLES32.GL_TEXTURE_WRAP_T,
-            GLES32.GL_CLAMP_TO_EDGE
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_WRAP_T,
+            GLES30.GL_CLAMP_TO_EDGE
         )
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D,
-            GLES32.GL_TEXTURE_MIN_FILTER,
-            GLES32.GL_NEAREST
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_MIN_FILTER,
+            GLES30.GL_NEAREST
         )
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D,
-            GLES32.GL_TEXTURE_MAG_FILTER,
-            GLES32.GL_NEAREST
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_MAG_FILTER,
+            GLES30.GL_NEAREST
         )
-        GLUtils.texImage2D(GLES32.GL_TEXTURE_2D, 0, bitmap, 0)
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0)
 
         checkGLError()
         return texture[0]
@@ -234,8 +234,8 @@ object ShaderUtils {
      * @return 纹理对象的ID
      */
     fun updateTexture(textureId: Int, bitmap: Bitmap): Int {
-        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, textureId)
-        GLUtils.texImage2D(GLES32.GL_TEXTURE_2D, 0, bitmap, 0)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId)
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0)
         return textureId
     }
 
@@ -247,14 +247,14 @@ object ShaderUtils {
     fun createFBO(textureId: Int): Int {
         // 创建帧缓冲
         val fbo = IntArray(1)
-        GLES32.glGenFramebuffers(1, fbo, 0)
+        GLES30.glGenFramebuffers(1, fbo, 0)
         // 绑定帧缓冲
-        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, fbo[0])
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, fbo[0])
         // 把纹理作为帧缓冲的附件
-        GLES32.glFramebufferTexture2D(
-            GLES32.GL_FRAMEBUFFER,
-            GLES32.GL_COLOR_ATTACHMENT0,
-            GLES32.GL_TEXTURE_2D, textureId, 0
+        GLES30.glFramebufferTexture2D(
+            GLES30.GL_FRAMEBUFFER,
+            GLES30.GL_COLOR_ATTACHMENT0,
+            GLES30.GL_TEXTURE_2D, textureId, 0
         )
 
         checkGLError { "FBO create error" }
@@ -264,8 +264,8 @@ object ShaderUtils {
     }
 
     private fun checkGLError(msg: () -> String = { "" }) {
-        val error = GLES32.glGetError()
-        if (error != GLES32.GL_NO_ERROR) {
+        val error = GLES30.glGetError()
+        if (error != GLES30.GL_NO_ERROR) {
             val hexErrorCode = Integer.toHexString(error)
             val message = "[GLError: $hexErrorCode] ${msg()}"
             Log.e(LOGTAG, message)
@@ -275,8 +275,8 @@ object ShaderUtils {
 
     private fun checkFrameBufferError() {
         // 检查帧缓冲是否完整
-        val fboStatus = GLES32.glCheckFramebufferStatus(GLES32.GL_FRAMEBUFFER)
-        if (fboStatus != GLES32.GL_FRAMEBUFFER_COMPLETE) {
+        val fboStatus = GLES30.glCheckFramebufferStatus(GLES30.GL_FRAMEBUFFER)
+        if (fboStatus != GLES30.GL_FRAMEBUFFER_COMPLETE) {
             Log.e(LOGTAG, "initFBO failed, status: $fboStatus")
             throw RuntimeException("GLError")
         }
