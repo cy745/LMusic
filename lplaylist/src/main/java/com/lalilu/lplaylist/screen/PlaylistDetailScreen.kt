@@ -12,6 +12,8 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.extension.SelectAction
 import com.lalilu.lplaylist.R
+import com.lalilu.lplaylist.entity.LPlaylist
+import com.lalilu.lplaylist.extension.replaceForFavourite
 import com.lalilu.component.R as componentR
 import com.lalilu.lplaylist.repository.PlaylistRepository
 import com.lalilu.lplaylist.repository.PlaylistSp
@@ -68,11 +70,9 @@ private fun DynamicScreen.PlaylistDetailScreen(
         headerContent = {
             item {
                 NavigatorHeader(
-                    title = playlist!!.title,
-                    subTitle = playlist!!.subTitle
-                ) {
-
-                }
+                    title = replaceForFavourite(playlist!!, LPlaylist::title),
+                    subTitle = replaceForFavourite(playlist!!, LPlaylist::subTitle)
+                )
             }
         }
     )

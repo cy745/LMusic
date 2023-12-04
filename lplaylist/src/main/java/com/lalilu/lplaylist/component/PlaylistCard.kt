@@ -23,8 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.extension.dayNightTextColor
-import com.lalilu.component.R as ComponentR
 import com.lalilu.lplaylist.entity.LPlaylist
+import com.lalilu.lplaylist.extension.replaceForFavourite
+import com.lalilu.component.R as ComponentR
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -60,16 +61,18 @@ fun PlaylistCard(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = playlist.title,
+                text = replaceForFavourite(playlist, LPlaylist::title),
                 style = MaterialTheme.typography.subtitle1,
                 color = dayNightTextColor()
             )
+
+            val subTitle = replaceForFavourite(playlist, LPlaylist::subTitle)
             AnimatedVisibility(
-                visible = playlist.subTitle.isNotBlank(),
+                visible = subTitle.isNotBlank(),
                 label = "SubTitleVisibility"
             ) {
                 Text(
-                    text = playlist.subTitle,
+                    text = subTitle,
                     style = MaterialTheme.typography.body2,
                     color = dayNightTextColor(alpha = 0.8f)
                 )

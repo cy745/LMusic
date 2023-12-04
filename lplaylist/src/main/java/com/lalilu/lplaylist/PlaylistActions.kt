@@ -48,7 +48,7 @@ object PlaylistActions {
         val mediaIds = selector.selected.value
             .mapNotNull { (it as? Playable)?.mediaId }
 
-        // todo
+        playlistRepo.addMediaIdsToFavourite(mediaIds)
         ToastUtils.showShort("已添加${mediaIds.size}首歌曲至我喜欢")
     }
 
