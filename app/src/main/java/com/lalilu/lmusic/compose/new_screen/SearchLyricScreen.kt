@@ -38,7 +38,7 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.LLazyColumn
 import com.lalilu.lmusic.compose.component.card.SearchInputBar
-import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
+import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.lmusic.compose.presenter.SearchLyricAction
 import com.lalilu.lmusic.compose.presenter.SearchLyricPresenter
 import com.lalilu.lmusic.compose.presenter.SearchLyricState

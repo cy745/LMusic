@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.navigate
+package com.lalilu.component.base
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
@@ -19,10 +19,12 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun NavigatorHeader(
+    modifier: Modifier = Modifier,
     @StringRes titleRes: Int,
     @StringRes subTitleRes: Int,
     extraContent: @Composable RowScope.() -> Unit = {}
 ) = NavigatorHeader(
+    modifier = modifier,
     title = stringResource(id = titleRes),
     subTitle = stringResource(id = subTitleRes),
     extraContent = extraContent
@@ -30,22 +32,29 @@ fun NavigatorHeader(
 
 @Composable
 fun NavigatorHeader(
+    modifier: Modifier = Modifier,
     title: String,
     subTitle: String,
     extraContent: @Composable RowScope.() -> Unit = {}
 ) {
-    NavigatorHeader(title = title, columnExtraContent = {
-        Text(
-            text = subTitle,
-            fontSize = 14.sp,
-            color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
-                .copy(alpha = 0.5f)
-        )
-    }, rowExtraContent = extraContent)
+    NavigatorHeader(
+        modifier = modifier,
+        title = title,
+        rowExtraContent = extraContent,
+        columnExtraContent = {
+            Text(
+                text = subTitle,
+                fontSize = 14.sp,
+                color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+                    .copy(alpha = 0.5f)
+            )
+        }
+    )
 }
 
 @Composable
 fun NavigatorHeader(
+    modifier: Modifier = Modifier,
     title: String,
     columnExtraContent: @Composable ColumnScope.() -> Unit = {},
     rowExtraContent: @Composable RowScope.() -> Unit = {}
@@ -53,7 +62,7 @@ fun NavigatorHeader(
     Row(
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(20.dp),
-        modifier = Modifier.padding(top = 26.dp, bottom = 20.dp, start = 20.dp, end = 20.dp)
+        modifier = modifier.padding(top = 26.dp, bottom = 20.dp, start = 20.dp, end = 20.dp)
     ) {
         Column(
             modifier = Modifier.weight(1f),

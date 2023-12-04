@@ -34,7 +34,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.SmartContainer
 import com.lalilu.lmusic.compose.component.SmartFloatBtns
 import com.lalilu.lmusic.compose.component.base.SongsSelectWrapper
-import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
+import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import kotlinx.coroutines.launch

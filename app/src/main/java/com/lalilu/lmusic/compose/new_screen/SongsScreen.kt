@@ -25,7 +25,7 @@ import com.lalilu.lmedia.extension.GroupRuleStatic
 import com.lalilu.lmedia.extension.ListActionPreset
 import com.lalilu.lmedia.extension.OrderRuleStatic
 import com.lalilu.lmedia.extension.SortRuleStatic
-import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
+import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.lhistory.SortRuleLastPlayTime
 import com.lalilu.lhistory.SortRulePlayCount
 import com.lalilu.lhistory.SortRulePresetLastPlayTime

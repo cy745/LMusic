@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.ExtensionLoadResult
 import com.lalilu.extension_core.ExtensionManager
-import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
+import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
 
 @OptIn(ExperimentalMaterialApi::class)

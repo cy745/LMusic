@@ -66,7 +66,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.base.IconCheckButton
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 import com.lalilu.lmusic.compose.component.card.SongInformationCard
-import com.lalilu.lmusic.compose.component.navigate.NavigatorHeader
+import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.lmusic.compose.presenter.DetailScreenAction
 import com.lalilu.lmusic.compose.presenter.DetailScreenIsPlayingPresenter
 import com.lalilu.lmusic.compose.presenter.DetailScreenLikeBtnPresenter
