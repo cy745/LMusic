@@ -62,7 +62,11 @@ sealed interface SelectAction {
         data class SelectAll(val getAll: () -> List<Any>) : StaticAction(
             title = R.string.select_action_title_select_all,
             color = Color(0xFF1F5AC0),
-            onAction = { it.selected.value = getAll() }
+            onAction = { helper ->
+                val all = getAll()
+                val diff = all.any { !helper.selected.value.contains(it) }
+                helper.selected.value = if (diff) all else emptyList()
+            }
         )
 
         data object ClearAll : StaticAction(
