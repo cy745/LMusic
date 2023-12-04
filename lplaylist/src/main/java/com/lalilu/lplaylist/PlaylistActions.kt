@@ -5,12 +5,15 @@ import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.common.base.Playable
 import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.lplaylist.entity.LPlaylist
+import com.lalilu.lplaylist.repository.PlaylistRepository
 import com.lalilu.lplaylist.screen.PlaylistAddToScreen
 import org.koin.java.KoinJavaComponent
 import com.lalilu.component.R as componentR
 
 object PlaylistActions {
-    val navigator: GlobalNavigator by KoinJavaComponent.inject(GlobalNavigator::class.java)
+    private val navigator: GlobalNavigator by KoinJavaComponent.inject(GlobalNavigator::class.java)
+    private val playlistRepo: PlaylistRepository by KoinJavaComponent.inject(PlaylistRepository::class.java)
 
     /**
      * 将指定歌曲添加至播放列表
@@ -23,7 +26,15 @@ object PlaylistActions {
         val mediaIds = selector.selected.value
             .mapNotNull { (it as? Playable)?.mediaId }
 
-        navigator.navigateTo(PlaylistAddToScreen(ids = mediaIds))
+        navigator.navigateTo(
+            PlaylistAddToScreen(
+                ids = mediaIds,
+                callback = {
+                    selector.clear()
+                    navigator.goBack()
+                }
+            )
+        )
     }
 
     /**
@@ -39,5 +50,26 @@ object PlaylistActions {
 
         // todo
         ToastUtils.showShort("已添加${mediaIds.size}首歌曲至我喜欢")
+    }
+
+    /**
+     * 删除指定的播放列表
+     */
+    internal val removePlaylists = SelectAction.StaticAction.Custom(
+        title = R.string.playlist_action_remove_playlist,
+        icon = componentR.drawable.ic_delete_bin_6_line,
+        color = Color(0xFFE91E1E),
+    ) { selector ->
+        val selectedPlaylist = selector.selected.value.filterIsInstance<LPlaylist>()
+        val playlistIds = selectedPlaylist.map { it.id }
+
+        runCatching {
+            playlistRepo.removeByIds(ids = playlistIds)
+            ToastUtils.showShort("已删除${playlistIds.size}个歌单")
+            selector.remove(selectedPlaylist)
+        }.getOrElse {
+            it.printStackTrace()
+            ToastUtils.showShort("删除失败")
+        }
     }
 }
