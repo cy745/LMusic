@@ -82,6 +82,7 @@ data class PlaylistCreateScreen(
                     color = Color.Green
                 ) {
                     val title = createSM.title.value
+                    val subTitle = createSM.subTitle.value
 
                     if (title.isBlank()) {
                         ToastUtils.showShort("歌单名称不可为空")
@@ -90,7 +91,7 @@ data class PlaylistCreateScreen(
                             LPlaylist(
                                 id = UUID.randomUUID().toString(),
                                 title = title,
-                                subTitle = "",
+                                subTitle = subTitle,
                                 coverUri = "",
                                 mediaIds = mediaIdsToAdd
                             )
