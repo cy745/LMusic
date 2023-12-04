@@ -42,12 +42,14 @@ fun NavigatorHeader(
         title = title,
         rowExtraContent = extraContent,
         columnExtraContent = {
-            Text(
-                text = subTitle,
-                fontSize = 14.sp,
-                color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
-                    .copy(alpha = 0.5f)
-            )
+            if (subTitle.isNotBlank()) {
+                Text(
+                    text = subTitle,
+                    fontSize = 14.sp,
+                    color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+                        .copy(alpha = 0.5f)
+                )
+            }
         }
     )
 }
