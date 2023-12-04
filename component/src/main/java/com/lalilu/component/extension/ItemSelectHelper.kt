@@ -69,6 +69,7 @@ sealed interface SelectAction {
         @StringRes open val title: Int,
         @DrawableRes open val icon: Int? = null,
         @StringRes open val info: Int? = null,
+        open val forLongClick: Boolean = false,
         open val color: Color = Color.Transparent,
         open val onAction: (ItemSelectHelper) -> Unit
     ) : SelectAction {
@@ -92,9 +93,10 @@ sealed interface SelectAction {
             override val title: Int,
             override val icon: Int? = null,
             override val info: Int? = null,
+            override val forLongClick: Boolean = false,
             override val color: Color = Color.Transparent,
             override val onAction: (ItemSelectHelper) -> Unit
-        ) : StaticAction(title, icon, info, color, onAction)
+        ) : StaticAction(title, icon, info, forLongClick, color, onAction)
     }
 
     data class ComposeAction(
