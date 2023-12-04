@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import com.lalilu.common.base.BaseSp
 import com.lalilu.lplaylist.entity.LPlaylist
 
-class PlaylistSp(private val context: Application) : BaseSp() {
+internal class PlaylistSp(private val context: Application) : BaseSp() {
     override fun obtainSourceSp(): SharedPreferences {
         return context.getSharedPreferences(
             context.packageName + "_PLAYLIST",
