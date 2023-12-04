@@ -9,6 +9,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -77,6 +78,10 @@ private fun DynamicScreen.PlaylistScreen(
         },
         onDragEnd = { _, _ -> playlists.save() }
     )
+
+    LaunchedEffect(Unit) {
+        playlistRepo.checkFavouriteExist()
+    }
 
     DisposableEffect(Unit) {
         onDispose {
