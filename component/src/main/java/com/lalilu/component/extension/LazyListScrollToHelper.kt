@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 
 
 class LazyListScrollToHelper internal constructor(
-    private val onScrollTo: (delay: Long, action: () -> Int?) -> Unit
+    private val onScrollTo: (delay: Long, scrollOffset: Int, animateTo: Boolean, action: () -> Int?) -> Unit
 ) {
     private val keys: MutableSet<Any> = mutableSetOf()
     private var finished: Boolean = false
@@ -35,9 +35,11 @@ class LazyListScrollToHelper internal constructor(
 
     fun scrollToItem(
         key: Any,
+        animateTo: Boolean = false,
+        scrollOffset: Int = 0,
         delay: Long = 0L
     ) {
-        onScrollTo(delay) {
+        onScrollTo(delay, scrollOffset, animateTo) {
             keys.indexOf(key)
                 .takeIf { it >= 0 }
         }
@@ -51,11 +53,21 @@ fun rememberLazyListScrollToHelper(
     val scope = rememberCoroutineScope()
 
     return remember {
-        LazyListScrollToHelper { delayTimeMillis, action ->
+        LazyListScrollToHelper { delayTimeMillis, scrollOffset, animateTo, action ->
             scope.launch {
                 delay(delayTimeMillis)
                 val index = action() ?: return@launch
-                listState.scrollToItem(index = index)
+                if (animateTo) {
+                    listState.animateScrollToItem(
+                        index = index,
+                        scrollOffset = scrollOffset
+                    )
+                } else {
+                    listState.scrollToItem(
+                        index = index,
+                        scrollOffset = scrollOffset
+                    )
+                }
             }
         }
     }
