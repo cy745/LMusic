@@ -11,4 +11,5 @@ interface PlaylistRepository {
     fun removeByIds(ids: List<String>)
 
     fun addMediaIdsToPlaylists(mediaIds: List<String>, playlistIds: List<String>)
+    fun removeMediaIdsFromPlaylist(mediaIds: List<String>, playlistId: String)
 }
