@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -28,8 +29,10 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -127,9 +130,12 @@ fun NavigateCommonBar(
     screenActions: () -> List<ScreenAction>,
     navigator: SheetNavigator
 ) {
+    val itemFitImePadding = remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier
             .clickable(enabled = false) {}
+            .run { if (itemFitImePadding.value) this.imePadding() else this }
             .height(52.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -180,6 +186,12 @@ fun NavigateCommonBar(
                     }
 
                     if (it is ScreenAction.StaticAction) {
+                        if (it.fitImePadding) {
+                            LaunchedEffect(Unit) {
+                                itemFitImePadding.value = true
+                            }
+                        }
+
                         TextButton(
                             modifier = Modifier.fillMaxHeight(),
                             shape = RectangleShape,

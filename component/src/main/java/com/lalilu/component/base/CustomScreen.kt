@@ -35,7 +35,9 @@ sealed interface ScreenAction {
         @StringRes val title: Int,
         @DrawableRes val icon: Int? = null,
         @StringRes val info: Int? = null,
-        val color: Color = Color.Transparent,
+        val color: Color = Color.White,
+        val fitImePadding: Boolean = false,
+        val isLongClickAction: Boolean = false,
         val onAction: () -> Unit
     ) : ScreenAction
 
