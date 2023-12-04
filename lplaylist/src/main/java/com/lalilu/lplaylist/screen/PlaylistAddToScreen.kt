@@ -1,122 +1,98 @@
 package com.lalilu.lplaylist.screen
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.screen.ScreenKey
 import com.lalilu.component.LLazyColumn
 import com.lalilu.component.base.DialogScreen
 import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.NavigatorHeader
+import com.lalilu.component.base.ScreenAction
+import com.lalilu.component.extension.ItemSelectHelper
 import com.lalilu.component.extension.rememberItemSelectHelper
-import com.lalilu.component.extension.toColorFilter
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.component.PlaylistCard
 import com.lalilu.lplaylist.entity.LPlaylist
-import com.lalilu.lplaylist.repository.PlaylistSp
+import com.lalilu.lplaylist.repository.PlaylistRepository
 import org.koin.compose.koinInject
 import com.lalilu.component.R as componentR
 
 data class PlaylistAddToScreen(
-    private val ids: List<String>
+    private val ids: List<String>,
+    @Transient private val callback: () -> Unit = {} // callback内若有其他对象的引用会影响到Voyager的序列化
 ) : DynamicScreen(), DialogScreen {
     override val key: ScreenKey = "${super<DynamicScreen>.key}:${ids.hashCode()}"
 
     @Composable
     override fun Content() {
-        PlaylistAddToScreen(mediaIds = ids)
+        val playlistRepo: PlaylistRepository = koinInject()
+        val playlists = playlistRepo.getPlaylists()
+        val selector = rememberItemSelectHelper()
+
+        RegisterActions {
+            listOf(
+                ScreenAction.StaticAction(
+                    title = R.string.playlist_action_add_to_playlist,
+                    icon = componentR.drawable.ic_check_line,
+                    color = Color.Green
+                ) {
+                    val playlistIds = selector.selected.value
+                        .filterIsInstance(LPlaylist::class.java)
+                        .map { it.id }
+
+                    playlistRepo.addMediaIdsToPlaylists(
+                        mediaIds = ids,
+                        playlistIds = playlistIds
+                    )
+
+                    callback.invoke()
+                }
+            )
+        }
+
+        PlaylistAddToScreen(
+            mediaIds = ids,
+            selector = selector,
+            playlists = { playlists.value }
+        )
     }
 }
 
 @Composable
 private fun DynamicScreen.PlaylistAddToScreen(
     mediaIds: List<String>,
-    sp: PlaylistSp = koinInject(),
+    selector: ItemSelectHelper,
+    playlists: () -> List<LPlaylist>,
 ) {
-    val navigator: GlobalNavigator = koinInject()
-    val selector = rememberItemSelectHelper()
-    val playlists = sp.obtainList<LPlaylist>("Playlist", autoSave = false)
-
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    LLazyColumn(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                text = "添加到歌单 [${mediaIds.size}] -> [${selector.selected.value.size}]"
+        item {
+            NavigatorHeader(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
+                title = stringResource(id = R.string.playlist_action_add_to_playlist),
+                subTitle = "[S: ${mediaIds.size}] -> [P: ${selector.selected.value.size}]"
             )
-
-            val contentColor = remember { Color(0xFFFFFFFF) }
-            val bgColor = remember { contentColor.copy(0.15f) }
-
-            TextButton(
-                modifier = Modifier.fillMaxHeight(),
-                shape = RectangleShape,
-                contentPadding = PaddingValues(horizontal = 20.dp),
-                colors = ButtonDefaults.textButtonColors(
-                    backgroundColor = bgColor,
-                    contentColor = contentColor
-                ),
-                onClick = {
-
-                }
-            ) {
-                Image(
-                    modifier = Modifier.size(20.dp),
-                    painter = painterResource(id = componentR.drawable.ic_check_line),
-                    contentDescription = "confirm",
-                    colorFilter = contentColor.toColorFilter()
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "确认",
-                    fontSize = 14.sp
-                )
-            }
         }
 
-        LLazyColumn(modifier = Modifier.fillMaxHeight(0.4f)) {
-            items(
-                items = playlists.value,
-                key = { it.id },
-                contentType = { LPlaylist::class.java }
-            ) { playlist ->
-                PlaylistCard(
-                    playlist = playlist,
-                    isSelected = { selector.isSelected(playlist) },
-                    onClick = { selector.onSelect(playlist) }
-                )
-            }
+        items(
+            items = playlists(),
+            key = { it.id },
+            contentType = { LPlaylist::class.java }
+        ) { playlist ->
+            PlaylistCard(
+                playlist = playlist,
+                isSelected = { selector.isSelected(playlist) },
+                onClick = { selector.onSelect(playlist) }
+            )
         }
     }
 }
