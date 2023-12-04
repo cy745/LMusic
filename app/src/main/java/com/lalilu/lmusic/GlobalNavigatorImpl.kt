@@ -1,10 +1,8 @@
 package com.lalilu.lmusic
 
 import cafe.adriel.voyager.core.screen.Screen
-import com.lalilu.component.base.DialogScreen
-import com.lalilu.component.navigation.SheetNavigator
 import com.lalilu.component.navigation.GlobalNavigator
-import com.lalilu.lmusic.compose.DialogWrapper
+import com.lalilu.component.navigation.SheetNavigator
 import com.lalilu.lmusic.compose.NavigationWrapper
 import com.lalilu.lmusic.compose.new_screen.SongDetailScreen
 import com.lalilu.lmusic.compose.new_screen.SongsScreen
@@ -44,12 +42,12 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
         screen: Screen,
         navigator: SheetNavigator?
     ) {
-        val nav = navigator
-            ?: (if (screen is DialogScreen) DialogWrapper.navigator else NavigationWrapper.navigator)
-            ?: return
-        nav.showSingle(
-            screen = screen,
-            replaceAllWhenInvisible = screen is DialogScreen
-        )
+        val nav = navigator ?: NavigationWrapper.navigator ?: return
+        nav.showSingle(screen = screen)
+    }
+
+    override fun goBack(navigator: SheetNavigator?) {
+        val nav = navigator ?: NavigationWrapper.navigator ?: return
+        nav.pop()
     }
 }

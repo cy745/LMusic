@@ -150,10 +150,10 @@ class BottomSheetNavigator internal constructor(
         }
     }
 
-    override fun showSingle(screen: Screen, replaceAllWhenInvisible: Boolean) {
+    override fun showSingle(screen: Screen) {
         val lastItem = lastItemOrNull
 
-        if (!isVisible && replaceAllWhenInvisible) {
+        if (!isVisible) {
             replaceAll(screen)
         } else {
             if (lastItem == null || lastItem::class.java != screen::class.java) {

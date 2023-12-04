@@ -89,7 +89,7 @@ class SideSheetNavigator(
     override fun pushTab(screen: Screen) {
     }
 
-    override fun showSingle(screen: Screen, replaceAllWhenInvisible: Boolean) {
+    override fun showSingle(screen: Screen) {
         val lastItem = lastItemOrNull
 
         // 若当前为隐藏状态

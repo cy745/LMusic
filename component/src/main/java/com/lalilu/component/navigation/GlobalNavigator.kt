@@ -25,4 +25,8 @@ interface GlobalNavigator {
         screen: Screen,
         navigator: SheetNavigator? = null
     )
+
+    fun goBack(
+        navigator: SheetNavigator? = null
+    )
 }
