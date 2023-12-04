@@ -18,11 +18,24 @@ data class ItemSelectHelper(
     fun onSelect(item: Any) {
         if (!isSelecting.value) isSelecting.value = true
 
-        selected.value = if (selected.value.contains(item)) {
-            selected.value.minus(item)
-        } else {
-            selected.value.plus(item)
+        // 尝试添加，失败则认为已存在，进行移除
+        if (!add(item)) remove(item)
+    }
+
+    fun add(item: Any): Boolean {
+        if (selected.value.contains(item)) {
+            return false
         }
+        selected.value = selected.value.plus(item)
+        return true
+    }
+
+    fun remove(item: Any) {
+        selected.value = selected.value.minus(item)
+    }
+
+    fun remove(item: List<Any>) {
+        selected.value = selected.value.minus(item.toSet())
     }
 
     fun isSelected(item: Any): Boolean {
