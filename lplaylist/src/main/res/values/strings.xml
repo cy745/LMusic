@@ -3,4 +3,6 @@
     <string name="playlist_screen_title">Playlist</string>
     <string name="playlist_action_add_to_playlist">Add to playlist</string>
     <string name="playlist_action_add_to_favorites">Add to favorites</string>
+    <string name="playlist_action_remove_playlist">Remove</string>
+    <string name="playlist_action_create_playlist">Create playlist</string>
 </resources>

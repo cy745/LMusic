@@ -3,4 +3,6 @@
     <string name="playlist_screen_title">歌单</string>
     <string name="playlist_action_add_to_playlist">添加至歌单</string>
     <string name="playlist_action_add_to_favorites">添加至我喜欢</string>
+    <string name="playlist_action_remove_playlist">删除</string>
+    <string name="playlist_action_create_playlist">创建歌单</string>
 </resources>
