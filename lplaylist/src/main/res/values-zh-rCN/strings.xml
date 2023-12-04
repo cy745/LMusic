@@ -5,4 +5,5 @@
     <string name="playlist_action_add_to_favorites">添加至我喜欢</string>
     <string name="playlist_action_remove_playlist">删除</string>
     <string name="playlist_action_create_playlist">创建歌单</string>
+    <string name="playlist_action_remove_from_playlist">从歌单中移除</string>
 </resources>
