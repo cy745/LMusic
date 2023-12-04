@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
+import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.common.base.BaseSp
 import com.lalilu.common.base.Playable
 import com.lalilu.component.base.DynamicScreen
@@ -133,6 +134,7 @@ fun DynamicScreen.Songs(
                     scrollToHelper = { scrollHelper },
                     itemSelectHelper = { selector },
                     hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
+                    isFavourite = { playingVM.isFavourite(it) },
                     isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
                     onHeaderClick = { headerJumperWrapperVisible.value = true },
                     showPrefixContent = { showPrefixContent(sortRuleStr) },
@@ -233,7 +235,7 @@ fun DynamicScreen.SelectPanelWrapper(
                     }
 
                     if (it is SelectAction.StaticAction) {
-                        TextButton(
+                        LongClickableTextButton(
                             modifier = Modifier.fillMaxHeight(),
                             shape = RectangleShape,
                             contentPadding = PaddingValues(horizontal = 20.dp),
@@ -241,7 +243,15 @@ fun DynamicScreen.SelectPanelWrapper(
                                 backgroundColor = it.color.copy(alpha = 0.15f),
                                 contentColor = it.color
                             ),
-                            onClick = { it.onAction(selector) }
+                            enableLongClickMask = it.forLongClick,
+                            onLongClick = { if (it.forLongClick) it.onAction(selector) },
+                            onClick = {
+                                if (it.forLongClick) {
+                                    ToastUtils.showShort("请长按此按钮以继续")
+                                } else {
+                                    it.onAction(selector)
+                                }
+                            },
                         ) {
                             it.icon?.let { icon ->
                                 Image(
