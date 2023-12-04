@@ -4,6 +4,9 @@ import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.common.base.SpListItem
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.entity.LPlaylist
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapLatest
 
 
 internal class PlaylistRepositoryImpl(
@@ -44,6 +47,16 @@ internal class PlaylistRepositoryImpl(
         }
         sp.playlistList.value = result
         sp.playlistList.save()
+    }
+
+    override fun isExist(playlistId: String): Boolean {
+        return sp.playlistList.value.any { it.id == playlistId }
+    }
+
+    override fun isExistInPlaylist(playlistId: String, mediaId: String): Boolean {
+        val playlists = sp.playlistList.value.toMutableList()
+        val playlist = playlists.firstOrNull { it.id == playlistId } ?: return false
+        return playlist.mediaIds.contains(mediaId)
     }
 
     override fun addMediaIdsToPlaylist(mediaIds: List<String>, playlistId: String) {
@@ -140,5 +153,21 @@ internal class PlaylistRepositoryImpl(
         }
 
         return exist
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun getFavouriteMediaIds(): Flow<List<String>> {
+        return sp.playlistList.flow(true)
+            .mapLatest { playlists ->
+                playlists
+                    ?.firstOrNull { it.id == PlaylistRepository.FAVOURITE_PLAYLIST_ID }
+                    ?.mediaIds ?: emptyList()
+            }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun isItemInFavourite(mediaId: String): Flow<Boolean> {
+        return getFavouriteMediaIds()
+            .mapLatest { it.contains(mediaId) }
     }
 }

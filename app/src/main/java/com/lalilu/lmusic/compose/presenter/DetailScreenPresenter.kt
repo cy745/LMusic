@@ -2,14 +2,14 @@ package com.lalilu.lmusic.compose.presenter
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.lalilu.common.base.Playable
 import com.lalilu.component.base.UiAction
 import com.lalilu.component.base.UiState
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplaylist.repository.PlaylistRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -34,15 +34,20 @@ data class DetailScreenIsPlayingState(
 @Composable
 fun DetailScreenLikeBtnPresenter(
     mediaId: String,
-//    favRepo: FavoriteRepository = koinInject()
+    playlistRepo: PlaylistRepository = koinInject(),
 ): DetailScreenLikeBtnState {
     val scope = rememberCoroutineScope { Dispatchers.IO }
-    val isLiked by remember { mutableStateOf(false) }
+    val isLiked by playlistRepo.isItemInFavourite(mediaId).collectAsState(initial = false)
 
     return DetailScreenLikeBtnState(isLiked = isLiked) {
         when (it) {
-            DetailScreenAction.Like -> scope.launch { }
-            DetailScreenAction.UnLike -> scope.launch { }
+            DetailScreenAction.Like -> scope.launch {
+                playlistRepo.addMediaIdsToFavourite(mediaIds = listOf(mediaId))
+            }
+
+            DetailScreenAction.UnLike -> scope.launch {
+                playlistRepo.removeMediaIdsFromFavourite(mediaIds = listOf(mediaId))
+            }
         }
     }
 }

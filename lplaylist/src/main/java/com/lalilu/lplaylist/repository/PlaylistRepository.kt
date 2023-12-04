@@ -2,6 +2,7 @@ package com.lalilu.lplaylist.repository
 
 import com.lalilu.common.base.SpListItem
 import com.lalilu.lplaylist.entity.LPlaylist
+import kotlinx.coroutines.flow.Flow
 
 interface PlaylistRepository {
     companion object {
@@ -13,6 +14,8 @@ interface PlaylistRepository {
     fun remove(playlist: LPlaylist)
     fun removeById(id: String)
     fun removeByIds(ids: List<String>)
+    fun isExist(playlistId: String): Boolean
+    fun isExistInPlaylist(playlistId: String, mediaId: String): Boolean
 
     fun addMediaIdsToPlaylist(mediaIds: List<String>, playlistId: String)
     fun addMediaIdsToPlaylists(mediaIds: List<String>, playlistIds: List<String>)
@@ -26,4 +29,6 @@ interface PlaylistRepository {
      * 检查我喜欢歌单是否存在，若不存在则创建
      */
     fun checkFavouriteExist(): Boolean
+    fun getFavouriteMediaIds(): Flow<List<String>>
+    fun isItemInFavourite(mediaId: String): Flow<Boolean>
 }
