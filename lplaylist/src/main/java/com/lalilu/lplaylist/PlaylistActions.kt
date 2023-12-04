@@ -57,6 +57,7 @@ object PlaylistActions {
      */
     internal val removePlaylists = SelectAction.StaticAction.Custom(
         title = R.string.playlist_action_remove_playlist,
+        forLongClick = true,
         icon = componentR.drawable.ic_delete_bin_6_line,
         color = Color(0xFFE91E1E),
     ) { selector ->

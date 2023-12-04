@@ -46,6 +46,7 @@ private fun DynamicScreen.PlaylistDetailScreen(
     val deleteAction = remember {
         SelectAction.StaticAction.Custom(
             title = R.string.playlist_action_remove_from_playlist,
+            forLongClick = true,
             icon = componentR.drawable.ic_delete_bin_6_line,
             color = Color.Red
         ) { selector ->
