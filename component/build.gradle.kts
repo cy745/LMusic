@@ -43,12 +43,9 @@ dependencies {
     api(libs.coil)
     api(libs.coil.compose)
 
-    // https://github.com/aclassen/ComposeReorderable
-    // https://mvnrepository.com/artifact/org.burnoutcrew.composereorderable/reorderable
+    // https://github.com/Calvin-LL/Reorderable
     // Apache-2.0 license
-    // Compose的拖动排序组件
-    api("org.burnoutcrew.composereorderable:reorderable:0.9.6")
-    // 0.9.2对LazyColumn的ContentPadding存在偏移的bug
+    api("sh.calvin.reorderable:reorderable:1.1.0")
 
     implementation(libs.activity.compose)
     // compose
