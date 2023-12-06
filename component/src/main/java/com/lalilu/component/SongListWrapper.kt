@@ -44,6 +44,7 @@ fun <K : Any> SongListWrapper(
     onLongClickItem: (Playable) -> Unit = {},
     onHeaderClick: (Any) -> Unit = {},
     hasLyric: (Playable) -> Boolean = { false },
+    isFavourite: (Playable) -> Boolean = { false },
     isItemPlaying: (Playable) -> Boolean = { false },
     showPrefixContent: () -> Boolean = { false },
     prefixContent: @Composable (item: Playable) -> Unit = {},

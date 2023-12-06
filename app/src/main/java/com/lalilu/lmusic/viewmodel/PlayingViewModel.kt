@@ -11,6 +11,7 @@ import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.extensions.QueueAction
+import com.lalilu.lplaylist.repository.PlaylistRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -19,6 +20,7 @@ import kotlinx.coroutines.withContext
 class PlayingViewModel(
     val settingsSp: SettingsSp,
     val lyricRepository: LyricRepository,
+    playlistRepo: PlaylistRepository
 ) : IPlayingViewModel() {
     val playing = LPlayer.runtime.info.playingFlow.toState(viewModelScope)
     val isPlaying = LPlayer.runtime.info.isPlayingFlow.toState(false, viewModelScope)
@@ -76,5 +78,12 @@ class PlayingViewModel(
             hasLyricList[item.mediaId] = lyricRepository.hasLyric(item)
         }
         return hasLyricList
+    }
+
+    private val isFavouriteList = playlistRepo.getFavouriteMediaIds()
+        .toState(viewModelScope)
+
+    override fun isFavourite(item: Playable): Boolean {
+        return isFavouriteList.value?.contains(item.mediaId) ?: false
     }
 }
