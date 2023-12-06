@@ -17,15 +17,17 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.lplaylist.entity.LPlaylist
-import com.lalilu.lplaylist.extension.replaceForFavourite
-import com.lalilu.component.R as ComponentR
+import com.lalilu.lplaylist.repository.PlaylistRepository
+import com.lalilu.component.R as componentR
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -61,22 +63,32 @@ fun PlaylistCard(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = replaceForFavourite(playlist, LPlaylist::title),
+                text = playlist.title,
                 style = MaterialTheme.typography.subtitle1,
                 color = dayNightTextColor()
             )
 
-            val subTitle = replaceForFavourite(playlist, LPlaylist::subTitle)
             AnimatedVisibility(
-                visible = subTitle.isNotBlank(),
+                visible = playlist.subTitle.isNotBlank(),
                 label = "SubTitleVisibility"
             ) {
                 Text(
-                    text = subTitle,
+                    text = playlist.subTitle,
                     style = MaterialTheme.typography.body2,
                     color = dayNightTextColor(alpha = 0.8f)
                 )
             }
+        }
+
+        if (playlist.id == PlaylistRepository.FAVOURITE_PLAYLIST_ID) {
+            Icon(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .scale(0.9f),
+                painter = painterResource(id = componentR.drawable.ic_heart_3_fill),
+                tint = Color(0xFFFE4141),
+                contentDescription = "heart_icon"
+            )
         }
 
         Text(
@@ -92,7 +104,7 @@ fun PlaylistCard(
         ) {
             Icon(
                 modifier = draggingModifier,
-                painter = painterResource(id = ComponentR.drawable.ic_draggable),
+                painter = painterResource(id = componentR.drawable.ic_draggable),
                 contentDescription = "DragHandle",
             )
         }
