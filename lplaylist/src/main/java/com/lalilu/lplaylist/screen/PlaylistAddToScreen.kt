@@ -1,5 +1,6 @@
 package com.lalilu.lplaylist.screen
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -8,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.ScreenKey
 import com.lalilu.component.LLazyColumn
 import com.lalilu.component.base.DialogScreen
@@ -71,7 +73,8 @@ private fun DynamicScreen.PlaylistAddToScreen(
     playlists: () -> List<LPlaylist>,
 ) {
     LLazyColumn(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         item {
             NavigatorHeader(
