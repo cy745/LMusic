@@ -7,6 +7,9 @@
     <string name="playlist_action_create_playlist">创建歌单</string>
     <string name="playlist_action_update_playlist">更新歌单</string>
     <string name="playlist_action_remove_from_playlist">从歌单中移除</string>
+    <string name="playlist_action_play_all">播放全部</string>
+    <string name="playlist_action_play_randomly">随机播放</string>
+
     <string name="playlist_tips_cannot_remove_favourite">不能删除我喜欢歌单</string>
     <string name="playlist_tips_favourite">我喜欢</string>
     <string name="playlist_tips_favourite_subTitle">喜欢的歌曲</string>

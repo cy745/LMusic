@@ -7,6 +7,8 @@
     <string name="playlist_action_create_playlist">Create playlist</string>
     <string name="playlist_action_update_playlist">Update playlist</string>
     <string name="playlist_action_remove_from_playlist">Remove from the playlist</string>
+    <string name="playlist_action_play_all">Play All</string>
+    <string name="playlist_action_play_randomly">Randomly Play</string>
 
     <string name="playlist_tips_favourite">Favourites</string>
     <string name="playlist_tips_favourite_subTitle">Favourites</string>
