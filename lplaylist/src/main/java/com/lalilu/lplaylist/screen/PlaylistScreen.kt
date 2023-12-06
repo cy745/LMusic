@@ -5,16 +5,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import com.lalilu.component.LLazyColumn
@@ -30,11 +29,9 @@ import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.component.PlaylistCard
 import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.repository.PlaylistRepository
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorder
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
 import org.koin.compose.koinInject
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyColumnState
 import com.lalilu.component.R as ComponentR
 
 class PlaylistScreenModel : ScreenModel {
@@ -62,31 +59,20 @@ private fun DynamicScreen.PlaylistScreen(
     navigator: GlobalNavigator = koinInject()
 ) {
     val playlists = playlistRepo.getPlaylists()
-    val state = rememberReorderableLazyListState(
-        maxScrollPerFrame = 200.dp,
-        onMove = { from, to ->
-            val toIndex = playlists.value.indexOfFirst { it.id == to.key }
-            val fromIndex = playlists.value.indexOfFirst { it.id == from.key }
-            if (toIndex < 0 || fromIndex < 0) return@rememberReorderableLazyListState
+    val listState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyColumnState(listState) { from, to ->
+        playlists.value = playlists.value.toMutableList().apply {
+            val toIndex = indexOfFirst { it.id == to.key }
+            val fromIndex = indexOfFirst { it.id == from.key }
+            if (toIndex < 0 || fromIndex < 0) return@rememberReorderableLazyColumnState
 
-            playlists.value = playlists.value.toMutableList().apply {
-                add(toIndex, removeAt(fromIndex))
-            }
-        },
-        canDragOver = { draggedOver, _ ->
-            playlists.value.any { it.id == draggedOver.key }
-        },
-        onDragEnd = { _, _ -> playlists.save() }
-    )
+            add(toIndex, removeAt(fromIndex))
+        }
+        playlists.save()
+    }
 
     LaunchedEffect(Unit) {
         playlistRepo.checkFavouriteExist()
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            playlists.save()
-        }
     }
 
     SelectPanelWrapper(
@@ -97,10 +83,9 @@ private fun DynamicScreen.PlaylistScreen(
         )
     ) { selectHelper ->
         LLazyColumn(
-            state = state.listState,
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .reorderable(state)
         ) {
             item {
                 NavigatorHeader(
@@ -126,13 +111,12 @@ private fun DynamicScreen.PlaylistScreen(
                 contentType = { LPlaylist::class.java }
             ) { playlist ->
                 ReorderableItem(
-                    defaultDraggingModifier = Modifier.animateItemPlacement(),
-                    state = state,
+                    reorderableLazyListState = reorderableState,
                     key = playlist.id
                 ) { isDragging ->
                     PlaylistCard(
                         playlist = playlist,
-                        draggingModifier = Modifier.detectReorder(state),
+                        draggingModifier = Modifier.draggableHandle(),
                         isDragging = { isDragging },
                         isSelected = { selectHelper.isSelected(playlist) },
                         isSelecting = { selectHelper.isSelecting.value },
