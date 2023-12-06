@@ -17,11 +17,13 @@ interface PlaylistRepository {
     fun isExist(playlistId: String): Boolean
     fun isExistInPlaylist(playlistId: String, mediaId: String): Boolean
 
+    fun updateMediaIdsToPlaylist(mediaIds: List<String>, playlistId: String)
     fun addMediaIdsToPlaylist(mediaIds: List<String>, playlistId: String)
     fun addMediaIdsToPlaylists(mediaIds: List<String>, playlistIds: List<String>)
     fun removeMediaIdsFromPlaylist(mediaIds: List<String>, playlistId: String)
     fun removeMediaIdsFromPlaylists(mediaIds: List<String>, playlistIds: List<String>)
 
+    fun updateMediaIdsToFavourite(mediaIds: List<String>)
     fun addMediaIdsToFavourite(mediaIds: List<String>)
     fun removeMediaIdsFromFavourite(mediaIds: List<String>)
 

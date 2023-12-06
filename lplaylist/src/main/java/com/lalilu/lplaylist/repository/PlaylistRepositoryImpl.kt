@@ -17,6 +17,17 @@ internal class PlaylistRepositoryImpl(
     }
 
     override fun save(playlist: LPlaylist) {
+        val playlists = sp.playlistList.value.toMutableList()
+        val index = playlists.indexOfFirst { it.id == playlist.id }
+
+        // 若已存在则更新
+        if (index >= 0) {
+            playlists[index] = playlist
+            sp.playlistList.value = playlists
+            sp.playlistList.save()
+            return
+        }
+
         sp.playlistList.add(0, playlist)
         sp.playlistList.save()
     }
@@ -59,14 +70,12 @@ internal class PlaylistRepositoryImpl(
         return playlist.mediaIds.contains(mediaId)
     }
 
-    override fun addMediaIdsToPlaylist(mediaIds: List<String>, playlistId: String) {
-        val playlists = sp.playlistList.value.toMutableList()
-        val index = playlists.indexOfFirst { it.id == playlistId }.takeIf { it >= 0 } ?: return
-        val playlist = playlists[index]
+    override fun updateMediaIdsToPlaylist(mediaIds: List<String>, playlistId: String) {
+        updatePlaylist(playlistId) { it.copy(mediaIds = mediaIds) }
+    }
 
-        playlists[index] = playlist.copy(mediaIds = playlist.mediaIds.plus(mediaIds.toSet()))
-        sp.playlistList.value = playlists
-        sp.playlistList.save()
+    override fun addMediaIdsToPlaylist(mediaIds: List<String>, playlistId: String) {
+        updatePlaylist(playlistId) { it.copy(mediaIds = it.mediaIds.plus(mediaIds.toSet())) }
     }
 
     override fun addMediaIdsToPlaylists(mediaIds: List<String>, playlistIds: List<String>) {
@@ -94,13 +103,7 @@ internal class PlaylistRepositoryImpl(
     }
 
     override fun removeMediaIdsFromPlaylist(mediaIds: List<String>, playlistId: String) {
-        val playlists = sp.playlistList.value.toMutableList()
-        val index = playlists.indexOfFirst { it.id == playlistId }.takeIf { it >= 0 } ?: return
-        val playlist = playlists[index]
-
-        playlists[index] = playlist.copy(mediaIds = playlist.mediaIds.minus(mediaIds.toSet()))
-        sp.playlistList.value = playlists
-        sp.playlistList.save()
+        updatePlaylist(playlistId) { it.copy(mediaIds = it.mediaIds.minus(mediaIds.toSet())) }
     }
 
     override fun removeMediaIdsFromPlaylists(mediaIds: List<String>, playlistIds: List<String>) {
@@ -122,6 +125,10 @@ internal class PlaylistRepositoryImpl(
         if (!changed) return
         sp.playlistList.value = playlists
         sp.playlistList.save()
+    }
+
+    override fun updateMediaIdsToFavourite(mediaIds: List<String>) {
+        updateMediaIdsToPlaylist(mediaIds, PlaylistRepository.FAVOURITE_PLAYLIST_ID)
     }
 
     override fun addMediaIdsToFavourite(mediaIds: List<String>) {
@@ -169,5 +176,14 @@ internal class PlaylistRepositoryImpl(
     override fun isItemInFavourite(mediaId: String): Flow<Boolean> {
         return getFavouriteMediaIds()
             .mapLatest { it.contains(mediaId) }
+    }
+
+    private fun updatePlaylist(playlistId: String, action: (LPlaylist) -> LPlaylist) {
+        val playlists = sp.playlistList.value.toMutableList()
+        val index = playlists.indexOfFirst { it.id == playlistId }.takeIf { it >= 0 } ?: return
+
+        playlists[index] = action(playlists[index])
+        sp.playlistList.value = playlists
+        sp.playlistList.save()
     }
 }
