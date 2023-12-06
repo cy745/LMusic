@@ -176,7 +176,7 @@ object NavigationWrapper {
         val customScreenInfo by remember { derivedStateOf { (currentScreen as? CustomScreen)?.getScreenInfo() } }
 
         ImmerseStatusBar(
-            enable = { customScreenInfo?.immerseStatusBar == true },
+            enable = { customScreenInfo?.immerseStatusBar != false },
             isExpended = { sheetNavigator.isVisible }
         )
 
