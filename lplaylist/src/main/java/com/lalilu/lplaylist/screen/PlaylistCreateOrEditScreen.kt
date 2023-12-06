@@ -80,7 +80,7 @@ class PlaylistCreateOrEditScreenModel(
         icon = componentR.drawable.ic_check_line,
         isLongClickAction = true,
         fitImePadding = true,
-        color = Color.Green
+        color = Color(0xFF008521)
     ) {
         val title = title.value
         val subTitle = subTitle.value
@@ -106,7 +106,7 @@ class PlaylistCreateOrEditScreenModel(
         icon = componentR.drawable.ic_check_line,
         isLongClickAction = true,
         fitImePadding = true,
-        color = Color.Green
+        color = Color(0xFF008521)
     ) {
         val playlistId = playlistId.value
         val title = title.value
