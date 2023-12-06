@@ -19,6 +19,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,9 +35,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.koin.getScreenModel
 import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.common.toCachedFlow
 import com.lalilu.component.LLazyColumn
 import com.lalilu.component.base.DialogScreen
 import com.lalilu.component.base.DynamicScreen
@@ -44,73 +47,130 @@ import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
+import com.lalilu.component.extension.toMutableState
 import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.repository.PlaylistRepository
-import org.koin.compose.koinInject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.mapLatest
 import java.util.UUID
+import com.lalilu.component.R as componentR
 
+@OptIn(ExperimentalCoroutinesApi::class)
+class PlaylistCreateOrEditScreenModel(
+    private val navigator: GlobalNavigator,
+    private val playlistRepo: PlaylistRepository
+) : ScreenModel {
+    private val playlistId = MutableStateFlow("")
+    private val playlist = playlistId
+        .combine(playlistRepo.getPlaylists().flow(true)) { playlistId, playlists ->
+            playlists?.firstOrNull { it.id == playlistId }
+        }.toCachedFlow()
 
-class PlaylistCreateScreenModel : ScreenModel {
-    val title = mutableStateOf("")
-    val subTitle = mutableStateOf("")
+    val title = playlist.mapLatest { it?.title ?: "" }
+        .toMutableState(defaultValue = "", scope = screenModelScope)
+    val subTitle = playlist.mapLatest { it?.subTitle ?: "" }
+        .toMutableState(defaultValue = "", scope = screenModelScope)
+
+    val createPlaylistAction = ScreenAction.StaticAction(
+        title = R.string.playlist_action_create_playlist,
+        icon = componentR.drawable.ic_check_line,
+        isLongClickAction = true,
+        fitImePadding = true,
+        color = Color.Green
+    ) {
+        val title = title.value
+        val subTitle = subTitle.value
+
+        if (title.isBlank()) {
+            ToastUtils.showShort("歌单名称不可为空")
+        } else {
+            playlistRepo.save(
+                LPlaylist(
+                    id = UUID.randomUUID().toString(),
+                    title = title,
+                    subTitle = subTitle,
+                    coverUri = "",
+                    mediaIds = emptyList()
+                )
+            )
+            navigator.goBack()
+        }
+    }
+
+    val updatePlaylistAction = ScreenAction.StaticAction(
+        title = R.string.playlist_action_update_playlist,
+        icon = componentR.drawable.ic_check_line,
+        isLongClickAction = true,
+        fitImePadding = true,
+        color = Color.Green
+    ) {
+        val playlistId = playlistId.value
+        val title = title.value
+        val subTitle = subTitle.value
+
+        if (title.isBlank()) {
+            ToastUtils.showShort("歌单名称不可为空")
+        } else {
+            val playlist = playlist.get()
+
+            playlistRepo.save(
+                LPlaylist(
+                    id = playlistId,
+                    title = title,
+                    subTitle = subTitle,
+                    coverUri = playlist?.coverUri ?: "",
+                    mediaIds = playlist?.mediaIds ?: emptyList()
+                )
+            )
+            navigator.goBack()
+        }
+    }
+
+    fun updateTargetPlaylistId(playlistId: String) {
+        this.playlistId.tryEmit(playlistId)
+    }
 }
 
 /**
  * [targetPlaylistId]   目标操作歌单的Id
- * [mediaIdsToAdd]           需要添加进歌单里的媒体元素的Id
  */
-data class PlaylistCreateScreen(
-    private val targetPlaylistId: String? = null,
-    private val mediaIdsToAdd: List<String> = emptyList()
+data class PlaylistCreateOrEditScreen(
+    private val targetPlaylistId: String? = null
 ) : DynamicScreen(), DialogScreen {
-    override val key: ScreenKey
-        get() = mediaIdsToAdd.toString()
+    override val key: ScreenKey = targetPlaylistId.toString()
 
     @Composable
     override fun Content() {
-        val navigator = koinInject<GlobalNavigator>()
-        val playlistRepo: PlaylistRepository = koinInject()
-        val createSM = rememberScreenModel { PlaylistCreateScreenModel() }
+        val createOrEditSM: PlaylistCreateOrEditScreenModel = getScreenModel()
+
+        if (targetPlaylistId != null) {
+            LaunchedEffect(Unit) {
+                createOrEditSM.updateTargetPlaylistId(playlistId = targetPlaylistId)
+            }
+        }
 
         RegisterActions {
             listOf(
-                ScreenAction.StaticAction(
-                    title = R.string.playlist_action_create_playlist,
-                    fitImePadding = true,
-                    color = Color.Green
-                ) {
-                    val title = createSM.title.value
-                    val subTitle = createSM.subTitle.value
-
-                    if (title.isBlank()) {
-                        ToastUtils.showShort("歌单名称不可为空")
-                    } else {
-                        playlistRepo.save(
-                            LPlaylist(
-                                id = UUID.randomUUID().toString(),
-                                title = title,
-                                subTitle = subTitle,
-                                coverUri = "",
-                                mediaIds = mediaIdsToAdd
-                            )
-                        )
-                        navigator.goBack()
-                    }
-                }
+                if (targetPlaylistId == null) createOrEditSM.createPlaylistAction
+                else createOrEditSM.updatePlaylistAction
             )
         }
 
-        PlaylistCreateScreen(
-            createSM = createSM
+        PlaylistCreateOrEditScreen(
+            targetPlaylistId = targetPlaylistId,
+            createOrEditSM = createOrEditSM
         )
     }
 }
 
 @Composable
-private fun DynamicScreen.PlaylistCreateScreen(
-    createSM: PlaylistCreateScreenModel
+private fun DynamicScreen.PlaylistCreateOrEditScreen(
+    targetPlaylistId: String?,
+    createOrEditSM: PlaylistCreateOrEditScreenModel
 ) {
     val state = rememberLazyListState()
     val scrollToHelper = rememberLazyListScrollToHelper(listState = state)
@@ -126,6 +186,13 @@ private fun DynamicScreen.PlaylistCreateScreen(
         }
     }
 
+    val headerTitleRes = remember(targetPlaylistId) {
+        if (targetPlaylistId == null) R.string.playlist_action_create_playlist else R.string.playlist_action_update_playlist
+    }
+    val headerSubTitleRes = remember(targetPlaylistId) {
+        if (targetPlaylistId == null) R.string.playlist_action_create_playlist else R.string.playlist_action_update_playlist
+    }
+
     LLazyColumn(
         modifier = Modifier
             .fillMaxSize(),
@@ -139,15 +206,15 @@ private fun DynamicScreen.PlaylistCreateScreen(
             scrollToHelper.doRecord("header")
             NavigatorHeader(
                 modifier = Modifier.statusBarsPadding(),
-                title = stringResource(id = R.string.playlist_action_create_playlist),
-                subTitle = "创建一个自定义的歌单"
+                title = stringResource(id = headerTitleRes),
+                subTitle = stringResource(id = headerSubTitleRes),
             )
         }
 
         editTextFor(
             title = "主标题",
             minLines = 1,
-            value = createSM.title,
+            value = createOrEditSM.title,
             onInit = { scrollToHelper.doRecord(it) },
             onFocus = onFocusCallback
         )
@@ -155,7 +222,7 @@ private fun DynamicScreen.PlaylistCreateScreen(
         editTextFor(
             title = "简介/备注",
             minLines = 3,
-            value = createSM.subTitle,
+            value = createOrEditSM.subTitle,
             onInit = { scrollToHelper.doRecord(it) },
             onFocus = onFocusCallback
         )
@@ -190,8 +257,10 @@ fun EditText(
 ) {
     val focusRequest = remember { FocusRequester() }
     val focused = remember { mutableStateOf(false) }
+    val color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+        .copy(alpha = 0.3f)
     val borderColor = animateColorAsState(
-        targetValue = if (focused.value) Color(0xFF135CB6) else Color.DarkGray,
+        targetValue = if (focused.value) Color(0xFF135CB6) else color,
         label = "TextField border color with focus"
     )
 
@@ -240,8 +309,7 @@ fun EditText(
                 Text(
                     text = title,
                     fontSize = 12.sp,
-                    color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
-                        .copy(alpha = 0.5f)
+                    color = borderColor.value
                 )
             }
         }

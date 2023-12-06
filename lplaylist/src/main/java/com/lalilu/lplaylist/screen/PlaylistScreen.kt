@@ -98,7 +98,7 @@ private fun DynamicScreen.PlaylistScreen(
                     title = stringResource(id = R.string.playlist_screen_title)
                 ) {
                     IconButton(
-                        onClick = { navigator.navigateTo(PlaylistCreateScreen()) }
+                        onClick = { navigator.navigateTo(PlaylistCreateOrEditScreen()) }
                     ) {
                         Icon(
                             painter = painterResource(ComponentR.drawable.ic_add_line),
