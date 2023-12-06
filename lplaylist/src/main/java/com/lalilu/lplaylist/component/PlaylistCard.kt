@@ -1,7 +1,7 @@
 package com.lalilu.lplaylist.component
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -15,10 +15,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,14 +41,19 @@ fun PlaylistCard(
     onClick: (LPlaylist) -> Unit = {},
     onLongClick: (LPlaylist) -> Unit = {},
 ) {
-    val elevation =
-        animateDpAsState(if (isDragging()) 16.dp else 0.dp, label = "")
+    val bgColor by animateColorAsState(
+        targetValue = when {
+            isDragging() -> dayNightTextColor(0.25f)
+            isSelected() -> dayNightTextColor(0.20f)
+            else -> dayNightTextColor(0.05f)
+        },
+        label = ""
+    )
 
     Row(
         modifier = modifier
             .heightIn(min = 56.dp)
-            .shadow(elevation.value)
-            .background(MaterialTheme.colors.surface)
+            .background(bgColor)
             .combinedClickable(
                 onClick = { onClick(playlist) },
                 onLongClick = { onLongClick(playlist) }
