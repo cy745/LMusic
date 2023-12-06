@@ -21,9 +21,11 @@ import com.lalilu.component.Songs
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
+import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.component.viewmodel.IPlayingViewModel
+import com.lalilu.lplaylist.PlaylistActions
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.repository.PlaylistRepository
 import com.lalilu.lplaylist.repository.PlaylistSp
@@ -35,6 +37,10 @@ import com.lalilu.component.R as componentR
 data class PlaylistDetailScreen(
     val playlistId: String
 ) : DynamicScreen() {
+
+    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
+        title = R.string.playlist_screen_detail
+    )
 
     @Composable
     override fun Content() {
@@ -148,8 +154,8 @@ private fun DynamicScreen.PlaylistDetailScreen(
         selectActions = { getAll ->
             listOf(
                 SelectAction.StaticAction.SelectAll(getAll),
-                SelectAction.StaticAction.ClearAll,
-                playlistDetailSM.deleteAction
+                playlistDetailSM.deleteAction,
+                PlaylistActions.addToPlaylistAction,
             )
         },
         sortFor = "PlaylistDetail",
