@@ -1,5 +1,6 @@
 package com.lalilu.lplaylist.repository
 
+import android.app.Application
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.common.base.SpListItem
 import com.lalilu.lplaylist.R
@@ -10,7 +11,8 @@ import kotlinx.coroutines.flow.mapLatest
 
 
 internal class PlaylistRepositoryImpl(
-    private val sp: PlaylistSp
+    private val sp: PlaylistSp,
+    private val context: Application,
 ) : PlaylistRepository {
     override fun getPlaylists(): SpListItem<LPlaylist> {
         return sp.playlistList
@@ -151,8 +153,8 @@ internal class PlaylistRepositoryImpl(
             save(
                 LPlaylist(
                     id = PlaylistRepository.FAVOURITE_PLAYLIST_ID,
-                    title = "",
-                    subTitle = "",
+                    title = context.getString(R.string.playlist_tips_favourite),
+                    subTitle = context.getString(R.string.playlist_tips_favourite_subTitle),
                     coverUri = "",
                     mediaIds = emptyList()
                 )
