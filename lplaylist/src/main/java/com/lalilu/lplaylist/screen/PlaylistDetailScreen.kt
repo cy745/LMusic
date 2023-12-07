@@ -1,17 +1,19 @@
 package com.lalilu.lplaylist.screen
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.koin.getScreenModel
 import com.blankj.utilcode.util.ToastUtils
@@ -19,9 +21,11 @@ import com.lalilu.common.base.Playable
 import com.lalilu.common.toCachedFlow
 import com.lalilu.component.Songs
 import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.LoadingScaffold
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.base.collectAsLoadingState
 import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.component.viewmodel.IPlayingViewModel
@@ -46,6 +50,13 @@ data class PlaylistDetailScreen(
     override fun Content() {
         val playlistDetailSM: PlaylistDetailScreenModel = getScreenModel()
         playlistDetailSM.updatePlaylistId(playlistId)
+
+        RegisterActions {
+            listOf(
+                playlistDetailSM.playAllRandomlyAction,
+                playlistDetailSM.playAllAction
+            )
+        }
 
         PlaylistDetailScreen(
             playlistId = playlistId,
@@ -129,57 +140,60 @@ private fun DynamicScreen.PlaylistDetailScreen(
     playlistDetailSM: PlaylistDetailScreenModel,
 ) {
     val navigator = koinInject<GlobalNavigator>()
-    val playlist by playlistDetailSM.playlist.collectAsState(initial = null)
+    val playlistState = playlistDetailSM.playlist.collectAsLoadingState()
 
-    if (playlist == null) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "Playlist Load Error")
-        }
-        return
-    }
-
-    RegisterActions {
-        listOf(
-            playlistDetailSM.playAllRandomlyAction,
-            playlistDetailSM.playAllAction
-        )
-    }
-
-    Songs(
-        mediaIds = playlist!!.mediaIds,
-        onDragMoveEnd = playlistDetailSM::onDragMoveEnd,
-        selectActions = { getAll ->
-            listOf(
-                SelectAction.StaticAction.SelectAll(getAll),
-                playlistDetailSM.deleteAction,
-                PlaylistActions.addToPlaylistAction,
-            )
-        },
-        sortFor = "PlaylistDetail",
-        supportListAction = { emptyList() },
-        headerContent = {
-            item {
-                NavigatorHeader(
-                    title = playlist!!.title,
-                    subTitle = playlist!!.subTitle
+    LoadingScaffold(targetState = playlistState) { playlist ->
+        Songs(
+            mediaIds = playlist.mediaIds,
+            onDragMoveEnd = playlistDetailSM::onDragMoveEnd,
+            selectActions = { getAll ->
+                listOf(
+                    SelectAction.StaticAction.SelectAll(getAll),
+                    playlistDetailSM.deleteAction,
+                    PlaylistActions.addToPlaylistAction,
+                )
+            },
+            sortFor = "PlaylistDetail",
+            supportListAction = { emptyList() },
+            emptyContent = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 20.dp),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    IconButton(
-                        onClick = {
-                            navigator.navigateTo(
-                                PlaylistCreateOrEditScreen(targetPlaylistId = playlistId)
+                    Text(
+                        text = "There is no songs.",
+                        style = MaterialTheme.typography.subtitle1
+                    )
+                    Text(
+                        text = "Add songs from library.",
+                        style = MaterialTheme.typography.subtitle2
+                    )
+                }
+            },
+            headerContent = {
+                item {
+                    NavigatorHeader(
+                        title = playlist.title,
+                        subTitle = playlist.subTitle
+                    ) {
+                        IconButton(
+                            onClick = {
+                                navigator.navigateTo(
+                                    PlaylistCreateOrEditScreen(targetPlaylistId = playlistId)
+                                )
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(componentR.drawable.ic_edit_line),
+                                contentDescription = null
                             )
                         }
-                    ) {
-                        Icon(
-                            painter = painterResource(componentR.drawable.ic_edit_line),
-                            contentDescription = null
-                        )
                     }
                 }
             }
-        }
-    )
+        )
+    }
 }
