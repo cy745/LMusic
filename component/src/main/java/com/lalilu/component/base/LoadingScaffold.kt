@@ -16,11 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -33,6 +32,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.lalilu.component.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
@@ -42,11 +42,11 @@ import kotlin.coroutines.EmptyCoroutineContext
 @Composable
 inline fun <reified T> LoadingScaffold(
     modifier: Modifier = Modifier,
-    targetState: State<LoadingState<T>>,
+    targetState: LoadingState<T>,
     contentAlignment: Alignment = Alignment.TopStart,
     label: String = "Loading PlaceHolder AnimatedContent",
-    noinline contentKey: (LoadingState<T>) -> Any = { it },
-    noinline transitionSpec: AnimatedContentTransitionScope<LoadingState<T>>.() -> ContentTransform = {
+    noinline contentKey: (LoadingType) -> Any = { it },
+    noinline transitionSpec: AnimatedContentTransitionScope<LoadingType>.() -> ContentTransform = {
         fadeIn(animationSpec = tween(220)) togetherWith
                 ExitTransition.None
     },
@@ -54,29 +54,18 @@ inline fun <reified T> LoadingScaffold(
     crossinline onLoadErrorContent: @Composable () -> Unit = { DefaultErrorContent() },
     crossinline onLoadedContent: @Composable (T) -> Unit = {}
 ) {
-    val ready = remember { mutableStateOf(false) }
-
-    // 加载成功后直接显示LoadedContent,避免再次出现动画
-    if (ready.value && targetState.value.data != null) {
-        onLoadedContent(targetState.value.data as T)
-        return
-    }
-
     AnimatedContent(
         modifier = modifier,
-        targetState = targetState.value,
+        targetState = targetState.loadingType,
         transitionSpec = transitionSpec,
         contentAlignment = contentAlignment,
         contentKey = contentKey,
         label = label
     ) {
         when {
-            it.isLoading -> onLoadingContent()
-            it.isError || it.data == null -> onLoadErrorContent()
-            else -> {
-                onLoadedContent(targetState.value.data as T)
-                ready.value = true
-            }
+            it == LoadingType.Loading -> onLoadingContent()
+            it == LoadingType.Error || targetState.data == null -> onLoadErrorContent()
+            else -> onLoadedContent(targetState.data as T)
         }
     }
 }
@@ -143,41 +132,33 @@ fun DefaultErrorContent() {
     }
 }
 
-@Suppress("UNCHECKED_CAST")
-data class LoadingState<T>(
-    val data: T? = null,
-    val isError: Boolean = false,
-    val isLoading: Boolean = false
-) {
-    companion object {
-        val loadingInstanceMap = HashMap<Class<*>, LoadingState<*>>()
-        val errorInstanceMap = HashMap<Class<*>, LoadingState<*>>()
+sealed class LoadingType {
+    data object Error : LoadingType()
+    data object Loading : LoadingType()
+    data object Ready : LoadingType()
+}
 
-        inline fun <reified T> getLoadingInstance(): LoadingState<T> {
-            return loadingInstanceMap
-                .getOrPut(T::class.java) { LoadingState<T>(isLoading = true) }
-                    as LoadingState<T>
-        }
-
-        inline fun <reified T> getErrorInstance(): LoadingState<T> {
-            return errorInstanceMap
-                .getOrPut(T::class.java) { LoadingState<T>(isError = true) }
-                    as LoadingState<T>
-        }
-    }
+class LoadingState<T> {
+    var data: T? by mutableStateOf(null)
+    var loadingType: LoadingType by mutableStateOf(LoadingType.Loading)
 }
 
 @Composable
 inline fun <reified T> Flow<T?>.collectAsLoadingState(
     context: CoroutineContext = EmptyCoroutineContext
-): State<LoadingState<T>> = produceState(LoadingState.getLoadingInstance(), this, context) {
-    if (context == EmptyCoroutineContext) {
-        collect {
-            value = if (it == null) LoadingState.getErrorInstance() else LoadingState(data = it)
-        }
-    } else withContext(context) {
-        collect {
-            value = if (it == null) LoadingState.getErrorInstance() else LoadingState(data = it)
+): LoadingState<T> {
+    val result = remember { LoadingState<T>() }
+
+    LaunchedEffect(Unit) {
+        withContext(context) {
+            this@collectAsLoadingState.collectLatest {
+                result.apply {
+                    loadingType = it?.let { LoadingType.Ready } ?: LoadingType.Error
+                    data = it
+                }
+            }
         }
     }
+
+    return result
 }
