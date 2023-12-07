@@ -54,6 +54,15 @@ inline fun <reified T> LoadingScaffold(
     crossinline onLoadErrorContent: @Composable () -> Unit = { DefaultErrorContent() },
     crossinline onLoadedContent: @Composable (T) -> Unit = {}
 ) {
+    // 不使用State避免更新加载成功标记导致触发recompose
+    val ready = remember { mutableListOf(false) }
+
+    // 加载成功后直接显示LoadedContent,避免再次出现动画
+    if (ready[0] && targetState.value.data != null) {
+        onLoadedContent(targetState.value.data as T)
+        return
+    }
+
     AnimatedContent(
         modifier = modifier,
         targetState = targetState.value,
@@ -65,7 +74,10 @@ inline fun <reified T> LoadingScaffold(
         when {
             it.isLoading -> onLoadingContent()
             it.isError || it.data == null -> onLoadErrorContent()
-            else -> onLoadedContent(it.data as T)
+            else -> {
+                onLoadedContent(targetState.value.data as T)
+                ready[0] = true
+            }
         }
     }
 }
