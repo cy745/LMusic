@@ -3,6 +3,7 @@ package com.lalilu.component
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,6 +42,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.model.ScreenModel
@@ -51,6 +54,7 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.extension.ItemSelectHelper
 import com.lalilu.component.extension.LazyListScrollToHelper
 import com.lalilu.component.extension.SelectAction
+import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.rememberItemSelectHelper
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.component.extension.singleViewModel
@@ -73,7 +77,25 @@ class SongsScreenModel : ScreenModel {
 }
 
 @Composable
+fun DefaultEmptyContent() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .heightIn(min = 200.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            text = stringResource(R.string.empty_screen_no_items).uppercase(),
+            color = dayNightTextColor()
+        )
+    }
+}
+
+@Composable
 fun DynamicScreen.Songs(
+    modifier: Modifier = Modifier,
     mediaIds: List<String>,
     showAll: Boolean = false,
     sortFor: String = Sortable.SORT_FOR_SONGS,
@@ -84,6 +106,7 @@ fun DynamicScreen.Songs(
     songsSM: SongsScreenModel = rememberScreenModel { SongsScreenModel() },
     showPrefixContent: (sortRuleStr: State<String>) -> Boolean = { it.value == SortRuleStatic.TrackNumber::class.java.name },
     onDragMoveEnd: ((List<Playable>) -> Unit)? = null,
+    emptyContent: @Composable () -> Unit = { DefaultEmptyContent() },
     prefixContent: @Composable (item: Playable, sortRuleStr: State<String>) -> Unit = { _, _ -> },
     headerContent: LazyListScope.(State<Map<GroupIdentity, List<Playable>>>) -> Unit = {},
     footerContent: LazyListScope.(State<Map<GroupIdentity, List<Playable>>>) -> Unit = {}
@@ -122,6 +145,7 @@ fun DynamicScreen.Songs(
             ) { sortRuleStr ->
                 if (onDragMoveEnd != null) {
                     ReorderableSongListWrapper(
+                        modifier = modifier,
                         items = songsState.value.values.flatten(),
                         listState = listState,
                         onDragMoveEnd = onDragMoveEnd,
@@ -133,6 +157,7 @@ fun DynamicScreen.Songs(
                         showPrefixContent = { showPrefixContent(sortRuleStr) },
                         headerContent = { headerContent(songsState) },
                         footerContent = { footerContent(songsState) },
+                        emptyContent = emptyContent,
                         prefixContent = { prefixContent(it, sortRuleStr) },
                         onLongClickItem = { navigator.goToDetailOf(it.mediaId) },
                         onClickItem = {
@@ -145,6 +170,7 @@ fun DynamicScreen.Songs(
                     )
                 } else {
                     SongListWrapper(
+                        modifier = modifier,
                         state = listState,
                         itemsMap = songsState.value,
                         idMapper = {
@@ -164,6 +190,7 @@ fun DynamicScreen.Songs(
                         showPrefixContent = { showPrefixContent(sortRuleStr) },
                         headerContent = { headerContent(songsState) },
                         footerContent = { footerContent(songsState) },
+                        emptyContent = emptyContent,
                         prefixContent = { prefixContent(it, sortRuleStr) },
                         onLongClickItem = { navigator.goToDetailOf(it.mediaId) },
                         onClickItem = {

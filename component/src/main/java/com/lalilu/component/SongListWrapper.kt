@@ -51,6 +51,7 @@ fun <K : Any> SongListWrapper(
     isFavourite: (Playable) -> Boolean = { false },
     isItemPlaying: (Playable) -> Boolean = { false },
     showPrefixContent: () -> Boolean = { false },
+    emptyContent: @Composable () -> Unit = {},
     prefixContent: @Composable (item: Playable) -> Unit = {},
     headerContent: LazyListScope.() -> Unit,
     footerContent: LazyListScope.() -> Unit,
@@ -73,68 +74,73 @@ fun <K : Any> SongListWrapper(
         headerContent()
         scrollHelper?.startRecord()
 
-        for ((key, list) in itemsMap) {
-            val headerTitle = idMapper(key)
+        if (!itemsMap.values.any { it.isNotEmpty() }) {
+            scrollHelper?.doRecord("EMPTY_CONTENT")
+            item(key = "EMPTY_CONTENT") { emptyContent() }
+        } else {
+            for ((key, list) in itemsMap) {
+                val headerTitle = idMapper(key)
 
-            if (headerTitle != "") {
-                scrollHelper?.doRecord(key)
-                stickyHeaderExtent(
-                    helper = stickyHelper,
-                    key = { key }
-                ) {
-                    Chip(
-                        modifier = Modifier
-                            .animateItemPlacement()
-                            .offsetWithHelper()
-                            .zIndexWithHelper(),
-                        onClick = { onHeaderClick(key) }
+                if (headerTitle != "") {
+                    scrollHelper?.doRecord(key)
+                    stickyHeaderExtent(
+                        helper = stickyHelper,
+                        key = { key }
                     ) {
-                        Text(
-                            style = MaterialTheme.typography.h6,
-                            text = headerTitle
-                        )
+                        Chip(
+                            modifier = Modifier
+                                .animateItemPlacement()
+                                .offsetWithHelper()
+                                .zIndexWithHelper(),
+                            onClick = { onHeaderClick(key) }
+                        ) {
+                            Text(
+                                style = MaterialTheme.typography.h6,
+                                text = headerTitle
+                            )
+                        }
                     }
                 }
-            }
 
-            scrollHelper?.doRecord(list.map { it.mediaId })
-            items(
-                items = list,
-                key = { it.mediaId },
-                contentType = { Playable::class }
-            ) { item ->
-                SongCard(
-                    song = { item },
-                    modifier = Modifier.animateItemPlacement(),
-                    onClick = {
-                        if (selector?.isSelecting() == true) {
-                            selector.onSelect(item)
-                        } else {
-                            onClickItem(item)
+                scrollHelper?.doRecord(list.map { it.mediaId })
+                items(
+                    items = list,
+                    key = { it.mediaId },
+                    contentType = { Playable::class }
+                ) { item ->
+                    SongCard(
+                        song = { item },
+                        modifier = Modifier.animateItemPlacement(),
+                        onClick = {
+                            if (selector?.isSelecting() == true) {
+                                selector.onSelect(item)
+                            } else {
+                                onClickItem(item)
+                            }
+                        },
+                        onLongClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onLongClickItem(item)
+                        },
+                        onEnterSelect = { selector?.onSelect(item) },
+                        isSelected = { selector?.isSelected(item) ?: false },
+                        isPlaying = { isItemPlaying(item) },
+                        showPrefix = showPrefixContent,
+                        hasLyric = { hasLyric(item) },
+                        prefixContent = { modifier ->
+                            Row(
+                                modifier = modifier
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colors.surface)
+                                    .padding(start = 4.dp, end = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                prefixContent(item)
+                            }
                         }
-                    },
-                    onLongClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onLongClickItem(item)
-                    },
-                    onEnterSelect = { selector?.onSelect(item) },
-                    isSelected = { selector?.isSelected(item) ?: false },
-                    isPlaying = { isItemPlaying(item) },
-                    showPrefix = showPrefixContent,
-                    hasLyric = { hasLyric(item) },
-                    prefixContent = { modifier ->
-                        Row(
-                            modifier = modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colors.surface)
-                                .padding(start = 4.dp, end = 5.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                            prefixContent(item)
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
         scrollHelper?.endRecord()
@@ -158,6 +164,7 @@ fun ReorderableSongListWrapper(
     isFavourite: (Playable) -> Boolean = { false },
     isItemPlaying: (Playable) -> Boolean = { false },
     showPrefixContent: () -> Boolean = { false },
+    emptyContent: @Composable () -> Unit = {},
     prefixContent: @Composable (item: Playable) -> Unit = {},
     headerContent: LazyListScope.() -> Unit,
     footerContent: LazyListScope.() -> Unit,
@@ -191,53 +198,62 @@ fun ReorderableSongListWrapper(
         headerContent()
         scrollHelper?.startRecord()
 
-        scrollHelper?.doRecord(itemsState.map { it.mediaId })
-        items(
-            items = itemsState,
-            key = { it.mediaId },
-            contentType = { Playable::class }
-        ) { item ->
-            ReorderableItem(
-                reorderableLazyListState = reorderableState,
-                key = item.mediaId
-            ) { isDragging ->
-                SongCard(
-                    song = { item },
-                    modifier = Modifier.animateItemPlacement(),
-                    dragModifier = Modifier.draggableHandle(
-                        onDragStopped = { onDragMoveEnd(itemsState) }
-                    ),
-                    onClick = {
-                        if (selector?.isSelecting() == true) {
-                            selector.onSelect(item)
-                        } else {
-                            onClickItem(item)
+        if (itemsState.isEmpty()) {
+            scrollHelper?.doRecord("EMPTY_CONTENT")
+            item(key = "EMPTY_CONTENT") {
+                emptyContent()
+            }
+        } else {
+            scrollHelper?.doRecord(itemsState.map { it.mediaId })
+            items(
+                items = itemsState,
+                key = { it.mediaId },
+                contentType = { Playable::class }
+            ) { item ->
+                ReorderableItem(
+                    reorderableLazyListState = reorderableState,
+                    key = item.mediaId
+                ) { isDragging ->
+                    SongCard(
+                        song = { item },
+                        modifier = Modifier.animateItemPlacement(),
+                        dragModifier = Modifier.draggableHandle(
+                            onDragStopped = { onDragMoveEnd(itemsState) }
+                        ),
+                        onClick = {
+                            if (selector?.isSelecting() == true) {
+                                selector.onSelect(item)
+                            } else {
+                                onClickItem(item)
+                            }
+                        },
+                        onLongClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onLongClickItem(item)
+                        },
+                        onEnterSelect = { selector?.onSelect(item) },
+                        isSelected = { selector?.isSelected(item) ?: false },
+                        isPlaying = { isItemPlaying(item) },
+                        showPrefix = showPrefixContent,
+                        hasLyric = { hasLyric(item) },
+                        prefixContent = { modifier ->
+                            Row(
+                                modifier = modifier
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colors.surface)
+                                    .padding(start = 4.dp, end = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                prefixContent(item)
+                            }
                         }
-                    },
-                    onLongClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onLongClickItem(item)
-                    },
-                    onEnterSelect = { selector?.onSelect(item) },
-                    isSelected = { selector?.isSelected(item) ?: false },
-                    isPlaying = { isItemPlaying(item) },
-                    showPrefix = showPrefixContent,
-                    hasLyric = { hasLyric(item) },
-                    prefixContent = { modifier ->
-                        Row(
-                            modifier = modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colors.surface)
-                                .padding(start = 4.dp, end = 5.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                            prefixContent(item)
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
+
+
         scrollHelper?.endRecord()
         footerContent()
     }
