@@ -14,6 +14,7 @@ interface SheetNavigator : Stack<Screen> {
     fun hide()
     fun pushTab(screen: Screen)
     fun showSingle(screen: Screen)
+    fun showMultiple(screen: Screen)
     fun getNavigator(): Navigator
 }
 

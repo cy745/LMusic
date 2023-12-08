@@ -170,6 +170,20 @@ class BottomSheetNavigator internal constructor(
         }
     }
 
+    override fun showMultiple(screen: Screen) {
+        if (!isVisible) {
+            replaceAll(screen)
+        } else {
+            push(screen)
+        }
+
+        if (!isVisible) {
+            coroutineScope.launch {
+                sheetState.show()
+            }
+        }
+    }
+
     override fun show(screen: Screen?) {
         coroutineScope.launch {
             if (screen != null && screen !== lastItemOrNull) {
