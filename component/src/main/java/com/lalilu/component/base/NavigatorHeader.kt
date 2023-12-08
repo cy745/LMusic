@@ -22,11 +22,13 @@ fun NavigatorHeader(
     modifier: Modifier = Modifier,
     @StringRes titleRes: Int,
     @StringRes subTitleRes: Int,
+    titleScale: Float = 1f,
     extraContent: @Composable RowScope.() -> Unit = {}
 ) = NavigatorHeader(
     modifier = modifier,
     title = stringResource(id = titleRes),
     subTitle = stringResource(id = subTitleRes),
+    titleScale = titleScale,
     extraContent = extraContent
 )
 
@@ -35,11 +37,13 @@ fun NavigatorHeader(
     modifier: Modifier = Modifier,
     title: String,
     subTitle: String,
+    titleScale: Float = 1f,
     extraContent: @Composable RowScope.() -> Unit = {}
 ) {
     NavigatorHeader(
         modifier = modifier,
         title = title,
+        titleScale = titleScale,
         rowExtraContent = extraContent,
         columnExtraContent = {
             if (subTitle.isNotBlank()) {
@@ -58,6 +62,7 @@ fun NavigatorHeader(
 fun NavigatorHeader(
     modifier: Modifier = Modifier,
     title: String,
+    titleScale: Float = 1f,
     columnExtraContent: @Composable ColumnScope.() -> Unit = {},
     rowExtraContent: @Composable RowScope.() -> Unit = {}
 ) {
@@ -72,7 +77,7 @@ fun NavigatorHeader(
         ) {
             Text(
                 text = title,
-                fontSize = 26.sp,
+                fontSize = 26.sp * titleScale,
                 color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
             )
             columnExtraContent()
