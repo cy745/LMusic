@@ -40,10 +40,16 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
 
     override fun navigateTo(
         screen: Screen,
+        singleTop: Boolean,
         navigator: SheetNavigator?
     ) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
-        nav.showSingle(screen = screen)
+
+        if (singleTop) {
+            nav.showSingle(screen = screen)
+        } else {
+            nav.showMultiple(screen = screen)
+        }
     }
 
     override fun goBack(navigator: SheetNavigator?) {

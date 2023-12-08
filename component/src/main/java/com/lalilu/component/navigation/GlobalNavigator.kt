@@ -21,8 +21,16 @@ interface GlobalNavigator {
         navigator: SheetNavigator? = null
     )
 
+    /**
+     * 跳转至某页面
+     *
+     * [screen]     目标页面
+     * [singleTop]  是否替换栈顶的相同类型的页面
+     * [navigator]  执行操作的导航器
+     */
     fun navigateTo(
         screen: Screen,
+        singleTop: Boolean = true,
         navigator: SheetNavigator? = null
     )
 
