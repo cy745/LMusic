@@ -1,11 +1,37 @@
 package com.lalilu.lartist.screen
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
+import cafe.adriel.voyager.koin.getScreenModel
 import com.lalilu.component.LLazyColumn
 import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.LoadingScaffold
+import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.base.collectAsLoadingState
+import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lartist.R
 import com.lalilu.lartist.component.ArtistCard
+import com.lalilu.lmedia.LMedia
+import com.lalilu.lmedia.entity.LArtist
+import com.lalilu.lmedia.entity.LSong
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import com.lalilu.component.R as ComponentR
 
 data class ArtistsScreen(
@@ -18,172 +44,75 @@ data class ArtistsScreen(
 
     @Composable
     override fun Content() {
-        ArtistsScreen()
+        val artistsSM = getScreenModel<ArtistsScreenModel>()
+
+        LaunchedEffect(Unit) {
+            artistsSM.updateArtistsName(artistsName)
+        }
+
+        ArtistsScreen(artistsSM = artistsSM)
     }
 }
 
-@Composable
-private fun DynamicScreen.ArtistsScreen() {
+@OptIn(ExperimentalCoroutinesApi::class)
+class ArtistsScreenModel : ScreenModel {
+    private val artistsName = MutableStateFlow<List<String>>(emptyList())
+    val artists = artistsName.flatMapLatest {
+        if (it.isEmpty()) LMedia.getFlow<LArtist>()
+        else LMedia.flowMapBy<LArtist>(it)
+    }
 
-    LLazyColumn {
-        item {
-            ArtistCard(index = 1, artistName = "", songCount = 20)
+    fun updateArtistsName(artistsName: List<String>) = screenModelScope.launch {
+        this@ArtistsScreenModel.artistsName.emit(artistsName)
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun DynamicScreen.ArtistsScreen(
+    artistsSM: ArtistsScreenModel,
+    playingVM: IPlayingViewModel = koinInject()
+) {
+    val navigator = koinInject<GlobalNavigator>()
+    val artistsState = artistsSM.artists.collectAsLoadingState()
+
+    LoadingScaffold(targetState = artistsState) { artists ->
+        LLazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                NavigatorHeader(
+                    modifier = Modifier.statusBarsPadding(),
+                    title = stringResource(id = R.string.artist_screen_title),
+                    subTitle = stringResource(id = R.string.artist_screen_title)
+                )
+            }
+
+            itemsIndexed(
+                items = artists,
+                key = { _, item -> item.id },
+                contentType = { _, _ -> LArtist::class }
+            ) { index, item ->
+                ArtistCard(
+                    modifier = Modifier.animateItemPlacement(),
+                    title = item.name,
+                    subTitle = "#$index",
+                    songCount = item.requireItemsCount(),
+                    imageSource = { item.songs.firstOrNull()?.imageSource },
+                    isPlaying = {
+                        playingVM.isItemPlaying { playing ->
+                            playing.let { it as? LSong }
+                                ?.let { song -> song.artists.any { it.name == item.name } }
+                                ?: false
+                        }
+                    },
+                    onClick = {
+                        navigator.navigateTo(ArtistDetailScreen(item.name))
+                    }
+                )
+            }
         }
     }
 }
-
-//@OptIn(ExperimentalFoundationApi::class)
-//@Composable
-//private fun DynamicScreen.ArtistsScreen(
-//    title: String = "所有艺术家",
-//    sortFor: String = Sortable.SORT_FOR_ARTISTS,
-//    artistIdsText: String? = null,
-//    playingVM: IPlayingViewModel = singleViewModel(),
-//    artistsVM: ArtistsViewModel = singleViewModel(),
-//) {
-//    val artists = artistsVM.artists
-//    val scope = rememberCoroutineScope()
-//    val listState = rememberLazyListState()
-//    val showPanelState = remember { mutableStateOf(false) }
-//    val currentPlaying by LPlayer.runtime.info.playingFlow.collectAsState(null)
-//
-//    val scrollProgress = remember(listState) {
-//        derivedStateOf {
-//            if (listState.layoutInfo.totalItemsCount == 0) return@derivedStateOf 0f
-//            listState.firstVisibleItemIndex / listState.layoutInfo.totalItemsCount.toFloat()
-//        }
-//    }
-//
-////    val supportSortPresets = remember {
-////        listOf(
-////            SortPreset.SortByAddTime,
-////            SortPreset.SortByTitle,
-////            SortPreset.SortByDuration,
-////            SortPreset.SortByItemCount
-////        )
-////    }
-////    val supportSortRules = remember {
-////        listOf(
-////            SortRule.Normal,
-////            SortRule.Title,
-////            SortRule.ItemsCount,
-////            SortRule.ItemsDuration,
-////            SortRule.FileSize
-////        )
-////    }
-////    val supportGroupRules = remember { emptyList<GroupRule>() }
-////    val supportOrderRules = remember {
-////        listOf(
-////            OrderRule.Normal,
-////            OrderRule.Reverse,
-////            OrderRule.Shuffle
-////        )
-////    }
-//
-////    LaunchedEffect(artistIdsText) {
-////        artistsVM.updateByIds(
-////            sortFor = sortFor,
-////            ids = artistIdsText.getIds(),
-////            supportGroupRules = supportGroupRules,
-////            supportSortRules = supportSortRules,
-////            supportOrderRules = supportOrderRules
-////        )
-////    }
-//
-//    SmartFloatBtns.RegisterFloatBtns(
-//        progress = scrollProgress,
-//        items = listOf(
-//            SmartFloatBtns.FloatBtnItem(
-//                title = "排序",
-//                icon = ComponentR.drawable.ic_sort_desc,
-//                callback = { showAll ->
-//                    showPanelState.value = true
-//                    showAll.value = false
-//                }
-//            ),
-//            SmartFloatBtns.FloatBtnItem(
-//                icon = ComponentR.drawable.ic_focus_3_line,
-//                title = "定位当前播放歌曲",
-//                callback = {
-//                    if (currentPlaying != null) {
-//                        scope.launch {
-//                            var targetIndex = -1
-//                            val startIndex = listState.firstVisibleItemIndex
-//
-//                            // 从当前可见的元素Index开始往后找
-//                            for (i in startIndex until artists.value.size) {
-//                                if (i == startIndex) continue
-//
-//                                if (currentPlaying!!.subTitle.contains(artists.value[i].name)) {
-//                                    targetIndex = i
-//                                    break
-//                                }
-//                            }
-//
-//                            // 若无法往后找到，则从头开始找
-//                            if (targetIndex == -1) {
-//                                targetIndex = artists.value.indexOfFirst { artist ->
-//                                    currentPlaying!!.subTitle.contains(artist.name)
-//                                }
-//                            }
-//
-//                            // 若找到则跳转
-//                            if (targetIndex != -1) {
-//                                listState.scrollToItem(targetIndex)
-//                            }
-//                        }
-//                    }
-//                }
-//            ),
-//            SmartFloatBtns.FloatBtnItem(
-//                icon = ComponentR.drawable.ic_arrow_up_s_line,
-//                title = "回到顶部",
-//                callback = { scope.launch { listState.scrollToItem(0) } }
-//            ),
-//            SmartFloatBtns.FloatBtnItem(
-//                icon = ComponentR.drawable.ic_arrow_down_s_line,
-//                title = "滚动到底部",
-//                callback = { scope.launch { listState.scrollToItem(listState.layoutInfo.totalItemsCount) } }
-//            )
-//        )
-//    )
-//
-//    SortPanelWrapper(
-//        sortFor = sortFor,
-//        showPanelState = showPanelState,
-//        supportListAction = { emptyList() },
-//        sp = koinInject<SettingsSp>()
-//    ) { sortRuleStr ->
-//        SmartContainer.LazyColumn(state = listState) {
-//            item(key = "Header") {
-//                NavigatorHeader(
-//                    title = title,
-//                    subTitle = "共 ${artists.value.size} 条记录"
-//                )
-//            }
-//
-//            itemsIndexed(
-//                items = artists.value,
-//                key = { _, item -> item.id },
-//                contentType = { _, _ -> LArtist::class }
-//            ) { index, item ->
-//                ArtistCard(
-//                    modifier = Modifier.animateItemPlacement(),
-//                    index = index,
-//                    artistName = item.name,
-//                    songCount = item.requireItemsCount(),
-//                    isPlaying = {
-//                        playingVM.isItemPlaying { playing ->
-//                            playing.let { it as? LSong }
-//                                ?.let { song -> song.artists.any { it.name == item.name } }
-//                                ?: false
-//                        }
-//                    },
-//                    onClick = {
-////                        navigator.navigate(ArtistDetailScreenDestination(item.name))
-//                    }
-//                )
-//            }
-//        }
-//    }
-//}
