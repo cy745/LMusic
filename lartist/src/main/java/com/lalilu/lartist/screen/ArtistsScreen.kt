@@ -76,7 +76,10 @@ private fun DynamicScreen.ArtistsScreen(
     val navigator = koinInject<GlobalNavigator>()
     val artistsState = artistsSM.artists.collectAsLoadingState()
 
-    LoadingScaffold(targetState = artistsState) { artists ->
+    LoadingScaffold(
+        modifier = Modifier.fillMaxSize(),
+        targetState = artistsState
+    ) { artists ->
         LLazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(4.dp),
