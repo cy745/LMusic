@@ -27,28 +27,26 @@ object LayoutWrapper {
         }
         val defaultScreen = remember { HiddenBottomSheetScreen }
 
-        DialogWrapper.Content {
-            // 共用Navigator避免切换时导致导航栈丢失
-            Navigator(
-                defaultScreen,
-                onBackPressed = null,
-                key = compositionUniqueId()
-            ) { navigator ->
-                DrawerWrapper.Content(
-                    isPad = { isPad },
-                    isLandscape = { isLandscape },
-                    mainContent = {
-                        Playing.Content()
-                    },
-                    secondContent = {
-                        NavigationWrapper.Content(
-                            navigator = navigator,
-                            defaultScreen = defaultScreen,
-                            forPad = { isPad && isLandscape }
-                        )
-                    }
-                )
-            }
+        // 共用Navigator避免切换时导致导航栈丢失
+        Navigator(
+            defaultScreen,
+            onBackPressed = null,
+            key = compositionUniqueId()
+        ) { navigator ->
+            DrawerWrapper.Content(
+                isPad = { isPad },
+                isLandscape = { isLandscape },
+                mainContent = {
+                    Playing.Content()
+                },
+                secondContent = {
+                    NavigationWrapper.Content(
+                        navigator = navigator,
+                        defaultScreen = defaultScreen,
+                        forPad = { isPad && isLandscape }
+                    )
+                }
+            )
         }
 
         if (isLandscape) {
