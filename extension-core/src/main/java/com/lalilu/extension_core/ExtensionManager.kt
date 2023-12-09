@@ -5,19 +5,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
-import android.os.Build
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import dalvik.system.PathClassLoader
+import com.lalilu.extension_core.loader.CacheApkExtensionLoader
+import com.lalilu.extension_core.loader.HostExtensionLoader
+import com.lalilu.extension_core.loader.SharedExtensionLoader
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -29,21 +26,17 @@ import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 object ExtensionManager : CoroutineScope, LifecycleEventObserver {
-    private const val EXTENSION_FEATURE_NAME = "lmusic.extension"
-    private const val EXTENSION_META_DATA_CLASS = "lmusic.extension.class"
-    private const val EXTENSION_SOURCES_CLASS = "lalilu.extension_ksp.ExtensionsConstants"
-
     override val coroutineContext: CoroutineContext = Dispatchers.Default
-
-    private val PACKAGE_FLAGS = PackageManager.GET_CONFIGURATIONS or
-            PackageManager.GET_META_DATA or
-            PackageManager.GET_SIGNATURES or
-            (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else 0)
 
     private var debounceJob: Job? = null
     private var loadingJob: Job? = null
-    val isLoadingFlow = MutableStateFlow(false)
+    private val isLoadingFlow = MutableStateFlow(false)
     val extensionsFlow = MutableStateFlow<List<ExtensionLoadResult>>(emptyList())
+    private val loaders = listOf(
+        CacheApkExtensionLoader(),
+        HostExtensionLoader(),
+        SharedExtensionLoader()
+    )
 
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(p0: Context, p1: Intent) {
@@ -56,14 +49,34 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
         }
     }
 
+    fun loadExtensions(context: Context) {
+        loadingJob?.cancel()
+        loadingJob = launch {
+            isLoadingFlow.emit(true)
+
+            val result = loaders
+                .map { it.loadExtension(context, this) }
+                .flatten()
+                .awaitAll()
+
+            if (!isActive) return@launch
+            extensionsFlow.emit(result)
+            isLoadingFlow.emit(false)
+        }
+    }
+
     fun requireExtensionByPackageName(packageName: String): Flow<ExtensionLoadResult?> {
         return extensionsFlow.mapLatest { list ->
-            list.firstOrNull { it.packageInfo.packageName == packageName }
+            list.firstOrNull {
+                it is ExtensionLoadResult.Ready &&
+                        it.environment is ExtensionEnvironment.Package &&
+                        it.environment.packageInfo.packageName == packageName
+            }
         }
     }
 
     fun requireExtensionByClassName(className: String): Flow<ExtensionLoadResult?> {
-        return extensionsFlow.mapLatest { list -> list.firstOrNull { it.className == className } }
+        return extensionsFlow.mapLatest { list -> list.firstOrNull { it.extId == className } }
     }
 
     fun requireExtensionByContentKey(contentKey: String): Flow<List<ExtensionLoadResult.Ready>> {
@@ -89,153 +102,6 @@ object ExtensionManager : CoroutineScope, LifecycleEventObserver {
             list.filterIsInstance<ExtensionLoadResult.Ready>()
                 .mapNotNull { runCatching { it.extension.getProvider() }.getOrNull() }
         }
-    }
-
-    fun loadExtensions(context: Context) {
-        loadingJob?.cancel()
-        loadingJob = launch {
-            isLoadingFlow.emit(true)
-
-            val packageManager = context.packageManager
-            val installedPackages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                packageManager.getInstalledPackages(PackageManager.PackageInfoFlags.of(PACKAGE_FLAGS.toLong()))
-            } else {
-                packageManager.getInstalledPackages(PACKAGE_FLAGS)
-            }
-
-            if (!isActive) return@launch
-            val hostExtensions = packageManager.getPackageInfo(context.packageName, PACKAGE_FLAGS)
-                ?.let { loadHostExtensions(this, context, it) }
-                ?: emptyList()
-
-            if (!isActive) return@launch
-            val sharedExtensions = installedPackages
-                .asSequence()
-                .filter { it.reqFeatures.orEmpty().any { it.name == EXTENSION_FEATURE_NAME } }
-                .flatMap { loadSharedExtensions(this, context, it) }
-                .toList()
-
-            val result = sharedExtensions.awaitAll() + hostExtensions.awaitAll()
-            if (!isActive) return@launch
-            extensionsFlow.emit(result)
-            isLoadingFlow.emit(false)
-        }
-    }
-
-    private fun loadExtensionWithClassLoader(
-        scope: CoroutineScope,
-        classes: List<String>,
-        packageInfo: PackageInfo,
-        classLoader: ClassLoader,
-    ): List<Deferred<ExtensionLoadResult>> {
-        return classes.map { className ->
-            scope.async {
-                var errorMessage = "Unknown error"
-                val extension = runCatching {
-                    val clazz = Class.forName(className, false, classLoader)
-
-                    clazz.getDeclaredConstructor().newInstance() as? Extension
-                }.getOrElse {
-                    println("""[loadExtensionWithClassLoader] Error: ${it.message}""")
-                    it.printStackTrace()
-                    errorMessage = it.message ?: it.localizedMessage ?: "Unknown error"
-                    null
-                }
-
-                if (extension != null) {
-                    return@async ExtensionLoadResult.Ready(
-                        className = className,
-                        packageInfo = packageInfo,
-                        extension = extension
-                    )
-                }
-
-                ExtensionLoadResult.Error(
-                    className = className,
-                    packageInfo = packageInfo,
-                    message = errorMessage
-                )
-            }
-        }
-    }
-
-    private fun loadSharedExtensions(
-        scope: CoroutineScope,
-        context: Context,
-        packageInfo: PackageInfo,
-    ): List<Deferred<ExtensionLoadResult>> {
-        return runCatching {
-            val classLoader = ExtensionClassLoader(
-                dexPath = packageInfo.applicationInfo.sourceDir,
-                parent = context.classLoader
-            )
-            val classes = getExtensionListFromMeta(packageInfo).toMutableSet()
-            classes += getExtensionListByReflection(classLoader)
-
-            loadExtensionWithClassLoader(scope, classes.toList(), packageInfo, classLoader)
-        }.getOrElse {
-            println("""[loadSharedExtensions] Error: ${it.message}""")
-            it.printStackTrace()
-            emptyList()
-        }
-    }
-
-    private fun loadHostExtensions(
-        scope: CoroutineScope,
-        context: Context,
-        packageInfo: PackageInfo,
-    ): List<Deferred<ExtensionLoadResult>> {
-        return runCatching {
-            val classes = getExtensionListByReflection(context.classLoader)
-
-            loadExtensionWithClassLoader(scope, classes, packageInfo, context.classLoader)
-        }.getOrElse {
-            println("""[loadHostExtensions] Error: ${it.message}""")
-            it.printStackTrace()
-            emptyList()
-        }
-    }
-
-    private fun getExtensionListFromMeta(
-        packageInfo: PackageInfo,
-    ): List<String> {
-        val packageName = packageInfo.packageName
-        val appInfo = packageInfo.applicationInfo
-
-        return appInfo.metaData
-            .getString(EXTENSION_META_DATA_CLASS)
-            ?.trim()
-            ?.takeIf(String::isNotBlank)
-            ?.split(";")
-            ?.map { if (it.startsWith(".")) packageName + it else it }
-            ?: emptyList()
-    }
-
-    private fun getExtensionListByReflection(
-        classLoader: ClassLoader,
-    ): List<String> {
-        return runCatching {
-            val targetClass = EXTENSION_SOURCES_CLASS
-            val clazz = Class.forName(targetClass, false, classLoader)
-            val method = clazz.getDeclaredMethod("getClasses").apply { isAccessible = true }
-            val obj = clazz.getDeclaredConstructor().newInstance()
-
-            (method.invoke(obj) as List<*>).mapNotNull { it as? String }
-        }.getOrElse {
-            it.printStackTrace()
-            emptyList()
-        }
-    }
-
-    private class ExtensionClassLoader(
-        dexPath: String,
-        parent: ClassLoader,
-    ) : PathClassLoader(dexPath, null, parent) {
-        override fun loadClass(name: String, resolve: Boolean): Class<*> =
-            runCatching { findClass(name) }.getOrElse {
-                if (name == EXTENSION_SOURCES_CLASS) throw ClassNotFoundException("$EXTENSION_SOURCES_CLASS not exist in the Extension, try load classList by getExtensionListFromMeta()")
-                else super.loadClass(name, resolve)
-            }
     }
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
