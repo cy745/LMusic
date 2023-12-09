@@ -20,6 +20,9 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+# 取消混淆(obfuscate)，只执行压缩(shrink)、优化操作(optimize)
+-dontobfuscate
+
 -dontwarn org.bouncycastle.**
 -dontwarn org.conscrypt.**
 -dontwarn org.openjsse.**
@@ -28,14 +31,12 @@
 -dontwarn org.jetbrains.kotlin.diagnostics.**
 
 # retrofit 使用的所有bean都不可以混淆
--keep  class com.lalilu.lmusic.apis.bean.** { *; }
+-keep class com.lalilu.lmusic.apis.bean.** { *; }
 
 -keep class com.google.gson.reflect.TypeToken
 -keep class * extends com.google.gson.reflect.TypeToken
 -keep public class * implements java.lang.reflect.Type
 
--keep class com.simple.spiderman.** { *; }
--keepnames class com.simple.spiderman.** { *; }
 -keep public class * extends android.app.Activity
 -keep class * implements android.os.Parcelable {
     public static final android.os.Parcelable$Creator *;
@@ -54,16 +55,17 @@
 -keep class kotlinx.coroutines.** { public protected *; }
 -keep class androidx.lifecycle.** { public protected *; }
 -keep class androidx.compose.** { public protected *; }
+-keep class android.support.v4.media.** { public protected *; }
 -keep class coil.compose.** { public protected *; }
+
 -keep class com.lalilu.extension_core.** { public protected *; }
 -keep class com.lalilu.common.** { public protected *; }
 -keep class com.lalilu.lplayer.** { public protected *; }
--keep class android.support.v4.media.** { public protected *; }
+-keep class lalilu.extension_ksp.ExtensionsConstants { public protected *;}
 
 -keepclassmembers class * implements com.lalilu.extension_core.Extension {
     <init>(...);
     com.lalilu.extension_core.Extension *;
 }
--keep class lalilu.extension_ksp.ExtensionsConstants { *;}
 
--printmapping mapping.txt
+-printmapping ../mapping.txt
