@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import com.lalilu.extension_core.Content
 import com.lalilu.extension_core.ExtensionLoadResult
 import com.lalilu.extension_core.ExtensionManager
+import com.lalilu.extension_core.Place
 
 
 @Composable
@@ -25,7 +26,6 @@ fun ExtensionHostScreen(
         errorPlaceHolder = {
             val message = when (extensionResult) {
                 is ExtensionLoadResult.Error -> (extensionResult as ExtensionLoadResult.Error).message
-                is ExtensionLoadResult.OutOfDated -> "Extension $className is out of dated."
                 else -> "Extension $className is not found."
             }
             Text(text = message)

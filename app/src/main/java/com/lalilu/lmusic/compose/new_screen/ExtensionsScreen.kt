@@ -26,6 +26,7 @@ import com.lalilu.extension_core.ExtensionLoadResult
 import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
+import com.lalilu.extension_core.Place
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -67,7 +68,7 @@ fun ExtensionsScreen(
                         extensionResult.Place(
                             contentKey = Content.COMPONENT_CATEGORY,
                             errorPlaceHolder = {
-                                Text(text = "LoadError ${extensionResult.packageInfo.packageName}")
+                                Text(text = "LoadError ${extensionResult.extId}")
                             },
                         )
                     }
@@ -75,10 +76,6 @@ fun ExtensionsScreen(
 
                 is ExtensionLoadResult.Error -> {
                     Text(text = "Error: ${extensionResult.message}")
-                }
-
-                is ExtensionLoadResult.OutOfDated -> {
-                    Text(text = "OutOfDate")
                 }
             }
         }

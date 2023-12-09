@@ -13,6 +13,7 @@ import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.LLazyColumn
 import com.lalilu.component.extension.singleViewModel
+import com.lalilu.extension_core.Place
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
 object HomeScreen : DynamicScreen(), TabScreen {
