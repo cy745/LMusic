@@ -103,7 +103,6 @@ data class SongDetailScreen(
 
                     IconCheckButton(
                         modifier = Modifier
-                            .recomposeHighlighter()
                             .fillMaxHeight()
                             .aspectRatio(4f / 3f),
                         shape = RectangleShape,
@@ -119,7 +118,6 @@ data class SongDetailScreen(
 
                     AnimatedContent(
                         modifier = Modifier
-                            .recomposeHighlighter()
                             .fillMaxHeight()
                             .aspectRatio(3f / 2f),
                         targetState = state.isPlaying,
