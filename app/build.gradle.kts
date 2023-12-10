@@ -138,8 +138,13 @@ registerPlugin {
 dependencies {
     implementation(project(":ui"))
     implementation(project(":crash"))
-    implementation(project(":extension-core"))
     implementation(project(":component"))
+    implementation(project(":extension-core"))
+    implementation(project(":lplaylist"))
+    implementation(project(":lhistory"))
+    implementation(project(":lartist"))
+    implementation(project(":lalbum"))
+    implementation(project(":lextension"))
     ksp(project(":extension-ksp"))
 
     implementation(libs.room.ktx)
