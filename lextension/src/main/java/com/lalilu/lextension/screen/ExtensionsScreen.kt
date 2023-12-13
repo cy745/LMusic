@@ -22,7 +22,7 @@ import com.lalilu.lextension.component.ExtensionList
 import com.lalilu.lextension.component.ExtensionsScreenModel
 import com.lalilu.component.R as ComponentR
 
-class ExtensionsScreen : DynamicScreen() {
+object ExtensionsScreen : DynamicScreen() {
     override fun getScreenInfo(): ScreenInfo = ScreenInfo(
         title = R.string.extension_screen_title,
         icon = ComponentR.drawable.ic_shapes_line

@@ -28,6 +28,7 @@ import com.lalilu.lmusic.compose.new_screen.SongsScreen
 import com.lalilu.lplaylist.screen.PlaylistScreen
 import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.lextension.screen.ExtensionsScreen
 import com.lalilu.lhistory.screen.HistoryScreen
 import org.koin.compose.koinInject
 
@@ -49,6 +50,7 @@ class ExtEntryPanel : Extension {
                 PlaylistScreen,
                 HistoryScreen,
                 SettingsScreen,
+                ExtensionsScreen
             )
         }
 
