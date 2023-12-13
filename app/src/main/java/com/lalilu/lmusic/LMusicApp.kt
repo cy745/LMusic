@@ -10,6 +10,7 @@ import com.lalilu.component.ComponentModule
 import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lalbum.AlbumModule
 import com.lalilu.lartist.ArtistModule
+import com.lalilu.ldictionary.DictionaryModule
 import com.lalilu.lextension.ExtensionModule
 import com.lalilu.lhistory.HistoryModule
 import com.lalilu.lmedia.LMedia
@@ -47,6 +48,7 @@ class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelSt
                 HistoryModule,
                 ArtistModule,
                 AlbumModule,
+                DictionaryModule,
                 ExtensionModule,
                 LPlayer.module,
                 LMedia.module

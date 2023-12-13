@@ -13,7 +13,7 @@ import com.lalilu.ldictionary.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import com.lalilu.component.R as ComponentR
 
-data object DictionaryScreen : DynamicScreen() {
+object DictionaryScreen : DynamicScreen() {
     override fun getScreenInfo(): ScreenInfo = ScreenInfo(
         title = R.string.dictionary_screen_title,
         icon = ComponentR.drawable.ic_disc_line

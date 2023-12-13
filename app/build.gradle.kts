@@ -144,6 +144,7 @@ dependencies {
     implementation(project(":lhistory"))
     implementation(project(":lartist"))
     implementation(project(":lalbum"))
+    implementation(project(":ldictionary"))
     implementation(project(":lextension"))
     ksp(project(":extension-ksp"))
 
