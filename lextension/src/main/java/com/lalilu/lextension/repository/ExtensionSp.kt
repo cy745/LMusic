@@ -10,4 +10,5 @@ class ExtensionSp(private val context: Application) : BaseSp() {
     }
 
     val orderList = obtainList<String>("ORDER_LIST")
+    val hidingList = obtainList<String>("HIDING_LIST")
 }
