@@ -9,7 +9,7 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.LoadingScaffold
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
-import com.lalilu.lhistory.R
+import com.lalilu.ldictionary.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import com.lalilu.component.R as ComponentR
 
