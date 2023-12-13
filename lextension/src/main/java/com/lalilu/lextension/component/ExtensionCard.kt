@@ -1,5 +1,6 @@
 package com.lalilu.lextension.component
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
@@ -40,10 +41,13 @@ fun ExtensionCard(
     maskAlpha: Float = 0.5f,
     onUpClick: () -> Unit = {},
     onDownClick: () -> Unit = {},
+    onVisibleChange: (Boolean) -> Unit = {},
+    isVisible: () -> Boolean = { true },
     isEditing: () -> Boolean = { false },
     isDragging: () -> Boolean = { false },
-    content: @Composable BoxScope.() -> Unit,
+    content: @Composable BoxScope.() -> Unit = {},
 ) {
+    val visible = isVisible()
     val density = LocalDensity.current
     val heightDp = remember { mutableStateOf(0.dp) }
     val elevation = animateDpAsState(
@@ -51,59 +55,83 @@ fun ExtensionCard(
         label = ""
     )
 
-    Surface(
-        elevation = elevation.value,
-        color = MaterialTheme.colors.background
+    AnimatedVisibility(
+        visible = isEditing() || visible,
+        enter = fadeIn(),
+        exit = fadeOut()
     ) {
-        Box(
-            modifier = modifier
-                .fillMaxWidth()
-                .onSizeChanged { heightDp.value = density.run { it.height.toDp() } }
-                .run { if (isEditing()) this.heightIn(100.dp) else this }
-                .wrapContentHeight(),
-            contentAlignment = Alignment.Center
+        Surface(
+            elevation = elevation.value,
+            color = MaterialTheme.colors.background
         ) {
-            content()
-
-            AnimatedVisibility(
-                visible = isEditing(),
-                enter = fadeIn(),
-                exit = fadeOut()
+            Box(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .onSizeChanged { heightDp.value = density.run { it.height.toDp() } }
+                    .run { if (isEditing()) this.heightIn(100.dp) else this }
+                    .wrapContentHeight(),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(color = MaterialTheme.colors.surface.copy(alpha = maskAlpha))
-                        .clickable(MutableInteractionSource(), indication = null) { }
-                        .fillMaxWidth()
-                        .height(heightDp.value),
-                    contentAlignment = Alignment.Center
+                content()
+
+                AnimatedVisibility(
+                    visible = isEditing(),
+                    enter = fadeIn(),
+                    exit = fadeOut()
                 ) {
-                    Row(
-                        modifier
+                    Box(
+                        modifier = Modifier
+                            .background(color = MaterialTheme.colors.surface.copy(alpha = maskAlpha))
+                            .clickable(MutableInteractionSource(), indication = null) { }
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
+                            .height(heightDp.value),
+                        contentAlignment = Alignment.Center
                     ) {
-                        IconButton(onClick = onUpClick) {
+                        Row(
+                            modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
+                        ) {
+                            IconButton(onClick = { onVisibleChange(!visible) }) {
+                                AnimatedContent(
+                                    targetState = visible,
+                                    label = ""
+                                ) {
+                                    val icon = if (it) {
+                                        painterResource(id = componentR.drawable.ic_eye_off_fill)
+                                    } else {
+                                        painterResource(id = componentR.drawable.ic_edit_line)
+                                    }
+
+                                    Icon(
+                                        modifier = Modifier.size(36.dp),
+                                        painter = icon,
+                                        contentDescription = ""
+                                    )
+                                }
+                            }
+                            IconButton(onClick = onUpClick) {
+                                Icon(
+                                    modifier = Modifier.size(36.dp),
+                                    painter = painterResource(id = componentR.drawable.ic_arrow_up_s_line),
+                                    contentDescription = ""
+                                )
+                            }
+                            IconButton(onClick = onDownClick) {
+                                Icon(
+                                    modifier = Modifier.size(36.dp),
+                                    painter = painterResource(id = componentR.drawable.ic_arrow_down_s_line),
+                                    contentDescription = ""
+                                )
+                            }
                             Icon(
-                                modifier = Modifier.size(36.dp),
-                                painter = painterResource(id = componentR.drawable.ic_arrow_up_s_line),
+                                modifier = draggableModifier.size(36.dp),
+                                painter = painterResource(id = componentR.drawable.ic_draggable),
                                 contentDescription = ""
                             )
                         }
-                        IconButton(onClick = onDownClick) {
-                            Icon(
-                                modifier = Modifier.size(36.dp),
-                                painter = painterResource(id = componentR.drawable.ic_arrow_down_s_line),
-                                contentDescription = ""
-                            )
-                        }
-                        Icon(
-                            modifier = draggableModifier.size(36.dp),
-                            painter = painterResource(id = componentR.drawable.ic_draggable),
-                            contentDescription = ""
-                        )
                     }
                 }
             }
