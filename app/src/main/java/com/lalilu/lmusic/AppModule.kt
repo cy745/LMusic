@@ -137,7 +137,7 @@ val FilterModule = module {
         val settingSp: SettingsSp = get()
         val unknownArtistFilter = Filter(
             flow = settingSp.enableUnknownFilter.flow(true),
-            getter = LSong::_artist::get,
+            getter = { it.metadata.artist },
             targetClass = LSong::class.java,
             ignoreRule = { flowValue, getterValue ->
                 flowValue == true && getterValue == "<unknown>"
@@ -153,7 +153,7 @@ val FilterModule = module {
         )
         val pathFilter = Filter(
             flow = settingSp.blockedPaths.flow(true),
-            getter = LSong::pathStr::get,
+            getter = { it.fileInfo.pathStr },
             targetClass = LSong::class.java,
             ignoreRule = { flowValue, getterValue ->
                 if (flowValue.isNullOrEmpty()) return@Filter false

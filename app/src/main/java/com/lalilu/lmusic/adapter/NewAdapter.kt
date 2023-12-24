@@ -109,7 +109,7 @@ class NewPlayingAdapter private constructor(
         binding.songPic.loadCoverForPlaying(item)
 
         if (item is LSong) {
-            binding.songType.setImageResource(getMimeTypeIconRes(item.mimeType))
+            binding.songType.setImageResource(getMimeTypeIconRes(item.fileInfo.mimeType))
         }
 
         onItemBoundCallback?.onItemBound(binding, item)

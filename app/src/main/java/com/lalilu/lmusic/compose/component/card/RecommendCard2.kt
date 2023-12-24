@@ -31,7 +31,7 @@ fun RecommendCard2(
         contentModifier = contentModifier,
         imageData = { song },
         title = { song.name },
-        subTitle = { song._artist },
+        subTitle = { song.metadata.artist },
         onClick = onClick
     )
 }

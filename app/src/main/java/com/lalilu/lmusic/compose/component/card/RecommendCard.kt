@@ -82,7 +82,7 @@ fun RecommendCard(
         contentModifier = contentModifier,
         imageData = { song },
         title = { song.name },
-        subTitle = { song._artist },
+        subTitle = { song.metadata.artist },
         isPlaying = isPlaying,
         width = width,
         height = height,
