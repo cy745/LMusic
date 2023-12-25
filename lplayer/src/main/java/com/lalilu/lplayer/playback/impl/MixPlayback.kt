@@ -174,8 +174,11 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
 
             PlayerAction.ReloadAndPlay -> {
                 player ?: return
-                player?.isPrepared = false
-                onPlay()
+                val item = queue?.getCurrent() ?: return
+                val uri = queue?.getUriFromItem(item) ?: return
+
+                onPlayInfoUpdate(item, PlaybackStateCompat.STATE_BUFFERING, 0L)
+                onPlayFromUri(uri, null)
             }
         }
     }
