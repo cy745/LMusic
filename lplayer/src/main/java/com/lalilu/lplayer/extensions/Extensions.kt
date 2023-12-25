@@ -51,7 +51,7 @@ fun MediaPlayer.setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
 
 fun MediaPlayer.fadeStart(
     duration: Long = 500L,
-    onFinished: () -> Unit = {},
+    onFinished: MediaPlayer.() -> Unit = {},
 ) = synchronized(this) {
     val sessionId = audioSessionId
     PlayerVolumeHelper.cancelTimer(sessionId)
@@ -87,7 +87,7 @@ fun MediaPlayer.fadeStart(
 
 fun MediaPlayer.fadePause(
     duration: Long = 500L,
-    onFinished: () -> Unit = {},
+    onFinished: MediaPlayer.() -> Unit = {},
 ) = synchronized(this) {
     val sessionId = audioSessionId
     PlayerVolumeHelper.cancelTimer(sessionId)
