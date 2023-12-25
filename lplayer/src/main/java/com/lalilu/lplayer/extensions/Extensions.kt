@@ -14,7 +14,7 @@ import java.net.URLDecoder
 object PlayerVolumeHelper {
     private var maxVolume: Float = 1f
     private val timers = LruCache<Int, CountDownTimer>(5)
-    private val nowVolumes = LruCache<Int, Float>(5)
+    private val nowVolumes = LruCache<Int, Float>(10)
 
     fun getMaxVolume(): Float = maxVolume
     fun getNowVolume(id: Int): Float {
