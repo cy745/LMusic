@@ -4,9 +4,9 @@ import android.net.Uri
 
 interface Player {
     var listener: Listener?
-    var isPrepared: Boolean
-    var isPlaying: Boolean
-    var isStopped: Boolean
+    val isPrepared: Boolean
+    val isPlaying: Boolean
+    val isStopped: Boolean
     var couldPlayNow: () -> Boolean
     var handleNetUrl: (String) -> String
 
