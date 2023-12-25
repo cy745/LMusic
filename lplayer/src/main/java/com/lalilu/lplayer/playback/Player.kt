@@ -19,7 +19,7 @@ interface Player {
     /**
      * 加载歌曲文件
      */
-    fun load(uri: Uri, startWhenReady: Boolean)
+    fun load(uri: Uri, startWhenReady: Boolean, startPosition: Long)
     fun preloadNext(uri: Uri)
     fun confirmPreloadNext()        // 确认当前歌曲播放完成，可以播放下一首
     fun resetPreloadNext()          // 重置预加载的下一首歌曲

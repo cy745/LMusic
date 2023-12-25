@@ -84,7 +84,7 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
     }
 
     override fun onPlayFromUri(uri: Uri, extras: Bundle?) {
-        player?.load(uri, true)
+        player?.load(uri, true, 0L)
     }
 
     override fun onPlayFromMediaId(mediaId: String, extras: Bundle?) {
@@ -124,7 +124,16 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
     }
 
     override fun onSeekTo(pos: Long) {
-        player?.seekTo(pos)
+        // TODO 存在正在加载的情况下触发重新加载的可能，需要增加一个正在加载的标志位，在加载完成前不触发重新加载
+        if (player?.isPrepared == true) {
+            player?.seekTo(pos)
+        } else {
+            val item = queue?.getCurrent() ?: return
+            val uri = queue?.getUriFromItem(item) ?: return
+
+            onPlayInfoUpdate(item, PlaybackStateCompat.STATE_BUFFERING, 0L)
+            player?.load(uri, true, pos)
+        }
     }
 
     override fun onStop() {
