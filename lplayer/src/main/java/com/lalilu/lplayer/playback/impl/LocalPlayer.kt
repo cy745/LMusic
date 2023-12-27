@@ -178,6 +178,9 @@ class LocalPlayer(
     }
 
     override fun preloadNext(uri: Uri) {
+        // 若预加载已成功且无参数变化则不重新进行预加载
+        if (nextLoadedUri == uri && nextPlayer != null) return
+
         nextPlayer = null
         nextLoadedUri = null
 
