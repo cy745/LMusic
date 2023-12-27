@@ -71,7 +71,7 @@ class LocalPlayer(
      * 回收MediaPlayer，超出最大容量则释放不再需要该MediaPlayer了
      */
     private fun recycleMediaPlayer(player: LMediaPlayer) {
-        if (player.isPlaying) stop()
+        if (player.isPlaying) player.stop()
         unbindPlayer(player)
         player.reset()
 
@@ -181,9 +181,6 @@ class LocalPlayer(
         // 若预加载已成功且无参数变化则不重新进行预加载
         if (nextLoadedUri == uri && nextPlayer != null) return
 
-        nextPlayer = null
-        nextLoadedUri = null
-
         // 获取可用的MediaPlayer
         preloadingPlayer = requireUsablePlayer()
 
@@ -200,7 +197,7 @@ class LocalPlayer(
                 nextPlayer = it
                 nextLoadedUri = uri
                 preloadingPlayer = null
-                player?.setNextMediaPlayer(this)
+                player?.setNextMediaPlayer(it)
                 onPlayerEvent(PlayerEvent.OnNextPrepared)
             }
             setOnErrorListener { mp, what, extra ->
@@ -215,9 +212,7 @@ class LocalPlayer(
     }
 
     override fun confirmPreloadNext() {
-        // 获取当前MediaPlayer缓存的音量后回收该MediaPlayer
-        val audioSessionId = player?.audioSessionId
-        val volume = audioSessionId?.let { PlayerVolumeHelper.getNowVolume(it) }
+        // 回收当前使用的MediaPlayer
         player?.let(::recycleMediaPlayer)
 
         // 将nextPlayer转移至当前播放的player
@@ -225,7 +220,9 @@ class LocalPlayer(
         nextPlayer = null
         nextLoadedUri = null
 
-        volume?.let { player?.setVolume(it, it) }
+        // 为MediaPlayer设置音量
+        PlayerVolumeHelper.getMaxVolume()
+            .let { player?.setVolume(it, it) }
     }
 
     override fun resetPreloadNext() {
