@@ -11,11 +11,19 @@ import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.playback.Playback
 import com.lalilu.lplayer.playback.Player
 import com.lalilu.lplayer.playback.PlayerEvent
+import com.lalilu.lplayer.playback.QueueEvent
 import com.lalilu.lplayer.playback.UpdatableQueue
 
-class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Listener {
+class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Listener,
+    QueueEvent.OnQueueEventListener {
     override var playbackListener: Listener<Playable>? = null
     override var queue: UpdatableQueue<Playable>? = null
+        set(value) {
+            field = value
+            value ?: return
+            value.setOnQueueEventListener(this)
+        }
+
     override var audioFocusHelper: AudioFocusHelper? = null
         set(value) {
             field = value
@@ -307,5 +315,22 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
 
     override fun onItemPause(item: Playable) {
         playbackListener?.onItemPause(item)
+    }
+
+    override fun onQueueEvent(event: QueueEvent) {
+        when (event) {
+            // TODO 列表发生移动时下一个元素与预加载元素不一样时需要重新进行处理
+            is QueueEvent.Added -> {}
+            is QueueEvent.Moved -> {}
+
+            is QueueEvent.Removed -> {
+                // 若队列中删除的是已预加载的下一个元素，则去除该元素，重新尝试进行预加载操作
+                if (event.id == tempNextItem?.mediaId) {
+                    tempNextItem = null
+                    player?.resetPreloadNext()
+                    preloadNextItem()
+                }
+            }
+        }
     }
 }
