@@ -151,11 +151,12 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
     private var tempNextItem: Playable? = null
 
     override fun preloadNextItem() {
-        tempNextItem = when (playMode) {
-            PlayMode.ListRecycle -> queue?.getNext()
-            PlayMode.RepeatOne -> queue?.getCurrent()
-            PlayMode.Shuffle -> queue?.getShuffle()
-        } ?: return
+        tempNextItem = when {
+            playMode == PlayMode.ListRecycle -> queue?.getNext()
+            playMode == PlayMode.RepeatOne -> queue?.getCurrent()
+            playMode == PlayMode.Shuffle && tempNextItem == null -> queue?.getShuffle()
+            else -> tempNextItem
+        }
         val uri = queue?.getUriFromItem(tempNextItem!!) ?: return
         player?.preloadNext(uri)
     }
@@ -276,6 +277,7 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
                     playbackState = PlaybackStateCompat.STATE_PLAYING,
                     position = player?.getPosition() ?: 0L
                 )
+                tempNextItem = null
                 preloadNextItem()
             }
 
