@@ -16,12 +16,18 @@ class AlbumCoverFetcher private constructor(
     private val context: Context,
     private val album: LAlbum
 ) : BaseFetcher() {
-    override suspend fun fetch(): FetchResult? = fetchForAlbum(context, album)?.let { stream ->
-        SourceResult(
-            source = ImageSource(stream.source().buffer(), context),
-            mimeType = null,
-            dataSource = DataSource.DISK
-        )
+    override suspend fun fetch(): FetchResult? {
+        // 首先尝试从媒体库获取封面，若无则通过其内部的歌曲来获取
+        val result = fetchMediaStoreCovers(context, album.coverUri)
+            ?: album.songs.firstNotNullOfOrNull { fetchForSong(context, it) }
+
+        return result?.let { stream ->
+            SourceResult(
+                source = ImageSource(stream.source().buffer(), context),
+                mimeType = null,
+                dataSource = DataSource.DISK
+            )
+        }
     }
 
     class AlbumFactory : Fetcher.Factory<LAlbum> {
