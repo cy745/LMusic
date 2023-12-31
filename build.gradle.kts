@@ -15,7 +15,7 @@ buildscript {
 gradle.taskGraph.whenReady {
     allTasks.onEach {
         // 避免ksp类型任务被跳过
-        if (it.name == "kspDebugKotlin") {
+        if (it.name.startsWith("ksp") && it.name.endsWith("Kotlin")) {
             it.setOnlyIf { true }
             it.outputs.upToDateWhen { false }
         }
