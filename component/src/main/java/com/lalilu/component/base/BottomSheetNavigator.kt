@@ -3,6 +3,7 @@ package com.lalilu.component.base
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.ExperimentalMaterialApi
@@ -24,12 +25,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.Stack
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
+import com.lalilu.component.extension.rememberBottomSheetNestedScrollInterceptor
 import com.lalilu.component.navigation.LocalSheetNavigator
 import com.lalilu.component.navigation.SheetNavigator
 import kotlinx.coroutines.CoroutineScope
@@ -97,7 +100,10 @@ fun BottomSheetNavigatorLayout(
             sheetGesturesEnabled = sheetGesturesEnabled,
             sheetContent = {
                 BottomSheetNavigatorBackHandler(bottomSheetNavigator, hideOnBackPress)
-                sheetContent(bottomSheetNavigator)
+                Box(
+                    modifier = Modifier.nestedScroll(rememberBottomSheetNestedScrollInterceptor()),
+                    content = { sheetContent(bottomSheetNavigator) }
+                )
             },
             content = { content(bottomSheetNavigator) }
         )
