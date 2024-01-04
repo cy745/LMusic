@@ -12,7 +12,6 @@ import com.lalilu.lmusic.api.lrcshare.SongResult
 import com.lalilu.lmusic.repository.LMediaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
 
 class SearchLyricViewModel(
     private val context: Application,
@@ -70,27 +69,17 @@ class SearchLyricViewModel(
 
                 val lyric = lrcShareApi.getLyricById(lyricId)?.lyric
                 val song = lMediaRepo.requireSong(mediaId)!!
-                val ext = song.fileName
-                    ?.substringAfterLast('.')
-                    ?.takeIf { it.isNotBlank() }!!
-                val tempFile = File(context.cacheDir, "temp.audio")
 
-                val resolver = context.contentResolver
+                val result = context.contentResolver
+                    .openFileDescriptor(song.uri, "rw")
+                    .use {
+                        it ?: return@use false
 
-                // 将文件复制到temp中
-                resolver.openInputStream(song.uri)?.use {
-                    it.copyTo(tempFile.outputStream())
-                }
+                        Taglib.writeLyricInto(it.detachFd(), lyric ?: "")
+                    }
 
-                val result = Taglib.writeLyricInto(tempFile.absolutePath, lyric ?: "")
                 if (!result) {
                     throw RuntimeException("保存失败")
-                }
-
-                val readAndWriteMode = "rw"
-                // 修改完成后将该文件写回到源文件
-                resolver.openOutputStream(song.uri, readAndWriteMode)?.use {
-                    tempFile.inputStream().copyTo(it)
                 }
 
                 searchState.value = SearchState.Idle
