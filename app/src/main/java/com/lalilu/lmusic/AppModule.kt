@@ -49,6 +49,7 @@ import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -112,10 +113,11 @@ val ViewModelModule = module {
 }
 
 val RuntimeModule = module {
-    single<Notifier> { LMusicNotifier(androidApplication(), get(), get(), get(), get()) }
-    single { LMusicServiceConnector(get(), get()) }
-    single { CoverRepository(get()) }
-    single { LyricRepository(get()) }
+    singleOf(::LMusicNotifier)
+    single<Notifier> { get<LMusicNotifier>() }
+    singleOf(::LMusicServiceConnector)
+    singleOf(::CoverRepository)
+    singleOf(::LyricRepository)
     single { LMediaRepository() }
 }
 
