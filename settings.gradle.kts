@@ -36,6 +36,7 @@ include(":crash")
 include(":extension-core")
 include(":extension-ksp")
 include(":component")
+include(":value-cat")
 includeBuild("register")
 
 val extFile = File(rootDir, "extension")

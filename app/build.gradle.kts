@@ -146,6 +146,7 @@ dependencies {
     implementation(project(":lalbum"))
     implementation(project(":ldictionary"))
     implementation(project(":lextension"))
+    implementation(project(":value-cat"))
     ksp(project(":extension-ksp"))
 
     implementation(libs.room.ktx)
