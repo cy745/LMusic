@@ -76,6 +76,24 @@ android {
             resValue("string", "app_name", "@string/app_name_release")
         }
 
+        create("alpha") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            versionNameSuffix = "-ALPHA_${releaseTime()}"
+            applicationIdSuffix = ".alpha"
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = kotlin.runCatching { signingConfigs["release"] }.getOrNull()
+                ?: signingConfigs.getByName("debug")
+            resValue("string", "app_name", "@string/app_name_alpha")
+
+            matchingFallbacks.add("release")
+            matchingFallbacks.add("debug")
+        }
+
         create("beta") {
             isMinifyEnabled = true
             isShrinkResources = true
