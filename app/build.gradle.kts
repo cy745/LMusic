@@ -153,10 +153,6 @@ dependencies {
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
 
-    // accompanist
-    // https://google.github.io/accompanist
-    implementation(libs.bundles.accompanist)
-
     implementation(libs.navigation.compose)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.viewmodel.compose)

@@ -37,6 +37,10 @@ dependencies {
 
     api(libs.bundles.voyager)
 
+    // accompanist
+    // https://google.github.io/accompanist
+    api(libs.bundles.accompanist)
+
     api(project(":lmedia"))
     api(project(":common"))
 
