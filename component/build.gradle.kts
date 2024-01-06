@@ -51,10 +51,11 @@ dependencies {
     // Apache-2.0 license
     api("sh.calvin.reorderable:reorderable:1.1.0")
 
-    implementation(libs.activity.compose)
     // compose
+//    api(platform(libs.compose.bom))
+    api(platform(libs.compose.bom.alpha))
+    api(libs.activity.compose)
     api(libs.compose.compiler)
-    api(platform(libs.compose.bom))
     api(libs.bundles.compose)
-    debugApi(libs.bundles.compose.debug)
+    api(libs.bundles.compose.debug)
 }
