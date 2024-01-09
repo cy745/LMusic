@@ -52,10 +52,9 @@ dependencies {
     api("sh.calvin.reorderable:reorderable:1.1.0")
 
     // compose
-//    api(platform(libs.compose.bom))
+    // api(platform(libs.compose.bom))
     api(platform(libs.compose.bom.alpha))
     api(libs.activity.compose)
-    api(libs.compose.compiler)
     api(libs.bundles.compose)
     api(libs.bundles.compose.debug)
 }
