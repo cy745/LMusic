@@ -121,11 +121,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.compose.compiler.get().version.toString()
@@ -164,19 +164,12 @@ dependencies {
     implementation(project(":lalbum"))
     implementation(project(":ldictionary"))
     implementation(project(":lextension"))
-    implementation(project(":value-cat"))
+//    implementation(project(":value-cat"))
     ksp(project(":extension-ksp"))
 
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
-
-    implementation(libs.navigation.compose)
-    implementation(libs.lifecycle.viewmodel.ktx)
-    implementation(libs.lifecycle.viewmodel.compose)
-    implementation(libs.lifecycle.runtime.ktx)
-    implementation(libs.lifecycle.livedata.ktx)
-
 
     // https://github.com/Block-Network/StatusBarApiExample
     // 墨 · 状态栏歌词 API
