@@ -8,7 +8,7 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
@@ -28,7 +28,7 @@ import com.lalilu.lmusic.helper.LastTouchTimeHelper
 import com.lalilu.lmusic.service.LMusicServiceConnector
 import org.koin.android.ext.android.inject
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
     private val settingsSp: SettingsSp by inject()
     private val connector: LMusicServiceConnector by inject()
 

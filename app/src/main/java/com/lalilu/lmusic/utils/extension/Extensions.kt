@@ -19,8 +19,8 @@ import android.os.Build
 import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.GsonUtils
@@ -181,10 +181,10 @@ fun Cursor.getMediaUri(): Uri {
     )
 }
 
-fun Context.getActivity(): AppCompatActivity? {
+fun Context.getActivity(): ComponentActivity? {
     var currentContext = this
     while (currentContext is ContextWrapper) {
-        if (currentContext is AppCompatActivity) {
+        if (currentContext is ComponentActivity) {
             return currentContext
         }
         currentContext = currentContext.baseContext
