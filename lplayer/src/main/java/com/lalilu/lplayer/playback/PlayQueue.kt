@@ -22,10 +22,16 @@ interface PlayQueue<T> {
         ?.let { getById(it) }
 
     fun getNextIndex(): Int = (getCurrentIndex() + 1)
-        .let { if (isListLooping()) it % getSize() else it }
+        .let {
+            if (getSize() == 0) return@let it
+            if (isListLooping()) it % getSize() else it
+        }
 
     fun getPreviousIndex(): Int = (getCurrentIndex() - 1)
-        .let { if (isListLooping()) it % getSize() else it }
+        .let {
+            if (getSize() == 0) return@let it
+            if (isListLooping()) it % getSize() else it
+        }
 
     fun getNextId(): String? = getOrNull(getNextIndex())
     fun getPreviousId(): String? = getOrNull(getPreviousIndex())
