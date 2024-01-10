@@ -156,7 +156,7 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
             playMode == PlayMode.RepeatOne -> queue?.getCurrent()
             playMode == PlayMode.Shuffle && tempNextItem == null -> queue?.getShuffle()
             else -> tempNextItem
-        }
+        } ?: return
         val uri = queue?.getUriFromItem(tempNextItem!!) ?: return
         player?.preloadNext(uri)
     }
@@ -331,6 +331,9 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
                     tempNextItem = null
                     player?.resetPreloadNext()
                     preloadNextItem()
+                }
+                if (event.id == queue?.getCurrentId()) {
+                    player?.stop()
                 }
             }
         }
