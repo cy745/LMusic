@@ -131,8 +131,12 @@ class LMusicNotifier constructor(
         }
 //            .debounce(50)
             .onEach {
-                statusBarLyric.updateLyric(it?.tickerText?.toString() ?: "")
-                notificationManager.notify(NOTIFICATION_PLAYER_ID, it)
+                if (it == null) {
+                    notificationManager.cancel(NOTIFICATION_PLAYER_ID)
+                } else {
+                    statusBarLyric.updateLyric(it.tickerText?.toString() ?: "")
+                    notificationManager.notify(NOTIFICATION_PLAYER_ID, it)
+                }
             }.launchIn(this)
     }
 
