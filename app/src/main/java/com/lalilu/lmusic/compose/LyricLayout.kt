@@ -22,12 +22,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -70,9 +68,9 @@ fun LyricLayout(
     val listState = rememberLazyListState()
 
     val scrollToHelper = rememberLazyListScrollToHelper(listState)
-    val time by rememberUpdatedState(newValue = currentTime())
     val line: State<LyricEntry?> = remember {
         derivedStateOf {
+            val time = currentTime()
             val lyricEntryList = lyricEntry.value
             if (lyricEntryList.isEmpty()) return@derivedStateOf null
 
@@ -125,6 +123,7 @@ fun LyricLayout(
     }
 
     LaunchedEffect(deltaValue.floatValue) {
+        if (isDragged.value) return@LaunchedEffect
         listState.scroll { scrollBy(deltaValue.floatValue) }
     }
 
