@@ -4,7 +4,9 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,7 +37,6 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.common.HapticUtils
-import com.lalilu.lmusic.compose.LyricLayout
 import com.lalilu.lmusic.compose.component.playing.sealed.PlayingToolbar
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -171,152 +172,167 @@ fun PlayingLayout(
         }
     }
 
-    Layout(
-        modifier = Modifier
-            .nestedScroll(nestedScrollConnection)
-            .recomposeHighlighter(),
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(bottom = 10.dp)
-            ) {
-                PlayingToolbar()
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .drawWithContent {
-                        clipRect(0f, 0f, size.width, draggable.position.floatValue) {
-                            drawRect(animateColor.value)
-                            this@drawWithContent.drawContent()
-                        }
-                    }
-            ) {
-                val adInterpolator = remember { AccelerateDecelerateInterpolator() }
-                val dInterpolator = remember { DecelerateInterpolator() }
-                val transition: (Float) -> Float = remember {
-                    { x -> -2f * (x - 0.5f).pow(2) + 0.5f }
+    BoxWithConstraints {
+        Layout(
+            modifier = Modifier
+                .nestedScroll(nestedScrollConnection)
+                .recomposeHighlighter(),
+            content = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(bottom = 10.dp)
+                ) {
+                    PlayingToolbar()
                 }
 
-                val currentTime = LPlayer.runtime.info.positionFlow.collectAsState()
-                val lyricEntry = playingVM.lyricRepository.currentLyric
-                    .mapLatest {
-                        LyricUtil
-                            .parseLrc(arrayOf(it?.first, it?.second))
-                            ?: emptyList()
-                    }
-                    .collectAsState(initial = emptyList())
-                val minToMiddleProgress = remember {
-                    derivedStateOf {
-                        draggable.progressBetween(
-                            from = DragAnchor.Min,
-                            to = DragAnchor.Middle,
-                            offset = draggable.position.floatValue
-                        )
-                    }
-                }
-                val middleToMaxProgress = remember {
-                    derivedStateOf {
-                        draggable.progressBetween(
-                            from = DragAnchor.Middle,
-                            to = DragAnchor.Max,
-                            offset = draggable.position.floatValue
-                        )
-                    }
-                }
-
-                BlurBackground(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .graphicsLayer {
-                            val progress = middleToMaxProgress.value
-                            val dProgress = dInterpolator.getInterpolation(progress)
-                            val minTop = -(size.height - size.width) / 2f
-                            val offsetTop = lerp(minTop, 0f, dProgress)
+                        .drawWithContent {
+                            clipRect(0f, 0f, size.width, draggable.position.floatValue) {
+                                drawRect(animateColor.value)
+                                this@drawWithContent.drawContent()
+                            }
+                        }
+                ) {
+                    val adInterpolator = remember { AccelerateDecelerateInterpolator() }
+                    val dInterpolator = remember { DecelerateInterpolator() }
+                    val transition: (Float) -> Float = remember {
+                        { x -> -2f * (x - 0.5f).pow(2) + 0.5f }
+                    }
 
-                            val aspectRatio = size.height / size.width
-                            val scale = lerp(1f, aspectRatio, progress)
+                    val currentTime = LPlayer.runtime.info.positionFlow.collectAsState()
+                    val lyricEntry = playingVM.lyricRepository.currentLyric
+                        .mapLatest {
+                            LyricUtil
+                                .parseLrc(arrayOf(it?.first, it?.second))
+                                ?.mapIndexed { index, lyricEntry ->
+                                    LyricEntry(
+                                        index = index,
+                                        time = lyricEntry.time,
+                                        text = lyricEntry.text,
+                                        translate = lyricEntry.secondText
+                                    )
+                                }
+                                ?: emptyList()
+                        }
+                        .collectAsState(initial = emptyList())
+                    val minToMiddleProgress = remember {
+                        derivedStateOf {
+                            draggable.progressBetween(
+                                from = DragAnchor.Min,
+                                to = DragAnchor.Middle,
+                                offset = draggable.position.floatValue
+                            )
+                        }
+                    }
+                    val middleToMaxProgress = remember {
+                        derivedStateOf {
+                            draggable.progressBetween(
+                                from = DragAnchor.Middle,
+                                to = DragAnchor.Max,
+                                offset = draggable.position.floatValue
+                            )
+                        }
+                    }
 
-                            val floatProgress = transition(middleToMaxProgress.value)
-                            val translation = floatProgress * 200f
+                    BlurBackground(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .graphicsLayer {
+                                val progress = middleToMaxProgress.value
+                                val dProgress = dInterpolator.getInterpolation(progress)
+                                val minTop =
+                                    (this@BoxWithConstraints.constraints.maxHeight - this@BoxWithConstraints.constraints.maxWidth) / 2f
+                                val offsetTop = lerp(0f, minTop, dProgress)
 
-                            alpha = minToMiddleProgress.value
-                            translationY = offsetTop + translation
-                            scaleY = scale
-                            scaleX = scale
+                                val aspectRatio =
+                                    this@BoxWithConstraints.constraints.maxHeight.toFloat() / this@BoxWithConstraints.constraints.maxWidth.toFloat()
+                                val scale = lerp(1f, aspectRatio, progress)
+
+                                val floatProgress = transition(middleToMaxProgress.value)
+                                val translation = floatProgress * 200f
+
+                                alpha = minToMiddleProgress.value
+                                translationY = offsetTop + translation
+                                scaleY = scale
+                                scaleX = scale
+                            },
+                        blurProgress = { middleToMaxProgress.value },
+                        onBackgroundColorFetched = { backgroundColor.value = it },
+                        imageData = {
+                            playingVM.playing.value
+                                ?: com.lalilu.component.R.drawable.ic_music_2_line_100dp
+                        }
+                    )
+
+                    LyricLayout(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                val interpolation =
+                                    adInterpolator.getInterpolation(middleToMaxProgress.value)
+                                val progressIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
+
+                                val floatProgress = transition(middleToMaxProgress.value)
+                                val translation = floatProgress * 200f
+
+                                translationY = translation * 3f
+                                alpha = progressIncrease
+                            },
+                        currentTime = { currentTime.value },
+                        onItemLongClick = {
+                            if (draggable.state.value == DragAnchor.Max) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                isLyricViewScrollEnable.value = true
+                            }
                         },
-                    blurProgress = { middleToMaxProgress.value },
-                    onBackgroundColorFetched = { backgroundColor.value = it },
-                    imageData = {
-                        playingVM.playing.value
-                            ?: com.lalilu.component.R.drawable.ic_music_2_line_100dp
+                        lyricEntry = lyricEntry
+                    )
+                }
+
+                CustomRecyclerView(
+                    modifier = Modifier.clipToBounds(),
+                    onScrollStart = { scrollState.value = RecyclerView.SCROLL_STATE_DRAGGING },
+                    onScrollTouchUp = { scrollState.value = RecyclerView.SCROLL_STATE_SETTLING },
+                    onScrollIdle = {
+                        scrollState.value = RecyclerView.SCROLL_STATE_IDLE
+                        nestedScrollConnection.onFlingEnd()
+                        draggable.fling(0f)
                     }
                 )
-
-                LyricLayout(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            val interpolation =
-                                adInterpolator.getInterpolation(middleToMaxProgress.value)
-                            val progressIncrease = (2 * interpolation - 1F).coerceAtLeast(0F)
-
-                            val floatProgress = transition(middleToMaxProgress.value)
-                            val translation = floatProgress * 200f
-
-                            translationY = translation * 3f
-                            alpha = progressIncrease
-                        },
-                    currentTime = { currentTime.value },
-                    onItemLongClick = {
-                        if (draggable.state.value == DragAnchor.Max) {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            isLyricViewScrollEnable.value = true
-                        }
-                    },
-                    lyricEntry = lyricEntry
-                )
             }
+        ) { measurables, constraints ->
+            val minHeader = measurables[0].measure(constraints)
 
-            CustomRecyclerView(
-                modifier = Modifier.clipToBounds(),
-                onScrollStart = { scrollState.value = RecyclerView.SCROLL_STATE_DRAGGING },
-                onScrollTouchUp = { scrollState.value = RecyclerView.SCROLL_STATE_SETTLING },
-                onScrollIdle = {
-                    scrollState.value = RecyclerView.SCROLL_STATE_IDLE
-                    nestedScrollConnection.onFlingEnd()
-                    draggable.fling(0f)
-                }
+            val picture = measurables[1].measure(constraints)
+
+            val cConstraints =
+                constraints.copy(maxHeight = constraints.maxHeight - minHeader.height)
+            val column = measurables[2].measure(cConstraints)
+
+            draggable.updateAnchor(
+                min = minHeader.height,
+                middle = constraints.maxWidth,
+                max = constraints.maxHeight
             )
+
+            layout(
+                width = constraints.maxWidth,
+                height = constraints.maxHeight
+            ) {
+                val animateOffset = draggable.position.floatValue.roundToInt()
+                    .coerceIn(minHeader.height, constraints.maxHeight)
+
+                picture.place(0, 0)
+                minHeader.place(0, animateOffset - minHeader.height)
+                column.place(0, animateOffset)
+            }
         }
-    ) { measurables, constraints ->
-        val minHeader = measurables[0].measure(constraints)
 
-        val picture = measurables[1].measure(constraints)
-
-        val cConstraints =
-            constraints.copy(maxHeight = constraints.maxHeight - minHeader.height)
-        val column = measurables[2].measure(cConstraints)
-
-        draggable.updateAnchor(
-            min = minHeader.height,
-            middle = constraints.maxWidth,
-            max = constraints.maxHeight
-        )
-
-        layout(
-            width = constraints.maxWidth,
-            height = constraints.maxHeight
-        ) {
-            val animateOffset = draggable.position.floatValue.roundToInt()
-                .coerceIn(minHeader.height, constraints.maxHeight)
-
-            picture.place(0, 0, 0f)
-            minHeader.place(0, animateOffset - minHeader.height, 10f)
-            column.place(0, animateOffset, 5f)
-        }
+        SeekbarLayout(animateColor = animateColor)
     }
 }
