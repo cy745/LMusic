@@ -44,6 +44,10 @@ class ComposeNestedScrollRecyclerView @JvmOverloads constructor(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(e: MotionEvent): Boolean {
+        if (verticalDrag == null && e.actionMasked == MotionEvent.ACTION_DOWN) {
+            verticalDrag = true
+        }
+
         if (verticalDrag == true && e.actionMasked == MotionEvent.ACTION_MOVE) {
             e.setLocation(e.x, e.rawY - position[1])
         }
