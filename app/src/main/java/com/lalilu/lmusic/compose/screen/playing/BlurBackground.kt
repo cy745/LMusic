@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
@@ -34,7 +33,6 @@ fun BlurBackground(
     onBackgroundColorFetched: (Color) -> Unit,
     blurProgress: () -> Float,
 ) {
-    val progress = rememberUpdatedState(newValue = blurProgress())
     val context = LocalContext.current
     val maskPaint =
         remember { Paint(Paint.ANTI_ALIAS_FLAG).also { it.color = android.graphics.Color.BLACK } }
@@ -47,53 +45,68 @@ fun BlurBackground(
             fadeIn(tween(500)) togetherWith fadeOut(tween(300, 500))
         }
     ) { data ->
+        val extraKey = remember { data.toString() }
         val samplingBitmap = remember { mutableStateOf<Bitmap?>(null) }
+        val srcRect = remember { Rect() }
         val targetRect = remember { Rect() }
 
         SubcomposeAsyncImage(
             modifier = Modifier
                 .fillMaxSize()
                 .drawWithContent {
-                    val radius = (progress.value * 50f).toInt()
+                    val progress = blurProgress()
+                    val radius = (progress * StackBlurUtils.MAX_RADIUS).toInt()
 
-                    if (samplingBitmap.value == null || radius == 0) {
+                    // 若无降采样图片或当前Radius为0则直接绘制原图
+                    if (samplingBitmap.value == null || radius <= 0) {
                         this.drawContent()
-                    } else {
-                        val top = ((size.height - size.width) / 2f).toInt()
-                        val bottom = (size.height - top).toInt()
-                        targetRect.set(0, top, size.width.toInt(), bottom)
-
-                        StackBlurUtils
-                            .processWithCache(samplingBitmap.value!!, radius)
-                            ?.let {
-                                drawContext.canvas.nativeCanvas.drawBitmap(
-                                    it, null, targetRect, null
-                                )
-                            }
-
-                        maskPaint.alpha = (progress.value * 100f)
-                            .coerceIn(0f, 255f)
-                            .toInt()
-                        drawContext.canvas.nativeCanvas.drawRect(targetRect, maskPaint)
+                        return@drawWithContent
                     }
+
+                    // 绘制 blurredBitmap
+                    targetRect.set(0, 0, size.width.toInt(), size.height.toInt())
+                    val blurredBitmap =
+                        StackBlurUtils.processWithCache(samplingBitmap.value!!, radius, extraKey)
+                    if (blurredBitmap != null) {
+                        drawContext.canvas.nativeCanvas
+                            .drawBitmap(blurredBitmap, srcRect, targetRect, null)
+                    }
+
+                    // 绘制 mask 透明的深色遮罩
+                    maskPaint.alpha = (progress * 100f)
+                        .coerceIn(0f, 255f)
+                        .toInt()
+                    drawContext.canvas.nativeCanvas.drawRect(targetRect, maskPaint)
                 },
             model = ImageRequest.Builder(context)
                 .data(data)
                 .allowHardware(false)
                 .build(),
-            contentScale = ContentScale.FillWidth,
+            contentScale = ContentScale.Crop,
             contentDescription = "",
-            onSuccess = {
-                val temp = it.result.drawable.toBitmap()
-                val samplingTemp = createSamplingBitmap(temp, 400)
+            onSuccess = { state ->
+                val temp = state.result.drawable.toBitmap()
+                samplingBitmap.value = createSamplingBitmap(temp, 400).also {
+                    // 提前预加载BlurredBitmap
+                    StackBlurUtils.preload(it, extraKey)
 
-                println("samplingTemp: ${samplingTemp.width} ${samplingTemp.height}")
-                samplingBitmap.value = samplingTemp
+                    if (it.width > it.height) {
+                        val left = (it.width - it.height) / 2
+                        val right = it.width - left
+                        srcRect.set(left, 0, right, it.height)
+                    } else {
+                        val top = (it.height - it.width) / 2
+                        val bottom = it.height - top
+                        srcRect.set(0, top, it.width, bottom)
+                    }
+                }
 
-                val color = Palette.from(samplingTemp)
-                    .generate()
-                    .getAutomaticColor()
-                onBackgroundColorFetched(Color(color))
+                samplingBitmap.value?.let {
+                    val color = Palette.from(it)
+                        .generate()
+                        .getAutomaticColor()
+                    onBackgroundColorFetched(Color(color))
+                }
             }
         )
     }
@@ -111,9 +124,16 @@ fun createSamplingBitmap(source: Bitmap, samplingValue: Int): Bitmap {
     val height = source.height
     val matrix = Matrix()
 
-    val scaleWidth = samplingValue.toFloat() / width
-    val scaleHeight = samplingValue.toFloat() / height
-    matrix.postScale(scaleWidth, scaleHeight)
+    val scaleWidth: Float
+    val scaleHeight: Float
+    if (width > height) {
+        scaleHeight = samplingValue.toFloat() / height
+        scaleWidth = scaleHeight
+    } else {
+        scaleWidth = samplingValue.toFloat() / width
+        scaleHeight = scaleWidth
+    }
+    matrix.setScale(scaleWidth, scaleHeight)
 
     return Bitmap.createBitmap(
         source, 0, 0, width, height, matrix, false
