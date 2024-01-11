@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose
+package com.lalilu.lmusic.compose.screen.playing
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.sp
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.dynamicanimation.animation.springAnimationOf
 import androidx.dynamicanimation.animation.withSpringForceProperties
-import com.dirror.lyricviewx.LyricEntry
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -54,6 +53,15 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.isActive
 import kotlin.random.Random
+
+data class LyricEntry(
+    val index: Int,
+    val time: Long,
+    val text: String,
+    val translate: String? = null
+) {
+    val key = "$index:$time"
+}
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @Composable
@@ -154,7 +162,7 @@ fun LyricLayout(
                 // 1. 从当前可见元素直接查找offset （准确值）
                 // get the offset directly from the visibleItemsInfo
                 val offset = listState.layoutInfo.visibleItemsInfo
-                    .firstOrNull { it.key == line.value?.time }
+                    .firstOrNull { it.key == line.value?.key }
                     ?.offset
 
                 if (offset != null) {
@@ -176,7 +184,7 @@ fun LyricLayout(
 
                 // 2. 使用实时维护的sizeMap查找并计算目标元素的offset （非准确值）
                 // Use the real-time maintained sizeMap to find and calculate the offset of the target element
-                val index = scrollToHelper.keys.indexOfFirst { it == line.value?.time }
+                val index = scrollToHelper.keys.indexOfFirst { it == line.value?.key }
                 if (index == -1) return@collectLatest // 元素不存在keys列表中，则不进行滚动
 
                 if (!isActive) return@collectLatest
@@ -227,10 +235,10 @@ fun LyricLayout(
     ) {
         scrollToHelper.startRecord()
 
-        scrollToHelper.doRecord(lyricEntry.value.map { it.time })
+        scrollToHelper.doRecord(lyricEntry.value.map { it.key })
         items(
             items = lyricEntry.value,
-            key = { it.time },
+            key = { it.key },
             contentType = { LyricEntry::class }
         ) {
             BoxWithConstraints(
@@ -242,7 +250,7 @@ fun LyricLayout(
                     textMeasurer = textMeasurer,
                     fontFamily = fontFamily,
                     onLongClick = { onItemLongClick() },
-                    isCurrent = { it.time == line.value?.time }
+                    isCurrent = { it.key == line.value?.key }
                 )
             }
         }
