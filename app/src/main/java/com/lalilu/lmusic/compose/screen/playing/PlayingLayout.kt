@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.common.HapticUtils
-import com.lalilu.lmusic.compose.component.playing.sealed.PlayingToolbar
+import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
@@ -188,7 +188,9 @@ fun PlayingLayout(
                         .statusBarsPadding()
                         .padding(bottom = 10.dp)
                 ) {
-                    PlayingToolbar()
+                    PlayingToolbar(
+                        extraVisible = { draggable.state.value == DragAnchor.Max }
+                    )
                 }
 
                 Box(
@@ -316,6 +318,10 @@ fun PlayingLayout(
                                 .wrapContentHeight()
                                 .padding(bottom = 80.dp, top = 40.dp)
                                 .align(Alignment.BottomCenter),
+//                                .combinedClickable(
+//                                    onLongClick = { isLyricLayoutScrollEnable.value = false },
+//                                    onClick = {}
+//                                ),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Spacer(
