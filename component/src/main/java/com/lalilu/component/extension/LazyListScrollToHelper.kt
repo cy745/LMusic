@@ -14,6 +14,8 @@ class LazyListScrollToHelper internal constructor(
     private val keys: MutableSet<Any> = mutableSetOf()
     private var finished: Boolean = false
 
+    fun getKeys(): Collection<Any> = keys
+
     fun startRecord() {
         keys.clear()
         finished = false
