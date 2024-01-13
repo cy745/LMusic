@@ -39,6 +39,14 @@ object PlayerVolumeHelper {
     }
 }
 
+fun MediaPlayer.safeIsPlaying(): Boolean {
+    return runCatching { isPlaying }.getOrNull() ?: false
+}
+
+fun MediaPlayer.safeCheck(): Boolean {
+    return runCatching { currentPosition >= 0 }.getOrNull() ?: false
+}
+
 fun MediaPlayer.setMaxVolume(@IntRange(from = 0, to = 100) volume: Int) {
     val maxVolume = (volume / 100f).coerceIn(0f, 1f)
     val sessionId = audioSessionId
@@ -59,8 +67,10 @@ fun MediaPlayer.fadeStart(
     val startValue = PlayerVolumeHelper.getNowVolume(sessionId)
     setVolume(startValue, startValue)
 
+    if (!safeCheck()) return@synchronized
+
     // 当前未播放，则开始播放
-    if (!isPlaying) start()
+    if (!safeIsPlaying()) start()
 
     val timer = object : CountDownTimer(duration, duration / 10L) {
         override fun onTick(millisUntilFinished: Long) {
@@ -93,6 +103,8 @@ fun MediaPlayer.fadePause(
     PlayerVolumeHelper.cancelTimer(sessionId)
     val startValue = PlayerVolumeHelper.getNowVolume(sessionId)
 
+    if (!safeCheck()) return@synchronized
+
     val timer = object : CountDownTimer(duration, duration / 10L) {
         override fun onTick(millisUntilFinished: Long) {
             val maxVolume = PlayerVolumeHelper.getMaxVolume()
@@ -108,7 +120,7 @@ fun MediaPlayer.fadePause(
         override fun onFinish() {
             PlayerVolumeHelper.updateNowVolume(sessionId, 0f)
             runCatching { setVolume(0f, 0f) }.getOrElse { cancel() }
-            if (isPlaying) pause()
+            if (safeIsPlaying()) pause()
             onFinished()
         }
     }

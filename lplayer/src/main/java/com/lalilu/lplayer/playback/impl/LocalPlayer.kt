@@ -11,6 +11,7 @@ import com.lalilu.lplayer.extensions.PlayerVolumeHelper
 import com.lalilu.lplayer.extensions.fadePause
 import com.lalilu.lplayer.extensions.fadeStart
 import com.lalilu.lplayer.extensions.loadSource
+import com.lalilu.lplayer.extensions.safeIsPlaying
 import com.lalilu.lplayer.extensions.setMaxVolume
 import com.lalilu.lplayer.playback.Player
 import com.lalilu.lplayer.playback.PlayerEvent
@@ -25,9 +26,9 @@ class LocalPlayer(
     MediaPlayer.OnErrorListener,
     MediaPlayer.OnBufferingUpdateListener {
     override var listener: Player.Listener? = null
-    override val isPlaying: Boolean get() = player?.isPlaying == true
+    override val isPlaying: Boolean get() = player?.safeIsPlaying() == true
     override val isPrepared: Boolean get() = player?.isPrepared == true
-    override val isStopped: Boolean get() = player?.isPlaying != true
+    override val isStopped: Boolean get() = player?.safeIsPlaying() != true
 
     override var couldPlayNow: () -> Boolean = { true }
     override var handleNetUrl: (String) -> String = { it }
@@ -71,7 +72,7 @@ class LocalPlayer(
      * 回收MediaPlayer，超出最大容量则释放不再需要该MediaPlayer了
      */
     private fun recycleMediaPlayer(player: LMediaPlayer) {
-        if (player.isPlaying) player.stop()
+        if (player.safeIsPlaying()) player.stop()
         unbindPlayer(player)
         player.reset()
 
@@ -154,7 +155,7 @@ class LocalPlayer(
 
     override fun stop() {
         player?.apply {
-            if (isPlaying) stop()
+            if (safeIsPlaying()) stop()
             reset()
             release()
         }
