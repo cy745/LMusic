@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen.playing
 
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,7 +23,11 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.lmusic.utils.extension.edgeTransparent
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.isActive
 
 data class LyricEntry(
     val index: Int,
@@ -33,21 +38,26 @@ data class LyricEntry(
     val key = "$index:$time"
 }
 
+@OptIn(FlowPreview::class)
 @Composable
 fun LyricLayout(
     modifier: Modifier = Modifier,
     currentTime: () -> Long = { 0L },
     onItemLongClick: () -> Unit = {},
+    isUserScrollEnable: () -> Boolean = { false },
     lyricEntry: State<List<LyricEntry>> = remember { mutableStateOf(emptyList()) },
     fontFamily: State<FontFamily?> = remember { mutableStateOf<FontFamily?>(null) }
 ) {
     val textMeasurer = rememberTextMeasurer()
     val listState = rememberLazyListState()
 
+    val isUserTouching = remember { mutableStateOf(false) }
+    val isDragged = listState.interactionSource.collectIsDraggedAsState()
     val scrollToHelper = rememberLazyListScrollToHelper(listState)
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
-        keysKeeper = { scrollToHelper.keys }
+        enableScrollAnimation = { !isUserTouching.value },
+        keysKeeper = { scrollToHelper.getKeys() }
     )
 
     val line: State<LyricEntry?> = remember {
@@ -79,6 +89,18 @@ fun LyricLayout(
             .collectLatest {
                 it ?: return@collectLatest
                 scroller.animateTo(it.key)
+            }
+    }
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { isDragged.value }
+            .onEach { isUserTouching.value = isUserScrollEnable() }
+            .debounce(5000)
+            .collectLatest {
+                if (!it && isActive && isUserTouching.value) {
+                    isUserTouching.value = false
+                    line.value?.key?.let(scroller::animateTo)
+                }
             }
     }
 
