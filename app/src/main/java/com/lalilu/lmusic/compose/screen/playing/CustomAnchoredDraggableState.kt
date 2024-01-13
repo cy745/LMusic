@@ -152,7 +152,7 @@ class CustomAnchoredDraggableState(
         return result
     }
 
-    private fun getPositionByAnchor(anchor: DragAnchor) = when (anchor) {
+    fun getPositionByAnchor(anchor: DragAnchor) = when (anchor) {
         DragAnchor.Min -> minPosition
         DragAnchor.Middle -> middlePosition
         DragAnchor.Max -> maxPosition
@@ -202,9 +202,21 @@ class CustomAnchoredDraggableState(
 
     fun snapBy(targetPosition: Int) {
         when (stateValue) {
-            DragAnchor.Min, DragAnchor.Middle, DragAnchor.Max -> {
+            DragAnchor.Middle -> {
                 val position =
                     calcSnapToPosition(targetPosition, minPosition, middlePosition, maxPosition)
+                animator.animateToFinalPosition(position.toFloat())
+            }
+
+            DragAnchor.Min -> {
+                val position =
+                    calcSnapToPosition(targetPosition, minPosition, middlePosition)
+                animator.animateToFinalPosition(position.toFloat())
+            }
+
+            DragAnchor.Max -> {
+                val position =
+                    calcSnapToPosition(targetPosition, middlePosition, maxPosition)
                 animator.animateToFinalPosition(position.toFloat())
             }
 
