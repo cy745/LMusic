@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.playing.sealed
+package com.lalilu.lmusic.compose.component.playing
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
@@ -7,45 +7,33 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
-import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.compose.component.settings.FileSelectWrapper
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.lalilu.lplayer.LPlayer
 import org.koin.compose.koinInject
 
 @Composable
 fun LyricViewToolbar(
-    settingsSp: SettingsSp = koinInject(),
-    playingVM: PlayingViewModel = singleViewModel(),
+    settingsSp: SettingsSp = koinInject()
 ) {
     var isDrawTranslation by settingsSp.isDrawTranslation
     var isEnableBlurEffect by settingsSp.isEnableBlurEffect
-    val song by LPlayer.runtime.info.playingFlow.collectAsState(null)
 
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(horizontal = 25.dp, vertical = 16.dp),
+            .wrapContentWidth()
+            .wrapContentHeight(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
@@ -54,16 +42,6 @@ fun LyricViewToolbar(
         )
         val iconAlpha2 = animateFloatAsState(
             targetValue = if (isDrawTranslation) 1f else 0.5f, label = ""
-        )
-
-        Text(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 10.dp, end = 10.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            text = song?.title ?: stringResource(id = R.string.default_slogan),
-            color = Color.White.copy(0.5f)
         )
 
         FileSelectWrapper(state = settingsSp.lyricTypefacePath) { launcher, _ ->

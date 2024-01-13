@@ -7,7 +7,6 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,6 +28,7 @@ import com.lalilu.lmusic.utils.extension.slideTransition
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlayingHeader(
+    modifier: Modifier = Modifier,
     title: () -> String,
     subTitle: () -> String,
     isPlaying: () -> Boolean,
@@ -37,10 +37,10 @@ fun PlayingHeader(
     val slideMovement = remember { density.run { 50.dp.toPx().toInt() } }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(vertical = 8.dp, horizontal = 20.dp)
+            .padding(vertical = 8.dp)
     ) {
         AnimatedContent(
             targetState = title(),
@@ -68,7 +68,6 @@ fun PlayingHeader(
                 style = MaterialTheme.typography.subtitle1
             )
         }
-        Spacer(modifier = Modifier.weight(1f))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
