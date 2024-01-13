@@ -2,21 +2,38 @@ package com.lalilu.lmusic.compose.screen.playing
 
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
@@ -30,11 +47,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-import androidx.core.view.ViewCompat
-import androidx.recyclerview.widget.RecyclerView
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.common.HapticUtils
 import com.lalilu.lmusic.compose.component.playing.sealed.PlayingToolbar
@@ -47,58 +63,35 @@ import org.koin.compose.koinInject
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-private enum class ActionSource {
-    LYRIC_VIEW, RECYCLER_VIEW, UNKNOWN
-}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun PlayingLayout(
     playingVM: PlayingViewModel = koinInject(),
 ) {
-    val haptic = LocalHapticFeedback.current
     val view = LocalView.current
-    val isLyricViewScrollEnable = remember { mutableStateOf(false) }
+    val haptic = LocalHapticFeedback.current
+    val isLyricLayoutScrollEnable = remember { mutableStateOf(false) }
+    val lyricLayoutLazyListState = rememberLazyListState()
+    val cancelHandlerScrollState = rememberScrollState()
+    val recyclerViewScrollState = remember { mutableStateOf(false) }
+    val backgroundColor = remember { mutableStateOf(Color.DarkGray) }
+    val animateColor = animateColorAsState(targetValue = backgroundColor.value, label = "")
+
     val draggable = rememberCustomAnchoredDraggableState { oldState, newState ->
         if (newState == DragAnchor.MiddleXMax && oldState != DragAnchor.MiddleXMax) {
             HapticUtils.haptic(view, HapticUtils.Strength.HAPTIC_STRONG)
         }
         if (newState != DragAnchor.Max) {
-            isLyricViewScrollEnable.value = false
+            isLyricLayoutScrollEnable.value = false
         }
     }
 
-    val backgroundColor = remember { mutableStateOf(Color.DarkGray) }
-    val getRecyclerFunc = remember { mutableStateOf<() -> RecyclerView?>({ null }) }
-    val scrollState = remember { mutableStateOf(RecyclerView.SCROLL_STATE_IDLE) }
-    val animateColor = animateColorAsState(targetValue = backgroundColor.value, label = "")
-
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
-            private var startActionSource: ActionSource = ActionSource.UNKNOWN
-
-            fun isRecyclerViewAction(): Boolean {
-                return scrollState.value != RecyclerView.SCROLL_STATE_IDLE
-            }
-
-            fun isRecyclerViewFlinging(): Boolean {
-                return scrollState.value == RecyclerView.SCROLL_STATE_SETTLING
-            }
-
-            fun updateStartActionSource() {
-                if (startActionSource == ActionSource.UNKNOWN) {
-                    startActionSource =
-                        if (isRecyclerViewAction()) ActionSource.RECYCLER_VIEW else ActionSource.LYRIC_VIEW
-                }
-            }
-
-            fun onFlingEnd() {
-                startActionSource = ActionSource.UNKNOWN
-            }
-
             override suspend fun onPreFling(available: Velocity): Velocity {
                 // 若非RecyclerView的滚动，则消费y轴上的所有速度，避免嵌套滚动事件继续
-                if (!isRecyclerViewAction() && !isLyricViewScrollEnable.value) {
+                if (!recyclerViewScrollState.value && !isLyricLayoutScrollEnable.value) {
                     draggable.fling(available.y)
                     return available
                 }
@@ -107,8 +100,8 @@ fun PlayingLayout(
             }
 
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (startActionSource != ActionSource.RECYCLER_VIEW) {
-                    onFlingEnd()
+                if (consumed.y != 0f && available.y == 0f) {
+                    draggable.fling(0f)
                 }
                 return super.onPostFling(consumed, available)
             }
@@ -117,18 +110,24 @@ fun PlayingLayout(
                 // 取消正在进行的动画事件
                 draggable.tryCancel()
 
-                if (source == NestedScrollSource.Drag) {
-                    updateStartActionSource()
-
-                    // 新的拖拽事件将取消正在进行的fling滚动
-                    if (isRecyclerViewFlinging()) {
-                        getRecyclerFunc.value.invoke()?.stopNestedScroll(ViewCompat.TYPE_NON_TOUCH)
+                return when {
+                    cancelHandlerScrollState.isScrollInProgress -> {
+                        draggable.scrollBy(available.y)
+                        available
                     }
-                }
 
-                return when (startActionSource) {
-                    ActionSource.LYRIC_VIEW -> {
-                        if (isLyricViewScrollEnable.value) {
+                    lyricLayoutLazyListState.isScrollInProgress -> {
+                        if (
+                            !isLyricLayoutScrollEnable.value
+                            && available.y > 0
+                            && draggable.position.floatValue.toInt()
+                            == draggable.getPositionByAnchor(DragAnchor.Max)
+                        ) {
+                            HapticUtils.haptic(view, HapticUtils.Strength.HAPTIC_STRONG)
+                            isLyricLayoutScrollEnable.value = true
+                        }
+
+                        if (isLyricLayoutScrollEnable.value) {
                             super.onPreScroll(available, source)
                         } else {
                             draggable.scrollBy(available.y)
@@ -136,12 +135,13 @@ fun PlayingLayout(
                         }
                     }
 
-                    ActionSource.RECYCLER_VIEW -> {
+                    recyclerViewScrollState.value -> {
                         if (available.y < 0) available.copy(y = draggable.scrollBy(available.y))
                         else super.onPreScroll(available, source)
                     }
 
-                    else -> super.onPreScroll(available, source)
+                    // 前面的条件都不满足，则将该事件全部消费，避免未知的子组件产生动作
+                    else -> available
                 }
             }
 
@@ -150,18 +150,22 @@ fun PlayingLayout(
                 available: Offset,
                 source: NestedScrollSource
             ): Offset {
-                return when (startActionSource) {
-                    ActionSource.LYRIC_VIEW -> {
-                        if (isLyricViewScrollEnable.value) {
-                            if (available.y < 0) available.copy(y = draggable.scrollBy(available.y))
-                            else super.onPreScroll(available, source)
+                return when {
+                    cancelHandlerScrollState.isScrollInProgress -> {
+                        draggable.scrollBy(available.y)
+                        available
+                    }
+
+                    lyricLayoutLazyListState.isScrollInProgress -> {
+                        if (isLyricLayoutScrollEnable.value) {
+                            super.onPreScroll(available, source)
                         } else {
                             draggable.scrollBy(available.y)
                             available
                         }
                     }
 
-                    ActionSource.RECYCLER_VIEW -> {
+                    recyclerViewScrollState.value -> {
                         if (available.y > 0) available.copy(y = draggable.scrollBy(available.y))
                         else super.onPostScroll(consumed, available, source)
                     }
@@ -283,24 +287,54 @@ fun PlayingLayout(
                                 translationY = translation * 3f
                                 alpha = progressIncrease
                             },
+                        listState = lyricLayoutLazyListState,
+                        isUserScrollEnable = { isLyricLayoutScrollEnable.value },
                         currentTime = { currentTime.value },
                         onItemLongClick = {
                             if (draggable.state.value == DragAnchor.Max) {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                isLyricViewScrollEnable.value = true
+                                isLyricLayoutScrollEnable.value = !isLyricLayoutScrollEnable.value
                             }
                         },
                         lyricEntry = lyricEntry
                     )
+
+                    AnimatedVisibility(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        visible = isLyricLayoutScrollEnable.value || cancelHandlerScrollState.isScrollInProgress,
+                        label = "",
+                        enter = fadeIn() + slideIn { IntOffset(0, 100) },
+                        exit = fadeOut() + slideOut { IntOffset(0, 100) }
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .verticalScroll(cancelHandlerScrollState)
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .padding(bottom = 80.dp, top = 40.dp)
+                                .align(Alignment.BottomCenter),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Spacer(
+                                modifier = Modifier
+                                    .width(100.dp)
+                                    .height(5.dp)
+                                    .clip(RoundedCornerShape(5.dp))
+                                    .background(color = Color.White.copy(alpha = 0.6f))
+                            )
+                        }
+                    }
                 }
 
                 CustomRecyclerView(
                     modifier = Modifier.clipToBounds(),
-                    onScrollStart = { scrollState.value = RecyclerView.SCROLL_STATE_DRAGGING },
-                    onScrollTouchUp = { scrollState.value = RecyclerView.SCROLL_STATE_SETTLING },
+                    onScrollStart = { recyclerViewScrollState.value = true },
+                    onScrollTouchUp = { },
                     onScrollIdle = {
-                        scrollState.value = RecyclerView.SCROLL_STATE_IDLE
-                        nestedScrollConnection.onFlingEnd()
+                        recyclerViewScrollState.value = false
                         draggable.fling(0f)
                     }
                 )
@@ -333,6 +367,17 @@ fun PlayingLayout(
             }
         }
 
-        SeekbarLayout(animateColor = animateColor)
+        AnimatedVisibility(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            visible = !isLyricLayoutScrollEnable.value,
+            label = "",
+            enter = fadeIn(tween(300)) + slideIn { IntOffset(0, 100) },
+            exit = fadeOut(tween(300)) + slideOut { IntOffset(0, 100) }
+        ) {
+            SeekbarLayout(animateColor = animateColor)
+        }
     }
 }
