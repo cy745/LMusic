@@ -1,6 +1,5 @@
 package com.lalilu.component.extension
 
-import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,7 +18,7 @@ import androidx.dynamicanimation.animation.withSpringForceProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -37,7 +36,7 @@ class LazyListAnimateScroller internal constructor(
     private val targetRange: MutableState<IntRange>,
     private val sizeMap: SnapshotStateMap<Int, Int>
 ) {
-    private val keyEvent: MutableStateFlow<Any> = MutableStateFlow(Any())
+    private val keyEvent: MutableSharedFlow<Any> = MutableSharedFlow(1)
     val animator: SpringAnimation = springAnimationOf(
         getter = { currentValue.floatValue },
         setter = {
@@ -132,9 +131,9 @@ class LazyListAnimateScroller internal constructor(
 @Composable
 fun rememberLazyListAnimateScroller(
     listState: LazyListState,
+    enableScrollAnimation: () -> Boolean = { true },
     keysKeeper: () -> Collection<Any> = { emptyList() },
 ): LazyListAnimateScroller {
-    val isDragged = listState.interactionSource.collectIsDraggedAsState()
     val currentValue = remember { mutableFloatStateOf(0f) }
     val targetValue = remember { mutableFloatStateOf(0f) }
     val deltaValue = remember { mutableFloatStateOf(0f) }
@@ -158,7 +157,7 @@ fun rememberLazyListAnimateScroller(
     }
 
     LaunchedEffect(deltaValue.floatValue) {
-        if (isDragged.value) return@LaunchedEffect
+        if (!enableScrollAnimation()) return@LaunchedEffect
         listState.scroll { scrollBy(deltaValue.floatValue) }
     }
 
