@@ -22,7 +22,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
@@ -33,11 +33,13 @@ fun LyricSentence(
     constraints: Constraints,
     textMeasurer: TextMeasurer,
     fontFamily: State<FontFamily?>,
-    density: Density = LocalDensity.current,
+    currentTime: () -> Long = { 0L },
+    isTranslationShow: () -> Boolean = { false },
+    isCurrent: () -> Boolean,
     onLongClick: () -> Unit = {},
     onClick: () -> Unit = {},
-    isCurrent: () -> Boolean
 ) {
+    val density = LocalDensity.current
     val result = remember {
         textMeasurer.measure(
             text = lyric.text,
@@ -62,12 +64,12 @@ fun LyricSentence(
             )
         }
     }
-
+    val gapHeight = remember { with(density) { 10.dp.toPx() } }
     val textHeight = remember { result.getLineBottom(result.lineCount - 1) }
     val translateHeight = remember {
         translateResult?.let { it.getLineBottom(it.lineCount - 1) } ?: 0f
     }
-    val height = remember { textHeight + translateHeight }
+    val height = remember { textHeight + translateHeight + gapHeight }
     val heightDp = remember { density.run { height.toDp() } }
 
     val color = animateColorAsState(
@@ -105,7 +107,7 @@ fun LyricSentence(
             translateResult?.let {
                 drawText(
                     color = color.value,
-                    topLeft = Offset.Zero.copy(y = textHeight),
+                    topLeft = Offset.Zero.copy(y = textHeight + gapHeight),
                     textLayoutResult = it
                 )
             }
