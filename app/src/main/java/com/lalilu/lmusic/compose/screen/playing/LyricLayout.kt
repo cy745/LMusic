@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -42,15 +43,15 @@ data class LyricEntry(
 @Composable
 fun LyricLayout(
     modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState(),
     currentTime: () -> Long = { 0L },
     onItemLongClick: () -> Unit = {},
     isUserScrollEnable: () -> Boolean = { false },
+    isTranslationShow: () -> Boolean = { false },
     lyricEntry: State<List<LyricEntry>> = remember { mutableStateOf(emptyList()) },
     fontFamily: State<FontFamily?> = remember { mutableStateOf<FontFamily?>(null) }
 ) {
     val textMeasurer = rememberTextMeasurer()
-    val listState = rememberLazyListState()
-
     val isUserTouching = remember { mutableStateOf(false) }
     val isDragged = listState.interactionSource.collectIsDraggedAsState()
     val scrollToHelper = rememberLazyListScrollToHelper(listState)
@@ -129,8 +130,10 @@ fun LyricLayout(
                     constraints = constraints,
                     textMeasurer = textMeasurer,
                     fontFamily = fontFamily,
-                    onLongClick = { onItemLongClick() },
-                    isCurrent = { it.key == line.value?.key }
+                    currentTime = currentTime,
+                    isTranslationShow = isTranslationShow,
+                    isCurrent = { it.key == line.value?.key },
+                    onLongClick = { onItemLongClick() }
                 )
             }
         }
