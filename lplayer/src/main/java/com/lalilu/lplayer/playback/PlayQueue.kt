@@ -42,6 +42,7 @@ interface PlayQueue<T> {
 }
 
 sealed class QueueEvent {
+    data object Updated : QueueEvent()
     data class Removed(val id: String) : QueueEvent()
     data class Added(val id: String) : QueueEvent()
     data class Moved(val from: Int, val to: Int) : QueueEvent()
@@ -52,7 +53,10 @@ sealed class QueueEvent {
 }
 
 interface UpdatableQueue<T> : PlayQueue<T> {
-    fun setIds(ids: List<String>)
+    fun setIds(ids: List<String>) {
+        onQueueEvent(QueueEvent.Updated)
+    }
+
     fun setCurrentId(id: String?)
 
     fun addToNext(id: String): Boolean {

@@ -321,6 +321,20 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
 
     override fun onQueueEvent(event: QueueEvent) {
         when (event) {
+            QueueEvent.Updated -> {
+                // 更新队列后，检查预加载的元素是否还在队列中，若否则重新进行预加载
+                val exist = tempNextItem?.mediaId
+                    ?.let { queue?.indexOf(it) }
+                    ?.let { it >= 0 }
+                    ?: false
+
+                if (!exist) {
+                    tempNextItem = null
+                    player?.resetPreloadNext()
+                    preloadNextItem()
+                }
+            }
+
             // TODO 列表发生移动时下一个元素与预加载元素不一样时需要重新进行处理
             is QueueEvent.Added -> {}
             is QueueEvent.Moved -> {}

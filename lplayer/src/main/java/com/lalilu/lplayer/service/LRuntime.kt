@@ -42,6 +42,7 @@ class LRuntime internal constructor(
         override fun getById(id: String): Playable? = source()?.getById(id)
         override fun setIds(ids: List<String>) {
             info.idsFlow.value = ids
+            super.setIds(ids)
         }
 
         override fun setCurrentId(id: String?) {
