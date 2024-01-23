@@ -155,15 +155,17 @@ fun rememberLazyListAnimateScroller(
     }
 
     LaunchedEffect(Unit) {
+        snapshotFlow { deltaValue.floatValue }
+            .collectLatest {
+                if (!enableScrollAnimation()) return@collectLatest
+                listState.scroll { scrollBy(it) }
+            }
+    }
+
+    LaunchedEffect(Unit) {
         snapshotFlow { targetValue.floatValue }
             .onEach { scroller.animator.animateToFinalPosition(it) }
             .launchIn(this)
-
-        snapshotFlow { deltaValue.floatValue }
-            .onEach {
-                if (!enableScrollAnimation()) return@onEach
-                listState.scroll { scrollBy(it) }
-            }.launchIn(this)
 
         snapshotFlow { listState.layoutInfo.visibleItemsInfo }
             .distinctUntilChanged()
