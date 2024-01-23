@@ -53,10 +53,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.common.HapticUtils
+import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.extensions.PlayerAction
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.mapLatest
 import org.koin.compose.koinInject
@@ -67,7 +70,8 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun PlayingLayout(
-    playingVM: PlayingViewModel = koinInject(),
+    playingVM: PlayingViewModel = singleViewModel(),
+    settingsSp: SettingsSp = koinInject()
 ) {
     val view = LocalView.current
     val haptic = LocalHapticFeedback.current
@@ -186,7 +190,6 @@ fun PlayingLayout(
                     modifier = Modifier
                         .fillMaxWidth()
                         .statusBarsPadding()
-                        .padding(bottom = 10.dp)
                 ) {
                     PlayingToolbar(
                         extraVisible = { draggable.state.value == DragAnchor.Max }
@@ -290,8 +293,21 @@ fun PlayingLayout(
                                 alpha = progressIncrease
                             },
                         listState = lyricLayoutLazyListState,
+                        isTranslationShow = { settingsSp.isDrawTranslation.value },
+                        isUserClickEnable = { draggable.state.value == DragAnchor.Max },
                         isUserScrollEnable = { isLyricLayoutScrollEnable.value },
                         currentTime = { currentTime.value },
+                        onPositionReset = {
+                            if (isLyricLayoutScrollEnable.value) {
+                                isLyricLayoutScrollEnable.value = false
+                            }
+                        },
+                        onItemClick = {
+                            if (isLyricLayoutScrollEnable.value) {
+                                isLyricLayoutScrollEnable.value = false
+                            }
+                            LPlayer.controller.doAction(PlayerAction.SeekTo(it.time))
+                        },
                         onItemLongClick = {
                             if (draggable.state.value == DragAnchor.Max) {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
