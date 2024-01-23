@@ -1,5 +1,6 @@
 package com.lalilu.component.extension
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
@@ -7,6 +8,7 @@ import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -82,3 +84,13 @@ fun Modifier.longClickable(
             )
         }
 }
+
+/**
+ * 用于在Modifier上添加条件启用的控制逻辑
+ */
+@SuppressLint("UnnecessaryComposedModifier")
+fun Modifier.enableFor(
+    enable: () -> Boolean,
+    forFalse: @Composable Modifier.() -> Modifier = { this },
+    forTrue: @Composable Modifier.() -> Modifier,
+): Modifier = composed { if (enable()) this.forTrue() else this.forFalse() }
