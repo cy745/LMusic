@@ -54,6 +54,7 @@ import androidx.compose.ui.util.lerp
 import com.dirror.lyricviewx.LyricUtil
 import com.lalilu.common.HapticUtils
 import com.lalilu.component.extension.singleViewModel
+import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.recomposeHighlighter
@@ -192,8 +193,13 @@ fun PlayingLayout(
                         .statusBarsPadding()
                 ) {
                     PlayingToolbar(
-                        extraVisible = { draggable.state.value == DragAnchor.Max }
-                    )
+                        isItemPlaying = { mediaId -> playingVM.isItemPlaying { it.mediaId == mediaId } },
+                        isUserTouchEnable = { draggable.state.value == DragAnchor.Min },
+                        isExtraVisible = { draggable.state.value == DragAnchor.Max },
+                        onClick = { }
+                    ) {
+                        LyricViewToolbar()
+                    }
                 }
 
                 Box(
