@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
+import com.lalilu.component.extension.enableFor
 import com.lalilu.lplayer.LPlayer
 
 
@@ -80,11 +81,13 @@ fun PlayingToolbar(
 
     Row(
         modifier = modifier
-            .clickable(
-                onClick = { if (isUserTouchEnable()) onClick() },
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            )
+            .enableFor(isUserTouchEnable) {
+                clickable(
+                    onClick = { if (isUserTouchEnable()) onClick() },
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                )
+            }
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(start = 25.dp, end = 20.dp),
