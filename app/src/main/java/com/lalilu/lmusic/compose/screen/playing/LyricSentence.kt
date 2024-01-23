@@ -13,8 +13,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -24,7 +27,10 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -35,9 +41,15 @@ fun LyricSentence(
     modifier: Modifier = Modifier,
     lyric: LyricEntry,
     textMeasurer: TextMeasurer,
-    fontFamily: State<FontFamily?>,
     maxWidth: () -> Int = { 1080 },
     currentTime: () -> Long = { 0L },
+    positionToCurrent: () -> Int = { 0 },
+    fontFamily: State<FontFamily?>,
+    textSize: TextUnit = 26.sp,
+    textAlign: TextAlign = TextAlign.Start,
+    translationGap: Dp = 10.dp,
+    translationScale: Float = 0.8f,
+    isBlurredEnable: () -> Boolean = { false },
     isTranslationShow: () -> Boolean = { false },
     isCurrent: () -> Boolean,
     onLongClick: () -> Unit = {},
@@ -48,17 +60,23 @@ fun LyricSentence(
     val paddingHorizontal = remember { 40.dp }
     val paddingVerticalPx = remember { with(density) { paddingVertical.roundToPx() } }
     val paddingHorizontalPx = remember { with(density) { paddingHorizontal.roundToPx() } }
-    val gapHeight = remember { with(density) { 10.dp.toPx() } }
+    val gapHeight = remember(translationGap) { with(density) { translationGap.toPx() } }
 
     val actualConstraints = remember {
-        Constraints(maxWidth = maxWidth() - paddingHorizontalPx * 2, maxHeight = Int.MAX_VALUE)
+        val width = maxWidth() - paddingHorizontalPx * 2
+        Constraints(
+            maxWidth = width,
+            minWidth = width,
+            maxHeight = Int.MAX_VALUE
+        )
     }
     val result = remember {
         textMeasurer.measure(
             text = lyric.text,
             constraints = actualConstraints,
             style = TextStyle.Default.copy(
-                fontSize = 26.sp,
+                fontSize = textSize,
+                textAlign = textAlign,
                 fontFamily = fontFamily.value
                     ?: TextStyle.Default.fontFamily
             )
@@ -70,7 +88,8 @@ fun LyricSentence(
                 text = it,
                 constraints = actualConstraints,
                 style = TextStyle.Default.copy(
-                    fontSize = 20.sp,
+                    fontSize = textSize * translationScale,
+                    textAlign = textAlign,
                     fontFamily = fontFamily.value
                         ?: TextStyle.Default.fontFamily
                 )
@@ -113,7 +132,7 @@ fun LyricSentence(
     )
 
     val scale = animateFloatAsState(
-        targetValue = if (isCurrent()) 100f else 80f,
+        targetValue = if (isCurrent()) 100f else 90f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
             stiffness = Spring.StiffnessLow
@@ -131,12 +150,26 @@ fun LyricSentence(
     val translationTopLeft = remember {
         Offset.Zero.copy(y = textHeight + gapHeight)
     }
-    val pivotOffset = remember(height) {
-        Offset.Zero.copy(y = height / 2f)
+    val pivotOffset = remember(height, textAlign) {
+        val width = maxWidth()
+        val x = when (textAlign) {
+            TextAlign.End -> width.toFloat()
+            TextAlign.Center -> width / 2f
+            else -> 0f
+        }
+        Offset.Zero.copy(y = height / 2f, x = x)
     }
+    val blurRadius = remember {
+        derivedStateOf {
+            if (!isBlurredEnable()) return@derivedStateOf 0.dp
+            positionToCurrent().dp
+        }
+    }
+    val animateBlurRadius = animateDpAsState(targetValue = blurRadius.value, label = "")
 
     Canvas(
         modifier = modifier
+            .blur(animateBlurRadius.value, BlurredEdgeTreatment.Unbounded) // TODO 对性能影响较大，待进一步优化
             .fillMaxWidth()
             .height(animateHeight.value)
             .combinedClickable(onLongClick = onLongClick, onClick = onClick)

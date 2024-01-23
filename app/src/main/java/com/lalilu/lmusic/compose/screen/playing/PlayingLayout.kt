@@ -298,11 +298,16 @@ fun PlayingLayout(
                                 translationY = translation * 3f
                                 alpha = progressIncrease
                             },
+                        lyricEntry = lyricEntry,
                         listState = lyricLayoutLazyListState,
+                        currentTime = { currentTime.value },
+                        textSize = rememberTextSizeFromInt { settingsSp.lyricTextSize.value },
+                        textAlign = rememberTextAlignFromGravity { settingsSp.lyricGravity.value },
+                        fontFamily = rememberFontFamilyFromPath { settingsSp.lyricTypefacePath.value },
+                        isBlurredEnable = { !isLyricLayoutScrollEnable.value && settingsSp.isEnableBlurEffect.value },
                         isTranslationShow = { settingsSp.isDrawTranslation.value },
                         isUserClickEnable = { draggable.state.value == DragAnchor.Max },
                         isUserScrollEnable = { isLyricLayoutScrollEnable.value },
-                        currentTime = { currentTime.value },
                         onPositionReset = {
                             if (isLyricLayoutScrollEnable.value) {
                                 isLyricLayoutScrollEnable.value = false
@@ -320,7 +325,6 @@ fun PlayingLayout(
                                 isLyricLayoutScrollEnable.value = !isLyricLayoutScrollEnable.value
                             }
                         },
-                        lyricEntry = lyricEntry
                     )
 
                     AnimatedVisibility(
