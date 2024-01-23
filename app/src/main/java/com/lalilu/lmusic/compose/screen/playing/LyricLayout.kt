@@ -117,14 +117,15 @@ fun LyricLayout(
         keysKeeper = { scrollToHelper.getKeys() }
     )
 
-    val line: State<LyricEntry?> = remember {
+    val currentItemIndex = remember {
         derivedStateOf {
             val time = currentTime()
             val lyricEntryList = lyricEntry.value
-            if (lyricEntryList.isEmpty()) return@derivedStateOf null
+            if (lyricEntryList.isEmpty()) return@derivedStateOf Int.MAX_VALUE
 
             var left = 0
             var right = lyricEntryList.size
+            var currentItemIndex = 0
             while (left <= right) {
                 val middle = (left + right) / 2
                 val middleTime = lyricEntryList[middle].time
@@ -132,27 +133,26 @@ fun LyricLayout(
                     right = middle - 1
                 } else {
                     if (middle + 1 >= lyricEntryList.size || time < lyricEntryList[middle + 1].time) {
-                        return@derivedStateOf lyricEntryList[middle]
+                        currentItemIndex = middle
+                        break
                     }
                     left = middle + 1
                 }
             }
-            return@derivedStateOf null
+            currentItemIndex
         }
     }
 
-    // 计算当前元素在列表中的index，TODO 其实可在计算line的时候直接提取出来，待优化
-    val currentItemIndex = remember {
+    val currentItem: State<LyricEntry?> = remember {
         derivedStateOf {
-            line.value?.key
-                ?.let { lyricEntry.value.indexOfFirst { item -> item.key == it } }
-                ?.takeIf { it >= 0 }
-                ?: Int.MAX_VALUE
+            currentItemIndex.value
+                .takeIf { it != Int.MAX_VALUE }
+                ?.let { lyricEntry.value[it] }
         }
     }
 
     LaunchedEffect(Unit) {
-        snapshotFlow { line.value }
+        snapshotFlow { currentItem.value }
             .collectLatest {
                 it ?: return@collectLatest
                 scroller.animateTo(it.key)
@@ -166,7 +166,7 @@ fun LyricLayout(
             .collectLatest {
                 if (!it && isActive && isUserTouching.value) {
                     isUserTouching.value = false
-                    line.value?.key?.let(scroller::animateTo)
+                    currentItem.value?.key?.let(scroller::animateTo)
                     onPositionReset()
                 }
             }
@@ -199,7 +199,7 @@ fun LyricLayout(
                 positionToCurrent = { abs(index - currentItemIndex.value) },
                 isBlurredEnable = isBlurredEnable,
                 isTranslationShow = isTranslationShow,
-                isCurrent = { item.key == line.value?.key },
+                isCurrent = { item.key == currentItem.value?.key },
                 onLongClick = { if (isUserClickEnable()) onItemLongClick(item) },
                 onClick = { if (isUserClickEnable()) onItemClick(item) }
             )
