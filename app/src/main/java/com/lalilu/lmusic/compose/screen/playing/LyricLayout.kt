@@ -1,11 +1,8 @@
 package com.lalilu.lmusic.compose.screen.playing
 
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -45,9 +42,13 @@ fun LyricLayout(
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
     currentTime: () -> Long = { 0L },
-    onItemLongClick: () -> Unit = {},
+    maxWidth: () -> Int = { 1080 },
+    isUserClickEnable: () -> Boolean = { false },
     isUserScrollEnable: () -> Boolean = { false },
     isTranslationShow: () -> Boolean = { false },
+    onPositionReset: () -> Unit = {},
+    onItemClick: (LyricEntry) -> Unit = {},
+    onItemLongClick: (LyricEntry) -> Unit = {},
     lyricEntry: State<List<LyricEntry>> = remember { mutableStateOf(emptyList()) },
     fontFamily: State<FontFamily?> = remember { mutableStateOf<FontFamily?>(null) }
 ) {
@@ -101,6 +102,7 @@ fun LyricLayout(
                 if (!it && isActive && isUserTouching.value) {
                     isUserTouching.value = false
                     line.value?.key?.let(scroller::animateTo)
+                    onPositionReset()
                 }
             }
     }
@@ -111,8 +113,7 @@ fun LyricLayout(
             .fillMaxSize()
             .edgeTransparent(top = 300.dp, bottom = 300.dp),
         userScrollEnabled = true,
-        contentPadding = PaddingValues(top = 300.dp, bottom = 500.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        contentPadding = PaddingValues(top = 300.dp, bottom = 500.dp)
     ) {
         scrollToHelper.startRecord()
 
@@ -122,20 +123,25 @@ fun LyricLayout(
             key = { it.key },
             contentType = { LyricEntry::class }
         ) {
-            BoxWithConstraints(
-                modifier = Modifier.padding(horizontal = 40.dp)
-            ) {
-                LyricSentence(
-                    lyric = it,
-                    constraints = constraints,
-                    textMeasurer = textMeasurer,
-                    fontFamily = fontFamily,
-                    currentTime = currentTime,
-                    isTranslationShow = isTranslationShow,
-                    isCurrent = { it.key == line.value?.key },
-                    onLongClick = { onItemLongClick() }
-                )
-            }
+            LyricSentence(
+                lyric = it,
+                maxWidth = maxWidth,
+                textMeasurer = textMeasurer,
+                fontFamily = fontFamily,
+                currentTime = currentTime,
+                isTranslationShow = isTranslationShow,
+                isCurrent = { it.key == line.value?.key },
+                onLongClick = {
+                    if (isUserClickEnable()) {
+                        onItemLongClick(it)
+                    }
+                },
+                onClick = {
+                    if (isUserClickEnable()) {
+                        onItemClick(it)
+                    }
+                }
+            )
         }
         scrollToHelper.endRecord()
     }
