@@ -22,7 +22,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
@@ -152,36 +154,37 @@ fun rememberLazyListAnimateScroller(
         )
     }
 
-    LaunchedEffect(targetValue.floatValue) {
-        scroller.animator.animateToFinalPosition(targetValue.floatValue)
-    }
-
-    LaunchedEffect(deltaValue.floatValue) {
-        if (!enableScrollAnimation()) return@LaunchedEffect
-        listState.scroll { scrollBy(deltaValue.floatValue) }
-    }
-
     LaunchedEffect(Unit) {
+        snapshotFlow { targetValue.floatValue }
+            .onEach { scroller.animator.animateToFinalPosition(it) }
+            .launchIn(this)
+
+        snapshotFlow { deltaValue.floatValue }
+            .onEach {
+                if (!enableScrollAnimation()) return@onEach
+                listState.scroll { scrollBy(it) }
+            }.launchIn(this)
+
         snapshotFlow { listState.layoutInfo.visibleItemsInfo }
             .distinctUntilChanged()
-            .collectLatest { list ->
-                list.forEach {
+            .onEach { list ->
+                for (item in list) {
+                    if (!isActive) break
+
                     // 若当前更新的元素处于动画偏移值计算数据源的目标范围中
-                    if (it.index in targetRange.value && scroller.animator.isRunning) {
-                        val delta = it.size - (sizeMap[it.index] ?: 0)
+                    if (item.index in targetRange.value && scroller.animator.isRunning) {
+                        val delta = item.size - (sizeMap[item.index] ?: 0)
 
                         if (delta != 0) {
                             // 则将变化值直接更新到targetValue，触发动画位移修正
-                            println("update targetValue:  [${it.index} -> $delta]")
+                            println("update targetValue:  [${item.index} -> $delta]")
                             targetValue.floatValue += delta
                         }
                     }
-                    sizeMap[it.index] = it.size
+                    sizeMap[item.index] = item.size
                 }
-            }
-    }
+            }.launchIn(this)
 
-    LaunchedEffect(Unit) {
         scroller.startLoop(this)
     }
 
