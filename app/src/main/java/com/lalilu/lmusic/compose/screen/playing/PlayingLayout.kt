@@ -57,7 +57,6 @@ import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
@@ -82,6 +81,7 @@ fun PlayingLayout(
     val recyclerViewScrollState = remember { mutableStateOf(false) }
     val backgroundColor = remember { mutableStateOf(Color.DarkGray) }
     val animateColor = animateColorAsState(targetValue = backgroundColor.value, label = "")
+    val scrollToTopEvent = remember { mutableStateOf(0L) }
 
     val draggable = rememberCustomAnchoredDraggableState { oldState, newState ->
         if (newState == DragAnchor.MiddleXMax && oldState != DragAnchor.MiddleXMax) {
@@ -184,19 +184,19 @@ fun PlayingLayout(
     BoxWithConstraints {
         Layout(
             modifier = Modifier
-                .nestedScroll(nestedScrollConnection)
-                .recomposeHighlighter(),
+                .nestedScroll(nestedScrollConnection),
             content = {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .statusBarsPadding()
+                        .padding(bottom = 10.dp)
                 ) {
                     PlayingToolbar(
                         isItemPlaying = { mediaId -> playingVM.isItemPlaying { it.mediaId == mediaId } },
-                        isUserTouchEnable = { draggable.state.value == DragAnchor.Min },
+                        isUserTouchEnable = { draggable.state.value == DragAnchor.Min || draggable.state.value == DragAnchor.Max },
                         isExtraVisible = { draggable.state.value == DragAnchor.Max },
-                        onClick = { }
+                        onClick = { scrollToTopEvent.value = System.currentTimeMillis() }
                     ) {
                         LyricViewToolbar()
                     }
@@ -363,6 +363,7 @@ fun PlayingLayout(
 
                 CustomRecyclerView(
                     modifier = Modifier.clipToBounds(),
+                    scrollToTopEvent = { scrollToTopEvent.value },
                     onScrollStart = { recyclerViewScrollState.value = true },
                     onScrollTouchUp = { },
                     onScrollIdle = {
