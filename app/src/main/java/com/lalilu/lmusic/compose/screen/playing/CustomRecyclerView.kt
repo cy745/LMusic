@@ -4,11 +4,14 @@ import android.view.View
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.common.base.Playable
 import com.lalilu.component.extension.collectWithLifeCycleOwner
+import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmusic.GlobalNavigatorImpl
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.adapter.ViewEvent
@@ -17,7 +20,6 @@ import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.ui.ComposeNestedScrollRecyclerView
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.QueueAction
 import org.koin.compose.koinInject
@@ -26,11 +28,14 @@ import org.koin.compose.koinInject
 @Composable
 fun CustomRecyclerView(
     modifier: Modifier = Modifier,
-    playingVM: PlayingViewModel = koinInject(),
+    playingVM: IPlayingViewModel = koinInject(),
+    scrollToTopEvent: () -> Long = { 0L },
     onScrollStart: () -> Unit = {},
     onScrollTouchUp: () -> Unit = {},
     onScrollIdle: () -> Unit = {}
 ) {
+    val density = LocalDensity.current
+
     AndroidView(
         modifier = modifier.fillMaxSize(),
         factory = { context ->
@@ -40,6 +45,10 @@ fun CustomRecyclerView(
                 val mAdapter = createAdapter(playingVM) { scrollToPosition(0) }
                 mAdapter.stateRestorationPolicy =
                     RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+
+                val paddingBottom = density.run { 128.dp.roundToPx() }
+                setPadding(0, 0, 0, paddingBottom)
+                clipToPadding = false
 
                 id = Int.MAX_VALUE
                 overScrollMode = View.OVER_SCROLL_NEVER
@@ -64,11 +73,16 @@ fun CustomRecyclerView(
                 })
             }
         }
-    )
+    ) {
+        val event = scrollToTopEvent()
+        if (event > 0) {
+            it.smoothScrollToPosition(0)
+        }
+    }
 }
 
 private fun createAdapter(
-    playingVM: PlayingViewModel,
+    playingVM: IPlayingViewModel,
     onScrollToTop: () -> Unit = {},
 ): NewPlayingAdapter {
     return NewPlayingAdapter.Builder()
