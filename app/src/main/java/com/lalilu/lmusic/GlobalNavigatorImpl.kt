@@ -21,7 +21,7 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
         navigator: SheetNavigator?,
     ) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
-        nav.showSingle(SongDetailScreen(mediaId = mediaId))
+        nav.show(SongDetailScreen(mediaId = mediaId))
     }
 
     override fun showSongs(
@@ -30,7 +30,7 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
         navigator: SheetNavigator?,
     ) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
-        nav.showSingle(
+        nav.show(
             SongsScreen(
                 title = title,
                 mediaIds = mediaIds
@@ -44,16 +44,11 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
         navigator: SheetNavigator?
     ) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
-
-        if (singleTop) {
-            nav.showSingle(screen = screen)
-        } else {
-            nav.showMultiple(screen = screen)
-        }
+        nav.show(screen = screen)
     }
 
     override fun goBack(navigator: SheetNavigator?) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
-        nav.pop()
+        nav.back()
     }
 }

@@ -19,11 +19,12 @@ fun CustomTransition(
     modifier: Modifier = Modifier,
     navigator: Navigator,
     keyPrefix: String = "",
+    getScreenFrom: (Navigator) -> Screen = { navigator.lastItem },
     content: @Composable (AnimatedVisibilityScope.(Screen) -> Unit) = { it.Content() }
 ) {
     AnimatedContent(
         modifier = modifier,
-        targetState = navigator.lastItem,
+        targetState = getScreenFrom(navigator),
         transitionSpec = {
             fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + slideInVertically { 100 } togetherWith
                     fadeOut(tween(0))

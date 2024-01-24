@@ -86,19 +86,34 @@ class SideSheetNavigator(
 ) : Stack<Screen> by navigator, SheetNavigator {
     override val isVisible: Boolean by derivedStateOf { sheetState.isVisible }
 
-    override fun pushTab(screen: Screen) {
-    }
+    override fun show(screen: Screen?) {
+        if (screen == null) {
+            coroutineScope.launch { sheetState.isVisible = true }
+            return
+        }
 
-    override fun showSingle(screen: Screen) {
-        val lastItem = lastItemOrNull
+        when {
+            screen is TabScreen -> {
+                if (items.size <= 1) {
+                    push(screen)
+                    return
+                }
 
-        // 若当前为隐藏状态
-        if (!isVisible) {
-            replaceAll(screen)
-        } else {
-            if (lastItem == null || lastItem::class.java != screen::class.java) {
+                val firstItem = items.firstOrNull()?.let { listOf(it) } ?: emptyList()
+                replaceAll(firstItem)
+
+                if (screen != firstItem) {
+                    push(screen)
+                }
+                return
+            }
+
+            lastItemOrNull == null || lastItemOrNull::class.java != screen::class.java -> {
+                if (!isVisible) popUntil { it is TabScreen }
                 push(screen)
-            } else {
+            }
+
+            else -> {
                 replace(screen)
             }
         }
@@ -110,32 +125,27 @@ class SideSheetNavigator(
         }
     }
 
-    override fun showMultiple(screen: Screen) {
-        if (!isVisible) {
-            replaceAll(screen)
-        } else {
-            push(screen)
-        }
-
-        if (!isVisible) {
-            coroutineScope.launch {
-                sheetState.isVisible = true
-            }
-        }
-    }
-
-    override fun show(screen: Screen?) {
-        coroutineScope.launch {
-            if (screen != null && screen !== navigator.lastItemOrNull) {
-                replaceAll(screen)
-            }
-            sheetState.isVisible = true
-        }
-    }
-
     override fun hide() {
         coroutineScope.launch {
             sheetState.isVisible = false
+        }
+    }
+
+    override fun back(enable: Boolean) {
+        // 若当前只剩一个页面，则不清空元素了
+        if (navigator.items.size <= 1 || navigator.lastItemOrNull is TabScreen) {
+            hide()
+            return
+        }
+
+        val popped = navigator.pop()
+
+        if (!popped && enable) {
+            hide()
+        }
+
+        if (navigator.lastItemOrNull is TabScreen) {
+            hide()
         }
     }
 
@@ -151,14 +161,6 @@ fun SideSheetNavigatorBackHandler(
     hideOnBackPress: Boolean
 ) {
     BackHandler(enabled = navigator.isVisible) {
-        // 若当前只剩一个页面，则不清空元素了
-        if (navigator.items.size <= 1) {
-            navigator.hide()
-            return@BackHandler
-        }
-
-        if (navigator.pop().not() && hideOnBackPress) {
-            navigator.hide()
-        }
+        navigator.back(hideOnBackPress)
     }
 }

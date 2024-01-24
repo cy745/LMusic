@@ -50,7 +50,6 @@ fun BottomSheetNavigatorLayout(
     resetOnHide: Boolean = false,
     visibleWhenShow: Boolean = false,
     defaultIsVisible: Boolean = false,
-    defaultScreen: Screen = HiddenBottomSheetScreen,
     scrimColor: Color = ModalBottomSheetDefaults.scrimColor,
     sheetShape: Shape = MaterialTheme.shapes.large,
     sheetElevation: Dp = ModalBottomSheetDefaults.Elevation,
@@ -83,7 +82,6 @@ fun BottomSheetNavigatorLayout(
             resetOnHide = resetOnHide,
             navigator = navigator,
             sheetState = sheetState,
-            defaultScreen = defaultScreen,
             coroutineScope = coroutineScope
         )
     }
@@ -115,7 +113,7 @@ class BottomSheetNavigator internal constructor(
     private val visibleWhenShow: Boolean = false,
     private val resetOnHide: Boolean = false,
     private val navigator: Navigator,
-    private val defaultScreen: Screen,
+    private val defaultScreen: Screen = HiddenBottomSheetScreen,
     private val sheetState: ModalBottomSheetState,
     private val coroutineScope: CoroutineScope
 ) : Stack<Screen> by navigator, SheetNavigator {
@@ -142,29 +140,44 @@ class BottomSheetNavigator internal constructor(
         }
     }
 
-    override fun pushTab(screen: Screen) {
-        if (items.size <= 1) {
-            push(screen)
+    override fun back(enable: Boolean) {
+        // 若当前只剩一个页面，则不清空元素了
+        if (navigator.items.size <= 1) {
+            hide()
             return
         }
 
-        val firstItem = items.firstOrNull()
-        popUntil { it == firstItem }
-
-        if (screen != firstItem) {
-            push(screen)
+        if (navigator.pop().not() && enable) {
+            hide()
         }
     }
 
-    override fun showSingle(screen: Screen) {
-        val lastItem = lastItemOrNull
+    override fun show(screen: Screen?) {
+        if (screen == null) {
+            coroutineScope.launch { sheetState.show() }
+            return
+        }
 
-        if (!isVisible) {
-            replaceAll(screen)
-        } else {
-            if (lastItem == null || lastItem::class.java != screen::class.java) {
+        when {
+            screen is TabScreen -> {
+                if (items.size <= 1) {
+                    push(screen)
+                    return
+                }
+
+                val firstItem = items.firstOrNull()?.let { listOf(it) } ?: emptyList()
+                replaceAll(firstItem)
+
+                if (screen != firstItem) {
+                    push(screen)
+                }
+            }
+
+            lastItemOrNull == null || lastItemOrNull::class.java != screen::class.java -> {
                 push(screen)
-            } else {
+            }
+
+            else -> {
                 replace(screen)
             }
         }
@@ -173,29 +186,6 @@ class BottomSheetNavigator internal constructor(
             coroutineScope.launch {
                 sheetState.show()
             }
-        }
-    }
-
-    override fun showMultiple(screen: Screen) {
-        if (!isVisible) {
-            replaceAll(screen)
-        } else {
-            push(screen)
-        }
-
-        if (!isVisible) {
-            coroutineScope.launch {
-                sheetState.show()
-            }
-        }
-    }
-
-    override fun show(screen: Screen?) {
-        coroutineScope.launch {
-            if (screen != null && screen !== lastItemOrNull) {
-                replaceAll(screen)
-            }
-            sheetState.show()
         }
     }
 
@@ -231,15 +221,7 @@ fun BottomSheetNavigatorBackHandler(
     hideOnBackPress: Boolean
 ) {
     BackHandler(enabled = navigator.isVisible) {
-        // 若当前只剩一个页面，则不清空元素了
-        if (navigator.items.size <= 1) {
-            navigator.hide()
-            return@BackHandler
-        }
-
-        if (navigator.pop().not() && hideOnBackPress) {
-            navigator.hide()
-        }
+        navigator.back(hideOnBackPress)
     }
 }
 

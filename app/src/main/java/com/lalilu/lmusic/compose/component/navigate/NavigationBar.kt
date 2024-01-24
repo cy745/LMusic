@@ -84,7 +84,7 @@ fun NavigationBar(
             NavigateTabBar(
                 tabScreens = tabScreens,
                 currentScreen = { screen },
-                onSelectTab = { navigator.pushTab(it) }
+                onSelectTab = { navigator.show(it) }
             )
         } else {
             NavigateCommonBar(
@@ -147,13 +147,7 @@ fun NavigateCommonBar(
             shape = RectangleShape,
             contentPadding = PaddingValues(start = 16.dp, end = 24.dp),
             colors = ButtonDefaults.textButtonColors(contentColor = contentColor),
-            onClick = {
-                if (navigator.items.size == 1) {
-                    navigator.hide()
-                } else {
-                    navigator.pop()
-                }
-            }
+            onClick = { navigator.back() }
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_arrow_left_s_line),

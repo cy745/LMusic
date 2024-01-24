@@ -1,20 +1,18 @@
 package com.lalilu.component.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.activity.compose.BackHandler
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.Stack
 import cafe.adriel.voyager.navigator.Navigator
 
 interface SheetNavigator : Stack<Screen> {
     val isVisible: Boolean
-    fun show(screen: Screen? = null)
     fun hide()
-    fun pushTab(screen: Screen)
-    fun showSingle(screen: Screen)
-    fun showMultiple(screen: Screen)
+    fun show(screen: Screen? = null)
+    fun back(enable: Boolean = true)
     fun getNavigator(): Navigator
 }
 
