@@ -42,7 +42,7 @@ fun AutoSizeText(
     fontFamily: FontFamily? = null,
     letterSpacing: TextUnit = TextUnit.Unspecified,
     textDecoration: TextDecoration? = null,
-    textAlign: TextAlign? = null,
+    textAlign: TextAlign = TextAlign.Start,
     lineHeight: TextUnit = TextUnit.Unspecified,
     maxLines: Int = Int.MAX_VALUE,
     onTextLayout: (TextLayoutResult) -> Unit = {},
@@ -71,8 +71,8 @@ fun AutoSizeText(
                 constraints = Constraints(maxWidth = ceil(LocalDensity.current.run { maxWidth.toPx() }).toInt()),
                 density = LocalDensity.current,
                 fontFamilyResolver = LocalFontFamilyResolver.current,
-                spanStyles = listOf<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.SpanStyle>>(),
-                placeholders = listOf<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.Placeholder>>(),
+                spanStyles = listOf(),
+                placeholders = listOf(),
                 maxLines = maxLines,
                 ellipsis = false
             )
