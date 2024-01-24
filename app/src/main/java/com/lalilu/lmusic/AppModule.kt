@@ -14,6 +14,8 @@ import com.lalilu.BuildConfig
 import com.lalilu.R
 import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.component.viewmodel.IPlayingViewModel
+import com.lalilu.lalbum.viewModel.AlbumsViewModel
+import com.lalilu.lartist.viewModel.ArtistsViewModel
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
@@ -33,12 +35,8 @@ import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.SongCoverFetcher
 import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
 import com.lalilu.lmusic.utils.extension.toBitmap
-import com.lalilu.lalbum.viewModel.AlbumsViewModel
-import com.lalilu.lartist.viewModel.ArtistsViewModel
-import com.lalilu.lmusic.viewmodel.DictionariesViewModel
 import com.lalilu.lmusic.viewmodel.ExtensionsViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
-import com.lalilu.lmusic.viewmodel.LMediaViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
@@ -101,11 +99,9 @@ val AppModule = module {
 val ViewModelModule = module {
     viewModelOf(::PlayingViewModel)
     viewModel<IPlayingViewModel> { get<PlayingViewModel>() }
-    viewModelOf(::LMediaViewModel)
     viewModelOf(::SearchViewModel)
     viewModelOf(::AlbumsViewModel)
     viewModelOf(::ArtistsViewModel)
-    viewModelOf(::DictionariesViewModel)
     viewModelOf(::HistoryViewModel)
     viewModelOf(::SearchLyricViewModel)
     viewModelOf(::ExtensionsViewModel)

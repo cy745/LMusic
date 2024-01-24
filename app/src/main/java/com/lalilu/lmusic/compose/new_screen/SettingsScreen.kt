@@ -10,7 +10,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,11 +27,11 @@ import com.blankj.utilcode.util.RomUtils
 import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.R
 import com.lalilu.common.CustomRomUtils
-import com.lalilu.lmusic.GuidingActivity
+import com.lalilu.component.IconTextButton
 import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.ScreenInfo
-import com.lalilu.lmusic.compose.component.SmartContainer
-import com.lalilu.component.IconTextButton
+import com.lalilu.lmedia.scanner.FileSystemScanner
+import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.compose.component.settings.SettingCategory
 import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
 import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
@@ -61,6 +61,7 @@ private fun SettingsScreen(
     eqHelper: EQHelper = koinInject(),
     settingsSp: SettingsSp = koinInject(),
     statusBarLyricExt: StatusBarLyric = koinInject(),
+    fileSystemScanner: FileSystemScanner = koinInject()
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -85,9 +86,7 @@ private fun SettingsScreen(
     ) {
     }
 
-    SmartContainer.LazyStaggeredVerticalGrid(
-        columns = { if (it == WindowWidthSizeClass.Expanded) 2 else 1 },
-    ) {
+    LazyColumn {
 //        item {
 //            NavigatorHeader(route = ScreenData.Settings)
 //        }
@@ -231,7 +230,7 @@ private fun SettingsScreen(
                         })
 
                     IconTextButton(
-                        text = "重新扫描",
+                        text = "MediaStore重新扫描",
                         color = Color(0xFFFF8B3F),
                         onClick = {
                             Toast.makeText(context, "扫描开始", Toast.LENGTH_SHORT).show()
@@ -241,6 +240,15 @@ private fun SettingsScreen(
                                 Toast.makeText(context, "扫描结束", Toast.LENGTH_SHORT).show()
                                 LogUtils.i("MediaScannerConnection", "path: $path, uri: $uri")
                             }
+                        }
+                    )
+
+                    IconTextButton(
+                        text = "FileSystem重新扫描",
+                        color = Color(0xFFFF8B3F),
+                        onClick = {
+                            Toast.makeText(context, "扫描开始", Toast.LENGTH_SHORT).show()
+                            fileSystemScanner.updateAsync()
                         }
                     )
                     IconTextButton(

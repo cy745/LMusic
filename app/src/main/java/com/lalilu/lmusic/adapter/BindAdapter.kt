@@ -9,24 +9,6 @@ import coil.util.CoilUtils.dispose
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.common.base.Playable
-import com.lalilu.lmusic.ui.BlurImageView
-
-fun BlurImageView.loadCover(item: Playable?) {
-    item ?: run {
-        clearImage()
-        return
-    }
-    val samplingTo = width
-
-    load(item.imageSource) {
-        if (samplingTo > 0) size(samplingTo)
-        allowHardware(false)
-        target(
-            onSuccess = { loadImageFromDrawable(it) },
-            onError = { clearImage() }
-        ).build()
-    }
-}
 
 fun AppCompatImageView.loadCoverForPlaying(item: Playable?) {
     item ?: run {
