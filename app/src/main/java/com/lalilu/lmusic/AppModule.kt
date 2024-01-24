@@ -25,7 +25,6 @@ import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.datastore.TempSp
 import com.lalilu.lmusic.repository.CoverRepository
-import com.lalilu.lmusic.repository.LMediaRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicNotifier
 import com.lalilu.lmusic.service.LMusicServiceConnector
@@ -114,7 +113,6 @@ val RuntimeModule = module {
     singleOf(::LMusicServiceConnector)
     singleOf(::CoverRepository)
     singleOf(::LyricRepository)
-    single { LMediaRepository() }
 }
 
 val ApiModule = module {

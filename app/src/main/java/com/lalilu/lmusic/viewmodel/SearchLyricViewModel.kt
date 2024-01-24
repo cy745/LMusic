@@ -6,17 +6,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.lmedia.LMedia
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.wrapper.Taglib
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
 import com.lalilu.lmusic.api.lrcshare.SongResult
-import com.lalilu.lmusic.repository.LMediaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class SearchLyricViewModel(
     private val context: Application,
-    private val lrcShareApi: LrcShareApi,
-    private val lMediaRepo: LMediaRepository,
+    private val lrcShareApi: LrcShareApi
 ) : ViewModel() {
     enum class SearchState {
         Idle, Searching, Downloading, Error, Finished
@@ -68,7 +68,7 @@ class SearchLyricViewModel(
                 ToastUtils.showShort("开始获取歌词")
 
                 val lyric = lrcShareApi.getLyricById(lyricId)?.lyric
-                val song = lMediaRepo.requireSong(mediaId)!!
+                val song = LMedia.get<LSong>(mediaId)!!
 
                 val result = context.contentResolver
                     .openFileDescriptor(song.uri, "rw")
