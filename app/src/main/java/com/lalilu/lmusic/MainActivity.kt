@@ -6,9 +6,9 @@ import android.os.Build
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.WindowManager
+import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
-import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
@@ -47,9 +47,16 @@ class MainActivity : ComponentActivity() {
         // 优先最高帧率运行
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val params: WindowManager.LayoutParams = window.attributes
-            params.preferredRefreshRate = ContextCompat.getDisplayOrDefault(this)
-                .supportedModes.maxOf { it.refreshRate }
-            window.attributes = params
+            val supportedMode = ContextCompat
+                .getDisplayOrDefault(this)
+                .supportedModes
+                .maxBy { it.refreshRate }
+
+            supportedMode?.let {
+                params.preferredRefreshRate = it.refreshRate
+                params.preferredDisplayModeId = it.modeId
+                window.attributes = params
+            }
         }
 
         // 深色模式控制
