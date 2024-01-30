@@ -10,17 +10,10 @@ import com.lalilu.component.extension.toState
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.BaseMatchable
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.extension.GroupAction
 import com.lalilu.lmedia.extension.GroupIdentity
-import com.lalilu.lmedia.extension.GroupRuleDynamic
-import com.lalilu.lmedia.extension.GroupRuleStatic
 import com.lalilu.lmedia.extension.ListAction
-import com.lalilu.lmedia.extension.OrderAction
-import com.lalilu.lmedia.extension.OrderRuleDynamic
-import com.lalilu.lmedia.extension.OrderRuleStatic
-import com.lalilu.lmedia.extension.SortAction
-import com.lalilu.lmedia.extension.SortRuleDynamic
-import com.lalilu.lmedia.extension.SortRuleStatic
+import com.lalilu.lmedia.extension.SortDynamicAction
+import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmedia.extension.Sortable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -29,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 
@@ -87,88 +81,42 @@ class ItemsBaseSorter<T : Sortable>(
     private val supportListActionFlow = MutableStateFlow<Set<ListAction>>(emptySet())
     private val sortForFlow = MutableStateFlow(Sortable.SORT_FOR_SONGS)
 
-    private val sortRuleFlow: Flow<SortAction?> = sortForFlow.flatMapLatest { sortFor ->
-        supportListActionFlow.flatMapLatest { listActions ->
+    private val sortRuleFlow = sortForFlow.flatMapLatest { sortFor ->
+        supportListActionFlow.flatMapLatest { supportActions ->
             sp.obtain<String>("${sortFor}_SORT_RULE")
                 .flow(true)
                 .mapLatest { key ->
-                    if (key == null) return@mapLatest SortRuleStatic.Normal
-                    listActions.findInstance<SortAction> { it::class.java.name == key }
-                        ?: SortRuleStatic.Normal
-                }
-        }
-    }
-    private val orderRuleFlow: Flow<OrderAction> = sortForFlow.flatMapLatest { sortFor ->
-        supportListActionFlow.flatMapLatest { listActions ->
-            sp.obtain<String>("${sortFor}_ORDER_RULE")
-                .flow(true)
-                .mapLatest { key ->
-                    if (key == null) return@mapLatest OrderRuleStatic.Normal
-                    listActions.findInstance<OrderAction> { it::class.java.name == key }
-                        ?: OrderRuleStatic.Normal
-                }
-        }
-    }
-    private val groupRuleFlow: Flow<GroupAction> = sortForFlow.flatMapLatest { sortFor ->
-        supportListActionFlow.flatMapLatest { listActions ->
-            sp.obtain<String>("${sortFor}_GROUP_RULE")
-                .flow(true)
-                .mapLatest { key ->
-                    if (key == null) return@mapLatest GroupRuleStatic.Normal
-                    listActions.findInstance<GroupAction> { it::class.java.name == key }
-                        ?: GroupRuleStatic.Normal
+                    key?.let { supportActions.findInstance<ListAction> { it::class.java.name == key } }
+                        ?: SortStaticAction.Normal
                 }
         }
     }
 
-    private fun sortWithFlow(rule: SortAction?, source: Flow<List<T>>): Flow<List<T>> {
-        return when (rule) {
-            is SortRuleStatic -> source.mapLatest { rule.sort(it) }
-            is SortRuleDynamic -> rule.sort(source)
-            else -> source
+    private val reverseOrderFlow = sortForFlow.flatMapLatest { sortFor ->
+        sp.obtain<Boolean>("${sortFor}_SORT_RULE_REVERSE_ORDER", false)
+            .flow(true)
+            .mapLatest { it ?: false }
+    }
+
+    private val flattenOverrideFlow = sortForFlow.flatMapLatest { sortFor ->
+        sp.obtain<Boolean>("${sortFor}_SORT_RULE_FLATTEN_OVERRIDE", false)
+            .flow(true)
+            .mapLatest { it ?: false }
+    }
+
+    val output: Flow<Map<GroupIdentity, List<T>>> = sortRuleFlow.flatMapLatest { action ->
+        reverseOrderFlow.flatMapLatest { reverse ->
+            when (action) {
+                is SortStaticAction -> sourceFlow.mapLatest { action.doSort(it, reverse) }
+                is SortDynamicAction -> action.doSort(sourceFlow, reverse)
+                else -> flowOf(emptyMap())
+            }
+        }
+    }.flatMapLatest { result ->
+        flattenOverrideFlow.mapLatest {
+            if (it) mapOf(GroupIdentity.None to result.values.flatten()) else result
         }
     }
-
-    private fun orderWithFlow(rule: OrderAction?, source: Flow<List<T>>): Flow<List<T>> {
-        return when (rule) {
-            is OrderRuleStatic -> source.mapLatest { rule.order(it) }
-            is OrderRuleDynamic -> rule.order(source)
-            else -> source
-        }
-    }
-
-    private fun groupWithFlow(
-        rule: GroupAction?,
-        source: Flow<List<T>>
-    ): Flow<Map<GroupIdentity, List<T>>> {
-        return when (rule) {
-            is GroupRuleStatic -> source.mapLatest { rule.group(it) }
-            is GroupRuleDynamic -> rule.group(source)
-            else -> source.mapLatest { mapOf(GroupIdentity.None to it) }
-        }
-    }
-
-    private fun Flow<List<T>>.getSortedOutputFlow(
-        sortRule: Flow<SortAction?>,
-    ): Flow<List<T>> = sortRule.flatMapLatest { rule ->
-        sortWithFlow(rule, this)
-    }
-
-    private fun Flow<List<T>>.getOrderedOutputFlow(
-        orderRule: Flow<OrderAction?>,
-    ): Flow<List<T>> = orderRule.flatMapLatest { rule ->
-        orderWithFlow(rule, this)
-    }
-
-    private fun Flow<List<T>>.getGroupedOutputFlow(
-        groupRule: Flow<GroupAction?>,
-    ): Flow<Map<GroupIdentity, List<T>>> = groupRule.flatMapLatest { rule ->
-        groupWithFlow(rule, this)
-    }
-
-    val output = sourceFlow.getSortedOutputFlow(sortRuleFlow)
-        .getOrderedOutputFlow(orderRuleFlow)
-        .getGroupedOutputFlow(groupRuleFlow)
 
     fun updateSortFor(
         sortFor: String,

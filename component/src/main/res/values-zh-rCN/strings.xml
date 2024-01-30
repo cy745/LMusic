@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="sort_preset_by_title">标题名称</string>
-    <string name="sort_preset_by_add_time">最近添加</string>
-    <string name="sort_preset_by_modify_time">最近修改</string>
-    <string name="sort_preset_by_last_play_time">最近播放</string>
-    <string name="sort_preset_by_played_times">播放次数</string>
-    <string name="sort_preset_by_song_duration">歌曲时长</string>
-    <string name="sort_preset_by_item_count">元素个数</string>
-    <string name="sort_preset_by_disk_and_track">碟号&amp;音轨号</string>
     <string name="select_action_title_select_all">全选</string>
     <string name="select_action_title_clear_all">清空</string>
     <string name="empty_screen_no_items">无元素</string>

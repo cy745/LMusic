@@ -9,21 +9,24 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Chip
 import androidx.compose.material.ExperimentalMaterialApi
@@ -65,10 +68,8 @@ import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.component.viewmodel.SongsViewModel
 import com.lalilu.lmedia.extension.GroupIdentity
-import com.lalilu.lmedia.extension.GroupRuleStatic
 import com.lalilu.lmedia.extension.ListAction
-import com.lalilu.lmedia.extension.OrderRuleStatic
-import com.lalilu.lmedia.extension.SortRuleStatic
+import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmedia.extension.Sortable
 import org.koin.compose.koinInject
 
@@ -107,7 +108,7 @@ fun DynamicScreen.Songs(
     selectActions: (getAll: () -> List<Any>) -> List<SelectAction> = { emptyList() },
     scrollToHelper: LazyListScrollToHelper = rememberLazyListScrollToHelper(listState),
     songsSM: SongsScreenModel = rememberScreenModel { SongsScreenModel() },
-    showPrefixContent: (sortRuleStr: State<String>) -> Boolean = { it.value == SortRuleStatic.TrackNumber::class.java.name },
+    showPrefixContent: (sortRuleStr: State<String>) -> Boolean = { false },
     onDragMoveEnd: ((List<Playable>) -> Unit)? = null,
     emptyContent: @Composable () -> Unit = { DefaultEmptyContent() },
     prefixContent: @Composable (item: Playable, sortRuleStr: State<String>) -> Unit = { _, _ -> },
@@ -220,16 +221,16 @@ private fun registerSortPanel(
     showPanelState: MutableState<Boolean>,
     supportListAction: () -> List<ListAction>
 ): State<String> {
-    val sortRule = sp.obtain("${sortFor}_SORT_RULE", SortRuleStatic.Normal::class.java.name)
-    val orderRule = sp.obtain("${sortFor}_ORDER_RULE", OrderRuleStatic.Normal::class.java.name)
-    val groupRule = sp.obtain("${sortFor}_GROUP_RULE", GroupRuleStatic.Normal::class.java.name)
+    val sortRule = sp.obtain("${sortFor}_SORT_RULE", SortStaticAction.Normal::class.java.name)
+    val reverseOrder = sp.obtain("${sortFor}_SORT_RULE_REVERSE_ORDER", false)
+    val flattenOverride = sp.obtain("${sortFor}_SORT_RULE_FLATTEN_OVERRIDE", false)
 
     val dialog = remember {
         DialogItem.Dynamic(backgroundColor = Color.Transparent) {
             SortPanel(
                 sortRule = sortRule,
-                orderRule = orderRule,
-                groupRule = groupRule,
+                reverseOrder = reverseOrder,
+                flattenOverride = flattenOverride,
                 supportListAction = supportListAction,
                 onClose = { showPanelState.value = false }
             )
@@ -330,44 +331,87 @@ fun DynamicScreen.registerSelectPanel(
 }
 
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
 @Composable
 private fun registerGroupLabelJumper(
     items: () -> Collection<GroupIdentity>,
     scrollToHelper: LazyListScrollToHelper,
     isVisible: MutableState<Boolean>
 ) {
+    val statusBarPadding = WindowInsets.statusBars.asPaddingValues()
+    val navigationBarPadding = WindowInsets.navigationBars.asPaddingValues()
+
     val dialog = remember {
         DialogItem.Dynamic(backgroundColor = Color.Transparent) {
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(state = rememberScrollState())
-                    .padding(20.dp),
-                horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally)
+            val charMapping = remember {
+                items().filter { it.text.isNotBlank() }
+                    .groupBy { it.text[0].category }
+            }
+
+            val paddingValues = remember {
+                val topDp = statusBarPadding.calculateTopPadding()
+                val bottomDp = navigationBarPadding.calculateBottomPadding()
+                PaddingValues(top = topDp, bottom = bottomDp)
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = paddingValues
             ) {
-                items().forEach { key ->
-                    Chip(
-                        modifier = Modifier,
-                        onClick = {
+                charMapping.forEach {
+                    charCategoryMapping(
+                        category = it.key,
+                        items = it.value,
+                        onClick = { key ->
                             scrollToHelper.scrollToItem(key)
                             isVisible.value = false
                         }
-                    ) {
-                        Text(
-                            style = MaterialTheme.typography.h6,
-                            text = when (key) {
-                                is GroupIdentity.Time -> key.time
-                                is GroupIdentity.DiskNumber -> key.number.toString()
-                                is GroupIdentity.FirstLetter -> key.letter
-                                else -> ""
-                            }
-                        )
-                    }
+                    )
                 }
             }
         }
     }
 
     DialogWrapper.register(isVisible = isVisible, dialogItem = dialog)
+}
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
+private fun LazyListScope.charCategoryMapping(
+    category: CharCategory,
+    items: Collection<GroupIdentity>,
+    onClick: (GroupIdentity) -> Unit = {}
+) {
+    item {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            style = MaterialTheme.typography.h6,
+            color = Color.White,
+            text = category.name
+            // TODO 需要为CharCategory设置i18n转换
+        )
+    }
+
+    item {
+        FlowRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.Start)
+        ) {
+            // TODO 需要为时间类型的分组使用日历组件，方便查找
+            items.forEach { key ->
+                Chip(
+                    modifier = Modifier,
+                    onClick = { onClick(key) }
+                ) {
+                    Text(
+                        style = MaterialTheme.typography.h6,
+                        text = key.text
+                    )
+                }
+            }
+        }
+    }
 }

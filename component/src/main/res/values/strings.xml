@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="sort_preset_by_title">Title</string>
-    <string name="sort_preset_by_modify_time">Modify Time</string>
-    <string name="sort_preset_by_add_time">Add Time</string>
-    <string name="sort_preset_by_last_play_time">Last Play</string>
-    <string name="sort_preset_by_played_times">Play Count</string>
-    <string name="sort_preset_by_song_duration">Song Duration</string>
-    <string name="sort_preset_by_item_count">Item Count</string>
-    <string name="sort_preset_by_disk_and_track">Disk &amp; Track No.</string>
     <string name="select_action_title_select_all">Select All</string>
     <string name="select_action_title_clear_all">Clear All</string>
     <string name="empty_screen_no_items">No Items</string>

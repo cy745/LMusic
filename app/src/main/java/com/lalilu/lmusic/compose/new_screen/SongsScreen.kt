@@ -16,20 +16,15 @@ import com.lalilu.R
 import com.lalilu.component.Songs
 import com.lalilu.component.SongsScreenModel
 import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.component.extension.singleViewModel
-import com.lalilu.lmedia.extension.GroupRuleStatic
-import com.lalilu.lmedia.extension.ListActionPreset
-import com.lalilu.lmedia.extension.OrderRuleStatic
-import com.lalilu.lmedia.extension.SortRuleStatic
-import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.lhistory.SortRuleLastPlayTime
 import com.lalilu.lhistory.SortRulePlayCount
-import com.lalilu.lhistory.SortRulePresetLastPlayTime
-import com.lalilu.lhistory.SortRulePresetPlayedTimes
+import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplaylist.PlaylistActions
@@ -89,43 +84,16 @@ data class SongsScreen(
             },
             supportListAction = {
                 listOf(
-                    // 部分预设
-                    ListActionPreset.SortByAddTime,
-                    ListActionPreset.SortByModifyTime,
-                    ListActionPreset.SortByTitle,
-                    ListActionPreset.SortByDuration,
-                    SortRulePresetLastPlayTime,
-                    SortRulePresetPlayedTimes,
-
-                    // SortRule
-                    SortRuleStatic.Normal,
-                    SortRuleStatic.CreateTime,
-                    SortRuleStatic.Title,
-                    SortRuleStatic.SubTitle,
-                    SortRuleStatic.ItemsDuration,
-                    SortRuleStatic.ContentType,
-                    SortRuleStatic.ModifyTime,
+                    SortStaticAction.Normal,
+                    SortStaticAction.Title,
+                    SortStaticAction.AddTime,
+                    SortStaticAction.Duration,
                     SortRulePlayCount,
                     SortRuleLastPlayTime,
-
-                    // GroupRule
-                    GroupRuleStatic.Normal,
-                    GroupRuleStatic.CreateTime,
-                    GroupRuleStatic.ModifyTime,
-                    GroupRuleStatic.TitleFirstLetter,
-                    GroupRuleStatic.SubTitleFirstLetter,
-                    GroupRuleStatic.PinYinFirstLetter,
-
-                    // OrderRule
-                    OrderRuleStatic.Normal,
-                    OrderRuleStatic.Reverse,
-                    OrderRuleStatic.Shuffle
+                    SortStaticAction.Shuffle
                 )
             },
-            showPrefixContent = {
-                it.value == SortRuleStatic.TrackNumber::class.java.name ||
-                        it.value == SortRulePlayCount::class.java.name
-            },
+            showPrefixContent = { it.value == SortRulePlayCount::class.java.name },
             headerContent = {
                 item {
                     NavigatorHeader(
