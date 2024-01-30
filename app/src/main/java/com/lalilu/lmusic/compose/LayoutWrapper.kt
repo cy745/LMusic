@@ -36,5 +36,7 @@ object LayoutWrapper {
         if (isLandscape) {
             ShowScreen()
         }
+
+        DialogWrapper.Content()
     }
 }

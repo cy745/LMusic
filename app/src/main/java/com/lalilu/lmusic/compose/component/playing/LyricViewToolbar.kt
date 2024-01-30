@@ -6,7 +6,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Icon
@@ -17,11 +19,39 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
-import com.lalilu.lmusic.compose.component.settings.FileSelectWrapper
+import com.lalilu.lmusic.compose.DialogItem
+import com.lalilu.lmusic.compose.DialogWrapper
+import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
+import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
+import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.datastore.SettingsSp
 import org.koin.compose.koinInject
+
+private val LyricViewActionDialog = DialogItem.Dynamic {
+    val settingsSp: SettingsSp = koinInject()
+
+    Column(modifier = Modifier.navigationBarsPadding()) {
+        SettingStateSeekBar(
+            state = settingsSp.lyricGravity,
+            selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
+            titleRes = R.string.preference_lyric_settings_text_gravity
+        )
+        SettingProgressSeekBar(
+            state = settingsSp.lyricTextSize,
+            title = "歌词文字大小",
+            valueRange = 14..36
+        )
+        SettingFilePicker(
+            state = settingsSp.lyricTypefacePath,
+            title = "自定义字体",
+            subTitle = "请选择TTF格式的字体文件",
+            mimeType = "font/ttf"
+        )
+    }
+}
 
 @Composable
 fun LyricViewToolbar(
@@ -44,14 +74,12 @@ fun LyricViewToolbar(
             targetValue = if (isDrawTranslation) 1f else 0.5f, label = ""
         )
 
-        FileSelectWrapper(state = settingsSp.lyricTypefacePath) { launcher, _ ->
-            IconButton(onClick = { launcher.launch("font/ttf") }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_text),
-                    contentDescription = "",
-                    tint = Color.White
-                )
-            }
+        IconButton(onClick = { DialogWrapper.push(LyricViewActionDialog) }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_text),
+                contentDescription = "",
+                tint = Color.White
+            )
         }
 
         AnimatedContent(
