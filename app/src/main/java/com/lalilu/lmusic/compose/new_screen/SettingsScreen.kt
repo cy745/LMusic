@@ -8,9 +8,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.ActivityUtils
@@ -28,8 +29,11 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.R
 import com.lalilu.common.CustomRomUtils
 import com.lalilu.component.IconTextButton
+import com.lalilu.component.LLazyColumn
 import com.lalilu.component.base.CustomScreen
+import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
 import com.lalilu.lmedia.scanner.FileSystemScanner
 import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.compose.component.settings.SettingCategory
@@ -86,10 +90,15 @@ private fun SettingsScreen(
     ) {
     }
 
-    LazyColumn {
-//        item {
-//            NavigatorHeader(route = ScreenData.Settings)
-//        }
+    LLazyColumn(
+        contentPadding = PaddingValues(top = rememberFixedStatusBarHeightDp())
+    ) {
+        item {
+            NavigatorHeader(
+                title = stringResource(id = R.string.screen_title_settings),
+                subTitle = stringResource(id = R.string.destination_subtitle_settings)
+            )
+        }
 
         item {
             SettingCategory(
@@ -234,6 +243,7 @@ private fun SettingsScreen(
                         color = Color(0xFFFF8B3F),
                         onClick = {
                             Toast.makeText(context, "扫描开始", Toast.LENGTH_SHORT).show()
+                            // TODO 存在扫描不到的情况，改进方向为先遍历出fileList然后交由其进行scanFile
                             MediaScannerConnection.scanFile(
                                 context, arrayOf("/storage/emulated/0/"), null
                             ) { path, uri ->
