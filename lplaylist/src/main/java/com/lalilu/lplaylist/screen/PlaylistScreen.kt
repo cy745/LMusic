@@ -19,13 +19,13 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import com.lalilu.component.LLazyColumn
-import com.lalilu.component.SelectPanelWrapper
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.extension.rememberItemSelectHelper
 import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.registerSelectPanel
 import com.lalilu.lplaylist.PlaylistActions
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.component.PlaylistCard
@@ -77,62 +77,64 @@ private fun DynamicScreen.PlaylistScreen(
         playlistRepo.checkFavouriteExist()
     }
 
-    SelectPanelWrapper(
-        selectActions = { listOf(PlaylistActions.removePlaylists) },
-        selector = rememberItemSelectHelper(
-            isSelecting = playlistSM.isSelecting,
-            selected = playlistSM.selectedItems
-        )
-    ) { selectHelper ->
-        LLazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            item {
-                NavigatorHeader(
-                    modifier = Modifier
-                        .statusBarsPadding()
-                        .fillMaxWidth(),
-                    title = stringResource(id = R.string.playlist_screen_title)
-                ) {
-                    IconButton(
-                        onClick = { navigator.navigateTo(PlaylistCreateOrEditScreen()) }
-                    ) {
-                        Icon(
-                            painter = painterResource(ComponentR.drawable.ic_add_line),
-                            contentDescription = null
-                        )
-                    }
-                }
-            }
+    val selectHelper = rememberItemSelectHelper(
+        isSelecting = playlistSM.isSelecting,
+        selected = playlistSM.selectedItems
+    )
 
-            items(
-                items = playlists.value,
-                key = { it.id },
-                contentType = { LPlaylist::class.java }
-            ) { playlist ->
-                ReorderableItem(
-                    reorderableLazyListState = reorderableState,
-                    key = playlist.id
-                ) { isDragging ->
-                    PlaylistCard(
-                        playlist = playlist,
-                        draggingModifier = Modifier.draggableHandle(),
-                        isDragging = { isDragging },
-                        isSelected = { selectHelper.isSelected(playlist) },
-                        isSelecting = { selectHelper.isSelecting.value },
-                        onClick = {
-                            if (selectHelper.isSelecting()) {
-                                selectHelper.onSelect(playlist)
-                            } else {
-                                navigator.navigateTo(PlaylistDetailScreen(playlistId = playlist.id))
-                            }
-                        },
-                        onLongClick = { selectHelper.onSelect(playlist) }
+    registerSelectPanel(
+        selectActions = { listOf(PlaylistActions.removePlaylists) },
+        selector = selectHelper
+    )
+
+    LLazyColumn(
+        state = listState,
+        modifier = Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        item {
+            NavigatorHeader(
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .fillMaxWidth(),
+                title = stringResource(id = R.string.playlist_screen_title)
+            ) {
+                IconButton(
+                    onClick = { navigator.navigateTo(PlaylistCreateOrEditScreen()) }
+                ) {
+                    Icon(
+                        painter = painterResource(ComponentR.drawable.ic_add_line),
+                        contentDescription = null
                     )
                 }
+            }
+        }
+
+        items(
+            items = playlists.value,
+            key = { it.id },
+            contentType = { LPlaylist::class.java }
+        ) { playlist ->
+            ReorderableItem(
+                reorderableLazyListState = reorderableState,
+                key = playlist.id
+            ) { isDragging ->
+                PlaylistCard(
+                    playlist = playlist,
+                    draggingModifier = Modifier.draggableHandle(),
+                    isDragging = { isDragging },
+                    isSelected = { selectHelper.isSelected(playlist) },
+                    isSelecting = { selectHelper.isSelecting.value },
+                    onClick = {
+                        if (selectHelper.isSelecting()) {
+                            selectHelper.onSelect(playlist)
+                        } else {
+                            navigator.navigateTo(PlaylistDetailScreen(playlistId = playlist.id))
+                        }
+                    },
+                    onLongClick = { selectHelper.onSelect(playlist) }
+                )
             }
         }
     }

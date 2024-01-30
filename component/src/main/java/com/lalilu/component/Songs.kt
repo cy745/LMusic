@@ -35,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +52,8 @@ import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.common.base.BaseSp
 import com.lalilu.common.base.Playable
 import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.extension.DialogItem
+import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.ItemSelectHelper
 import com.lalilu.component.extension.LazyListScrollToHelper
 import com.lalilu.component.extension.SelectAction
@@ -125,124 +128,124 @@ fun DynamicScreen.Songs(
         )
     }
 
-    HeaderJumperWrapper(
+    val selectorHelper = rememberItemSelectHelper(
+        isSelecting = songsSM.isSelecting,
+        selected = songsSM.selectedItems
+    )
+
+    val sortRuleStr = registerSortPanel(
+        sp = songsVM.sp,
+        sortFor = sortFor,
+        showPanelState = songsSM.showSortPanel,
+        supportListAction = supportListAction,
+    )
+
+    registerGroupLabelJumper(
         items = { songsState.value.keys },
-        isVisible = songsSM.isFastJumping,
-        scrollToHelper = scrollToHelper
-    ) { scrollHelper, headerJumperWrapperVisible ->
-        SelectPanelWrapper(
-            selectActions = { selectActions { songsState.value.values.flatten() } },
-            selector = rememberItemSelectHelper(
-                isSelecting = songsSM.isSelecting,
-                selected = songsSM.selectedItems
-            )
-        ) { selector ->
-            SortPanelWrapper(
-                sp = songsVM.sp,
-                sortFor = sortFor,
-                showPanelState = songsSM.showSortPanel,
-                supportListAction = supportListAction,
-            ) { sortRuleStr ->
-                if (onDragMoveEnd != null) {
-                    ReorderableSongListWrapper(
-                        modifier = modifier,
-                        items = songsState.value.values.flatten(),
-                        listState = listState,
-                        onDragMoveEnd = onDragMoveEnd,
-                        scrollToHelper = { scrollHelper },
-                        itemSelectHelper = { selector },
-                        hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
-                        isFavourite = { playingVM.isFavourite(it) },
-                        isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
-                        showPrefixContent = { showPrefixContent(sortRuleStr) },
-                        headerContent = { headerContent(songsState) },
-                        footerContent = { footerContent(songsState) },
-                        emptyContent = emptyContent,
-                        prefixContent = { prefixContent(it, sortRuleStr) },
-                        onLongClickItem = { navigator.goToDetailOf(it.mediaId) },
-                        onClickItem = {
-                            playingVM.play(
-                                mediaId = it.mediaId,
-                                mediaIds = songsState.value.values.flatten().map(Playable::mediaId),
-                                playOrPause = true
-                            )
-                        },
-                    )
-                } else {
-                    SongListWrapper(
-                        modifier = modifier,
-                        state = listState,
-                        itemsMap = songsState.value,
-                        idMapper = {
-                            when {
-                                it is GroupIdentity.Time -> it.time
-                                it is GroupIdentity.FirstLetter -> it.letter
-                                it is GroupIdentity.DiskNumber && it.number > 0 -> it.number.toString()
-                                else -> ""
-                            }
-                        },
-                        scrollToHelper = { scrollHelper },
-                        itemSelectHelper = { selector },
-                        hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
-                        isFavourite = { playingVM.isFavourite(it) },
-                        isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
-                        onHeaderClick = { headerJumperWrapperVisible.value = true },
-                        showPrefixContent = { showPrefixContent(sortRuleStr) },
-                        headerContent = { headerContent(songsState) },
-                        footerContent = { footerContent(songsState) },
-                        emptyContent = emptyContent,
-                        prefixContent = { prefixContent(it, sortRuleStr) },
-                        onLongClickItem = { navigator.goToDetailOf(it.mediaId) },
-                        onClickItem = {
-                            playingVM.play(
-                                mediaId = it.mediaId,
-                                mediaIds = songsState.value.values.flatten().map(Playable::mediaId),
-                                playOrPause = true
-                            )
-                        },
-                    )
+        scrollToHelper = scrollToHelper,
+        isVisible = songsSM.isFastJumping
+    )
+
+    registerSelectPanel(
+        selectActions = { selectActions { songsState.value.values.flatten() } },
+        selector = selectorHelper
+    )
+
+    if (onDragMoveEnd != null) {
+        ReorderableSongListWrapper(
+            modifier = modifier,
+            items = songsState.value.values.flatten(),
+            listState = listState,
+            onDragMoveEnd = onDragMoveEnd,
+            scrollToHelper = { scrollToHelper },
+            itemSelectHelper = { selectorHelper },
+            hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
+            isFavourite = { playingVM.isFavourite(it) },
+            isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
+            showPrefixContent = { showPrefixContent(sortRuleStr) },
+            headerContent = { headerContent(songsState) },
+            footerContent = { footerContent(songsState) },
+            emptyContent = emptyContent,
+            prefixContent = { prefixContent(it, sortRuleStr) },
+            onLongClickItem = { navigator.goToDetailOf(it.mediaId) },
+            onClickItem = {
+                playingVM.play(
+                    mediaId = it.mediaId,
+                    mediaIds = songsState.value.values.flatten().map(Playable::mediaId),
+                    playOrPause = true
+                )
+            },
+        )
+    } else {
+        SongListWrapper(
+            modifier = modifier,
+            state = listState,
+            itemsMap = songsState.value,
+            idMapper = {
+                when {
+                    it is GroupIdentity.Time -> it.time
+                    it is GroupIdentity.FirstLetter -> it.letter
+                    it is GroupIdentity.DiskNumber && it.number > 0 -> it.number.toString()
+                    else -> ""
                 }
-            }
-        }
+            },
+            scrollToHelper = { scrollToHelper },
+            itemSelectHelper = { selectorHelper },
+            hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
+            isFavourite = { playingVM.isFavourite(it) },
+            isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
+            onHeaderClick = { songsSM.isFastJumping.value = true },
+            showPrefixContent = { showPrefixContent(sortRuleStr) },
+            headerContent = { headerContent(songsState) },
+            footerContent = { footerContent(songsState) },
+            emptyContent = emptyContent,
+            prefixContent = { prefixContent(it, sortRuleStr) },
+            onLongClickItem = { navigator.goToDetailOf(it.mediaId) },
+            onClickItem = {
+                playingVM.play(
+                    mediaId = it.mediaId,
+                    mediaIds = songsState.value.values.flatten().map(Playable::mediaId),
+                    playOrPause = true
+                )
+            },
+        )
     }
 }
 
 
 @Composable
-fun DynamicScreen.SortPanelWrapper(
+private fun registerSortPanel(
     sortFor: String,
     sp: BaseSp,
     showPanelState: MutableState<Boolean>,
-    supportListAction: () -> List<ListAction>,
-    content: @Composable (sortRuleStr: State<String>) -> Unit,
-) {
+    supportListAction: () -> List<ListAction>
+): State<String> {
     val sortRule = sp.obtain("${sortFor}_SORT_RULE", SortRuleStatic.Normal::class.java.name)
     val orderRule = sp.obtain("${sortFor}_ORDER_RULE", OrderRuleStatic.Normal::class.java.name)
     val groupRule = sp.obtain("${sortFor}_GROUP_RULE", GroupRuleStatic.Normal::class.java.name)
 
-    RegisterMainContent(
-        showMask = { true },
-        showBackground = { false },
-        isVisible = showPanelState
-    ) {
-        SortPanel(
-            sortRule = sortRule,
-            orderRule = orderRule,
-            groupRule = groupRule,
-            supportListAction = supportListAction,
-            onClose = { showPanelState.value = false }
-        )
+    val dialog = remember {
+        DialogItem.Dynamic(backgroundColor = Color.Transparent) {
+            SortPanel(
+                sortRule = sortRule,
+                orderRule = orderRule,
+                groupRule = groupRule,
+                supportListAction = supportListAction,
+                onClose = { showPanelState.value = false }
+            )
+        }
     }
-    content(sortRule)
+
+    DialogWrapper.register(isVisible = showPanelState, dialogItem = dialog)
+    return sortRule
 }
 
 
 @Composable
-fun DynamicScreen.SelectPanelWrapper(
+fun DynamicScreen.registerSelectPanel(
     modifier: Modifier = Modifier,
     selector: ItemSelectHelper = rememberItemSelectHelper(),
-    selectActions: () -> List<SelectAction> = { emptyList() },
-    content: @Composable (selector: ItemSelectHelper) -> Unit,
+    selectActions: () -> List<SelectAction> = { emptyList() }
 ) {
     RegisterMainContent(
         isVisible = selector.isSelecting,
@@ -324,51 +327,47 @@ fun DynamicScreen.SelectPanelWrapper(
             }
         }
     }
-
-    content(selector)
 }
 
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
 @Composable
-private fun DynamicScreen.HeaderJumperWrapper(
+private fun registerGroupLabelJumper(
     items: () -> Collection<GroupIdentity>,
     scrollToHelper: LazyListScrollToHelper,
-    isVisible: MutableState<Boolean>,
-    content: @Composable (LazyListScrollToHelper, MutableState<Boolean>) -> Unit,
+    isVisible: MutableState<Boolean>
 ) {
-    RegisterMainContent(
-        isVisible = isVisible,
-        showMask = { true },
-        showBackground = { false }
-    ) {
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(state = rememberScrollState())
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally)
-        ) {
-            items().forEach { key ->
-                Chip(
-                    modifier = Modifier,
-                    onClick = {
-                        scrollToHelper.scrollToItem(key)
-                        isVisible.value = false
-                    }
-                ) {
-                    Text(
-                        style = MaterialTheme.typography.h6,
-                        text = when (key) {
-                            is GroupIdentity.Time -> key.time
-                            is GroupIdentity.DiskNumber -> key.number.toString()
-                            is GroupIdentity.FirstLetter -> key.letter
-                            else -> ""
+    val dialog = remember {
+        DialogItem.Dynamic(backgroundColor = Color.Transparent) {
+            FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(state = rememberScrollState())
+                    .padding(20.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally)
+            ) {
+                items().forEach { key ->
+                    Chip(
+                        modifier = Modifier,
+                        onClick = {
+                            scrollToHelper.scrollToItem(key)
+                            isVisible.value = false
                         }
-                    )
+                    ) {
+                        Text(
+                            style = MaterialTheme.typography.h6,
+                            text = when (key) {
+                                is GroupIdentity.Time -> key.time
+                                is GroupIdentity.DiskNumber -> key.number.toString()
+                                is GroupIdentity.FirstLetter -> key.letter
+                                else -> ""
+                            }
+                        )
+                    }
                 }
             }
         }
     }
-    content(scrollToHelper, isVisible)
+
+    DialogWrapper.register(isVisible = isVisible, dialogItem = dialog)
 }
