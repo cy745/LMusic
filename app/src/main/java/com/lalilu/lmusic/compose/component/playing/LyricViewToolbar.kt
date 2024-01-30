@@ -22,8 +22,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
-import com.lalilu.lmusic.compose.DialogItem
-import com.lalilu.lmusic.compose.DialogWrapper
+import com.lalilu.component.extension.DialogItem
+import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
 import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
 import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar

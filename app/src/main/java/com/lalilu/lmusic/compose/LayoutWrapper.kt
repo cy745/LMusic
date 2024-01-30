@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.rememberIsPad
 import com.lalilu.lmusic.compose.screen.ShowScreen
 import com.lalilu.lmusic.compose.screen.playing.PlayingLayout

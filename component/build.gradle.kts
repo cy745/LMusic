@@ -50,6 +50,7 @@ dependencies {
     // https://github.com/Calvin-LL/Reorderable
     // Apache-2.0 license
     api("sh.calvin.reorderable:reorderable:1.1.0")
+    api("com.github.cy745:AnyPopDialog-Compose:jitpack-SNAPSHOT")
 
     // compose
     // api(platform(libs.compose.bom))

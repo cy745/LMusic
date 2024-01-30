@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose
+package com.lalilu.component.extension
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,26 +15,23 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.lalilu.component.extension.dayNightTextColor
 import com.melody.dialog.any_pop.AnyPopDialog
 import com.melody.dialog.any_pop.AnyPopDialogProperties
 import com.melody.dialog.any_pop.DirectionState
-
-
-interface DialogContext {
-    fun dismiss()
-    fun isVisible(): Boolean
-}
+import kotlinx.coroutines.flow.collectLatest
 
 private val DEFAULT_DIALOG_PROPERTIES = AnyPopDialogProperties(
     direction = DirectionState.BOTTOM
@@ -44,6 +41,7 @@ sealed class DialogItem {
     data class Static(
         val title: String,
         val message: String,
+        val backgroundColor: Color? = null,
         val properties: AnyPopDialogProperties = DEFAULT_DIALOG_PROPERTIES,
         val onConfirm: () -> Unit = {},
         val onCancel: () -> Unit = {},
@@ -51,24 +49,64 @@ sealed class DialogItem {
     ) : DialogItem()
 
     data class Dynamic(
+        val backgroundColor: Color? = null,
         val properties: AnyPopDialogProperties = DEFAULT_DIALOG_PROPERTIES,
         val content: @Composable DialogContext.() -> Unit,
     ) : DialogItem()
 }
 
-object DialogWrapper : DialogContext {
+interface DialogHost {
+    @Composable
+    fun Content()
+    fun push(dialogItem: DialogItem)
+
+    @Composable
+    fun register(isVisible: MutableState<Boolean>, dialogItem: DialogItem)
+}
+
+interface DialogContext {
+    fun dismiss()
+    fun isVisible(): Boolean
+}
+
+object DialogWrapper : DialogHost, DialogContext {
     private var dialogItem by mutableStateOf<DialogItem?>(null)
     private var dismissFunc by mutableStateOf<(() -> Unit)?>(null)
 
     override fun isVisible(): Boolean = dialogItem != null
     override fun dismiss(): Unit = run { dismissFunc?.invoke() }
 
-    fun push(item: DialogItem) {
-        dialogItem = item
+    override fun push(dialogItem: DialogItem) {
+        this.dialogItem = dialogItem
     }
 
     @Composable
-    fun Content() {
+    override fun register(isVisible: MutableState<Boolean>, dialogItem: DialogItem) {
+        LaunchedEffect(Unit) {
+            snapshotFlow { this@DialogWrapper.dialogItem }
+                .collectLatest {
+                    if (it != null || !isVisible.value) return@collectLatest
+                    isVisible.value = false
+                }
+        }
+
+        LaunchedEffect(Unit) {
+            snapshotFlow { isVisible.value }
+                .collectLatest { visible ->
+                    if (visible) {
+                        this@DialogWrapper.dialogItem = dialogItem
+                        return@collectLatest
+                    }
+
+                    this@DialogWrapper.dialogItem ?: return@collectLatest
+                    dismissFunc?.invoke()
+                }
+
+        }
+    }
+
+    @Composable
+    override fun Content() {
         if (dialogItem != null) {
             val isActiveClose by remember {
                 mutableStateOf(false)
@@ -84,11 +122,20 @@ object DialogWrapper : DialogContext {
                 } ?: DEFAULT_DIALOG_PROPERTIES
             }
 
+            val backgroundColor = remember(dialogItem) {
+                dialogItem?.let {
+                    when (it) {
+                        is DialogItem.Dynamic -> it.backgroundColor
+                        is DialogItem.Static -> it.backgroundColor
+                    }
+                }
+            }
+
             AnyPopDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 0.dp)
-                    .background(color = MaterialTheme.colors.background),
+                    .background(color = backgroundColor ?: MaterialTheme.colors.background),
                 isActiveClose = isActiveClose,
                 properties = properties,
                 onDismiss = {

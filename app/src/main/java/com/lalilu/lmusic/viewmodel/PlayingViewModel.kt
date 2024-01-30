@@ -4,10 +4,10 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.viewModelScope
 import com.lalilu.common.base.Playable
+import com.lalilu.component.extension.DialogItem
+import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.toState
 import com.lalilu.component.viewmodel.IPlayingViewModel
-import com.lalilu.lmusic.compose.DialogItem
-import com.lalilu.lmusic.compose.DialogWrapper
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lplayer.LPlayer
