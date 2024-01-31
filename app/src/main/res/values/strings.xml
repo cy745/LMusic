@@ -3,6 +3,7 @@
     <!--    <string name="app_name">LMusic</string>-->
     <string name="app_name_debug">LMusic_Debug</string>
     <string name="app_name_beta">LMusic_Beta</string>
+    <string name="app_name_alpha">LMusic_Alpha</string>
     <string name="app_name_release">LMusic</string>
 
     <string name="screen_title_agreement">用户协议 | 隐私协议</string>
