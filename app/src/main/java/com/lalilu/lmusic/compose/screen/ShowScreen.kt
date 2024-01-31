@@ -52,11 +52,10 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.playback.PlayMode
-import org.koin.compose.koinInject
 
 @Composable
 fun ShowScreen(
-    playingVM: PlayingViewModel = koinInject(),
+    playingVM: PlayingViewModel = singleViewModel(),
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
