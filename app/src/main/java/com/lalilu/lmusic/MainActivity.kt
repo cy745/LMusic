@@ -18,8 +18,6 @@ import androidx.core.content.ContextCompat
 import com.blankj.utilcode.util.ActivityUtils
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.component.extension.collectWithLifeCycleOwner
-import com.lalilu.extension_core.ExtensionLoadResult
-import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.App
@@ -71,18 +69,9 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-        ExtensionManager.extensionsFlow
-            .collectWithLifeCycleOwner(this) { list ->
-                list.onEach { result ->
-                    (result as? ExtensionLoadResult.Ready)
-                        ?.let { lifecycle.addObserver(it.extension) }
-                }
-            }
-
         LMedia.initialize(this)
 
         lifecycle.addObserver(connector)
-        lifecycle.addObserver(ExtensionManager)
         SystemUiUtil.immerseNavigationBar(this)
         SystemUiUtil.immersiveCutout(window)
 

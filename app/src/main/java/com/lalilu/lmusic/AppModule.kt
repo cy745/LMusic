@@ -34,7 +34,6 @@ import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.SongCoverFetcher
 import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
 import com.lalilu.lmusic.utils.extension.toBitmap
-import com.lalilu.lmusic.viewmodel.ExtensionsViewModel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
@@ -103,7 +102,6 @@ val ViewModelModule = module {
     viewModelOf(::ArtistsViewModel)
     viewModelOf(::HistoryViewModel)
     viewModelOf(::SearchLyricViewModel)
-    viewModelOf(::ExtensionsViewModel)
     viewModelOf(::LibraryViewModel)
 }
 

@@ -3,15 +3,12 @@ package com.lalilu.lmusic
 import android.app.Application
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
-import coil.Coil
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.lalilu.component.ComponentModule
-import com.lalilu.extension_core.ExtensionManager
 import com.lalilu.lalbum.AlbumModule
 import com.lalilu.lartist.ArtistModule
 import com.lalilu.ldictionary.DictionaryModule
-import com.lalilu.lextension.ExtensionModule
 import com.lalilu.lhistory.HistoryModule
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.indexer.FilterGroup
@@ -34,7 +31,6 @@ class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelSt
     override fun onCreate() {
         super.onCreate()
         ignoreSSLVerification()
-        ExtensionManager.loadExtensions(this)
         startKoin {
             androidContext(this@LMusicApp)
             modules(
@@ -49,14 +45,9 @@ class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelSt
                 ArtistModule,
                 AlbumModule,
                 DictionaryModule,
-                ExtensionModule,
                 LPlayer.module,
                 LMedia.module
             )
         }
-
-        // 插件端可能会比宿主更快使用ImageLoader，而插件端的context无法用于创建ImageLoader会导致闪退，
-        // 故宿主端提前初始化ImageLoader避免插件端进行初始化
-        Coil.imageLoader(this)
     }
 }
