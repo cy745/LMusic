@@ -70,7 +70,7 @@ fun LyricSentence(
             maxHeight = Int.MAX_VALUE
         )
     }
-    val result = remember {
+    val (textResult, translateResult) = remember(textAlign, textSize, fontFamily) {
         textMeasurer.measure(
             text = lyric.text,
             constraints = actualConstraints,
@@ -80,10 +80,7 @@ fun LyricSentence(
                 fontFamily = fontFamily.value
                     ?: TextStyle.Default.fontFamily
             )
-        )
-    }
-    val translateResult = remember {
-        lyric.translate?.let {
+        ) to lyric.translate?.let {
             textMeasurer.measure(
                 text = it,
                 constraints = actualConstraints,
@@ -96,11 +93,12 @@ fun LyricSentence(
             )
         }
     }
-    val textHeight = remember { result.getLineBottom(result.lineCount - 1) }
-    val translateHeight = remember {
+
+    val textHeight = remember(textResult) { textResult.getLineBottom(textResult.lineCount - 1) }
+    val translateHeight = remember(translateResult) {
         translateResult?.let { it.getLineBottom(it.lineCount - 1) } ?: 0f
     }
-    val height = remember(isTranslationShow()) {
+    val height = remember(isTranslationShow(), textHeight, translateHeight) {
         textHeight + if (isTranslationShow() && translateHeight > 0) translateHeight + gapHeight else 0f
     }
     val heightDp = remember(height) { density.run { height.toDp() + paddingVertical * 2 } }
@@ -147,7 +145,7 @@ fun LyricSentence(
             blurRadius = 1f
         )
     }
-    val translationTopLeft = remember {
+    val translationTopLeft = remember(textHeight) {
         Offset.Zero.copy(y = textHeight + gapHeight)
     }
     val pivotOffset = remember(height, textAlign) {
@@ -162,7 +160,7 @@ fun LyricSentence(
     val blurRadius = remember {
         derivedStateOf {
             if (!isBlurredEnable()) return@derivedStateOf 0.dp
-            positionToCurrent().dp
+            positionToCurrent().coerceAtMost(5).dp
         }
     }
     val animateBlurRadius = animateDpAsState(targetValue = blurRadius.value, label = "")
@@ -182,7 +180,7 @@ fun LyricSentence(
             drawText(
                 color = color.value,
                 shadow = textShadow,
-                textLayoutResult = result
+                textLayoutResult = textResult
             )
 
             if (translateResult == null) return@scale
