@@ -33,4 +33,5 @@ android {
 dependencies {
     implementation("com.github.getActivity:EasyWindow:10.6")
     implementation(libs.startup.runtime)
+    implementation(project(":component"))
 }

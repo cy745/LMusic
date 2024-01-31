@@ -1,5 +1,6 @@
 package com.lalilu.value_cat
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.sp
 
 object ValueCat {
     private val valueMap = mutableStateMapOf<String, List<Float>>()
+    private val enable = mutableStateOf(false)
 
     fun catFor(key: String, value: Float) {
         val queue = valueMap.getOrPut(key) { emptyList() }.toMutableList()
@@ -41,24 +44,26 @@ object ValueCat {
     }
 
     internal val content = @Composable {
-        Box(
-            modifier = Modifier.padding(5.dp)
-        ) {
-            Surface(
-                elevation = 10.dp,
-                shape = RoundedCornerShape(10.dp)
+        AnimatedVisibility(visible = enable.value) {
+            Box(
+                modifier = Modifier.padding(5.dp)
             ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    contentPadding = PaddingValues(20.dp)
+                Surface(
+                    elevation = 10.dp,
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    items(items = valueMap.entries.toList(), key = { it.key }) {
-                        ValueRow(
-                            key = it.key,
-                            list = it.value
-                        )
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentPadding = PaddingValues(20.dp)
+                    ) {
+                        items(items = valueMap.entries.toList(), key = { it.key }) {
+                            ValueRow(
+                                key = it.key,
+                                list = it.value
+                            )
+                        }
                     }
                 }
             }
