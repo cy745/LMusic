@@ -61,7 +61,8 @@ fun SongCard(
     dragModifier: Modifier = Modifier,
     song: () -> Playable,
     onClick: () -> Unit = {},
-    onLongClick: () -> Unit = {},
+    onLongClick: (() -> Unit)? = null,
+    onDoubleClick: (() -> Unit)? = null,
     onEnterSelect: () -> Unit = {},
     hasLyric: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
@@ -82,6 +83,7 @@ fun SongCard(
         imageData = { item },
         onClick = onClick,
         onLongClick = onLongClick,
+        onDoubleClick = onDoubleClick,
         onEnterSelect = onEnterSelect,
         hasLyric = hasLyric,
         isPlaying = isPlaying,
@@ -103,7 +105,8 @@ fun SongCard(
     sticker: () -> List<Sticker>,
     imageData: () -> Any?,
     onClick: () -> Unit = {},
-    onLongClick: () -> Unit = {},
+    onLongClick: (() -> Unit)? = null,
+    onDoubleClick: (() -> Unit)? = null,
     onEnterSelect: () -> Unit = {},
     hasLyric: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
@@ -128,7 +131,8 @@ fun SongCard(
                 interactionSource = interactionSource,
                 indication = rememberRipple(),
                 onClick = onClick,
-                onLongClick = onLongClick
+                onLongClick = onLongClick,
+                onDoubleClick = onDoubleClick
             )
             .padding(vertical = 8.dp, horizontal = 15.dp),
         verticalAlignment = Alignment.CenterVertically,

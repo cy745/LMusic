@@ -119,11 +119,6 @@ private fun SettingsScreen(
                     selection = listOf("列表循环", "单曲循环", "随机播放"),
                     title = "播放模式"
                 )
-                SettingStateSeekBar(
-                    state = settingsSp.playOption,
-                    selection = listOf("列表循环", "单曲循环", "随机播放"),
-                    title = "播放模式"
-                )
                 SettingSwitcher(
                     state = enableSystemEq,
                     title = "启用系统均衡器",

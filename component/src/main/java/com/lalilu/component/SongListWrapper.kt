@@ -46,6 +46,7 @@ fun <K : Any> SongListWrapper(
     itemsMap: Map<K, List<Playable>>,
     onClickItem: (Playable) -> Unit = {},
     onLongClickItem: (Playable) -> Unit = {},
+    onDoubleClickItem: (Playable) -> Unit = {},
     onHeaderClick: (Any) -> Unit = {},
     hasLyric: (Playable) -> Boolean = { false },
     isFavourite: (Playable) -> Boolean = { false },
@@ -122,6 +123,12 @@ fun <K : Any> SongListWrapper(
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             onLongClickItem(item)
                         },
+                        onDoubleClick = {
+                            if (selector?.isSelecting() != true) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onDoubleClickItem(item)
+                            }
+                        },
                         onEnterSelect = { selector?.onSelect(item) },
                         isSelected = { selector?.isSelected(item) ?: false },
                         isPlaying = { isItemPlaying(item) },
@@ -160,6 +167,7 @@ fun ReorderableSongListWrapper(
     scrollToHelper: () -> LazyListScrollToHelper? = { null },
     onClickItem: (Playable) -> Unit = {},
     onLongClickItem: (Playable) -> Unit = {},
+    onDoubleClickItem: (Playable) -> Unit = {},
     hasLyric: (Playable) -> Boolean = { false },
     isFavourite: (Playable) -> Boolean = { false },
     isItemPlaying: (Playable) -> Boolean = { false },
@@ -230,6 +238,12 @@ fun ReorderableSongListWrapper(
                         onLongClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             onLongClickItem(item)
+                        },
+                        onDoubleClick = {
+                            if (selector?.isSelecting() != true) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onDoubleClickItem(item)
+                            }
                         },
                         onEnterSelect = { selector?.onSelect(item) },
                         isSelected = { selector?.isSelected(item) ?: false },

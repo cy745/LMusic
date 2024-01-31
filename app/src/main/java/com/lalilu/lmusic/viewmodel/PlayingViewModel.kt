@@ -4,8 +4,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.viewModelScope
 import com.lalilu.common.base.Playable
-import com.lalilu.component.extension.DialogItem
-import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.toState
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmusic.datastore.SettingsSp
@@ -41,27 +39,19 @@ class PlayingViewModel(
         playOrPause: Boolean,
         addToNext: Boolean,
     ) {
-        DialogWrapper.push(
-            DialogItem.Static(
-                title = "是否开始播放",
-                message = "quer",
-                onConfirm = {
-                    viewModelScope.launch {
-                        if (mediaIds != null) {
-                            QueueAction.UpdateList(mediaIds).action()
-                        }
-                        if (addToNext) {
-                            QueueAction.AddToNext(mediaId).action()
-                        }
-                        if (mediaId == LPlayer.runtime.queue.getCurrentId() && playOrPause) {
-                            PlayerAction.PlayOrPause.action()
-                        } else {
-                            PlayerAction.PlayById(mediaId).action()
-                        }
-                    }
-                }
-            )
-        )
+        viewModelScope.launch {
+            if (!mediaIds.isNullOrEmpty()) {
+                QueueAction.UpdateList(mediaIds).action()
+            }
+            if (addToNext) {
+                QueueAction.AddToNext(mediaId).action()
+            }
+            if (mediaId == LPlayer.runtime.queue.getCurrentId() && playOrPause) {
+                PlayerAction.PlayOrPause.action()
+            } else {
+                PlayerAction.PlayById(mediaId).action()
+            }
+        }
     }
 
     override fun <T> isItemPlaying(item: T, getter: (Playable) -> T): Boolean =

@@ -205,6 +205,13 @@ fun DynamicScreen.Songs(
             onClickItem = {
                 playingVM.play(
                     mediaId = it.mediaId,
+                    playOrPause = true,
+                    addToNext = true
+                )
+            },
+            onDoubleClickItem = {
+                playingVM.play(
+                    mediaId = it.mediaId,
                     mediaIds = songsState.value.values.flatten().map(Playable::mediaId),
                     playOrPause = true
                 )
