@@ -3,6 +3,7 @@ package com.lalilu.lmusic.extension
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -49,53 +50,55 @@ class ExtHistory : Extension {
             remember { derivedStateOf { historyVM.historyState.value.size.coerceIn(0, 5) } }
         val itemsHeight = animateDpAsState(itemsCount.value * 85.dp, label = "")
 
-        RecommendTitle(
-            title = "最近播放",
-            onClick = { }
-        ) {
-            Chip(
-                onClick = {
-                    // navigator.navigate(HistoryScreenDestination)
-                },
+        Column {
+            RecommendTitle(
+                title = "最近播放",
+                onClick = { }
             ) {
-                Text(style = MaterialTheme.typography.caption, text = "历史记录")
-            }
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .height(itemsHeight.value)
-                .animateContentSize()
-                .fillMaxWidth()
-        ) {
-            items(
-                items = historyVM.historyState.value.take(5),
-                key = { it.id },
-                contentType = { LSong::class }
-            ) { item ->
-                SongCard(
-                    modifier = Modifier
-                        .animateItemPlacement()
-                        .padding(bottom = 5.dp),
-                    song = { item },
-                    fixedHeight = { true },
-                    isSelected = { false },
-                    onEnterSelect = { },
-                    isPlaying = { playingVM.isItemPlaying { it.mediaId == item.id } },
+                Chip(
                     onClick = {
-                        historyVM.requiteHistoryList {
-                            playingVM.play(
-                                mediaId = item.mediaId,
-                                mediaIds = it.map(Playable::mediaId),
-                                playOrPause = true
-                            )
-                        }
+                        // navigator.navigate(HistoryScreenDestination)
                     },
-                    onLongClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        GlobalNavigatorImpl.goToDetailOf(mediaId = item.id)
-                    }
-                )
+                ) {
+                    Text(style = MaterialTheme.typography.caption, text = "历史记录")
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .height(itemsHeight.value)
+                    .animateContentSize()
+                    .fillMaxWidth()
+            ) {
+                items(
+                    items = historyVM.historyState.value.take(5),
+                    key = { it.id },
+                    contentType = { LSong::class }
+                ) { item ->
+                    SongCard(
+                        modifier = Modifier
+                            .animateItemPlacement()
+                            .padding(bottom = 5.dp),
+                        song = { item },
+                        fixedHeight = { true },
+                        isSelected = { false },
+                        onEnterSelect = { },
+                        isPlaying = { playingVM.isItemPlaying { it.mediaId == item.id } },
+                        onClick = {
+                            historyVM.requiteHistoryList {
+                                playingVM.play(
+                                    mediaId = item.mediaId,
+                                    mediaIds = it.map(Playable::mediaId),
+                                    playOrPause = true
+                                )
+                            }
+                        },
+                        onLongClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            GlobalNavigatorImpl.goToDetailOf(mediaId = item.id)
+                        }
+                    )
+                }
             }
         }
     }

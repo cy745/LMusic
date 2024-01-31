@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.extension
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Chip
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -33,37 +34,39 @@ class ExtLatest : Extension {
         libraryVM: LibraryViewModel = singleViewModel(),
         playingVM: PlayingViewModel = singleViewModel()
     ) {
-        RecommendTitle(
-            title = "最近添加",
-            onClick = { }
-        ) {
-            Chip(onClick = { }) {
-                Text(
-                    style = MaterialTheme.typography.caption,
-                    text = "所有歌曲"
-                )
-            }
-        }
-
-        RecommendRow(
-            items = { libraryVM.recentlyAdded.value },
-            getId = { it.id }
-        ) {
-            RecommendCard(
-                item = { it },
-                width = { 100.dp },
-                height = { 100.dp },
-                modifier = Modifier.animateItemPlacement(),
-                onClick = { GlobalNavigatorImpl.goToDetailOf(mediaId = it.id) },
-                isPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) },
-                onClickButton = {
-                    playingVM.play(
-                        mediaId = it.id,
-                        playOrPause = true,
-                        addToNext = true
+        Column {
+            RecommendTitle(
+                title = "最近添加",
+                onClick = { }
+            ) {
+                Chip(onClick = { }) {
+                    Text(
+                        style = MaterialTheme.typography.caption,
+                        text = "所有歌曲"
                     )
                 }
-            )
+            }
+
+            RecommendRow(
+                items = { libraryVM.recentlyAdded.value },
+                getId = { it.id }
+            ) {
+                RecommendCard(
+                    item = { it },
+                    width = { 100.dp },
+                    height = { 100.dp },
+                    modifier = Modifier.animateItemPlacement(),
+                    onClick = { GlobalNavigatorImpl.goToDetailOf(mediaId = it.id) },
+                    isPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) },
+                    onClickButton = {
+                        playingVM.play(
+                            mediaId = it.id,
+                            playOrPause = true,
+                            addToNext = true
+                        )
+                    }
+                )
+            }
         }
     }
 }
