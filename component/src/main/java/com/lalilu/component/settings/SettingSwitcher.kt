@@ -16,9 +16,7 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,16 +40,24 @@ fun SettingSwitcher(
     state: MutableState<Boolean>,
     title: String,
     subTitle: String? = null
+) = SettingSwitcher(
+    state = { state.value },
+    onStateUpdate = { state.value = it },
+    title = title,
+    subTitle = subTitle
+)
+
+@Composable
+fun SettingSwitcher(
+    state: () -> Boolean,
+    onStateUpdate: (Boolean) -> Unit,
+    title: String,
+    subTitle: String? = null
 ) {
-    var value by state
     val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 
     SettingSwitcher(
-        onContentStartClick = {
-            println("set: $value")
-            value = !value
-            println("after set: $value")
-        },
+        onContentStartClick = { onStateUpdate(!state()) },
         contentStart = {
             Text(
                 text = title,
@@ -68,8 +74,8 @@ fun SettingSwitcher(
         }
     ) { interaction ->
         Switch(
-            checked = value,
-            onCheckedChange = { value = it },
+            checked = state(),
+            onCheckedChange = { onStateUpdate(it) },
             interactionSource = interaction,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = textColor.multiply(0.7f)

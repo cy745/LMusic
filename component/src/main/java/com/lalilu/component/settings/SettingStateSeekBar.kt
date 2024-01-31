@@ -14,10 +14,8 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -48,9 +46,25 @@ fun SettingStateSeekBar(
     title: String,
     subTitle: String? = null,
     paddingValues: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+) = SettingStateSeekBar(
+    state = { state.value },
+    onStateUpdate = { state.value = it },
+    selection = selection,
+    title = title,
+    subTitle = subTitle,
+    paddingValues = paddingValues
+)
+
+@Composable
+fun SettingStateSeekBar(
+    state: () -> Int,
+    onStateUpdate: (Int) -> Unit,
+    selection: List<String>,
+    title: String,
+    subTitle: String? = null,
+    paddingValues: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
 ) {
-    var value by state
-    val tempValue = remember(value) { mutableStateOf(value.toFloat()) }
+    val tempValue = remember(state()) { mutableStateOf(state().toFloat()) }
     val interactionSource = remember { MutableInteractionSource() }
     val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 
@@ -73,13 +87,11 @@ fun SettingStateSeekBar(
         )
         StateSeekBar(
             value = tempValue.value,
+            steps = selection.size - 2,
             selections = selection,
             onValueChange = { tempValue.value = it },
             valueRange = 0f..(selection.size - 1f),
-            steps = selection.size - 2,
-            onValueChangeFinished = {
-                value = tempValue.value.roundToInt()
-            }
+            onValueChangeFinished = { onStateUpdate(tempValue.value.roundToInt()) }
         )
         if (subTitle != null) {
             Text(
