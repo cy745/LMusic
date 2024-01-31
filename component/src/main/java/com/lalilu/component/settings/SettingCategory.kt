@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.settings
+package com.lalilu.component.settings
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes

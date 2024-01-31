@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.base
+package com.lalilu.component.base
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -6,12 +6,15 @@ import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.SliderColors
@@ -23,26 +26,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.collectLatest
-import kotlin.math.roundToInt
 
 @Composable
-fun ProgressSeekBar(
+fun StateSeekBar(
     value: Float,
+    selections: List<String>,
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     steps: Int = 0,
     colors: SliderColors = SliderDefaults.colors(),
-    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     onValueChangeFinished: (() -> Unit)? = null,
 ) {
@@ -57,16 +58,14 @@ fun ProgressSeekBar(
         colors = colors,
         onValueChangeFinished = onValueChangeFinished
     ) { positionFraction, tickFractions, draggableState, minPx, maxPx, modifier2 ->
-        ProgressSliderImpl(
+        SliderImpl(
             enabled = enabled,
+            selections = selections,
             positionFraction = positionFraction,
             tickFractions = tickFractions,
             draggableState = draggableState,
             colors = colors,
-            minPx = minPx,
-            maxPx = maxPx,
-            value = value,
-            valueRange = valueRange,
+            width = maxPx - minPx,
             interactionSource = interactionSource,
             modifier = modifier2
         )
@@ -74,16 +73,14 @@ fun ProgressSeekBar(
 }
 
 @Composable
-fun ProgressSliderImpl(
+private fun SliderImpl(
     enabled: Boolean,
+    selections: List<String>,
     positionFraction: Float,
     tickFractions: List<Float>,
     draggableState: SliderDraggableState,
     colors: SliderColors,
-    minPx: Float,
-    maxPx: Float,
-    value: Float,
-    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    width: Float,
     interactionSource: MutableInteractionSource,
     modifier: Modifier
 ) {
@@ -95,8 +92,9 @@ fun ProgressSliderImpl(
         targetValue = if (interactions.isNotEmpty()) 8f else 10f
     )
     val backgroundColor = MaterialTheme.colors.background
-    val bgColor = contentColorFor(backgroundColor = backgroundColor).copy(0.2f)
-    val thumbColor = contentColorFor(backgroundColor = backgroundColor).copy(0.7f)
+    val titleColor = contentColorFor(backgroundColor = backgroundColor)
+    val bgColor = titleColor.copy(0.2f)
+    val thumbColor = titleColor.copy(0.7f)
 
     LaunchedEffect(interactionSource) {
         interactionSource.interactions.collectLatest { interaction ->
@@ -112,48 +110,44 @@ fun ProgressSliderImpl(
     }
 
     Surface(shape = RoundedCornerShape(10.dp)) {
-        Box(
-            modifier = modifier
-                .then(DefaultSliderConstraints)
-                .fillMaxSize()
-                .padding(paddingAnim.value.dp)
-                .clip(RoundedCornerShape(radiusAnim.value.dp))
-                .background(color = bgColor)
-        ) {
-            val offset = (minPx + maxPx) * positionFraction
-            val offsetDp = LocalDensity.current.run { offset.toDp() }
-            val widthPx = LocalDensity.current.run { 64.dp.toPx() }
-
-            Text(
-                color = backgroundColor,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .width(64.dp)
-                    .align(Alignment.CenterEnd),
-                text = "${valueRange.endInclusive.roundToInt()}"
-            )
+        Box(modifier.then(DefaultSliderConstraints)) {
+            val offset = width * positionFraction
 
             Spacer(
                 modifier = Modifier
-                    .width(offsetDp)
+                    .fillMaxSize()
+                    .padding(paddingAnim.value.dp)
+                    .clip(RoundedCornerShape(radiusAnim.value.dp))
+                    .background(color = bgColor)
+            )
+            Spacer(
+                modifier = Modifier
+                    .graphicsLayer { translationX = offset }
                     .fillMaxHeight()
+                    .fillMaxWidth(1f / selections.size)
+                    .padding(paddingAnim.value.dp)
                     .clip(RoundedCornerShape(radiusAnim.value.dp))
                     .background(color = thumbColor)
             )
-
-            Text(
-                color = backgroundColor,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .width(64.dp)
-                    .align(Alignment.CenterStart)
-                    .graphicsLayer {
-                        translationX = (offset - widthPx).coerceAtLeast(0f)
-                    },
-                text = "${value.roundToInt()}"
-            )
+            LazyVerticalGrid(
+                modifier = Modifier.fillMaxSize(),
+                columns = GridCells.Fixed(selections.size),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalArrangement = Arrangement.Center,
+                userScrollEnabled = false
+            ) {
+                selections.forEach {
+                    item {
+                        Text(
+                            text = it,
+                            color = backgroundColor,
+                            fontSize = 14.sp,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }

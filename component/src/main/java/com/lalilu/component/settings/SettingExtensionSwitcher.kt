@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.settings
+package com.lalilu.component.settings
 
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -13,7 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
-import com.lalilu.R
+import com.lalilu.component.R
 
 @Composable
 fun SettingExtensionSwitcher(

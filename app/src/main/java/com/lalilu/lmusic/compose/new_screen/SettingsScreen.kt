@@ -34,13 +34,13 @@ import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
+import com.lalilu.component.settings.SettingCategory
+import com.lalilu.component.settings.SettingFilePicker
+import com.lalilu.component.settings.SettingProgressSeekBar
+import com.lalilu.component.settings.SettingStateSeekBar
+import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.lmedia.scanner.FileSystemScanner
 import com.lalilu.lmusic.GuidingActivity
-import com.lalilu.lmusic.compose.component.settings.SettingCategory
-import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
-import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
-import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
-import com.lalilu.lmusic.compose.component.settings.SettingSwitcher
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
@@ -116,6 +116,11 @@ private fun SettingsScreen(
                 )
                 SettingStateSeekBar(
                     state = playMode,
+                    selection = listOf("列表循环", "单曲循环", "随机播放"),
+                    title = "播放模式"
+                )
+                SettingStateSeekBar(
+                    state = settingsSp.playOption,
                     selection = listOf("列表循环", "单曲循环", "随机播放"),
                     title = "播放模式"
                 )

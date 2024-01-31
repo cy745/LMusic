@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.settings
+package com.lalilu.component.settings
 
 import android.content.ContentResolver
 import android.net.Uri
@@ -30,7 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lalilu.R
+import com.lalilu.component.R
 import okio.buffer
 import okio.sink
 import okio.source

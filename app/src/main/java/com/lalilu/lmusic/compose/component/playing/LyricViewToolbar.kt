@@ -24,9 +24,9 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.R
 import com.lalilu.component.extension.DialogItem
 import com.lalilu.component.extension.DialogWrapper
-import com.lalilu.lmusic.compose.component.settings.SettingFilePicker
-import com.lalilu.lmusic.compose.component.settings.SettingProgressSeekBar
-import com.lalilu.lmusic.compose.component.settings.SettingStateSeekBar
+import com.lalilu.component.settings.SettingFilePicker
+import com.lalilu.component.settings.SettingProgressSeekBar
+import com.lalilu.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.datastore.SettingsSp
 import org.koin.compose.koinInject
 

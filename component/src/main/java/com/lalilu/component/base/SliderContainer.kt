@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.base
+package com.lalilu.component.base
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.SpringSpec

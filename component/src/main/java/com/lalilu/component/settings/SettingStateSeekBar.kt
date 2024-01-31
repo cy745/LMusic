@@ -1,10 +1,11 @@
-package com.lalilu.lmusic.compose.component.settings
+package com.lalilu.component.settings
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
@@ -22,28 +23,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lalilu.lmusic.compose.component.base.ProgressSeekBar
+import com.lalilu.component.base.StateSeekBar
 import kotlin.math.roundToInt
 
 @Composable
-fun SettingProgressSeekBar(
+fun SettingStateSeekBar(
     state: MutableState<Int>,
     selection: List<String>,
     @StringRes titleRes: Int,
-    @StringRes subTitleRes: Int? = null
+    @StringRes subTitleRes: Int? = null,
+    paddingValues: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
 ) = SettingStateSeekBar(
     state = state,
     selection = selection,
     title = stringResource(id = titleRes),
-    subTitle = subTitleRes?.let { stringResource(id = it) }
+    subTitle = subTitleRes?.let { stringResource(id = it) },
+    paddingValues = paddingValues
 )
 
 @Composable
-fun SettingProgressSeekBar(
+fun SettingStateSeekBar(
     state: MutableState<Int>,
+    selection: List<String>,
     title: String,
     subTitle: String? = null,
-    valueRange: IntRange
+    paddingValues: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
 ) {
     var value by state
     val tempValue = remember(value) { mutableStateOf(value.toFloat()) }
@@ -58,7 +62,7 @@ fun SettingProgressSeekBar(
                 indication = rememberRipple(),
                 onClick = { }
             )
-            .padding(horizontal = 20.dp, vertical = 10.dp),
+            .padding(paddingValues),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -67,11 +71,12 @@ fun SettingProgressSeekBar(
             color = textColor,
             fontSize = 14.sp
         )
-        ProgressSeekBar(
+        StateSeekBar(
             value = tempValue.value,
+            selections = selection,
             onValueChange = { tempValue.value = it },
-            valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
-            steps = valueRange.last - valueRange.first - 1,
+            valueRange = 0f..(selection.size - 1f),
+            steps = selection.size - 2,
             onValueChangeFinished = {
                 value = tempValue.value.roundToInt()
             }
