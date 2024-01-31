@@ -1,4 +1,3 @@
-import com.lalilu.register.RegisterConfig
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -9,7 +8,6 @@ plugins {
     id("com.android.application")
     kotlin("android")
     id("com.google.devtools.ksp")
-    id("com.lalilu.register")
 }
 
 val keystoreProps = rootProject.file("keystore.properties")
@@ -92,6 +90,17 @@ android {
 
             matchingFallbacks.add("release")
             matchingFallbacks.add("debug")
+
+            ndk {
+                // mips (已弃用)
+                // mips64 (已弃用)
+                // armeabi (已弃用)
+                // armeabi-v7a (需要支持—现在最流行的处理器架构)
+                // arm64-v8a (需要支持—armeabi-v7a的新版本)
+                // x86 (可选, 设备非常有限，可以用于模拟器debugging)
+                // x86_64 (可选, 设备非常有限，可以用于模拟器debugging)
+                abiFilters.addAll(setOf("armeabi-v7a"))
+            }
         }
 
         create("beta") {
@@ -141,31 +150,15 @@ android {
     }
 }
 
-registerPlugin {
-    enable = false
-    registerInfoList = listOf(
-        mapOf(
-            RegisterConfig.TARGET_MANAGER_CLASS to "com.lalilu.component.SortRuleManager",
-            RegisterConfig.BASE_INTERFACE to "com.lalilu.lmedia.extension.ListAction",
-            RegisterConfig.REGISTER_METHOD to "register",
-            RegisterConfig.REGISTER_METHOD_CLASS to "com.lalilu.component.SortRuleManager",
-        )
-    )
-}
-
 dependencies {
     implementation(project(":ui"))
     implementation(project(":crash"))
     implementation(project(":component"))
-    implementation(project(":extension-core"))
     implementation(project(":lplaylist"))
     implementation(project(":lhistory"))
     implementation(project(":lartist"))
     implementation(project(":lalbum"))
     implementation(project(":ldictionary"))
-    implementation(project(":lextension"))
-//    implementation(project(":value-cat"))
-    ksp(project(":extension-ksp"))
 
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
@@ -200,7 +193,7 @@ dependencies {
     // https://github.com/cy745/EdgeTranslucent
     // Undeclared License
     // 实现边沿渐变透明
-    implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
+    // implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
 
     debugImplementation("com.github.getActivity:Logcat:11.8")
 }

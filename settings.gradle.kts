@@ -31,15 +31,6 @@ include(":lhistory")
 include(":lartist")
 include(":lalbum")
 include(":ldictionary")
-include(":lextension")
 include(":crash")
-include(":extension-core")
-include(":extension-ksp")
 include(":component")
 include(":value-cat")
-includeBuild("register")
-
-val extFile = File(rootDir, "extension")
-if (extFile.exists() && extFile.isDirectory) {
-    include(":extension")
-}
