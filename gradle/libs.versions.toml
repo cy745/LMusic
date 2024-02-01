@@ -33,6 +33,9 @@ navigation_version = "2.7.4"
 room_version = "2.5.2"
 media = "1.7.0"
 
+umeng-common = "9.4.4"
+umeng-asms = "1.4.1"
+umeng-apm = "1.5.2"
 
 [libraries]
 # kotlin
@@ -81,6 +84,11 @@ koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = 
 # 图片加载库
 coil = { module = "io.coil-kt:coil", version.ref = "coil_version" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil_version" }
+
+# 友盟
+umeng-common = { module = "com.umeng.umsdk:common", version.ref = "umeng-common" }
+umeng-asms = { module = "com.umeng.umsdk:asms", version.ref = "umeng-asms" }
+umeng-apm = { module = "com.umeng.umsdk:apm", version.ref = "umeng-apm" }
 
 # androidx
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -142,4 +150,9 @@ voyager = [
     "voyager-transitions",
     "voyager-androidx",
     "voyager-koin"
+]
+umeng = [
+    "umeng-common", #（必选）
+    "umeng-asms",   # asms包依赖(必选)
+    "umeng-apm"     # U-APM包依赖(必选)
 ]

@@ -24,9 +24,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.blankj.utilcode.util.ActivityUtils
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
-import com.lalilu.lmusic.MainActivity
 import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.ScreenInfo
+import com.lalilu.lmusic.LMusicApp
+import com.lalilu.lmusic.MainActivity
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.ui.CLICK_PART_LEFT
@@ -84,6 +85,9 @@ private fun SeekbarGuidingPage(
 
     val complete: () -> Unit = {
         context.getActivity()?.apply {
+            if (!isGuidingOver) {
+                (context.applicationContext as? LMusicApp)?.doInitUmeng()
+            }
             isGuidingOver = true
 
             if (!ActivityUtils.isActivityExistsInStack(MainActivity::class.java)) {

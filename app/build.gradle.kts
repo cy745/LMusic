@@ -164,6 +164,8 @@ dependencies {
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
 
+    implementation(libs.bundles.umeng)
+
     // https://github.com/Block-Network/StatusBarApiExample
     // 墨 · 状态栏歌词 API
     implementation("com.github.577fkj:StatusBarApiExample:v2.0")
