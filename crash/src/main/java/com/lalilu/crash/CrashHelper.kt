@@ -12,6 +12,7 @@ object CrashHelper : Thread.UncaughtExceptionHandler {
 
     private lateinit var mContext: Application
     private lateinit var packageManager: PackageManager
+    const val EXTRA_KEY = "CRASH_MODEL"
 
     fun init(context: Application) {
         mContext = context
@@ -35,7 +36,7 @@ object CrashHelper : Thread.UncaughtExceptionHandler {
         e.printStackTrace()
         Intent(mContext, CrashActivity::class.java).run {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            e.toCrashModel().copyTo(this)
+            putExtra(EXTRA_KEY, e.toCrashModel())
             mContext.startActivity(this)
         }
     }
