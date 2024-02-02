@@ -26,6 +26,7 @@ import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.RomUtils
 import com.google.accompanist.flowlayout.FlowRow
+import com.lalilu.BuildConfig
 import com.lalilu.R
 import com.lalilu.common.CustomRomUtils
 import com.lalilu.component.IconTextButton
@@ -277,6 +278,16 @@ private fun SettingsScreen(
                             json?.let { settingsSp.restore(it) }
                         }
                     )
+
+                    if (BuildConfig.DEBUG) {
+                        IconTextButton(
+                            text = "测试异常捕获",
+                            color = Color(0xFFF12121),
+                            onClick = {
+                                throw RuntimeException("Exception test")
+                            }
+                        )
+                    }
                 }
             }
         }

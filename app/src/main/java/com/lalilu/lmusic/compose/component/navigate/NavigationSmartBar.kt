@@ -52,8 +52,8 @@ fun NavigationSmartBar(
     val measureMainHeightState = remember { mutableStateOf(PaddingValues(0.dp)) }
 
     val screen by remember { derivedStateOf { currentScreen() as? DynamicScreen } }
-    val mainContent by remember { derivedStateOf { screen?.mainContentStack?.lastOrNull() } }
-    val extraContent by remember { derivedStateOf { screen?.extraContentStack?.lastOrNull() } }
+    val mainContent by remember { derivedStateOf { runCatching { screen?.mainContentStack?.lastOrNull() }.getOrNull() } }
+    val extraContent by remember { derivedStateOf { runCatching { screen?.extraContentStack?.lastOrNull() }.getOrNull() } }
 
     val isShowMask by remember { derivedStateOf { mainContent?.showMask ?: false } }
     val isShowBackground by remember { derivedStateOf { mainContent?.showBackground ?: true } }

@@ -12,7 +12,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,7 +22,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.LocalPaddingValue
 import com.lalilu.component.navigation.SheetNavigator
-import com.lalilu.lmusic.compose.NavigationWrapper
 import com.lalilu.lmusic.compose.TabWrapper
 import com.lalilu.lmusic.compose.component.CustomTransition
 
@@ -52,7 +50,7 @@ fun NavigationSheetContent(
     getScreenFrom: (Navigator) -> Screen = { sheetNavigator.getNavigator().lastItem },
 ) {
     val currentPaddingValue = remember { mutableStateOf(PaddingValues(0.dp)) }
-    var currentScreen by remember { mutableStateOf<Screen?>(null) }
+    val currentScreen by remember { derivedStateOf { getScreenFrom(sheetNavigator.getNavigator()) } }
     val customScreenInfo by remember { derivedStateOf { (currentScreen as? CustomScreen)?.getScreenInfo() } }
 
     ImmerseStatusBar(
@@ -67,7 +65,6 @@ fun NavigationSheetContent(
             navigator = sheetNavigator.getNavigator(),
             getScreenFrom = getScreenFrom,
         ) {
-            currentScreen = it
             CompositionLocalProvider(LocalPaddingValue provides currentPaddingValue) {
                 it.Content()
             }
@@ -77,7 +74,7 @@ fun NavigationSheetContent(
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter),
             measureHeightState = currentPaddingValue,
-            currentScreen = { NavigationWrapper.navigator?.lastItemOrNull }
+            currentScreen = { currentScreen }
         ) { modifier ->
             NavigationBar(
                 modifier = modifier.align(Alignment.BottomCenter),
