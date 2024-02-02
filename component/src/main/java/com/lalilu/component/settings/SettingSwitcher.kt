@@ -31,11 +31,13 @@ import com.lalilu.component.extension.enableFor
 
 @Composable
 fun SettingSwitcher(
+    modifier: Modifier = Modifier,
     state: MutableState<Boolean>,
     @StringRes titleRes: Int,
     @StringRes subTitleRes: Int? = null,
     enableContentClickable: Boolean = true
 ) = SettingSwitcher(
+    modifier = modifier,
     state = state,
     title = stringResource(id = titleRes),
     subTitle = subTitleRes?.let { stringResource(id = it) },
@@ -44,11 +46,13 @@ fun SettingSwitcher(
 
 @Composable
 fun SettingSwitcher(
+    modifier: Modifier = Modifier,
     state: MutableState<Boolean>,
     title: String,
     subTitle: String? = null,
     enableContentClickable: Boolean = true
 ) = SettingSwitcher(
+    modifier = modifier,
     state = { state.value },
     onStateUpdate = { state.value = it },
     title = title,
@@ -59,6 +63,7 @@ fun SettingSwitcher(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingSwitcher(
+    modifier: Modifier = Modifier,
     state: () -> Boolean,
     onStateUpdate: (Boolean) -> Unit,
     title: String,
@@ -68,6 +73,7 @@ fun SettingSwitcher(
     val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 
     SettingSwitcher(
+        modifier = modifier,
         enableContentClickable = enableContentClickable,
         onContentStartClick = { onStateUpdate(!state()) },
         contentStart = {
@@ -107,6 +113,7 @@ fun SettingSwitcher(
 
 @Composable
 fun SettingSwitcher(
+    modifier: Modifier = Modifier,
     enableContentClickable: Boolean = true,
     onContentStartClick: () -> Unit = {},
     contentStart: @Composable ColumnScope.() -> Unit = {},
@@ -115,7 +122,7 @@ fun SettingSwitcher(
     val interactionSource = remember { MutableInteractionSource() }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .enableFor(enable = { enableContentClickable }) {
                 clickable(
