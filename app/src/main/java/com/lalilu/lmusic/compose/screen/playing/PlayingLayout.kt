@@ -57,6 +57,7 @@ import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.extension.SleepTimerSmallEntry
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
@@ -196,10 +197,10 @@ fun PlayingLayout(
                         isItemPlaying = { mediaId -> playingVM.isItemPlaying { it.mediaId == mediaId } },
                         isUserTouchEnable = { draggable.state.value == DragAnchor.Min || draggable.state.value == DragAnchor.Max },
                         isExtraVisible = { draggable.state.value == DragAnchor.Max },
-                        onClick = { scrollToTopEvent.value = System.currentTimeMillis() }
-                    ) {
-                        LyricViewToolbar()
-                    }
+                        onClick = { scrollToTopEvent.value = System.currentTimeMillis() },
+                        fixContent = { SleepTimerSmallEntry() },
+                        extraContent = { LyricViewToolbar() }
+                    )
                 }
 
                 Box(
