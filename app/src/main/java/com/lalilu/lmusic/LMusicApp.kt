@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import coil.ImageLoader
 import coil.ImageLoaderFactory
+import com.blankj.utilcode.util.LogUtils
 import com.lalilu.component.ComponentModule
 import com.lalilu.lalbum.AlbumModule
 import com.lalilu.lartist.ArtistModule
@@ -19,6 +20,7 @@ import com.lalilu.lplaylist.PlaylistModule
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
+import java.io.File
 
 class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelStoreOwner {
     override val viewModelStore: ViewModelStore = ViewModelStore()
@@ -30,6 +32,14 @@ class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelSt
 
     override fun onCreate() {
         super.onCreate()
+
+        LogUtils.getConfig()
+            .setLog2FileSwitch(true)
+            .setFileExtension(".log")
+            .setSaveDays(7)
+            .setStackDeep(3)
+            .setDir(File("${cacheDir}/log"))
+
         ignoreSSLVerification()
         startKoin {
             androidContext(this@LMusicApp)
