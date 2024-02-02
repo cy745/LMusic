@@ -156,12 +156,6 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = libs.compose.compiler.get().version.toString()
     }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
     lint {
         disable += "Instantiatable"
     }
@@ -213,6 +207,8 @@ dependencies {
     // implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
 
     debugImplementation("com.github.getActivity:Logcat:11.8")
+    debugImplementation("io.github.knight-zxw:blockcanary:0.0.5")
+    debugImplementation("io.github.knight-zxw:blockcanary-ui:0.0.5")
 
     implementation(libs.bundles.flyjingfish.aop)
     ksp(libs.flyjingfish.aop.ksp)
