@@ -8,17 +8,34 @@ plugins {
     id("com.android.application")
     kotlin("android")
     id("com.google.devtools.ksp")
+    alias(libs.plugins.flyjingfish.aop)
 }
 
 val keystoreProps = rootProject.file("keystore.properties")
     .takeIf { it.exists() }
     ?.let { Properties().apply { load(FileInputStream(it)) } }
 
-fun releaseTime(): String = SimpleDateFormat("yyyyMMdd_HHmmZ").run {
+fun releaseTime(pattern: String = "yyyyMMdd_HHmmZ"): String = SimpleDateFormat(pattern).run {
     timeZone = TimeZone.getTimeZone("Asia/Shanghai")
     format(Date())
 }
 
+
+androidAopConfig {
+    enabled = true
+    debug = true
+
+//    include 'com.flyjingfish'
+//    cutInfoJson = true
+//    increment = true
+    // 移除kotlin相关，减少编译错误并提升速度
+    exclude(
+        "kotlin.jvm",
+        "kotlin.internal",
+        "kotlinx.coroutines.internal",
+        "kotlinx.coroutines.android"
+    )
+}
 
 android {
     namespace = "com.lalilu"
@@ -99,7 +116,7 @@ android {
                 // arm64-v8a (需要支持—armeabi-v7a的新版本)
                 // x86 (可选, 设备非常有限，可以用于模拟器debugging)
                 // x86_64 (可选, 设备非常有限，可以用于模拟器debugging)
-                abiFilters.addAll(setOf("armeabi-v7a"))
+                // abiFilters.addAll(setOf("armeabi-v7a"))
             }
         }
 
@@ -122,7 +139,7 @@ android {
         }
 
         debug {
-            versionNameSuffix = "-DEBUG_${releaseTime()}"
+            versionNameSuffix = "-DEBUG_${releaseTime("yyyyMMdd")}"
             applicationIdSuffix = ".debug"
             signingConfig = signingConfigs.getByName("debug")
 
@@ -196,4 +213,7 @@ dependencies {
     // implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
 
     debugImplementation("com.github.getActivity:Logcat:11.8")
+
+    implementation(libs.bundles.flyjingfish.aop)
+    ksp(libs.flyjingfish.aop.ksp)
 }

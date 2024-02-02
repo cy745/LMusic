@@ -32,7 +32,7 @@ lifecycle_version = "2.6.2"
 navigation_version = "2.7.4"
 room_version = "2.5.2"
 media = "1.7.0"
-
+flyjingfish-aop = "1.3.6"
 
 [libraries]
 # kotlin
@@ -111,12 +111,17 @@ ksp-symbol-api = { module = "com.google.devtools.ksp:symbol-processing-api", ver
 # [Apache-2.0 License] 安卓工具类库 https://github.com/Blankj/AndroidUtilCode/
 utilcodex = { module = "com.blankj:utilcodex", version.ref = "utilcodex_version" }
 
+# [Apache-2.0 License] AOP框架 https://github.com/FlyJingFish/AndroidAOP
+flyjingfish-aop-core = { module = "io.github.FlyJingFish.AndroidAop:android-aop-core", version.ref = "flyjingfish-aop" }
+flyjingfish-aop-annotation = { module = "io.github.FlyJingFish.AndroidAop:android-aop-annotation", version.ref = "flyjingfish-aop" }
+flyjingfish-aop-ksp = { module = "io.github.FlyJingFish.AndroidAop:android-aop-ksp", version.ref = "flyjingfish-aop" }
 
 [plugins]
 application = { id = "com.android.application", version.ref = "agp_version" }
 library = { id = "com.android.library", version.ref = "agp_version" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin_version" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp_version" }
+flyjingfish-aop = { id = "io.github.FlyJingFish.AndroidAop.android-aop", version.ref = "flyjingfish-aop" }
 
 
 [bundles]
@@ -142,4 +147,8 @@ voyager = [
     "voyager-transitions",
     "voyager-androidx",
     "voyager-koin"
+]
+flyjingfish-aop = [
+    "flyjingfish-aop-core",
+    "flyjingfish-aop-annotation"
 ]
