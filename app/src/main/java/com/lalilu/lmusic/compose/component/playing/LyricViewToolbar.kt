@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,26 +33,33 @@ import com.lalilu.component.settings.SettingStateSeekBar
 import com.lalilu.lmusic.datastore.SettingsSp
 import org.koin.compose.koinInject
 
-private val LyricViewActionDialog = DialogItem.Dynamic {
+private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transparent) {
     val settingsSp: SettingsSp = koinInject()
 
-    Column(modifier = Modifier.navigationBarsPadding()) {
-        SettingStateSeekBar(
-            state = settingsSp.lyricGravity,
-            selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
-            titleRes = R.string.preference_lyric_settings_text_gravity
-        )
-        SettingProgressSeekBar(
-            state = settingsSp.lyricTextSize,
-            title = "歌词文字大小",
-            valueRange = 14..36
-        )
-        SettingFilePicker(
-            state = settingsSp.lyricTypefacePath,
-            title = "自定义字体",
-            subTitle = "请选择TTF格式的字体文件",
-            mimeType = "font/ttf"
-        )
+    Surface(
+        modifier = Modifier
+            .padding(15.dp)
+            .navigationBarsPadding(),
+        shape = RoundedCornerShape(15.dp)
+    ) {
+        Column(modifier = Modifier) {
+            SettingStateSeekBar(
+                state = settingsSp.lyricGravity,
+                selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
+                titleRes = R.string.preference_lyric_settings_text_gravity
+            )
+            SettingProgressSeekBar(
+                state = settingsSp.lyricTextSize,
+                title = "歌词文字大小",
+                valueRange = 14..36
+            )
+            SettingFilePicker(
+                state = settingsSp.lyricTypefacePath,
+                title = "自定义字体",
+                subTitle = "请选择TTF格式的字体文件",
+                mimeType = "font/ttf"
+            )
+        }
     }
 }
 
