@@ -11,6 +11,9 @@ abstract class Playback<T> : MediaSessionCompat.Callback() {
     abstract var player: Player?
     abstract var playMode: PlayMode
 
+    abstract fun pauseWhenCompletion()
+    abstract fun cancelPauseWhenCompletion()
+
     abstract fun readyToUse(): Boolean
     abstract fun changeToPlayer(changeTo: Player)
     abstract fun setMaxVolume(volume: Int)

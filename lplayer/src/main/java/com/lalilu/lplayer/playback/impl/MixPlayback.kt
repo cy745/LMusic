@@ -48,6 +48,16 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
             onSetPlayMode(value)
         }
 
+    private var doPauseWhenComplete: Boolean = false
+
+    override fun pauseWhenCompletion() {
+        doPauseWhenComplete = true
+    }
+
+    override fun cancelPauseWhenCompletion() {
+        doPauseWhenComplete = false
+    }
+
     override fun readyToUse(): Boolean {
         return queue != null && player != null
     }
@@ -235,6 +245,13 @@ class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Li
             }
 
             is PlayerEvent.OnCompletion -> {
+                if (doPauseWhenComplete) {
+                    doPauseWhenComplete = false
+                    player?.resetPreloadNext()
+                    audioFocusHelper?.abandon()
+                    return
+                }
+
                 val current = queue?.getCurrent()
                 val currentUri = current?.let { queue?.getUriFromItem(it) }
                 val isPreloadedCurrent = current?.mediaId == tempNextItem?.mediaId

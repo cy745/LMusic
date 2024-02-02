@@ -11,6 +11,7 @@ sealed class PlayerAction : Action {
     data object SkipToPrevious : PlayerAction()
     data class PlayById(val mediaId: String) : PlayerAction()
     data class SeekTo(val positionMs: Long) : PlayerAction()
+    data class PauseWhenCompletion(val cancel: Boolean = false) : PlayerAction()
 
     sealed class CustomAction(val name: String) : PlayerAction()
     data object PlayOrPause : CustomAction(PlayOrPause::class.java.name)

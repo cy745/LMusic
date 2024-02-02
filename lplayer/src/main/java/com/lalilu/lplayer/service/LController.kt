@@ -22,6 +22,7 @@ class LController(
                 is PlayerAction.PlayById -> onPlayFromMediaId(action.mediaId, null)
                 is PlayerAction.SeekTo -> onSeekTo(action.positionMs)
                 is PlayerAction.CustomAction -> onCustomAction(action.name, null)
+                is PlayerAction.PauseWhenCompletion -> if (action.cancel) cancelPauseWhenCompletion() else pauseWhenCompletion()
                 else -> return false
             }
         }
