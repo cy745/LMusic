@@ -64,7 +64,12 @@ class CrashActivity : ComponentActivity(), CoroutineScope, View.OnClickListener 
     override fun onClick(v: View?) {
         when (v?.id) {
             R.id.restart_btn -> {
-                android.os.Process.killProcess(android.os.Process.myPid())
+                val intent = packageManager.getLaunchIntentForPackage(packageName)
+                if (intent != null) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    startActivity(intent)
+                }
+                finish()
             }
 
             R.id.exit_btn -> {

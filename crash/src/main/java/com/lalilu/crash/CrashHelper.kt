@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import com.blankj.utilcode.util.LogUtils
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -23,6 +24,9 @@ object CrashHelper : Thread.UncaughtExceptionHandler {
     override fun uncaughtException(t: Thread, e: Throwable) {
         if (!this::mContext.isInitialized) return
 
+        e.printStackTrace()
+        LogUtils.e(e)
+
         try {
             handleException(e)
         } catch (exception: Exception) {
@@ -33,7 +37,6 @@ object CrashHelper : Thread.UncaughtExceptionHandler {
     }
 
     fun handleException(e: Throwable) {
-        e.printStackTrace()
         Intent(mContext, CrashActivity::class.java).run {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
             putExtra(EXTRA_KEY, e.toCrashModel())
