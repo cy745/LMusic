@@ -3,6 +3,7 @@ package com.lalilu.component.extension
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -51,6 +52,7 @@ sealed class DialogItem {
     data class Dynamic(
         val backgroundColor: Color? = null,
         val properties: AnyPopDialogProperties = DEFAULT_DIALOG_PROPERTIES,
+        val onDismiss: () -> Unit = {},
         val content: @Composable DialogContext.() -> Unit,
     ) : DialogItem()
 }
@@ -139,7 +141,12 @@ object DialogWrapper : DialogHost, DialogContext {
                 isActiveClose = isActiveClose,
                 properties = properties,
                 onDismiss = {
-                    (dialogItem as? DialogItem.Static)?.onDismiss?.invoke()
+                    dialogItem?.let {
+                        when (it) {
+                            is DialogItem.Dynamic -> it.onDismiss.invoke()
+                            is DialogItem.Static -> it.onDismiss.invoke()
+                        }
+                    }
                     dialogItem = null
                 },
                 content = {
@@ -174,22 +181,18 @@ fun StaticDialogCard(
     modifier: Modifier = Modifier,
     title: String,
     message: String,
-    onCancel: () -> Unit = {},
-    onConfirm: () -> Unit = {}
+    cancelText: String = "取消",
+    confirmText: String = "确认",
+    onCancel: (() -> Unit)? = null,
+    onConfirm: (() -> Unit)? = null,
+    extraContent: @Composable ColumnScope.() -> Unit = {}
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
+    Column(
+        modifier = modifier
             .navigationBarsPadding(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically)
     ) {
-        Column(
-            modifier = modifier
-                .weight(1f)
-                .padding(start = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically)
-        ) {
+        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.subtitle1,
@@ -202,34 +205,51 @@ fun StaticDialogCard(
             )
         }
 
-        val cancelColor = remember { Color(0xFFFF7575) }
-        val confirmColor = remember { Color(0xFF258302) }
+        extraContent()
 
-        TextButton(
-            shape = RectangleShape,
-            modifier = Modifier
-                .heightIn(min = 56.dp)
-                .widthIn(min = 84.dp),
-            colors = ButtonDefaults.textButtonColors(
-                backgroundColor = cancelColor.copy(alpha = 0.15f),
-                contentColor = cancelColor
-            ),
-            onClick = onCancel
-        ) {
-            Text(text = "取消")
-        }
-        TextButton(
-            shape = RectangleShape,
-            modifier = Modifier
-                .heightIn(min = 56.dp)
-                .widthIn(min = 84.dp),
-            colors = ButtonDefaults.textButtonColors(
-                backgroundColor = confirmColor.copy(alpha = 0.15f),
-                contentColor = confirmColor
-            ),
-            onClick = onConfirm
-        ) {
-            Text(text = "确认")
+        if (onCancel != null || onConfirm != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                val cancelColor = remember { Color(0xFFFF7575) }
+                val confirmColor = remember { Color(0xFF258302) }
+
+                onCancel?.let {
+                    TextButton(
+                        shape = RectangleShape,
+                        modifier = Modifier
+                            .heightIn(min = 56.dp)
+                            .widthIn(min = 84.dp),
+                        colors = ButtonDefaults.textButtonColors(
+                            backgroundColor = cancelColor.copy(alpha = 0.15f),
+                            contentColor = cancelColor
+                        ),
+                        onClick = onCancel
+                    ) {
+                        Text(text = cancelText)
+                    }
+                }
+
+                onConfirm?.let {
+                    TextButton(
+                        shape = RectangleShape,
+                        modifier = Modifier
+                            .heightIn(min = 56.dp)
+                            .widthIn(min = 84.dp),
+                        colors = ButtonDefaults.textButtonColors(
+                            backgroundColor = confirmColor.copy(alpha = 0.15f),
+                            contentColor = confirmColor
+                        ),
+                        onClick = onConfirm
+                    ) {
+                        Text(text = confirmText)
+                    }
+                }
+            }
         }
     }
 }
@@ -237,5 +257,10 @@ fun StaticDialogCard(
 @Preview(showBackground = true)
 @Composable
 fun StaticCardDialogPreview() {
-    StaticDialogCard(title = "是否需要删除文件{}", message = "确认删除吗？")
+    StaticDialogCard(
+        title = "是否需要删除文件{}",
+        message = "确认删除吗？",
+        onCancel = {},
+        onConfirm = {}
+    )
 }
