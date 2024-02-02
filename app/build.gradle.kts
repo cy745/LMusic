@@ -149,6 +149,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "1.8"
@@ -206,9 +207,12 @@ dependencies {
     // 实现边沿渐变透明
     // implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
 
+    implementation("com.github.commandiron:WheelPickerCompose:1.1.11")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
     debugImplementation("com.github.getActivity:Logcat:11.8")
-    debugImplementation("io.github.knight-zxw:blockcanary:0.0.5")
-    debugImplementation("io.github.knight-zxw:blockcanary-ui:0.0.5")
+//    debugImplementation("io.github.knight-zxw:blockcanary:0.0.5")
+//    debugImplementation("io.github.knight-zxw:blockcanary-ui:0.0.5")
 
     implementation(libs.bundles.flyjingfish.aop)
     ksp(libs.flyjingfish.aop.ksp)
