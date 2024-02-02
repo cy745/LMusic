@@ -31,4 +31,5 @@ android {
 dependencies {
     implementation(libs.startup.runtime)
     implementation(libs.appcompat)
+    implementation(libs.utilcodex)
 }

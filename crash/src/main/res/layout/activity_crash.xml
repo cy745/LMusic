@@ -154,6 +154,15 @@
                 android:backgroundTint="@android:color/holo_red_light"
                 android:text="Exit" />
 
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/share_log_btn"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:backgroundTint="@android:color/holo_blue_light"
+                android:text="Share Log" />
+
         </androidx.appcompat.widget.LinearLayoutCompat>
 
         <androidx.appcompat.widget.AppCompatTextView
