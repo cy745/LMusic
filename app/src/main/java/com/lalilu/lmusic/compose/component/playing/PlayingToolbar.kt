@@ -12,8 +12,8 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -37,6 +37,7 @@ fun PlayingToolbar(
     isItemPlaying: (mediaId: String) -> Boolean = { false },
     isExtraVisible: () -> Boolean = { true },
     onClick: () -> Unit = {},
+    fixContent: @Composable RowScope.() -> Unit = {},
     extraContent: @Composable AnimatedVisibilityScope.() -> Unit = {}
 ) {
     val song by LPlayer.runtime.info.playingFlow.collectAsState(null)
@@ -91,15 +92,18 @@ fun PlayingToolbar(
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(start = 25.dp, end = 20.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        verticalAlignment = Alignment.CenterVertically
     ) {
         PlayingHeader(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 10.dp),
             title = { song?.title?.takeIf(String::isNotBlank) ?: defaultSloganStr },
             subTitle = { song?.subTitle ?: defaultSloganStr },
             isPlaying = { song?.let { isItemPlaying(it.mediaId) } ?: false }
         )
+
+        fixContent()
 
         AnimatedVisibility(
             visible = isExtraVisible(),
