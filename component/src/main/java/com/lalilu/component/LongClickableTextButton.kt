@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -48,7 +49,7 @@ fun LongClickableTextButton(
     val haptic = LocalHapticFeedback.current
     var isClicking by remember { mutableStateOf(false) }
     val contentColor by colors.contentColor(enabled)
-    val maskColor = remember { contentColor.copy(alpha = 0.3f) }
+    val maskColor = remember(contentColor) { contentColor.copy(alpha = 0.3f) }
     val maskWidthProgress by animateFloatAsState(
         label = "Animate mask width progress",
         targetValue = if (isClicking) 1f else 0f,
@@ -67,6 +68,7 @@ fun LongClickableTextButton(
 
     Surface(
         modifier = modifier
+            .clip(shape)
             .longClickable(
                 onClick = { if (enabled) onClick() },
                 enableHaptic = false,
