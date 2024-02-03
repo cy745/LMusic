@@ -36,6 +36,14 @@
     public <init>();
 }
 
+-dontwarn com.bumptech.glide.Glide
+-dontwarn com.bumptech.glide.RequestBuilder
+-dontwarn com.bumptech.glide.RequestManager
+-dontwarn com.bumptech.glide.request.BaseRequestOptions
+-dontwarn com.bumptech.glide.request.target.ViewTarget
+-dontwarn com.squareup.picasso.Picasso
+-dontwarn com.squareup.picasso.RequestCreator
+
 # 墨 · 状态栏歌词
 -keep class StatusBarLyric.API.StatusBarLyric { *; }
 

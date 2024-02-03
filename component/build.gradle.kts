@@ -52,6 +52,7 @@ dependencies {
     // Apache-2.0 license
     api("sh.calvin.reorderable:reorderable:1.1.0")
     api("com.github.cy745:AnyPopDialog-Compose:jitpack-SNAPSHOT")
+    api("me.rosuh:AndroidFilePicker:1.0.1")
 
     // compose
     // api(platform(libs.compose.bom))
