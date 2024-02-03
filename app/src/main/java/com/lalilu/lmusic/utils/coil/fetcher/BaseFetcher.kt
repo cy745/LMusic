@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import coil.fetch.Fetcher
+import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.wrapper.Taglib
 import kotlinx.coroutines.Dispatchers
@@ -31,10 +32,14 @@ abstract class BaseFetcher : Fetcher {
     }
 
     protected suspend fun fetchCoverByTaglib(context: Context, song: LSong): ByteArrayInputStream? {
-        return context.contentResolver.openFileDescriptor(song.uri, "r")?.use { fileDescriptor ->
-            Taglib.getPictureWithFD(fileDescriptor.detachFd())
-                ?.let { ByteArrayInputStream(it) }
-        }
+        return runCatching { context.contentResolver.openFileDescriptor(song.uri, "r") }
+            .getOrElse {
+                LogUtils.e(song, it)
+                null
+            }?.use { fileDescriptor ->
+                Taglib.getPictureWithFD(fileDescriptor.detachFd())
+                    ?.let { ByteArrayInputStream(it) }
+            }
     }
 
     /**
