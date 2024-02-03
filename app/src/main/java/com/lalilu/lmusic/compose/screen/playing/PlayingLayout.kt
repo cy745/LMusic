@@ -302,6 +302,7 @@ fun PlayingLayout(
                         lyricEntry = lyricEntry,
                         listState = lyricLayoutLazyListState,
                         currentTime = { currentTime.value },
+                        maxWidth = { this@BoxWithConstraints.constraints.maxWidth },
                         textSize = rememberTextSizeFromInt { settingsSp.lyricTextSize.value },
                         textAlign = rememberTextAlignFromGravity { settingsSp.lyricGravity.value },
                         fontFamily = rememberFontFamilyFromPath { settingsSp.lyricTypefacePath.value },
