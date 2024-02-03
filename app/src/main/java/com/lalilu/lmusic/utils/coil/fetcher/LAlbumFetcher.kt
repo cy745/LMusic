@@ -12,7 +12,7 @@ import com.lalilu.lmedia.entity.LAlbum
 import okio.buffer
 import okio.source
 
-class AlbumCoverFetcher private constructor(
+class LAlbumFetcher private constructor(
     private val context: Context,
     private val album: LAlbum
 ) : BaseFetcher() {
@@ -32,6 +32,6 @@ class AlbumCoverFetcher private constructor(
 
     class AlbumFactory : Fetcher.Factory<LAlbum> {
         override fun create(data: LAlbum, options: Options, imageLoader: ImageLoader) =
-            AlbumCoverFetcher(options.context, data)
+            LAlbumFetcher(options.context, data)
     }
 }

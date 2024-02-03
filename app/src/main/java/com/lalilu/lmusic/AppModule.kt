@@ -30,9 +30,11 @@ import com.lalilu.lmusic.service.LMusicNotifier
 import com.lalilu.lmusic.service.LMusicServiceConnector
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
-import com.lalilu.lmusic.utils.coil.fetcher.AlbumCoverFetcher
-import com.lalilu.lmusic.utils.coil.fetcher.SongCoverFetcher
+import com.lalilu.lmusic.utils.coil.fetcher.LAlbumFetcher
+import com.lalilu.lmusic.utils.coil.fetcher.LSongFetcher
+import com.lalilu.lmusic.utils.coil.keyer.PlayableKeyer
 import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
+import com.lalilu.lmusic.utils.coil.mapper.LSongMapper
 import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
@@ -70,24 +72,21 @@ val AppModule = module {
         ImageLoader.Builder(androidApplication())
             .callFactory(get<OkHttpClient>())
             .components {
-                add(AlbumCoverFetcher.AlbumFactory())
-                add(SongCoverFetcher.SongFactory(get<OkHttpClient>()))
                 add(SongCoverKeyer())
+                add(PlayableKeyer())
+                add(LSongMapper())
+                add(LSongFetcher.SongFactory())
+                add(LAlbumFetcher.AlbumFactory())
             }
             .transitionFactory(CrossfadeTransitionFactory())
             .error(R.drawable.ic_music_2_line_100dp)
             .eventListener(object : EventListener {
                 override fun onError(request: ImageRequest, result: ErrorResult) {
-                    if (BuildConfig.DEBUG) {
-                        LogUtils.w("[ImageLoader]:onError", request.data, result.throwable.message)
-                        result.throwable.printStackTrace()
-                    }
+                    LogUtils.w("[ImageLoader]:onError", request.data, result.throwable)
                 }
 
                 override fun onCancel(request: ImageRequest) {
-                    if (BuildConfig.DEBUG) {
-                        LogUtils.w("[ImageLoader]:onCancel", request)
-                    }
+                    LogUtils.w("[ImageLoader]:onCancel", request.data)
                 }
             })
             .build()
