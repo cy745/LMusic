@@ -8,10 +8,9 @@ import coil.EventListener
 import coil.ImageLoader
 import coil.request.ErrorResult
 import coil.request.ImageRequest
-import com.blankj.utilcode.util.FileUtils
 import com.blankj.utilcode.util.LogUtils
-import com.lalilu.BuildConfig
 import com.lalilu.R
+import com.lalilu.common.base.SourceType
 import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lalbum.viewModel.AlbumsViewModel
@@ -51,6 +50,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.net.URLDecoder
 
 val AppModule = module {
     single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
@@ -144,21 +144,23 @@ val FilterModule = module {
                 getterValue <= (flowValue ?: 15)
             }
         )
-        val pathFilter = Filter(
-            flow = settingSp.blockedPaths.flow(true),
-            getter = { it.fileInfo.pathStr },
+        val excludePathFilter = Filter(
+            flow = settingSp.excludePath.flow(true),
+            getter = { it },
             targetClass = LSong::class.java,
             ignoreRule = { flowValue, getterValue ->
                 if (flowValue.isNullOrEmpty()) return@Filter false
+                // 排除目录功能只涉及 FileSystemScanner 和 MediaStoreScanner的
+                if (getterValue.sourceType != SourceType.Local && getterValue.sourceType != SourceType.MediaStore)
+                    return@Filter false
 
-                val path = FileUtils.getDirName(getterValue)
-                    ?.takeIf(String::isNotEmpty)
-                    ?: "Unknown dir"
-                path in flowValue
+                val path = getterValue.fileInfo.directoryPath
+                flowValue.any { path.startsWith(URLDecoder.decode(it, "UTF-8")) }
             }
         )
+
         FilterGroup.Builder()
-            .add(unknownArtistFilter, durationFilter, pathFilter)
+            .add(unknownArtistFilter, durationFilter, excludePathFilter)
             .build()
     }
 }
