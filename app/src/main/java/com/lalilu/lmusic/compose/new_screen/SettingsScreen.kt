@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,11 +21,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.RomUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.BuildConfig
 import com.lalilu.R
@@ -40,11 +41,13 @@ import com.lalilu.component.settings.SettingFilePicker
 import com.lalilu.component.settings.SettingProgressSeekBar
 import com.lalilu.component.settings.SettingStateSeekBar
 import com.lalilu.component.settings.SettingSwitcher
+import com.lalilu.crash.CrashHelper
 import com.lalilu.lmedia.scanner.FileSystemScanner
 import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 object SettingsScreen : CustomScreen {
@@ -68,6 +71,7 @@ private fun SettingsScreen(
     statusBarLyricExt: StatusBarLyric = koinInject(),
     fileSystemScanner: FileSystemScanner = koinInject()
 ) {
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val darkModeOption = settingsSp.darkModeOption
@@ -240,6 +244,20 @@ private fun SettingsScreen(
                         })
 
                     IconTextButton(
+                        text = "日志分享",
+                        color = Color(0xFF0040FF),
+                        onClick = {
+                            scope.launch {
+                                context.getActivity()?.apply {
+                                    CrashHelper.shareLog(this)
+                                } ?: run {
+                                    ToastUtils.showShort("日志分享失败")
+                                }
+                            }
+                        }
+                    )
+
+                    IconTextButton(
                         text = "MediaStore重新扫描",
                         color = Color(0xFFFF8B3F),
                         onClick = {
@@ -266,16 +284,18 @@ private fun SettingsScreen(
                         text = "备份数据",
                         color = Color(0xFFFF8B3F),
                         onClick = {
-                            val json = settingsSp.backup()
-                            clipboardManager.setText(AnnotatedString(json))
+                            ToastUtils.showShort("重做中...")
+//                            val json = settingsSp.backup()
+//                            clipboardManager.setText(AnnotatedString(json))
                         }
                     )
                     IconTextButton(
                         text = "恢复数据",
                         color = Color(0xFFFF8B3F),
                         onClick = {
-                            val json = clipboardManager.getText()?.text
-                            json?.let { settingsSp.restore(it) }
+                            ToastUtils.showShort("重做中...")
+//                            val json = clipboardManager.getText()?.text
+//                            json?.let { settingsSp.restore(it) }
                         }
                     )
 
