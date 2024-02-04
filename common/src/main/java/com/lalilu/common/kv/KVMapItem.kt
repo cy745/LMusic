@@ -12,6 +12,7 @@ abstract class KVMapItem<T>(
 
         key.take(20) + EncryptUtils.encryptMD5ToString(key).take(8)
     }
+    private val mapKey by lazy { mapKeyTemplate.format(identityKey) }
 
     companion object {
         const val mapKeyTemplate = "#MAP_%s"
@@ -22,8 +23,6 @@ abstract class KVMapItem<T>(
     protected abstract fun get(key: String): T?
 
     override fun get(): Map<String, T>? {
-        val mapKey = mapKeyTemplate.format(identityKey)
-
         return fastKV.getStringSet(mapKey)
             .mapNotNull { str ->
                 str?.let { itemKeyTemplate.format(identityKey, it) }
@@ -36,7 +35,6 @@ abstract class KVMapItem<T>(
     override fun set(value: Map<String, T>?) {
         super.set(value)
 
-        val mapKey = mapKeyTemplate.format(identityKey)
         if (value == null) {
             fastKV.remove(mapKey)
             return
@@ -48,7 +46,7 @@ abstract class KVMapItem<T>(
         }
 
         for (str in value.entries) {
-            val itemKey = itemKeyTemplate.format(identityKey, itemKeyTemplate)
+            val itemKey = itemKeyTemplate.format(identityKey, str.key)
             set(itemKey, str.value)
         }
         fastKV.putStringSet(mapKey, value.keys)
