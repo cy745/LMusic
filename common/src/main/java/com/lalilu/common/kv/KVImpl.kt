@@ -241,3 +241,18 @@ class ObjectListKVItem<T>(
     }
 }
 
+class ObjectMapKVItem<T>(
+    val key: String,
+    private val fastKV: FastKV,
+    private val encoder: FastEncoder<T>
+) : KVMapItem<T>(key, fastKV) {
+    override fun set(key: String, value: T?) {
+        if (value == null) fastKV.remove(key)
+        else fastKV.putObject(key, value, encoder)
+    }
+
+    override fun get(key: String): T? {
+        return if (!fastKV.contains(key)) null
+        else fastKV.getObject<T>(key)
+    }
+}

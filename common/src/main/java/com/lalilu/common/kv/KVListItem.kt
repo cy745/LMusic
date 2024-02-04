@@ -8,7 +8,11 @@ abstract class KVListItem<T>(
     private val key: String,
     private val fastKV: FastKV
 ) : KVItem<List<T>>() {
-    private val md5ForKey by lazy { EncryptUtils.encryptMD5ToString(key).take(8) }
+    private val identityKey by lazy {
+        if (key.length <= 20) return@lazy key
+
+        key.take(20) + EncryptUtils.encryptMD5ToString(key).take(8)
+    }
 
     companion object {
         const val countKeyTemplate = "#COUNT_%s"
@@ -20,7 +24,7 @@ abstract class KVListItem<T>(
 
     override fun set(value: List<T>?) {
         super.set(value)
-        val countKey = countKeyTemplate.format(md5ForKey)
+        val countKey = countKeyTemplate.format(identityKey)
 
         // 若列表为null，则删除计数键
         if (value == null) {
@@ -36,7 +40,7 @@ abstract class KVListItem<T>(
 
         // 先进行数据存入
         for (index in value.indices) {
-            val valueKey = valueKeyTemplate.format(md5ForKey, index)
+            val valueKey = valueKeyTemplate.format(identityKey, index)
             set(valueKey, value[index])
         }
 
@@ -45,7 +49,7 @@ abstract class KVListItem<T>(
     }
 
     override fun get(): List<T>? {
-        val countKey = countKeyTemplate.format(md5ForKey)
+        val countKey = countKeyTemplate.format(identityKey)
 
         if (!fastKV.contains(countKey)) {
             LogUtils.i("[$key] is undefined, return null [countKey: $countKey]")
@@ -59,7 +63,7 @@ abstract class KVListItem<T>(
         }
 
         return (0..count).mapNotNull {
-            val valueKey = valueKeyTemplate.format(md5ForKey, it)
+            val valueKey = valueKeyTemplate.format(identityKey, it)
             get(valueKey)
         }
     }

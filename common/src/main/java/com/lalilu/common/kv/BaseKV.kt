@@ -21,7 +21,7 @@ abstract class BaseKV {
         }
     } as KVItem<T>
 
-    inline fun <reified T : Any> obtainList(key: String): KVItem<List<T>> = kvMap.getOrPut(key) {
+    inline fun <reified T : Any> obtainList(key: String): KVListItem<T> = kvMap.getOrPut(key) {
         when {
             T::class.java.isAssignableFrom(Int::class.java) -> IntListKVItem(key, fastKV)
             T::class.java.isAssignableFrom(Long::class.java) -> LongListKVItem(key, fastKV)
@@ -31,11 +31,15 @@ abstract class BaseKV {
             T::class.java.isAssignableFrom(String::class.java) -> StringListKVItem(key, fastKV)
             else -> throw IllegalArgumentException("Unsupported type")
         }
-    } as KVItem<List<T>>
+    } as KVListItem<T>
 
     inline fun <reified T : Any> obtain(key: String, encoder: FastEncoder<T>): KVItem<T> =
         kvMap.getOrPut(key) { ObjectKVItem(key, fastKV, encoder) } as KVItem<T>
 
     inline fun <reified T : Any> obtainList(key: String, encoder: FastEncoder<T>): KVListItem<T> =
         kvMap.getOrPut(key) { ObjectListKVItem(key, fastKV, encoder) } as KVListItem<T>
+
+    inline fun <reified T : Any> obtainMap(key: String, encoder: FastEncoder<T>): KVMapItem<T> =
+        kvMap.getOrPut(key) { ObjectMapKVItem(key, fastKV, encoder) } as KVMapItem<T>
+
 }
