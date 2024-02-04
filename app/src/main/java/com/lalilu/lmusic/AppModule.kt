@@ -8,17 +8,16 @@ import coil.EventListener
 import coil.ImageLoader
 import coil.request.ErrorResult
 import coil.request.ImageRequest
-import com.blankj.utilcode.util.LogUtils
 import com.lalilu.R
 import com.lalilu.common.base.SourceType
 import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lalbum.viewModel.AlbumsViewModel
 import com.lalilu.lartist.viewModel.ArtistsViewModel
-import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
+import com.lalilu.lmedia.repository.LSongFastEncoder
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
 import com.lalilu.lmusic.datastore.LastPlayedSp
@@ -42,6 +41,7 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.lalilu.lplayer.notification.Notifier
+import com.lalilu.lplaylist.entity.LPlaylistFastEncoder
 import io.fastkv.FastKV
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
@@ -60,7 +60,12 @@ val AppModule = module {
 
     single<FastKV> {
         FastKV.Builder(androidApplication(), "LMusic")
-            .encoder(LMedia.fastEncoders)
+            .encoder(
+                arrayOf(
+                    LSongFastEncoder,
+                    LPlaylistFastEncoder
+                )
+            )
             .build()
     }
 
@@ -91,11 +96,11 @@ val AppModule = module {
             .error(R.drawable.ic_music_2_line_100dp)
             .eventListener(object : EventListener {
                 override fun onError(request: ImageRequest, result: ErrorResult) {
-                    LogUtils.w("[ImageLoader]:onError", request.data, result.throwable)
+//                    LogUtils.w("[ImageLoader]:onError", request.data, result.throwable)
                 }
 
                 override fun onCancel(request: ImageRequest) {
-                    LogUtils.w("[ImageLoader]:onCancel", request.data)
+//                    LogUtils.w("[ImageLoader]:onCancel", request.data)
                 }
             })
             .build()
