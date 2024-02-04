@@ -45,6 +45,7 @@ class BooleanKVItem(
     }
 
     override fun set(value: Boolean?) {
+        super.set(value)
         if (value == null) fastKV.remove(key)
         else fastKV.putBoolean(key, value)
     }
@@ -60,6 +61,7 @@ class FloatKVItem(
     }
 
     override fun set(value: Float?) {
+        super.set(value)
         if (value == null) fastKV.remove(key)
         else fastKV.putFloat(key, value)
     }
@@ -76,6 +78,7 @@ class DoubleKVItem(
     }
 
     override fun set(value: Double?) {
+        super.set(value)
         if (value == null) fastKV.remove(key)
         else fastKV.putDouble(key, value)
     }
@@ -91,6 +94,7 @@ class StringKVItem(
     }
 
     override fun set(value: String?) {
+        super.set(value)
         if (value == null) fastKV.remove(key)
         else fastKV.putString(key, value)
     }
@@ -106,6 +110,7 @@ class ByteArrayKVItem(
     }
 
     override fun set(value: ByteArray?) {
+        super.set(value)
         if (value == null) fastKV.remove(key)
         else fastKV.putArray(key, value)
     }
@@ -122,6 +127,7 @@ class ObjectKVItem<T>(
     }
 
     override fun set(value: T?) {
+        super.set(value)
         if (value == null) fastKV.remove(key)
         else fastKV.putObject(key, value, encoder)
     }

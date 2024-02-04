@@ -8,4 +8,6 @@ interface UpdatableKV<T> {
     fun set(value: T?)
     fun save()
     fun update()
+    fun enableAutoSave()
+    fun disableAutoSave()
 }

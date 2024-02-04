@@ -8,7 +8,7 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 abstract class KVItem<T> : MutableState<T?>, ReadWriteProperty<KVItem<T>, T?>, UpdatableKV<T> {
-    private var autoSave = false
+    private var autoSave = true
     private val state: MutableState<T?> by lazy { mutableStateOf(null) }
     private val flowInternal: MutableStateFlow<T?> = MutableStateFlow(state.value)
     override var value: T?
@@ -17,7 +17,7 @@ abstract class KVItem<T> : MutableState<T?>, ReadWriteProperty<KVItem<T>, T?>, U
             val oldValue = state.value
             state.value = value
             if (oldValue != value && autoSave) {
-                setInternal(value)
+                set(value)
             }
         }
 
@@ -28,12 +28,13 @@ abstract class KVItem<T> : MutableState<T?>, ReadWriteProperty<KVItem<T>, T?>, U
     override fun component1(): T? = value
     override fun component2(): (T?) -> Unit = { value = it }
 
-    override fun save() = setInternal(value)
+    override fun save() = set(value)
     override fun update() = run { value = get() }
     override fun flow(): Flow<T?> = flowInternal
+    override fun enableAutoSave() = run { autoSave = true }
+    override fun disableAutoSave() = run { autoSave = false }
 
-    private fun setInternal(value: T?) {
+    override fun set(value: T?) {
         flowInternal.tryEmit(value)
-        set(value)
     }
 }

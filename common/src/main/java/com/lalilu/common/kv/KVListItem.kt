@@ -19,6 +19,7 @@ abstract class KVListItem<T>(
     protected abstract fun get(key: String): T?
 
     override fun set(value: List<T>?) {
+        super.set(value)
         val countKey = countKeyTemplate.format(md5ForKey)
 
         // 若列表为null，则删除计数键

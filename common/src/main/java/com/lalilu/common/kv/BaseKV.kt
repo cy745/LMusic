@@ -36,6 +36,6 @@ abstract class BaseKV {
     inline fun <reified T : Any> obtain(key: String, encoder: FastEncoder<T>): KVItem<T> =
         kvMap.getOrPut(key) { ObjectKVItem(key, fastKV, encoder) } as KVItem<T>
 
-    inline fun <reified T : Any> obtainList(key: String, encoder: FastEncoder<T>): KVItem<List<T>> =
-        kvMap.getOrPut(key) { ObjectListKVItem(key, fastKV, encoder) } as KVItem<List<T>>
+    inline fun <reified T : Any> obtainList(key: String, encoder: FastEncoder<T>): KVListItem<T> =
+        kvMap.getOrPut(key) { ObjectListKVItem(key, fastKV, encoder) } as KVListItem<T>
 }
