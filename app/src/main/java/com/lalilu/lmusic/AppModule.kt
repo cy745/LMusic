@@ -15,6 +15,7 @@ import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lalbum.viewModel.AlbumsViewModel
 import com.lalilu.lartist.viewModel.ArtistsViewModel
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
@@ -41,6 +42,7 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.lalilu.lplayer.notification.Notifier
+import io.fastkv.FastKV
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
@@ -55,6 +57,13 @@ import java.net.URLDecoder
 val AppModule = module {
     single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
     single<GlobalNavigator> { GlobalNavigatorImpl }
+
+    single<FastKV> {
+        FastKV.Builder(androidApplication(), "LMusic")
+            .encoder(LMedia.fastEncoders)
+            .build()
+    }
+
     single { SettingsSp(androidApplication()) }
     single { LastPlayedSp(androidApplication()) }
     single { TempSp(androidApplication()) }
