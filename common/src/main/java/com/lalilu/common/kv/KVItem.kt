@@ -8,9 +8,11 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 abstract class KVItem<T> : MutableState<T?>, ReadWriteProperty<KVItem<T>, T?>, UpdatableKV<T> {
-    private var autoSave = true
-    private val state: MutableState<T?> by lazy { mutableStateOf(null) }
-    private val flowInternal: MutableStateFlow<T?> = MutableStateFlow(state.value)
+    var autoSave = true
+        private set
+
+    private val state: MutableState<T?> by lazy { mutableStateOf(get()) }
+    private val flowInternal: MutableStateFlow<T?> by lazy { MutableStateFlow(state.value) }
     override var value: T?
         get() = state.value
         set(value) {
