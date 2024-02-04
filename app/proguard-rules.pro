@@ -26,7 +26,7 @@
 -keep public class * implements java.lang.reflect.Type
 
 # AndroidAop必备混淆规则
--keep class * { @androidx.annotation.Keep <fields>; }
+#-keep class * { @androidx.annotation.Keep <fields>; }
 -keepnames class * implements com.flyjingfish.android_aop_annotation.base.BasePointCut
 -keepnames class * implements com.flyjingfish.android_aop_annotation.base.MatchClassMethod
 -keep class * implements com.flyjingfish.android_aop_annotation.base.BasePointCut{
@@ -36,6 +36,7 @@
     public <init>();
 }
 
+# AndroidFilePicker相关
 -dontwarn com.bumptech.glide.Glide
 -dontwarn com.bumptech.glide.RequestBuilder
 -dontwarn com.bumptech.glide.RequestManager
