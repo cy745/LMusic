@@ -1,6 +1,5 @@
 package com.lalilu.lplaylist.repository
 
-import com.lalilu.common.base.SpListItem
 import com.lalilu.lplaylist.entity.LPlaylist
 import kotlinx.coroutines.flow.Flow
 
@@ -9,7 +8,10 @@ interface PlaylistRepository {
         const val FAVOURITE_PLAYLIST_ID = "FAVOURITE"
     }
 
-    fun getPlaylists(): SpListItem<LPlaylist>
+    fun getPlaylistsFlow(): Flow<List<LPlaylist>>
+    fun getPlaylists(): List<LPlaylist>
+    fun setPlaylists(playlists: List<LPlaylist>)
+
     fun save(playlist: LPlaylist)
     fun remove(playlist: LPlaylist)
     fun removeById(id: String)

@@ -2,41 +2,53 @@ package com.lalilu.lplaylist.repository
 
 import android.app.Application
 import com.blankj.utilcode.util.ToastUtils
-import com.lalilu.common.base.SpListItem
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.entity.LPlaylist
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 
-
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class PlaylistRepositoryImpl(
-    private val sp: PlaylistSp,
+    private val kv: PlaylistKV,
     private val context: Application,
 ) : PlaylistRepository {
-    override fun getPlaylists(): SpListItem<LPlaylist> {
-        return sp.playlistList
+
+    override fun getPlaylistsFlow(): Flow<List<LPlaylist>> {
+        return kv.playlistList.flow()
+            .mapLatest { it ?: emptyList() }
+    }
+
+    override fun getPlaylists(): List<LPlaylist> {
+        return kv.playlistList.value ?: emptyList()
+    }
+
+    override fun setPlaylists(playlists: List<LPlaylist>) {
+        kv.playlistList.apply {
+            value = playlists
+            if (!autoSave) save()
+        }
     }
 
     override fun save(playlist: LPlaylist) {
-        val playlists = sp.playlistList.value.toMutableList()
+        val playlists = getPlaylists().toMutableList()
         val index = playlists.indexOfFirst { it.id == playlist.id }
 
         // 若已存在则更新
         if (index >= 0) {
             playlists[index] = playlist
-            sp.playlistList.value = playlists
-            sp.playlistList.save()
+            setPlaylists(playlists)
             return
         }
 
-        sp.playlistList.add(0, playlist)
-        sp.playlistList.save()
+        playlists.add(0, playlist)
+        setPlaylists(playlists)
     }
 
     override fun remove(playlist: LPlaylist) {
-        sp.playlistList.remove(playlist)
-        sp.playlistList.save()
+        val playlists = getPlaylists().toMutableList()
+        playlists.remove(playlist)
+        setPlaylists(playlists)
     }
 
     override fun removeById(id: String) {
@@ -45,9 +57,9 @@ internal class PlaylistRepositoryImpl(
             return
         }
 
-        val result = sp.playlistList.value.filter { it.id != id }
-        sp.playlistList.value = result
-        sp.playlistList.save()
+        // 筛选不用删除的元素
+        val result = getPlaylists().filter { it.id != id }
+        setPlaylists(result)
     }
 
     override fun removeByIds(ids: List<String>) {
@@ -55,19 +67,19 @@ internal class PlaylistRepositoryImpl(
             ToastUtils.showShort(R.string.playlist_tips_cannot_remove_favourite)
         }
 
-        val result = sp.playlistList.value.filter {
+        // 筛选不用删除的元素
+        val result = getPlaylists().filter {
             !ids.contains(it.id) || it.id == PlaylistRepository.FAVOURITE_PLAYLIST_ID
         }
-        sp.playlistList.value = result
-        sp.playlistList.save()
+        setPlaylists(result)
     }
 
     override fun isExist(playlistId: String): Boolean {
-        return sp.playlistList.value.any { it.id == playlistId }
+        return getPlaylists().any { it.id == playlistId }
     }
 
     override fun isExistInPlaylist(playlistId: String, mediaId: String): Boolean {
-        val playlists = sp.playlistList.value.toMutableList()
+        val playlists = getPlaylists()
         val playlist = playlists.firstOrNull { it.id == playlistId } ?: return false
         return playlist.mediaIds.contains(mediaId)
     }
@@ -82,7 +94,7 @@ internal class PlaylistRepositoryImpl(
 
     override fun addMediaIdsToPlaylists(mediaIds: List<String>, playlistIds: List<String>) {
         var changed = false
-        val playlists = sp.playlistList.value.toMutableList()
+        val playlists = getPlaylists().toMutableList()
 
         for (index in playlists.indices) {
             val playlist = playlists[index]
@@ -100,8 +112,7 @@ internal class PlaylistRepositoryImpl(
         }
 
         if (!changed) return
-        sp.playlistList.value = playlists
-        sp.playlistList.save()
+        setPlaylists(playlists)
     }
 
     override fun removeMediaIdsFromPlaylist(mediaIds: List<String>, playlistId: String) {
@@ -110,7 +121,7 @@ internal class PlaylistRepositoryImpl(
 
     override fun removeMediaIdsFromPlaylists(mediaIds: List<String>, playlistIds: List<String>) {
         var changed = false
-        val playlists = sp.playlistList.value.toMutableList()
+        val playlists = getPlaylists().toMutableList()
 
         for (index in playlists.indices) {
             val playlist = playlists[index]
@@ -125,8 +136,7 @@ internal class PlaylistRepositoryImpl(
         }
 
         if (!changed) return
-        sp.playlistList.value = playlists
-        sp.playlistList.save()
+        setPlaylists(playlists)
     }
 
     override fun updateMediaIdsToFavourite(mediaIds: List<String>) {
@@ -146,7 +156,7 @@ internal class PlaylistRepositoryImpl(
     }
 
     override fun checkFavouriteExist(): Boolean {
-        val playlists = sp.playlistList.value
+        val playlists = getPlaylists()
         val exist = playlists.any { it.id == PlaylistRepository.FAVOURITE_PLAYLIST_ID }
 
         if (!exist) {
@@ -166,10 +176,10 @@ internal class PlaylistRepositoryImpl(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getFavouriteMediaIds(): Flow<List<String>> {
-        return sp.playlistList.flow(true)
+        return getPlaylistsFlow()
             .mapLatest { playlists ->
                 playlists
-                    ?.firstOrNull { it.id == PlaylistRepository.FAVOURITE_PLAYLIST_ID }
+                    .firstOrNull { it.id == PlaylistRepository.FAVOURITE_PLAYLIST_ID }
                     ?.mediaIds ?: emptyList()
             }
     }
@@ -181,11 +191,10 @@ internal class PlaylistRepositoryImpl(
     }
 
     private fun updatePlaylist(playlistId: String, action: (LPlaylist) -> LPlaylist) {
-        val playlists = sp.playlistList.value.toMutableList()
+        val playlists = getPlaylists().toMutableList()
         val index = playlists.indexOfFirst { it.id == playlistId }.takeIf { it >= 0 } ?: return
 
         playlists[index] = action(playlists[index])
-        sp.playlistList.value = playlists
-        sp.playlistList.save()
+        setPlaylists(playlists)
     }
 }
