@@ -32,7 +32,6 @@ import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lplaylist.PlaylistActions
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.repository.PlaylistRepository
-import com.lalilu.lplaylist.repository.PlaylistSp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import org.koin.compose.koinInject
@@ -66,15 +65,14 @@ data class PlaylistDetailScreen(
 }
 
 class PlaylistDetailScreenModel(
-    sp: PlaylistSp,
     private val playingVM: IPlayingViewModel,
     private val playlistRepo: PlaylistRepository
 ) : ScreenModel {
     private val playlistId = MutableStateFlow("")
 
     val playlist = playlistId
-        .combine(sp.playlistList.flow(true)) { id, playlists ->
-            playlists?.firstOrNull { it.id == id }
+        .combine(playlistRepo.getPlaylistsFlow()) { id, playlists ->
+            playlists.firstOrNull { it.id == id }
         }.toCachedFlow()
 
     val deleteAction = SelectAction.StaticAction.Custom(

@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -43,7 +45,7 @@ data class PlaylistAddToScreen(
     @Composable
     override fun Content() {
         val playlistRepo: PlaylistRepository = koinInject()
-        val playlists = playlistRepo.getPlaylists()
+        val playlists = remember { derivedStateOf { playlistRepo.getPlaylists() } }
         val selector = rememberItemSelectHelper()
 
         RegisterActions {

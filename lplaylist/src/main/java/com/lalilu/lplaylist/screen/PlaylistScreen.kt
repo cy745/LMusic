@@ -11,7 +11,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -60,17 +64,20 @@ private fun DynamicScreen.PlaylistScreen(
     playlistRepo: PlaylistRepository = koinInject(),
     navigator: GlobalNavigator = koinInject()
 ) {
-    val playlists = playlistRepo.getPlaylists()
     val listState = rememberLazyListState()
+    val playlists by remember { derivedStateOf { playlistRepo.getPlaylists() } }
+    val playlistState = remember(playlists) { playlists.toMutableStateList() }
+
     val reorderableState = rememberReorderableLazyColumnState(listState) { from, to ->
-        playlists.value = playlists.value.toMutableList().apply {
+        playlistState.toMutableList().apply {
             val toIndex = indexOfFirst { it.id == to.key }
             val fromIndex = indexOfFirst { it.id == from.key }
             if (toIndex < 0 || fromIndex < 0) return@rememberReorderableLazyColumnState
 
             add(toIndex, removeAt(fromIndex))
+            playlistState.clear()
+            playlistState.addAll(this)
         }
-        playlists.save()
     }
 
     LaunchedEffect(Unit) {
@@ -112,7 +119,7 @@ private fun DynamicScreen.PlaylistScreen(
         }
 
         items(
-            items = playlists.value,
+            items = playlistState,
             key = { it.id },
             contentType = { LPlaylist::class.java }
         ) { playlist ->
@@ -122,7 +129,9 @@ private fun DynamicScreen.PlaylistScreen(
             ) { isDragging ->
                 PlaylistCard(
                     playlist = playlist,
-                    draggingModifier = Modifier.draggableHandle(),
+                    draggingModifier = Modifier.draggableHandle(
+                        onDragStopped = { playlistRepo.setPlaylists(playlistState) }
+                    ),
                     isDragging = { isDragging },
                     isSelected = { selectHelper.isSelected(playlist) },
                     isSelecting = { selectHelper.isSelecting.value },

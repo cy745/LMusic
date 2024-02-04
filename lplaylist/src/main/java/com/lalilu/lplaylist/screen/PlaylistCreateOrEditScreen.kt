@@ -66,8 +66,8 @@ class PlaylistCreateOrEditScreenModel(
 ) : ScreenModel {
     private val playlistId = MutableStateFlow("")
     private val playlist = playlistId
-        .combine(playlistRepo.getPlaylists().flow(true)) { playlistId, playlists ->
-            playlists?.firstOrNull { it.id == playlistId }
+        .combine(playlistRepo.getPlaylistsFlow()) { playlistId, playlists ->
+            playlists.firstOrNull { it.id == playlistId }
         }.toCachedFlow()
 
     val title = playlist.mapLatest { it?.title ?: "" }
