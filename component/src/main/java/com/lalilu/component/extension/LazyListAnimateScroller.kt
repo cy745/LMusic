@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.dynamicanimation.animation.SpringAnimation
@@ -141,6 +142,7 @@ fun rememberLazyListAnimateScroller(
     val deltaValue = remember { mutableFloatStateOf(0f) }
     val targetRange = remember { mutableStateOf(IntRange(0, 0)) }
     val sizeMap = remember { mutableStateMapOf<Int, Int>() }
+    val enableAnimation = rememberUpdatedState(enableScrollAnimation())
 
     val scroller = remember {
         LazyListAnimateScroller(
@@ -157,7 +159,7 @@ fun rememberLazyListAnimateScroller(
     LaunchedEffect(Unit) {
         snapshotFlow { deltaValue.floatValue }
             .collectLatest {
-                if (!enableScrollAnimation()) return@collectLatest
+                if (!enableAnimation.value) return@collectLatest
                 listState.scroll { scrollBy(it) }
             }
     }
