@@ -43,18 +43,20 @@ import org.koin.compose.koinInject
 
 @Composable
 fun BoxScope.SeekbarLayout(
+    modifier: Modifier = Modifier,
+    seekBarModifier: Modifier = Modifier,
     settingsSp: SettingsSp = koinInject(),
     animateColor: State<Color>
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(bottom = 72.dp, start = 50.dp, end = 50.dp)
             .align(Alignment.BottomCenter)
     ) {
         AndroidView(
-            modifier = Modifier
+            modifier = seekBarModifier
                 .fillMaxWidth()
                 .height(48.dp),
             factory = { context ->

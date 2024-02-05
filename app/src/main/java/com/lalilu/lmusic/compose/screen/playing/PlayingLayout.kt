@@ -9,31 +9,24 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
@@ -52,7 +45,9 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.dirror.lyricviewx.LyricUtil
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.common.HapticUtils
+import com.lalilu.component.extension.hideControl
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
@@ -76,9 +71,10 @@ fun PlayingLayout(
 ) {
     val view = LocalView.current
     val haptic = LocalHapticFeedback.current
-    val isLyricLayoutScrollEnable = remember { mutableStateOf(false) }
+    val systemUiController = rememberSystemUiController()
     val lyricLayoutLazyListState = rememberLazyListState()
-    val cancelHandlerScrollState = rememberScrollState()
+
+    val isLyricScrollEnable = remember { mutableStateOf(false) }
     val recyclerViewScrollState = remember { mutableStateOf(false) }
     val backgroundColor = remember { mutableStateOf(Color.DarkGray) }
     val animateColor = animateColorAsState(targetValue = backgroundColor.value, label = "")
@@ -89,15 +85,25 @@ fun PlayingLayout(
             HapticUtils.haptic(view, HapticUtils.Strength.HAPTIC_STRONG)
         }
         if (newState != DragAnchor.Max) {
-            isLyricLayoutScrollEnable.value = false
+            isLyricScrollEnable.value = false
         }
+    }
+
+    val hideComponent = remember {
+        derivedStateOf {
+            settingsSp.autoHideSeekbar.value && draggable.state.value == DragAnchor.Max
+        }
+    }
+
+    LaunchedEffect(hideComponent.value) {
+        systemUiController.isStatusBarVisible = !hideComponent.value
     }
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override suspend fun onPreFling(available: Velocity): Velocity {
                 // 若非RecyclerView的滚动，则消费y轴上的所有速度，避免嵌套滚动事件继续
-                if (!recyclerViewScrollState.value && !isLyricLayoutScrollEnable.value) {
+                if (!recyclerViewScrollState.value && !isLyricScrollEnable.value) {
                     draggable.fling(available.y)
                     return available
                 }
@@ -117,23 +123,19 @@ fun PlayingLayout(
                 draggable.tryCancel()
 
                 return when {
-                    cancelHandlerScrollState.isScrollInProgress -> {
-                        draggable.scrollBy(available.y)
-                        available
-                    }
-
                     lyricLayoutLazyListState.isScrollInProgress -> {
                         if (
-                            !isLyricLayoutScrollEnable.value
+                            !isLyricScrollEnable.value
                             && available.y > 0
+                            && source == NestedScrollSource.Drag
                             && draggable.position.floatValue.toInt()
                             == draggable.getPositionByAnchor(DragAnchor.Max)
                         ) {
                             HapticUtils.haptic(view, HapticUtils.Strength.HAPTIC_STRONG)
-                            isLyricLayoutScrollEnable.value = true
+                            isLyricScrollEnable.value = true
                         }
 
-                        if (isLyricLayoutScrollEnable.value) {
+                        if (isLyricScrollEnable.value) {
                             super.onPreScroll(available, source)
                         } else {
                             draggable.scrollBy(available.y)
@@ -157,13 +159,8 @@ fun PlayingLayout(
                 source: NestedScrollSource
             ): Offset {
                 return when {
-                    cancelHandlerScrollState.isScrollInProgress -> {
-                        draggable.scrollBy(available.y)
-                        available
-                    }
-
                     lyricLayoutLazyListState.isScrollInProgress -> {
-                        if (isLyricLayoutScrollEnable.value) {
+                        if (isLyricScrollEnable.value) {
                             super.onPreScroll(available, source)
                         } else {
                             draggable.scrollBy(available.y)
@@ -189,6 +186,7 @@ fun PlayingLayout(
             content = {
                 Column(
                     modifier = Modifier
+                        .hideControl(enable = { hideComponent.value })
                         .fillMaxWidth()
                         .statusBarsPadding()
                         .padding(bottom = 10.dp)
@@ -306,61 +304,28 @@ fun PlayingLayout(
                         textSize = rememberTextSizeFromInt { settingsSp.lyricTextSize.value },
                         textAlign = rememberTextAlignFromGravity { settingsSp.lyricGravity.value },
                         fontFamily = rememberFontFamilyFromPath { settingsSp.lyricTypefacePath.value },
-                        isBlurredEnable = { !isLyricLayoutScrollEnable.value && settingsSp.isEnableBlurEffect.value },
+                        isBlurredEnable = { !isLyricScrollEnable.value && settingsSp.isEnableBlurEffect.value },
                         isTranslationShow = { settingsSp.isDrawTranslation.value },
                         isUserClickEnable = { draggable.state.value == DragAnchor.Max },
-                        isUserScrollEnable = { isLyricLayoutScrollEnable.value },
+                        isUserScrollEnable = { isLyricScrollEnable.value },
                         onPositionReset = {
-                            if (isLyricLayoutScrollEnable.value) {
-                                isLyricLayoutScrollEnable.value = false
+                            if (isLyricScrollEnable.value) {
+                                isLyricScrollEnable.value = false
                             }
                         },
                         onItemClick = {
-                            if (isLyricLayoutScrollEnable.value) {
-                                isLyricLayoutScrollEnable.value = false
+                            if (isLyricScrollEnable.value) {
+                                isLyricScrollEnable.value = false
                             }
                             LPlayer.controller.doAction(PlayerAction.SeekTo(it.time))
                         },
                         onItemLongClick = {
                             if (draggable.state.value == DragAnchor.Max) {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                isLyricLayoutScrollEnable.value = !isLyricLayoutScrollEnable.value
+                                isLyricScrollEnable.value = !isLyricScrollEnable.value
                             }
                         },
                     )
-
-                    AnimatedVisibility(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        visible = isLyricLayoutScrollEnable.value || cancelHandlerScrollState.isScrollInProgress,
-                        label = "",
-                        enter = fadeIn() + slideIn { IntOffset(0, 100) },
-                        exit = fadeOut() + slideOut { IntOffset(0, 100) }
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .verticalScroll(cancelHandlerScrollState)
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .padding(bottom = 80.dp, top = 40.dp)
-                                .align(Alignment.BottomCenter),
-//                                .combinedClickable(
-//                                    onLongClick = { isLyricLayoutScrollEnable.value = false },
-//                                    onClick = {}
-//                                ),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Spacer(
-                                modifier = Modifier
-                                    .width(100.dp)
-                                    .height(5.dp)
-                                    .clip(RoundedCornerShape(5.dp))
-                                    .background(color = Color.White.copy(alpha = 0.6f))
-                            )
-                        }
-                    }
                 }
 
                 CustomRecyclerView(
@@ -407,12 +372,15 @@ fun PlayingLayout(
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .wrapContentHeight(),
-            visible = !isLyricLayoutScrollEnable.value,
+            visible = !isLyricScrollEnable.value,
             label = "",
             enter = fadeIn(tween(300)) + slideIn { IntOffset(0, 100) },
             exit = fadeOut(tween(300)) + slideOut { IntOffset(0, 100) }
         ) {
-            SeekbarLayout(animateColor = animateColor)
+            SeekbarLayout(
+                seekBarModifier = Modifier.hideControl(enable = { hideComponent.value }),
+                animateColor = animateColor
+            )
         }
     }
 }
