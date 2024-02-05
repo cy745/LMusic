@@ -30,6 +30,7 @@ import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.settings.SettingFilePicker
 import com.lalilu.component.settings.SettingProgressSeekBar
 import com.lalilu.component.settings.SettingStateSeekBar
+import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.lmusic.datastore.SettingsSp
 import org.koin.compose.koinInject
 
@@ -52,6 +53,11 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 state = settingsSp.lyricTextSize,
                 title = "歌词文字大小",
                 valueRange = 14..36
+            )
+            SettingSwitcher(
+                title = "歌词页展开时隐藏其他组件",
+                subTitle = "简化界面显示效果",
+                state = settingsSp.autoHideSeekbar,
             )
             SettingFilePicker(
                 state = settingsSp.lyricTypefacePath,
