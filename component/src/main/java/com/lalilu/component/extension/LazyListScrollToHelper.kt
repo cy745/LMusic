@@ -8,9 +8,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
+interface ScrollToHelperScope {
+    fun record(key: Any)
+    fun record(keys: Collection<Any>)
+}
+
 class LazyListScrollToHelper internal constructor(
     private val onScrollTo: (delay: Long, scrollOffset: Int, animateTo: Boolean, action: () -> Int?) -> Unit
-) {
+) : ScrollToHelperScope {
     private val keys: MutableSet<Any> = mutableSetOf()
     private var finished: Boolean = false
 
@@ -33,6 +38,22 @@ class LazyListScrollToHelper internal constructor(
 
     fun endRecord() {
         finished = true
+    }
+
+    override fun record(key: Any) {
+        if (finished) return
+        this.keys.add(key)
+    }
+
+    override fun record(keys: Collection<Any>) {
+        if (finished) return
+        this.keys.addAll(keys)
+    }
+
+    fun record(action: ScrollToHelperScope.() -> Unit) {
+        startRecord()
+        action()
+        endRecord()
     }
 
     fun scrollToItem(
