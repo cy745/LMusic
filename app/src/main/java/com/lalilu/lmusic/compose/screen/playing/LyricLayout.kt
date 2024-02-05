@@ -1,13 +1,25 @@
 package com.lalilu.lmusic.compose.screen.playing
 
 import android.graphics.Typeface
-import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -15,10 +27,14 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,7 +44,6 @@ import com.lalilu.lmusic.utils.extension.edgeTransparent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import java.io.File
 import kotlin.math.abs
@@ -88,6 +103,13 @@ fun rememberTextSizeFromInt(textSize: () -> Int?): TextUnit {
     return remember(textSize()) { textSize()?.takeIf { it > 0 }?.sp ?: 26.sp }
 }
 
+private val EMPTY_SENTENCE_TIPS = LyricEntry(
+    index = 0,
+    time = 0,
+    text = "暂无歌词",
+    translate = null
+)
+
 @OptIn(FlowPreview::class)
 @Composable
 fun LyricLayout(
@@ -108,12 +130,11 @@ fun LyricLayout(
     fontFamily: State<FontFamily?> = remember { mutableStateOf<FontFamily?>(null) }
 ) {
     val textMeasurer = rememberTextMeasurer()
-    val isUserTouching = remember { mutableStateOf(false) }
-    val isDragged = listState.interactionSource.collectIsDraggedAsState()
+    val isUserScrolling = remember(isUserScrollEnable()) { mutableStateOf(isUserScrollEnable()) }
     val scrollToHelper = rememberLazyListScrollToHelper(listState)
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
-        enableScrollAnimation = { !isUserTouching.value },
+        enableScrollAnimation = { !isUserScrolling.value },
         keysKeeper = { scrollToHelper.getKeys() }
     )
 
@@ -160,50 +181,106 @@ fun LyricLayout(
     }
 
     LaunchedEffect(Unit) {
-        snapshotFlow { isDragged.value }
-            .onEach { isUserTouching.value = isUserScrollEnable() }
+        snapshotFlow { listState.isScrollInProgress to isUserScrollEnable() }
             .debounce(5000)
-            .collectLatest {
-                if (!it && isActive && isUserTouching.value) {
-                    isUserTouching.value = false
-                    currentItem.value?.key?.let(scroller::animateTo)
-                    onPositionReset()
-                }
+            .collectLatest { pair ->
+                val (isDragging, isScrolling) = pair
+                if (!isActive || isDragging || !isScrolling) return@collectLatest
+
+                isUserScrolling.value = false
+                currentItem.value?.key?.let(scroller::animateTo)
+                onPositionReset()
             }
     }
 
-    LazyColumn(
-        state = listState,
-        modifier = modifier
-            .fillMaxSize()
-            .edgeTransparent(top = 300.dp, bottom = 300.dp),
-        userScrollEnabled = true,
-        contentPadding = remember { PaddingValues(top = 300.dp, bottom = 500.dp) }
-    ) {
-        scrollToHelper.startRecord()
-
-        scrollToHelper.doRecord(lyricEntry.value.map { it.key })
-        itemsIndexed(
-            items = lyricEntry.value,
-            key = { _, item -> item.key },
-            contentType = { _, _ -> LyricEntry::class }
-        ) { index, item ->
-            LyricSentence(
-                lyric = item,
-                maxWidth = maxWidth,
-                textMeasurer = textMeasurer,
-                fontFamily = fontFamily,
-                textAlign = textAlign,
-                textSize = textSize,
-                currentTime = currentTime,
-                positionToCurrent = { abs(index - currentItemIndex.value) },
-                isBlurredEnable = isBlurredEnable,
-                isTranslationShow = isTranslationShow,
-                isCurrent = { item.key == currentItem.value?.key },
-                onLongClick = { if (isUserClickEnable()) onItemLongClick(item) },
-                onClick = { if (isUserClickEnable()) onItemClick(item) }
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = modifier
+                .fillMaxSize()
+                .edgeTransparent(top = 300.dp, bottom = 250.dp),
+            userScrollEnabled = true,
+            contentPadding = remember { PaddingValues(top = 300.dp, bottom = 500.dp) }
+        ) {
+            scrollToHelper.record {
+                if (lyricEntry.value.isEmpty()) {
+                    item {
+                        LyricSentence(
+                            lyric = EMPTY_SENTENCE_TIPS,
+                            maxWidth = maxWidth,
+                            textMeasurer = textMeasurer,
+                            fontFamily = fontFamily,
+                            textAlign = textAlign,
+                            textSize = textSize,
+                            currentTime = currentTime,
+                            isBlurredEnable = isBlurredEnable,
+                            isTranslationShow = isTranslationShow,
+                            isCurrent = { true },
+                            onLongClick = {
+                                if (isUserClickEnable()) onItemLongClick(
+                                    EMPTY_SENTENCE_TIPS
+                                )
+                            }
+                        )
+                    }
+                } else {
+                    record(lyricEntry.value.map { it.key })
+                    itemsIndexed(
+                        items = lyricEntry.value,
+                        key = { _, item -> item.key },
+                        contentType = { _, _ -> LyricEntry::class }
+                    ) { index, item ->
+                        LyricSentence(
+                            lyric = item,
+                            maxWidth = maxWidth,
+                            textMeasurer = textMeasurer,
+                            fontFamily = fontFamily,
+                            textAlign = textAlign,
+                            textSize = textSize,
+                            currentTime = currentTime,
+                            positionToCurrent = { abs(index - currentItemIndex.value) },
+                            isBlurredEnable = isBlurredEnable,
+                            isTranslationShow = isTranslationShow,
+                            isCurrent = { item.key == currentItem.value?.key },
+                            onLongClick = { if (isUserClickEnable()) onItemLongClick(item) },
+                            onClick = { if (isUserClickEnable()) onItemClick(item) }
+                        )
+                    }
+                }
+            }
         }
-        scrollToHelper.endRecord()
+
+        val contentColor = remember { Color(0xFFFFFFFF) }
+        val colors = ButtonDefaults.textButtonColors(
+            backgroundColor = contentColor.copy(alpha = 0.15f),
+            contentColor = contentColor
+        )
+
+        AnimatedVisibility(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 72.dp)
+                .fillMaxWidth(),
+            enter = fadeIn() + slideIn { IntOffset(0, 100) },
+            exit = fadeOut() + slideOut { IntOffset(0, 100) },
+            visible = isUserScrolling.value
+        ) {
+            TextButton(
+                modifier = Modifier.wrapContentWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = colors,
+                onClick = {
+                    isUserScrolling.value = false
+                    currentItem.value?.key?.let(scroller::animateTo)
+                    onPositionReset()
+                }
+            ) {
+                Text(
+                    text = "退出歌词滚动模式",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
     }
 }
