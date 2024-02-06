@@ -95,7 +95,7 @@ data class SongDetailScreen(
             listOf(
                 ScreenAction.StaticAction(
                     title = R.string.button_set_song_to_next,
-                    color = Color.Cyan,
+                    color = Color(0xFF00AC84),
                     onAction = { QueueAction.AddToNext(mediaId).action() }
                 ),
                 ScreenAction.ComposeAction {
