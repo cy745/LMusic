@@ -138,7 +138,9 @@ fun PlayingLayout(
                         if (isLyricScrollEnable.value) {
                             super.onPreScroll(available, source)
                         } else {
-                            draggable.scrollBy(available.y)
+                            if (source == NestedScrollSource.Drag) {
+                                draggable.scrollBy(available.y)
+                            }
                             available
                         }
                     }
