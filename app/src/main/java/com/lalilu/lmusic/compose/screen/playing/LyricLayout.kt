@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.compose.screen.playing
 
 import android.graphics.Typeface
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -170,6 +171,12 @@ fun LyricLayout(
                 .takeIf { it != Int.MAX_VALUE }
                 ?.let { lyricEntry.value[it] }
         }
+    }
+
+    BackHandler(enabled = isUserScrolling.value) {
+        isUserScrolling.value = false
+        currentItem.value?.key?.let(scroller::animateTo)
+        onPositionReset()
     }
 
     LaunchedEffect(Unit) {

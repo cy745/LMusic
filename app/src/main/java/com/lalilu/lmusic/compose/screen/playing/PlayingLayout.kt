@@ -2,6 +2,7 @@ package com.lalilu.lmusic.compose.screen.playing
 
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -97,6 +98,12 @@ fun PlayingLayout(
 
     LaunchedEffect(hideComponent.value) {
         systemUiController.isStatusBarVisible = !hideComponent.value
+    }
+
+    BackHandler(draggable.state.value == DragAnchor.Max) {
+        if (draggable.state.value == DragAnchor.Max) {
+            draggable.animateToState(DragAnchor.Middle)
+        }
     }
 
     val nestedScrollConnection = remember {
