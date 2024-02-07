@@ -70,7 +70,7 @@ fun LyricSentence(
             maxHeight = Int.MAX_VALUE
         )
     }
-    val (textResult, translateResult) = remember(textAlign, textSize, fontFamily) {
+    val (textResult, translateResult) = remember(textAlign, textSize, fontFamily, lyric) {
         textMeasurer.measure(
             text = lyric.text,
             constraints = actualConstraints,
