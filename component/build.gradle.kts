@@ -55,8 +55,8 @@ dependencies {
     api("me.rosuh:AndroidFilePicker:1.0.1")
 
     // compose
-    // api(platform(libs.compose.bom))
-    api(platform(libs.compose.bom.alpha))
+    api(platform(libs.compose.bom))
+//    api(platform(libs.compose.bom.alpha))
     api(libs.activity.compose)
     api(libs.bundles.compose)
     api(libs.bundles.compose.debug)
