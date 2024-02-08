@@ -195,7 +195,10 @@ fun PlayingLayout(
             content = {
                 Column(
                     modifier = Modifier
-                        .hideControl(enable = { hideComponent.value })
+                        .hideControl(
+                            enable = { hideComponent.value },
+                            intercept = { true }
+                        )
                         .fillMaxWidth()
                         .statusBarsPadding()
                         .padding(bottom = 10.dp)
