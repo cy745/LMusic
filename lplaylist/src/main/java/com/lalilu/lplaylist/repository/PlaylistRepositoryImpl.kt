@@ -16,7 +16,9 @@ internal class PlaylistRepositoryImpl(
 
     override fun getPlaylistsFlow(): Flow<List<LPlaylist>> {
         return kv.playlistList.flow()
-            .mapLatest { it ?: emptyList() }
+            .mapLatest { playlists ->
+                playlists?.distinctBy { it.id } ?: emptyList()
+            }
     }
 
     override fun getPlaylists(): List<LPlaylist> {
@@ -25,7 +27,7 @@ internal class PlaylistRepositoryImpl(
 
     override fun setPlaylists(playlists: List<LPlaylist>) {
         kv.playlistList.apply {
-            value = playlists
+            value = playlists.distinctBy { it.id }
             if (!autoSave) save()
         }
     }
