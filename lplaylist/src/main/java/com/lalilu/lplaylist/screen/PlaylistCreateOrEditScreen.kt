@@ -144,20 +144,25 @@ data class PlaylistCreateOrEditScreen(
     override val key: ScreenKey = targetPlaylistId.toString()
 
     @Composable
+    override fun registerActions(): List<ScreenAction> {
+        val createOrEditSM = getScreenModel<PlaylistCreateOrEditScreenModel>()
+
+        return remember {
+            listOf(
+                if (targetPlaylistId == null) createOrEditSM.createPlaylistAction
+                else createOrEditSM.updatePlaylistAction
+            )
+        }
+    }
+
+    @Composable
     override fun Content() {
-        val createOrEditSM: PlaylistCreateOrEditScreenModel = getScreenModel()
+        val createOrEditSM = getScreenModel<PlaylistCreateOrEditScreenModel>()
 
         if (targetPlaylistId != null) {
             LaunchedEffect(Unit) {
                 createOrEditSM.updateTargetPlaylistId(playlistId = targetPlaylistId)
             }
-        }
-
-        RegisterActions {
-            listOf(
-                if (targetPlaylistId == null) createOrEditSM.createPlaylistAction
-                else createOrEditSM.updatePlaylistAction
-            )
         }
 
         PlaylistCreateOrEditScreen(

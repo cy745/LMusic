@@ -42,22 +42,24 @@ data class PlaylistAddToScreen(
         title = R.string.playlist_action_add_to_playlist
     )
 
-    @Composable
-    override fun Content() {
-        val playlistRepo: PlaylistRepository = koinInject()
-        val playlists = remember { derivedStateOf { playlistRepo.getPlaylists() } }
-        val selector = rememberItemSelectHelper()
+    @Transient
+    private var selector: ItemSelectHelper? = null
 
-        RegisterActions {
+    @Composable
+    override fun registerActions(): List<ScreenAction> {
+        val playlistRepo: PlaylistRepository = koinInject()
+
+        return remember {
             listOf(
                 ScreenAction.StaticAction(
                     title = R.string.playlist_action_add_to_playlist,
                     icon = componentR.drawable.ic_check_line,
                     color = Color(0xFF008521)
                 ) {
-                    val playlistIds = selector.selected.value
-                        .filterIsInstance(LPlaylist::class.java)
-                        .map { it.id }
+                    val playlistIds = selector?.selected?.value
+                        ?.filterIsInstance(LPlaylist::class.java)
+                        ?.map { it.id }
+                        ?: emptyList()
 
                     playlistRepo.addMediaIdsToPlaylists(
                         mediaIds = ids,
@@ -68,6 +70,13 @@ data class PlaylistAddToScreen(
                 }
             )
         }
+    }
+
+    @Composable
+    override fun Content() {
+        val playlistRepo: PlaylistRepository = koinInject()
+        val playlists = remember { derivedStateOf { playlistRepo.getPlaylists() } }
+        val selector = rememberItemSelectHelper().also { this.selector = it }
 
         PlaylistAddToScreen(
             mediaIds = ids,

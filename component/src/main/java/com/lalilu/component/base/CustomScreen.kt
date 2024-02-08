@@ -102,10 +102,6 @@ interface UiPresenter<T : UiState> : CoroutineScope {
 }
 
 abstract class DynamicScreen : CustomScreen {
-    @delegate:Transient     // Voyager的Screen会被序列化，需要避免自定义的参数参与进序列化
-    var actions: List<ScreenAction> by mutableStateOf(emptyList())
-        private set
-
     @delegate:Transient
     var extraContentStack: List<ScreenBarComponent> by mutableStateOf(emptyList())
         private set
@@ -115,10 +111,8 @@ abstract class DynamicScreen : CustomScreen {
         private set
 
     @Composable
-    fun RegisterActions(actionList: () -> List<ScreenAction>) {
-        LaunchedEffect(Unit) {
-            actions = actionList()
-        }
+    open fun registerActions(): List<ScreenAction> {
+        return remember { emptyList() }
     }
 
     @Composable

@@ -54,6 +54,7 @@ import com.lalilu.component.IconButton
 import com.lalilu.component.IconTextButton
 import com.lalilu.component.LLazyColumn
 import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.extension.dayNightTextColor
@@ -66,7 +67,6 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.base.IconCheckButton
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 import com.lalilu.lmusic.compose.component.card.SongInformationCard
-import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.lmusic.compose.presenter.DetailScreenAction
 import com.lalilu.lmusic.compose.presenter.DetailScreenIsPlayingPresenter
 import com.lalilu.lmusic.compose.presenter.DetailScreenLikeBtnPresenter
@@ -87,11 +87,8 @@ data class SongDetailScreen(
     )
 
     @Composable
-    override fun Content() {
-        val song = LMedia.getFlow<LSong>(id = mediaId)
-            .collectAsState(initial = null)
-
-        RegisterActions {
+    override fun registerActions(): List<ScreenAction> {
+        return remember {
             listOf(
                 ScreenAction.StaticAction(
                     title = R.string.button_set_song_to_next,
@@ -138,6 +135,12 @@ data class SongDetailScreen(
                 },
             )
         }
+    }
+
+    @Composable
+    override fun Content() {
+        val song = LMedia.getFlow<LSong>(id = mediaId)
+            .collectAsState(initial = null)
 
         DetailScreen(
             mediaId = { mediaId },

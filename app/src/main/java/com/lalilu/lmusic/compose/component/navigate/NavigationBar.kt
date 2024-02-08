@@ -71,9 +71,8 @@ fun NavigationBar(
     val previousTitle by remember {
         derivedStateOf { previousInfo?.title ?: R.string.bottom_sheet_navigate_back }
     }
-    val screenActions by remember {
-        derivedStateOf { (screen as? DynamicScreen)?.actions ?: emptyList() }
-    }
+    val dynamicScreen by remember { derivedStateOf { screen as? DynamicScreen } }
+    val screenActions = dynamicScreen?.registerActions() ?: emptyList()
 
     AnimatedContent(
         modifier = modifier.fillMaxWidth(),

@@ -9,6 +9,8 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,15 +48,23 @@ data class PlaylistDetailScreen(
     )
 
     @Composable
-    override fun Content() {
-        val playlistDetailSM: PlaylistDetailScreenModel = getScreenModel()
-        playlistDetailSM.updatePlaylistId(playlistId)
+    override fun registerActions(): List<ScreenAction> {
+        val playlistDetailSM = getScreenModel<PlaylistDetailScreenModel>()
 
-        RegisterActions {
+        return remember {
             listOf(
                 playlistDetailSM.playAllRandomlyAction,
                 playlistDetailSM.playAllAction
             )
+        }
+    }
+
+    @Composable
+    override fun Content() {
+        val playlistDetailSM = getScreenModel<PlaylistDetailScreenModel>()
+
+        LaunchedEffect(Unit) {
+            playlistDetailSM.updatePlaylistId(playlistId)
         }
 
         PlaylistDetailScreen(

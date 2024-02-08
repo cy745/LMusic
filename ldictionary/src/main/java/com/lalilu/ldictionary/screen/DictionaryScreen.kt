@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -77,15 +78,17 @@ object DictionaryScreen : DynamicScreen() {
     )
 
     @Composable
-    override fun Content() {
+    override fun registerActions(): List<ScreenAction> {
         val context = LocalContext.current
         val dictionarySM = getScreenModel<DictionaryScreenModel>()
+
         val pickFileLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree()
         ) { treeUri ->
             treeUri?.let { dictionarySM.saveTargetUri(it) }
             LogUtils.i(treeUri)
         }
+
         val filePickerLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartActivityForResult(),
             onResult = {
@@ -96,7 +99,7 @@ object DictionaryScreen : DynamicScreen() {
             }
         )
 
-        RegisterActions {
+        return remember {
             listOf(
                 ScreenAction.StaticAction(
                     title = R.string.dictionary_screen_title,
@@ -121,6 +124,11 @@ object DictionaryScreen : DynamicScreen() {
                 }
             )
         }
+    }
+
+    @Composable
+    override fun Content() {
+        val dictionarySM = getScreenModel<DictionaryScreenModel>()
 
         DictionaryScreen(dictionarySM = dictionarySM)
     }

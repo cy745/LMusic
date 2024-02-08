@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -19,6 +20,7 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.extension.LazyListScrollToHelper
 import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.component.extension.singleViewModel
@@ -39,22 +41,23 @@ data class SongsScreen(
         icon = R.drawable.ic_music_2_line
     )
 
+    @Transient
+    private var scrollHelper: LazyListScrollToHelper? = null
+
+    @Transient
+    private var songsSM: SongsScreenModel? = null
+
     @Composable
-    override fun Content() {
+    override fun registerActions(): List<ScreenAction> {
         val playingVM: PlayingViewModel = singleViewModel()
-        val historyVM: HistoryViewModel = singleViewModel()
-        val songsSM: SongsScreenModel = rememberScreenModel { SongsScreenModel() }
 
-        val listState: LazyListState = rememberLazyListState()
-        val scrollHelper = rememberLazyListScrollToHelper(listState = listState)
-
-        RegisterActions {
+        return remember {
             listOf(
                 ScreenAction.StaticAction(
                     title = R.string.screen_action_sort,
                     icon = R.drawable.ic_sort_desc,
                     color = Color(0xFF1793FF),
-                    onAction = { songsSM.showSortPanel.value = true }
+                    onAction = { songsSM?.showSortPanel?.value = true }
                 ),
                 ScreenAction.StaticAction(
                     title = R.string.screen_action_locate_playing_item,
@@ -62,11 +65,21 @@ data class SongsScreen(
                     color = Color(0xFF9317FF),
                     onAction = {
                         val playingId = playingVM.playing.value?.mediaId ?: return@StaticAction
-                        scrollHelper.scrollToItem(playingId)
+                        scrollHelper?.scrollToItem(playingId)
                     }
                 ),
             )
         }
+    }
+
+    @Composable
+    override fun Content() {
+        val listState: LazyListState = rememberLazyListState()
+        val historyVM: HistoryViewModel = singleViewModel()
+        val songsSM = rememberScreenModel { SongsScreenModel() }
+            .also { this.songsSM = it }
+        val scrollHelper = rememberLazyListScrollToHelper(listState = listState)
+            .also { this.scrollHelper = it }
 
         Songs(
             showAll = true,
