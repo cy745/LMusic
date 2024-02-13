@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -48,6 +50,8 @@ fun BoxScope.SeekbarLayout(
     settingsSp: SettingsSp = koinInject(),
     animateColor: State<Color>
 ) {
+    val haptic = LocalHapticFeedback.current
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -86,6 +90,10 @@ fun BoxScope.SeekbarLayout(
                             )
                         }
                     )
+
+                    switchIndexUpdateCallback = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    }
 
                     valueToText = { it.toLong().durationToTime() }
 
