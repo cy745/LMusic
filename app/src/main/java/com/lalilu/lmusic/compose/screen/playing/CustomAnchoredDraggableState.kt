@@ -59,7 +59,7 @@ class CustomAnchoredDraggableState(
             }
         }
     }
-    private val dragThreshold = 200
+    private val dragThreshold = 120
     private val overScroller by lazy { OverScroller(context) }
 
     private var minPosition = Int.MIN_VALUE
