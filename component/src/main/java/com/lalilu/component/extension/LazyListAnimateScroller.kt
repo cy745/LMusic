@@ -17,6 +17,7 @@ import androidx.dynamicanimation.animation.SpringForce
 import androidx.dynamicanimation.animation.springAnimationOf
 import androidx.dynamicanimation.animation.withSpringForceProperties
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -39,7 +40,10 @@ class LazyListAnimateScroller internal constructor(
     private val targetRange: MutableState<IntRange>,
     private val sizeMap: SnapshotStateMap<Int, Int>
 ) {
+    private var lastKey: Any? = null
     private val keyEvent: MutableSharedFlow<Any> = MutableSharedFlow(1)
+    private var exactAnimation: Boolean = false
+    private var reCalculateTimes: Int = 0
     val animator: SpringAnimation = springAnimationOf(
         getter = { currentValue.floatValue },
         setter = {
@@ -50,14 +54,37 @@ class LazyListAnimateScroller internal constructor(
     ).withSpringForceProperties {
         dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
         stiffness = SpringForce.STIFFNESS_VERY_LOW
+    }.addUpdateListener { animation, value, velocity ->
+        if (exactAnimation || reCalculateTimes >= 1) return@addUpdateListener
+
+        val progress = normalize(value, 0f, targetValue.floatValue)
+        if (progress > 0.95f && lastKey != null) {
+            reCalculateTimes += 1
+//            keyEvent.tryEmit(lastKey!!)
+            println("reCalculateTimes: $reCalculateTimes $progress")
+        }
     }.addEndListener { animation, canceled, value, velocity ->
         if (!canceled) {
             targetRange.value = IntRange.EMPTY
         }
     }
 
+    private fun normalize(value: Float, min: Float, max: Float): Float {
+        return ((value - min) / (max - min))
+            .coerceIn(0f, 1f)
+    }
+
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     internal suspend fun startLoop(scope: CoroutineScope) = withContext(scope.coroutineContext) {
+        snapshotFlow { targetValue.floatValue }
+            .onEach { animator.animateToFinalPosition(it) }
+            .launchIn(this)
+
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo }
+            .distinctUntilChanged()
+            .onEach { list -> list.forEach { sizeMap[it.index] = it.size } }
+            .launchIn(this)
+
         keyEvent.mapLatest { key ->
             // 1. 从当前可见元素直接查找offset （准确值）
             // get the offset directly from the visibleItemsInfo
@@ -66,13 +93,7 @@ class LazyListAnimateScroller internal constructor(
                 ?.offset
 
             if (offset != null) {
-                animator.cancel()
-                currentValue.floatValue = 0f
-                targetValue.floatValue =
-                    offset.toFloat() + Random(System.currentTimeMillis()).nextFloat() * 0.1f
-                // 添加随机值，为了确保能触发LaunchedEffect重组
-                // add random value to offset, to ensure that LaunchedEffect will be recomposed
-
+                doScroll(offset.toFloat(), true)
                 println("[visible target]: ${targetValue.floatValue}")
                 return@mapLatest null
             }
@@ -82,52 +103,66 @@ class LazyListAnimateScroller internal constructor(
             .collectLatest { key ->
                 if (key == null) return@collectLatest
 
-                // 2. 使用实时维护的sizeMap查找并计算目标元素的offset （非准确值）
-                // Use the real-time maintained sizeMap to find and calculate the offset of the target element
                 val index = keysKeeper().indexOfFirst { it == key }
                 if (index == -1) return@collectLatest // 元素不存在keys列表中，则不进行滚动
 
-                if (!isActive) return@collectLatest
-                val firstVisibleIndex = listState.firstVisibleItemIndex
-                val firstVisibleOffset = listState.firstVisibleItemScrollOffset
-                targetRange.value = minOf(firstVisibleIndex, index)..maxOf(firstVisibleIndex, index)
-
-                // 计算方向乘数，向下滚动则为正数
-                // calculate the direction multiplier, if scrolling down, it's positive
-                val forwardMultiple = if (index >= firstVisibleIndex) 1f else -1f
-
-                if (!isActive) return@collectLatest
-                // 计算目标距离，若未缓存有相应位置的值，则计算使用平均值
-                // calculate the target offset，if these no value cached then use the average value
-                val sizeAverage = sizeMap.values.average().toInt()
-                val sizeSum = targetRange.value.sumOf { sizeMap.getOrPut(it) { sizeAverage } }
-                val spacingSum =
-                    (targetRange.value.last - targetRange.value.first) * listState.layoutInfo.mainAxisItemSpacing
-                var offsetTemp = (sizeSum + spacingSum) * forwardMultiple
-
-                val firstVisibleHeight = listState.layoutInfo.visibleItemsInfo
-                    .getOrNull(firstVisibleIndex)?.size
-                    ?: sizeMap[firstVisibleIndex]
-                    ?: sizeAverage
-
-                // 针对firstVisibleItem的边界情况修正offset值
-                // fix the offset value for the boundary case of the firstVisibleItem
-                offsetTemp += if (forwardMultiple > 0) firstVisibleOffset else (firstVisibleOffset - firstVisibleHeight)
-
-                // 使用非准确值进行滚动
-                // use the non-accurate value for scrolling
-                if (!isActive) return@collectLatest
-                animator.cancel()
-                currentValue.floatValue = 0f
-                targetValue.floatValue =
-                    offsetTemp + Random(System.currentTimeMillis()).nextFloat() * 0.1f
-
-                println("[calculate target]: ${targetValue.floatValue} -> range: [${targetRange.value.first} -> ${targetRange.value.last}]")
+                // 2. 使用实时维护的sizeMap查找并计算目标元素的offset （非准确值）
+                // Use the real-time maintained sizeMap to find and calculate the offset of the target element
+                scrollTo(index)
             }
     }
 
     fun animateTo(key: Any) {
+        lastKey = key
         keyEvent.tryEmit(key)
+    }
+
+    private fun doScroll(
+        targetOffset: Float,
+        isExactScroll: Boolean = false
+    ) {
+        animator.cancel()
+        exactAnimation = isExactScroll
+        reCalculateTimes = 0
+        currentValue.floatValue = 0f
+        targetValue.floatValue = targetOffset +
+                Random(System.currentTimeMillis()).nextFloat() * 0.1f
+        // 添加随机值，为了确保能触发LaunchedEffect重组
+        // add random value to offset, to ensure that LaunchedEffect will be recomposed
+    }
+
+    private suspend fun scrollTo(index: Int) = withContext(Dispatchers.Unconfined) {
+        if (!isActive) return@withContext
+        val firstVisibleIndex = listState.firstVisibleItemIndex
+        val firstVisibleOffset = listState.firstVisibleItemScrollOffset
+        targetRange.value = minOf(firstVisibleIndex, index)..maxOf(firstVisibleIndex, index)
+
+        // 计算方向乘数，向下滚动则为正数
+        // calculate the direction multiplier, if scrolling down, it's positive
+        val forwardMultiple = if (index >= firstVisibleIndex) 1f else -1f
+
+        if (!isActive) return@withContext
+        // 计算目标距离，若未缓存有相应位置的值，则计算使用平均值
+        // calculate the target offset，if these no value cached then use the average value
+        val sizeAverage = sizeMap.values.average().toInt()
+        val sizeSum = targetRange.value.sumOf {
+            if (it == targetRange.value.last) return@sumOf 0
+            sizeMap.getOrPut(it) { sizeAverage }
+        }
+        val spacingSum = (targetRange.value.last - targetRange.value.first) *
+                listState.layoutInfo.mainAxisItemSpacing.toFloat()
+        var offsetTemp = sizeSum + spacingSum
+
+        // 针对firstVisibleItem的边界情况修正offset值
+        // fix the offset value for the boundary case of the firstVisibleItem
+        offsetTemp -= firstVisibleOffset * forwardMultiple
+
+        // 使用非准确值进行滚动
+        // use the non-accurate value for scrolling
+        if (!isActive) return@withContext
+        doScroll(offsetTemp * forwardMultiple, false)
+
+        println("[calculate target]: ${targetValue.floatValue} -> range: [${targetRange.value.first} -> ${targetRange.value.last}]")
     }
 }
 
@@ -165,30 +200,6 @@ fun rememberLazyListAnimateScroller(
     }
 
     LaunchedEffect(Unit) {
-        snapshotFlow { targetValue.floatValue }
-            .onEach { scroller.animator.animateToFinalPosition(it) }
-            .launchIn(this)
-
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo }
-            .distinctUntilChanged()
-            .onEach { list ->
-                for (item in list) {
-                    if (!isActive) break
-
-                    // 若当前更新的元素处于动画偏移值计算数据源的目标范围中
-                    if (item.index in targetRange.value && scroller.animator.isRunning) {
-                        val delta = item.size - (sizeMap[item.index] ?: 0)
-
-                        if (delta != 0) {
-                            // 则将变化值直接更新到targetValue，触发动画位移修正
-                            println("update targetValue:  [${item.index} -> $delta]")
-                            targetValue.floatValue += delta
-                        }
-                    }
-                    sizeMap[item.index] = item.size
-                }
-            }.launchIn(this)
-
         scroller.startLoop(this)
     }
 
