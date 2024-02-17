@@ -310,6 +310,11 @@ class NewSeekBar @JvmOverloads constructor(
         nowValue = value
     }
 
+    override fun onValueChange(value: Float) {
+        val actualValue = if (touching) value else dataValue
+        super.onValueChange(actualValue)
+    }
+
     fun setSwitchToCallback(vararg callbackPair: Pair<Drawable, () -> Unit>) {
         switchToCallbacks.clear()
         switchToCallbacks.addAll(callbackPair)
