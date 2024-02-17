@@ -39,6 +39,7 @@ import com.lalilu.ui.OnSeekBarCancelListener
 import com.lalilu.ui.OnSeekBarClickListener
 import com.lalilu.ui.OnSeekBarScrollToThresholdListener
 import com.lalilu.ui.OnSeekBarSeekToListener
+import com.lalilu.ui.OnValueChangeListener
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.compose.koinInject
@@ -47,6 +48,7 @@ import org.koin.compose.koinInject
 fun BoxScope.SeekbarLayout(
     modifier: Modifier = Modifier,
     seekBarModifier: Modifier = Modifier,
+    onValueChange: ((Long) -> Unit)? = null,
     settingsSp: SettingsSp = koinInject(),
     animateColor: State<Color>
 ) {
@@ -139,9 +141,16 @@ fun BoxScope.SeekbarLayout(
                         HapticUtils.haptic(this@apply)
                     })
 
+                    if (onValueChange != null) {
+                        onValueChangeListener.add(OnValueChangeListener {
+                            onValueChange(it.toLong())
+                        })
+                    }
+
                     LPlayer.runtime.info.durationFlow.collectWithLifeCycleOwner(activity) {
                         maxValue = it.takeIf { it > 0f }?.toFloat() ?: 0f
                     }
+
                     LPlayer.runtime.info.positionFlow.collectWithLifeCycleOwner(activity) {
                         updateValue(it.toFloat())
                     }

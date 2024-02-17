@@ -3,13 +3,10 @@ package com.lalilu.lmusic.compose.screen.playing
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideIn
-import androidx.compose.animation.slideOut
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -18,12 +15,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -41,7 +38,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
@@ -64,7 +60,9 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(
+    ExperimentalCoroutinesApi::class
+)
 @Composable
 fun PlayingLayout(
     playingVM: PlayingViewModel = singleViewModel(),
@@ -81,6 +79,7 @@ fun PlayingLayout(
     val animateColor = animateColorAsState(targetValue = backgroundColor.value, label = "")
     val scrollToTopEvent = remember { mutableStateOf(0L) }
 
+    val seekbarTime = remember { mutableLongStateOf(0L) }
     val draggable = rememberCustomAnchoredDraggableState { oldState, newState ->
         if (newState == DragAnchor.MiddleXMax && oldState != DragAnchor.MiddleXMax) {
             HapticUtils.haptic(view, HapticUtils.Strength.HAPTIC_STRONG)
@@ -229,7 +228,6 @@ fun PlayingLayout(
                         { x -> -2f * (x - 0.5f).pow(2) + 0.5f }
                     }
 
-                    val currentTime = LPlayer.runtime.info.positionFlow.collectAsState()
                     val lyricEntry = playingVM.lyricRepository.currentLyric
                         .mapLatest {
                             LyricUtil
@@ -311,7 +309,7 @@ fun PlayingLayout(
                             },
                         lyricEntry = lyricEntry,
                         listState = lyricLayoutLazyListState,
-                        currentTime = { currentTime.value },
+                        currentTime = { seekbarTime.longValue },
                         maxWidth = { this@BoxWithConstraints.constraints.maxWidth },
                         textSize = rememberTextSizeFromInt { settingsSp.lyricTextSize.value },
                         textAlign = rememberTextAlignFromGravity { settingsSp.lyricGravity.value },
@@ -379,20 +377,22 @@ fun PlayingLayout(
             }
         }
 
-        AnimatedVisibility(
+        val animateProgress = animateFloatAsState(
+            targetValue = if (!isLyricScrollEnable.value) 100f else 0f,
+            animationSpec = spring(stiffness = Spring.StiffnessLow),
+            label = ""
+        )
+
+        SeekbarLayout(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            visible = !isLyricScrollEnable.value,
-            label = "",
-            enter = fadeIn(tween(300)) + slideIn { IntOffset(0, 100) },
-            exit = fadeOut(tween(300)) + slideOut { IntOffset(0, 100) }
-        ) {
-            SeekbarLayout(
-                seekBarModifier = Modifier.hideControl(enable = { hideComponent.value }),
-                animateColor = animateColor
-            )
-        }
+                .graphicsLayer {
+                    alpha = animateProgress.value / 100f
+                    translationY = (1f - animateProgress.value / 100f) * 500f
+                },
+            seekBarModifier = Modifier.hideControl(enable = { hideComponent.value }),
+            currentTime = seekbarTime,
+            animateColor = animateColor
+        )
     }
 }
