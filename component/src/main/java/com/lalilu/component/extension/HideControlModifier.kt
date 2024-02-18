@@ -57,8 +57,7 @@ fun Modifier.hideControl(
         }
     }
 
-    this
-        .alpha(animateAlpha.value / 100f)
+    this.alpha(animateAlpha.value / 100f)
         .enableFor(enable = enable) {
             pointerInput(Unit) {
                 awaitPointerEventScope {
