@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.lmedia.extension.ListAction
 
 /**
@@ -55,7 +56,7 @@ fun SortPanel(
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(start = 15.dp, end = 15.dp, bottom = 20.dp),
-        border = BorderStroke(1.dp, Color.DarkGray),
+        border = BorderStroke(1.dp, dayNightTextColor(0.1f)),
         shape = RoundedCornerShape(18.dp),
         elevation = 10.dp
     ) {
