@@ -66,6 +66,7 @@ fun Modifier.hideControl(
 
                         if (event.type == PointerEventType.Press) {
                             isHide.value = false
+                            showEvent.longValue = -1L
                         }
 
                         if (event.type == PointerEventType.Release) {
