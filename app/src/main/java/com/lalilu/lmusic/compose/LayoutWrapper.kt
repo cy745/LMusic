@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.compose
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -9,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.extension.DialogWrapper
+import com.lalilu.component.extension.DynamicTipsHost
 import com.lalilu.component.extension.rememberIsPad
 import com.lalilu.lmusic.compose.screen.ShowScreen
 import com.lalilu.lmusic.compose.screen.playing.PlayingLayout
@@ -16,7 +18,7 @@ import com.lalilu.lmusic.compose.screen.playing.PlayingLayout
 object LayoutWrapper {
 
     @Composable
-    fun Content(windowSize: WindowSizeClass = LocalWindowSize.current) {
+    fun BoxScope.Content(windowSize: WindowSizeClass = LocalWindowSize.current) {
         val configuration = LocalConfiguration.current
         val isPad by windowSize.rememberIsPad()
         val isLandscape by remember(configuration.orientation) {
@@ -39,5 +41,7 @@ object LayoutWrapper {
         }
 
         DialogWrapper.Content()
+
+        with(DynamicTipsHost) { Content() }
     }
 }

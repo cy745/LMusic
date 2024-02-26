@@ -21,9 +21,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
+import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.extension.collectWithLifeCycleOwner
 import com.lalilu.lmusic.compose.NavigationWrapper
-import com.lalilu.lmusic.compose.component.DynamicTips
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
@@ -72,24 +72,24 @@ fun BoxScope.SeekbarLayout(
                     setSwitchToCallback(
                         ContextCompat.getDrawable(context, R.drawable.ic_shuffle_line)!! to {
                             settingsSp.playMode.value = PlayMode.Shuffle.value
-                            DynamicTips.push(
+                            DynamicTipsItem.Static(
                                 title = "随机播放",
                                 subTitle = "随机播放将触发列表重排序"
-                            )
+                            ).show()
                         },
                         ContextCompat.getDrawable(context, R.drawable.ic_order_play_line)!! to {
                             settingsSp.playMode.value = PlayMode.ListRecycle.value
-                            DynamicTips.push(
+                            DynamicTipsItem.Static(
                                 title = "列表循环",
                                 subTitle = "循环循环循环"
-                            )
+                            ).show()
                         },
                         ContextCompat.getDrawable(context, R.drawable.ic_repeat_one_line)!! to {
                             settingsSp.playMode.value = PlayMode.RepeatOne.value
-                            DynamicTips.push(
+                            DynamicTipsItem.Static(
                                 title = "单曲循环",
                                 subTitle = "循环循环循环"
-                            )
+                            ).show()
                         }
                     )
 

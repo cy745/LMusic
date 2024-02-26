@@ -57,6 +57,8 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.extension.DynamicTipsHost
+import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.rememberScrollPosition
 import com.lalilu.component.navigation.GlobalNavigator
@@ -93,7 +95,15 @@ data class SongDetailScreen(
                 ScreenAction.StaticAction(
                     title = R.string.button_set_song_to_next,
                     color = Color(0xFF00AC84),
-                    onAction = { QueueAction.AddToNext(mediaId).action() }
+                    onAction = {
+                        val song = LMedia.get<LSong>(id = mediaId) ?: return@StaticAction
+                        QueueAction.AddToNext(song.mediaId).action()
+                        DynamicTipsItem.Static(
+                            title = song.title,
+                            subTitle = "下一首播放",
+                            imageData = song.imageSource
+                        ).show()
+                    }
                 ),
                 ScreenAction.ComposeAction {
                     val state = DetailScreenLikeBtnPresenter(mediaId)
