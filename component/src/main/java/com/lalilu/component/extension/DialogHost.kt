@@ -109,70 +109,70 @@ object DialogWrapper : DialogHost, DialogContext {
 
     @Composable
     override fun Content() {
-        if (dialogItem != null) {
-            val isActiveClose by remember {
-                mutableStateOf(false)
-                    .also { dismissFunc = { it.value = true } }
-            }
-
-            val properties = remember(dialogItem) {
-                dialogItem?.let {
-                    when (it) {
-                        is DialogItem.Dynamic -> it.properties
-                        is DialogItem.Static -> it.properties
-                    }
-                } ?: DEFAULT_DIALOG_PROPERTIES
-            }
-
-            val backgroundColor = remember(dialogItem) {
-                dialogItem?.let {
-                    when (it) {
-                        is DialogItem.Dynamic -> it.backgroundColor
-                        is DialogItem.Static -> it.backgroundColor
-                    }
-                }
-            }
-
-            AnyPopDialog(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 0.dp)
-                    .background(color = backgroundColor ?: MaterialTheme.colors.background),
-                isActiveClose = isActiveClose,
-                properties = properties,
-                onDismiss = {
-                    dialogItem?.let {
-                        when (it) {
-                            is DialogItem.Dynamic -> it.onDismiss.invoke()
-                            is DialogItem.Static -> it.onDismiss.invoke()
-                        }
-                    }
-                    dialogItem = null
-                },
-                content = {
-                    dialogItem?.let {
-                        when (it) {
-                            is DialogItem.Static -> {
-                                StaticDialogCard(
-                                    title = it.title,
-                                    message = it.message,
-                                    onConfirm = {
-                                        dismiss()
-                                        it.onConfirm()
-                                    },
-                                    onCancel = {
-                                        dismiss()
-                                        it.onCancel()
-                                    }
-                                )
-                            }
-
-                            is DialogItem.Dynamic -> it.content.invoke(this@DialogWrapper)
-                        }
-                    }
-                }
-            )
+        if (dialogItem == null) return
+        
+        val isActiveClose by remember {
+            mutableStateOf(false)
+                .also { dismissFunc = { it.value = true } }
         }
+
+        val properties = remember(dialogItem) {
+            dialogItem?.let {
+                when (it) {
+                    is DialogItem.Dynamic -> it.properties
+                    is DialogItem.Static -> it.properties
+                }
+            } ?: DEFAULT_DIALOG_PROPERTIES
+        }
+
+        val backgroundColor = remember(dialogItem) {
+            dialogItem?.let {
+                when (it) {
+                    is DialogItem.Dynamic -> it.backgroundColor
+                    is DialogItem.Static -> it.backgroundColor
+                }
+            }
+        }
+
+        AnyPopDialog(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 0.dp)
+                .background(color = backgroundColor ?: MaterialTheme.colors.background),
+            isActiveClose = isActiveClose,
+            properties = properties,
+            onDismiss = {
+                dialogItem?.let {
+                    when (it) {
+                        is DialogItem.Dynamic -> it.onDismiss.invoke()
+                        is DialogItem.Static -> it.onDismiss.invoke()
+                    }
+                }
+                dialogItem = null
+            },
+            content = {
+                dialogItem?.let {
+                    when (it) {
+                        is DialogItem.Static -> {
+                            StaticDialogCard(
+                                title = it.title,
+                                message = it.message,
+                                onConfirm = {
+                                    dismiss()
+                                    it.onConfirm()
+                                },
+                                onCancel = {
+                                    dismiss()
+                                    it.onCancel()
+                                }
+                            )
+                        }
+
+                        is DialogItem.Dynamic -> it.content.invoke(this@DialogWrapper)
+                    }
+                }
+            }
+        )
     }
 }
 

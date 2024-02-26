@@ -60,9 +60,7 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 
-@OptIn(
-    ExperimentalCoroutinesApi::class
-)
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun PlayingLayout(
     playingVM: PlayingViewModel = singleViewModel(),
@@ -391,7 +389,7 @@ fun PlayingLayout(
                     translationY = (1f - animateProgress.value / 100f) * 500f
                 },
             seekBarModifier = Modifier.hideControl(enable = { hideComponent.value }),
-            currentTime = seekbarTime,
+            onValueChange = { seekbarTime.longValue = it },
             animateColor = animateColor
         )
     }
