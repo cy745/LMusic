@@ -40,11 +40,9 @@ class LazyListAnimateScroller internal constructor(
     private val targetRange: MutableState<IntRange>,
     private val sizeMap: SnapshotStateMap<Int, Int>
 ) {
-    private var lastKey: Any? = null
     private val keyEvent: MutableSharedFlow<Any> = MutableSharedFlow(1)
     private var exactAnimation: Boolean = false
-    private var reCalculateTimes: Int = 0
-    val animator: SpringAnimation = springAnimationOf(
+    private val animator: SpringAnimation = springAnimationOf(
         getter = { currentValue.floatValue },
         setter = {
             deltaValue.floatValue = it - currentValue.floatValue
@@ -54,24 +52,10 @@ class LazyListAnimateScroller internal constructor(
     ).withSpringForceProperties {
         dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
         stiffness = SpringForce.STIFFNESS_VERY_LOW
-    }.addUpdateListener { animation, value, velocity ->
-        if (exactAnimation || reCalculateTimes >= 1) return@addUpdateListener
-
-        val progress = normalize(value, 0f, targetValue.floatValue)
-        if (progress > 0.95f && lastKey != null) {
-            reCalculateTimes += 1
-//            keyEvent.tryEmit(lastKey!!)
-            println("reCalculateTimes: $reCalculateTimes $progress")
-        }
     }.addEndListener { animation, canceled, value, velocity ->
         if (!canceled) {
             targetRange.value = IntRange.EMPTY
         }
-    }
-
-    private fun normalize(value: Float, min: Float, max: Float): Float {
-        return ((value - min) / (max - min))
-            .coerceIn(0f, 1f)
     }
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -113,7 +97,6 @@ class LazyListAnimateScroller internal constructor(
     }
 
     fun animateTo(key: Any) {
-        lastKey = key
         keyEvent.tryEmit(key)
     }
 
@@ -123,7 +106,6 @@ class LazyListAnimateScroller internal constructor(
     ) {
         animator.cancel()
         exactAnimation = isExactScroll
-        reCalculateTimes = 0
         currentValue.floatValue = 0f
         targetValue.floatValue = targetOffset +
                 Random(System.currentTimeMillis()).nextFloat() * 0.1f
