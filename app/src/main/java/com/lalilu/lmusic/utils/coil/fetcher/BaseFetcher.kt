@@ -25,9 +25,17 @@ abstract class BaseFetcher : Fetcher {
     }
 
     protected suspend fun fetchCoverByRetriever(context: Context, song: LSong): InputStream? {
-        return MediaMetadataRetriever().use { retriever ->
+        val retriever = MediaMetadataRetriever()
+
+        return try {
             retriever.setDataSource(context, song.uri)
-            retriever.embeddedPicture?.let { ByteArrayInputStream(it) }
+            retriever.embeddedPicture?.inputStream()
+        } catch (e: Exception) {
+            LogUtils.e(song, e)
+            null
+        } finally {
+            retriever.close()
+            retriever.release()
         }
     }
 
@@ -38,7 +46,7 @@ abstract class BaseFetcher : Fetcher {
                 null
             }?.use { fileDescriptor ->
                 Taglib.getPictureWithFD(fileDescriptor.detachFd())
-                    ?.let { ByteArrayInputStream(it) }
+                    ?.inputStream()
             }
     }
 
