@@ -1,20 +1,25 @@
 package com.lalilu.lplayer.playback
 
-interface Playback<T> {
-    var playbackListener: Listener<T>?
-    var queue: PlayQueue<T>?
-    var player: Player?
-    var playMode: PlayMode
+import android.support.v4.media.session.MediaSessionCompat
+import com.lalilu.lplayer.extensions.AudioFocusHelper
+import com.lalilu.lplayer.extensions.PlayerAction
 
-    fun changeToPlayer(changeTo: Player)
-    fun setMaxVolume(volume: Int)
-    fun onCustomActionIn(action: PlaybackAction?)
-    fun preloadNextItem()
-    fun handleCustomAction(action: String?) {
-        onCustomActionIn(PlaybackAction.of(action))
-    }
+abstract class Playback<T> : MediaSessionCompat.Callback() {
+    abstract var audioFocusHelper: AudioFocusHelper?
+    abstract var playbackListener: Listener<T>?
+    abstract var queue: UpdatableQueue<T>?
+    abstract var player: Player?
+    abstract var playMode: PlayMode
 
-    fun destroy()
+    abstract fun pauseWhenCompletion()
+    abstract fun cancelPauseWhenCompletion()
+
+    abstract fun readyToUse(): Boolean
+    abstract fun changeToPlayer(changeTo: Player)
+    abstract fun setMaxVolume(volume: Int)
+    abstract fun preloadNextItem()
+    abstract fun destroy()
+    abstract fun handleCustomAction(action: PlayerAction.CustomAction)
 
     interface Listener<T> {
         fun onPlayInfoUpdate(item: T?, playbackState: Int, position: Long)
@@ -22,13 +27,5 @@ interface Playback<T> {
         fun onItemPlay(item: T)
         fun onItemPause(item: T)
         fun onPlayerCreated(id: Any)
-    }
-
-    enum class PlaybackAction {
-        PlayPause, ReloadAndPlay;
-
-        companion object {
-            fun of(name: String?): PlaybackAction? = values().firstOrNull { it.name == name }
-        }
     }
 }

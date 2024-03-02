@@ -33,8 +33,8 @@ import com.airbnb.lottie.compose.*
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.utils.coil.requirePalette
-import com.lalilu.lmusic.utils.extension.dayNightTextColor
+import com.lalilu.component.extension.requirePalette
+import com.lalilu.component.extension.dayNightTextColor
 
 @Composable
 fun RecommendCardForAlbum(
@@ -82,7 +82,7 @@ fun RecommendCard(
         contentModifier = contentModifier,
         imageData = { song },
         title = { song.name },
-        subTitle = { song._artist },
+        subTitle = { song.metadata.artist },
         isPlaying = isPlaying,
         width = width,
         height = height,

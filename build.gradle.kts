@@ -1,6 +1,17 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id("com.android.application").version("8.2.0-alpha13").apply(false)
-    id("org.jetbrains.kotlin.android").version("1.9.0").apply(false)
-    id("com.google.devtools.ksp").version("1.9.0-1.0.11").apply(false)
+    alias(libs.plugins.application) apply false
+    alias(libs.plugins.library) apply false
+    alias(libs.plugins.kotlin) apply false
+    alias(libs.plugins.ksp) apply false
+}
+
+gradle.taskGraph.whenReady {
+    allTasks.onEach {
+        // 避免ksp类型任务被跳过
+        if (it.name.startsWith("ksp") && it.name.endsWith("Kotlin")) {
+            it.setOnlyIf { true }
+            it.outputs.upToDateWhen { false }
+        }
+    }
 }

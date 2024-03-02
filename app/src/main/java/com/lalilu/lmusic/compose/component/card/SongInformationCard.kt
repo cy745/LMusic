@@ -21,10 +21,11 @@ import java.text.SimpleDateFormat
 
 @Composable
 fun SongInformationCard(
+    modifier: Modifier = Modifier,
     song: LSong
 ) {
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 20.dp)
             .width(intrinsicSize = IntrinsicSize.Min),
         shape = RoundedCornerShape(20.dp)
@@ -35,7 +36,7 @@ fun SongInformationCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            song.mimeType.let { mimeType ->
+            song.fileInfo.mimeType.let { mimeType ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -62,12 +63,12 @@ fun SongInformationCard(
                     style = MaterialTheme.typography.subtitle2
                 )
                 Text(
-                    text = ConvertUtils.byte2FitMemorySize(song.size),
+                    text = ConvertUtils.byte2FitMemorySize(song.fileInfo.size),
                     style = MaterialTheme.typography.caption
                 )
             }
 
-            song.dateAdded?.let { date ->
+            song.metadata.dateAdded.let { date ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -84,13 +85,13 @@ fun SongInformationCard(
                 }
             }
 
-            if (song.disc != null || song.track != null) {
+            if (song.metadata.disc.isNotBlank() || song.metadata.track.isNotBlank()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    song.disc?.let { disc ->
+                    song.metadata.disc.takeIf { it.isNotBlank() }?.let { disc ->
                         Row(
                             modifier = Modifier
                                 .weight(1f)
@@ -103,12 +104,12 @@ fun SongInformationCard(
                                 style = MaterialTheme.typography.subtitle2
                             )
                             Text(
-                                text = disc.toString(),
+                                text = disc,
                                 style = MaterialTheme.typography.caption
                             )
                         }
                     }
-                    song.track?.let { track ->
+                    song.metadata.track.takeIf { it.isNotBlank() }?.let { track ->
                         Row(
                             modifier = Modifier
                                 .weight(1f)
@@ -121,7 +122,7 @@ fun SongInformationCard(
                                 style = MaterialTheme.typography.subtitle2
                             )
                             Text(
-                                text = track.toString(),
+                                text = track,
                                 style = MaterialTheme.typography.caption
                             )
                         }
@@ -129,7 +130,7 @@ fun SongInformationCard(
                 }
             }
 
-            song.pathStr?.let { path ->
+            song.fileInfo.pathStr?.takeIf { it.isNotBlank() }?.let { path ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.Top,

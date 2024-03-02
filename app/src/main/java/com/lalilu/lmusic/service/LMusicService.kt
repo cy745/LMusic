@@ -1,14 +1,14 @@
 package com.lalilu.lmusic.service
 
 import android.content.Intent
-import com.lalilu.lmedia.entity.HISTORY_TYPE_SONG
-import com.lalilu.lmedia.entity.LHistory
-import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.repository.HistoryRepository
+import com.lalilu.common.base.Playable
+import com.lalilu.lhistory.repository.HistoryRepository
 import com.lalilu.lmusic.Config
+import com.lalilu.lhistory.entity.HISTORY_TYPE_SONG
+import com.lalilu.lhistory.entity.LHistory
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
-import com.lalilu.lmusic.utils.extension.collectWithLifeCycleOwner
+import com.lalilu.component.extension.collectWithLifeCycleOwner
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.AudioFocusHelper
 import com.lalilu.lplayer.playback.PlayMode
@@ -18,9 +18,6 @@ import org.koin.android.ext.android.inject
 class LMusicService : LService() {
     private val intent: Intent by lazy { Intent(this@LMusicService, LMusicService::class.java) }
     override fun getStartIntent(): Intent = intent
-    override fun getLoopDelay(isPlaying: Boolean): Long {
-        return if (isPlaying) 50L else 0L
-    }
 
     private val historyRepo: HistoryRepository by inject()
     private val settingsSp: SettingsSp by inject()
@@ -39,7 +36,7 @@ class LMusicService : LService() {
                 }
             playMode.flow(true)
                 .collectWithLifeCycleOwner(this@LMusicService) {
-                    it?.let { playback.onSetPlayMode(PlayMode.of(it)) }
+                    it?.let { playback.playMode = PlayMode.of(it) }
                 }
             ignoreAudioFocus.flow(true)
                 .collectWithLifeCycleOwner(this@LMusicService) {
@@ -54,7 +51,7 @@ class LMusicService : LService() {
             LPlayer.ACTION_SET_REPEAT_MODE -> {
                 val playMode = extras?.getInt(PlayMode.KEY)?.takeIf { it in 0..2 }
 
-                playMode?.let { settingsSp.playMode.set(it) }
+                playMode?.let { settingsSp.playMode.value = it }
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -63,12 +60,12 @@ class LMusicService : LService() {
     private var lastMediaId: String? = null
     private var startTime: Long = 0L
     private var duration: Long = 0L
-    override fun onItemPlay(item: LSong) {
+    override fun onItemPlay(item: Playable) {
         val now = System.currentTimeMillis()
         if (startTime > 0) duration += now - startTime
 
         // 若切歌了或者播放时长超过阈值，更新或删除上一首歌的历史记录
-        if (lastMediaId != item.id || duration >= Config.HISTORY_DURATION_THRESHOLD || duration >= item.durationMs) {
+        if (lastMediaId != item.mediaId || duration >= Config.HISTORY_DURATION_THRESHOLD || duration >= item.durationMs) {
             if (lastMediaId != null) {
                 if (duration >= Config.HISTORY_DURATION_THRESHOLD) {
                     historyRepo.updatePreSavedHistory(
@@ -83,7 +80,7 @@ class LMusicService : LService() {
             // 将当前播放的歌曲预保存添加到历史记录中
             historyRepo.preSaveHistory(
                 LHistory(
-                    contentId = item.id,
+                    contentId = item.mediaId,
                     duration = -1L,
                     startTime = now,
                     type = HISTORY_TYPE_SONG
@@ -93,12 +90,12 @@ class LMusicService : LService() {
         }
 
         startTime = now
-        lastMediaId = item.id
+        lastMediaId = item.mediaId
     }
 
-    override fun onItemPause(item: LSong) {
+    override fun onItemPause(item: Playable) {
         // 判断当前暂停时的歌曲是否是最近正在播放的歌曲
-        if (lastMediaId != item.id) return
+        if (lastMediaId != item.mediaId) return
 
         // 将该歌曲目前为止播放的时间加到历史记录中
         if (startTime > 0) {

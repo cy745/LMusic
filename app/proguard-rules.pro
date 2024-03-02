@@ -20,55 +20,32 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# retrofit 使用的所有bean都不可以混淆
--keep  class com.lalilu.lmusic.apis.bean.** { *; }
-
-# jaudiotagger release打包后可能会出现MP3格式无法读取歌词的问题
--keep class org.jaudiotagger.tag.** { *; }
-
--dontwarn org.jaudiotagger.**
--dontwarn java.awt.Graphics2D
--dontwarn java.awt.Image
--dontwarn java.awt.geom.AffineTransform
--dontwarn java.awt.image.BufferedImage
--dontwarn java.awt.image.ImageObserver
--dontwarn java.awt.image.RenderedImage
--dontwarn javax.imageio.ImageIO
--dontwarn javax.imageio.ImageWriter
--dontwarn javax.imageio.stream.ImageInputStream
--dontwarn javax.imageio.stream.ImageOutputStream
-
--dontwarn org.bouncycastle.jsse.BCSSLParameters
--dontwarn org.bouncycastle.jsse.BCSSLSocket
--dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
--dontwarn org.conscrypt.Conscrypt$Version
--dontwarn org.conscrypt.Conscrypt
--dontwarn org.conscrypt.ConscryptHostnameVerifier
--dontwarn org.openjsse.javax.net.ssl.SSLParameters
--dontwarn org.openjsse.javax.net.ssl.SSLSocket
--dontwarn org.openjsse.net.ssl.OpenJSSE
-
--dontwarn org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
--dontwarn org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
--dontwarn org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages$Extension
-
+# Gson反射所需混淆规则
 -keep class com.google.gson.reflect.TypeToken
 -keep class * extends com.google.gson.reflect.TypeToken
 -keep public class * implements java.lang.reflect.Type
 
--keep class com.simple.spiderman.** { *; }
--keepnames class com.simple.spiderman.** { *; }
--keep public class * extends android.app.Activity
--keep class * implements android.os.Parcelable {
-    public static final android.os.Parcelable$Creator *;
+# AndroidAop必备混淆规则
+#-keep class * { @androidx.annotation.Keep <fields>; }
+-keepnames class * implements com.flyjingfish.android_aop_annotation.base.BasePointCut
+-keepnames class * implements com.flyjingfish.android_aop_annotation.base.MatchClassMethod
+-keep class * implements com.flyjingfish.android_aop_annotation.base.BasePointCut{
+    public <init>();
 }
-# support
--keep public class * extends android.support.annotation.** { *; }
-# androidx
--keep public class * extends androidx.annotation.** { *; }
--keep public class * extends androidx.core.content.FileProvider
+-keep class * implements com.flyjingfish.android_aop_annotation.base.MatchClassMethod{
+    public <init>();
+}
+
+# AndroidFilePicker相关
+-dontwarn com.bumptech.glide.Glide
+-dontwarn com.bumptech.glide.RequestBuilder
+-dontwarn com.bumptech.glide.RequestManager
+-dontwarn com.bumptech.glide.request.BaseRequestOptions
+-dontwarn com.bumptech.glide.request.target.ViewTarget
+-dontwarn com.squareup.picasso.Picasso
+-dontwarn com.squareup.picasso.RequestCreator
 
 # 墨 · 状态栏歌词
 -keep class StatusBarLyric.API.StatusBarLyric { *; }
 
--printmapping mapping.txt
+-printmapping ../mapping.txt

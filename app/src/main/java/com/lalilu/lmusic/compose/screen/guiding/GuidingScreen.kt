@@ -1,45 +1,78 @@
 package com.lalilu.lmusic.compose.screen.guiding
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.with
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
+import cafe.adriel.voyager.navigator.Navigator
 import com.lalilu.R
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.rememberIsPad
+import com.lalilu.component.base.CustomScreen
+import com.lalilu.lmusic.compose.component.CustomTransition
+import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.extension.rememberIsPad
 
 @Composable
 @OptIn(ExperimentalAnimationApi::class)
-fun GuidingScreen(
-    navController: NavHostController = LocalNavigatorHost.current
-) {
+fun GuidingScreen() {
     val windowSize = LocalWindowSize.current
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp +
             WindowInsets.statusBars.asPaddingValues().calculateTopPadding() +
             WindowInsets.navigationBars.asPaddingValues().calculateTopPadding()
 
-    val currentBackStack by navController.currentBackStackEntryAsState()
-    val destination = currentBackStack?.destination?.route.let {
-        GuidingNavGraph.fromRoute(it)
-    }
-
     val isPad by windowSize.rememberIsPad()
+    val navigatorState = remember { mutableStateOf<Navigator?>(null) }
+    val backStackSize = remember { derivedStateOf { navigatorState.value?.items?.size ?: 0 } }
+    val showPopUpBtn = remember { derivedStateOf { backStackSize.value > 1 } }
+    val currentScreenTitleRes by remember {
+        derivedStateOf {
+            (navigatorState.value?.lastItemOrNull as? CustomScreen)
+                ?.getScreenInfo()
+                ?.title
+                ?: R.string.app_name
+        }
+    }
 
     Surface(color = MaterialTheme.colors.background) {
         Box(
@@ -61,8 +94,8 @@ fun GuidingScreen(
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    AnimatedVisibility(visible = (GuidingNavGraph.getIndex(destination) != 0)) {
-                        IconButton(onClick = { navController.navigateUp() }) {
+                    AnimatedVisibility(visible = showPopUpBtn.value) {
+                        IconButton(onClick = { navigatorState.value?.pop() }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_arrow_left_s_line),
                                 contentDescription = "navigateUp"
@@ -76,44 +109,33 @@ fun GuidingScreen(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.Start
                     ) {
-                        AnimatedContent(targetState = destination, transitionSpec = {
+                        AnimatedContent(targetState = currentScreenTitleRes, transitionSpec = {
                             (slideInVertically { height -> height } + fadeIn() with
                                     slideOutVertically { height -> -height } + fadeOut()).using(
                                 SizeTransform(clip = false)
                             )
-                        }) {
-                            Text(text = it?.title ?: "", fontSize = 22.sp)
+                        }, label = "") {
+                            Text(text = stringResource(id = it), fontSize = 22.sp)
                         }
                         Text(
-                            text = "${GuidingNavGraph.getIndex(destination) + 1} / ${GuidingNavGraph.values().size}",
+                            text = "${backStackSize.value} / 3",
                             fontSize = 16.sp,
                             color = Color.Gray
                         )
                     }
                 }
-                NavHost(
-                    navController = navController,
-                    startDestination = GuidingNavGraph.Agreement.name,
-                    exitTransition = { ExitTransition.None },
-                    enterTransition = {
-                        fadeIn(animationSpec = tween(durationMillis = 300)) +
-                                slideInVertically { 100 }
-                    }
-                ) {
-                    composable(
-                        route = GuidingNavGraph.Agreement.name
+                Navigator(
+                    AgreementScreen(
+                        nextScreen = PermissionsScreen(
+                            nextScreen = SeekbarGuidingScreen
+                        )
+                    )
+                ) { navigator ->
+                    navigatorState.value = navigator
+                    CustomTransition(
+                        navigator = navigator
                     ) {
-                        AgreementPage(navController)
-                    }
-                    composable(
-                        route = GuidingNavGraph.Permissions.name
-                    ) {
-                        PermissionsPage(navController)
-                    }
-                    composable(
-                        route = GuidingNavGraph.SeekbarGuiding.name
-                    ) {
-                        SeekbarGuidingPage()
+                        it.Content()
                     }
                 }
             }
@@ -135,7 +157,7 @@ fun CheckActionCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             content()
-            Crossfade(targetState = isPassed) {
+            Crossfade(targetState = isPassed, label = "") {
                 if (it) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_check_line),
@@ -191,42 +213,6 @@ fun ActionCard(
                     }
                 }
             }
-        }
-    }
-}
-
-enum class GuidingNavGraph(
-    val title: String
-) {
-    Agreement(title = "用户协议 | 隐私协议"),
-    Permissions(title = "必要权限授予"),
-    SeekbarGuiding(title = "基础引导教程");
-
-    fun getNext(): GuidingNavGraph? {
-        return getNext(this)
-    }
-
-    fun navigate(navController: NavController) {
-        navController.navigate(this.name)
-    }
-
-    companion object {
-        fun fromRoute(route: String?): GuidingNavGraph? {
-            val target = route?.substringBefore("/")
-            return values().find { it.name == target }
-        }
-
-        fun fromIndex(index: Int): GuidingNavGraph? {
-            return values().getOrNull(index)
-        }
-
-        fun getIndex(destination: GuidingNavGraph?): Int {
-            destination ?: return -1
-            return values().indexOf(destination)
-        }
-
-        fun getNext(destination: GuidingNavGraph?): GuidingNavGraph? {
-            return fromIndex(getIndex(destination) + 1)
         }
     }
 }

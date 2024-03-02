@@ -4,8 +4,9 @@ import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import coil.fetch.Fetcher
-import com.lalilu.lmedia.entity.LAlbum
+import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.wrapper.Taglib
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
@@ -17,51 +18,42 @@ import java.io.InputStream
 abstract class BaseFetcher : Fetcher {
 
     open suspend fun fetchForSong(context: Context, song: LSong): InputStream? {
-        return fetchAospMetadataCovers(context, song)
-            ?: fetchMediaStoreCovers(context, song)
-            ?: song.album?.let { fetchForAlbum(context, it) }
+        return fetchCoverByTaglib(context, song)
+            ?: fetchMediaStoreCovers(context, song.albumCoverUri)
+            ?: fetchMediaStoreCovers(context, song.artworkUri)
+            ?: fetchCoverByRetriever(context, song)
     }
 
-    open suspend fun fetchForAlbum(context: Context, album: LAlbum): InputStream? {
-        return fetchMediaStoreCovers(context, album)
-            ?: fetchAospMetadataCovers(context, album)
-    }
+    protected suspend fun fetchCoverByRetriever(context: Context, song: LSong): InputStream? {
+        val retriever = MediaMetadataRetriever()
 
-    private fun fetchAospMetadataCovers(context: Context, album: LAlbum): InputStream? {
-        var result: InputStream? = null
-        for (song in album.songs) {
-            result = fetchAospMetadataCovers(context, song)
-            if (result != null) break
-        }
-        return result
-    }
-
-    private fun fetchAospMetadataCovers(context: Context, song: LSong): InputStream? {
-        MediaMetadataRetriever().apply {
-            // This call is time-consuming but it also doesn't seem to hold up the main thread,
-            // so it's probably fine not to wrap it.rmt
-            setDataSource(context, song.uri)
-
-            // Get the embedded picture from MediaMetadataRetriever, which will return a full
-            // ByteArray of the cover without any compression artifacts.
-            // If its null [i.e there is no embedded cover], than just ignore it and move on
-            return embeddedPicture?.let { ByteArrayInputStream(it) }.also { release() }
+        return try {
+            retriever.setDataSource(context, song.uri)
+            retriever.embeddedPicture?.inputStream()
+        } catch (e: Exception) {
+            LogUtils.e(song, e)
+            null
+        } finally {
+            retriever.close()
+            retriever.release()
         }
     }
 
-    private suspend fun fetchMediaStoreCovers(context: Context, album: LAlbum): InputStream? {
-        val uri = album.coverUri ?: return null
-
-        return fetchMediaStoreCovers(context, uri)
+    protected suspend fun fetchCoverByTaglib(context: Context, song: LSong): ByteArrayInputStream? {
+        return runCatching { context.contentResolver.openFileDescriptor(song.uri, "r") }
+            .getOrElse {
+                LogUtils.e(song, it)
+                null
+            }?.use { fileDescriptor ->
+                Taglib.getPictureWithFD(fileDescriptor.detachFd())
+                    ?.inputStream()
+            }
     }
 
-    private suspend fun fetchMediaStoreCovers(context: Context, song: LSong): InputStream? {
-        val uri = song.albumCoverUri
-
-        return fetchMediaStoreCovers(context, uri)
-    }
-
-    private suspend fun fetchMediaStoreCovers(context: Context, uri: Uri?): InputStream? {
+    /**
+     * 非音频文件Uri，而是已经缓存在MediaStore中的图片文件Uri
+     */
+    protected suspend fun fetchMediaStoreCovers(context: Context, uri: Uri?): InputStream? {
         uri ?: return null
 
         return withContext(Dispatchers.IO) {

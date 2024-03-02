@@ -67,7 +67,7 @@
         app:layout_constraintTop_toTopOf="@+id/song_singer"
         tools:text="@tools:sample/date/hhmm" />
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/song_type"
         android:layout_width="wrap_content"
         android:layout_height="20dp"
@@ -78,7 +78,7 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:srcCompat="@drawable/ic_flac_line" />
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/song_lrc"
         android:layout_width="wrap_content"
         android:layout_height="20dp"

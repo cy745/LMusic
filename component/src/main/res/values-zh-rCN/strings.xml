@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="select_action_title_select_all">全选</string>
+    <string name="select_action_title_clear_all">清空</string>
+    <string name="empty_screen_no_items">无元素</string>
+</resources>

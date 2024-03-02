@@ -21,7 +21,7 @@ jobs:
           clean: true
           fetch-depth: 1
           lfs: false
-          submodules: true
+          submodules: recursive
 
       - name: Create the Keystore from Secrets to Sign the App
         env:

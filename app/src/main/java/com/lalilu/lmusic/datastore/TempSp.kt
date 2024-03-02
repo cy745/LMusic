@@ -3,12 +3,13 @@ package com.lalilu.lmusic.datastore
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import com.lalilu.common.base.BaseSp
 
-class TempSp(context: Context) : BaseSp() {
-    override val sp: SharedPreferences by lazy {
-        context.getSharedPreferences(context.packageName + "_TEMP", Application.MODE_PRIVATE)
+class TempSp(private val context: Context) : BaseSp() {
+    override fun obtainSourceSp(): SharedPreferences {
+        return context.getSharedPreferences(context.packageName + "_TEMP", Application.MODE_PRIVATE)
     }
 
-    val dayOfYear = intSp("DAY_OF_YEAR")
-    val dailyRecommends = stringListSp("DAILY_RECOMMENDS")
+    val dayOfYear = obtain<Int>("DAY_OF_YEAR")
+    val dailyRecommends = obtainList<String>("DAILY_RECOMMENDS")
 }

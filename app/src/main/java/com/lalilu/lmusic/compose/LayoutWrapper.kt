@@ -1,47 +1,47 @@
 package com.lalilu.lmusic.compose
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
-import com.lalilu.lmusic.compose.component.FixedLayout
+import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.extension.DialogWrapper
+import com.lalilu.component.extension.DynamicTipsHost
+import com.lalilu.component.extension.rememberIsPad
 import com.lalilu.lmusic.compose.screen.ShowScreen
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.rememberIsPad
+import com.lalilu.lmusic.compose.screen.playing.PlayingLayout
 
 object LayoutWrapper {
 
     @Composable
-    fun Content(
-        windowSize: WindowSizeClass = LocalWindowSize.current,
-        playingContent: @Composable () -> Unit,
-        libraryContent: @Composable () -> Unit,
-    ) {
+    fun BoxScope.Content(windowSize: WindowSizeClass = LocalWindowSize.current) {
         val configuration = LocalConfiguration.current
         val isPad by windowSize.rememberIsPad()
         val isLandscape by remember(configuration.orientation) {
             derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
         }
 
-        if (isPad) {
-            DrawerWrapper.Content(
-                mainContent = playingContent,
-                secondContent = libraryContent
-            )
-        } else {
-            FixedLayout {
-                BottomSheetWrapper.Content(
-                    mainContent = playingContent,
-                    secondContent = libraryContent
+        DrawerWrapper.Content(
+            isPad = { isPad },
+            isLandscape = { isLandscape },
+            mainContent = { PlayingLayout() },
+            secondContent = {
+                NavigationWrapper.Content(
+                    forPad = { isPad && isLandscape }
                 )
             }
-        }
+        )
 
         if (isLandscape) {
             ShowScreen()
         }
+
+        DialogWrapper.Content()
+
+        with(DynamicTipsHost) { Content() }
     }
 }

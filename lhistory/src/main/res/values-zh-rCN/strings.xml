@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="history_screen_title">历史记录</string>
+
+    <string name="sort_preset_by_last_play_time">最近播放</string>
+    <string name="sort_preset_by_played_times">播放次数</string>
+</resources>

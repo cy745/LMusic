@@ -3,36 +3,71 @@ package com.lalilu.lplayer.playback.impl
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import com.lalilu.lmedia.entity.LSong
+import com.lalilu.common.base.Playable
 import com.lalilu.lplayer.extensions.AudioFocusHelper
+import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.playback.PlayMode
-import com.lalilu.lplayer.playback.PlayQueue
 import com.lalilu.lplayer.playback.Playback
 import com.lalilu.lplayer.playback.Player
+import com.lalilu.lplayer.playback.PlayerEvent
+import com.lalilu.lplayer.playback.QueueEvent
+import com.lalilu.lplayer.playback.UpdatableQueue
 
-class MixPlayback(
-    private val audioFocusHelper: AudioFocusHelper,
-    override var playbackListener: Playback.Listener<LSong>? = null,
-    override var queue: PlayQueue<LSong>? = null,
-    override var player: Player? = null,
-    override var playMode: PlayMode = PlayMode.ListRecycle,
-) : MediaSessionCompat.Callback(), Playback<LSong>, Playback.Listener<LSong>, Player.Listener {
+class MixPlayback : Playback<Playable>(), Playback.Listener<Playable>, Player.Listener,
+    QueueEvent.OnQueueEventListener {
+    override var playbackListener: Listener<Playable>? = null
+    override var queue: UpdatableQueue<Playable>? = null
+        set(value) {
+            field = value
+            value ?: return
+            value.setOnQueueEventListener(this)
+        }
 
-    init {
-        player?.listener = this
-        audioFocusHelper.onPlay = ::onPlay
-        audioFocusHelper.onPause = ::onPause
-        audioFocusHelper.isPlaying = { player?.isPlaying ?: false }
+    override var audioFocusHelper: AudioFocusHelper? = null
+        set(value) {
+            field = value
+            value ?: return
+            value.onPlay = ::onPlay
+            value.onPause = ::onPause
+            value.isPlaying = { player?.isPlaying ?: false }
+        }
+
+    override var player: Player? = null
+        set(value) {
+            field = value
+            value ?: return
+            value.listener = this
+            value.couldPlayNow = {
+                audioFocusHelper == null || audioFocusHelper?.request() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+            }
+        }
+    override var playMode: PlayMode = PlayMode.ListRecycle
+        set(value) {
+            field = value
+            onSetPlayMode(value)
+        }
+
+    private var doPauseWhenComplete: Boolean = false
+
+    override fun pauseWhenCompletion() {
+        doPauseWhenComplete = true
+    }
+
+    override fun cancelPauseWhenCompletion() {
+        doPauseWhenComplete = false
+    }
+
+    override fun readyToUse(): Boolean {
+        return queue != null && player != null
     }
 
     override fun onSetShuffleMode(shuffleMode: Int) {
-        onSetPlayMode(PlayMode.of(playMode.repeatMode, shuffleMode))
+        playMode = PlayMode.of(playMode.repeatMode, shuffleMode)
     }
 
     override fun onSetRepeatMode(repeatMode: Int) {
-        onSetPlayMode(PlayMode.of(repeatMode, playMode.shuffleMode))
+        playMode = PlayMode.of(repeatMode, playMode.shuffleMode)
     }
 
     override fun changeToPlayer(changeTo: Player) {
@@ -67,7 +102,7 @@ class MixPlayback(
     }
 
     override fun onPlayFromUri(uri: Uri, extras: Bundle?) {
-        player?.load(uri, true)
+        player?.load(uri, true, 0L)
     }
 
     override fun onPlayFromMediaId(mediaId: String, extras: Bundle?) {
@@ -87,7 +122,7 @@ class MixPlayback(
         val uri = queue?.getUriFromItem(next) ?: return
 
         if (playMode == PlayMode.Shuffle) {
-            queue?.moveToPrevious(item = next)
+            queue?.moveToPrevious(id = next.mediaId)
         }
 
         onPlayInfoUpdate(next, PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, 0L)
@@ -107,44 +142,32 @@ class MixPlayback(
     }
 
     override fun onSeekTo(pos: Long) {
-        player?.seekTo(pos)
+        // TODO 存在正在加载的情况下触发重新加载的可能，需要增加一个正在加载的标志位，在加载完成前不触发重新加载
+        if (player?.isPrepared == true) {
+            player?.seekTo(pos)
+        } else {
+            val item = queue?.getCurrent() ?: return
+            val uri = queue?.getUriFromItem(item) ?: return
+
+            onPlayInfoUpdate(item, PlaybackStateCompat.STATE_BUFFERING, 0L)
+            player?.load(uri, true, pos)
+        }
     }
 
     override fun onStop() {
         player?.stop()
     }
 
-    override fun onCustomActionIn(action: Playback.PlaybackAction?) {
-        when (action) {
-            Playback.PlaybackAction.PlayPause -> {
-                if (player?.isPlaying == true) onPause() else onPlay()
-            }
-
-            Playback.PlaybackAction.ReloadAndPlay -> {
-                player?.isPrepared = false
-                onPlay()
-            }
-
-            null -> {
-
-            }
-        }
-    }
-
-    private var tempNextItem: LSong? = null
+    private var tempNextItem: Playable? = null
 
     override fun preloadNextItem() {
-        tempNextItem = when (playMode) {
-            PlayMode.ListRecycle -> queue?.getNext()
-            PlayMode.RepeatOne -> queue?.getNext()
-            PlayMode.Shuffle -> queue?.getShuffle()
+        tempNextItem = when {
+            playMode == PlayMode.ListRecycle -> queue?.getNext()
+            playMode == PlayMode.RepeatOne -> queue?.getCurrent()
+            playMode == PlayMode.Shuffle && tempNextItem == null -> queue?.getShuffle()
+            else -> tempNextItem
         } ?: return
         val uri = queue?.getUriFromItem(tempNextItem!!) ?: return
-
-        if (playMode == PlayMode.Shuffle) {
-            queue?.moveToPrevious(item = tempNextItem!!)
-        }
-
         player?.preloadNext(uri)
     }
 
@@ -155,98 +178,149 @@ class MixPlayback(
     }
 
     override fun onCustomAction(action: String?, extras: Bundle?) {
-        handleCustomAction(action)
+        action ?: return
+
+        val customAction = PlayerAction.of(action) ?: return
+        handleCustomAction(customAction)
     }
 
-    override fun requestAudioFocus(): Boolean {
-        return audioFocusHelper.request() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-    }
+    override fun handleCustomAction(action: PlayerAction.CustomAction) {
+        when (action) {
+            PlayerAction.PlayOrPause -> {
+                player ?: return
+                if (player!!.isPlaying) onPause() else onPlay()
+            }
 
-    override fun onLPlayerCreated(id: Any) {
-        onPlayerCreated(id)
-    }
+            PlayerAction.ReloadAndPlay -> {
+                player ?: return
+                val item = queue?.getCurrent() ?: return
+                val uri = queue?.getUriFromItem(item) ?: return
 
-    override fun onLStart() {
-        val current = queue?.getCurrent()
-        current?.let { onItemPlay(it) }
-        onPlayInfoUpdate(
-            current,
-            PlaybackStateCompat.STATE_PLAYING,
-            player?.getPosition() ?: 0L
-        )
-        preloadNextItem()
-    }
-
-    override fun onLStop() {
-        audioFocusHelper.abandon()
-
-        onPlayInfoUpdate(
-            item = queue?.getCurrent(),
-            playbackState = PlaybackStateCompat.STATE_STOPPED,
-            position = 0L
-        )
-    }
-
-    override fun onLPlay() {
-        onPlayInfoUpdate(
-            item = queue?.getCurrent(),
-            playbackState = PlaybackStateCompat.STATE_PLAYING,
-            position = player?.getPosition() ?: 0L
-        )
-    }
-
-    override fun onLPause() {
-        val current = queue?.getCurrent()
-        current?.let { onItemPause(it) }
-
-        onPlayInfoUpdate(
-            item = queue?.getCurrent(),
-            playbackState = PlaybackStateCompat.STATE_PAUSED,
-            position = player?.getPosition() ?: 0L
-        )
-    }
-
-    override fun onLSeekTo(newDurationMs: Number) {
-        onPlayInfoUpdate(
-            queue?.getCurrent(),
-            PlaybackStateCompat.STATE_PLAYING,
-            newDurationMs.toLong()
-        )
-    }
-
-    override fun onLPrepared() {
-    }
-
-    override fun onLCompletion(skipToNext: Boolean) {
-        // 单曲循环模式
-        if (playMode == PlayMode.RepeatOne) {
-            val current = queue?.getCurrent() ?: return
-            val uri = queue?.getUriFromItem(current) ?: return
-
-            onPlayInfoUpdate(current, PlaybackStateCompat.STATE_BUFFERING, 0L)
-            onPlayFromUri(uri, null)
-            return
+                onPlayInfoUpdate(item, PlaybackStateCompat.STATE_BUFFERING, 0L)
+                onPlayFromUri(uri, null)
+            }
         }
+    }
 
-        if (skipToNext) {
-            onSkipToNext()
-        } else {
-            if (tempNextItem != null) {
+    override fun onPlayerEvent(event: PlayerEvent) {
+        when (event) {
+            PlayerEvent.OnPlay -> {
+                onPlayInfoUpdate(
+                    item = queue?.getCurrent(),
+                    playbackState = PlaybackStateCompat.STATE_PLAYING,
+                    position = player?.getPosition() ?: 0L
+                )
+            }
+
+            PlayerEvent.OnStart -> {
+                val current = queue?.getCurrent()
+                current?.let { onItemPlay(it) }
+                onPlayInfoUpdate(
+                    current,
+                    PlaybackStateCompat.STATE_PLAYING,
+                    player?.getPosition() ?: 0L
+                )
+                preloadNextItem()
+            }
+
+            PlayerEvent.OnPause -> {
+                val current = queue?.getCurrent()
+                current?.let { onItemPause(it) }
+
+                onPlayInfoUpdate(
+                    item = current,
+                    playbackState = PlaybackStateCompat.STATE_PAUSED,
+                    position = player?.getPosition() ?: 0L
+                )
+            }
+
+            PlayerEvent.OnStop -> {
+                audioFocusHelper?.abandon()
+
+                onPlayInfoUpdate(
+                    item = queue?.getCurrent(),
+                    playbackState = PlaybackStateCompat.STATE_STOPPED,
+                    position = 0L
+                )
+            }
+
+            is PlayerEvent.OnCompletion -> {
+                if (doPauseWhenComplete) {
+                    doPauseWhenComplete = false
+                    player?.resetPreloadNext()
+                    audioFocusHelper?.abandon()
+                    return
+                }
+
+                val current = queue?.getCurrent()
+                val currentUri = current?.let { queue?.getUriFromItem(it) }
+                val isPreloadedCurrent = current?.mediaId == tempNextItem?.mediaId
+
+                // 若Player未完成预加载，即无法直接播放下一首，则进行Playback的切换下一首流程
+                if (!event.nextItemReady || tempNextItem == null) {
+                    player?.resetPreloadNext()
+                    // 若当前处于单曲播放模式，且预加载的歌曲非当前歌曲则需要重新加载并播放
+                    if (playMode == PlayMode.RepeatOne
+                        && !isPreloadedCurrent
+                        && current != null
+                        && currentUri != null
+                    ) {
+                        onPlayInfoUpdate(current, PlaybackStateCompat.STATE_BUFFERING, 0L)
+                        onPlayFromUri(currentUri, null)
+                    } else {
+                        // 否则切换下一首
+                        onSkipToNext()
+                    }
+                    return
+                }
+
+                // 非单曲循环模式但预加载的元素却是当前正在播放元素
+                if (playMode != PlayMode.RepeatOne && isPreloadedCurrent) {
+                    player?.resetPreloadNext()
+                    onSkipToNext()
+                    return
+                }
+
+                // 若当前播放模式为随机播放，将该预加载的元素移动至对应位置
+                if (playMode == PlayMode.Shuffle) {
+                    queue?.moveToPrevious(id = tempNextItem!!.mediaId)
+                }
+
+                // 播放已成功预加载的元素
+                player?.confirmPreloadNext()
+                onItemPlay(tempNextItem!!)
                 onPlayInfoUpdate(
                     item = tempNextItem,
                     playbackState = PlaybackStateCompat.STATE_PLAYING,
                     position = player?.getPosition() ?: 0L
                 )
+                tempNextItem = null
+                preloadNextItem()
             }
+
+            is PlayerEvent.OnSeekTo -> {
+                onPlayInfoUpdate(
+                    queue?.getCurrent(),
+                    PlaybackStateCompat.STATE_PLAYING,
+                    event.newDurationMs.toLong()
+                )
+            }
+
+            is PlayerEvent.OnCreated -> {
+                onPlayerCreated(event.playerId)
+            }
+
+            PlayerEvent.OnPrepared -> {}
+            PlayerEvent.OnNextPrepared -> {}
+            is PlayerEvent.OnError -> {}
         }
     }
 
-    override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
+    override fun onPlayInfoUpdate(item: Playable?, playbackState: Int, position: Long) {
         playbackListener?.onPlayInfoUpdate(item, playbackState, position)
     }
 
     override fun onSetPlayMode(playMode: PlayMode) {
-        this.playMode = playMode
         playbackListener?.onSetPlayMode(playMode)
     }
 
@@ -254,11 +328,45 @@ class MixPlayback(
         playbackListener?.onPlayerCreated(id)
     }
 
-    override fun onItemPlay(item: LSong) {
+    override fun onItemPlay(item: Playable) {
         playbackListener?.onItemPlay(item)
     }
 
-    override fun onItemPause(item: LSong) {
+    override fun onItemPause(item: Playable) {
         playbackListener?.onItemPause(item)
+    }
+
+    override fun onQueueEvent(event: QueueEvent) {
+        when (event) {
+            QueueEvent.Updated -> {
+                // 更新队列后，检查预加载的元素是否还在队列中，若否则重新进行预加载
+                val exist = tempNextItem?.mediaId
+                    ?.let { queue?.indexOf(it) }
+                    ?.let { it >= 0 }
+                    ?: false
+
+                if (!exist) {
+                    tempNextItem = null
+                    player?.resetPreloadNext()
+                    preloadNextItem()
+                }
+            }
+
+            // TODO 列表发生移动时下一个元素与预加载元素不一样时需要重新进行处理
+            is QueueEvent.Added -> {}
+            is QueueEvent.Moved -> {}
+
+            is QueueEvent.Removed -> {
+                // 若队列中删除的是已预加载的下一个元素，则去除该元素，重新尝试进行预加载操作
+                if (event.id == tempNextItem?.mediaId) {
+                    tempNextItem = null
+                    player?.resetPreloadNext()
+                    preloadNextItem()
+                }
+                if (event.id == queue?.getCurrentId()) {
+                    player?.stop()
+                }
+            }
+        }
     }
 }

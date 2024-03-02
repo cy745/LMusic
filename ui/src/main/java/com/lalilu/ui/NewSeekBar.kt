@@ -116,6 +116,7 @@ class NewSeekBar @JvmOverloads constructor(
     val onTapEnterListeners = HashSet<OnTapEventListener>()
     var valueToText: ((Float) -> String)? = null
     private var switchToCallbacks = ArrayList<Pair<Drawable, () -> Unit>>()
+    var switchIndexUpdateCallback: (Int) -> Unit = {}
 
     private var moved = false
     private var canceled = true
@@ -276,8 +277,24 @@ class NewSeekBar @JvmOverloads constructor(
         }
     }
 
+    private var switchIndex: Int = 0
+        set(value) {
+            if (field == value) return
+            field = value
+            switchIndexUpdateCallback(value)
+        }
+
     fun updateSwitchMoveX(moveX: Float) {
         switchMoveX = moveX
+    }
+
+    fun updateSwitchIndex() {
+        switchIndex = getIntervalIndex(
+            a = 0f,
+            b = width.toFloat(),
+            n = switchToCallbacks.size,
+            x = switchMoveX
+        )
     }
 
     fun updateValue(value: Float) {
@@ -291,6 +308,11 @@ class NewSeekBar @JvmOverloads constructor(
 
     fun updateProgress(value: Float, fromUser: Boolean = false) {
         nowValue = value
+    }
+
+    override fun onValueChange(value: Float) {
+        val actualValue = if (touching) value else dataValue
+        super.onValueChange(actualValue)
     }
 
     fun setSwitchToCallback(vararg callbackPair: Pair<Drawable, () -> Unit>) {
@@ -315,13 +337,8 @@ class NewSeekBar @JvmOverloads constructor(
 
                 if (moved && !canceled) {
                     if (switchMode) {
-                        val index = getIntervalIndex(
-                            a = 0f,
-                            b = width.toFloat(),
-                            n = switchToCallbacks.size,
-                            x = switchMoveX
-                        )
-                        switchToCallbacks.getOrNull(index)?.second?.invoke()
+                        updateSwitchIndex()
+                        switchToCallbacks.getOrNull(switchIndex)?.second?.invoke()
                     } else if (abs(nowValue - startValue) > minIncrement) {
                         seekToListeners.forEach { it.onSeekTo(nowValue) }
                     }
@@ -354,6 +371,7 @@ class NewSeekBar @JvmOverloads constructor(
                 moved = true
                 if (switchMode) {
                     updateSwitchMoveX(event.x)
+                    updateSwitchIndex()
                 } else {
                     updateValueByDelta(deltaX)
                 }

@@ -15,7 +15,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.layout
@@ -23,6 +28,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lalilu.component.extension.rememberFixedStatusBarHeight
 
 /**
  * 在布局元素时获取其测量好的宽高并通过callback返回给调用方
@@ -62,10 +68,7 @@ fun Modifier.navigateBarHeight(multiple: Float = 1f): Modifier = composed {
 
 fun Modifier.edgeTransparentForStatusBar(enable: Boolean = true) = composed {
     if (enable) {
-        edgeTransparent(
-            position = EDGE_TOP,
-            edgeWidth = rememberFixedStatusBarHeight().toFloat()
-        )
+        edgeTransparent(top = rememberFixedStatusBarHeight().toFloat())
     } else {
         Modifier
     }
@@ -143,6 +146,124 @@ fun Modifier.edgeTransparent(
             canvas.rotate(180f, size.width / 2f, size.height / 2f)
             canvas.drawRect(0f, 0f, size.width, actualWidth, mPaint)
             canvas.restoreToCount(layerSaveTemp)
+        }
+
+        canvas.restoreToCount(layerSave)
+    }
+}
+
+private val interpolator: (x: Float) -> Float = AccelerateDecelerateInterpolator()::getInterpolation
+private val xValue = (0..100 step 10).map { if (it == 0) 0f else it / 100f }.toFloatArray()
+private val colorArray =
+    xValue.map { it to Color.Black.copy(alpha = 1f - interpolator(it)) }.toTypedArray()
+
+fun Modifier.edgeTransparent(
+    left: Dp = 0.dp,
+    top: Dp = 0.dp,
+    right: Dp = 0.dp,
+    bottom: Dp = 0.dp
+): Modifier = composed {
+    val density = LocalDensity.current
+    val leftPx = remember { with(density) { left.toPx() } }
+    val topPx = remember { with(density) { top.toPx() } }
+    val rightPx = remember { with(density) { right.toPx() } }
+    val bottomPx = remember { with(density) { bottom.toPx() } }
+    if (leftPx == 0f && topPx == 0f && rightPx == 0f && bottomPx == 0f) return@composed this
+
+    return@composed edgeTransparent(leftPx, topPx, rightPx, bottomPx)
+}
+
+fun Modifier.edgeTransparent(
+    left: Float = 0f,
+    top: Float = 0f,
+    right: Float = 0f,
+    bottom: Float = 0f
+): Modifier = composed {
+    if (left == 0f && top == 0f && right == 0f && bottom == 0f) return@composed this
+
+    var topBrush: Brush? = remember { null }
+    var bottomBrush: Brush? = remember { null }
+    var leftBrush: Brush? = remember { null }
+    var rightBrush: Brush? = remember { null }
+    val blendMode = remember { BlendMode.DstOut }
+
+    var layerSave: Int
+    var canvas: Canvas
+
+    drawWithContent {
+        canvas = drawContext.canvas.nativeCanvas
+        layerSave = canvas.saveLayer(0f, 0f, size.width, size.height, null)
+
+        this@drawWithContent.drawContent()
+        if (top > 0) {
+            if (topBrush == null) {
+                topBrush = Brush.linearGradient(
+                    colorStops = colorArray,
+                    start = Offset.Zero,
+                    end = Offset.Zero.copy(y = top),
+                    tileMode = TileMode.Clamp
+                )
+            }
+            drawRect(
+                brush = topBrush!!,
+                size = size.copy(height = top),
+                blendMode = blendMode
+            )
+        }
+
+        if (bottom > 0) {
+            rotate(180f) {
+                if (bottomBrush == null) {
+                    bottomBrush = Brush.linearGradient(
+                        colorStops = colorArray,
+                        start = Offset.Zero,
+                        end = Offset.Zero.copy(y = bottom),
+                        tileMode = TileMode.Clamp
+                    )
+                }
+
+                drawRect(
+                    brush = bottomBrush!!,
+                    size = size.copy(height = bottom),
+                    blendMode = blendMode
+                )
+            }
+        }
+
+        if (left > 0) {
+            if (leftBrush == null) {
+                leftBrush = Brush.linearGradient(
+                    colorStops = colorArray,
+                    start = Offset.Zero,
+                    end = Offset.Zero.copy(x = left),
+                    tileMode = TileMode.Clamp
+                )
+            }
+
+            drawRect(
+                brush = leftBrush!!,
+                size = size.copy(width = left),
+                blendMode = blendMode
+            )
+        }
+
+        if (right > 0) {
+            rotate(180f) {
+                if (rightBrush == null) {
+                    rightBrush = Brush.linearGradient(
+                        colorStops = colorArray,
+                        start = Offset.Zero,
+                        end = Offset.Zero.copy(x = right),
+                        tileMode = TileMode.Clamp
+                    )
+                }
+
+                drawRect(
+                    brush = rightBrush!!,
+                    size = size.copy(width = right),
+                    blendMode = blendMode
+                )
+            }
         }
 
         canvas.restoreToCount(layerSave)

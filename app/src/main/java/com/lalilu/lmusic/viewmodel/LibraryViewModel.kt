@@ -2,10 +2,10 @@ package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lalilu.component.extension.toState
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.datastore.TempSp
-import com.lalilu.lmusic.utils.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
@@ -25,12 +25,12 @@ class LibraryViewModel(
     fun checkOrUpdateToday() {
         val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
 
-        if (today != tempSp.dayOfYear.get() || dailyRecommends.value.isEmpty()) {
+        if (today != tempSp.dayOfYear.value || dailyRecommends.value.isEmpty()) {
             val ids = LMedia.get<LSong>().shuffled().take(10).map { it.id }
             if (ids.isEmpty()) return
 
-            tempSp.dayOfYear.set(today)
-            tempSp.dailyRecommends.set(ids)
+            tempSp.dayOfYear.value = today
+            tempSp.dailyRecommends.value = ids
         }
     }
 }

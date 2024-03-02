@@ -43,18 +43,19 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
-import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lplayer.playback.PlayMode
+import com.lalilu.common.base.Playable
+import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.utils.coil.BlurTransformation
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
-import com.lalilu.lmusic.utils.extension.rememberIsPad
+import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.extension.rememberIsPad
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.lalilu.lplayer.playback.Playback
-import org.koin.androidx.compose.get
+import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.playback.PlayMode
 
 @Composable
 fun ShowScreen(
-    playingVM: PlayingViewModel = get()
+    playingVM: PlayingViewModel = singleViewModel(),
 ) {
     val windowSize = LocalWindowSize.current
     val configuration = LocalConfiguration.current
@@ -65,14 +66,14 @@ fun ShowScreen(
     }
 
     if (visible) {
-        val song by playingVM.runtime.playingFlow.collectAsState(null)
+        val song by LPlayer.runtime.info.playingFlow.collectAsState(null)
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = Color.DarkGray)
         ) {
-            BlurImageBg(song = song)
+            BlurImageBg(playable = song)
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -81,7 +82,7 @@ fun ShowScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                ImageCover(song = song)
+                ImageCover(playable = song)
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -90,7 +91,7 @@ fun ShowScreen(
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    SongDetailPanel(song = song)
+                    SongDetailPanel(playable = song)
                     ControlPanel(playingVM)
                 }
             }
@@ -99,7 +100,7 @@ fun ShowScreen(
 }
 
 @Composable
-fun RowScope.ImageCover(song: LSong?) {
+fun RowScope.ImageCover(playable: Playable?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -113,7 +114,7 @@ fun RowScope.ImageCover(song: LSong?) {
         ) {
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(context = LocalContext.current)
-                    .data(song)
+                    .data(playable?.imageSource)
                     .size(SizeUtils.dp2px(256f))
                     .crossfade(true)
                     .build(),
@@ -142,14 +143,14 @@ fun RowScope.ImageCover(song: LSong?) {
 }
 
 @Composable
-fun BoxScope.BlurImageBg(song: LSong?) {
+fun BoxScope.BlurImageBg(playable: Playable?) {
 
     AsyncImage(
         modifier = Modifier
             .fillMaxSize()
             .align(Alignment.Center),
         model = ImageRequest.Builder(LocalContext.current)
-            .data(song)
+            .data(playable?.imageSource)
             .size(SizeUtils.dp2px(128f))
             .transformations(BlurTransformation(LocalContext.current, 25f, 4f))
             .crossfade(true)
@@ -166,9 +167,9 @@ fun BoxScope.BlurImageBg(song: LSong?) {
 
 @Composable
 fun SongDetailPanel(
-    song: LSong?
+    playable: Playable?,
 ) {
-    if (song == null) {
+    if (playable == null) {
         Text(
             text = "歌曲读取失败",
             color = Color.White,
@@ -181,17 +182,17 @@ fun SongDetailPanel(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(
-            text = song.name,
+            text = playable.title,
             color = Color.White,
             fontSize = 24.sp
         )
         Text(
-            text = song._artist,
+            text = playable.subTitle,
             color = Color.White,
             fontSize = 16.sp
         )
         Text(
-            text = song._albumTitle,
+            text = playable.subTitle,
             color = Color.White,
             fontSize = 12.sp
         )
@@ -200,16 +201,16 @@ fun SongDetailPanel(
 
 @Composable
 fun ControlPanel(
-    playingVM: PlayingViewModel = get()
+    playingVM: PlayingViewModel = singleViewModel(),
 ) {
-    val isPlaying = playingVM.runtime.isPlayingFlow.collectAsState(false)
+    val isPlaying = LPlayer.runtime.info.isPlayingFlow.collectAsState(false)
     var playMode by playingVM.settingsSp.playMode
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        IconButton(onClick = { playingVM.browser.play() }) {
+        IconButton(onClick = { PlayerAction.SkipToPrevious.action() }) {
             Image(
                 painter = painterResource(id = R.drawable.ic_skip_previous_line),
                 contentDescription = "skip_back",
@@ -219,7 +220,7 @@ fun ControlPanel(
         IconToggleButton(
             checked = isPlaying.value,
             onCheckedChange = {
-                playingVM.browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
+                PlayerAction.PlayOrPause.action()
             }
         ) {
             Image(
@@ -230,7 +231,7 @@ fun ControlPanel(
                 modifier = Modifier.size(28.dp)
             )
         }
-        IconButton(onClick = { playingVM.browser.skipToNext() }) {
+        IconButton(onClick = { PlayerAction.SkipToNext.action() }) {
             Image(
                 painter = painterResource(id = R.drawable.ic_skip_next_line),
                 contentDescription = "skip_forward",

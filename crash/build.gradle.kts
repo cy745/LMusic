@@ -1,30 +1,22 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    kotlin("android")
 }
 
 android {
     namespace = "com.lalilu.crash"
-    compileSdk = 34
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
 
-    defaultConfig {
-        minSdk = 21
-
-        buildFeatures {
-            viewBinding = true
-        }
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
+    buildFeatures {
+        viewBinding = true
     }
 
+    defaultConfig {
+        minSdk = AndroidConfig.MIN_SDK_VERSION
+    }
     buildTypes {
         release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            consumerProguardFiles("proguard-rules.pro")
         }
     }
     compileOptions {
@@ -37,7 +29,7 @@ android {
 }
 
 dependencies {
-    implementation("androidx.startup:startup-runtime:1.2.0-alpha02")
-
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation(libs.startup.runtime)
+    implementation(libs.appcompat)
+    implementation(libs.utilcodex)
 }

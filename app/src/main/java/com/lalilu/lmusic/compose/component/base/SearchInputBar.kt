@@ -15,6 +15,7 @@ fun SearchInputBar(
     modifier: Modifier = Modifier,
     hint: String = "",
     value: MutableState<String>,
+    onValueChange: (String) -> Unit = {},
     onSubmit: (String) -> Unit = {},
 ) {
     Row(
@@ -28,6 +29,7 @@ fun SearchInputBar(
             modifier = Modifier.weight(1f),
             hint = hint,
             value = value,
+            onValueChange = onValueChange,
             onSubmit = onSubmit
         )
     }

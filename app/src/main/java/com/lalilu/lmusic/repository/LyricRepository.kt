@@ -6,11 +6,13 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.dirror.lyricviewx.LyricUtil
+import com.lalilu.common.base.Playable
+import com.lalilu.common.base.Sticker
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.service.LMusicRuntime
-import com.lalilu.lmusic.utils.extension.findShowLine
 import com.lalilu.lmedia.repository.LyricSourceFactory
+import com.lalilu.lmusic.utils.extension.findShowLine
+import com.lalilu.lplayer.LPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,27 +29,30 @@ import kotlin.coroutines.CoroutineContext
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class LyricRepository(
     private val lyricSource: LyricSourceFactory,
-    private val runtime: LMusicRuntime
 ) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
+    val runtime = LPlayer.runtime
 
     @Composable
-    fun rememberHasLyric(song: LSong): State<Boolean> {
+    fun rememberHasLyric(playable: Playable): State<Boolean> {
         return remember { mutableStateOf(false) }.also { state ->
-            LaunchedEffect(song) {
+            LaunchedEffect(playable) {
                 if (isActive) {
-                    state.value = hasLyric(song)
+                    state.value = hasLyric(playable)
                 }
             }
         }
     }
 
-    suspend fun hasLyric(song: LSong): Boolean =
-        withContext(Dispatchers.IO) { lyricSource.hasLyric(song) }
+    suspend fun hasLyric(song: Playable): Boolean = withContext(Dispatchers.IO) {
+        if (song.sticker.contains(Sticker.HasLyricSticker)) return@withContext true
+        if (song !is LSong) return@withContext false
+        lyricSource.hasLyric(song)
+    }
 
     val currentLyric: Flow<Pair<String, String?>?> =
-        runtime.playingFlow.flatMapLatest { item ->
-            LMedia.getFlow<LSong>(item?.id)
+        runtime.info.playingIdFlow.flatMapLatest { id ->
+            LMedia.getFlow<LSong>(id)
                 .mapLatest { it?.let { lyricSource.loadLyric(it) } }
         }
 
@@ -55,7 +60,7 @@ class LyricRepository(
         pair ?: return@mapLatest null
         LyricUtil.parseLrc(arrayOf(pair.first, pair.second))
     }.flatMapLatest { lyrics ->
-        runtime.positionFlow.mapLatest {
+        runtime.info.positionFlow.mapLatest {
             findShowLine(lyrics, it + 500)
         }.distinctUntilChanged()
             .mapLatest { lyrics?.getOrNull(it)?.text }

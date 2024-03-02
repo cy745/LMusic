@@ -6,34 +6,53 @@ import java.util.TimeZone
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-android")
+    kotlin("android")
     id("com.google.devtools.ksp")
+    alias(libs.plugins.flyjingfish.aop)
 }
 
 val keystoreProps = rootProject.file("keystore.properties")
     .takeIf { it.exists() }
     ?.let { Properties().apply { load(FileInputStream(it)) } }
 
-fun releaseTime(): String = SimpleDateFormat("yyyyMMdd_HHmmZ").run {
+fun releaseTime(pattern: String = "yyyyMMdd_HHmmZ"): String = SimpleDateFormat(pattern).run {
     timeZone = TimeZone.getTimeZone("Asia/Shanghai")
     format(Date())
 }
 
 
+androidAopConfig {
+    enabled = true
+    debug = true
+
+//    include 'com.flyjingfish'
+//    cutInfoJson = true
+//    increment = true
+    // 移除kotlin相关，减少编译错误并提升速度
+    exclude(
+        "kotlin.jvm",
+        "kotlin.internal",
+        "kotlinx.coroutines.internal",
+        "kotlinx.coroutines.android"
+    )
+}
+
 android {
     namespace = "com.lalilu"
-    compileSdk = 34
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
 
     defaultConfig {
         applicationId = "com.lalilu.lmusic"
-        minSdk = 21
-        targetSdk = 34
+        minSdk = AndroidConfig.MIN_SDK_VERSION
+        targetSdk = AndroidConfig.TARGET_SDK_VERSION
         versionCode = 42
         versionName = "1.5.4"
 
         vectorDrawables {
             useSupportLibrary = true
+        }
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
         }
     }
 
@@ -72,6 +91,35 @@ android {
             resValue("string", "app_name", "@string/app_name_release")
         }
 
+        create("alpha") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            versionNameSuffix = "-ALPHA_${releaseTime()}"
+            applicationIdSuffix = ".alpha"
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = kotlin.runCatching { signingConfigs["release"] }.getOrNull()
+                ?: signingConfigs.getByName("debug")
+            resValue("string", "app_name", "@string/app_name_alpha")
+
+            matchingFallbacks.add("release")
+            matchingFallbacks.add("debug")
+
+            ndk {
+                // mips (已弃用)
+                // mips64 (已弃用)
+                // armeabi (已弃用)
+                // armeabi-v7a (需要支持—现在最流行的处理器架构)
+                // arm64-v8a (需要支持—armeabi-v7a的新版本)
+                // x86 (可选, 设备非常有限，可以用于模拟器debugging)
+                // x86_64 (可选, 设备非常有限，可以用于模拟器debugging)
+                // abiFilters.addAll(setOf("armeabi-v7a"))
+            }
+        }
+
         create("beta") {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -91,7 +139,7 @@ android {
         }
 
         debug {
-            versionNameSuffix = "-DEBUG_${releaseTime()}"
+            versionNameSuffix = "-DEBUG_${releaseTime("yyyyMMdd")}"
             applicationIdSuffix = ".debug"
             signingConfig = signingConfigs.getByName("debug")
 
@@ -99,71 +147,39 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = findProperty("compose_compiler_version").toString()
+        kotlinCompilerExtensionVersion = libs.compose.compiler.get().version.toString()
     }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
     lint {
         disable += "Instantiatable"
+        abortOnError = false
     }
 }
 
 dependencies {
-    implementation(project(":common"))
     implementation(project(":ui"))
-    implementation(project(":lplayer"))
     implementation(project(":crash"))
+    implementation(project(":component"))
+    implementation(project(":lplaylist"))
+    implementation(project(":lhistory"))
+    implementation(project(":lartist"))
+    implementation(project(":lalbum"))
+    implementation(project(":ldictionary"))
 
-    // compose
-    implementation("androidx.compose.compiler:compiler:${findProperty("compose_compiler_version")}")
-    implementation(platform("androidx.compose:compose-bom:${findProperty("compose_bom_version")}"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-util")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-viewbinding")
-    implementation("androidx.compose.foundation:foundation")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material3:material3-window-size-class")
-    implementation("androidx.compose.runtime:runtime-livedata")
-    implementation("androidx.compose.material:material")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-tooling-preview")
-
-    // compose-destinations
-    implementation("io.github.raamcosta.compose-destinations:animations-core:${findProperty("compose_destinations_version")}")
-    ksp("io.github.raamcosta.compose-destinations:ksp:${findProperty("compose_destinations_version")}")
-
-    // accompanist
-    // https://google.github.io/accompanist
-    implementation("com.google.accompanist:accompanist-systemuicontroller:${findProperty("accompanist_version")}")
-    implementation("com.google.accompanist:accompanist-flowlayout:${findProperty("accompanist_version")}")
-    implementation("com.google.accompanist:accompanist-permissions:${findProperty("accompanist_version")}")
-
-    // lottie
-    // https://mvnrepository.com/artifact/com.airbnb.android/lottie-compose
-    implementation("com.airbnb.android:lottie-compose:5.2.0")
+    implementation(libs.room.ktx)
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
 
     // https://github.com/Block-Network/StatusBarApiExample
     // 墨 · 状态栏歌词 API
     implementation("com.github.577fkj:StatusBarApiExample:v2.0")
-
-    // https://github.com/aclassen/ComposeReorderable
-    // https://mvnrepository.com/artifact/org.burnoutcrew.composereorderable/reorderable
-    // Apache-2.0 license
-    // Compose的拖动排序组件
-    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
-    // 0.9.2对LazyColumn的ContentPadding存在偏移的bug
 
     // https://gitee.com/simplepeng/SpiderMan
     // Apache-2.0 License
@@ -190,14 +206,15 @@ dependencies {
     // https://github.com/cy745/EdgeTranslucent
     // Undeclared License
     // 实现边沿渐变透明
-    implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
+    // implementation("com.github.cy745:EdgeTranslucent:8c25866a14")
 
-//    implementation("com.github.angcyo:DslAdapter:6.0.1")
+    implementation("com.github.commandiron:WheelPickerCompose:1.1.11")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
-    implementation("androidx.activity:activity-compose:1.7.2")
-    implementation("androidx.navigation:navigation-compose:${findProperty("navigation_version")}")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${findProperty("lifecycle_version")}")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${findProperty("lifecycle_version")}")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${findProperty("lifecycle_version")}")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:${findProperty("lifecycle_version")}")
+    debugImplementation("com.github.getActivity:Logcat:11.8")
+//    debugImplementation("io.github.knight-zxw:blockcanary:0.0.5")
+//    debugImplementation("io.github.knight-zxw:blockcanary-ui:0.0.5")
+
+    implementation(libs.bundles.flyjingfish.aop)
+    ksp(libs.flyjingfish.aop.ksp)
 }

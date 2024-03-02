@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FE4141</color>
+    <color name="colorPrimaryVariant">#FF444444</color>
+    <color name="colorOnPrimary">#D9D9D9</color>
+    <color name="ic_launcher_background">#FE4141</color>
+
+    <color name="gray_400">#FFBDBDBD</color>
+    <color name="gray_600">#FF757575</color>
+
+    <color name="daynight_1">#FF000000</color>
+    <color name="daynight_0.4">#FF757575</color>
+    <color name="daynight_0.6">#FFBDBDBD</color>
+    <color name="daynight_0">#FFFFFFFF</color>
+
+    <color name="item_selected_bg">#121212</color>
+    <color name="edit_text_bg">#0DFFFFFF</color>
+
+    <color name="bottom_sheet_bg">#292929</color>
+    <color name="bottom_sheet_divider">#373737</color>
+    <color name="bottom_sheet_card_bg">#303030</color>
+
+    <color name="activity_window_bg">#1A1A1A</color>
+
+    <color name="gray_scale_1">#FFF8F9FA</color>
+    <color name="gray_scale_2">#FFE9ECEF</color>
+    <color name="gray_scale_3">#FFDEE2E6</color>
+    <color name="gray_scale_4">#FFCED4DA</color>
+    <color name="gray_scale_5">#FFADB5BD</color>
+    <color name="gray_scale_6">#FF6C757D</color>
+    <color name="gray_scale_7">#FF495057</color>
+    <color name="gray_scale_8">#FF343A40</color>
+    <color name="gray_scale_9">#FF212529</color>
+
+</resources>

@@ -3,15 +3,34 @@
     <!--    <string name="app_name">LMusic</string>-->
     <string name="app_name_debug">LMusic_Debug</string>
     <string name="app_name_beta">LMusic_Beta</string>
+    <string name="app_name_alpha">LMusic_Alpha</string>
     <string name="app_name_release">LMusic</string>
+
+    <string name="screen_title_agreement">用户协议 | 隐私协议</string>
+    <string name="screen_title_permissions">必要权限授予</string>
+    <string name="screen_title_guiding">操作引导教程</string>
+    <string name="screen_title_home">首页</string>
+    <string name="screen_title_search">搜索</string>
+    <string name="screen_title_settings">设置</string>
+    <string name="screen_title_songs">歌曲</string>
+    <string name="screen_title_albums">专辑</string>
+    <string name="screen_title_artists">艺术家</string>
+    <string name="screen_title_playlist">歌单</string>
+    <string name="screen_title_song_detail">歌曲详情</string>
+    <string name="screen_title_artist_detail">歌手详情</string>
+    <string name="screen_title_album_detail">专辑详情</string>
+
+    <string name="bottom_sheet_navigate_back">返回</string>
+    <string name="bottom_sheet_navigate_close">关闭</string>
+
+    <string name="screen_action_sort">排序</string>
+    <string name="screen_action_locate_playing_item">定位当前播放歌曲</string>
+
 
     <string name="audio_type">音频格式</string>
     <string name="default_slogan">LMusic…</string>
 
     <string name="text_button_play">播放</string>
-
-    <string name="dialog_bottom_sheet_navigator_back">返回</string>
-    <string name="dialog_bottom_sheet_navigator_close">关闭</string>
 
     <string name="destination_label_library">曲库</string>
     <string name="destination_label_albums">专辑</string>
@@ -28,6 +47,7 @@
     <string name="destination_label_song_detail">歌曲详情</string>
     <string name="destination_label_genres">流派</string>
     <string name="destination_label_dictionaries">文件夹</string>
+    <string name="destination_label_extensions">插件列表</string>
 
     <string name="destination_subtitle_library">各种各样的选项</string>
     <string name="destination_subtitle_artist">所有歌手</string>
@@ -47,12 +67,4 @@
     <string name="button_add_song_to_playlist">添加至歌单</string>
     <string name="button_set_song_to_next">下一首播放</string>
 
-    <string name="sort_preset_by_title">标题名称</string>
-    <string name="sort_preset_by_add_time">最近添加</string>
-    <string name="sort_preset_by_modify_time">最近修改</string>
-    <string name="sort_preset_by_last_play_time">最近播放</string>
-    <string name="sort_preset_by_played_times">播放次数</string>
-    <string name="sort_preset_by_song_duration">歌曲时长</string>
-    <string name="sort_preset_by_item_count">元素个数</string>
-    <string name="sort_preset_by_disk_and_track">碟号&amp;音轨号</string>
 </resources>

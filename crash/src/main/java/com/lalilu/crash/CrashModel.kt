@@ -1,8 +1,7 @@
 package com.lalilu.crash
 
-import android.content.Intent
-import java.io.Serializable
-
+import android.os.Parcel
+import android.os.Parcelable
 
 data class CrashModel(
     val title: String = "",
@@ -14,28 +13,42 @@ data class CrashModel(
     val stackTrace: String = "",
     val deviceInfo: String = "",
     val buildVersion: String = ""
-) : Serializable
+) : Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: ""
+    )
 
-fun CrashModel.copyTo(intent: Intent) = intent.run {
-    putExtra(CrashModel::title.name, title)
-    putExtra(CrashModel::message.name, message)
-    putExtra(CrashModel::causeClass.name, causeClass)
-    putExtra(CrashModel::causeMethod.name, causeMethod)
-    putExtra(CrashModel::causeFile.name, causeFile)
-    putExtra(CrashModel::causeLine.name, causeLine)
-    putExtra(CrashModel::stackTrace.name, stackTrace)
-    putExtra(CrashModel::deviceInfo.name, deviceInfo)
-    putExtra(CrashModel::buildVersion.name, buildVersion)
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(title)
+        parcel.writeString(message)
+        parcel.writeString(causeClass)
+        parcel.writeString(causeMethod)
+        parcel.writeString(causeFile)
+        parcel.writeString(causeLine)
+        parcel.writeString(stackTrace)
+        parcel.writeString(deviceInfo)
+        parcel.writeString(buildVersion)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<CrashModel> {
+        override fun createFromParcel(parcel: Parcel): CrashModel {
+            return CrashModel(parcel)
+        }
+
+        override fun newArray(size: Int): Array<CrashModel?> {
+            return arrayOfNulls(size)
+        }
+    }
 }
-
-fun Intent.toCrashModel(): CrashModel = CrashModel(
-    title = getStringExtra(CrashModel::title.name) ?: "",
-    message = getStringExtra(CrashModel::message.name) ?: "",
-    causeClass = getStringExtra(CrashModel::causeClass.name) ?: "",
-    causeMethod = getStringExtra(CrashModel::causeMethod.name) ?: "",
-    causeFile = getStringExtra(CrashModel::causeFile.name) ?: "",
-    causeLine = getStringExtra(CrashModel::causeLine.name) ?: "",
-    stackTrace = getStringExtra(CrashModel::stackTrace.name) ?: "",
-    deviceInfo = getStringExtra(CrashModel::deviceInfo.name) ?: "",
-    buildVersion = getStringExtra(CrashModel::buildVersion.name) ?: "",
-)

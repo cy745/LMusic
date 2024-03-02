@@ -18,33 +18,23 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
-import com.lalilu.lmedia.entity.LSong
+import com.danikula.videocache.HttpProxyCacheServer
+import com.lalilu.common.base.Playable
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.AudioFocusHelper
 import com.lalilu.lplayer.notification.Notifier
 import com.lalilu.lplayer.playback.PlayMode
 import com.lalilu.lplayer.playback.Playback
 import com.lalilu.lplayer.playback.impl.LocalPlayer
-import com.lalilu.lplayer.playback.impl.MixPlayback
 import com.lalilu.lplayer.runtime.Runtime
-import com.lalilu.lplayer.runtime.RuntimeQueue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import org.koin.android.ext.android.inject
-import kotlin.coroutines.CoroutineContext
 
 @Suppress("DEPRECATION")
-abstract class LService : MediaBrowserServiceCompat(),
-    LifecycleOwner, Playback.Listener<LSong>, CoroutineScope {
-    override val coroutineContext: CoroutineContext = Dispatchers.Default + SupervisorJob()
+abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.Listener<Playable> {
     override val lifecycle: Lifecycle get() = registry
     private val registry by lazy { LifecycleRegistry(this) }
 
     abstract fun getStartIntent(): Intent
-    abstract fun getLoopDelay(isPlaying: Boolean): Long
 
     private val sessionActivityPendingIntent by lazy {
         packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
@@ -55,10 +45,11 @@ abstract class LService : MediaBrowserServiceCompat(),
         }
     }
 
-    lateinit var mediaSession: MediaSessionCompat
-    lateinit var playback: MixPlayback
+    private lateinit var mediaSession: MediaSessionCompat
+    protected lateinit var playback: Playback<Playable>
 
-    private val runtime: Runtime<LSong> by inject()
+    private val runtime: Runtime<Playable> = LPlayer.runtime
+    private val proxy: HttpProxyCacheServer by inject()
     private val notifier: Notifier by inject()
     private val localPlayer: LocalPlayer by inject()
     private val audioFocusHelper: AudioFocusHelper by inject()
@@ -75,13 +66,16 @@ abstract class LService : MediaBrowserServiceCompat(),
         super.onCreate()
         registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         if (!this::playback.isInitialized) {
-            runtime.getPosition = localPlayer::getPosition
-            playback = MixPlayback(
-                audioFocusHelper = audioFocusHelper,
-                playbackListener = this,
-                queue = RuntimeQueue(runtime),
+            runtime.info.getPosition = localPlayer::getPosition
+            runtime.info.getDuration = localPlayer::getDuration
+            runtime.info.getBufferedPosition = localPlayer::getBufferedPosition
+            localPlayer.handleNetUrl = { proxy.getProxyUrl(it) }
+            playback = LPlayer.playback.apply {
+                audioFocusHelper = this@LService.audioFocusHelper
+                playbackListener = this@LService
+                queue = runtime.queue
                 player = localPlayer
-            )
+            }
         }
 
         if (!this::mediaSession.isInitialized) {
@@ -97,14 +91,14 @@ abstract class LService : MediaBrowserServiceCompat(),
         registry.handleLifecycleEvent(Lifecycle.Event.ON_START)
     }
 
-    override fun onPlayInfoUpdate(item: LSong?, playbackState: Int, position: Long) {
+    override fun onPlayInfoUpdate(item: Playable?, playbackState: Int, position: Long) {
         val isPlaying = playback.player?.isPlaying ?: false
 
-        runtime.update(playing = item?.id)
-        runtime.update(isPlaying = isPlaying)
-        runtime.updatePosition(startPosition = position, loopDelay = getLoopDelay(isPlaying))
+        runtime.queue.setCurrentId(id = item?.mediaId)
+        runtime.info.updateIsPlaying(isPlaying)
+        runtime.info.updatePosition(startPosition = position, isPlaying = isPlaying)
 
-        mediaSession.setMetadata(item?.metadataCompat)
+        mediaSession.setMetadata(item?.metaDataCompat)
         mediaSession.setPlaybackState(
             PlaybackStateCompat.Builder()
                 .setActions(LPlayer.MEDIA_DEFAULT_ACTION)
@@ -169,18 +163,22 @@ abstract class LService : MediaBrowserServiceCompat(),
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>,
     ) {
+//        val description = MediaDescriptionCompat.Builder()
+//            .setTitle("")
+//            .build()
+//        val mediaItem = MediaBrowserCompat.MediaItem(
+//            description,
+//            MediaBrowserCompat.MediaItem.FLAG_BROWSABLE or MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+//        )
+//        result.sendResult(mutableListOf(mediaItem))
         result.sendResult(mutableListOf())
     }
 
     override fun onDestroy() {
+        runtime.info.updatePosition(startPosition = 0, isPlaying = false)
         registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         playback.destroy()
         localPlayer.destroy()
-
-        // 服务被结束后取消本协程作用域
-        if (coroutineContext[Job] != null) {
-            this.cancel()
-        }
         super.onDestroy()
     }
 

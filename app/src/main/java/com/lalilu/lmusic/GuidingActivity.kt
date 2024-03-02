@@ -6,10 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.navigation.compose.rememberNavController
 import com.lalilu.lmusic.compose.screen.guiding.GuidingScreen
-import com.lalilu.lmusic.utils.extension.LocalNavigatorHost
-import com.lalilu.lmusic.utils.extension.LocalWindowSize
+import com.lalilu.component.base.LocalWindowSize
 
 class GuidingActivity : AppCompatActivity() {
 
@@ -21,7 +19,6 @@ class GuidingActivity : AppCompatActivity() {
             LMusicTheme {
                 CompositionLocalProvider(
                     LocalWindowSize provides calculateWindowSizeClass(activity = this),
-                    LocalNavigatorHost provides rememberNavController()
                 ) {
                     GuidingScreen()
                 }

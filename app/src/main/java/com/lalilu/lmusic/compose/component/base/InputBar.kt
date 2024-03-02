@@ -17,6 +17,7 @@ fun InputBar(
     hint: String = "",
     defaultValue: String = "",
     value: MutableState<String> = remember { mutableStateOf(defaultValue) },
+    onValueChange: (String) -> Unit = { },
     onSubmit: (String) -> Unit = {},
     onFocusChange: (Boolean) -> Boolean = { false },
 ) {
@@ -32,10 +33,12 @@ fun InputBar(
                 }
 
                 inputer.addTextChangedListener {
+                    onValueChange(it.toString())
                     value.value = it.toString()
                 }
 
                 inputer.setOnEditorActionListener { textView, _, _ ->
+                    onValueChange(textView.text.toString())
                     value.value = textView.text.toString()
                     onSubmit(value.value)
                     textView.clearFocus()

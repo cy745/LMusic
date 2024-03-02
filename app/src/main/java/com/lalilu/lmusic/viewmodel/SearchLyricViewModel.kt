@@ -6,18 +6,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.lmedia.LMedia
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.wrapper.Taglib
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
 import com.lalilu.lmusic.api.lrcshare.SongResult
-import com.lalilu.lmusic.repository.LMediaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
 
 class SearchLyricViewModel(
     private val context: Application,
-    private val lrcShareApi: LrcShareApi,
-    private val lMediaRepo: LMediaRepository,
+    private val lrcShareApi: LrcShareApi
 ) : ViewModel() {
     enum class SearchState {
         Idle, Searching, Downloading, Error, Finished
@@ -69,28 +68,18 @@ class SearchLyricViewModel(
                 ToastUtils.showShort("开始获取歌词")
 
                 val lyric = lrcShareApi.getLyricById(lyricId)?.lyric
-                val song = lMediaRepo.requireSong(mediaId)!!
-                val ext = song.fileName
-                    ?.substringAfterLast('.')
-                    ?.takeIf { it.isNotBlank() }!!
-                val tempFile = File(context.cacheDir, "temp.audio")
+                val song = LMedia.get<LSong>(mediaId)!!
 
-                val resolver = context.contentResolver
+                val result = context.contentResolver
+                    .openFileDescriptor(song.uri, "rw")
+                    .use {
+                        it ?: return@use false
 
-                // 将文件复制到temp中
-                resolver.openInputStream(song.uri)?.use {
-                    it.copyTo(tempFile.outputStream())
-                }
+                        Taglib.writeLyricInto(it.detachFd(), lyric ?: "")
+                    }
 
-                val result = Taglib.writeLyricInto(tempFile.absolutePath, lyric ?: "")
                 if (!result) {
                     throw RuntimeException("保存失败")
-                }
-
-                val readAndWriteMode = "rw"
-                // 修改完成后将该文件写回到源文件
-                resolver.openOutputStream(song.uri, readAndWriteMode)?.use {
-                    tempFile.inputStream().copyTo(it)
                 }
 
                 searchState.value = SearchState.Idle

@@ -1,36 +1,29 @@
 package com.lalilu.lmusic.viewmodel
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.viewModelScope
-import com.lalilu.lmedia.entity.LSong
+import com.lalilu.common.base.Playable
+import com.lalilu.component.extension.toState
+import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.repository.LyricRepository
-import com.lalilu.lmusic.service.LMusicBrowser
-import com.lalilu.lmusic.service.LMusicRuntime
-import com.lalilu.lmusic.utils.extension.toState
-import com.lalilu.lplayer.playback.Playback
+import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.extensions.QueueAction
+import com.lalilu.lplaylist.repository.PlaylistRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PlayingViewModel(
-    val runtime: LMusicRuntime,
-    val browser: LMusicBrowser,
     val settingsSp: SettingsSp,
     val lyricRepository: LyricRepository,
-) : ViewModel() {
-    private val playing = runtime.playingFlow.toState(viewModelScope)
-    private val isPlaying = runtime.isPlayingFlow.toState(false, viewModelScope)
-
-    fun play(
-        song: LSong,
-        songs: List<LSong>? = null,
-        playOrPause: Boolean = false,
-        addToNext: Boolean = false,
-    ) = play(song.id, songs?.map(LSong::id), playOrPause, addToNext)
+    playlistRepo: PlaylistRepository
+) : IPlayingViewModel() {
+    val playing = LPlayer.runtime.info.playingFlow.toState(viewModelScope)
+    val isPlaying = LPlayer.runtime.info.isPlayingFlow.toState(false, viewModelScope)
 
     /**
      * 综合播放操作
@@ -40,47 +33,36 @@ class PlayingViewModel(
      * @param playOrPause 当前正在播放则暂停，暂停则开始播放
      * @param addToNext 是否在播放前将该歌曲移动到下一首播放的位置
      */
-    fun play(
+    override fun play(
         mediaId: String,
-        mediaIds: List<String>? = null,
-        playOrPause: Boolean = false,
-        addToNext: Boolean = false,
-    ) = viewModelScope.launch {
-        if (mediaIds != null) {
-            browser.setSongs(mediaIds)
-        }
-        if (addToNext) {
-            browser.addToNext(mediaId)
-        }
-
-        when {
-            mediaId == runtime.getPlayingId() && playOrPause -> {
-                browser.sendCustomAction(Playback.PlaybackAction.PlayPause)
+        mediaIds: List<String>?,
+        playOrPause: Boolean,
+        addToNext: Boolean,
+    ) {
+        viewModelScope.launch {
+            if (!mediaIds.isNullOrEmpty()) {
+                QueueAction.UpdateList(mediaIds).action()
             }
-
-            else -> {
-                // TODO 存在播放列表中不存在该歌曲的情况
-                browser.playById(mediaId)
+            if (addToNext) {
+                QueueAction.AddToNext(mediaId).action()
+            }
+            if (mediaId == LPlayer.runtime.queue.getCurrentId() && playOrPause) {
+                PlayerAction.PlayOrPause.action()
+            } else {
+                PlayerAction.PlayById(mediaId).action()
             }
         }
     }
 
-    fun isSongPlaying(mediaId: String): Boolean {
+    override fun <T> isItemPlaying(item: T, getter: (Playable) -> T): Boolean =
+        isItemPlaying { item == getter(it) }
+
+    override fun isItemPlaying(compare: (Playable) -> Boolean): Boolean {
         if (!isPlaying.value) return false
-        return playing.value?.let { it.id == mediaId } ?: false
+        return playing.value?.let { compare(it) } ?: false
     }
 
-    fun isAlbumPlaying(albumId: String): Boolean {
-        if (!isPlaying.value) return false
-        return playing.value?.let { it.album?.id == albumId } ?: false
-    }
-
-    fun isArtistPlaying(artistName: String): Boolean {
-        if (!isPlaying.value) return false
-        return playing.value?.let { song -> song.artists.any { it.name == artistName } } ?: false
-    }
-
-    fun requireLyric(item: LSong, callback: (hasLyric: Boolean) -> Unit) {
+    override fun requireLyric(item: Playable, callback: (hasLyric: Boolean) -> Unit) {
         viewModelScope.launch {
             if (isActive) {
                 val hasLyric = lyricRepository.hasLyric(item)
@@ -89,13 +71,19 @@ class PlayingViewModel(
         }
     }
 
-    fun requireHasLyricState(item: LSong): MutableState<Boolean> {
-        return mutableStateOf(false).also {
-            viewModelScope.launch {
-                if (isActive) {
-                    it.value = lyricRepository.hasLyric(item)
-                }
-            }
+    private val hasLyricList = mutableStateMapOf<String, Boolean>()
+    override fun requireHasLyric(item: Playable): SnapshotStateMap<String, Boolean> {
+        viewModelScope.launch {
+            if (!isActive) return@launch
+            hasLyricList[item.mediaId] = lyricRepository.hasLyric(item)
         }
+        return hasLyricList
+    }
+
+    private val isFavouriteList = playlistRepo.getFavouriteMediaIds()
+        .toState(viewModelScope)
+
+    override fun isFavourite(item: Playable): Boolean {
+        return isFavouriteList.value?.contains(item.mediaId) ?: false
     }
 }

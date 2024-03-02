@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.repository.HistoryRepository
-import com.lalilu.lmusic.utils.extension.toState
+import com.lalilu.lhistory.repository.HistoryRepository
+import com.lalilu.component.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 
