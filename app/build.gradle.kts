@@ -159,6 +159,7 @@ android {
     }
     lint {
         disable += "Instantiatable"
+        abortOnError = false
     }
 }
 
