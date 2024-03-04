@@ -6,7 +6,7 @@ ksp_version = "1.9.20-1.0.14"
 #serialization_json_version = "1.6.0"
 
 koin_version = "3.5.0"
-compose_bom_alpha_version = "2023.12.00-alpha04"
+compose_bom_alpha_version = "2024.02.00-alpha02"
 compose_bom_version = "2024.01.00"
 compose_compiler_version = "1.5.5"
 accompanist_version = "0.32.0"
