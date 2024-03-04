@@ -2,6 +2,7 @@ package com.lalilu.component.settings
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -127,7 +128,7 @@ fun SettingSwitcher(
             .enableFor(enable = { enableContentClickable }) {
                 clickable(
                     interactionSource = interactionSource,
-                    indication = rememberRipple(),
+                    indication = LocalIndication.current,
                     onClick = onContentStartClick
                 )
             }

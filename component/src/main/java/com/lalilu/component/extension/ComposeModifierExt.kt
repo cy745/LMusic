@@ -2,6 +2,7 @@ package com.lalilu.component.extension
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Indication
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.indication
@@ -45,7 +46,7 @@ fun Modifier.longClickable(
         .semantics { role = Role.Button }
         .indication(
             interactionSource = interactionSource,
-            indication = indication ?: rememberRipple()
+            indication = indication ?: LocalIndication.current
         )
         .hoverable(interactionSource, true)
         .pointerInput(Unit) {

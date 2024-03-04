@@ -1,6 +1,7 @@
 package com.lalilu.component.settings
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -55,7 +56,7 @@ fun SettingProgressSeekBar(
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,
-                indication = rememberRipple(),
+                indication = LocalIndication.current,
                 onClick = { }
             )
             .padding(horizontal = 20.dp, vertical = 10.dp),
