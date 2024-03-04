@@ -10,14 +10,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.lalilu.common.base.Playable
-import com.lalilu.component.extension.DynamicTipsHost
 import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.extension.collectWithLifeCycleOwner
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmusic.GlobalNavigatorImpl
 import com.lalilu.lmusic.adapter.NewPlayingAdapter
 import com.lalilu.lmusic.adapter.ViewEvent
-import com.lalilu.lmusic.compose.NavigationWrapper
 import com.lalilu.lmusic.ui.ComposeNestedScrollRecyclerView
 import com.lalilu.lmusic.utils.extension.calculateExtraLayoutSpace
 import com.lalilu.lmusic.utils.extension.getActivity
@@ -90,13 +88,7 @@ private fun createAdapter(
         .setViewEvent { event, item ->
             when (event) {
                 ViewEvent.OnClick -> playingVM.play(mediaId = item.mediaId, playOrPause = true)
-                ViewEvent.OnLongClick -> {
-                    GlobalNavigatorImpl.goToDetailOf(
-                        mediaId = item.mediaId,
-                        navigator = NavigationWrapper.navigator,
-                    )
-                    NavigationWrapper.navigator?.show()
-                }
+                ViewEvent.OnLongClick -> GlobalNavigatorImpl.goToDetailOf(mediaId = item.mediaId)
 
                 ViewEvent.OnSwipeLeft -> {
                     DynamicTipsItem.Static(

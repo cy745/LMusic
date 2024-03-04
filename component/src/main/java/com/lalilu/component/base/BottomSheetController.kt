@@ -120,10 +120,6 @@ class BottomSheetController internal constructor(
         }
     }
 
-    override fun getCurrentScreen(): Screen? {
-        return lastItemOrNull
-    }
-
     override fun preBack(currentScreen: Screen?): Boolean {
         // 若当前只剩一个页面，则不清空元素了
         if (items.size <= 1) {

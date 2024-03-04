@@ -57,7 +57,6 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
-import com.lalilu.component.extension.DynamicTipsHost
 import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.rememberScrollPosition

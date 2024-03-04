@@ -1,7 +1,6 @@
 package com.lalilu.component.settings
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.basicMarquee
@@ -18,7 +17,6 @@ import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
@@ -61,7 +59,6 @@ fun SettingSwitcher(
     enableContentClickable = enableContentClickable
 )
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingSwitcher(
     modifier: Modifier = Modifier,

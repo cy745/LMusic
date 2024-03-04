@@ -87,7 +87,7 @@ interface EnhanceNavigator : Stack<Screen> {
      *
      * @return 当前用户可见的页面
      */
-    fun getCurrentScreen(): Screen?
+    fun getCurrentScreen(): Screen? = lastItemOrNull
 
     /**
      * 执行跳转操作
@@ -139,5 +139,11 @@ interface EnhanceNavigator : Stack<Screen> {
     }
 
     fun getNavigator(): Navigator
+}
+
+fun createDefaultEnhanceNavigator(navigator: Navigator): EnhanceNavigator {
+    return object : Stack<Screen> by navigator, EnhanceNavigator {
+        override fun getNavigator(): Navigator = navigator
+    }
 }
 

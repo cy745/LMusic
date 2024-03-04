@@ -9,7 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,9 +49,9 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.Navigator
 import com.lalilu.R
 import com.lalilu.component.base.CustomScreen
-import com.lalilu.lmusic.compose.component.CustomTransition
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.extension.rememberIsPad
+import com.lalilu.lmusic.compose.component.CustomTransition
 
 @Composable
 @OptIn(ExperimentalAnimationApi::class)
@@ -110,8 +110,8 @@ fun GuidingScreen() {
                         horizontalAlignment = Alignment.Start
                     ) {
                         AnimatedContent(targetState = currentScreenTitleRes, transitionSpec = {
-                            (slideInVertically { height -> height } + fadeIn() with
-                                    slideOutVertically { height -> -height } + fadeOut()).using(
+                            ((slideInVertically { height -> height } + fadeIn()).togetherWith(
+                                slideOutVertically { height -> -height } + fadeOut())).using(
                                 SizeTransform(clip = false)
                             )
                         }, label = "") {

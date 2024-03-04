@@ -24,6 +24,7 @@ fun CustomTransition(
 ) {
     AnimatedContent(
         modifier = modifier,
+        contentKey = { it.key },
         targetState = getScreenFrom(navigator),
         transitionSpec = {
             fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + slideInVertically { 100 } togetherWith
