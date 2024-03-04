@@ -9,7 +9,7 @@ interface GlobalNavigator {
      */
     fun goToDetailOf(
         mediaId: String,
-        navigator: SheetNavigator? = null
+        navigator: EnhanceNavigator? = null
     )
 
     /**
@@ -18,7 +18,7 @@ interface GlobalNavigator {
     fun showSongs(
         mediaIds: List<String>,
         title: String? = null,
-        navigator: SheetNavigator? = null
+        navigator: EnhanceNavigator? = null
     )
 
     /**
@@ -31,10 +31,10 @@ interface GlobalNavigator {
     fun navigateTo(
         screen: Screen,
         singleTop: Boolean = true,
-        navigator: SheetNavigator? = null
+        navigator: EnhanceNavigator? = null
     )
 
     fun goBack(
-        navigator: SheetNavigator? = null
+        navigator: EnhanceNavigator? = null
     )
 }

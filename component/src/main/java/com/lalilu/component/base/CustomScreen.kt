@@ -125,7 +125,7 @@ abstract class DynamicScreen : CustomScreen {
     ) {
         LaunchedEffect(isVisible.value) {
             if (isVisible.value) {
-                extraContentStack = extraContentStack.plus(ScreenBarComponent(
+                extraContentStack += ScreenBarComponent(
                     state = isVisible,
                     showMask = showMask(),
                     showBackground = showBackground(),
@@ -139,7 +139,7 @@ abstract class DynamicScreen : CustomScreen {
                             }
                         }
                     }
-                ))
+                )
             } else {
                 val key = isVisible.hashCode().toString()
                 extraContentStack = extraContentStack.filter { it.key != key }
@@ -157,7 +157,7 @@ abstract class DynamicScreen : CustomScreen {
     ) {
         LaunchedEffect(isVisible.value) {
             if (isVisible.value) {
-                mainContentStack = mainContentStack.plus(ScreenBarComponent(
+                mainContentStack += ScreenBarComponent(
                     state = isVisible,
                     showMask = showMask(),
                     showBackground = showBackground(),
@@ -168,7 +168,7 @@ abstract class DynamicScreen : CustomScreen {
                             onBackPressed()
                         }
                     }
-                ))
+                )
             } else {
                 val key = isVisible.hashCode().toString()
                 mainContentStack = mainContentStack.filter { it.key != key }
