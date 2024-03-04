@@ -133,7 +133,7 @@ object DrawerWrapper {
                 )
             )
 
-        val lastXSpace = constraints.maxWidth - (spacer?.width ?: 0) - (main?.width ?: 0)
+        val lastXSpace = constraints.maxWidth - (main?.width ?: 0)
         val second = measurables.getOrNull(2)
             ?.measure(constraints.copy(maxWidth = lastXSpace))
 
@@ -149,7 +149,7 @@ object DrawerWrapper {
                 fraction = animateProgress
             )
             val secondX = lerp(
-                start = (main?.width ?: 0) + (spacer?.width ?: 0),
+                start = main?.width ?: 0,
                 stop = 0,
                 fraction = animateProgress
             )

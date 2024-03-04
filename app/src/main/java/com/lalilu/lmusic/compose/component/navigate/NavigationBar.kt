@@ -30,6 +30,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,50 +48,93 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.core.stack.Stack
 import com.lalilu.R
 import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.extension.dayNightTextColor
-import com.lalilu.component.navigation.SheetNavigator
+import com.lalilu.component.navigation.EnhanceNavigator
+import com.lalilu.component.navigation.SheetController
+
+sealed class NavigationBarState {
+    data class ForTabScreen(val tabScreens: List<TabScreen>) : NavigationBarState()
+    data class ForScreen(val screen: DynamicScreen?) : NavigationBarState()
+}
+
+@Composable
+fun rememberNavigationBarState(
+    tabScreens: () -> List<TabScreen>,
+    currentScreen: () -> Screen?,
+): State<NavigationBarState> {
+    return remember {
+        derivedStateOf {
+            when (val screen = currentScreen()) {
+                is TabScreen -> NavigationBarState.ForTabScreen(tabScreens())
+                is DynamicScreen -> NavigationBarState.ForScreen(screen)
+                else -> NavigationBarState.ForScreen(null)
+            }
+        }
+    }
+}
+
+@Composable
+fun rememberPreviousScreenTitleRes(
+    stack: Stack<Screen>,
+    currentScreen: Screen?
+): State<Int> {
+    val previousScreen by remember(currentScreen) {
+        derivedStateOf { stack.items.getOrNull(stack.size - 2) as? CustomScreen }
+    }
+    val previousInfo by remember {
+        derivedStateOf { previousScreen?.getScreenInfo() }
+    }
+    return remember {
+        derivedStateOf { previousInfo?.title ?: R.string.bottom_sheet_navigate_back }
+    }
+}
+
 
 @Composable
 fun NavigationBar(
     modifier: Modifier = Modifier,
     tabScreens: () -> List<TabScreen>,
     currentScreen: () -> Screen?,
-    navigator: SheetNavigator,
+    navigator: EnhanceNavigator,
+    sheetController: SheetController? = null,
 ) {
-    val screen by remember { derivedStateOf { currentScreen() } }
-    val isCurrentTabScreen by remember { derivedStateOf { screen as? TabScreen != null } }
-    val previousScreen by remember(screen) {
-        derivedStateOf { navigator.items.getOrNull(navigator.size - 2) as? CustomScreen }
-    }
-    val previousInfo by remember { derivedStateOf { previousScreen?.getScreenInfo() } }
-    val previousTitle by remember {
-        derivedStateOf { previousInfo?.title ?: R.string.bottom_sheet_navigate_back }
-    }
-    val dynamicScreen by remember { derivedStateOf { screen as? DynamicScreen } }
-    val screenActions = dynamicScreen?.registerActions() ?: emptyList()
+    val navigationBarState =
+        rememberNavigationBarState(tabScreens = tabScreens, currentScreen = currentScreen)
 
     AnimatedContent(
         modifier = modifier.fillMaxWidth(),
-        targetState = isCurrentTabScreen,
+        targetState = navigationBarState.value,
         label = "NavigateBarTransform"
-    ) { tabScreenNow ->
-        if (tabScreenNow) {
-            NavigateTabBar(
-                tabScreens = tabScreens,
-                currentScreen = { screen },
-                onSelectTab = { navigator.show(it) }
-            )
-        } else {
-            NavigateCommonBar(
-                previousTitle = { previousTitle },
-                screenActions = { screenActions },
-                navigator = navigator
-            )
+    ) { state ->
+        when (state) {
+            is NavigationBarState.ForTabScreen -> {
+                NavigateTabBar(
+                    tabScreens = state::tabScreens::get,
+                    currentScreen = currentScreen,
+                    onSelectTab = { navigator.jump(it) }
+                )
+            }
+
+            is NavigationBarState.ForScreen -> {
+                val actions = state.screen?.registerActions() ?: emptyList()
+                val previousTitle = rememberPreviousScreenTitleRes(
+                    stack = navigator,
+                    currentScreen = currentScreen()
+                )
+
+                NavigateCommonBar(
+                    previousTitle = { previousTitle.value },
+                    screenActions = { actions },
+                    navigator = navigator,
+                    sheetController = sheetController
+                )
+            }
         }
     }
 }
@@ -127,7 +171,8 @@ fun NavigateCommonBar(
     modifier: Modifier = Modifier,
     previousTitle: () -> Int,
     screenActions: () -> List<ScreenAction>,
-    navigator: SheetNavigator
+    navigator: EnhanceNavigator,
+    sheetController: SheetController? = null,
 ) {
     val itemFitImePadding = remember { mutableStateOf(false) }
 
@@ -222,7 +267,7 @@ fun NavigateCommonBar(
                                 backgroundColor = Color(0x25FE4141),
                                 contentColor = Color(0xFFFE4141)
                             ),
-                            onClick = { navigator.hide() }
+                            onClick = { sheetController?.hide() }
                         ) {
                             Text(
                                 text = stringResource(id = R.string.bottom_sheet_navigate_close),

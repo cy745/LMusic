@@ -1,8 +1,8 @@
 package com.lalilu.lmusic
 
 import cafe.adriel.voyager.core.screen.Screen
+import com.lalilu.component.navigation.EnhanceNavigator
 import com.lalilu.component.navigation.GlobalNavigator
-import com.lalilu.component.navigation.SheetNavigator
 import com.lalilu.lmusic.compose.NavigationWrapper
 import com.lalilu.lmusic.compose.new_screen.SongDetailScreen
 import com.lalilu.lmusic.compose.new_screen.SongsScreen
@@ -18,19 +18,19 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
      */
     override fun goToDetailOf(
         mediaId: String,
-        navigator: SheetNavigator?,
+        navigator: EnhanceNavigator?,
     ) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
-        nav.show(SongDetailScreen(mediaId = mediaId))
+        nav.jump(SongDetailScreen(mediaId = mediaId))
     }
 
     override fun showSongs(
         mediaIds: List<String>,
         title: String?,
-        navigator: SheetNavigator?,
+        navigator: EnhanceNavigator?,
     ) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
-        nav.show(
+        nav.jump(
             SongsScreen(
                 title = title,
                 mediaIds = mediaIds
@@ -41,13 +41,13 @@ object GlobalNavigatorImpl : GlobalNavigator, CoroutineScope {
     override fun navigateTo(
         screen: Screen,
         singleTop: Boolean,
-        navigator: SheetNavigator?
+        navigator: EnhanceNavigator?
     ) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
-        nav.show(screen = screen)
+        nav.jump(targetScreen = screen)
     }
 
-    override fun goBack(navigator: SheetNavigator?) {
+    override fun goBack(navigator: EnhanceNavigator?) {
         val nav = navigator ?: NavigationWrapper.navigator ?: return
         nav.back()
     }

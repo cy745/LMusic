@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,9 +20,10 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.LocalPaddingValue
-import com.lalilu.component.navigation.SheetNavigator
+import com.lalilu.component.navigation.EnhanceNavigator
+import com.lalilu.component.navigation.LocalSheetController
+import com.lalilu.component.navigation.SheetController
 import com.lalilu.lmusic.compose.TabWrapper
 import com.lalilu.lmusic.compose.component.CustomTransition
 
@@ -46,25 +48,31 @@ fun ImmerseStatusBar(
 fun NavigationSheetContent(
     modifier: Modifier,
     transitionKeyPrefix: String,
-    sheetNavigator: SheetNavigator,
-    getScreenFrom: (Navigator) -> Screen = { sheetNavigator.getNavigator().lastItem },
+    navigator: EnhanceNavigator,
+    sheetController: SheetController? = LocalSheetController.current,
+    getScreenFrom: (Navigator) -> Screen = { it.lastItem },
 ) {
-    val currentPaddingValue = remember { mutableStateOf(PaddingValues(0.dp)) }
-    val currentScreen by remember { derivedStateOf { getScreenFrom(sheetNavigator.getNavigator()) } }
-    val customScreenInfo by remember { derivedStateOf { (currentScreen as? CustomScreen)?.getScreenInfo() } }
+//    val customScreenInfo by remember { derivedStateOf { (currentScreen as? CustomScreen)?.getScreenInfo() } }
 
-    ImmerseStatusBar(
-        enable = { customScreenInfo?.immerseStatusBar != false },
-        isExpended = { sheetNavigator.isVisible }
-    )
+//    ImmerseStatusBar(
+//        enable = { customScreenInfo?.immerseStatusBar != false },
+//        isExpended = { sheetNavigator.isVisible }
+//    )
 
     Box(modifier = Modifier.fillMaxSize()) {
+        val currentScreen = remember { mutableStateOf<Screen?>(null) }
+        val currentPaddingValue = remember { mutableStateOf(PaddingValues(0.dp)) }
+
         CustomTransition(
             modifier = Modifier.fillMaxSize(),
             keyPrefix = transitionKeyPrefix,
-            navigator = sheetNavigator.getNavigator(),
+            navigator = navigator.getNavigator(),
             getScreenFrom = getScreenFrom,
         ) {
+            if (!currentComposer.skipping) {
+                currentScreen.value = it
+            }
+
             CompositionLocalProvider(LocalPaddingValue provides currentPaddingValue) {
                 it.Content()
             }
@@ -74,13 +82,14 @@ fun NavigationSheetContent(
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter),
             measureHeightState = currentPaddingValue,
-            currentScreen = { currentScreen }
+            currentScreen = { currentScreen.value }
         ) { modifier ->
             NavigationBar(
                 modifier = modifier.align(Alignment.BottomCenter),
                 tabScreens = { TabWrapper.tabScreen },
-                currentScreen = { currentScreen },
-                navigator = sheetNavigator
+                currentScreen = { currentScreen.value },
+                navigator = navigator,
+                sheetController = sheetController
             )
         }
     }
