@@ -226,21 +226,23 @@ fun PlayingLayout(
                         { x -> -2f * (x - 0.5f).pow(2) + 0.5f }
                     }
 
-                    val lyricEntry = playingVM.lyricRepository.currentLyric
-                        .mapLatest {
-                            LyricUtil
-                                .parseLrc(arrayOf(it?.first, it?.second))
-                                ?.mapIndexed { index, lyricEntry ->
-                                    LyricEntry(
-                                        index = index,
-                                        time = lyricEntry.time,
-                                        text = lyricEntry.text,
-                                        translate = lyricEntry.secondText
-                                    )
-                                }
-                                ?: emptyList()
-                        }
-                        .collectAsState(initial = emptyList())
+                    val flow = remember {
+                        playingVM.lyricRepository.currentLyric
+                            .mapLatest {
+                                LyricUtil
+                                    .parseLrc(arrayOf(it?.first, it?.second))
+                                    ?.mapIndexed { index, lyricEntry ->
+                                        LyricEntry(
+                                            index = index,
+                                            time = lyricEntry.time,
+                                            text = lyricEntry.text,
+                                            translate = lyricEntry.secondText
+                                        )
+                                    }
+                                    ?: emptyList()
+                            }
+                    }
+                    val lyricEntry = flow.collectAsState(initial = emptyList())
                     val minToMiddleProgress = remember {
                         derivedStateOf {
                             draggable.progressBetween(

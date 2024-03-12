@@ -1,7 +1,7 @@
 package com.lalilu.lmusic.compose
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
@@ -63,13 +63,19 @@ object NavigationWrapper {
                     transitionKeyPrefix = "forPad"
                 )
             } else {
+                val animateSpec = remember {
+                    tween<Float>(
+                        durationMillis = 150,
+                        easing = CubicBezierEasing(0.1f, 0.16f, 0f, 1f)
+                    )
+                }
                 BottomSheetNavigatorLayout(
                     modifier = modifier.fillMaxSize(),
                     navigator = navigator,
                     defaultIsVisible = false,
                     scrimColor = Color.Black.copy(alpha = 0.5f),
                     sheetBackgroundColor = MaterialTheme.colors.background,
-                    animationSpec = remember { tween(300, easing = FastOutSlowInEasing) },
+                    animationSpec = animateSpec,
                     sheetContent = { sheetNavigator ->
                         this@NavigationWrapper.navigator = sheetNavigator
                         this@NavigationWrapper.sheetController = sheetNavigator

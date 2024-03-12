@@ -40,7 +40,6 @@ fun BottomSheetNavigatorLayout(
     modifier: Modifier = Modifier,
     navigator: Navigator,
     hideOnBackPress: Boolean = true,
-    visibleWhenShow: Boolean = false,
     defaultIsVisible: Boolean = false,
     scrimColor: Color = ModalBottomSheetDefaults.scrimColor,
     sheetShape: Shape = MaterialTheme.shapes.large,
@@ -62,7 +61,6 @@ fun BottomSheetNavigatorLayout(
 
     val bottomSheetNavigator = remember {
         BottomSheetController(
-            visibleWhenShow = visibleWhenShow,
             navigator = navigator,
             sheetState = sheetState,
             coroutineScope = coroutineScope
@@ -90,34 +88,24 @@ fun BottomSheetNavigatorLayout(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 class BottomSheetController internal constructor(
-    private val visibleWhenShow: Boolean = false,
     private val navigator: Navigator,
     private val sheetState: ModalBottomSheetState,
     private val coroutineScope: CoroutineScope
 ) : Stack<Screen> by navigator, SheetController, EnhanceNavigator {
 
     override val isVisible: Boolean by derivedStateOf {
-        if (sheetState.currentValue == sheetState.targetValue && sheetState.progress == 1f) {
-            return@derivedStateOf sheetState.currentValue == ModalBottomSheetValue.Expanded
-        }
+        val exitProgress = sheetState.progress(
+            from = ModalBottomSheetValue.Expanded,
+            to = ModalBottomSheetValue.Hidden
+        )
 
-        if (visibleWhenShow) {
-            return@derivedStateOf when (sheetState.currentValue) {
-                ModalBottomSheetValue.Hidden -> sheetState.progress >= 0.05f
-                ModalBottomSheetValue.Expanded -> sheetState.progress <= 0.95f
+        val enterProgress = sheetState.progress(
+            from = ModalBottomSheetValue.Hidden,
+            to = ModalBottomSheetValue.Expanded
+        )
 
-                else -> false
-            }
-        }
-
-        when (sheetState.currentValue) {
-            ModalBottomSheetValue.Hidden -> sheetState.progress >= 0.95f
-            ModalBottomSheetValue.Expanded -> sheetState.progress <= 0.05f
-
-            else -> false
-        }
+        enterProgress >= 0.05 || exitProgress < 0.95
     }
 
     override fun preBack(currentScreen: Screen?): Boolean {

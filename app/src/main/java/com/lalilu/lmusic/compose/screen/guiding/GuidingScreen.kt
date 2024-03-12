@@ -54,7 +54,6 @@ import com.lalilu.component.extension.rememberIsPad
 import com.lalilu.lmusic.compose.component.CustomTransition
 
 @Composable
-@OptIn(ExperimentalAnimationApi::class)
 fun GuidingScreen() {
     val windowSize = LocalWindowSize.current
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp +
