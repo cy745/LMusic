@@ -2,6 +2,7 @@ package com.lalilu.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,8 @@ import com.lalilu.common.base.Playable
 import com.lalilu.component.card.SongCard
 import com.lalilu.component.extension.ItemSelectHelper
 import com.lalilu.component.extension.LazyListScrollToHelper
+import com.lalilu.component.extension.SwipeAction
+import com.lalilu.component.extension.SwipeActionRow
 import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
 import com.lalilu.component.extension.rememberStickyHelper
 import com.lalilu.component.extension.stickyHeaderExtent
@@ -109,44 +112,56 @@ fun <K : Any> SongListWrapper(
                     key = { it.mediaId },
                     contentType = { Playable::class }
                 ) { item ->
-                    SongCard(
-                        song = { item },
-                        modifier = Modifier.animateItemPlacement(),
-                        onClick = {
-                            if (selector?.isSelecting() == true) {
-                                selector.onSelect(item)
-                            } else {
-                                onClickItem(item)
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val swipeAction = remember {
+                        SwipeAction.BySwipe(
+                            iconRes = R.drawable.ic_play_list_2_fill,
+                            titleRes = R.string.select_action_title_select_all,
+                            onAction = {
+                                if (selector?.isSelecting() != true) {
+                                    onDoubleClickItem(item)
+                                }
                             }
-                        },
-                        onLongClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onLongClickItem(item)
-                        },
-                        onDoubleClick = {
-                            if (selector?.isSelecting() != true) {
+                        )
+                    }
+
+                    SwipeActionRow(
+                        actionAtLeft = swipeAction,
+                        interactionSource = interactionSource,
+                    ) {
+                        SongCard(
+                            song = { item },
+                            modifier = Modifier.animateItemPlacement(),
+                            onClick = {
+                                if (selector?.isSelecting() == true) {
+                                    selector.onSelect(item)
+                                } else {
+                                    onClickItem(item)
+                                }
+                            },
+                            onLongClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onDoubleClickItem(item)
+                                onLongClickItem(item)
+                            },
+                            onEnterSelect = { selector?.onSelect(item) },
+                            isSelected = { selector?.isSelected(item) ?: false },
+                            isPlaying = { isItemPlaying(item) },
+                            showPrefix = showPrefixContent,
+                            hasLyric = { hasLyric(item) },
+                            prefixContent = { modifier ->
+                                Row(
+                                    modifier = modifier
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colors.surface)
+                                        .padding(start = 4.dp, end = 5.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    prefixContent(item)
+                                }
                             }
-                        },
-                        onEnterSelect = { selector?.onSelect(item) },
-                        isSelected = { selector?.isSelected(item) ?: false },
-                        isPlaying = { isItemPlaying(item) },
-                        showPrefix = showPrefixContent,
-                        hasLyric = { hasLyric(item) },
-                        prefixContent = { modifier ->
-                            Row(
-                                modifier = modifier
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colors.surface)
-                                    .padding(start = 4.dp, end = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                prefixContent(item)
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -222,47 +237,60 @@ fun ReorderableSongListWrapper(
                     reorderableLazyListState = reorderableState,
                     key = item.mediaId
                 ) { isDragging ->
-                    SongCard(
-                        song = { item },
-                        modifier = Modifier.animateItemPlacement(),
-                        dragModifier = Modifier.draggableHandle(
-                            onDragStopped = { onDragMoveEnd(itemsState) }
-                        ),
-                        onClick = {
-                            if (selector?.isSelecting() == true) {
-                                selector.onSelect(item)
-                            } else {
-                                onClickItem(item)
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val swipeAction = remember {
+                        SwipeAction.BySwipe(
+                            iconRes = R.drawable.ic_play_list_2_fill,
+                            titleRes = R.string.select_action_title_select_all,
+                            onAction = {
+                                if (selector?.isSelecting() != true) {
+                                    onDoubleClickItem(item)
+                                }
                             }
-                        },
-                        onLongClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onLongClickItem(item)
-                        },
-                        onDoubleClick = {
-                            if (selector?.isSelecting() != true) {
+                        )
+                    }
+
+                    SwipeActionRow(
+                        actionAtLeft = swipeAction,
+                        interactionSource = interactionSource,
+                    ) {
+                        SongCard(
+                            song = { item },
+                            modifier = Modifier.animateItemPlacement(),
+                            dragModifier = Modifier.draggableHandle(
+                                onDragStopped = { onDragMoveEnd(itemsState) }
+                            ),
+                            interactionSource = interactionSource,
+                            onClick = {
+                                if (selector?.isSelecting() == true) {
+                                    selector.onSelect(item)
+                                } else {
+                                    onClickItem(item)
+                                }
+                            },
+                            onLongClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onDoubleClickItem(item)
+                                onLongClickItem(item)
+                            },
+                            onEnterSelect = { selector?.onSelect(item) },
+                            isSelected = { selector?.isSelected(item) ?: false },
+                            isPlaying = { isItemPlaying(item) },
+                            showPrefix = showPrefixContent,
+                            hasLyric = { hasLyric(item) },
+                            prefixContent = { modifier ->
+                                Row(
+                                    modifier = modifier
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colors.surface)
+                                        .padding(start = 4.dp, end = 5.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    prefixContent(item)
+                                }
                             }
-                        },
-                        onEnterSelect = { selector?.onSelect(item) },
-                        isSelected = { selector?.isSelected(item) ?: false },
-                        isPlaying = { isItemPlaying(item) },
-                        showPrefix = showPrefixContent,
-                        hasLyric = { hasLyric(item) },
-                        prefixContent = { modifier ->
-                            Row(
-                                modifier = modifier
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colors.surface)
-                                    .padding(start = 4.dp, end = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                prefixContent(item)
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

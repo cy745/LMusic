@@ -59,6 +59,7 @@ import com.lalilu.component.extension.mimeTypeToIcon
 fun SongCard(
     modifier: Modifier = Modifier,
     dragModifier: Modifier = Modifier,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     song: () -> Playable,
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
@@ -76,6 +77,7 @@ fun SongCard(
     SongCard(
         modifier = modifier,
         dragModifier = dragModifier,
+        interactionSource = interactionSource,
         title = { item.title },
         subTitle = { item.subTitle },
         duration = { item.durationMs },
@@ -94,11 +96,13 @@ fun SongCard(
     )
 }
 
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SongCard(
     modifier: Modifier = Modifier,
     dragModifier: Modifier = Modifier,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     title: () -> String,
     subTitle: () -> String,
     duration: () -> Long,
@@ -115,7 +119,6 @@ fun SongCard(
     showPrefix: () -> Boolean = { false },
     prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     val bgColor by animateColorAsState(
         targetValue = if (isSelected()) dayNightTextColor(0.15f) else Color.Transparent,
         label = ""
@@ -214,7 +217,7 @@ fun SongCardContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            PlayingTipIcon(isPlaying = isPlaying)
+//            PlayingTipIcon(isPlaying = isPlaying)
             AnimatedVisibility(
                 visible = showPrefix(),
                 modifier = Modifier.wrapContentWidth(),
