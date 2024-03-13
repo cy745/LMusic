@@ -136,8 +136,8 @@ object DialogWrapper : DialogHost, DialogContext {
 
         AnyPopDialog(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 0.dp)
+                .wrapContentHeight()
+                .widthIn(max = 560.dp)
                 .background(color = backgroundColor ?: MaterialTheme.colors.background),
             isActiveClose = isActiveClose,
             properties = properties,
