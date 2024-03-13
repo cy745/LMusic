@@ -24,8 +24,10 @@ import com.lalilu.component.base.LocalPaddingValue
 import com.lalilu.component.navigation.EnhanceNavigator
 import com.lalilu.component.navigation.LocalSheetController
 import com.lalilu.component.navigation.SheetController
-import com.lalilu.lmusic.compose.TabWrapper
 import com.lalilu.lmusic.compose.component.CustomTransition
+import com.lalilu.lmusic.compose.new_screen.HomeScreen
+import com.lalilu.lmusic.compose.new_screen.SearchScreen
+import com.lalilu.lplaylist.screen.PlaylistScreen
 
 @Composable
 fun ImmerseStatusBar(
@@ -86,7 +88,13 @@ fun NavigationSheetContent(
         ) { modifier ->
             NavigationBar(
                 modifier = modifier.align(Alignment.BottomCenter),
-                tabScreens = { TabWrapper.tabScreen },
+                tabScreens = {
+                    listOf(
+                        HomeScreen,
+                        PlaylistScreen,
+                        SearchScreen
+                    )
+                },
                 currentScreen = { currentScreen.value },
                 navigator = navigator,
                 sheetController = sheetController

@@ -1,9 +1,10 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -13,11 +14,13 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.extension.singleViewModel
-import com.lalilu.lmusic.extension.DailyRecommend
 import com.lalilu.lmusic.extension.EntryPanel
-import com.lalilu.lmusic.extension.HistoryPanel
-import com.lalilu.lmusic.extension.LatestPanel
+import com.lalilu.lmusic.extension.dailyRecommend
+import com.lalilu.lmusic.extension.historyPanel
+import com.lalilu.lmusic.extension.latestPanel
+import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 object HomeScreen : DynamicScreen(), TabScreen {
     override fun getScreenInfo(): ScreenInfo = ScreenInfo(
@@ -25,9 +28,12 @@ object HomeScreen : DynamicScreen(), TabScreen {
         icon = R.drawable.ic_loader_line
     )
 
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     override fun Content() {
         val vm: LibraryViewModel = singleViewModel()
+        val historyVM: HistoryViewModel = singleViewModel()
+        val playingVM: PlayingViewModel = singleViewModel()
 
         LaunchedEffect(Unit) {
             vm.checkOrUpdateToday()
@@ -35,19 +41,21 @@ object HomeScreen : DynamicScreen(), TabScreen {
 
         LLazyColumn(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = WindowInsets.statusBars.asPaddingValues()
+            contentPadding = WindowInsets.statusBarsIgnoringVisibility.asPaddingValues()
         ) {
-            item {
-                DailyRecommend()
-            }
+            dailyRecommend(
+                libraryVM = vm,
+            )
 
-            item {
-                LatestPanel()
-            }
+            latestPanel(
+                libraryVM = vm,
+                playingVM = playingVM
+            )
 
-            item {
-                HistoryPanel()
-            }
+            historyPanel(
+                historyVM = historyVM,
+                playingVM = playingVM
+            )
 
             item {
                 EntryPanel()

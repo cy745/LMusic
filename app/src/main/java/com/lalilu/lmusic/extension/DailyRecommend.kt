@@ -1,26 +1,23 @@
 package com.lalilu.lmusic.extension
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.extension.dayNightTextColor
-import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.GlobalNavigatorImpl
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 
-@Composable
-fun DailyRecommend(
-    vm: LibraryViewModel = singleViewModel(),
+fun LazyListScope.dailyRecommend(
+    libraryVM: LibraryViewModel,
 ) {
-    Column {
+    item {
         Text(
             modifier = Modifier
                 .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 10.dp)
@@ -29,8 +26,10 @@ fun DailyRecommend(
             style = MaterialTheme.typography.h6,
             color = dayNightTextColor()
         )
+    }
+    item {
         RecommendRow(
-            items = { vm.dailyRecommends.value },
+            items = { libraryVM.dailyRecommends.value },
             getId = { it.id }
         ) {
             RecommendCard2(

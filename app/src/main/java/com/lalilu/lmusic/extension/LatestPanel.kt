@@ -1,16 +1,14 @@
 package com.lalilu.lmusic.extension
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.Chip
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.common.base.Playable
-import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.GlobalNavigatorImpl
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendRow
@@ -20,13 +18,11 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
-
-@Composable
-fun LatestPanel(
-    libraryVM: LibraryViewModel = singleViewModel(),
-    playingVM: PlayingViewModel = singleViewModel()
+fun LazyListScope.latestPanel(
+    libraryVM: LibraryViewModel,
+    playingVM: PlayingViewModel
 ) {
-    Column {
+    item {
         RecommendTitle(
             title = "最近添加",
             onClick = { }
@@ -38,7 +34,8 @@ fun LatestPanel(
                 )
             }
         }
-
+    }
+    item {
         RecommendRow(
             items = { libraryVM.recentlyAdded.value },
             getId = { it.id }
