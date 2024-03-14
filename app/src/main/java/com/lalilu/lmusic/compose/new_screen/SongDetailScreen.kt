@@ -12,15 +12,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Chip
@@ -36,6 +38,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -52,7 +55,7 @@ import coil.request.ImageRequest
 import com.lalilu.R
 import com.lalilu.component.IconButton
 import com.lalilu.component.IconTextButton
-import com.lalilu.component.LLazyColumn
+import com.lalilu.component.TwoColumnWithPad
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
@@ -71,10 +74,10 @@ import com.lalilu.lmusic.compose.component.card.SongInformationCard
 import com.lalilu.lmusic.compose.presenter.DetailScreenAction
 import com.lalilu.lmusic.compose.presenter.DetailScreenIsPlayingPresenter
 import com.lalilu.lmusic.compose.presenter.DetailScreenLikeBtnPresenter
+import com.lalilu.lmusic.compose.screen.detail.ImageBgBox
 import com.lalilu.lmusic.utils.extension.EDGE_BOTTOM
 import com.lalilu.lmusic.utils.extension.checkActivityIsExist
 import com.lalilu.lmusic.utils.extension.edgeTransparent
-import com.lalilu.lmusic.utils.recomposeHighlighter
 import com.lalilu.lplayer.extensions.QueueAction
 import org.koin.compose.koinInject
 
@@ -152,28 +155,25 @@ data class SongDetailScreen(
             .collectAsState(initial = null)
 
         DetailScreen(
-            mediaId = { mediaId },
-            getSong = { song.value }
+            mediaId = mediaId,
+            song = song.value
         )
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun DetailScreen(
-    mediaId: () -> String,
-    getSong: () -> LSong?
+    mediaId: String,
+    song: LSong?
 ) {
     val navigator: GlobalNavigator = koinInject()
-    val context = LocalContext.current
-    val song = getSong()
 
     if (song == null) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "[Error]加载失败 #${mediaId()}")
+            Text(text = "[Error]加载失败 #${mediaId}")
         }
         return
     }
@@ -187,163 +187,211 @@ private fun DetailScreen(
         }
     }
 
-    val intent = remember(song) {
-        Intent().apply {
-            component = ComponentName(
-                "com.xjcheng.musictageditor",
-                "com.xjcheng.musictageditor.SongDetailActivity"
-            )
-            action = "android.intent.action.VIEW"
-            data = song.uri
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .recomposeHighlighter(),
-        contentAlignment = Alignment.TopCenter
+    ImageBgBox(
+        imageData = song,
+        imageModifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .blur(20.dp)
+            .edgeTransparent(position = EDGE_BOTTOM, percent = 1.5f)
+            .graphicsLayer { alpha = bgAlpha.value }
     ) {
+        TwoColumnWithPad(
+            minWidthBreakPoint = 600.dp,
+            modifierForPad = Modifier.width(325.dp),
+            arrangementForNormal = Arrangement.spacedBy(16.dp),
+            columnForPad = {
+                songHeadContent(song, navigator)
+            },
+            columnForNormal = { isPad ->
+                if (!isPad) {
+                    songHeadContent(song, navigator)
+                }
+
+                songAlbumInfoCard(song, navigator)
+
+                songActionsCard(song, navigator)
+
+                songDetailInfoCard(song, navigator)
+            }
+        )
+    }
+}
+
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
+fun LazyListScope.songHeadContent(
+    song: LSong,
+    navigator: GlobalNavigator
+) {
+    item {
         AsyncImage(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f)
-                .edgeTransparent(position = EDGE_BOTTOM, percent = 1.5f)
-                .graphicsLayer { alpha = bgAlpha.value },
-            model = ImageRequest.Builder(context)
+                .aspectRatio(1f),
+            model = ImageRequest.Builder(LocalContext.current)
                 .data(song)
                 .crossfade(true)
                 .build(),
             contentScale = ContentScale.Crop,
             contentDescription = ""
         )
-
-        LLazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .recomposeHighlighter(),
-            verticalArrangement = Arrangement.spacedBy(15.dp)
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(150.dp))
-            }
-
-            item {
-                NavigatorHeader(
-                    title = song.name,
-                    columnExtraContent = {
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            song.artists.forEach {
-                                Chip(
-                                    onClick = { navigator.navigateTo(ArtistDetailScreen(artistName = it.name)) },
-                                    colors = ChipDefaults.outlinedChipColors(),
-                                ) {
-                                    Text(
-                                        text = it.name,
-                                        fontSize = 14.sp,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
-                                            .copy(alpha = 0.7f)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                )
-            }
-
-            song.album?.let {
-                item {
-                    Surface(
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        onClick = { navigator.navigateTo(AlbumDetailScreen(albumId = it.id)) }
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+    }
+    item {
+        NavigatorHeader(
+            title = song.name,
+            paddingValues = PaddingValues(vertical = 20.dp),
+            columnExtraContent = {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    song.artists.forEach {
+                        Chip(
+                            onClick = {
+                                navigator.navigateTo(ArtistDetailScreen(artistName = it.name))
+                            },
+                            colors = ChipDefaults.outlinedChipColors(),
                         ) {
-                            RecommendCardCover(
-                                width = { 125.dp },
-                                height = { 125.dp },
-                                imageData = { it }
+                            Text(
+                                text = it.name,
+                                fontSize = 14.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+                                    .copy(alpha = 0.7f)
                             )
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = it.name,
-                                    style = MaterialTheme.typography.subtitle1,
-                                    color = dayNightTextColor()
-                                )
-                                it.artistName?.let { it1 ->
-                                    Text(
-                                        text = it1,
-                                        style = MaterialTheme.typography.subtitle2,
-                                        color = dayNightTextColor(0.5f)
-                                    )
-                                }
-                            }
                         }
                     }
                 }
             }
+        )
+    }
+}
 
-            item {
+@OptIn(ExperimentalMaterialApi::class)
+fun LazyListScope.songAlbumInfoCard(
+    song: LSong,
+    navigator: GlobalNavigator
+) {
+    song.album?.let {
+        item {
+            Surface(
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp),
+                shape = RoundedCornerShape(20.dp),
+                onClick = { navigator.navigateTo(AlbumDetailScreen(albumId = it.id)) }
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(15.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                        .padding(10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    if (context.checkActivityIsExist(intent)) {
-                        IconTextButton(
-                            text = "音乐标签编辑",
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            color = Color(0xFF3EA22C),
-                            onClick = {
-                                if (context.checkActivityIsExist(intent)) {
-                                    context.startActivity(intent)
-                                } else {
-                                    Toast.makeText(context, "未安装[音乐标签]", Toast.LENGTH_SHORT)
-                                        .show()
-                                }
-                            }
+                    RecommendCardCover(
+                        width = { 125.dp },
+                        height = { 125.dp },
+                        imageData = { it }
+                    )
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = it.name,
+                            style = MaterialTheme.typography.subtitle1,
+                            color = dayNightTextColor()
                         )
-                    }
-                    IconTextButton(
-                        text = "搜索LrcShare",
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(48.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        color = Color(0xFF3EA22C),
-                        onClick = {
-                            navigator.navigateTo(
-                                SearchLyricScreen(
-                                    mediaId = song.id,
-                                    keywords = song.name
-                                )
+                        it.artistName?.let { it1 ->
+                            Text(
+                                text = it1,
+                                style = MaterialTheme.typography.subtitle2,
+                                color = dayNightTextColor(0.5f)
                             )
                         }
-                    )
+                    }
                 }
-            }
-
-            item {
-                SongInformationCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    song = song
-                )
             }
         }
     }
+}
+
+fun LazyListScope.songActionsCard(
+    song: LSong,
+    navigator: GlobalNavigator
+) {
+    item {
+        val context = LocalContext.current
+        val intent = remember(song) {
+            Intent().apply {
+                component = ComponentName(
+                    "com.xjcheng.musictageditor",
+                    "com.xjcheng.musictageditor.SongDetailActivity"
+                )
+                action = "android.intent.action.VIEW"
+                data = song.uri
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(15.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (context.checkActivityIsExist(intent)) {
+                IconTextButton(
+                    text = "音乐标签编辑",
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color(0xFF3EA22C),
+                    onClick = {
+                        if (context.checkActivityIsExist(intent)) {
+                            context.startActivity(intent)
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "未安装[音乐标签]",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
+                    }
+                )
+            }
+            IconTextButton(
+                text = "搜索LrcShare",
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                shape = RoundedCornerShape(10.dp),
+                color = Color(0xFF3EA22C),
+                onClick = {
+                    navigator.navigateTo(
+                        SearchLyricScreen(
+                            mediaId = song.id,
+                            keywords = song.name
+                        )
+                    )
+                }
+            )
+        }
+    }
+}
+
+fun LazyListScope.songDetailInfoCard(
+    song: LSong,
+    navigator: GlobalNavigator
+) {
+    item {
+        SongInformationCard(
+            modifier = Modifier.fillMaxWidth(),
+            song = song
+        )
+    }
+}
+
+fun LazyListScope.songLyricCard(
+    song: LSong
+) {
+
 }
