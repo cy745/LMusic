@@ -95,17 +95,10 @@ class BottomSheetController internal constructor(
 ) : Stack<Screen> by navigator, SheetController, EnhanceNavigator {
 
     override val isVisible: Boolean by derivedStateOf {
-        val exitProgress = sheetState.progress(
-            from = ModalBottomSheetValue.Expanded,
-            to = ModalBottomSheetValue.Hidden
-        )
-
-        val enterProgress = sheetState.progress(
+        sheetState.progress(
             from = ModalBottomSheetValue.Hidden,
             to = ModalBottomSheetValue.Expanded
-        )
-
-        enterProgress >= 0.05 || exitProgress < 0.95
+        ) >= 0.95
     }
 
     override fun preBack(currentScreen: Screen?): Boolean {
