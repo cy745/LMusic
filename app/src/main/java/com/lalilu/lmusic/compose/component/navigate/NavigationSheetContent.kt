@@ -54,12 +54,9 @@ fun NavigationSheetContent(
     sheetController: SheetController? = LocalSheetController.current,
     getScreenFrom: (Navigator) -> Screen = { it.lastItem },
 ) {
-//    val customScreenInfo by remember { derivedStateOf { (currentScreen as? CustomScreen)?.getScreenInfo() } }
-
-//    ImmerseStatusBar(
-//        enable = { customScreenInfo?.immerseStatusBar != false },
-//        isExpended = { sheetNavigator.isVisible }
-//    )
+    ImmerseStatusBar(
+        isExpended = { sheetController?.isVisible ?: false }
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         val currentScreen = remember { mutableStateOf<Screen?>(null) }
