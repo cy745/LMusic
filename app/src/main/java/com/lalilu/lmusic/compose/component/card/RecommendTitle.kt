@@ -29,6 +29,7 @@ import com.lalilu.lmusic.utils.recomposeHighlighter
 fun RecommendTitle(
     modifier: Modifier = Modifier,
     title: String,
+    paddingValues: PaddingValues = PaddingValues(horizontal = 20.dp),
     onClick: () -> Unit = {},
     extraContent: @Composable RowScope.() -> Unit = {},
 ) {
@@ -36,7 +37,7 @@ fun RecommendTitle(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp)
+            .padding(paddingValues)
             .recomposeHighlighter(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -52,8 +53,18 @@ fun RecommendTitle(
 }
 
 @Composable
-fun RecommendTitle(modifier: Modifier = Modifier, title: String, onClick: () -> Unit = {}) {
-    RecommendTitle(modifier = modifier, title = title, onClick = onClick) {
+fun RecommendTitle(
+    modifier: Modifier = Modifier,
+    title: String,
+    paddingValues: PaddingValues = PaddingValues(horizontal = 20.dp),
+    onClick: () -> Unit = {}
+) {
+    RecommendTitle(
+        modifier = modifier,
+        title = title,
+        paddingValues = paddingValues,
+        onClick = onClick
+    ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_right_s_line),
             contentDescription = "",
