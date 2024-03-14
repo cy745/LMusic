@@ -60,6 +60,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import org.koin.compose.koinInject
 import java.time.LocalTime
+import com.lalilu.component.R as ComponentR
 
 
 data class CustomCountDownTimer(
@@ -131,7 +132,7 @@ private val SleepTimerDialog = DialogItem.Dynamic(backgroundColor = Color.Transp
 fun SleepTimerSmallEntry() {
     IconButton(onClick = { DialogWrapper.push(SleepTimerDialog) }) {
         Icon(
-            painter = painterResource(id = StatusBarLyric.API.R.drawable.ic_clock_black_24dp),
+            painter = painterResource(id = ComponentR.drawable.ic_time_line),
             contentDescription = "",
             tint = Color.White
         )

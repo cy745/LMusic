@@ -1,10 +1,6 @@
 package com.lalilu.lmusic.compose.component.playing
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,6 +28,7 @@ import com.lalilu.component.settings.SettingProgressSeekBar
 import com.lalilu.component.settings.SettingStateSeekBar
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.extension.SleepTimerSmallEntry
 import org.koin.compose.koinInject
 
 private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transparent) {
@@ -55,6 +52,11 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 valueRange = 14..36
             )
             SettingSwitcher(
+                title = "歌词模糊效果",
+                subTitle = "为歌词添加一点模糊效果",
+                state = settingsSp.isEnableBlurEffect,
+            )
+            SettingSwitcher(
                 title = "歌词页展开时隐藏其他组件",
                 subTitle = "简化界面显示效果",
                 state = settingsSp.autoHideSeekbar,
@@ -74,7 +76,6 @@ fun LyricViewToolbar(
     settingsSp: SettingsSp = koinInject()
 ) {
     var isDrawTranslation by settingsSp.isDrawTranslation
-    var isEnableBlurEffect by settingsSp.isEnableBlurEffect
 
     Row(
         modifier = Modifier
@@ -83,12 +84,11 @@ fun LyricViewToolbar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        val iconAlpha1 = animateFloatAsState(
-            targetValue = if (isEnableBlurEffect) 1f else 0.5f, label = ""
-        )
         val iconAlpha2 = animateFloatAsState(
             targetValue = if (isDrawTranslation) 1f else 0.5f, label = ""
         )
+
+        SleepTimerSmallEntry()
 
         IconButton(onClick = { DialogWrapper.push(LyricViewActionDialog) }) {
             Icon(
@@ -96,20 +96,6 @@ fun LyricViewToolbar(
                 contentDescription = "",
                 tint = Color.White
             )
-        }
-
-        AnimatedContent(
-            targetState = isEnableBlurEffect,
-            transitionSpec = { fadeIn() togetherWith fadeOut() }, label = ""
-        ) { enable ->
-            IconButton(onClick = { isEnableBlurEffect = !enable }) {
-                Icon(
-                    modifier = Modifier.graphicsLayer { alpha = iconAlpha1.value },
-                    painter = painterResource(id = if (enable) R.drawable.drop_line else R.drawable.blur_off_line),
-                    contentDescription = "",
-                    tint = Color.White
-                )
-            }
         }
 
         IconButton(onClick = { isDrawTranslation = !isDrawTranslation }) {
