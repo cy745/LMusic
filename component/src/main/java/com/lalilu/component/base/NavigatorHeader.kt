@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -82,21 +83,24 @@ fun NavigatorHeader(
         start = 20.dp,
         end = 20.dp
     ),
+    columnExtraSpace: Dp = 15.dp,
+    rowExtraSpace: Dp = 20.dp,
     columnExtraContent: @Composable ColumnScope.() -> Unit = {},
     rowExtraContent: @Composable RowScope.() -> Unit = {}
 ) {
     Row(
         verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalArrangement = Arrangement.spacedBy(rowExtraSpace),
         modifier = modifier.padding(paddingValues)
     ) {
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(15.dp)
+            verticalArrangement = Arrangement.spacedBy(columnExtraSpace)
         ) {
             Text(
                 text = title,
                 fontSize = 26.sp * titleScale,
+                lineHeight = 26.sp * titleScale * 1.5f,
                 color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
             )
             columnExtraContent()
