@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Chip
 import androidx.compose.material.ChipDefaults
@@ -34,14 +33,12 @@ import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -62,7 +59,6 @@ import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.extension.dayNightTextColor
-import com.lalilu.component.extension.rememberScrollPosition
 import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.lalbum.screen.AlbumDetailScreen
 import com.lalilu.lartist.screen.ArtistDetailScreen
@@ -178,34 +174,25 @@ private fun DetailScreen(
         return
     }
 
-    val listState = rememberLazyListState()
-    val scrollPosition = rememberScrollPosition(state = listState)
-    val bgAlpha = remember {
-        derivedStateOf {
-            return@derivedStateOf 1f - (scrollPosition.value / 500f)
-                .coerceIn(0f, 0.8f)
-        }
-    }
-
     ImageBgBox(
         imageData = song,
         imageModifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
+            .fillMaxHeight()
             .blur(20.dp)
             .edgeTransparent(position = EDGE_BOTTOM, percent = 1.5f)
-            .graphicsLayer { alpha = bgAlpha.value }
     ) {
         TwoColumnWithPad(
             minWidthBreakPoint = 600.dp,
             modifierForPad = Modifier.width(325.dp),
+            arrangementForPad = Arrangement.spacedBy(16.dp),
             arrangementForNormal = Arrangement.spacedBy(16.dp),
             columnForPad = {
-                songHeadContent(song, navigator)
+                songHeadContent(song = song, navigator = navigator, isPad = true)
             },
             columnForNormal = { isPad ->
                 if (!isPad) {
-                    songHeadContent(song, navigator)
+                    songHeadContent(song = song, navigator = navigator, isPad = false)
                 }
 
                 songAlbumInfoCard(song, navigator)
@@ -221,26 +208,38 @@ private fun DetailScreen(
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
 fun LazyListScope.songHeadContent(
+    isPad: Boolean = false,
     song: LSong,
     navigator: GlobalNavigator
 ) {
     item {
-        AsyncImage(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f),
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(song)
-                .crossfade(true)
-                .build(),
-            contentScale = ContentScale.Crop,
-            contentDescription = ""
-        )
+        Surface(
+            modifier = Modifier.padding(
+                horizontal = if (isPad) 0.dp else 20.dp,
+                vertical = if (isPad) 0.dp else 10.dp
+            ),
+            elevation = 2.dp,
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            AsyncImage(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(song)
+                    .crossfade(true)
+                    .build(),
+                contentScale = ContentScale.FillWidth,
+                contentDescription = ""
+            )
+        }
     }
     item {
         NavigatorHeader(
             title = song.name,
-            paddingValues = PaddingValues(vertical = 20.dp),
+            columnExtraSpace = 5.dp,
+            paddingValues = PaddingValues(
+                horizontal = if (isPad) 0.dp else 20.dp
+            ),
             columnExtraContent = {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     song.artists.forEach {
@@ -328,52 +327,57 @@ fun LazyListScope.songActionsCard(
             }
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(15.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Surface(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            shape = RoundedCornerShape(20.dp)
         ) {
-            if (context.checkActivityIsExist(intent)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(15.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (context.checkActivityIsExist(intent)) {
+                    IconTextButton(
+                        text = "音乐标签编辑",
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color(0xFF3EA22C),
+                        onClick = {
+                            if (context.checkActivityIsExist(intent)) {
+                                context.startActivity(intent)
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "未安装[音乐标签]",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                        }
+                    )
+                }
                 IconTextButton(
-                    text = "音乐标签编辑",
+                    text = "搜索LrcShare",
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
                     shape = RoundedCornerShape(10.dp),
                     color = Color(0xFF3EA22C),
                     onClick = {
-                        if (context.checkActivityIsExist(intent)) {
-                            context.startActivity(intent)
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "未安装[音乐标签]",
-                                Toast.LENGTH_SHORT
+                        navigator.navigateTo(
+                            SearchLyricScreen(
+                                mediaId = song.id,
+                                keywords = song.name
                             )
-                                .show()
-                        }
+                        )
                     }
                 )
             }
-            IconTextButton(
-                text = "搜索LrcShare",
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                shape = RoundedCornerShape(10.dp),
-                color = Color(0xFF3EA22C),
-                onClick = {
-                    navigator.navigateTo(
-                        SearchLyricScreen(
-                            mediaId = song.id,
-                            keywords = song.name
-                        )
-                    )
-                }
-            )
         }
     }
 }
