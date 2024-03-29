@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.palette.graphics.Palette
-import coil.compose.SubcomposeAsyncImage
+import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.utils.StackBlurUtils
@@ -50,7 +50,7 @@ fun BlurBackground(
         val srcRect = remember { Rect() }
         val targetRect = remember { Rect() }
 
-        SubcomposeAsyncImage(
+        AsyncImage(
             modifier = Modifier
                 .fillMaxSize()
                 .drawWithContent {
