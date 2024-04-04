@@ -46,7 +46,7 @@ fun NestedScrollBaseLayout(
         object : NestedScrollConnection {
             override suspend fun onPreFling(available: Velocity): Velocity {
                 // 若非RecyclerView的滚动，则消费y轴上的所有速度，避免嵌套滚动事件继续
-                if (scrollingItemType() == null) {
+                if (ScrollingItemType.RecyclerView != scrollingItemType() && !isLyricScrollEnable.value) {
                     draggable.fling(available.y)
                     return available
                 }
