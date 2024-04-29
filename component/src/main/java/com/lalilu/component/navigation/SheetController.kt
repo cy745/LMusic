@@ -1,30 +1,9 @@
 package com.lalilu.component.navigation
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.staticCompositionLocalOf
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.Stack
 import cafe.adriel.voyager.navigator.Navigator
 import com.lalilu.component.base.TabScreen
-
-interface SheetController {
-    val isVisible: Boolean
-    fun hide()
-    fun show()
-}
-
-val LocalSheetController: ProvidableCompositionLocal<SheetController?> =
-    staticCompositionLocalOf { null }
-
-@Composable
-fun BackHandler(
-    navigator: SheetController? = LocalSheetController.current,
-    onBack: () -> Unit
-) {
-    BackHandler(enabled = navigator?.isVisible ?: false, onBack = onBack)
-}
 
 interface EnhanceNavigator : Stack<Screen> {
 
@@ -139,11 +118,5 @@ interface EnhanceNavigator : Stack<Screen> {
     }
 
     fun getNavigator(): Navigator
-}
-
-fun createDefaultEnhanceNavigator(navigator: Navigator): EnhanceNavigator {
-    return object : Stack<Screen> by navigator, EnhanceNavigator {
-        override fun getNavigator(): Navigator = navigator
-    }
 }
 

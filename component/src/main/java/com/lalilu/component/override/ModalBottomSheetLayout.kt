@@ -35,11 +35,8 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.contentColorFor
-import com.lalilu.component.override.ModalBottomSheetState.Companion.Saver
-import com.lalilu.component.override.ModalBottomSheetValue.Expanded
-import com.lalilu.component.override.ModalBottomSheetValue.HalfExpanded
-import com.lalilu.component.override.ModalBottomSheetValue.Hidden
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -67,10 +64,10 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import kotlinx.coroutines.launch
 
 /**
  * Possible values of [ModalBottomSheetState].
@@ -112,6 +109,7 @@ enum class ModalBottomSheetValue {
 class ModalBottomSheetState(
     initialValue: ModalBottomSheetValue,
     density: Density,
+    enableBottomSheetMode: () -> Boolean = { true },
     confirmValueChange: (ModalBottomSheetValue) -> Boolean = { true },
     internal val animationSpec: AnimationSpec<Float> = ModalBottomSheetDefaults.AnimationSpec,
     internal val isSkipHalfExpanded: Boolean = false,
@@ -128,6 +126,8 @@ class ModalBottomSheetState(
         },
         velocityThreshold = { with(density) { ModalBottomSheetVelocityThreshold.toPx() } }
     )
+
+    val enabled: Boolean by derivedStateOf(enableBottomSheetMode)
 
     /**
      * The current value of the [ModalBottomSheetState].
@@ -181,15 +181,15 @@ class ModalBottomSheetState(
      * Whether the bottom sheet is visible.
      */
     val isVisible: Boolean
-        get() = anchoredDraggableState.currentValue != Hidden
+        get() = anchoredDraggableState.currentValue != ModalBottomSheetValue.Hidden
 
     internal val hasHalfExpandedState: Boolean
-        get() = anchoredDraggableState.anchors.hasAnchorFor(HalfExpanded)
+        get() = anchoredDraggableState.anchors.hasAnchorFor(ModalBottomSheetValue.HalfExpanded)
 
     init {
         if (isSkipHalfExpanded) {
-            require(initialValue != HalfExpanded) {
-                "The initial value must not be set to HalfExpanded if skipHalfExpanded is set to" +
+            require(initialValue != ModalBottomSheetValue.HalfExpanded) {
+                "The initial value must not be set to ModalBottomSheetValue.HalfExpanded if skipHalfExpanded is set to" +
                         " true."
             }
         }
@@ -201,10 +201,11 @@ class ModalBottomSheetState(
      * fully expanded.
      */
     suspend fun show() {
-        val hasExpandedState = anchoredDraggableState.anchors.hasAnchorFor(Expanded)
+        val hasExpandedState =
+            anchoredDraggableState.anchors.hasAnchorFor(ModalBottomSheetValue.Expanded)
         val targetValue = when (currentValue) {
-            Hidden -> if (hasHalfExpandedState) HalfExpanded else Expanded
-            else -> if (hasExpandedState) Expanded else Hidden
+            ModalBottomSheetValue.Hidden -> if (hasHalfExpandedState) ModalBottomSheetValue.HalfExpanded else ModalBottomSheetValue.Expanded
+            else -> if (hasExpandedState) ModalBottomSheetValue.Expanded else ModalBottomSheetValue.Hidden
         }
         animateTo(targetValue)
     }
@@ -217,24 +218,24 @@ class ModalBottomSheetState(
         if (!hasHalfExpandedState) {
             return
         }
-        animateTo(HalfExpanded)
+        animateTo(ModalBottomSheetValue.HalfExpanded)
     }
 
     /**
      * Hide the bottom sheet with animation and suspend until it if fully hidden or animation has
      * been cancelled.
      */
-    suspend fun hide() = animateTo(Hidden)
+    suspend fun hide() = animateTo(ModalBottomSheetValue.Hidden)
 
     /**
      * Fully expand the bottom sheet with animation and suspend until it if fully expanded or
      * animation has been cancelled.
      */
     internal suspend fun expand() {
-        if (!anchoredDraggableState.anchors.hasAnchorFor(Expanded)) {
+        if (!anchoredDraggableState.anchors.hasAnchorFor(ModalBottomSheetValue.Expanded)) {
             return
         }
-        animateTo(Expanded)
+        animateTo(ModalBottomSheetValue.Expanded)
     }
 
     internal suspend fun animateTo(
@@ -255,6 +256,7 @@ class ModalBottomSheetState(
          */
         fun Saver(
             animationSpec: AnimationSpec<Float>,
+            enableBottomSheetMode: () -> Boolean,
             confirmValueChange: (ModalBottomSheetValue) -> Boolean,
             skipHalfExpanded: Boolean,
             density: Density
@@ -264,6 +266,7 @@ class ModalBottomSheetState(
                 ModalBottomSheetState(
                     initialValue = it,
                     density = density,
+                    enableBottomSheetMode = enableBottomSheetMode,
                     animationSpec = animationSpec,
                     isSkipHalfExpanded = skipHalfExpanded,
                     confirmValueChange = confirmValueChange
@@ -289,6 +292,7 @@ class ModalBottomSheetState(
 @Composable
 fun rememberModalBottomSheetState(
     initialValue: ModalBottomSheetValue,
+    enableBottomSheetMode: () -> Boolean = { true },
     animationSpec: AnimationSpec<Float> = ModalBottomSheetDefaults.AnimationSpec,
     confirmValueChange: (ModalBottomSheetValue) -> Boolean = { true },
     skipHalfExpanded: Boolean = false,
@@ -300,9 +304,10 @@ fun rememberModalBottomSheetState(
     return key(initialValue) {
         rememberSaveable(
             initialValue, animationSpec, skipHalfExpanded, confirmValueChange, density,
-            saver = Saver(
+            saver = ModalBottomSheetState.Saver(
                 density = density,
                 animationSpec = animationSpec,
+                enableBottomSheetMode = enableBottomSheetMode,
                 skipHalfExpanded = skipHalfExpanded,
                 confirmValueChange = confirmValueChange
             )
@@ -311,6 +316,7 @@ fun rememberModalBottomSheetState(
                 density = density,
                 initialValue = initialValue,
                 animationSpec = animationSpec,
+                enableBottomSheetMode = enableBottomSheetMode,
                 isSkipHalfExpanded = skipHalfExpanded,
                 confirmValueChange = confirmValueChange
             )
@@ -353,7 +359,7 @@ fun ModalBottomSheetLayout(
     sheetContent: @Composable ColumnScope.() -> Unit,
     modifier: Modifier = Modifier,
     sheetState: ModalBottomSheetState =
-        rememberModalBottomSheetState(Hidden),
+        rememberModalBottomSheetState(ModalBottomSheetValue.Hidden),
     sheetGesturesEnabled: Boolean = true,
     sheetShape: Shape = MaterialTheme.shapes.large,
     sheetElevation: Dp = ModalBottomSheetDefaults.Elevation,
@@ -370,75 +376,84 @@ fun ModalBottomSheetLayout(
             Scrim(
                 color = scrimColor,
                 onDismiss = {
-                    if (sheetState.anchoredDraggableState.confirmValueChange(Hidden)) {
+                    if (sheetState.anchoredDraggableState.confirmValueChange(ModalBottomSheetValue.Hidden)) {
                         scope.launch { sheetState.hide() }
                     }
                 },
-                visible = sheetState.anchoredDraggableState.targetValue != Hidden
+                visible = sheetState.anchoredDraggableState.targetValue != ModalBottomSheetValue.Hidden
             )
         }
         Surface(
             Modifier
                 .align(Alignment.TopCenter) // We offset from the top so we'll center from there
-                .widthIn(max = MaxModalBottomSheetWidth)
                 .fillMaxWidth()
                 .then(
-                    if (sheetGesturesEnabled) {
-                        Modifier.nestedScroll(
-                            remember(sheetState.anchoredDraggableState, orientation) {
-                                ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
-                                    state = sheetState.anchoredDraggableState,
-                                    orientation = orientation
-                                )
-                            }
-                        )
-                    } else Modifier
-                )
-                .modalBottomSheetAnchors(sheetState)
-                .anchoredDraggable(
-                    state = sheetState.anchoredDraggableState,
-                    orientation = orientation,
-                    enabled = sheetGesturesEnabled &&
-                            sheetState.anchoredDraggableState.currentValue != Hidden,
-                )
-                .then(
-                    if (sheetGesturesEnabled) {
-                        Modifier.semantics {
-                            if (sheetState.isVisible) {
-                                dismiss {
-                                    if (
-                                        sheetState.anchoredDraggableState.confirmValueChange(Hidden)
-                                    ) {
-                                        scope.launch { sheetState.hide() }
-                                    }
-                                    true
-                                }
-                                if (sheetState.anchoredDraggableState.currentValue
-                                    == HalfExpanded
-                                ) {
-                                    expand {
-                                        if (sheetState.anchoredDraggableState.confirmValueChange(
-                                                Expanded
+                    if (sheetState.enabled) {
+                        Modifier
+                            .widthIn(max = MaxModalBottomSheetWidth)
+                            .then(
+                                if (sheetGesturesEnabled) {
+                                    Modifier.nestedScroll(
+                                        remember(sheetState.anchoredDraggableState, orientation) {
+                                            ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
+                                                state = sheetState.anchoredDraggableState,
+                                                orientation = orientation
                                             )
-                                        ) {
-                                            scope.launch { sheetState.expand() }
                                         }
-                                        true
-                                    }
-                                } else if (sheetState.hasHalfExpandedState) {
-                                    collapse {
-                                        if (sheetState.anchoredDraggableState.confirmValueChange(
-                                                HalfExpanded
-                                            )
-                                        ) {
-                                            scope.launch { sheetState.halfExpand() }
+                                    )
+                                } else Modifier
+                            )
+                            .modalBottomSheetAnchors(sheetState)
+                            .anchoredDraggable(
+                                state = sheetState.anchoredDraggableState,
+                                orientation = orientation,
+                                enabled = sheetGesturesEnabled &&
+                                        sheetState.anchoredDraggableState.currentValue != ModalBottomSheetValue.Hidden,
+                            )
+                            .then(
+                                if (sheetGesturesEnabled) {
+                                    Modifier.semantics {
+                                        if (sheetState.isVisible) {
+                                            dismiss {
+                                                if (
+                                                    sheetState.anchoredDraggableState.confirmValueChange(
+                                                        ModalBottomSheetValue.Hidden
+                                                    )
+                                                ) {
+                                                    scope.launch { sheetState.hide() }
+                                                }
+                                                true
+                                            }
+                                            if (sheetState.anchoredDraggableState.currentValue
+                                                == ModalBottomSheetValue.HalfExpanded
+                                            ) {
+                                                expand {
+                                                    if (sheetState.anchoredDraggableState.confirmValueChange(
+                                                            ModalBottomSheetValue.Expanded
+                                                        )
+                                                    ) {
+                                                        scope.launch { sheetState.expand() }
+                                                    }
+                                                    true
+                                                }
+                                            } else if (sheetState.hasHalfExpandedState) {
+                                                collapse {
+                                                    if (sheetState.anchoredDraggableState.confirmValueChange(
+                                                            ModalBottomSheetValue.HalfExpanded
+                                                        )
+                                                    ) {
+                                                        scope.launch { sheetState.halfExpand() }
+                                                    }
+                                                    true
+                                                }
+                                            }
                                         }
-                                        true
                                     }
-                                }
-                            }
-                        }
-                    } else Modifier
+                                } else Modifier
+                            )
+                    } else {
+                        Modifier
+                    }
                 ),
             shape = sheetShape,
             elevation = sheetElevation,
@@ -457,13 +472,13 @@ private fun Modifier.modalBottomSheetAnchors(sheetState: ModalBottomSheetState) 
 ) { sheetSize, constraints ->
     val fullHeight = constraints.maxHeight.toFloat()
     val newAnchors = DraggableAnchors {
-        Hidden at fullHeight
+        ModalBottomSheetValue.Hidden at fullHeight
         val halfHeight = fullHeight / 2f
         if (!sheetState.isSkipHalfExpanded && sheetSize.height > halfHeight) {
-            HalfExpanded at halfHeight
+            ModalBottomSheetValue.HalfExpanded at halfHeight
         }
         if (sheetSize.height != 0) {
-            Expanded at max(0f, fullHeight - sheetSize.height)
+            ModalBottomSheetValue.Expanded at max(0f, fullHeight - sheetSize.height)
         }
     }
     // If we are setting the anchors for the first time and have an anchor for
@@ -474,15 +489,16 @@ private fun Modifier.modalBottomSheetAnchors(sheetState: ModalBottomSheetState) 
         previousValue
     } else {
         when (sheetState.targetValue) {
-            Hidden -> Hidden
-            HalfExpanded, Expanded -> {
-                val hasHalfExpandedState = newAnchors.hasAnchorFor(HalfExpanded)
+            ModalBottomSheetValue.Hidden -> ModalBottomSheetValue.Hidden
+            ModalBottomSheetValue.HalfExpanded, ModalBottomSheetValue.Expanded -> {
+                val hasHalfExpandedState =
+                    newAnchors.hasAnchorFor(ModalBottomSheetValue.HalfExpanded)
                 val newTarget = if (hasHalfExpandedState) {
-                    HalfExpanded
-                } else if (newAnchors.hasAnchorFor(Expanded)) {
-                    Expanded
+                    ModalBottomSheetValue.HalfExpanded
+                } else if (newAnchors.hasAnchorFor(ModalBottomSheetValue.Expanded)) {
+                    ModalBottomSheetValue.Expanded
                 } else {
-                    Hidden
+                    ModalBottomSheetValue.Hidden
                 }
                 newTarget
             }

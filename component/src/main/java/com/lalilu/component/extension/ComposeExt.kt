@@ -65,15 +65,6 @@ fun rememberScreenHeightInPx(): Int {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
-fun SwipeProgress<ModalBottomSheetValue>.watchForOffset(
-    betweenFirst: ModalBottomSheetValue, betweenSecond: ModalBottomSheetValue, elseValue: Float = 1f
-): Float = when {
-    from == betweenFirst && to == betweenSecond -> 1f - (fraction * 3)
-    from == betweenSecond && to == betweenFirst -> fraction * 3
-    else -> elseValue
-}.coerceIn(0f, 1f)
-
 /**
  * 根据屏幕的长宽类型来判断设备是否平板
  * 依据是：平板没有一条边会是Compact的

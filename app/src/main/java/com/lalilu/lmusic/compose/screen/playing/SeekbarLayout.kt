@@ -103,12 +103,12 @@ fun BoxScope.SeekbarLayout(
                         OnSeekBarScrollToThresholdListener({ 300f }) {
                         override fun onScrollToThreshold() {
                             HapticUtils.haptic(this@apply)
-                            NavigationWrapper.sheetController?.show()
+                            NavigationWrapper.navigator?.show()
                         }
 
                         override fun onScrollRecover() {
                             HapticUtils.haptic(this@apply)
-                            NavigationWrapper.sheetController?.hide()
+                            NavigationWrapper.navigator?.hide()
                         }
                     })
 

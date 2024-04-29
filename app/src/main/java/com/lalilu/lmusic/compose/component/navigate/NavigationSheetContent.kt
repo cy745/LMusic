@@ -20,10 +20,10 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.lalilu.component.base.BottomSheetNavigator
 import com.lalilu.component.base.LocalPaddingValue
-import com.lalilu.component.navigation.EnhanceNavigator
-import com.lalilu.component.navigation.LocalSheetController
-import com.lalilu.component.navigation.SheetController
+import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.extension.rememberIsPad
 import com.lalilu.lmusic.compose.component.CustomTransition
 import com.lalilu.lmusic.compose.new_screen.HomeScreen
 import com.lalilu.lmusic.compose.new_screen.SearchScreen
@@ -34,7 +34,9 @@ fun ImmerseStatusBar(
     enable: () -> Boolean = { true },
     isExpended: () -> Boolean = { false },
 ) {
-    val result by remember { derivedStateOf { isExpended() && enable() } }
+    val windowSize = LocalWindowSize.current
+    val isPad by windowSize.rememberIsPad()
+    val result by remember { derivedStateOf { (isExpended() && enable()) || isPad } }
     val systemUiController = rememberSystemUiController()
     val isDarkModeNow = isSystemInDarkTheme()
 
@@ -50,12 +52,11 @@ fun ImmerseStatusBar(
 fun NavigationSheetContent(
     modifier: Modifier,
     transitionKeyPrefix: String,
-    navigator: EnhanceNavigator,
-    sheetController: SheetController? = LocalSheetController.current,
+    navigator: BottomSheetNavigator,
     getScreenFrom: (Navigator) -> Screen = { it.lastItem },
 ) {
     ImmerseStatusBar(
-        isExpended = { sheetController?.isVisible ?: false }
+        isExpended = { navigator.isVisible }
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -92,9 +93,7 @@ fun NavigationSheetContent(
                         SearchScreen
                     )
                 },
-                currentScreen = { currentScreen.value },
-                navigator = navigator,
-                sheetController = sheetController
+                currentScreen = { currentScreen.value }
             )
         }
     }

@@ -50,13 +50,13 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.Stack
 import com.lalilu.R
+import com.lalilu.component.base.BottomSheetNavigator
 import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.LocalBottomSheetNavigator
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.extension.dayNightTextColor
-import com.lalilu.component.navigation.EnhanceNavigator
-import com.lalilu.component.navigation.SheetController
 
 sealed class NavigationBarState {
     data class ForTabScreen(val tabScreens: List<TabScreen>) : NavigationBarState()
@@ -81,11 +81,11 @@ fun rememberNavigationBarState(
 
 @Composable
 fun rememberPreviousScreenTitleRes(
-    stack: Stack<Screen>,
+    stack: Stack<Screen>?,
     currentScreen: Screen?
 ): State<Int> {
     val previousScreen by remember(currentScreen) {
-        derivedStateOf { stack.items.getOrNull(stack.size - 2) as? CustomScreen }
+        derivedStateOf { stack?.items?.getOrNull(stack.size - 2) as? CustomScreen }
     }
     val previousInfo by remember {
         derivedStateOf { previousScreen?.getScreenInfo() }
@@ -101,8 +101,7 @@ fun NavigationBar(
     modifier: Modifier = Modifier,
     tabScreens: () -> List<TabScreen>,
     currentScreen: () -> Screen?,
-    navigator: EnhanceNavigator,
-    sheetController: SheetController? = null,
+    navigator: BottomSheetNavigator? = LocalBottomSheetNavigator.current
 ) {
     val navigationBarState =
         rememberNavigationBarState(tabScreens = tabScreens, currentScreen = currentScreen)
@@ -117,7 +116,7 @@ fun NavigationBar(
                 NavigateTabBar(
                     tabScreens = state::tabScreens::get,
                     currentScreen = currentScreen,
-                    onSelectTab = { navigator.jump(it) }
+                    onSelectTab = { navigator?.jump(it) }
                 )
             }
 
@@ -130,9 +129,7 @@ fun NavigationBar(
 
                 NavigateCommonBar(
                     previousTitle = { previousTitle.value },
-                    screenActions = { actions },
-                    navigator = navigator,
-                    sheetController = sheetController
+                    screenActions = { actions }
                 )
             }
         }
@@ -171,8 +168,7 @@ fun NavigateCommonBar(
     modifier: Modifier = Modifier,
     previousTitle: () -> Int,
     screenActions: () -> List<ScreenAction>,
-    navigator: EnhanceNavigator,
-    sheetController: SheetController? = null,
+    navigator: BottomSheetNavigator? = LocalBottomSheetNavigator.current
 ) {
     val itemFitImePadding = remember { mutableStateOf(false) }
 
@@ -191,7 +187,7 @@ fun NavigateCommonBar(
             shape = RectangleShape,
             contentPadding = PaddingValues(start = 16.dp, end = 24.dp),
             colors = ButtonDefaults.textButtonColors(contentColor = contentColor),
-            onClick = { navigator.back() }
+            onClick = { navigator?.back() }
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_arrow_left_s_line),
@@ -267,7 +263,7 @@ fun NavigateCommonBar(
                                 backgroundColor = Color(0x25FE4141),
                                 contentColor = Color(0xFFFE4141)
                             ),
-                            onClick = { sheetController?.hide() }
+                            onClick = { navigator?.hide() }
                         ) {
                             Text(
                                 text = stringResource(id = R.string.bottom_sheet_navigate_close),
