@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import coil.drawable.CrossfadeDrawable
 import coil.request.ImageRequest
 
 
@@ -19,6 +20,7 @@ fun ImageBgBox(
     contentAlignment: Alignment = Alignment.TopCenter,
     imageData: Any? = null,
     imageModifier: Modifier = Modifier,
+    imageCrossFadeDuration: Int = CrossfadeDrawable.DEFAULT_DURATION,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -26,7 +28,7 @@ fun ImageBgBox(
         imageData?.let {
             ImageRequest.Builder(context)
                 .data(it)
-                .crossfade(true)
+                .crossfade(imageCrossFadeDuration)
                 .build()
         }
     }

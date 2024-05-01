@@ -30,7 +30,6 @@ object NavigationWrapper {
         modifier: Modifier = Modifier,
     ) {
         val windowSizeClass = LocalWindowSize.current
-        // 共用Navigator避免切换时导致导航栈丢失
         val animateSpec = remember {
             tween<Float>(
                 durationMillis = 150,

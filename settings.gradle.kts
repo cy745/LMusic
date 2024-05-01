@@ -20,7 +20,7 @@ dependencyResolutionManagement {
 }
 
 
-rootProject.name = "lmusic"
+rootProject.name = "LMusic"
 include(":app")
 include(":ui")
 include(":common")
