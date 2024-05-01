@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose
 
+import androidx.compose.material.Surface
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -20,12 +21,10 @@ object DrawerWrapper {
     ) {
         val density = LocalDensity.current
         val mainContentWidthPx = remember { density.run { 360.dp.toPx() }.toInt() }
-        val horizontalPaddingPx = remember { density.run { 16.dp.toPx() }.toInt() }
 
         val policy = remember(windowClass.widthSizeClass) {
             when (windowClass.widthSizeClass) {
-                WindowWidthSizeClass.Expanded -> expendedPolicy(
-                    horizontalPaddingPx = horizontalPaddingPx,
+                WindowWidthSizeClass.Expanded -> rowPolicy(
                     mainContentWidthPx = mainContentWidthPx
                 )
 
@@ -35,29 +34,27 @@ object DrawerWrapper {
 
         Layout(
             content = {
-                mainContent()
+                Surface { mainContent() }
                 secondContent()
             },
             measurePolicy = policy
         )
     }
 
-    private fun expendedPolicy(
-        horizontalPaddingPx: Int,
+    private fun rowPolicy(
         mainContentWidthPx: Int,
     ): MeasurePolicy = MeasurePolicy { measurables, constraints ->
         val mainPlaceable = measurables[0]
             .measure(constraints.copy(maxWidth = mainContentWidthPx))
 
-        val secondWidth =
-            constraints.maxWidth - mainContentWidthPx - horizontalPaddingPx
+        val secondWidth = constraints.maxWidth - mainContentWidthPx
         val secondPlaceable = measurables[1]
             .measure(constraints.copy(maxWidth = secondWidth))
 
         layout(constraints.maxWidth, constraints.maxHeight) {
-            mainPlaceable.place(horizontalPaddingPx, 0)
+            mainPlaceable.place(0, 0)
 
-            secondPlaceable.place(horizontalPaddingPx + mainContentWidthPx, 0)
+            secondPlaceable.place(mainContentWidthPx, 0)
         }
     }
 
