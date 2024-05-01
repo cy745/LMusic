@@ -8,7 +8,7 @@ plugins {
     id("com.android.application")
     kotlin("android")
     id("com.google.devtools.ksp")
-    alias(libs.plugins.flyjingfish.aop)
+    id("android.aop")
 }
 
 val keystoreProps = rootProject.file("keystore.properties")

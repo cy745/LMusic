@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.library) apply false
     alias(libs.plugins.kotlin) apply false
     alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.flyjingfish.aop) apply false
 }
 
 gradle.taskGraph.whenReady {
