@@ -1,6 +1,10 @@
 package com.lalilu.lmusic.compose.new_screen
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -35,6 +39,13 @@ object HomeScreen : DynamicScreen(), TabScreen {
         }
 
         LLazyColumn(modifier = Modifier.fillMaxSize()) {
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .windowInsetsTopHeight(WindowInsets.statusBars)
+                )
+            }
+
             dailyRecommend(libraryVM = libraryVM)
 
             latestPanel(
