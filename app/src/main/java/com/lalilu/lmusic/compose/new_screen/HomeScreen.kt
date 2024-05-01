@@ -1,18 +1,17 @@
 package com.lalilu.lmusic.compose.new_screen
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Modifier
 import com.lalilu.R
-import com.lalilu.component.TwoColumnWithPad
+import com.lalilu.component.LLazyColumn
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.extension.EntryPanel
 import com.lalilu.lmusic.extension.dailyRecommend
-import com.lalilu.lmusic.extension.dailyRecommendVertical
 import com.lalilu.lmusic.extension.historyPanel
 import com.lalilu.lmusic.extension.latestPanel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
@@ -35,32 +34,22 @@ object HomeScreen : DynamicScreen(), TabScreen {
             libraryVM.checkOrUpdateToday()
         }
 
-        TwoColumnWithPad(
-            arrangementForPad = Arrangement.spacedBy(10.dp),
-            columnForPad = {
-                dailyRecommendVertical(libraryVM = libraryVM)
-            },
-            columnForNormal = { isPad ->
-                if (!isPad) {
-                    dailyRecommend(
-                        libraryVM = libraryVM,
-                    )
-                }
+        LLazyColumn(modifier = Modifier.fillMaxSize()) {
+            dailyRecommend(libraryVM = libraryVM)
 
-                latestPanel(
-                    libraryVM = libraryVM,
-                    playingVM = playingVM
-                )
+            latestPanel(
+                libraryVM = libraryVM,
+                playingVM = playingVM
+            )
 
-                historyPanel(
-                    historyVM = historyVM,
-                    playingVM = playingVM
-                )
+            historyPanel(
+                historyVM = historyVM,
+                playingVM = playingVM
+            )
 
-                item {
-                    EntryPanel()
-                }
+            item {
+                EntryPanel()
             }
-        )
+        }
     }
 }
