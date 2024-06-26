@@ -24,6 +24,7 @@ import com.lalilu.lmusic.compose.App
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.helper.LastTouchTimeHelper
 import com.lalilu.lmusic.service.LMusicServiceConnector
+import com.lalilu.lmusic.utils.dynamicUpdateStatusBarColor
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
@@ -72,13 +73,14 @@ class MainActivity : ComponentActivity() {
         LMedia.initialize(this)
 
         lifecycle.addObserver(connector)
-        SystemUiUtil.immerseNavigationBar(this)
-        SystemUiUtil.immersiveCutout(window)
-
         // 注册返回键事件回调
         onBackPressedDispatcher.addCallback { this@MainActivity.moveTaskToBack(false) }
 
+        SystemUiUtil.immerseNavigationBar(this)
+        SystemUiUtil.immersiveCutout(window)
+
         setContent { App.Content(activity = this) }
+        dynamicUpdateStatusBarColor()
 
         volumeControlStream = AudioManager.STREAM_MUSIC
     }
