@@ -7,6 +7,7 @@ import java.util.TimeZone
 plugins {
     id("com.android.application")
     kotlin("android")
+    alias(libs.plugins.compose.compiler)
     id("com.google.devtools.ksp")
     id("android.aop")
 }
@@ -39,12 +40,12 @@ androidAopConfig {
 
 android {
     namespace = "com.lalilu"
-    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
+    compileSdk = libs.versions.compile.version.get().toIntOrNull()
 
     defaultConfig {
         applicationId = "com.lalilu.lmusic"
-        minSdk = AndroidConfig.MIN_SDK_VERSION
-        targetSdk = AndroidConfig.TARGET_SDK_VERSION
+        minSdk = libs.versions.min.sdk.version.get().toIntOrNull()
+        targetSdk = libs.versions.compile.version.get().toIntOrNull()
         versionCode = 42
         versionName = "1.5.4"
 
@@ -154,13 +155,14 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.compose.compiler.get().version.toString()
-    }
     lint {
         disable += "Instantiatable"
         abortOnError = false
     }
+}
+
+composeCompiler {
+    enableStrongSkippingMode = true
 }
 
 dependencies {

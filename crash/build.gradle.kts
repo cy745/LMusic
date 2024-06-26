@@ -5,15 +5,16 @@ plugins {
 
 android {
     namespace = "com.lalilu.crash"
-    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
+    compileSdk = libs.versions.compile.version.get().toIntOrNull()
+
+    defaultConfig {
+        minSdk = libs.versions.min.sdk.version.get().toIntOrNull()
+    }
 
     buildFeatures {
         viewBinding = true
     }
 
-    defaultConfig {
-        minSdk = AndroidConfig.MIN_SDK_VERSION
-    }
     buildTypes {
         release {
             consumerProguardFiles("proguard-rules.pro")

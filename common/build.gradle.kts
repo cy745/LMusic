@@ -5,10 +5,10 @@ plugins {
 
 android {
     namespace = "com.lalilu.common"
-    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
+    compileSdk = libs.versions.compile.version.get().toIntOrNull()
 
     defaultConfig {
-        minSdk = AndroidConfig.MIN_SDK_VERSION
+        minSdk = libs.versions.min.sdk.version.get().toIntOrNull()
     }
     buildTypes {
         release {

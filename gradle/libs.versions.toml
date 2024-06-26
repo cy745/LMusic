@@ -1,16 +1,18 @@
 [versions]
-agp_version = "8.2.0"
-kotlin_version = "1.9.20"
-coroutines_version = "1.7.3"
-ksp_version = "1.9.20-1.0.14"
+compile_version = "34"
+min_sdk_version = "21"
+
+agp_version = "8.5.0"
+kotlin_version = "2.0.0"
+coroutines_version = "1.8.1"
+ksp_version = "2.0.0-1.0.22"
 #serialization_json_version = "1.6.0"
 
-koin_version = "3.5.0"
-compose_bom_alpha_version = "2024.02.00-alpha02"
-compose_bom_version = "2024.01.00"
-compose_compiler_version = "1.5.5"
+koin_version = "3.5.6"
+compose_bom_alpha_version = "2024.05.00-alpha03"
+compose_bom_version = "2024.06.00"
 accompanist_version = "0.32.0"
-voyager = "1.0.0-rc10"
+voyager = "1.1.0-beta02"
 lottie-compose = "5.2.0"
 
 kotlinpoet = "1.14.2"
@@ -18,8 +20,8 @@ coil_version = "2.4.0"
 utilcodex_version = "1.31.1"
 
 # androidx
-appcompat = "1.6.1"
-core-ktx = "1.12.0"
+appcompat = "1.7.0"
+core-ktx = "1.13.1"
 palette-ktx = "1.0.0"
 dynamicanimation-ktx = "1.0.0-alpha03"
 startup-runtime = "1.2.0-alpha02"
@@ -43,7 +45,6 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 #kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization_json_version" }
 
 # compose
-compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose_compiler_version" }
 compose-bom-alpha = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "compose_bom_alpha_version" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose_bom_version" }
 compose-ui = { module = "androidx.compose.ui:ui" }
@@ -64,7 +65,6 @@ voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.
 voyager-bottomSheetNavigator = { module = "cafe.adriel.voyager:voyager-bottom-sheet-navigator", version.ref = "voyager" }
 voyager-tabNavigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
 voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
-voyager-androidx = { module = "cafe.adriel.voyager:voyager-androidx", version.ref = "voyager" }
 voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
 
 accompanist-flowlayout = { module = "com.google.accompanist:accompanist-flowlayout", version.ref = "accompanist_version" }
@@ -122,6 +122,7 @@ library = { id = "com.android.library", version.ref = "agp_version" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin_version" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp_version" }
 flyjingfish-aop = { id = "io.github.FlyJingFish.AndroidAop.android-aop", version.ref = "flyjingfish-aop" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin_version" }
 
 
 [bundles]
@@ -145,7 +146,6 @@ voyager = [
     "voyager-navigator",
     "voyager-tabNavigator",
     "voyager-transitions",
-    "voyager-androidx",
     "voyager-koin"
 ]
 flyjingfish-aop = [

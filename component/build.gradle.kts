@@ -1,18 +1,19 @@
 plugins {
     id("com.android.library")
     kotlin("android")
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "com.lalilu.component"
-    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
+    compileSdk = libs.versions.compile.version.get().toIntOrNull()
+
+    defaultConfig {
+        minSdk = libs.versions.min.sdk.version.get().toIntOrNull()
+    }
 
     buildFeatures {
         compose = true
-    }
-
-    defaultConfig {
-        minSdk = AndroidConfig.MIN_SDK_VERSION
     }
 
     buildTypes {
@@ -27,9 +28,10 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.version.get()
-    }
+}
+
+composeCompiler {
+    enableStrongSkippingMode = true
 }
 
 dependencies {
