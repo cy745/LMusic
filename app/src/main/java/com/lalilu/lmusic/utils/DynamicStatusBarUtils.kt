@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 
 fun ComponentActivity.dynamicUpdateStatusBarColor(
-    showLog: Boolean = true,
+    showLog: Boolean = false,
     delay: Long = 100,
 ) = lifecycleScope.launch(Dispatchers.Default) {
     repeatOnLifecycle(Lifecycle.State.RESUMED) {

@@ -7,7 +7,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,7 +57,6 @@ fun PlayingLayout(
     val lyricLayoutLazyListState = rememberLazyListState()
 
     val isLyricScrollEnable = remember { mutableStateOf(false) }
-    val recyclerViewScrollState = remember { mutableStateOf(false) }
     val backgroundColor = remember { mutableStateOf(Color.DarkGray) }
     val animateColor = animateColorAsState(targetValue = backgroundColor.value, label = "")
     val scrollToTopEvent = remember { mutableStateOf(0L) }
@@ -85,13 +84,6 @@ fun PlayingLayout(
     NestedScrollBaseLayout(
         draggable = draggable,
         isLyricScrollEnable = isLyricScrollEnable,
-        scrollingItemType = {
-            when {
-                lyricLayoutLazyListState.isScrollInProgress -> ScrollingItemType.LyricView
-                recyclerViewScrollState.value -> ScrollingItemType.RecyclerView
-                else -> null
-            }
-        },
         toolbarContent = {
             Column(
                 modifier = Modifier
@@ -112,9 +104,9 @@ fun PlayingLayout(
                 )
             }
         },
-        dynamicHeaderContent = { constraints ->
-            Box(
-                modifier = Modifier
+        dynamicHeaderContent = { modifier ->
+            BoxWithConstraints(
+                modifier = modifier
                     .fillMaxSize()
                     .clipToBounds()
                     .background(color = animateColor.value)
@@ -253,17 +245,8 @@ fun PlayingLayout(
                 )
             }
         },
-        recyclerViewContent = {
-            CustomRecyclerView(
-                modifier = Modifier.clipToBounds(),
-                scrollToTopEvent = { scrollToTopEvent.value },
-                onScrollStart = { recyclerViewScrollState.value = true },
-                onScrollTouchUp = { },
-                onScrollIdle = {
-                    recyclerViewScrollState.value = false
-                    draggable.fling(0f)
-                }
-            )
+        playlistContent = { modifier ->
+            PlaylistLayout(modifier = modifier.clipToBounds())
         },
         overlayContent = {
             val animateProgress = animateFloatAsState(
