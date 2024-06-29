@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import kotlin.random.Random
 
 class LazyListAnimateScroller internal constructor(
     private val keysKeeper: () -> Collection<Any>,
@@ -60,10 +59,6 @@ class LazyListAnimateScroller internal constructor(
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     internal suspend fun startLoop(scope: CoroutineScope) = withContext(scope.coroutineContext) {
-        snapshotFlow { targetValue.floatValue }
-            .onEach { animator.animateToFinalPosition(it) }
-            .launchIn(this)
-
         snapshotFlow { listState.layoutInfo.visibleItemsInfo }
             .distinctUntilChanged()
             .onEach { list -> list.forEach { sizeMap[it.index] = it.size } }
@@ -107,10 +102,9 @@ class LazyListAnimateScroller internal constructor(
         animator.cancel()
         exactAnimation = isExactScroll
         currentValue.floatValue = 0f
-        targetValue.floatValue = targetOffset +
-                Random(System.currentTimeMillis()).nextFloat() * 0.1f
-        // 添加随机值，为了确保能触发LaunchedEffect重组
-        // add random value to offset, to ensure that LaunchedEffect will be recomposed
+        targetValue.floatValue = targetOffset
+
+        animator.animateToFinalPosition(targetOffset)
     }
 
     private suspend fun scrollTo(index: Int) = withContext(Dispatchers.Unconfined) {
