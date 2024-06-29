@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListUpdateCallback
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.lalilu.common.base.Playable
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmusic.GlobalNavigatorImpl

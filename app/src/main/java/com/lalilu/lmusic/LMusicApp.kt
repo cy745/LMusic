@@ -3,8 +3,9 @@ package com.lalilu.lmusic
 import android.app.Application
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
-import coil.ImageLoader
-import coil.ImageLoaderFactory
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
 import com.blankj.utilcode.util.LogUtils
 import com.lalilu.component.ComponentModule
 import com.lalilu.lalbum.AlbumModule
@@ -22,16 +23,19 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import java.io.File
 
-class LMusicApp : Application(), ImageLoaderFactory, FilterProvider, ViewModelStoreOwner {
+class LMusicApp : Application(), SingletonImageLoader.Factory, FilterProvider, ViewModelStoreOwner {
     override val viewModelStore: ViewModelStore = ViewModelStore()
     private val imageLoader: ImageLoader by inject()
     private val filterGroup: FilterGroup by inject()
 
-    override fun newImageLoader(): ImageLoader = imageLoader
+    override fun newImageLoader(context: PlatformContext): ImageLoader = imageLoader
     override fun newFilterGroup(): FilterGroup = filterGroup
 
     override fun onCreate() {
         super.onCreate()
+
+        SingletonImageLoader
+            .setSafe(this)
 
         LogUtils.getConfig()
             .setLog2FileSwitch(true)

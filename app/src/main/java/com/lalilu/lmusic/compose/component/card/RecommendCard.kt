@@ -26,8 +26,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.palette.graphics.Palette
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.error
+import coil3.request.placeholder
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.*
 import com.lalilu.R

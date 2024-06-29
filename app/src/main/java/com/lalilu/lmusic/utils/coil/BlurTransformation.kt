@@ -8,8 +8,8 @@ import android.renderscript.Element
 import android.renderscript.RenderScript
 import android.renderscript.ScriptIntrinsicBlur
 import androidx.core.graphics.applyCanvas
-import coil.size.Size
-import coil.transform.Transformation
+import coil3.size.Size
+import coil3.transform.Transformation
 
 /**
  * A [Transformation] that applies a Gaussian blur to an image.
@@ -23,7 +23,7 @@ class BlurTransformation @JvmOverloads constructor(
     private val context: Context,
     private val radius: Float = DEFAULT_RADIUS,
     private val sampling: Float = DEFAULT_SAMPLING,
-) : Transformation {
+) : Transformation() {
 
     init {
         require(radius in 0.0..25.0) { "radius must be in [0, 25]." }

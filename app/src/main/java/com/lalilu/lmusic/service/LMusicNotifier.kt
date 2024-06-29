@@ -9,8 +9,11 @@ import android.os.Build
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
 import androidx.palette.graphics.Palette
-import coil.imageLoader
-import coil.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.toBitmap
 import com.lalilu.R
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.datastore.SettingsSp
@@ -51,6 +54,7 @@ class LMusicNotifier constructor(
     private val notificationBuilderFlow = MutableStateFlow<NotificationCompat.Builder?>(null)
     private var notificationLoopJob: Job? = null
 
+    @OptIn(ExperimentalCoilApi::class)
     override suspend fun getBitmapFromData(data: Any?): Bitmap? {
         return mContext.imageLoader.execute(
             ImageRequest.Builder(mContext)
@@ -58,7 +62,7 @@ class LMusicNotifier constructor(
                 .data(data)
                 .size(400)
                 .build()
-        ).drawable?.toBitmap()
+        ).image?.toBitmap()
     }
 
     override fun getColorFromBitmap(bitmap: Bitmap): Int {

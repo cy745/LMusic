@@ -20,12 +20,15 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.palette.graphics.Palette
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.toBitmap
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.utils.StackBlurUtils
-import com.lalilu.lmusic.utils.extension.toBitmap
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun BlurBackground(
     modifier: Modifier = Modifier,
@@ -85,7 +88,7 @@ fun BlurBackground(
             contentScale = ContentScale.Crop,
             contentDescription = "",
             onSuccess = { state ->
-                val temp = state.result.drawable.toBitmap()
+                val temp = state.result.image.toBitmap()
                 samplingBitmap.value = createSamplingBitmap(temp, 400).also {
                     // 提前预加载BlurredBitmap
                     StackBlurUtils.preload(it, extraKey)

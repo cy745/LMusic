@@ -16,7 +16,7 @@ voyager = "1.1.0-beta02"
 lottie-compose = "5.2.0"
 
 kotlinpoet = "1.14.2"
-coil_version = "2.4.0"
+coil3_version = "3.0.0-alpha07"
 utilcodex_version = "1.31.1"
 
 # androidx
@@ -79,8 +79,9 @@ koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = 
 # https://github.com/coil-kt/coil
 # Apache-2.0 License
 # 图片加载库
-coil = { module = "io.coil-kt:coil", version.ref = "coil_version" }
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil_version" }
+coil3-android = { module = "io.coil-kt.coil3:coil-android", version.ref = "coil3_version" }
+coil3-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil3_version" }
+coil3-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil3_version" }
 
 # androidx
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -151,4 +152,9 @@ voyager = [
 flyjingfish-aop = [
     "flyjingfish-aop-core",
     "flyjingfish-aop-annotation"
+]
+coil3 = [
+    "coil3-android",
+    "coil3-compose",
+    "coil3-okhttp"
 ]

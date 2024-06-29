@@ -4,10 +4,10 @@ import StatusBarLyric.API.StatusBarLyric
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.ViewModelStoreOwner
-import coil.EventListener
-import coil.ImageLoader
-import coil.request.ErrorResult
-import coil.request.ImageRequest
+import coil3.ImageLoader
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.request.transitionFactory
+import coil3.util.DebugLogger
 import com.lalilu.R
 import com.lalilu.common.base.SourceType
 import com.lalilu.component.navigation.GlobalNavigator
@@ -84,8 +84,8 @@ val AppModule = module {
     }
     single {
         ImageLoader.Builder(androidApplication())
-            .callFactory(get<OkHttpClient>())
             .components {
+                add(OkHttpNetworkFetcherFactory(get<OkHttpClient>()))
                 add(SongCoverKeyer())
                 add(PlayableKeyer())
                 add(LSongMapper())
@@ -93,16 +93,7 @@ val AppModule = module {
                 add(LAlbumFetcher.AlbumFactory())
             }
             .transitionFactory(CrossfadeTransitionFactory())
-            .error(R.drawable.ic_music_2_line_100dp)
-            .eventListener(object : EventListener {
-                override fun onError(request: ImageRequest, result: ErrorResult) {
-//                    LogUtils.w("[ImageLoader]:onError", request.data, result.throwable)
-                }
-
-                override fun onCancel(request: ImageRequest) {
-//                    LogUtils.w("[ImageLoader]:onCancel", request.data)
-                }
-            })
+            .logger(DebugLogger())
             .build()
     }
 }

@@ -47,8 +47,7 @@ dependencies {
     api(project(":common"))
     api(project(":lplayer"))
 
-    api(libs.coil)
-    api(libs.coil.compose)
+    api(libs.bundles.coil3)
 
     // https://github.com/Calvin-LL/Reorderable
     // Apache-2.0 license

@@ -1,7 +1,7 @@
 package com.lalilu.lmusic.utils.coil.keyer
 
-import coil.key.Keyer
-import coil.request.Options
+import coil3.key.Keyer
+import coil3.request.Options
 import com.lalilu.common.base.Playable
 import com.lalilu.lmedia.entity.Item
 
