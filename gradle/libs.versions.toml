@@ -9,7 +9,7 @@ ksp_version = "2.0.0-1.0.22"
 #serialization_json_version = "1.6.0"
 
 koin_version = "3.5.6"
-compose_bom_alpha_version = "2024.05.00-alpha03"
+compose_bom_alpha_version = "2024.06.00-alpha01"
 compose_bom_version = "2024.06.00"
 accompanist_version = "0.32.0"
 voyager = "1.1.0-beta02"
