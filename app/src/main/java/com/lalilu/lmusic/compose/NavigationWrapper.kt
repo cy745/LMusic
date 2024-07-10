@@ -28,6 +28,7 @@ object NavigationWrapper {
     @Composable
     fun Content(
         modifier: Modifier = Modifier,
+        content: @Composable () -> Unit = {}
     ) {
         val windowSizeClass = LocalWindowSize.current
         val animateSpec = remember {
@@ -40,6 +41,7 @@ object NavigationWrapper {
             modifier = modifier.fillMaxSize(),
             defaultScreen = HomeScreen,
             scrimColor = Color.Black.copy(alpha = 0.5f),
+            skipHalfExpanded = false,
             sheetBackgroundColor = MaterialTheme.colors.background,
             enableBottomSheetMode = { windowSizeClass.widthSizeClass != WindowWidthSizeClass.Expanded },
             animationSpec = animateSpec,
@@ -51,7 +53,8 @@ object NavigationWrapper {
                     transitionKeyPrefix = "bottomSheet",
                     navigator = sheetNavigator
                 )
-            }
-        ) { }
+            },
+            content = { content() }
+        )
     }
 }
