@@ -63,7 +63,7 @@ import kotlinx.coroutines.launch
  * See the DraggableAnchors factory method to construct drag anchors using a default implementation.
  */
 @ExperimentalMaterialApi
-internal interface DraggableAnchors<T> {
+interface DraggableAnchors<T> {
 
     /**
      * Get the anchor position for an associated [value]
@@ -196,7 +196,7 @@ internal fun <T> Modifier.anchoredDraggable(
  * access to this scope.
  */
 @ExperimentalMaterialApi
-internal interface AnchoredDragScope {
+interface AnchoredDragScope {
     /**
      * Assign a new value for an offset value for [AnchoredDraggableState].
      *
@@ -230,7 +230,7 @@ internal interface AnchoredDragScope {
  */
 @Stable
 @ExperimentalMaterialApi
-internal class AnchoredDraggableState<T>(
+class AnchoredDraggableState<T>(
     initialValue: T,
     internal val positionalThreshold: (totalDistance: Float) -> Float,
     internal val velocityThreshold: () -> Float,
@@ -813,7 +813,7 @@ private class MapDraggableAnchors<T>(private val anchors: Map<T, Float>) : Dragg
  * constraints. These can be useful to avoid subcomposition.
  */
 @ExperimentalMaterialApi
-internal fun<T> Modifier.draggableAnchors(
+internal fun <T> Modifier.draggableAnchors(
     state: AnchoredDraggableState<T>,
     orientation: Orientation,
     anchors: (size: IntSize, constraints: Constraints) -> Pair<DraggableAnchors<T>, T>,

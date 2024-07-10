@@ -115,7 +115,7 @@ class ModalBottomSheetState(
     internal val isSkipHalfExpanded: Boolean = false,
 ) {
 
-    internal val anchoredDraggableState = AnchoredDraggableState(
+    val anchoredDraggableState = AnchoredDraggableState(
         initialValue = initialValue,
         animationSpec = animationSpec,
         confirmValueChange = confirmValueChange,
@@ -404,12 +404,12 @@ fun ModalBottomSheetLayout(
                                 } else Modifier
                             )
                             .modalBottomSheetAnchors(sheetState)
-                            .anchoredDraggable(
-                                state = sheetState.anchoredDraggableState,
-                                orientation = orientation,
-                                enabled = sheetGesturesEnabled &&
-                                        sheetState.anchoredDraggableState.currentValue != ModalBottomSheetValue.Hidden,
-                            )
+//                            .anchoredDraggable(
+//                                state = sheetState.anchoredDraggableState,
+//                                orientation = orientation,
+//                                enabled = sheetGesturesEnabled &&
+//                                        sheetState.anchoredDraggableState.currentValue != ModalBottomSheetValue.Hidden,
+//                            )
                             .then(
                                 if (sheetGesturesEnabled) {
                                     Modifier.semantics {
