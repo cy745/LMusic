@@ -4,7 +4,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.navigation.EnhanceNavigator
 import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.lmusic.compose.NavigationWrapper
-import com.lalilu.lmusic.compose.new_screen.SongDetailScreen
+import com.lalilu.lmusic.compose.new_screen.detail.SongDetailScreen
 import com.lalilu.lmusic.compose.new_screen.SongsScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

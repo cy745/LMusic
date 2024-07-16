@@ -54,6 +54,7 @@ dependencies {
     api("sh.calvin.reorderable:reorderable:1.1.0")
     api("com.github.cy745:AnyPopDialog-Compose:jitpack-SNAPSHOT")
     api("me.rosuh:AndroidFilePicker:1.0.1")
+    api("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
 
     // compose
 //    api(platform(libs.compose.bom))

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component.card
+package com.lalilu.lmusic.compose.new_screen.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,9 +25,7 @@ fun SongInformationCard(
     song: LSong
 ) {
     Surface(
-        modifier = modifier
-            .padding(horizontal = 20.dp)
-            .width(intrinsicSize = IntrinsicSize.Min),
+        modifier = modifier,
         shape = RoundedCornerShape(20.dp)
     ) {
         Column(
