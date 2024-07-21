@@ -48,7 +48,8 @@ import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.component.extension.toMutableState
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.repository.PlaylistRepository
@@ -61,7 +62,6 @@ import com.lalilu.component.R as componentR
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlaylistCreateOrEditScreenModel(
-    private val navigator: GlobalNavigator,
     private val playlistRepo: PlaylistRepository
 ) : ScreenModel {
     private val playlistId = MutableStateFlow("")
@@ -97,7 +97,8 @@ class PlaylistCreateOrEditScreenModel(
                     mediaIds = emptyList()
                 )
             )
-            navigator.goBack()
+
+            AppRouter.intent(NavIntent.Pop)
         }
     }
 
@@ -126,7 +127,7 @@ class PlaylistCreateOrEditScreenModel(
                     mediaIds = playlist?.mediaIds ?: emptyList()
                 )
             )
-            navigator.goBack()
+            AppRouter.intent(NavIntent.Pop)
         }
     }
 

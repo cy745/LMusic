@@ -25,7 +25,8 @@ import com.lalilu.component.base.LoadingScaffold
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.component.viewmodel.SongsSp
 import com.lalilu.lalbum.R
@@ -88,7 +89,6 @@ private fun DynamicScreen.AlbumsScreen(
 ) {
     val albumsState = albumsSM.albums.collectAsLoadingState()
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val navigator = koinInject<GlobalNavigator>()
 
     LoadingScaffold(
         targetState = albumsState
@@ -130,7 +130,11 @@ private fun DynamicScreen.AlbumsScreen(
                     },
                     showTitle = { albumsSM.showTitle.value },
                     onClick = {
-                        navigator.navigateTo(AlbumDetailScreen(item.id))
+                        AppRouter.intent(
+                            NavIntent.Push(
+                                AlbumDetailScreen(item.id)
+                            )
+                        )
                     }
                 )
             }

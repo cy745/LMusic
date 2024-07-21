@@ -29,14 +29,14 @@ import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
 import com.lalilu.component.extension.SelectAction
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lplaylist.PlaylistActions
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.repository.PlaylistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import org.koin.compose.koinInject
 import com.lalilu.component.R as componentR
 
 data class PlaylistDetailScreen(
@@ -147,7 +147,6 @@ private fun DynamicScreen.PlaylistDetailScreen(
     playlistId: String,
     playlistDetailSM: PlaylistDetailScreenModel,
 ) {
-    val navigator = koinInject<GlobalNavigator>()
     val playlistState = playlistDetailSM.playlist.collectAsLoadingState()
 
     LoadingScaffold(targetState = playlistState) { playlist ->
@@ -189,8 +188,8 @@ private fun DynamicScreen.PlaylistDetailScreen(
                     ) {
                         IconButton(
                             onClick = {
-                                navigator.navigateTo(
-                                    PlaylistCreateOrEditScreen(targetPlaylistId = playlistId)
+                                AppRouter.intent(
+                                    NavIntent.Push(PlaylistCreateOrEditScreen(targetPlaylistId = playlistId))
                                 )
                             }
                         ) {

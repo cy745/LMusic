@@ -51,10 +51,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.common.base.BaseSp
 import com.lalilu.common.base.Playable
-import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.extension.DialogItem
 import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.ItemSelectHelper
@@ -64,14 +65,15 @@ import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.rememberItemSelectHelper
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.component.extension.singleViewModel
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.component.viewmodel.SongsViewModel
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.ListAction
 import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmedia.extension.Sortable
-import org.koin.compose.koinInject
+import com.zhangke.krouter.KRouter
 
 class SongsScreenModel : ScreenModel {
     val isFastJumping = mutableStateOf(false)
@@ -98,7 +100,7 @@ fun DefaultEmptyContent() {
 }
 
 @Composable
-fun DynamicScreen.Songs(
+fun Screen.Songs(
     modifier: Modifier = Modifier,
     mediaIds: List<String>,
     showAll: Boolean = false,
@@ -115,7 +117,6 @@ fun DynamicScreen.Songs(
     headerContent: LazyListScope.(State<Map<GroupIdentity, List<Playable>>>) -> Unit = {},
     footerContent: LazyListScope.(State<Map<GroupIdentity, List<Playable>>>) -> Unit = {}
 ) {
-    val navigator: GlobalNavigator = koinInject()
     val songsVM: SongsViewModel = singleViewModel()
     val playingVM: IPlayingViewModel = singleViewModel()
     val songsState = songsVM.output
@@ -147,10 +148,12 @@ fun DynamicScreen.Songs(
         isVisible = songsSM.isFastJumping
     )
 
-    registerSelectPanel(
-        selectActions = { selectActions { songsState.value.values.flatten() } },
-        selector = selectorHelper
-    )
+    if (this is ScreenBarFactory) {
+        registerSelectPanel(
+            selectActions = { selectActions { songsState.value.values.flatten() } },
+            selector = selectorHelper
+        )
+    }
 
     if (onDragMoveEnd != null) {
         ReorderableSongListWrapper(
@@ -168,7 +171,13 @@ fun DynamicScreen.Songs(
             footerContent = { footerContent(songsState) },
             emptyContent = emptyContent,
             prefixContent = { prefixContent(it, sortRuleStr) },
-            onLongClickItem = { navigator.goToDetailOf(it.mediaId) },
+            onLongClickItem = {
+                AppRouter.intent {
+                    KRouter.route<Screen>("/song/detail?mediaId=${it.mediaId}") {
+                        with("mediaId", it.mediaId)
+                    }?.let(NavIntent::Push)
+                }
+            },
             onClickItem = {
                 playingVM.play(
                     mediaId = it.mediaId,
@@ -201,7 +210,13 @@ fun DynamicScreen.Songs(
             footerContent = { footerContent(songsState) },
             emptyContent = emptyContent,
             prefixContent = { prefixContent(it, sortRuleStr) },
-            onLongClickItem = { navigator.goToDetailOf(it.mediaId) },
+            onLongClickItem = {
+                AppRouter.intent {
+                    KRouter.route<Screen>("/song/detail?mediaId=${it.mediaId}") {
+                        with("mediaId", it.mediaId)
+                    }?.let(NavIntent::Push)
+                }
+            },
             onClickItem = {
                 playingVM.play(
                     mediaId = it.mediaId,
@@ -250,12 +265,12 @@ private fun registerSortPanel(
 
 
 @Composable
-fun DynamicScreen.registerSelectPanel(
+fun ScreenBarFactory.registerSelectPanel(
     modifier: Modifier = Modifier,
     selector: ItemSelectHelper = rememberItemSelectHelper(),
     selectActions: () -> List<SelectAction> = { emptyList() }
 ) {
-    RegisterMainContent(
+    RegisterContent(
         isVisible = selector.isSelecting,
         onBackPressed = { selector.clear() }
     ) {

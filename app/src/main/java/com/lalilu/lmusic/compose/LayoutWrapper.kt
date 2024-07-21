@@ -21,7 +21,7 @@ object LayoutWrapper {
             derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
         }
 
-        NavigationWrapper.Content { PlayingLayout() }
+        NavigationWrapper { PlayingLayout() }
 
         if (isLandscape) {
             ShowScreen()

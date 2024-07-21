@@ -24,7 +24,8 @@ import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.extension.ItemSelectHelper
 import com.lalilu.component.extension.rememberItemSelectHelper
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.component.PlaylistCard
 import com.lalilu.lplaylist.entity.LPlaylist
@@ -92,8 +93,6 @@ private fun DynamicScreen.PlaylistAddToScreen(
     selector: ItemSelectHelper,
     playlists: () -> List<LPlaylist>,
 ) {
-    val navigator = koinInject<GlobalNavigator>()
-
     LLazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -107,7 +106,13 @@ private fun DynamicScreen.PlaylistAddToScreen(
                 subTitle = "[S: ${mediaIds.size}] -> [P: ${selector.selected.value.size}]"
             ) {
                 IconButton(
-                    onClick = { navigator.navigateTo(PlaylistCreateOrEditScreen()) }
+                    onClick = {
+                        AppRouter.intent(
+                            NavIntent.Push(
+                                PlaylistCreateOrEditScreen()
+                            )
+                        )
+                    }
                 ) {
                     Icon(
                         painter = painterResource(componentR.drawable.ic_add_line),

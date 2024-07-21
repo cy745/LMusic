@@ -12,13 +12,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.common.base.Playable
 import com.lalilu.component.card.SongCard
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.GlobalNavigatorImpl
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.zhangke.krouter.KRouter
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 fun LazyListScope.historyPanel(
@@ -67,7 +70,11 @@ fun LazyListScope.historyPanel(
             },
             onLongClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                GlobalNavigatorImpl.goToDetailOf(mediaId = item.id)
+                AppRouter.intent {
+                    KRouter.route<Screen>("/song/detail") {
+                        with("mediaId", item.mediaId)
+                    }?.let(NavIntent::Push)
+                }
             }
         )
     }

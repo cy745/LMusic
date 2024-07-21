@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lartist.screen.ArtistDetailScreen
 import com.lalilu.lmedia.entity.LArtist
-import org.koin.compose.koinInject
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -25,8 +25,6 @@ fun SongArtistsRow(
     modifier: Modifier = Modifier,
     artists: Set<LArtist>
 ) {
-    val navigator: GlobalNavigator = koinInject()
-
     FlowRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -34,7 +32,9 @@ fun SongArtistsRow(
         artists.forEach {
             Chip(
                 onClick = {
-                    navigator.navigateTo(ArtistDetailScreen(artistName = it.name))
+                    AppRouter.intent(
+                        NavIntent.Push(ArtistDetailScreen(artistName = it.name))
+                    )
                 },
                 colors = ChipDefaults.outlinedChipColors(),
             ) {

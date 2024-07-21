@@ -20,7 +20,8 @@ import com.lalilu.component.base.LoadingScaffold
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lartist.R
 import com.lalilu.lartist.component.ArtistCard
@@ -73,7 +74,6 @@ private fun DynamicScreen.ArtistsScreen(
     artistsSM: ArtistsScreenModel,
     playingVM: IPlayingViewModel = koinInject()
 ) {
-    val navigator = koinInject<GlobalNavigator>()
     val artistsState = artistsSM.artists.collectAsLoadingState()
 
     LoadingScaffold(
@@ -112,7 +112,9 @@ private fun DynamicScreen.ArtistsScreen(
                         }
                     },
                     onClick = {
-                        navigator.navigateTo(ArtistDetailScreen(item.name))
+                        AppRouter.intent(
+                            NavIntent.Push(ArtistDetailScreen(item.id))
+                        )
                     }
                 )
             }

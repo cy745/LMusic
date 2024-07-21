@@ -13,13 +13,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.R
 import com.lalilu.component.Songs
 import com.lalilu.component.SongsScreenModel
-import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
-import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.base.screen.ScreenActionFactory
+import com.lalilu.component.base.screen.ScreenBarFactory
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.extension.LazyListScrollToHelper
 import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
@@ -34,12 +37,7 @@ import com.lalilu.lplaylist.PlaylistActions
 data class SongsScreen(
     private val title: String? = null,
     private val mediaIds: List<String> = emptyList()
-) : DynamicScreen() {
-
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.screen_title_songs,
-        icon = R.drawable.ic_music_2_line
-    )
+) : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBarFactory {
 
     @Transient
     private var scrollHelper: LazyListScrollToHelper? = null
@@ -48,7 +46,15 @@ data class SongsScreen(
     private var songsSM: SongsScreenModel? = null
 
     @Composable
-    override fun registerActions(): List<ScreenAction> {
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = R.string.screen_title_songs,
+            icon = R.drawable.ic_music_2_line
+        )
+    }
+
+    @Composable
+    override fun provideScreenActions(): List<ScreenAction> {
         val playingVM: PlayingViewModel = singleViewModel()
 
         return remember {

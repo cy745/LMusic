@@ -19,7 +19,8 @@ import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
 import com.lalilu.component.extension.SelectAction
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lartist.R
 import com.lalilu.lartist.component.ArtistCard
 import com.lalilu.lmedia.LMedia
@@ -28,7 +29,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
 
 data class ArtistDetailScreen(
     private val artistName: String
@@ -65,7 +65,6 @@ class ArtistDetailScreenModel : ScreenModel {
 private fun DynamicScreen.ArtistDetail(
     artistDetailSM: ArtistDetailScreenModel
 ) {
-    val navigator = koinInject<GlobalNavigator>()
     val artistState = artistDetailSM.artist.collectAsLoadingState()
 
     LoadingScaffold(targetState = artistState) { artist ->
@@ -109,9 +108,8 @@ private fun DynamicScreen.ArtistDetail(
                         ArtistCard(
                             artist = it,
                             onClick = {
-                                navigator.navigateTo(
-                                    screen = ArtistDetailScreen(it.id),
-                                    singleTop = false
+                                AppRouter.intent(
+                                    NavIntent.Push(ArtistDetailScreen(it.id))
                                 )
                             }
                         )

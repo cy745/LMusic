@@ -21,13 +21,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import com.lalilu.R
 import com.lalilu.component.IconButton
-import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.LocalBottomSheetNavigator
 import com.lalilu.component.base.ScreenAction
-import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.base.screen.ScreenActionFactory
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.override.ModalBottomSheetValue
 import com.lalilu.lmedia.LMedia
@@ -37,18 +39,22 @@ import com.lalilu.lmusic.compose.presenter.DetailScreenAction
 import com.lalilu.lmusic.compose.presenter.DetailScreenIsPlayingPresenter
 import com.lalilu.lmusic.compose.presenter.DetailScreenLikeBtnPresenter
 import com.lalilu.lplayer.extensions.QueueAction
+import com.zhangke.krouter.annotation.Destination
+import com.zhangke.krouter.annotation.Param
 
+@Destination("/song/detail", type = Screen::class)
 data class SongDetailScreen(
-    private val mediaId: String
-) : DynamicScreen() {
+    @Param val mediaId: String
+) : Screen, ScreenActionFactory, ScreenInfoFactory {
     override val key: ScreenKey = "${super.key}:$mediaId"
 
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.screen_title_song_detail
-    )
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(title = R.string.screen_title_song_detail)
+    }
 
     @Composable
-    override fun registerActions(): List<ScreenAction> {
+    override fun provideScreenActions(): List<ScreenAction> {
         return remember {
             listOf(
                 ScreenAction.StaticAction(

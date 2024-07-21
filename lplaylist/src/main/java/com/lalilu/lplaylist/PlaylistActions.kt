@@ -4,7 +4,8 @@ import androidx.compose.ui.graphics.Color
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.common.base.Playable
 import com.lalilu.component.extension.SelectAction
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.repository.PlaylistRepository
 import com.lalilu.lplaylist.screen.PlaylistAddToScreen
@@ -12,7 +13,6 @@ import org.koin.java.KoinJavaComponent
 import com.lalilu.component.R as componentR
 
 object PlaylistActions {
-    private val navigator: GlobalNavigator by KoinJavaComponent.inject(GlobalNavigator::class.java)
     private val playlistRepo: PlaylistRepository by KoinJavaComponent.inject(PlaylistRepository::class.java)
 
     /**
@@ -26,13 +26,16 @@ object PlaylistActions {
         val mediaIds = selector.selected.value
             .mapNotNull { (it as? Playable)?.mediaId }
 
-        navigator.navigateTo(
-            PlaylistAddToScreen(
-                ids = mediaIds,
-                callback = {
-                    selector.clear()
-                    navigator.goBack()
-                }
+        AppRouter.intent(
+            NavIntent.Push(
+                PlaylistAddToScreen(
+                    ids = mediaIds,
+                    callback = {
+                        selector.clear()
+
+                        AppRouter.intent(NavIntent.Pop)
+                    }
+                )
             )
         )
     }

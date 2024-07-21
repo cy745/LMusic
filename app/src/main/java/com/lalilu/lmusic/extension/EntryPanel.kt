@@ -18,8 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.extension.dayNightTextColor
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lalbum.screen.AlbumsScreen
 import com.lalilu.lartist.screen.ArtistsScreen
 import com.lalilu.ldictionary.screen.DictionaryScreen
@@ -27,12 +30,9 @@ import com.lalilu.lhistory.screen.HistoryScreen
 import com.lalilu.lmusic.compose.new_screen.SettingsScreen
 import com.lalilu.lmusic.compose.new_screen.SongsScreen
 import com.lalilu.lplaylist.screen.PlaylistScreen
-import org.koin.compose.koinInject
 
 @Composable
 fun EntryPanel() {
-    val navigator: GlobalNavigator = koinInject()
-
     val screenEntry = remember {
         listOf(
             SongsScreen(),
@@ -51,26 +51,34 @@ fun EntryPanel() {
     ) {
         Column {
             for (entry in screenEntry) {
-                val info = entry.getScreenInfo() ?: continue
+                val (icon, title) = when (entry) {
+                    is DynamicScreen -> entry.getScreenInfo()?.let { it.icon to it.title }
+                    is ScreenInfoFactory -> entry.provideScreenInfo().let { it.icon to it.title }
+                    else -> null
+                } ?: continue
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { navigator.navigateTo(entry) }
+                        .clickable {
+                            AppRouter.intent(
+                                NavIntent.Push(entry)
+                            )
+                        }
                         .padding(horizontal = 20.dp, vertical = 15.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    info.icon?.let { icon ->
+                    icon?.let { icon ->
                         Icon(
                             painter = painterResource(id = icon),
-                            contentDescription = stringResource(id = info.title),
+                            contentDescription = stringResource(id = title),
                             tint = dayNightTextColor(0.7f)
                         )
                     }
 
                     Text(
-                        text = stringResource(id = info.title),
+                        text = stringResource(id = title),
                         color = dayNightTextColor(0.6f),
                         style = MaterialTheme.typography.subtitle2
                     )

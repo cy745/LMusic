@@ -19,18 +19,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.IconTextButton
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.new_screen.SearchLyricScreen
 import com.lalilu.lmusic.utils.extension.checkActivityIsExist
-import org.koin.compose.koinInject
 
 @Composable
 fun SongActionsCard(
     modifier: Modifier = Modifier,
     song: LSong,
 ) {
-    val navigator: GlobalNavigator = koinInject()
     val context = LocalContext.current
     val intent = remember(song) {
         Intent().apply {
@@ -85,10 +84,12 @@ fun SongActionsCard(
                 shape = RoundedCornerShape(10.dp),
                 color = Color(0xFF3EA22C),
                 onClick = {
-                    navigator.navigateTo(
-                        SearchLyricScreen(
-                            mediaId = song.id,
-                            keywords = song.name
+                    AppRouter.intent(
+                        NavIntent.Push(
+                            SearchLyricScreen(
+                                mediaId = song.id,
+                                keywords = song.name
+                            )
                         )
                     )
                 }

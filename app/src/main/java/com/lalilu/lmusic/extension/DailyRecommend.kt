@@ -23,12 +23,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.base.LocalWindowSize
-import com.lalilu.lmusic.GlobalNavigatorImpl
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
+import com.lalilu.lmusic.compose.new_screen.SongsScreen
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
+import com.zhangke.krouter.KRouter
 
 @OptIn(ExperimentalMaterialApi::class)
 fun LazyListScope.dailyRecommend(
@@ -40,7 +44,7 @@ fun LazyListScope.dailyRecommend(
             title = "每日推荐",
             onClick = {
                 val ids = libraryVM.dailyRecommends.value.map { it.mediaId }
-                GlobalNavigatorImpl.showSongs(ids)
+                AppRouter.intent(NavIntent.Push(SongsScreen(mediaIds = ids)))
             }
         ) {
             Chip(onClick = { libraryVM.forceUpdate() }) {
@@ -66,7 +70,13 @@ fun LazyListScope.dailyRecommend(
                     RecommendCard2(
                         item = { it },
                         modifier = Modifier.size(width = 250.dp, height = 250.dp),
-                        onClick = { GlobalNavigatorImpl.goToDetailOf(mediaId = it.id) }
+                        onClick = {
+                            AppRouter.intent {
+                                KRouter.route<Screen>("/song/detail") {
+                                    with("mediaId", it.id)
+                                }?.let(NavIntent::Push)
+                            }
+                        }
                     )
                 }
             }
@@ -92,7 +102,7 @@ fun RecommendRowForSizeMedium(libraryVM: LibraryViewModel) {
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f),
-                onClick = { GlobalNavigatorImpl.goToDetailOf(mediaId = it.id) }
+                onClick = { AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") } }
             )
         }
 
@@ -102,7 +112,7 @@ fun RecommendRowForSizeMedium(libraryVM: LibraryViewModel) {
                 modifier = Modifier
                     .width(150.dp)
                     .fillMaxHeight(),
-                onClick = { GlobalNavigatorImpl.goToDetailOf(mediaId = it.id) }
+                onClick = { AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") } }
             )
         }
 
@@ -112,7 +122,7 @@ fun RecommendRowForSizeMedium(libraryVM: LibraryViewModel) {
                 modifier = Modifier
                     .width(150.dp)
                     .fillMaxHeight(),
-                onClick = { GlobalNavigatorImpl.goToDetailOf(mediaId = it.id) }
+                onClick = { AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") } }
             )
         }
     }
@@ -136,7 +146,7 @@ fun RecommendRowForSizeExpanded(libraryVM: LibraryViewModel) {
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f),
-                onClick = { GlobalNavigatorImpl.goToDetailOf(mediaId = it.id) }
+                onClick = { AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") } }
             )
         }
 
@@ -154,7 +164,7 @@ fun RecommendRowForSizeExpanded(libraryVM: LibraryViewModel) {
                         .fillMaxWidth()
                         .weight(1f),
                     onClick = {
-                        GlobalNavigatorImpl.goToDetailOf(mediaId = it.id)
+                        AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") }
                     }
                 )
             }
@@ -166,7 +176,7 @@ fun RecommendRowForSizeExpanded(libraryVM: LibraryViewModel) {
                         .fillMaxWidth()
                         .weight(1f),
                     onClick = {
-                        GlobalNavigatorImpl.goToDetailOf(mediaId = it.id)
+                        AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") }
                     }
                 )
             }

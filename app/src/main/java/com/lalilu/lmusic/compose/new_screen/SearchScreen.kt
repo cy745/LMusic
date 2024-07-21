@@ -19,38 +19,51 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
 import com.lalilu.component.Songs
+import com.lalilu.component.base.TabScreen
+import com.lalilu.component.base.screen.ScreenExtraBarFactory
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.extension.singleViewModel
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
+import com.lalilu.lartist.component.ArtistCard
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.GlobalNavigatorImpl
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.ScreenInfo
-import com.lalilu.component.base.TabScreen
 import com.lalilu.lmusic.compose.component.base.SearchInputBar
-import com.lalilu.lartist.component.ArtistCard
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
+import com.zhangke.krouter.annotation.Destination
 
-object SearchScreen : DynamicScreen(), TabScreen {
+@Destination("/pages/search", type = Screen::class)
+object SearchScreen : Screen, TabScreen, ScreenExtraBarFactory {
 
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.screen_title_search,
-        icon = R.drawable.ic_search_2_line
-    )
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = R.string.screen_title_search,
+            icon = R.drawable.ic_search_2_line
+        )
+    }
 
     @Composable
     override fun Content() {
-        RegisterExtraContent { SearchBar() }
+        RegisterExtraContent(
+            isVisible = remember { mutableStateOf(true) },
+            onBackPressed = null,
+            content = { SearchBar() }
+        )
 
         SearchScreen()
     }
@@ -72,7 +85,7 @@ fun SearchBar(
     ExperimentalMaterialApi::class
 )
 @Composable
-private fun DynamicScreen.SearchScreen(
+private fun Screen.SearchScreen(
     playingVM: PlayingViewModel = singleViewModel(),
     searchVM: SearchViewModel = singleViewModel(),
 ) {
@@ -95,10 +108,12 @@ private fun DynamicScreen.SearchScreen(
                     title = "歌曲",
                     onClick = {
                         if (searchVM.songsResult.value.isNotEmpty()) {
-                            GlobalNavigatorImpl.showSongs(
-                                title = "[${searchVM.keyword.value}]\n歌曲搜索结果",
-                                mediaIds = searchVM.songsResult.value.map { it.mediaId }
-                            )
+                            AppRouter.intent(NavIntent.Push(
+                                SongsScreen(
+                                    title = "[${searchVM.keyword.value}]\n歌曲搜索结果",
+                                    mediaIds = searchVM.songsResult.value.map { it.mediaId }
+                                )
+                            ))
                         }
                     }
                 )

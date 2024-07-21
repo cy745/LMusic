@@ -7,11 +7,12 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.R
 import com.lalilu.component.LLazyColumn
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.extension.EntryPanel
@@ -21,12 +22,18 @@ import com.lalilu.lmusic.extension.latestPanel
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.zhangke.krouter.annotation.Destination
 
-object HomeScreen : DynamicScreen(), TabScreen {
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.screen_title_home,
-        icon = R.drawable.ic_loader_line
-    )
+@Destination("/pages/home", type = Screen::class)
+object HomeScreen : TabScreen, Screen {
+
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = R.string.screen_title_home,
+            icon = R.drawable.ic_loader_line
+        )
+    }
 
     @Composable
     override fun Content() {

@@ -21,6 +21,8 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.screen.Screen
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -37,11 +40,12 @@ import coil3.request.error
 import coil3.request.placeholder
 import com.lalilu.R
 import com.lalilu.lmusic.api.lrcshare.SongResult
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.LLazyColumn
 import com.lalilu.lmusic.compose.component.card.SearchInputBar
 import com.lalilu.component.base.NavigatorHeader
+import com.lalilu.component.base.screen.ScreenExtraBarFactory
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.lmusic.compose.presenter.SearchLyricAction
 import com.lalilu.lmusic.compose.presenter.SearchLyricPresenter
 import com.lalilu.lmusic.compose.presenter.SearchLyricState
@@ -52,11 +56,14 @@ import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 data class SearchLyricScreen(
     private val mediaId: String,
     private val keywords: String? = null
-) : DynamicScreen() {
+) : Screen, ScreenInfoFactory, ScreenExtraBarFactory {
 
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.preference_lyric_settings
-    )
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = R.string.preference_lyric_settings
+        )
+    }
 
     @Composable
     override fun Content() {
@@ -71,7 +78,10 @@ data class SearchLyricScreen(
             state.onAction(SearchLyricAction.SearchFor(keywords))
         }
 
-        RegisterExtraContent {
+        RegisterExtraContent(
+            isVisible = remember { mutableStateOf(true) },
+            onBackPressed = null
+        ) {
             SearchInputBar(
                 value = keywords ?: "",
                 onSearchFor = { SearchLyricPresenter.onAction(SearchLyricAction.SearchFor(it)) },
