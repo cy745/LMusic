@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
@@ -397,7 +398,8 @@ fun ModalBottomSheetLayout(
                                         remember(sheetState.anchoredDraggableState, orientation) {
                                             ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
                                                 state = sheetState.anchoredDraggableState,
-                                                orientation = orientation
+                                                orientation = orientation,
+                                                scope = scope
                                             )
                                         }
                                     )
@@ -569,9 +571,15 @@ object ModalBottomSheetDefaults {
 @OptIn(ExperimentalMaterialApi::class)
 private fun ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
     state: AnchoredDraggableState<*>,
-    orientation: Orientation
+    orientation: Orientation,
+    scope: CoroutineScope,
 ): NestedScrollConnection = object : NestedScrollConnection {
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        // 开始拖动时取消正在进行的动画
+        if (source == NestedScrollSource.UserInput) {
+            scope.launch { state.anchoredDrag { } }
+        }
+
         val delta = available.toFloat()
         return if (delta < 0 && source == NestedScrollSource.Drag) {
             state.dispatchRawDelta(delta).toOffset()
