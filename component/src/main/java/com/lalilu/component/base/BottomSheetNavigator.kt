@@ -100,7 +100,11 @@ fun BottomSheetNavigatorLayout(
                 sheetGesturesEnabled = sheetGesturesEnabled,
                 sheetContent = {
                     BackHandler(enabled = bottomSheetNavigator.isVisible) {
-                        bottomSheetNavigator.back()
+                        if (sheetState.currentValue == ModalBottomSheetValue.Expanded) {
+                            bottomSheetNavigator.back()
+                        } else {
+                            coroutineScope.launch { sheetState.hide() }
+                        }
                     }
                     key("SheetContent") {
                         sheetContent(bottomSheetNavigator)
