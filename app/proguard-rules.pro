@@ -45,7 +45,8 @@
 -dontwarn com.squareup.picasso.Picasso
 -dontwarn com.squareup.picasso.RequestCreator
 
--keepnames @com.zhangke.krouter.annotation.Destination class * { *; }
+# 针对KRouter，保留所需的类的构造函数
+-keepclassmembers @com.zhangke.krouter.annotation.Destination public class * { public <init>(*); }
 
 # 墨 · 状态栏歌词
 -keep class StatusBarLyric.API.StatusBarLyric { *; }
