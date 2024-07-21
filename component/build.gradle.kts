@@ -55,6 +55,7 @@ dependencies {
     api("com.github.cy745:AnyPopDialog-Compose:jitpack-SNAPSHOT")
     api("me.rosuh:AndroidFilePicker:1.0.1")
     api("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
+    api("com.github.cy745.KRouter:core:fcf40f4b15")
 
     // compose
 //    api(platform(libs.compose.bom))

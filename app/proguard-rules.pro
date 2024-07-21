@@ -45,6 +45,8 @@
 -dontwarn com.squareup.picasso.Picasso
 -dontwarn com.squareup.picasso.RequestCreator
 
+-keepnames @com.zhangke.krouter.annotation.Destination class * { *; }
+
 # 墨 · 状态栏歌词
 -keep class StatusBarLyric.API.StatusBarLyric { *; }
 

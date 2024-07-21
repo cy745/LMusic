@@ -10,7 +10,6 @@ import coil3.request.transitionFactory
 import coil3.util.DebugLogger
 import com.lalilu.R
 import com.lalilu.common.base.SourceType
-import com.lalilu.component.navigation.GlobalNavigator
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lalbum.viewModel.AlbumsViewModel
 import com.lalilu.lartist.viewModel.ArtistsViewModel
@@ -56,8 +55,6 @@ import java.net.URLDecoder
 
 val AppModule = module {
     single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
-    single<GlobalNavigator> { GlobalNavigatorImpl }
-
     single<FastKV> {
         FastKV.Builder(androidApplication(), "LMusic")
             .encoder(

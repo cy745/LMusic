@@ -7,54 +7,53 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.lalilu.component.base.BottomSheetNavigator
 import com.lalilu.component.base.BottomSheetNavigatorLayout
 import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lmusic.compose.component.navigate.NavigationSheetContent
 import com.lalilu.lmusic.compose.new_screen.HomeScreen
 
 
 @OptIn(ExperimentalMaterialApi::class)
-object NavigationWrapper {
-    var navigator: BottomSheetNavigator? by mutableStateOf(null)
-        private set
+@Composable
+fun NavigationWrapper(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit = {}
+) {
+    val windowSizeClass = LocalWindowSize.current
 
-    @Composable
-    fun Content(
-        modifier: Modifier = Modifier,
-        content: @Composable () -> Unit = {}
-    ) {
-        val windowSizeClass = LocalWindowSize.current
-        val animateSpec = remember {
-            tween<Float>(
-                durationMillis = 150,
-                easing = CubicBezierEasing(0.1f, 0.16f, 0f, 1f)
+    BottomSheetNavigatorLayout(
+        modifier = modifier.fillMaxSize(),
+        defaultScreen = HomeScreen,
+        scrimColor = Color.Black.copy(alpha = 0.5f),
+        skipHalfExpanded = false,
+        sheetBackgroundColor = MaterialTheme.colors.background,
+        enableBottomSheetMode = { windowSizeClass.widthSizeClass != WindowWidthSizeClass.Expanded },
+        animationSpec = tween(
+            durationMillis = 200,
+            easing = CubicBezierEasing(0.1f, 0.16f, 0f, 1f)
+        ),
+        sheetContent = { sheetNavigator ->
+            LaunchedEffect(sheetNavigator) {
+                AppRouter.intentFlow.collect { intent ->
+                    when (intent) {
+                        NavIntent.Pop -> sheetNavigator.back()
+                        is NavIntent.Push -> sheetNavigator.jump(intent.screen)
+                        is NavIntent.Replace -> sheetNavigator.replace(intent.screen)
+                    }
+                }
+            }
+
+            NavigationSheetContent(
+                modifier = modifier,
+                transitionKeyPrefix = "bottomSheet",
+                navigator = sheetNavigator
             )
-        }
-        BottomSheetNavigatorLayout(
-            modifier = modifier.fillMaxSize(),
-            defaultScreen = HomeScreen,
-            scrimColor = Color.Black.copy(alpha = 0.5f),
-            skipHalfExpanded = false,
-            sheetBackgroundColor = MaterialTheme.colors.background,
-            enableBottomSheetMode = { windowSizeClass.widthSizeClass != WindowWidthSizeClass.Expanded },
-            animationSpec = animateSpec,
-            sheetContent = { sheetNavigator ->
-                this@NavigationWrapper.navigator = sheetNavigator
-
-                NavigationSheetContent(
-                    modifier = modifier,
-                    transitionKeyPrefix = "bottomSheet",
-                    navigator = sheetNavigator
-                )
-            },
-            content = { content() }
-        )
-    }
+        },
+        content = { content() }
+    )
 }

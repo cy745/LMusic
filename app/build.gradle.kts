@@ -175,6 +175,9 @@ dependencies {
     implementation(project(":lalbum"))
     implementation(project(":ldictionary"))
 
+    // KRouter
+    ksp("com.github.cy745.KRouter:compiler:fcf40f4b15")
+
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
