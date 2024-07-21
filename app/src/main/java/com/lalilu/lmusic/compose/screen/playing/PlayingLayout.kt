@@ -7,6 +7,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -15,6 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.dirror.lyricviewx.LyricUtil
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.lalilu.component.base.LocalBottomSheetNavigator
 import com.lalilu.component.extension.hideControl
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
@@ -46,13 +51,15 @@ import kotlinx.coroutines.flow.mapLatest
 import org.koin.compose.koinInject
 import kotlin.math.pow
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun PlayingLayout(
     playingVM: PlayingViewModel = singleViewModel(),
-    settingsSp: SettingsSp = koinInject()
+    settingsSp: SettingsSp = koinInject(),
 ) {
     val haptic = LocalHapticFeedback.current
+    val navigator = LocalBottomSheetNavigator.current
+    val sheetState = navigator?.sheetState
     val systemUiController = rememberSystemUiController()
     val lyricLayoutLazyListState = rememberLazyListState()
 
@@ -246,7 +253,12 @@ fun PlayingLayout(
             }
         },
         playlistContent = { modifier ->
-            PlaylistLayout(modifier = modifier.clipToBounds())
+            Surface(color = MaterialTheme.colors.background) {
+                PlaylistLayout(
+                    modifier = modifier.clipToBounds(),
+                    forceRefresh = { draggable.state.value != DragAnchor.Min }
+                )
+            }
         },
         overlayContent = {
             val animateProgress = animateFloatAsState(
@@ -255,17 +267,42 @@ fun PlayingLayout(
                 label = ""
             )
 
-            SeekbarLayout(
-                modifier = Modifier
+            Box(
+                Modifier
                     .align(Alignment.BottomCenter)
                     .graphicsLayer {
                         alpha = animateProgress.value / 100f
                         translationY = (1f - animateProgress.value / 100f) * 500f
+                    }
+            ) {
+                val duration = LPlayer.runtime.info.durationFlow.collectAsState()
+                val currentValue = LPlayer.runtime.info.positionFlow.collectAsState()
+
+                SeekbarLayout2(
+                    modifier = Modifier.hideControl(enable = { hideComponent.value }),
+                    animateColor = { animateColor.value },
+                    onValueChange = { seekbarTime.longValue = it.toLong() },
+                    maxValue = { duration.value.toFloat() },
+                    dataValue = { currentValue.value.toFloat() },
+                    onDispatchDragOffset = {
+                        sheetState?.anchoredDraggableState?.dispatchRawDelta(it)
                     },
-                seekBarModifier = Modifier.hideControl(enable = { hideComponent.value }),
-                onValueChange = { seekbarTime.longValue = it },
-                animateColor = animateColor
-            )
+                    onDragStop = { result ->
+                        if (result == -1) sheetState?.hide()
+                        else sheetState?.anchoredDraggableState?.settle(0f)
+                    },
+                    onSeekTo = { position ->
+                        PlayerAction.SeekTo(position.toLong()).action()
+                    },
+                    onClick = { clickPart ->
+                        when (clickPart) {
+                            ClickPart.Start -> PlayerAction.SkipToPrevious.action()
+                            ClickPart.Middle -> PlayerAction.PlayOrPause.action()
+                            ClickPart.End -> PlayerAction.SkipToNext.action()
+                        }
+                    }
+                )
+            }
         }
     )
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,11 +36,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListUpdateCallback
+import cafe.adriel.voyager.core.screen.Screen
 import coil3.compose.AsyncImage
 import com.lalilu.common.base.Playable
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.viewmodel.IPlayingViewModel
-import com.lalilu.lmusic.GlobalNavigatorImpl
 import com.lalilu.lplayer.LPlayer
+import com.zhangke.krouter.KRouter
 import org.koin.compose.koinInject
 
 
@@ -100,6 +104,7 @@ fun <T : Any> List<Item<T>>.diff(
 @Composable
 fun PlaylistLayout(
     modifier: Modifier = Modifier,
+    forceRefresh: () -> Boolean = { false },
     playingVM: IPlayingViewModel = koinInject()
 ) {
     val haptic = LocalHapticFeedback.current
@@ -130,7 +135,7 @@ fun PlaylistLayout(
                 .any { it.key == item.key }
         } ?: false
 
-        if (isNewListTopVisible || isOldListTopVisible) {
+        if (isNewListTopVisible || isOldListTopVisible || forceRefresh()) {
             actualItems = emptyList()
             view.post { actualItems = newList }
         } else {
@@ -140,7 +145,8 @@ fun PlaylistLayout(
 
     LazyColumn(
         state = listState,
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 200.dp)
     ) {
         items(
             items = actualItems,
@@ -155,7 +161,12 @@ fun PlaylistLayout(
                 },
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    GlobalNavigatorImpl.goToDetailOf(mediaId = item.data.mediaId)
+
+                    AppRouter.intent {
+                        KRouter.route<Screen>("/pages/detail") {
+                            with("mediaId", item.data.mediaId)
+                        }?.let(NavIntent::Push)
+                    }
                 }
             )
         }
