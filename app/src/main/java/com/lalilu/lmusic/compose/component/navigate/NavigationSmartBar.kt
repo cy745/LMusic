@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,7 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import com.lalilu.component.base.DynamicScreen
+import com.lalilu.component.base.screen.ScreenBarFactory
+import com.lalilu.component.base.screen.ScreenExtraBarFactory
 import com.lalilu.lmusic.utils.extension.measureHeight
 
 @Composable
@@ -40,9 +39,8 @@ fun NavigationSmartBar(
     val density = LocalDensity.current
     val measureMainHeightState = remember { mutableStateOf(PaddingValues(0.dp)) }
 
-    val screen by remember { derivedStateOf { currentScreen() as? DynamicScreen } }
-    val mainContent by remember { derivedStateOf { runCatching { screen?.mainContentStack?.lastOrNull() }.getOrNull() } }
-    val extraContent by remember { derivedStateOf { runCatching { screen?.extraContentStack?.lastOrNull() }.getOrNull() } }
+    val mainContent = (currentScreen() as? ScreenBarFactory)?.content()
+    val extraContent = (currentScreen() as? ScreenExtraBarFactory)?.content()
 
     Column(
         modifier = modifier

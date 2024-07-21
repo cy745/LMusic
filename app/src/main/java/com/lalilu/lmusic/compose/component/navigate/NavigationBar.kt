@@ -56,11 +56,14 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.LocalBottomSheetNavigator
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.TabScreen
+import com.lalilu.component.base.screen.ScreenActionFactory
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.extension.dayNightTextColor
 
 sealed class NavigationBarState {
     data class ForTabScreen(val tabScreens: List<TabScreen>) : NavigationBarState()
-    data class ForScreen(val screen: DynamicScreen?) : NavigationBarState()
+    data class ForDynamicScreen(val screen: DynamicScreen?) : NavigationBarState()
+    data class ForScreen(val screen: Screen?) : NavigationBarState()
 }
 
 @Composable
@@ -72,8 +75,9 @@ fun rememberNavigationBarState(
         derivedStateOf {
             when (val screen = currentScreen()) {
                 is TabScreen -> NavigationBarState.ForTabScreen(tabScreens())
-                is DynamicScreen -> NavigationBarState.ForScreen(screen)
-                else -> NavigationBarState.ForScreen(null)
+                is DynamicScreen -> NavigationBarState.ForDynamicScreen(screen)
+                null -> NavigationBarState.ForScreen(null)
+                else -> NavigationBarState.ForScreen(screen)
             }
         }
     }
@@ -83,16 +87,16 @@ fun rememberNavigationBarState(
 fun rememberPreviousScreenTitleRes(
     stack: Stack<Screen>?,
     currentScreen: Screen?
-): State<Int> {
+): Int {
     val previousScreen by remember(currentScreen) {
-        derivedStateOf { stack?.items?.getOrNull(stack.size - 2) as? CustomScreen }
+        derivedStateOf { stack?.items?.getOrNull(stack.size - 2) }
     }
-    val previousInfo by remember {
-        derivedStateOf { previousScreen?.getScreenInfo() }
-    }
-    return remember {
-        derivedStateOf { previousInfo?.title ?: R.string.bottom_sheet_navigate_back }
-    }
+
+    return when (previousScreen) {
+        is CustomScreen -> (previousScreen as CustomScreen).getScreenInfo()?.title
+        is ScreenInfoFactory -> (previousScreen as ScreenInfoFactory).provideScreenInfo().title
+        else -> null
+    } ?: R.string.bottom_sheet_navigate_back
 }
 
 
@@ -120,15 +124,34 @@ fun NavigationBar(
                 )
             }
 
-            is NavigationBarState.ForScreen -> {
-                val actions = state.screen?.registerActions() ?: emptyList()
+            is NavigationBarState.ForDynamicScreen -> {
+                val actions = state.screen
+                    ?.registerActions()
+                    ?: emptyList()
+
                 val previousTitle = rememberPreviousScreenTitleRes(
                     stack = navigator,
                     currentScreen = currentScreen()
                 )
 
                 NavigateCommonBar(
-                    previousTitle = { previousTitle.value },
+                    previousTitle = { previousTitle },
+                    screenActions = { actions }
+                )
+            }
+
+            is NavigationBarState.ForScreen -> {
+                val actions = (state.screen as? ScreenActionFactory)
+                    ?.provideScreenActions()
+                    ?: emptyList()
+
+                val previousTitle = rememberPreviousScreenTitleRes(
+                    stack = navigator,
+                    currentScreen = currentScreen()
+                )
+
+                NavigateCommonBar(
+                    previousTitle = { previousTitle },
                     screenActions = { actions }
                 )
             }
@@ -152,10 +175,13 @@ fun NavigateTabBar(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         tabScreens().forEach {
+            val screenInfo = (it as? ScreenInfoFactory)
+                ?.provideScreenInfo()
+
             NavigateItem(
                 modifier = Modifier.weight(1f),
-                titleRes = { it.getScreenInfo().title },
-                iconRes = { it.getScreenInfo().icon ?: R.drawable.ic_close_line },
+                titleRes = { screenInfo?.title ?: R.string.bottom_sheet_navigate_back },
+                iconRes = { screenInfo?.icon ?: R.drawable.ic_close_line },
                 isSelected = { currentScreen() === it },
                 onClick = { onSelectTab(it) }
             )
