@@ -29,6 +29,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.Stack
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import com.lalilu.component.navigation.EnhanceNavigator
 import com.lalilu.component.override.ModalBottomSheetDefaults
 import com.lalilu.component.override.ModalBottomSheetLayout
@@ -66,7 +67,11 @@ fun BottomSheetNavigatorLayout(
         animationSpec = animationSpec
     )
 
-    Navigator(screen = defaultScreen, onBackPressed = null) { navigator ->
+    Navigator(
+        screen = defaultScreen,
+        onBackPressed = null,
+        disposeBehavior = NavigatorDisposeBehavior(disposeSteps = false)
+    ) { navigator ->
         val bottomSheetNavigator = remember {
             BottomSheetNavigator(
                 navigator = navigator,

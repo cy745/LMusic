@@ -6,14 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.Navigator
 import com.lalilu.component.base.BottomSheetNavigator
 import com.lalilu.component.base.LocalPaddingValue
 import com.lalilu.lmusic.compose.component.CustomTransition
@@ -25,34 +22,24 @@ import com.lalilu.lplaylist.screen.PlaylistScreen
 @Composable
 fun NavigationSheetContent(
     modifier: Modifier,
-    transitionKeyPrefix: String,
     navigator: BottomSheetNavigator,
-    getScreenFrom: (Navigator) -> Screen = { it.lastItem },
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        val currentScreen = remember { mutableStateOf<Screen?>(null) }
         val currentPaddingValue = remember { mutableStateOf(PaddingValues(0.dp)) }
 
-        CustomTransition(
-            modifier = Modifier.fillMaxSize(),
-            keyPrefix = transitionKeyPrefix,
-            navigator = navigator.getNavigator(),
-            getScreenFrom = getScreenFrom,
-        ) {
-            if (!currentComposer.skipping) {
-                currentScreen.value = it
-            }
-
-            CompositionLocalProvider(LocalPaddingValue provides currentPaddingValue) {
-                it.Content()
-            }
+        CompositionLocalProvider(LocalPaddingValue provides currentPaddingValue) {
+            CustomTransition(
+                modifier = Modifier.fillMaxSize(),
+                navigator = navigator.getNavigator(),
+            )
         }
+
         NavigationSmartBar(
             modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter),
             measureHeightState = currentPaddingValue,
-            currentScreen = { currentScreen.value }
+            currentScreen = { navigator.lastItemOrNull }
         ) { modifier ->
             NavigationBar(
                 modifier = modifier.align(Alignment.BottomCenter),
@@ -63,7 +50,7 @@ fun NavigationSheetContent(
                         SearchScreen
                     )
                 },
-                currentScreen = { currentScreen.value }
+                currentScreen = { navigator.lastItemOrNull }
             )
         }
     }

@@ -50,7 +50,6 @@ fun NavigationWrapper(
 
             NavigationSheetContent(
                 modifier = modifier,
-                transitionKeyPrefix = "bottomSheet",
                 navigator = sheetNavigator
             )
         },
