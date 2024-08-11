@@ -37,4 +37,6 @@ dependencies {
 
     api(libs.koin.android)
     api(libs.koin.compose)
+
+    api(libs.krouter.core)
 }

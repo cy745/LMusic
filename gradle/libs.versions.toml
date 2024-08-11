@@ -36,6 +36,8 @@ room_version = "2.5.2"
 media = "1.7.0"
 flyjingfish-aop = "1.9.7"
 
+krouter_version = "0.0.1"
+
 [libraries]
 # kotlin
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin_version" }
@@ -104,11 +106,6 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "room_ve
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room_version" }
 media = { module = "androidx.media:media", version.ref = "media" }
 
-# thirdparty / others
-kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinpoet" }
-ksp-symbol-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp_version" }
-
 # [Apache-2.0 License] 安卓工具类库 https://github.com/Blankj/AndroidUtilCode/
 utilcodex = { module = "com.blankj:utilcodex", version.ref = "utilcodex_version" }
 
@@ -116,6 +113,10 @@ utilcodex = { module = "com.blankj:utilcodex", version.ref = "utilcodex_version"
 flyjingfish-aop-core = { module = "io.github.FlyJingFish.AndroidAop:android-aop-core", version.ref = "flyjingfish-aop" }
 flyjingfish-aop-annotation = { module = "io.github.FlyJingFish.AndroidAop:android-aop-annotation", version.ref = "flyjingfish-aop" }
 flyjingfish-aop-ksp = { module = "io.github.FlyJingFish.AndroidAop:android-aop-ksp", version.ref = "flyjingfish-aop" }
+
+# KRouter
+krouter-core = { module = "com.github.cy745.KRouter:core", version.ref = "krouter_version" }
+krouter-plugin = { module = "com.github.cy745.KRouter:plugin", version.ref = "krouter_version" }
 
 [plugins]
 application = { id = "com.android.application", version.ref = "agp_version" }

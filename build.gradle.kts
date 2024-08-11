@@ -8,12 +8,9 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
 }
 
-gradle.taskGraph.whenReady {
-    allTasks.onEach {
-        // 避免ksp类型任务被跳过
-        if (it.name.startsWith("ksp") && it.name.endsWith("Kotlin")) {
-            it.setOnlyIf { true }
-            it.outputs.upToDateWhen { false }
-        }
-    }
+buildscript {
+    dependencies { classpath(libs.krouter.plugin) }
 }
+
+ext { set("targetInjectProjectName", "app") }
+apply(plugin = "krouter-plugin")
