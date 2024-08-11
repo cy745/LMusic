@@ -173,9 +173,8 @@ fun Screen.Songs(
             prefixContent = { prefixContent(it, sortRuleStr) },
             onLongClickItem = {
                 AppRouter.intent {
-                    KRouter.route<Screen>("/song/detail?mediaId=${it.mediaId}") {
-                        with("mediaId", it.mediaId)
-                    }?.let(NavIntent::Push)
+                    KRouter.route<Screen>("/song/detail?mediaId=${it.mediaId}")
+                        ?.let(NavIntent::Push)
                 }
             },
             onClickItem = {
@@ -212,9 +211,8 @@ fun Screen.Songs(
             prefixContent = { prefixContent(it, sortRuleStr) },
             onLongClickItem = {
                 AppRouter.intent {
-                    KRouter.route<Screen>("/song/detail?mediaId=${it.mediaId}") {
-                        with("mediaId", it.mediaId)
-                    }?.let(NavIntent::Push)
+                    KRouter.route<Screen>("/song/detail?mediaId=${it.mediaId}")
+                        ?.let(NavIntent::Push)
                 }
             },
             onClickItem = {

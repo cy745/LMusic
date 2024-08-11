@@ -72,9 +72,8 @@ fun LazyListScope.dailyRecommend(
                         modifier = Modifier.size(width = 250.dp, height = 250.dp),
                         onClick = {
                             AppRouter.intent {
-                                KRouter.route<Screen>("/song/detail") {
-                                    with("mediaId", it.id)
-                                }?.let(NavIntent::Push)
+                                KRouter.route<Screen>("/song/detail?mediaId=${it.id}")
+                                    ?.let(NavIntent::Push)
                             }
                         }
                     )

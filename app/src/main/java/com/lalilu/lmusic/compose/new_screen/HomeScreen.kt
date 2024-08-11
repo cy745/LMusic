@@ -24,7 +24,7 @@ import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.zhangke.krouter.annotation.Destination
 
-@Destination("/pages/home", type = Screen::class)
+@Destination("/pages/home")
 object HomeScreen : TabScreen, Screen {
 
     @Composable

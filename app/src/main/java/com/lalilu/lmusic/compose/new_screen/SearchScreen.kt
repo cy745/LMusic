@@ -46,7 +46,7 @@ import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.zhangke.krouter.annotation.Destination
 
-@Destination("/pages/search", type = Screen::class)
+@Destination("/pages/search")
 object SearchScreen : Screen, TabScreen, ScreenExtraBarFactory {
 
     @Composable

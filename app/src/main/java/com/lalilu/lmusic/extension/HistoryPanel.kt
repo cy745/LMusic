@@ -71,9 +71,8 @@ fun LazyListScope.historyPanel(
             onLongClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 AppRouter.intent {
-                    KRouter.route<Screen>("/song/detail") {
-                        with("mediaId", item.mediaId)
-                    }?.let(NavIntent::Push)
+                    KRouter.route<Screen>("/song/detail?mediaId=${item.mediaId}")
+                        ?.let(NavIntent::Push)
                 }
             }
         )

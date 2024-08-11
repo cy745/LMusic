@@ -50,9 +50,8 @@ fun LazyListScope.latestPanel(
                 modifier = Modifier.animateItem(),
                 onClick = {
                     AppRouter.intent {
-                        KRouter.route<Screen>("/song/detail") {
-                            with("mediaId", it.mediaId)
-                        }?.let(NavIntent::Push)
+                        KRouter.route<Screen>("/song/detail?mediaId=${it.mediaId}")
+                            ?.let(NavIntent::Push)
                     }
                 },
                 isPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) },

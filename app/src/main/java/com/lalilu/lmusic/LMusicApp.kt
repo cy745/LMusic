@@ -18,6 +18,8 @@ import com.lalilu.lmedia.indexer.FilterProvider
 import com.lalilu.lmusic.utils.extension.ignoreSSLVerification
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplaylist.PlaylistModule
+import com.zhangke.krouter.KRouter
+import com.zhangke.krouter.generated.KRouterInjectMap
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -33,6 +35,8 @@ class LMusicApp : Application(), SingletonImageLoader.Factory, FilterProvider, V
 
     override fun onCreate() {
         super.onCreate()
+
+        KRouter.init(KRouterInjectMap::getMap)
 
         SingletonImageLoader
             .setSafe(this)

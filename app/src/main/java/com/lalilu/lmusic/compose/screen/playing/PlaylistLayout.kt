@@ -163,9 +163,8 @@ fun PlaylistLayout(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     AppRouter.intent {
-                        KRouter.route<Screen>("/song/detail") {
-                            with("mediaId", item.data.mediaId)
-                        }?.let(NavIntent::Push)
+                        KRouter.route<Screen>("/song/detail?mediaId=${item.data.mediaId}")
+                            ?.let(NavIntent::Push)
                     }
                 }
             )
