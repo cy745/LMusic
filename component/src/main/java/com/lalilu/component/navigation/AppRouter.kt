@@ -35,11 +35,22 @@ object AppRouter : CoroutineScope {
         channel.send(i)
     }
 
-    fun String.push(): NavIntent.Push? = KRouter
-        .route<Screen>(this)
-        ?.let(NavIntent::Push)
+    fun route(baseUrl: String): Request {
+        return Request(baseUrl)
+    }
 
-    fun String.replace(): NavIntent.Replace? = KRouter
-        .route<Screen>(this)
-        ?.let(NavIntent::Replace)
+    class Request internal constructor(
+        private val baseUrl: String,
+        private val params: MutableMap<String, Any?> = mutableMapOf()
+    ) {
+        fun <T : Any?> with(key: String, value: T) = apply { params[key] = value }
+
+        fun push() = requestResult()?.let { intent(NavIntent.Push(it)) }
+        fun replace() = requestResult()?.let { intent(NavIntent.Replace(it)) }
+        fun get() = requestResult()
+
+        private fun requestResult(): Screen? =
+            runCatching { KRouter.route<Screen>(baseUrl, params) }
+                .getOrNull()
+    }
 }

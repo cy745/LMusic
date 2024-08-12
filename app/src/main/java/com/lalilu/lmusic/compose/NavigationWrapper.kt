@@ -50,7 +50,7 @@ fun NavigationWrapper(
 
             NavigationSheetContent(
                 modifier = modifier,
-                navigator = sheetNavigator
+                navigator = sheetNavigator.getNavigator()
             )
         },
         content = { content() }

@@ -45,9 +45,9 @@ import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.component.LLazyColumn
 import com.lalilu.component.LongClickableTextButton
 import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.base.screen.ScreenBarFactory
+import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.extension.rememberItemSelectHelper
 import com.lalilu.component.navigation.AppRouter
@@ -57,6 +57,7 @@ import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.component.PlaylistCard
 import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.repository.PlaylistRepository
+import com.zhangke.krouter.annotation.Destination
 import org.koin.compose.koinInject
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyColumnState
@@ -67,6 +68,7 @@ class PlaylistScreenModel : ScreenModel {
     val selectedItems = mutableStateOf<List<Any>>(emptyList())
 }
 
+@Destination("/pages/playlist")
 data object PlaylistScreen : TabScreen, ScreenBarFactory {
 
     @Composable
