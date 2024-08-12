@@ -25,7 +25,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import com.lalilu.R
 import com.lalilu.component.IconButton
-import com.lalilu.component.base.LocalBottomSheetNavigator
+import com.lalilu.component.base.LocalEnhanceSheetState
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.base.screen.ScreenInfo
@@ -55,7 +55,7 @@ data class SongDetailScreen(
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
-        return remember {
+        return remember(this) {
             listOf(
                 ScreenAction.StaticAction(
                     title = R.string.button_set_song_to_next,
@@ -124,10 +124,10 @@ data class SongDetailScreen(
         ) {
             when {
                 song.value != null -> {
-                    val bottomSheet = LocalBottomSheetNavigator.current
-                    val progress by remember(bottomSheet?.sheetState) {
+                    val enhanceSheetState = LocalEnhanceSheetState.current
+                    val progress by remember(enhanceSheetState) {
                         derivedStateOf {
-                            bottomSheet?.sheetState?.progress(
+                            enhanceSheetState?.progress(
                                 ModalBottomSheetValue.HalfExpanded,
                                 ModalBottomSheetValue.Expanded,
                             ) ?: 0f

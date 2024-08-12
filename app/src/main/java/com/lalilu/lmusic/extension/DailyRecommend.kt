@@ -30,7 +30,7 @@ import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lmusic.compose.component.card.RecommendCard2
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
-import com.lalilu.lmusic.compose.new_screen.SongsScreen
+import com.lalilu.lmusic.compose.screen.songs.SongsScreen
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.zhangke.krouter.KRouter
 
@@ -95,7 +95,7 @@ fun RecommendRowForSizeMedium(libraryVM: LibraryViewModel) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items[0].let {
+        items.getOrNull(0)?.let {
             RecommendCard2(
                 item = { it },
                 modifier = Modifier
@@ -105,7 +105,7 @@ fun RecommendRowForSizeMedium(libraryVM: LibraryViewModel) {
             )
         }
 
-        items[1].let {
+        items.getOrNull(1)?.let {
             RecommendCard2(
                 item = { it },
                 modifier = Modifier
@@ -115,7 +115,7 @@ fun RecommendRowForSizeMedium(libraryVM: LibraryViewModel) {
             )
         }
 
-        items[2].let {
+        items.getOrNull(2)?.let {
             RecommendCard2(
                 item = { it },
                 modifier = Modifier
@@ -139,7 +139,7 @@ fun RecommendRowForSizeExpanded(libraryVM: LibraryViewModel) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items[0].let {
+        items.getOrNull(0)?.let {
             RecommendCard2(
                 item = { it },
                 modifier = Modifier
@@ -156,7 +156,7 @@ fun RecommendRowForSizeExpanded(libraryVM: LibraryViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items[1].let {
+            items.getOrNull(1)?.let {
                 RecommendCard2(
                     item = { it },
                     modifier = Modifier
@@ -168,7 +168,7 @@ fun RecommendRowForSizeExpanded(libraryVM: LibraryViewModel) {
                 )
             }
 
-            items[2].let {
+            items.getOrNull(2)?.let {
                 RecommendCard2(
                     item = { it },
                     modifier = Modifier

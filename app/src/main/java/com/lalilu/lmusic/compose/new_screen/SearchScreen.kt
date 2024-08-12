@@ -41,6 +41,7 @@ import com.lalilu.lmusic.compose.component.base.SearchInputBar
 import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
+import com.lalilu.lmusic.compose.screen.songs.SongsScreen
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel

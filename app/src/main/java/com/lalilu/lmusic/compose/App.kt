@@ -3,6 +3,7 @@ package com.lalilu.lmusic.compose
 import android.app.Activity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -26,10 +27,12 @@ object App {
     @Composable
     fun Environment(activity: Activity, content: @Composable () -> Unit) {
         LMusicTheme {
-            CompositionLocalProvider(
-                LocalWindowSize provides calculateWindowSizeClass(activity = activity),
-                content = content
-            )
+            MaterialTheme {
+                CompositionLocalProvider(
+                    LocalWindowSize provides calculateWindowSizeClass(activity = activity),
+                    content = content
+                )
+            }
         }
     }
 }

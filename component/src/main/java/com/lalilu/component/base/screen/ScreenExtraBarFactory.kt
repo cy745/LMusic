@@ -23,6 +23,7 @@ private class ExtraComponentStack {
     }
 }
 
+@Deprecated("移除")
 interface ScreenExtraBarFactory {
     private val stack: ExtraComponentStack
         get() = ExtraComponentStack.getInstance(this)

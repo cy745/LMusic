@@ -18,7 +18,7 @@ import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.transitions.ScreenTransition
+import com.lalilu.component.navigation.CustomScreenTransition
 
 @OptIn(ExperimentalVoyagerApi::class)
 @Composable
@@ -29,9 +29,11 @@ fun CustomTransition(
         stiffness = Spring.StiffnessMediumLow,
         visibilityThreshold = IntOffset.VisibilityThreshold
     ),
-    content: @Composable (AnimatedVisibilityScope.(Screen) -> Unit) = { it.Content() }
+    content: @Composable (AnimatedVisibilityScope.(Screen) -> Unit) = {
+        navigator.saveableState("transition", it) { it.Content() }
+    }
 ) {
-    ScreenTransition(
+    CustomScreenTransition(
         navigator = navigator,
         modifier = modifier,
         disposeScreenAfterTransitionEnd = true,

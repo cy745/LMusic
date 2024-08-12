@@ -23,7 +23,6 @@ import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.extension.collectWithLifeCycleOwner
-import com.lalilu.lmusic.compose.NavigationWrapper
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity

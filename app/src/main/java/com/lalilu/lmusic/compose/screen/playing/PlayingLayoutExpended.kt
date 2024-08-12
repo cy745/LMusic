@@ -1,25 +1,22 @@
-package com.lalilu.lmusic.compose.screen
+package com.lalilu.lmusic.compose.screen.playing
 
-import android.content.res.Configuration
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.IconToggleButton
-import androidx.compose.material.Surface
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,141 +27,96 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.FixedScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
-import coil3.compose.SubcomposeAsyncImage
-import coil3.compose.SubcomposeAsyncImageContent
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.transformations
-import com.blankj.utilcode.util.SizeUtils
 import com.lalilu.R
 import com.lalilu.common.base.Playable
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.utils.coil.BlurTransformation
-import com.lalilu.component.base.LocalWindowSize
-import com.lalilu.component.extension.rememberIsPad
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.playback.PlayMode
 
 @Composable
-fun ShowScreen(
+fun PlayingLayoutExpended(
+    modifier: Modifier = Modifier,
     playingVM: PlayingViewModel = singleViewModel(),
 ) {
-    val windowSize = LocalWindowSize.current
-    val configuration = LocalConfiguration.current
-    val isPad by windowSize.rememberIsPad()
-
-    val visible = remember(isPad, configuration.orientation) {
-        !isPad && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val currentPlaying by playingVM.playing
+    val context = LocalContext.current
+    val data = remember(currentPlaying) {
+        ImageRequest.Builder(context)
+            .data(currentPlaying)
+            .size(500)
+            .crossfade(true)
+            .transformations(BlurTransformation(context, 25f, 8f))
+            .build()
     }
 
-    if (visible) {
-        val song by LPlayer.runtime.info.playingFlow.collectAsState(null)
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colors.background)
+    ) {
+        AnimatedContent(
+            modifier = Modifier.fillMaxSize(),
+            transitionSpec = {
+                fadeIn(tween(500)) togetherWith fadeOut(tween(300, 500))
+            },
+            targetState = data,
+            label = ""
+        ) { model ->
+            AsyncImage(
+                modifier = Modifier.fillMaxSize(),
+                model = model,
+                contentScale = ContentScale.Crop,
+                contentDescription = null
+            )
+        }
 
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = Color.DarkGray)
+                .padding(64.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            BlurImageBg(playable = song)
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable(enabled = false) { }
-                    .padding(64.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(24.dp)
+                    .weight(1f),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                ImageCover(playable = song)
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp)
-                        .weight(1f),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
-                    SongDetailPanel(playable = song)
-                    ControlPanel(playingVM)
+                AnimatedContent(
+                    modifier = Modifier.size(300.dp),
+                    transitionSpec = {
+                        fadeIn(tween(500)) togetherWith fadeOut(tween(300, 500))
+                    },
+                    targetState = currentPlaying,
+                    label = ""
+                ) { model ->
+                    AsyncImage(
+                        modifier = Modifier.fillMaxSize(),
+                        model = model,
+                        contentScale = ContentScale.Crop,
+                        contentDescription = null
+                    )
                 }
+
+                SongDetailPanel(playable = currentPlaying)
+                ControlPanel(playingVM)
             }
         }
     }
-}
-
-@Composable
-fun RowScope.ImageCover(playable: Playable?) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .weight(1f)
-    ) {
-        Surface(
-            modifier = Modifier.align(Alignment.Center),
-            shape = RoundedCornerShape(10.dp),
-            color = Color(0x55000000),
-            elevation = 0.dp
-        ) {
-            SubcomposeAsyncImage(
-                model = ImageRequest.Builder(context = LocalContext.current)
-                    .data(playable?.imageSource)
-                    .size(SizeUtils.dp2px(256f))
-                    .crossfade(true)
-                    .build(),
-                contentDescription = ""
-            ) {
-                val state by painter.state.collectAsState()
-                if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_music_line),
-                        contentDescription = "",
-                        contentScale = FixedScale(1f),
-                        colorFilter = ColorFilter.tint(color = Color.LightGray),
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(1f)
-                    )
-                } else {
-                    SubcomposeAsyncImageContent(
-                        modifier = Modifier.fillMaxHeight(),
-                        contentScale = ContentScale.FillHeight
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun BoxScope.BlurImageBg(playable: Playable?) {
-
-    AsyncImage(
-        modifier = Modifier
-            .fillMaxSize()
-            .align(Alignment.Center),
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(playable?.imageSource)
-            .size(SizeUtils.dp2px(128f))
-            .transformations(BlurTransformation(LocalContext.current, 25f, 4f))
-            .crossfade(true)
-            .build(),
-        contentDescription = "",
-        contentScale = ContentScale.Crop
-    )
-    Spacer(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color(0x40000000))
-    )
 }
 
 @Composable
@@ -200,6 +152,7 @@ fun SongDetailPanel(
         )
     }
 }
+
 
 @Composable
 fun ControlPanel(

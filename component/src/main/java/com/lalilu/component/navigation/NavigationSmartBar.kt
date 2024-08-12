@@ -1,10 +1,18 @@
-package com.lalilu.lmusic.compose.component.navigate
+package com.lalilu.component.navigation
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,12 +36,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -48,112 +53,96 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.core.stack.Stack
-import com.lalilu.R
-import com.lalilu.component.base.BottomSheetNavigator
-import com.lalilu.component.base.CustomScreen
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.LocalBottomSheetNavigator
+import cafe.adriel.voyager.navigator.LocalNavigator
+import com.lalilu.component.R
 import com.lalilu.component.base.ScreenAction
+import com.lalilu.component.base.ScreenBarComponent
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.base.screen.ScreenActionFactory
+import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.extension.dayNightTextColor
+import com.lalilu.component.extension.toColorFilter
 
-sealed class NavigationBarState {
-    data class ForTabScreen(val tabScreens: List<TabScreen>) : NavigationBarState()
-    data class ForDynamicScreen(val screen: DynamicScreen?) : NavigationBarState()
-    data class ForScreen(val screen: Screen?) : NavigationBarState()
+
+sealed interface NavigationBarType {
+    data object TabBar : NavigationBarType
+    data object CommonBar : NavigationBarType
+    data class NormalBar(val barComponent: ScreenBarComponent) : NavigationBarType
 }
 
 @Composable
-fun rememberNavigationBarState(
-    tabScreens: () -> List<TabScreen>,
-    currentScreen: () -> Screen?,
-): State<NavigationBarState> {
-    return remember {
-        derivedStateOf {
-            when (val screen = currentScreen()) {
-                is TabScreen -> NavigationBarState.ForTabScreen(tabScreens())
-                is DynamicScreen -> NavigationBarState.ForDynamicScreen(screen)
-                null -> NavigationBarState.ForScreen(null)
-                else -> NavigationBarState.ForScreen(screen)
-            }
+fun NavigationSmartBar(
+    modifier: Modifier = Modifier,
+) {
+    val currentScreen = LocalNavigator.current
+        ?.currentScreen()
+        ?.value
+
+    val previousScreen = LocalNavigator.current
+        ?.previousScreen()
+        ?.value
+
+    val previousTitle = (previousScreen as? ScreenInfoFactory)?.provideScreenInfo()
+        ?.let { stringResource(id = it.title) }
+        ?: "返回"
+
+    val mainContent = (currentScreen as? ScreenBarFactory)?.content()
+    val tabScreenRoutes = remember {
+        listOf("/pages/home", "/pages/playlist", "/pages/search")
+    }
+
+    val tabScreens = remember(tabScreenRoutes) {
+        tabScreenRoutes.mapNotNull { AppRouter.route(it).get() as? TabScreen }
+    }
+
+    val navigationBar: NavigationBarType = remember(mainContent, currentScreen) {
+        when {
+            mainContent != null -> NavigationBarType.NormalBar(mainContent)
+            currentScreen is TabScreen -> NavigationBarType.TabBar
+            else -> NavigationBarType.CommonBar
         }
     }
-}
-
-@Composable
-fun rememberPreviousScreenTitleRes(
-    stack: Stack<Screen>?,
-    currentScreen: Screen?
-): Int {
-    val previousScreen by remember(currentScreen) {
-        derivedStateOf { stack?.items?.getOrNull(stack.size - 2) }
-    }
-
-    return when (previousScreen) {
-        is CustomScreen -> (previousScreen as CustomScreen).getScreenInfo()?.title
-        is ScreenInfoFactory -> (previousScreen as ScreenInfoFactory).provideScreenInfo().title
-        else -> null
-    } ?: R.string.bottom_sheet_navigate_back
-}
-
-
-@Composable
-fun NavigationBar(
-    modifier: Modifier = Modifier,
-    tabScreens: () -> List<TabScreen>,
-    currentScreen: () -> Screen?,
-    navigator: BottomSheetNavigator? = LocalBottomSheetNavigator.current
-) {
-    val navigationBarState =
-        rememberNavigationBarState(tabScreens = tabScreens, currentScreen = currentScreen)
 
     AnimatedContent(
         modifier = modifier.fillMaxWidth(),
-        targetState = navigationBarState.value,
-        label = "NavigateBarTransform"
-    ) { state ->
-        when (state) {
-            is NavigationBarState.ForTabScreen -> {
-                NavigateTabBar(
-                    tabScreens = state::tabScreens::get,
-                    currentScreen = currentScreen,
-                    onSelectTab = { navigator?.jump(it) }
-                )
-            }
+        transitionSpec = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+            ) togetherWith slideOutOfContainer(towards = AnimatedContentTransitionScope.SlideDirection.Down)
+        },
+        contentAlignment = Alignment.BottomCenter,
+        targetState = navigationBar,
+        label = ""
+    ) { item ->
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colors.background.copy(0.95f))
+                .navigationBarsPadding()
+                .height(56.dp)
+        ) {
+            when (item) {
+                is NavigationBarType.NormalBar -> {
+                    item.barComponent.content()
+                }
 
-            is NavigationBarState.ForDynamicScreen -> {
-                val actions = state.screen
-                    ?.registerActions()
-                    ?: emptyList()
+                is NavigationBarType.TabBar -> {
+                    NavigateTabBar(
+                        currentScreen = { currentScreen },
+                        tabScreens = { tabScreens },
+                        onSelectTab = { AppRouter.intent(NavIntent.Jump(it)) }
+                    )
+                }
 
-                val previousTitle = rememberPreviousScreenTitleRes(
-                    stack = navigator,
-                    currentScreen = currentScreen()
-                )
-
-                NavigateCommonBar(
-                    previousTitle = { previousTitle },
-                    screenActions = { actions }
-                )
-            }
-
-            is NavigationBarState.ForScreen -> {
-                val actions = (state.screen as? ScreenActionFactory)
-                    ?.provideScreenActions()
-                    ?: emptyList()
-
-                val previousTitle = rememberPreviousScreenTitleRes(
-                    stack = navigator,
-                    currentScreen = currentScreen()
-                )
-
-                NavigateCommonBar(
-                    previousTitle = { previousTitle },
-                    screenActions = { actions }
-                )
+                is NavigationBarType.CommonBar -> {
+                    NavigateCommonBar(
+                        modifier = Modifier.fillMaxSize(),
+                        previousTitle = previousTitle,
+                        currentScreen = currentScreen
+                    )
+                }
             }
         }
     }
@@ -180,7 +169,7 @@ fun NavigateTabBar(
 
             NavigateItem(
                 modifier = Modifier.weight(1f),
-                titleRes = { screenInfo?.title ?: R.string.bottom_sheet_navigate_back },
+                titleRes = { screenInfo?.title ?: R.string.empty_screen_no_items },
                 iconRes = { screenInfo?.icon ?: R.drawable.ic_close_line },
                 isSelected = { currentScreen() === it },
                 onClick = { onSelectTab(it) }
@@ -192,37 +181,37 @@ fun NavigateTabBar(
 @Composable
 fun NavigateCommonBar(
     modifier: Modifier = Modifier,
-    previousTitle: () -> Int,
-    screenActions: () -> List<ScreenAction>,
-    navigator: BottomSheetNavigator? = LocalBottomSheetNavigator.current
+    previousTitle: String,
+    currentScreen: Screen?
 ) {
     val itemFitImePadding = remember { mutableStateOf(false) }
+    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    val screenActions = (currentScreen as? ScreenActionFactory)?.provideScreenActions()
 
     Row(
         modifier = modifier
+            .fillMaxWidth()
             .clickable(enabled = false) {}
-            .run { if (itemFitImePadding.value) this.imePadding() else this }
-            .height(52.dp)
-            .fillMaxWidth(),
+            .run { if (itemFitImePadding.value) this.imePadding() else this },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val contentColor =
-            contentColorFor(backgroundColor = MaterialTheme.colors.background)
         TextButton(
             modifier = Modifier.fillMaxHeight(),
             shape = RectangleShape,
             contentPadding = PaddingValues(start = 16.dp, end = 24.dp),
-            colors = ButtonDefaults.textButtonColors(contentColor = contentColor),
-            onClick = { navigator?.back() }
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = MaterialTheme.colors.onBackground
+            ),
+            onClick = { onBackPressedDispatcher?.onBackPressed() }
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_arrow_left_s_line),
                 contentDescription = "backButtonIcon",
-                colorFilter = ColorFilter.tint(color = contentColor)
+                colorFilter = MaterialTheme.colors.onBackground.toColorFilter()
             )
-            AnimatedContent(targetState = previousTitle(), label = "") {
+            AnimatedContent(targetState = previousTitle, label = "") {
                 Text(
-                    text = stringResource(id = it),
+                    text = it,
                     fontSize = 14.sp
                 )
             }
@@ -232,14 +221,15 @@ fun NavigateCommonBar(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
-            targetState = screenActions(),
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            targetState = screenActions,
             label = "ExtraActions"
         ) { actions ->
             LazyRow(
                 modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.End
             ) {
-                items(items = actions) {
+                items(items = actions ?: emptyList()) {
                     if (it is ScreenAction.ComposeAction) {
                         it.content.invoke()
                         return@items
@@ -273,26 +263,6 @@ fun NavigateCommonBar(
                             }
                             Text(
                                 text = stringResource(id = it.title),
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                }
-
-                if (actions.isEmpty()) {
-                    item {
-                        TextButton(
-                            modifier = Modifier.fillMaxHeight(),
-                            shape = RectangleShape,
-                            contentPadding = PaddingValues(start = 20.dp, end = 28.dp),
-                            colors = ButtonDefaults.textButtonColors(
-                                backgroundColor = Color(0x25FE4141),
-                                contentColor = Color(0xFFFE4141)
-                            ),
-                            onClick = { navigator?.hide() }
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.bottom_sheet_navigate_close),
                                 fontSize = 14.sp
                             )
                         }

@@ -13,12 +13,13 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.koin.getScreenModel
 import com.lalilu.component.Songs
-import com.lalilu.lalbum.R
 import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.LoadingScaffold
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
+import com.lalilu.component.base.screen.ScreenType
+import com.lalilu.lalbum.R
 import com.lalilu.lalbum.component.AlbumCoverCard
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LAlbum
@@ -29,7 +30,7 @@ import kotlinx.coroutines.launch
 
 data class AlbumDetailScreen(
     private val albumId: String
-) : DynamicScreen() {
+) : DynamicScreen(), ScreenType.List {
 
     override fun getScreenInfo(): ScreenInfo = ScreenInfo(
         title = R.string.album_screen_title,

@@ -216,7 +216,14 @@ dependencies {
     debugImplementation("com.github.getActivity:Logcat:11.8")
 //    debugImplementation("io.github.knight-zxw:blockcanary:0.0.5")
 //    debugImplementation("io.github.knight-zxw:blockcanary-ui:0.0.5")
+    debugImplementation("com.github.cy745:wytrace:d0df4c2d15")
+    debugImplementation("com.bytedance.android:shadowhook:1.0.10")
 
     implementation(libs.bundles.flyjingfish.aop)
     ksp(libs.flyjingfish.aop.ksp)
+
+    implementation("com.google.accompanist:accompanist-adaptive:0.35.1-alpha")
+    implementation("androidx.compose.material3.adaptive:adaptive:1.0.0-beta04")
+    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.0.0-beta04")
+    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.0.0-beta04")
 }

@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.new_screen
+package com.lalilu.lmusic.compose.screen.songs
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
@@ -20,9 +20,9 @@ import com.lalilu.component.SongsScreenModel
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
-import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.component.base.screen.ScreenType
 import com.lalilu.component.extension.LazyListScrollToHelper
 import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
@@ -33,17 +33,20 @@ import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplaylist.PlaylistActions
+import com.zhangke.krouter.annotation.Destination
 
-data class SongsScreen(
+@Destination("/pages/songs")
+data class SubsSongsScreen(
     private val title: String? = null,
     private val mediaIds: List<String> = emptyList()
-) : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBarFactory {
+) : Screen, ScreenActionFactory, ScreenInfoFactory, ScreenType.List {
 
     @Transient
     private var scrollHelper: LazyListScrollToHelper? = null
 
     @Transient
     private var songsSM: SongsScreenModel? = null
+
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
@@ -81,15 +84,16 @@ data class SongsScreen(
     @Composable
     override fun Content() {
         val listState: LazyListState = rememberLazyListState()
-        val historyVM: HistoryViewModel = singleViewModel()
         val songsSM = rememberScreenModel { SongsScreenModel() }
             .also { this.songsSM = it }
         val scrollHelper = rememberLazyListScrollToHelper(listState = listState)
             .also { this.scrollHelper = it }
+        val historyVM: HistoryViewModel = singleViewModel()
 
         Songs(
+            modifier = Modifier,
             showAll = true,
-            mediaIds = mediaIds,
+            mediaIds = emptyList(),
             listState = listState,
             songsSM = songsSM,
             scrollToHelper = scrollHelper,

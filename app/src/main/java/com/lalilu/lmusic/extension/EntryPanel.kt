@@ -28,7 +28,7 @@ import com.lalilu.lartist.screen.ArtistsScreen
 import com.lalilu.ldictionary.screen.DictionaryScreen
 import com.lalilu.lhistory.screen.HistoryScreen
 import com.lalilu.lmusic.compose.new_screen.SettingsScreen
-import com.lalilu.lmusic.compose.new_screen.SongsScreen
+import com.lalilu.lmusic.compose.screen.songs.SongsScreen
 import com.lalilu.lplaylist.screen.PlaylistScreen
 
 @Composable

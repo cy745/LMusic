@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.dirror.lyricviewx.LyricUtil
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.lalilu.component.base.LocalBottomSheetNavigator
+import com.lalilu.component.base.LocalEnhanceSheetState
 import com.lalilu.component.extension.hideControl
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
@@ -58,8 +58,7 @@ fun PlayingLayout(
     settingsSp: SettingsSp = koinInject(),
 ) {
     val haptic = LocalHapticFeedback.current
-    val navigator = LocalBottomSheetNavigator.current
-    val sheetState = navigator?.sheetState
+    val enhanceSheetState = LocalEnhanceSheetState.current
     val systemUiController = rememberSystemUiController()
     val lyricLayoutLazyListState = rememberLazyListState()
 
@@ -284,12 +283,10 @@ fun PlayingLayout(
                     onValueChange = { seekbarTime.longValue = it.toLong() },
                     maxValue = { duration.value.toFloat() },
                     dataValue = { currentValue.value.toFloat() },
-                    onDispatchDragOffset = {
-                        sheetState?.anchoredDraggableState?.dispatchRawDelta(it)
-                    },
+                    onDispatchDragOffset = { enhanceSheetState?.dispatch(it) },
                     onDragStop = { result ->
-                        if (result == -1) sheetState?.hide()
-                        else sheetState?.anchoredDraggableState?.settle(0f)
+                        if (result == -1) enhanceSheetState?.hide()
+                        else enhanceSheetState?.settle(0f)
                     },
                     onSeekTo = { position ->
                         PlayerAction.SeekTo(position.toLong()).action()

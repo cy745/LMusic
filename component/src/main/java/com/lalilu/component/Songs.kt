@@ -99,6 +99,7 @@ fun DefaultEmptyContent() {
     }
 }
 
+@Deprecated("耦合度过高，待重新实现")
 @Composable
 fun Screen.Songs(
     modifier: Modifier = Modifier,
@@ -172,10 +173,10 @@ fun Screen.Songs(
             emptyContent = emptyContent,
             prefixContent = { prefixContent(it, sortRuleStr) },
             onLongClickItem = {
-                AppRouter.intent {
-                    KRouter.route<Screen>("/song/detail?mediaId=${it.mediaId}")
-                        ?.let(NavIntent::Push)
-                }
+                AppRouter.route(
+                    baseUrl = "/song/detail?mediaId=${it.mediaId}",
+                    key = "/pages/songs"
+                ).push()
             },
             onClickItem = {
                 playingVM.play(
@@ -210,10 +211,10 @@ fun Screen.Songs(
             emptyContent = emptyContent,
             prefixContent = { prefixContent(it, sortRuleStr) },
             onLongClickItem = {
-                AppRouter.intent {
-                    KRouter.route<Screen>("/song/detail?mediaId=${it.mediaId}")
-                        ?.let(NavIntent::Push)
-                }
+                AppRouter.route(
+                    baseUrl = "/song/detail?mediaId=${it.mediaId}",
+                    key = "/pages/songs"
+                ).push()
             },
             onClickItem = {
                 playingVM.play(
