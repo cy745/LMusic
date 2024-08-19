@@ -12,8 +12,9 @@ import com.lalilu.component.base.screen.ScreenType
 
 private val screenNavigatorMap = mutableStateMapOf<Screen, Navigator>()
 
-fun Navigator.lastNestedNavigator(): Navigator? {
-    return items.lastOrNull { it is ScreenType.ListHost }
+fun Navigator.nestedNavigatorInLastScreen(): Navigator? {
+    return items.lastOrNull()
+        ?.takeIf { it is ScreenType.ListHost }
         ?.let { screenNavigatorMap[it] }
 }
 

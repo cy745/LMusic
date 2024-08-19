@@ -42,7 +42,7 @@ fun HostNavigator(
                 else -> false
             }
         ) {
-            val actualNavigator = navigator.lastNestedNavigator()
+            val actualNavigator = navigator.nestedNavigatorInLastScreen()
                 ?.takeIf { it.canPop }
                 ?: navigator
 

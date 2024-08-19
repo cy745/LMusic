@@ -74,7 +74,7 @@ val DefaultHandler = NavHandler { navigator, intent ->
     }
 
     val actualNavigator = if (screen is ScreenType.Detail) {
-        navigator.lastNestedNavigator() ?: navigator
+        navigator.nestedNavigatorInLastScreen() ?: navigator
     } else {
         navigator
     }
