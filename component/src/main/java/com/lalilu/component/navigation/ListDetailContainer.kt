@@ -31,25 +31,23 @@ class ListDetailContainer(
             val isPad = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
 
             val listContent = remember(navigator) {
-                movableContentOf {
-                    navigator.items
-                        .firstOrNull { it is ScreenType.List }
-                        ?.let {
-                            navigator.saveableState(key = "list", screen = it) {
-                                it.Content()
-                            }
+                movableContentOf<Screen?> { screen ->
+                    (screen ?: navigator.items.firstOrNull { it is ScreenType.List })?.let {
+                        navigator.saveableState(key = "list", screen = it) {
+                            it.Content()
                         }
+                    }
                 }
             }
 
-            val detailContent = remember {
+            val detailContent = remember(navigator) {
                 movableContentOf<Boolean> { isPad ->
                     CustomTransition(
                         navigator = navigator,
                         content = {
                             when {
                                 isPad && it is ScreenType.List -> EmptyScreen.Content()
-                                !isPad && it is ScreenType.List -> listContent()
+                                !isPad && it is ScreenType.List -> listContent(it)
                                 else -> navigator.saveableState(
                                     screen = it,
                                     key = "transition",
@@ -71,7 +69,7 @@ class ListDetailContainer(
                         modifier = Modifier
                             .fillMaxHeight()
                             .width(360.dp),
-                        content = { listContent() }
+                        content = { listContent(null) }
                     )
 
                     Box(

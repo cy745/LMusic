@@ -42,12 +42,14 @@ fun HostNavigator(
                 else -> false
             }
         ) {
-            enhanceSheetState.apply {
-                when (this) {
-                    is EnhanceBottomSheetState -> navigator.pop()
-                    is EnhanceModalSheetState -> if (!navigator.pop()) hide()
-                    else -> {}
-                }
+            val actualNavigator = navigator.lastNestedNavigator()
+                ?.takeIf { it.canPop }
+                ?: navigator
+
+            when (enhanceSheetState) {
+                is EnhanceBottomSheetState -> actualNavigator.pop()
+                is EnhanceModalSheetState -> if (!actualNavigator.pop()) enhanceSheetState.hide()
+                else -> {}
             }
         }
 

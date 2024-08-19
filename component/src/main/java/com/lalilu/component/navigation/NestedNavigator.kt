@@ -1,6 +1,5 @@
 package com.lalilu.component.navigation
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
 import cafe.adriel.voyager.core.screen.Screen
@@ -10,9 +9,6 @@ import cafe.adriel.voyager.navigator.NavigatorContent
 import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import cafe.adriel.voyager.navigator.OnBackPressed
 import cafe.adriel.voyager.navigator.compositionUniqueId
-import com.lalilu.component.base.EnhanceBottomSheetState
-import com.lalilu.component.base.EnhanceModalSheetState
-import com.lalilu.component.base.LocalEnhanceSheetState
 
 @OptIn(InternalVoyagerApi::class)
 @Composable
@@ -23,8 +19,6 @@ fun Screen.NestedNavigator(
     key: String = compositionUniqueId(),
     content: NavigatorContent = { CurrentScreen() }
 ) {
-    val enhanceSheetState = LocalEnhanceSheetState.current
-
     Navigator(
         screen = startScreen,
         disposeBehavior = disposeBehavior,
@@ -35,25 +29,6 @@ fun Screen.NestedNavigator(
             screen = this,
             navigator = navigator
         )
-
-        if (onBackPressed == null) {
-            BackHandler(
-                enabled = when (enhanceSheetState) {
-                    is EnhanceBottomSheetState -> !enhanceSheetState.isVisible && navigator.canPop
-                    is EnhanceModalSheetState -> enhanceSheetState.isVisible && navigator.canPop
-                    else -> false
-                }
-            ) {
-                enhanceSheetState.apply {
-                    when (this) {
-                        is EnhanceBottomSheetState -> navigator.pop()
-                        is EnhanceModalSheetState -> if (!navigator.pop()) hide()
-                        else -> {}
-                    }
-                }
-            }
-        }
-
         content(navigator)
     }
 }
