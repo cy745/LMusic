@@ -7,34 +7,41 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.getScreenModel
 import com.lalilu.component.Songs
-import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.LoadingScaffold
 import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.base.screen.ScreenType
 import com.lalilu.lalbum.R
 import com.lalilu.lalbum.component.AlbumCoverCard
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LAlbum
+import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
+@Destination("/pages/albums/detail")
 data class AlbumDetailScreen(
     private val albumId: String
-) : DynamicScreen(), ScreenType.List {
+) : Screen, ScreenInfoFactory, ScreenType.List {
+    override val key: ScreenKey = "${super.key}:$albumId"
 
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.album_screen_title,
-    )
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(title = R.string.album_screen_title)
+    }
 
     @Composable
     override fun Content() {
@@ -59,7 +66,7 @@ class AlbumDetailScreenModel : ScreenModel {
 }
 
 @Composable
-private fun DynamicScreen.AlbumDetail(
+private fun Screen.AlbumDetail(
     albumDetailSM: AlbumDetailScreenModel
 ) {
     val albumLoadingState = albumDetailSM.album.collectAsLoadingState()

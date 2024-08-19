@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.RomUtils
@@ -32,9 +34,9 @@ import com.lalilu.R
 import com.lalilu.common.CustomRomUtils
 import com.lalilu.component.IconTextButton
 import com.lalilu.component.LLazyColumn
-import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
 import com.lalilu.component.settings.SettingCategory
 import com.lalilu.component.settings.SettingFilePicker
@@ -47,14 +49,21 @@ import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
-object SettingsScreen : CustomScreen {
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.screen_title_settings,
-        icon = R.drawable.ic_settings_4_line
-    )
+@Destination("/pages/settings")
+object SettingsScreen : Screen, ScreenInfoFactory {
+    private fun readResolve(): Any = SettingsScreen
+
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = R.string.screen_title_settings,
+            icon = R.drawable.ic_settings_4_line
+        )
+    }
 
     @Composable
     override fun Content() {

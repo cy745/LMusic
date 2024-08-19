@@ -12,19 +12,23 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import com.lalilu.component.LLazyVerticalStaggeredGrid
-import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.LoadingScaffold
+import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.viewmodel.IPlayingViewModel
@@ -35,6 +39,7 @@ import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.Sortable
+import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -42,13 +47,17 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import com.lalilu.component.R as ComponentR
 
+@Destination("/pages/albums")
 data class AlbumsScreen(
     val albumsId: List<String> = emptyList()
-) : DynamicScreen() {
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.album_screen_title,
-        icon = ComponentR.drawable.ic_album_fill
-    )
+) : Screen, ScreenInfoFactory {
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = R.string.album_screen_title,
+            icon = ComponentR.drawable.ic_album_fill
+        )
+    }
 
     @Composable
     override fun Content() {
@@ -81,12 +90,13 @@ class AlbumsScreenModel(
 }
 
 @Composable
-private fun DynamicScreen.AlbumsScreen(
+private fun AlbumsScreen(
     title: String = "全部专辑",
     albumsSM: AlbumsScreenModel,
     playingVM: IPlayingViewModel = koinInject(),
     sortFor: String = Sortable.SORT_FOR_ALBUMS,
 ) {
+    val isPad = LocalWindowSize.current.widthSizeClass == WindowWidthSizeClass.Expanded
     val albumsState = albumsSM.albums.collectAsLoadingState()
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
@@ -94,7 +104,7 @@ private fun DynamicScreen.AlbumsScreen(
         targetState = albumsState
     ) { albums ->
         LLazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Fixed(2),
+            columns = StaggeredGridCells.Fixed(if (isPad) 3 else 2),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalItemSpacing = 10.dp,
             contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = statusBarPadding)

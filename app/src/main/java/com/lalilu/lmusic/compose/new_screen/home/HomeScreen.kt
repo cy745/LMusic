@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.new_screen
+package com.lalilu.lmusic.compose.new_screen.home
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.R
 import com.lalilu.component.LLazyColumn
-import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.TabScreen
+import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.extension.EntryPanel
 import com.lalilu.lmusic.extension.dailyRecommend
@@ -26,6 +26,7 @@ import com.zhangke.krouter.annotation.Destination
 
 @Destination("/pages/home")
 object HomeScreen : TabScreen, Screen {
+    private fun readResolve(): Any = HomeScreen
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {

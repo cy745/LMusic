@@ -39,24 +39,24 @@ import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
 import com.lalilu.R
-import com.lalilu.lmusic.api.lrcshare.SongResult
-import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.LLazyColumn
-import com.lalilu.lmusic.compose.component.card.SearchInputBar
 import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.screen.ScreenExtraBarFactory
+import com.lalilu.component.base.screen.ScreenBarFactory
+import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.component.extension.dayNightTextColor
+import com.lalilu.component.extension.singleViewModel
+import com.lalilu.lmusic.api.lrcshare.SongResult
+import com.lalilu.lmusic.compose.component.card.SearchInputBar
 import com.lalilu.lmusic.compose.presenter.SearchLyricAction
 import com.lalilu.lmusic.compose.presenter.SearchLyricPresenter
 import com.lalilu.lmusic.compose.presenter.SearchLyricState
-import com.lalilu.component.extension.dayNightTextColor
-import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 
 data class SearchLyricScreen(
     private val mediaId: String,
     private val keywords: String? = null
-) : Screen, ScreenInfoFactory, ScreenExtraBarFactory {
+) : Screen, ScreenInfoFactory, ScreenBarFactory {
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
@@ -78,7 +78,7 @@ data class SearchLyricScreen(
             state.onAction(SearchLyricAction.SearchFor(keywords))
         }
 
-        RegisterExtraContent(
+        RegisterContent(
             isVisible = remember { mutableStateOf(true) },
             onBackPressed = null
         ) {
