@@ -1,6 +1,8 @@
 package com.lalilu.component.base.screen
 
 sealed interface ScreenType {
-    interface List : ScreenType
+    interface ListHost : ScreenType
     interface Empty : ScreenType
+    interface List : ScreenType
+    interface Detail : ScreenType
 }

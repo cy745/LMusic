@@ -30,6 +30,7 @@ import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.component.base.screen.ScreenType
 import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.override.ModalBottomSheetValue
 import com.lalilu.lmedia.LMedia
@@ -45,7 +46,7 @@ import com.zhangke.krouter.annotation.Param
 @Destination("/song/detail")
 data class SongDetailScreen(
     @Param val mediaId: String
-) : Screen, ScreenActionFactory, ScreenInfoFactory {
+) : Screen, ScreenActionFactory, ScreenInfoFactory, ScreenType.Detail {
     override val key: ScreenKey = "${super.key}:$mediaId"
 
     @Composable

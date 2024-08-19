@@ -3,7 +3,6 @@ package com.lalilu.lmusic.compose.screen.guiding
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -51,7 +50,7 @@ import com.lalilu.R
 import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.extension.rememberIsPad
-import com.lalilu.lmusic.compose.component.CustomTransition
+import com.lalilu.component.navigation.CustomTransition
 
 @Composable
 fun GuidingScreen() {
@@ -133,9 +132,7 @@ fun GuidingScreen() {
                     navigatorState.value = navigator
                     CustomTransition(
                         navigator = navigator
-                    ) {
-                        it.Content()
-                    }
+                    )
                 }
             }
         }

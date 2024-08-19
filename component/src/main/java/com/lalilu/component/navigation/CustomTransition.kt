@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.component
+package com.lalilu.component.navigation
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.FiniteAnimationSpec
@@ -18,7 +18,6 @@ import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.Navigator
-import com.lalilu.component.navigation.CustomScreenTransition
 
 @OptIn(ExperimentalVoyagerApi::class)
 @Composable

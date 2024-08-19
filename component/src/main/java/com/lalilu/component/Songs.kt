@@ -66,14 +66,12 @@ import com.lalilu.component.extension.rememberItemSelectHelper
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.component.navigation.AppRouter
-import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.component.viewmodel.SongsViewModel
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.ListAction
 import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmedia.extension.Sortable
-import com.zhangke.krouter.KRouter
 
 class SongsScreenModel : ScreenModel {
     val isFastJumping = mutableStateOf(false)
@@ -173,10 +171,9 @@ fun Screen.Songs(
             emptyContent = emptyContent,
             prefixContent = { prefixContent(it, sortRuleStr) },
             onLongClickItem = {
-                AppRouter.route(
-                    baseUrl = "/song/detail?mediaId=${it.mediaId}",
-                    key = "/pages/songs"
-                ).push()
+                AppRouter.route(baseUrl = "/song/detail")
+                    .with("mediaId", it.mediaId)
+                    .push()
             },
             onClickItem = {
                 playingVM.play(
@@ -211,10 +208,9 @@ fun Screen.Songs(
             emptyContent = emptyContent,
             prefixContent = { prefixContent(it, sortRuleStr) },
             onLongClickItem = {
-                AppRouter.route(
-                    baseUrl = "/song/detail?mediaId=${it.mediaId}",
-                    key = "/pages/songs"
-                ).push()
+                AppRouter.route(baseUrl = "/song/detail")
+                    .with("mediaId", it.mediaId)
+                    .push()
             },
             onClickItem = {
                 playingVM.play(

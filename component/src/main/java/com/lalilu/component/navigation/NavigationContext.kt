@@ -17,6 +17,11 @@ val LocalNavigatorKey = compositionLocalOf { "" }
 
 private val screenNavigatorMap = mutableStateMapOf<Screen, Navigator>()
 
+fun Navigator.lastNestedNavigator(): Navigator? {
+    return items.lastOrNull { it is ScreenType.ListHost }
+        ?.let { screenNavigatorMap[it] }
+}
+
 @Composable
 fun Navigator.currentScreen(): State<Screen?> {
     return remember(this) {

@@ -10,7 +10,6 @@ import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import com.lalilu.component.base.EnhanceBottomSheetState
 import com.lalilu.component.base.EnhanceModalSheetState
 import com.lalilu.component.base.LocalEnhanceSheetState
-import com.lalilu.component.base.TabScreen
 
 @Composable
 fun HostNavigator(
@@ -27,40 +26,11 @@ fun HostNavigator(
             disposeNestedNavigators = false
         )
     ) { navigator ->
-        LaunchedEffect(navigator) {
-            AppRouter.bindFor().collect { intent ->
-                when (intent) {
-                    NavIntent.Pop -> navigator.pop()
-                    is NavIntent.Push -> navigator.push(intent.screen)
-                    is NavIntent.Replace -> navigator.replace(intent.screen)
-                    is NavIntent.Jump -> {
-                        val screen = intent.screen
-                        when {
-                            // Tab类型页面
-                            screen is TabScreen -> {
-                                // 移除栈顶的页面，直到栈顶的页面是startScreen
-                                navigator.popUntil { it == startScreen }
-
-                                // 如果栈顶的页面与目标页面不同则替换
-                                if (navigator.lastItemOrNull != screen) {
-                                    navigator.push(screen)
-                                }
-                            }
-
-                            // 不同类型的页面，添加至导航栈
-                            navigator.lastItemOrNull
-                                ?.let { !it::class.isInstance(screen) }
-                                ?: true -> navigator.push(screen)
-
-                            // 同类型页面，替换
-                            else -> navigator.replace(screen)
-                        }
-
-                        // 尝试跳转的时候若底部sheet不可见，则显示
-                        if (enhanceSheetState is EnhanceModalSheetState && !enhanceSheetState.isVisible) {
-                            enhanceSheetState.show()
-                        }
-                    }
+        LaunchedEffect(navigator, enhanceSheetState) {
+            AppRouter.bind(navigator) {
+                // 尝试跳转的时候若底部sheet不可见，则显示
+                if (enhanceSheetState is EnhanceModalSheetState && !enhanceSheetState.isVisible) {
+                    enhanceSheetState.show()
                 }
             }
         }
