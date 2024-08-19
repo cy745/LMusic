@@ -42,8 +42,6 @@ interface ScreenBarFactory {
             if (isVisible.value) {
                 stack.stack += ScreenBarComponent(
                     state = isVisible,
-                    showMask = false,
-                    showBackground = false,
                     content = {
                         content.invoke()
 

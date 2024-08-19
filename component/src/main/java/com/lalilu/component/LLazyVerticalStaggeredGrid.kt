@@ -18,7 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.lalilu.component.base.LocalPaddingValue
+import com.lalilu.component.base.LocalSmartBarPadding
 
 @Composable
 fun LLazyVerticalStaggeredGrid(
@@ -33,7 +33,7 @@ fun LLazyVerticalStaggeredGrid(
     userScrollEnabled: Boolean = true,
     content: LazyStaggeredGridScope.() -> Unit
 ) {
-    val padding by LocalPaddingValue.current
+    val padding by LocalSmartBarPadding.current
 
     LazyVerticalStaggeredGrid(
         columns = columns,

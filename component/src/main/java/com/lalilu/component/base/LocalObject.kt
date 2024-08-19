@@ -6,7 +6,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.dp
 
-val LocalPaddingValue = compositionLocalOf { mutableStateOf(PaddingValues(0.dp)) }
+val LocalSmartBarPadding = compositionLocalOf { mutableStateOf(PaddingValues(0.dp)) }
 
 val LocalWindowSize = compositionLocalOf<WindowSizeClass> {
     error("WindowSizeClass hasn't been initialized")

@@ -9,8 +9,8 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import com.lalilu.lmusic.LMusicTheme
 import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.lmusic.LMusicTheme
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 object App {
@@ -19,7 +19,7 @@ object App {
     fun Content(activity: Activity) {
         Environment(activity = activity) {
             Box(modifier = Modifier.fillMaxSize()) {
-                with(LayoutWrapper) { Content() }
+                LayoutWrapperContent()
             }
         }
     }

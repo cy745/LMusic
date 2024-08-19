@@ -13,7 +13,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,14 +37,13 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -105,7 +104,9 @@ fun NavigationSmartBar(
     }
 
     AnimatedContent(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .imePadding(),
         transitionSpec = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Up,
@@ -119,6 +120,7 @@ fun NavigationSmartBar(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .pointerInput(Unit) { detectTapGestures() }
                 .background(MaterialTheme.colors.background.copy(0.95f))
                 .navigationBarsPadding()
                 .height(56.dp)
@@ -130,6 +132,7 @@ fun NavigationSmartBar(
 
                 is NavigationBarType.TabBar -> {
                     NavigateTabBar(
+                        modifier = Modifier.fillMaxHeight(),
                         currentScreen = { currentScreen },
                         tabScreens = { tabScreens },
                         onSelectTab = { AppRouter.intent(NavIntent.Jump(it)) }
@@ -138,7 +141,7 @@ fun NavigationSmartBar(
 
                 is NavigationBarType.CommonBar -> {
                     NavigateCommonBar(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxHeight(),
                         previousTitle = previousTitle,
                         currentScreen = currentScreen
                     )
@@ -157,7 +160,6 @@ fun NavigateTabBar(
 ) {
     Row(
         modifier = modifier
-            .clickable(enabled = false) {}
             .height(52.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -184,15 +186,13 @@ fun NavigateCommonBar(
     previousTitle: String,
     currentScreen: Screen?
 ) {
-    val itemFitImePadding = remember { mutableStateOf(false) }
     val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val screenActions = (currentScreen as? ScreenActionFactory)?.provideScreenActions()
 
+    // TODO 待实现当screenActions溢出时转换成下拉菜单的逻辑，下拉菜单可直接用Dialog替代
     Row(
         modifier = modifier
-            .fillMaxWidth()
-            .clickable(enabled = false) {}
-            .run { if (itemFitImePadding.value) this.imePadding() else this },
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TextButton(
@@ -236,12 +236,6 @@ fun NavigateCommonBar(
                     }
 
                     if (it is ScreenAction.StaticAction) {
-                        if (it.fitImePadding) {
-                            LaunchedEffect(Unit) {
-                                itemFitImePadding.value = true
-                            }
-                        }
-
                         TextButton(
                             modifier = Modifier.fillMaxHeight(),
                             shape = RectangleShape,

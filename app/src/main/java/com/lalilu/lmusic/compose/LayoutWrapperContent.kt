@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,25 +34,26 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import com.lalilu.component.base.BottomSheetLayout
 import com.lalilu.component.base.BottomSheetLayout2
+import com.lalilu.component.base.LocalSmartBarPadding
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.DynamicTipsHost
+import com.lalilu.component.navigation.CustomTransition
 import com.lalilu.component.navigation.HostNavigator
 import com.lalilu.component.navigation.NavigationSmartBar
-import com.lalilu.component.navigation.CustomTransition
-import com.lalilu.lmusic.compose.new_screen.HomeScreen
+import com.lalilu.lmusic.compose.new_screen.home.HomeScreen
 import com.lalilu.lmusic.compose.screen.playing.PlayingLayout
 import com.lalilu.lmusic.compose.screen.playing.PlayingLayoutExpended
 import com.lalilu.lmusic.compose.screen.playing.PlayingSmartCard
 
-object LayoutWrapper {
+@Composable
+fun BoxScope.LayoutWrapperContent() {
+    val windowClass = LocalWindowSize.current
+    val padding = remember { mutableStateOf(PaddingValues(bottom = 56.dp)) }
 
-    @Composable
-    fun BoxScope.Content() {
-        val windowClass = LocalWindowSize.current
-
-        val navHostContent = remember {
-            movableContentOf<(Navigator) -> Unit> { content ->
+    val navHostContent = remember {
+        movableContentOf<(Navigator) -> Unit> { content ->
+            CompositionLocalProvider(value = LocalSmartBarPadding provides padding) {
                 HostNavigator(HomeScreen) { navigator ->
                     content(navigator)
 
@@ -62,33 +64,33 @@ object LayoutWrapper {
                 }
             }
         }
-
-        val navigationSmartBar = remember {
-            movableContentOf<Modifier> { modifier ->
-                NavigationSmartBar(modifier = modifier)
-            }
-        }
-
-        if (windowClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
-            LayoutForPad(
-                navHostContent = navHostContent,
-                navigationSmartBar = navigationSmartBar
-            )
-        } else {
-            LayoutForMobile(
-                navHostContent = navHostContent,
-                navigationSmartBar = navigationSmartBar
-            )
-        }
-
-        DialogWrapper.Content()
-
-        with(DynamicTipsHost) { Content() }
     }
+
+    val navigationSmartBar = remember {
+        movableContentOf<Modifier> { modifier ->
+            NavigationSmartBar(modifier = modifier)
+        }
+    }
+
+    if (windowClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+        LayoutForPad(
+            navHostContent = navHostContent,
+            navigationSmartBar = navigationSmartBar
+        )
+    } else {
+        LayoutForMobile(
+            navHostContent = navHostContent,
+            navigationSmartBar = navigationSmartBar
+        )
+    }
+
+    DialogWrapper.Content()
+
+    with(DynamicTipsHost) { Content() }
 }
 
 @Composable
-fun LayoutForPad(
+private fun LayoutForPad(
     modifier: Modifier = Modifier,
     navigatorBarHeight: Dp = 56.dp,
     navHostContent: @Composable ((Navigator) -> Unit) -> Unit,

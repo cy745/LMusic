@@ -79,7 +79,6 @@ class PlaylistCreateOrEditScreenModel(
         title = R.string.playlist_action_create_playlist,
         icon = componentR.drawable.ic_check_line,
         isLongClickAction = true,
-        fitImePadding = true,
         color = Color(0xFF008521)
     ) {
         val title = title.value
@@ -106,7 +105,6 @@ class PlaylistCreateOrEditScreenModel(
         title = R.string.playlist_action_update_playlist,
         icon = componentR.drawable.ic_check_line,
         isLongClickAction = true,
-        fitImePadding = true,
         color = Color(0xFF008521)
     ) {
         val playlistId = playlistId.value

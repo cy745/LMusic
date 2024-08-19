@@ -16,7 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lalilu.component.base.LocalPaddingValue
+import com.lalilu.component.base.LocalSmartBarPadding
 
 @Composable
 fun LLazyColumn(
@@ -31,7 +31,7 @@ fun LLazyColumn(
     userScrollEnabled: Boolean = true,
     content: LazyListScope.() -> Unit
 ) {
-    val padding by LocalPaddingValue.current
+    val padding by LocalSmartBarPadding.current
 
     LazyColumn(
         modifier = modifier,

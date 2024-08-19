@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.new_screen
+package com.lalilu.lmusic.compose.new_screen.search
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -29,7 +29,7 @@ import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
 import com.lalilu.component.Songs
 import com.lalilu.component.base.TabScreen
-import com.lalilu.component.base.screen.ScreenExtraBarFactory
+import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.component.navigation.AppRouter
@@ -48,7 +48,8 @@ import com.lalilu.lmusic.viewmodel.SearchViewModel
 import com.zhangke.krouter.annotation.Destination
 
 @Destination("/pages/search")
-object SearchScreen : Screen, TabScreen, ScreenExtraBarFactory {
+object SearchScreen : Screen, TabScreen, ScreenBarFactory {
+    private fun readResolve(): Any = SearchScreen
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
@@ -60,7 +61,7 @@ object SearchScreen : Screen, TabScreen, ScreenExtraBarFactory {
 
     @Composable
     override fun Content() {
-        RegisterExtraContent(
+        RegisterContent(
             isVisible = remember { mutableStateOf(true) },
             onBackPressed = null,
             content = { SearchBar() }
@@ -75,6 +76,7 @@ fun SearchBar(
     searchVM: SearchViewModel = singleViewModel(),
 ) {
     SearchInputBar(
+        modifier = Modifier,
         value = searchVM.keyword,
         onValueChange = { searchVM.searchFor(it) },
         onSubmit = { searchVM.searchFor(it) }

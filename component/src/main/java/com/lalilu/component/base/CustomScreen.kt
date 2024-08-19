@@ -28,7 +28,6 @@ sealed interface ScreenAction {
         @DrawableRes val icon: Int? = null,
         @StringRes val info: Int? = null,
         val color: Color = Color.White,
-        val fitImePadding: Boolean = false,
         val isLongClickAction: Boolean = false,
         val onAction: () -> Unit
     ) : ScreenAction
@@ -40,8 +39,6 @@ sealed interface ScreenAction {
 
 data class ScreenBarComponent(
     val state: MutableState<Boolean>,
-    val showMask: Boolean,
-    val showBackground: Boolean,
     val key: String = state.hashCode().toString(),
     val content: @Composable () -> Unit
 ) {

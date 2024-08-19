@@ -36,7 +36,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.lalilu.common.base.SourceType
-import com.lalilu.component.base.LocalPaddingValue
+import com.lalilu.component.base.LocalSmartBarPadding
 import com.lalilu.lmedia.entity.FileInfo
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.entity.Metadata
@@ -216,7 +216,7 @@ fun SongDetailContent(
         Column(
             modifier = Modifier
                 .layoutId("content")
-                .padding(bottom = LocalPaddingValue.current.value.calculateBottomPadding() + 16.dp),
+                .padding(bottom = LocalSmartBarPadding.current.value.calculateBottomPadding() + 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SongArtistsRow(
