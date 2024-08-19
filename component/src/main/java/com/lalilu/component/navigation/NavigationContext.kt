@@ -3,17 +3,12 @@ package com.lalilu.component.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import com.lalilu.component.base.screen.ScreenType
-
-val LocalNavigatorParent = compositionLocalOf<Navigator?> { null }
-val LocalNavigatorBaseScreen = compositionLocalOf<Screen> { error("No base screen found") }
-val LocalNavigatorKey = compositionLocalOf { "" }
 
 private val screenNavigatorMap = mutableStateMapOf<Screen, Navigator>()
 
