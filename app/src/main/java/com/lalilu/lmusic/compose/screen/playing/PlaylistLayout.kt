@@ -36,14 +36,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListUpdateCallback
-import cafe.adriel.voyager.core.screen.Screen
 import coil3.compose.AsyncImage
 import com.lalilu.common.base.Playable
 import com.lalilu.component.navigation.AppRouter
-import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lplayer.LPlayer
-import com.zhangke.krouter.KRouter
 import org.koin.compose.koinInject
 
 
@@ -162,10 +159,9 @@ fun PlaylistLayout(
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                    AppRouter.intent {
-                        KRouter.route<Screen>("/song/detail?mediaId=${item.data.mediaId}")
-                            ?.let(NavIntent::Push)
-                    }
+                    AppRouter.route("/pages/songs/detail")
+                        .with("mediaId", item.data.mediaId)
+                        .jump()
                 }
             )
         }

@@ -8,16 +8,13 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.common.base.Playable
 import com.lalilu.component.navigation.AppRouter
-import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.zhangke.krouter.KRouter
 
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
@@ -49,10 +46,9 @@ fun LazyListScope.latestPanel(
                 height = { 100.dp },
                 modifier = Modifier.animateItem(),
                 onClick = {
-                    AppRouter.intent {
-                        KRouter.route<Screen>("/song/detail?mediaId=${it.mediaId}")
-                            ?.let(NavIntent::Push)
-                    }
+                    AppRouter.route("/pages/songs/detail")
+                        .with("mediaId", it.mediaId)
+                        .jump()
                 },
                 isPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) },
                 onClickButton = {

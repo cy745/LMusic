@@ -23,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
@@ -32,7 +31,6 @@ import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.compose.screen.songs.SongsScreen
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
-import com.zhangke.krouter.KRouter
 
 @OptIn(ExperimentalMaterialApi::class)
 fun LazyListScope.dailyRecommend(
@@ -71,10 +69,9 @@ fun LazyListScope.dailyRecommend(
                         item = { it },
                         modifier = Modifier.size(width = 250.dp, height = 250.dp),
                         onClick = {
-                            AppRouter.intent {
-                                KRouter.route<Screen>("/song/detail?mediaId=${it.id}")
-                                    ?.let(NavIntent::Push)
-                            }
+                            AppRouter.route("/pages/songs/detail")
+                                .with("mediaId", it.id)
+                                .jump()
                         }
                     )
                 }
@@ -101,7 +98,11 @@ fun RecommendRowForSizeMedium(libraryVM: LibraryViewModel) {
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f),
-                onClick = { AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") } }
+                onClick = {
+                    AppRouter.route("/pages/songs/detail")
+                        .with("mediaId", it.id)
+                        .jump()
+                }
             )
         }
 
@@ -111,7 +112,11 @@ fun RecommendRowForSizeMedium(libraryVM: LibraryViewModel) {
                 modifier = Modifier
                     .width(150.dp)
                     .fillMaxHeight(),
-                onClick = { AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") } }
+                onClick = {
+                    AppRouter.route("/pages/songs/detail")
+                        .with("mediaId", it.id)
+                        .jump()
+                }
             )
         }
 
@@ -121,7 +126,11 @@ fun RecommendRowForSizeMedium(libraryVM: LibraryViewModel) {
                 modifier = Modifier
                     .width(150.dp)
                     .fillMaxHeight(),
-                onClick = { AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") } }
+                onClick = {
+                    AppRouter.route("/pages/songs/detail")
+                        .with("mediaId", it.id)
+                        .jump()
+                }
             )
         }
     }
@@ -145,7 +154,11 @@ fun RecommendRowForSizeExpanded(libraryVM: LibraryViewModel) {
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f),
-                onClick = { AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") } }
+                onClick = {
+                    AppRouter.route("/pages/songs/detail")
+                        .with("mediaId", it.id)
+                        .jump()
+                }
             )
         }
 
@@ -163,7 +176,9 @@ fun RecommendRowForSizeExpanded(libraryVM: LibraryViewModel) {
                         .fillMaxWidth()
                         .weight(1f),
                     onClick = {
-                        AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") }
+                        AppRouter.route("/pages/songs/detail")
+                            .with("mediaId", it.id)
+                            .jump()
                     }
                 )
             }
@@ -175,7 +190,9 @@ fun RecommendRowForSizeExpanded(libraryVM: LibraryViewModel) {
                         .fillMaxWidth()
                         .weight(1f),
                     onClick = {
-                        AppRouter.intent { KRouter.route("/song/detail?mediaId=${it.id}") }
+                        AppRouter.route("/pages/songs/detail")
+                            .with("mediaId", it.id)
+                            .jump()
                     }
                 )
             }

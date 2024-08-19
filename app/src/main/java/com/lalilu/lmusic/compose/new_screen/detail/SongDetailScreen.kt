@@ -43,7 +43,7 @@ import com.lalilu.lplayer.extensions.QueueAction
 import com.zhangke.krouter.annotation.Destination
 import com.zhangke.krouter.annotation.Param
 
-@Destination("/song/detail")
+@Destination("/pages/songs/detail")
 data class SongDetailScreen(
     @Param val mediaId: String
 ) : Screen, ScreenActionFactory, ScreenInfoFactory, ScreenType.Detail {

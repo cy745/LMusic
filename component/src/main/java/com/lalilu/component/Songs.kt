@@ -171,7 +171,7 @@ fun Screen.Songs(
             emptyContent = emptyContent,
             prefixContent = { prefixContent(it, sortRuleStr) },
             onLongClickItem = {
-                AppRouter.route(baseUrl = "/song/detail")
+                AppRouter.route("/pages/songs/detail")
                     .with("mediaId", it.mediaId)
                     .push()
             },
@@ -208,7 +208,7 @@ fun Screen.Songs(
             emptyContent = emptyContent,
             prefixContent = { prefixContent(it, sortRuleStr) },
             onLongClickItem = {
-                AppRouter.route(baseUrl = "/song/detail")
+                AppRouter.route("/pages/songs/detail")
                     .with("mediaId", it.mediaId)
                     .push()
             },

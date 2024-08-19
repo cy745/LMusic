@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.base.LocalSmartBarPadding
 
+@Deprecated("弃用")
 @Composable
 fun LLazyColumn(
     modifier: Modifier = Modifier,
