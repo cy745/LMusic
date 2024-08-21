@@ -4,11 +4,10 @@ import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.lalilu.common.base.BaseSp
+import com.lalilu.common.ext.requestFor
 import com.lalilu.component.extension.toState
 import com.lalilu.component.viewmodel.SongsSp
 import com.lalilu.component.viewmodel.findInstance
-import com.lalilu.lhistory.SortRuleLastPlayTime
-import com.lalilu.lhistory.SortRulePlayCount
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.BaseMatchable
 import com.lalilu.lmedia.entity.LSong
@@ -27,6 +26,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import org.koin.core.qualifier.named
 import org.koin.java.KoinJavaComponent.inject
 
 internal sealed interface SongsScreenAction {
@@ -45,16 +45,14 @@ internal class SongsSM(
 ) : ScreenModel {
     // 持久化元素的状态
     val showSortPanel = mutableStateOf(false)
-    val supportSortActions = setOf(
+    val supportSortActions = setOf<ListAction?>(
         SortStaticAction.Normal,
         SortStaticAction.Title,
         SortStaticAction.AddTime,
         SortStaticAction.Shuffle,
         SortStaticAction.Duration,
-        SortRulePlayCount,
-        SortRuleLastPlayTime,
-//        KoinJavaComponent.getOrNull(ListAction::class.java, named("SortRulePlayCount")),
-//        KoinJavaComponent.getOrNull(ListAction::class.java, named("SortRuleLastPlayTime"))
+        requestFor(named("sort_rule_play_count")),
+        requestFor(named("sort_rule_last_play_time")),
     ).filterNotNull()
         .toSet()
 

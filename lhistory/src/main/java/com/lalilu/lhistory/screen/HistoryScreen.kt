@@ -16,6 +16,7 @@ import com.lalilu.lhistory.R
 import com.lalilu.lhistory.repository.HistoryRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.mapLatest
+import org.koin.core.annotation.Factory
 import com.lalilu.component.R as ComponentR
 
 data object HistoryScreen : DynamicScreen() {
@@ -32,6 +33,7 @@ data object HistoryScreen : DynamicScreen() {
     }
 }
 
+@Factory
 class HistoryScreenModel(
     historyRepo: HistoryRepository
 ) : ScreenModel {

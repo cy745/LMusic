@@ -9,6 +9,7 @@ ksp_version = "2.0.0-1.0.22"
 #serialization_json_version = "1.6.0"
 
 koin_version = "3.5.6"
+koin_ksp_version = "1.3.1"
 compose_bom_alpha_version = "2024.08.00-alpha01"
 compose_bom_version = "2024.06.00"
 accompanist_version = "0.32.0"
@@ -76,6 +77,8 @@ accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-
 # koin
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin_version" }
 koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin_version" }
+koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin_ksp_version" }
+koin-compiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "koin_ksp_version" }
 
 # coil
 # https://github.com/coil-kt/coil
@@ -158,4 +161,9 @@ coil3 = [
     "coil3-android",
     "coil3-compose",
     "coil3-okhttp"
+]
+koin = [
+    "koin-android",
+    "koin-compose",
+    "koin-annotations"
 ]

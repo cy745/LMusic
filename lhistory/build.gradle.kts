@@ -45,4 +45,5 @@ dependencies {
     ksp(libs.room.compiler)
 
     implementation(project(":component"))
+    ksp(libs.koin.compiler)
 }

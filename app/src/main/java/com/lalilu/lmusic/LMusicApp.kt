@@ -23,6 +23,7 @@ import com.zhangke.krouter.generated.KRouterInjectMap
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
+import org.koin.ksp.generated.module
 import java.io.File
 
 class LMusicApp : Application(), SingletonImageLoader.Factory, FilterProvider, ViewModelStoreOwner {
@@ -59,7 +60,7 @@ class LMusicApp : Application(), SingletonImageLoader.Factory, FilterProvider, V
                 FilterModule,
                 PlaylistModule,
                 ComponentModule,
-                HistoryModule,
+                HistoryModule.module,
                 ArtistModule,
                 AlbumModule,
                 DictionaryModule,

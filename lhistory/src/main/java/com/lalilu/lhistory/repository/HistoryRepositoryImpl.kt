@@ -8,8 +8,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.Single
 import kotlin.coroutines.CoroutineContext
 
+@Single(binds = [HistoryRepository::class])
 class HistoryRepositoryImpl(
     private val historyDao: HistoryDao
 ) : HistoryRepository, CoroutineScope {

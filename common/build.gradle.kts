@@ -35,8 +35,6 @@ dependencies {
     api("io.github.billywei01:fastkv:2.4.2")
     api("io.github.billywei01:packable:1.1.0")
 
-    api(libs.koin.android)
-    api(libs.koin.compose)
-
+    api(libs.bundles.koin)
     api(libs.krouter.core)
 }
