@@ -78,12 +78,14 @@ fun WindowSizeClass.rememberIsPad(): State<Boolean> {
     }
 }
 
+@Deprecated("弃用")
 @Composable
 fun dayNightTextColor(alpha: Float = 1f): Color {
     val color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
     return remember(color) { color.copy(alpha = alpha) }
 }
 
+@Deprecated("弃用")
 @Composable
 fun dayNightTextColorFilter(alpha: Float = 1f): ColorFilter {
     val color = contentColorFor(backgroundColor = MaterialTheme.colors.background)

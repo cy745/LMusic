@@ -54,7 +54,11 @@ data class SongsScreen(
         val sm = rememberScreenModel { SongsSM(mediaIds) }
             .also { songsSM = it }
 
-        SongsSortPanelDialog(songsSM = sm)
+        SongsSortPanelDialog(
+            isVisible = sm.showSortPanel,
+            supportSortActions = sm.supportSortActions,
+            onSelectSortAction = { sm.action(SongsScreenAction.SelectSortAction(it)) }
+        )
 
         SongsScreenContent(songsSM = sm)
     }
