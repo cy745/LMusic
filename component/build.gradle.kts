@@ -56,6 +56,7 @@ dependencies {
     api("me.rosuh:AndroidFilePicker:1.0.1")
     api("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
     api("com.github.cy745.KRouter:core:fcf40f4b15")
+    api("com.cheonjaeung.compose.grid:grid:2.0.0")
 
     // compose
 //    api(platform(libs.compose.bom))

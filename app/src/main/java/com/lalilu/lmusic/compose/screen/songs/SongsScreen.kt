@@ -57,6 +57,7 @@ data class SongsScreen(
         SongsSortPanelDialog(
             isVisible = sm.showSortPanel,
             supportSortActions = sm.supportSortActions,
+            isSortActionSelected = { sm.sorter.isSortActionSelected(it) },
             onSelectSortAction = { sm.action(SongsScreenAction.SelectSortAction(it)) }
         )
 

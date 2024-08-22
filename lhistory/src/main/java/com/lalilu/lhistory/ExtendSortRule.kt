@@ -9,14 +9,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
-import org.koin.java.KoinJavaComponent
 
 @Named("sort_rule_play_count")
 @Single(binds = [ListAction::class])
-class SortRulePlayCount :
-    SortDynamicAction(titleRes = R.string.sort_preset_by_played_times) {
-
-    private val historyRepo: HistoryRepository by KoinJavaComponent.inject(HistoryRepository::class.java)
+class SortRulePlayCount(
+    private val historyRepo: HistoryRepository
+) : SortDynamicAction(titleRes = R.string.sort_preset_by_played_times) {
 
     override fun <T : Sortable> doSort(
         items: Flow<List<T>>,
@@ -34,10 +32,9 @@ class SortRulePlayCount :
 
 @Named("sort_rule_last_play_time")
 @Single(binds = [ListAction::class])
-class SortRuleLastPlayTime :
-    SortDynamicAction(titleRes = R.string.sort_preset_by_last_play_time) {
-
-    private val historyRepo: HistoryRepository by KoinJavaComponent.inject(HistoryRepository::class.java)
+class SortRuleLastPlayTime(
+    private val historyRepo: HistoryRepository
+) : SortDynamicAction(titleRes = R.string.sort_preset_by_last_play_time) {
 
     override fun <T : Sortable> doSort(
         items: Flow<List<T>>,
