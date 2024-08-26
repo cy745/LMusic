@@ -3,15 +3,21 @@ package com.lalilu.lmusic.compose.screen.songs
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.R
-import com.lalilu.component.base.ScreenAction
+import com.lalilu.RemixIcon
+import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.base.screen.ScreenType
+import com.lalilu.remixicon.Design
+import com.lalilu.remixicon.Editor
+import com.lalilu.remixicon.design.focus3Line
+import com.lalilu.remixicon.editor.sortDesc
 import com.zhangke.krouter.annotation.Destination
 
 @Destination("/pages/songs")
@@ -31,16 +37,16 @@ data class SongsScreen(
     @Composable
     override fun provideScreenActions(): List<ScreenAction> = remember {
         listOf(
-            ScreenAction.StaticAction(
-                title = R.string.screen_action_sort,
-                icon = R.drawable.ic_sort_desc,
-                color = Color(0xFF1793FF),
+            ScreenAction.Static(
+                title = { stringResource(id = R.string.screen_action_sort) },
+                icon = { RemixIcon.Editor.sortDesc },
+                color = { Color(0xFF1793FF) },
                 onAction = { songsSM?.action(SongsScreenAction.ToggleSortPanel) }
             ),
-            ScreenAction.StaticAction(
-                title = R.string.screen_action_locate_playing_item,
-                icon = R.drawable.ic_focus_3_line,
-                color = Color(0xFF9317FF),
+            ScreenAction.Static(
+                title = { stringResource(id = R.string.screen_action_locate_playing_item) },
+                icon = { RemixIcon.Design.focus3Line },
+                color = { Color(0xFF9317FF) },
                 onAction = { songsSM?.action(SongsScreenAction.LocaleToPlayingItem) }
             ),
         )
@@ -58,7 +64,7 @@ data class SongsScreen(
             isVisible = sm.showSortPanel,
             supportSortActions = sm.supportSortActions,
             isSortActionSelected = { sm.sorter.isSortActionSelected(it) },
-            onSelectSortAction = { sm.action(SongsScreenAction.SelectSortAction(it)) }
+            onSelectSortAction = { sm.sorter.selectSortAction(it) }
         )
 
         SongsScreenContent(songsSM = sm)

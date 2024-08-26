@@ -16,6 +16,7 @@ import androidx.compose.material.FilterChip
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.SelectableChipColors
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -94,10 +95,9 @@ private fun SongsSortPanelDialogContent(
         elevation = 10.dp
     ) {
         VerticalGrid(
-            modifier = Modifier.padding(
-                horizontal = 16.dp,
-                vertical = 20.dp
-            ),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(top = 8.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             columns = SimpleGridCells.Fixed(2)
@@ -127,37 +127,57 @@ private fun SongsSortPanelDialogContent(
             }
 
             supportSortActions.forEach {
-                FilterChip(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                SortItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    title = stringResource(id = it.titleRes),
+                    subTitle = "test",
                     colors = colors,
-                    shape = RoundedCornerShape(5.dp),
-                    selected = isSortActionSelected(it),
-                    onClick = { onSelectSortAction(it) },
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(vertical = 10.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            fontSize = 12.sp,
-                            lineHeight = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            text = stringResource(id = it.titleRes)
-                        )
-
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = "test",
-                            fontSize = 10.sp,
-                            lineHeight = 10.sp,
-                        )
-                    }
-                }
+                    selected = { isSortActionSelected(it) },
+                    onClick = { onSelectSortAction(it) }
+                )
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun SortItem(
+    modifier: Modifier = Modifier,
+    title: String,
+    subTitle: String = "",
+    colors: SelectableChipColors = ChipDefaults.filterChipColors(),
+    selected: () -> Boolean,
+    onClick: () -> Unit = {}
+) {
+    FilterChip(
+        modifier = modifier
+            .fillMaxWidth(),
+        colors = colors,
+        shape = RoundedCornerShape(5.dp),
+        selected = selected(),
+        onClick = onClick,
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 12.sp,
+                lineHeight = 12.sp,
+                fontWeight = FontWeight.Bold,
+                text = title
+            )
+
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = subTitle,
+                fontSize = 10.sp,
+                lineHeight = 10.sp,
+            )
         }
     }
 }

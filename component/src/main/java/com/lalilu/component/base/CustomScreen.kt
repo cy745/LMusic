@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.base.screen.ScreenInfoFactory
@@ -13,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 /**
  * 定义一个页面的信息
  */
+@Deprecated("弃用", replaceWith = ReplaceWith("com.lalilu.component.base.screen.ScreenInfo"))
 data class ScreenInfo(
     @StringRes val title: Int,
     @DrawableRes val icon: Int? = null,
@@ -22,6 +24,7 @@ data class ScreenInfo(
 /**
  * 定义某个页面可执行的动作
  */
+@Deprecated("弃用")
 sealed interface ScreenAction {
     data class StaticAction(
         @StringRes val title: Int,
@@ -33,7 +36,7 @@ sealed interface ScreenAction {
     ) : ScreenAction
 
     data class ComposeAction(
-        val content: @Composable () -> Unit
+        val content: @Composable (Modifier) -> Unit
     ) : ScreenAction
 }
 

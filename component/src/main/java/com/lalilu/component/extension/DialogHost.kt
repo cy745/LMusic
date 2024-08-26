@@ -1,5 +1,6 @@
 package com.lalilu.component.extension
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -110,7 +111,7 @@ object DialogWrapper : DialogHost, DialogContext {
     @Composable
     override fun Content() {
         if (dialogItem == null) return
-        
+
         val isActiveClose by remember {
             mutableStateOf(false)
                 .also { dismissFunc = { it.value = true } }
@@ -151,24 +152,25 @@ object DialogWrapper : DialogHost, DialogContext {
                 dialogItem = null
             },
             content = {
-                dialogItem?.let {
-                    when (it) {
-                        is DialogItem.Static -> {
-                            StaticDialogCard(
-                                title = it.title,
-                                message = it.message,
-                                onConfirm = {
-                                    dismiss()
-                                    it.onConfirm()
-                                },
-                                onCancel = {
-                                    dismiss()
-                                    it.onCancel()
-                                }
-                            )
-                        }
+                AnimatedContent(
+                    targetState = dialogItem,
+                    label = ""
+                ) { dialog ->
+                    dialog?.apply {
+                        when (this) {
+                            is DialogItem.Static -> {
+                                StaticDialogCard(
+                                    title = title,
+                                    message = message,
+                                    onConfirm = { dismiss(); onConfirm() },
+                                    onCancel = { dismiss(); onCancel() }
+                                )
+                            }
 
-                        is DialogItem.Dynamic -> it.content.invoke(this@DialogWrapper)
+                            is DialogItem.Dynamic -> {
+                                content.invoke(this@DialogWrapper)
+                            }
+                        }
                     }
                 }
             }

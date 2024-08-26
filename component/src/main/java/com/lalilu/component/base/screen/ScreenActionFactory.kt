@@ -1,8 +1,31 @@
 package com.lalilu.component.base.screen
 
 import androidx.compose.runtime.Composable
-import com.lalilu.component.base.ScreenAction
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 
+@Stable
+@Immutable
+data class ActionContext(
+    val isFullyExpanded: Boolean = false
+)
+
+sealed class ScreenAction {
+    @Stable
+    data class Static(
+        val title: @Composable () -> String,
+        val color: @Composable () -> Color = { Color.White },
+        val icon: @Composable () -> ImageVector? = { null },
+        val onAction: () -> Unit = {}
+    ) : ScreenAction()
+
+    @Stable
+    data class Dynamic(
+        val content: @Composable (ActionContext) -> Unit
+    ) : ScreenAction()
+}
 
 interface ScreenActionFactory {
 

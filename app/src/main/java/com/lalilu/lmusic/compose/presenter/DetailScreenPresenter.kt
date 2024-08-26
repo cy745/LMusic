@@ -2,8 +2,11 @@ package com.lalilu.lmusic.compose.presenter
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.lalilu.common.base.Playable
 import com.lalilu.component.base.UiAction
@@ -58,9 +61,15 @@ fun DetailScreenIsPlayingPresenter(
     mediaId: String,
     playingVM: PlayingViewModel = koinInject()
 ): DetailScreenIsPlayingState {
-    val isPlaying = playingVM.isItemPlaying(mediaId, Playable::mediaId)
+    val isPlaying = remember {
+        derivedStateOf { playingVM.isItemPlaying(mediaId, Playable::mediaId) }
+    }
 
-    return DetailScreenIsPlayingState(isPlaying = isPlaying) {
+    SideEffect {
+        println("isPlaying: ${isPlaying}")
+    }
+
+    return DetailScreenIsPlayingState(isPlaying = isPlaying.value) {
         when (it) {
             DetailScreenAction.PlayPause -> playingVM.play(
                 mediaId = mediaId,

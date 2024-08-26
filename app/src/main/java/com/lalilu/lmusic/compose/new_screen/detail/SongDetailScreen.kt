@@ -1,16 +1,9 @@
 package com.lalilu.lmusic.compose.new_screen.detail
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -18,15 +11,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import com.lalilu.R
-import com.lalilu.component.IconButton
 import com.lalilu.component.base.LocalEnhanceSheetState
-import com.lalilu.component.base.ScreenAction
+import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
@@ -35,10 +25,8 @@ import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.override.ModalBottomSheetValue
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.compose.component.base.IconCheckButton
-import com.lalilu.lmusic.compose.presenter.DetailScreenAction
-import com.lalilu.lmusic.compose.presenter.DetailScreenIsPlayingPresenter
-import com.lalilu.lmusic.compose.presenter.DetailScreenLikeBtnPresenter
+import com.lalilu.lmusic.compose.screen.detail.provideSongLikeAction
+import com.lalilu.lmusic.compose.screen.detail.provideSongPlayAction
 import com.lalilu.lplayer.extensions.QueueAction
 import com.zhangke.krouter.annotation.Destination
 import com.zhangke.krouter.annotation.Param
@@ -55,62 +43,25 @@ data class SongDetailScreen(
     }
 
     @Composable
-    override fun provideScreenActions(): List<ScreenAction> {
-        return remember(this) {
-            listOf(
-                ScreenAction.StaticAction(
-                    title = R.string.button_set_song_to_next,
-                    color = Color(0xFF00AC84),
-                    onAction = {
-                        val song = LMedia.get<LSong>(id = mediaId) ?: return@StaticAction
-                        QueueAction.AddToNext(song.mediaId).action()
-                        DynamicTipsItem.Static(
-                            title = song.title,
-                            subTitle = "下一首播放",
-                            imageData = song.imageSource
-                        ).show()
-                    }
-                ),
-                ScreenAction.ComposeAction {
-                    val state = DetailScreenLikeBtnPresenter(mediaId)
+    override fun provideScreenActions(): List<ScreenAction> = remember(this) {
+        listOf(
+            provideSongLikeAction(mediaId),
+            provideSongPlayAction(mediaId),
+            ScreenAction.Static(
+                title = { stringResource(id = R.string.button_set_song_to_next) },
+                color = { Color(0xFF00AC84) },
+                onAction = {
+                    val song = LMedia.get<LSong>(id = mediaId) ?: return@Static
 
-                    IconCheckButton(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(4f / 3f),
-                        shape = RectangleShape,
-                        getIsChecked = { state.isLiked },
-                        onCheckedChange = { state.onAction(if (it) DetailScreenAction.Like else DetailScreenAction.UnLike) },
-                        checkedColor = MaterialTheme.colors.primary,
-                        checkedIconRes = R.drawable.ic_heart_3_fill,
-                        normalIconRes = R.drawable.ic_heart_3_line
-                    )
-                },
-                ScreenAction.ComposeAction {
-                    val state = DetailScreenIsPlayingPresenter(mediaId)
-
-                    AnimatedContent(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(3f / 2f),
-                        targetState = state.isPlaying,
-                        transitionSpec = { fadeIn() togetherWith fadeOut() },
-                        label = ""
-                    ) { isPlaying ->
-                        val icon =
-                            if (isPlaying) R.drawable.ic_pause_line else R.drawable.ic_play_line
-                        IconButton(
-                            modifier = Modifier.fillMaxSize(),
-                            color = Color(0xFF006E7C),
-                            shape = RectangleShape,
-                            text = stringResource(id = R.string.text_button_play),
-                            icon = painterResource(id = icon),
-                            onClick = { state.onAction(DetailScreenAction.PlayPause) }
-                        )
-                    }
-                },
-            )
-        }
+                    QueueAction.AddToNext(song.mediaId).action()
+                    DynamicTipsItem.Static(
+                        title = song.title,
+                        subTitle = "下一首播放",
+                        imageData = song.imageSource
+                    ).show()
+                }
+            ),
+        )
     }
 
     @Composable

@@ -33,7 +33,6 @@ internal sealed interface SongsScreenAction {
     data object ToggleSortPanel : SongsScreenAction
     data object LocaleToPlayingItem : SongsScreenAction
     data class SearchFor(val keyword: String) : SongsScreenAction
-    data class SelectSortAction(val action: ListAction) : SongsScreenAction
 }
 
 internal sealed interface SongsScreenEvent {
@@ -71,10 +70,6 @@ internal class SongsSM(
 
             is SongsScreenAction.SearchFor -> {
                 searcher.search(action.keyword)
-            }
-
-            is SongsScreenAction.SelectSortAction -> {
-                sorter.selectSortAction(action.action)
             }
 
             else -> {}
@@ -145,6 +140,11 @@ internal class ItemSorter<T : Sortable>(
     }
 
     fun isSortActionSelected(action: ListAction): Boolean {
+        // 初次启动时若key值为空，则默认为Normal
+        if (sortActionKey.value.isBlank()) {
+            return action::class.java == SortStaticAction.Normal::class.java
+        }
+
         return sortActionKey.value == action::class.java.name
     }
 }
