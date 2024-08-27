@@ -1,5 +1,6 @@
 package com.lalilu.component.navigation
 
+import android.util.Log
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import com.lalilu.component.base.TabScreen
@@ -130,6 +131,9 @@ object AppRouter : CoroutineScope {
 
         private fun requestResult(): Screen? =
             runCatching { KRouter.route<Screen>(baseUrl, params) }
-                .getOrNull()
+                .getOrElse {
+                    Log.e("AppRouter", "route request for [$baseUrl] Failed", it)
+                    null
+                }
     }
 }

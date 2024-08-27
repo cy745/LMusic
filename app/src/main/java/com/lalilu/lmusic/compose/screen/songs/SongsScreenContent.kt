@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import com.lalilu.common.base.Playable
 import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.card.SongCard
 import com.lalilu.component.navigation.AppRouter
@@ -24,7 +25,10 @@ import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 internal fun SongsScreenContent(
-    songsSM: SongsSM
+    songsSM: SongsSM,
+    isSelecting: () -> Boolean = { false },
+    isSelected: (Playable) -> Boolean = { false },
+    onSelect: (Playable) -> Unit = {}
 ) {
     val hapticFeedback = LocalHapticFeedback.current
     val listState: LazyListState = rememberLazyListState()
@@ -72,14 +76,26 @@ internal fun SongsScreenContent(
             ) {
                 SongCard(
                     song = { it },
-                    onClick = { PlayerAction.PlayById(it.mediaId).action() },
+                    isSelected = { isSelected(it) },
+                    onClick = {
+                        if (isSelecting()) {
+                            onSelect(it)
+                        } else {
+                            PlayerAction.PlayById(it.mediaId).action()
+                        }
+                    },
                     onLongClick = {
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                        AppRouter.route("/pages/songs/detail")
-                            .with("mediaId", it.mediaId)
-                            .jump()
+                        if (isSelecting()) {
+                            onSelect(it)
+                        } else {
+                            AppRouter.route("/pages/songs/detail")
+                                .with("mediaId", it.mediaId)
+                                .jump()
+                        }
                     },
+                    onEnterSelect = { onSelect(it) }
                 )
             }
         }

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -39,23 +40,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachReversed
 import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.RemixIcon
-import com.lalilu.component.R
 import com.lalilu.component.base.screen.ActionContext
 import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.extension.DialogItem
 import com.lalilu.component.extension.DialogWrapper
-import com.lalilu.component.extension.toColorFilter
+import com.lalilu.remixicon.Arrows
 import com.lalilu.remixicon.System
+import com.lalilu.remixicon.arrows.arrowLeftSLine
 import com.lalilu.remixicon.system.more2Fill
 
 
@@ -65,13 +66,34 @@ fun NavigateCommonBar(
     previousTitle: String,
     currentScreen: Screen?
 ) {
-    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val screenActions = (currentScreen as? ScreenActionFactory)?.provideScreenActions()
-    val moreActionPanelDialogVisible = remember { mutableStateOf(false) }
     val actionContext = ActionContext(isFullyExpanded = false)
+    val isDialogVisible = remember { mutableStateOf(false) }
+
+    NavigateCommonBarContent(
+        modifier = modifier,
+        previousTitle = previousTitle,
+        dialogVisible = isDialogVisible,
+        screenActions = screenActions,
+        actionContext = actionContext
+    )
+}
+
+@Composable
+fun NavigateCommonBarContent(
+    modifier: Modifier = Modifier,
+    previousTitle: String,
+    previousIcon: ImageVector = RemixIcon.Arrows.arrowLeftSLine,
+    dialogVisible: MutableState<Boolean>,
+    screenActions: List<ScreenAction>?,
+    actionContext: ActionContext,
+    onBackPress: (() -> Unit)? = null
+) {
+    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
+        ?.onBackPressedDispatcher
 
     MoreActionPanelDialog(
-        isVisible = moreActionPanelDialogVisible,
+        isVisible = dialogVisible,
         actions = screenActions ?: emptyList()
     )
 
@@ -87,14 +109,22 @@ fun NavigateCommonBar(
             colors = ButtonDefaults.textButtonColors(
                 contentColor = MaterialTheme.colors.onBackground
             ),
-            onClick = { onBackPressedDispatcher?.onBackPressed() }
+            onClick = {
+                if (onBackPress != null) {
+                    onBackPress()
+                } else {
+                    onBackPressedDispatcher?.onBackPressed()
+                }
+            }
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_arrow_left_s_line),
-                contentDescription = "backButtonIcon",
-                colorFilter = MaterialTheme.colors.onBackground.toColorFilter()
+            Icon(
+                imageVector = previousIcon,
+                tint = MaterialTheme.colors.onBackground,
+                contentDescription = null
             )
-            AnimatedContent(targetState = previousTitle, label = "") {
+            AnimatedContent(
+                targetState = previousTitle, label = ""
+            ) {
                 Text(
                     text = it,
                     fontSize = 14.sp
@@ -117,7 +147,7 @@ fun NavigateCommonBar(
                 if (actions == null) return@SubcomposeLayout layout(0, 0) {}
 
                 val moreBtnMeasurable = subcompose("moreBtn") {
-                    MoreActionBtn(onClick = { moreActionPanelDialogVisible.value = true })
+                    MoreActionBtn(onClick = { dialogVisible.value = true })
                 }[0]
                 val moreBtnPlaceable = moreBtnMeasurable.measure(
                     constraints.copy(

@@ -1,79 +1,53 @@
 package com.lalilu.lplaylist
 
+import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.RemixIcon
 import com.lalilu.common.base.Playable
-import com.lalilu.component.extension.SelectAction
+import com.lalilu.common.ext.requestFor
+import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.navigation.AppRouter
-import com.lalilu.component.navigation.NavIntent
-import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.repository.PlaylistRepository
-import com.lalilu.lplaylist.screen.PlaylistAddToScreen
-import org.koin.java.KoinJavaComponent
-import com.lalilu.component.R as componentR
+import com.lalilu.remixicon.HealthAndMedical
+import com.lalilu.remixicon.Media
+import com.lalilu.remixicon.healthandmedical.heart3Line
+import com.lalilu.remixicon.media.playListAddLine
+import org.koin.core.annotation.Factory
+import org.koin.core.annotation.Named
 
-object PlaylistActions {
-    private val playlistRepo: PlaylistRepository by KoinJavaComponent.inject(PlaylistRepository::class.java)
+@Factory(binds = [ScreenAction::class])
+@Named("add_to_playlist_action")
+fun provideAddToPlaylistAction(
+    selectedItems: () -> Collection<Playable>
+): ScreenAction.Static = ScreenAction.Static(
+    title = { "添加到歌单" },
+    icon = { RemixIcon.Media.playListAddLine },
+    color = { Color(0xFF24A800) },
+    onAction = {
+        val items = selectedItems()
 
-    /**
-     * 将指定歌曲添加至播放列表
-     */
-    val addToPlaylistAction = SelectAction.StaticAction.Custom(
-        title = R.string.playlist_action_add_to_playlist,
-        icon = componentR.drawable.ic_play_list_add_line,
-        color = Color(0xFF04B931),
-    ) { selector ->
-        val mediaIds = selector.selected.value
-            .mapNotNull { (it as? Playable)?.mediaId }
-
-        AppRouter.intent(
-            NavIntent.Push(
-                PlaylistAddToScreen(
-                    ids = mediaIds,
-                    callback = {
-                        selector.clear()
-
-                        AppRouter.intent(NavIntent.Pop)
-                    }
-                )
-            )
-        )
+        AppRouter.route("/playlist/add")
+            .with("mediaIds", items.map { it.mediaId })
+            .jump()
     }
+)
 
-    /**
-     * 将指定歌曲添加至播放列表
-     */
-    val addToFavorite = SelectAction.StaticAction.Custom(
-        title = R.string.playlist_action_add_to_favorites,
-        icon = componentR.drawable.ic_heart_3_fill,
-        color = Color(0xFFE91E63),
-    ) { selector ->
-        val mediaIds = selector.selected.value
-            .mapNotNull { (it as? Playable)?.mediaId }
+@Factory(binds = [ScreenAction::class])
+@Named("add_to_favourite_action")
+fun provideAddToFavouriteAction(
+    selectedItems: () -> Collection<Playable>
+): ScreenAction.Static = ScreenAction.Static(
+    title = { "添加到我喜欢" },
+    icon = { RemixIcon.HealthAndMedical.heart3Line },
+    color = { MaterialTheme.colors.primary },
+    onAction = {
+        val items = selectedItems().map { it.mediaId }
+        val playlistRepo = requestFor<PlaylistRepository>()
 
-        playlistRepo.addMediaIdsToFavourite(mediaIds)
-        ToastUtils.showShort("已添加${mediaIds.size}首歌曲至我喜欢")
-    }
-
-    /**
-     * 删除指定的播放列表
-     */
-    internal val removePlaylists = SelectAction.StaticAction.Custom(
-        title = R.string.playlist_action_remove_playlist,
-        forLongClick = true,
-        icon = componentR.drawable.ic_delete_bin_6_line,
-        color = Color(0xFFE91E1E),
-    ) { selector ->
-        val selectedPlaylist = selector.selected.value.filterIsInstance<LPlaylist>()
-        val playlistIds = selectedPlaylist.map { it.id }
-
-        runCatching {
-            playlistRepo.removeByIds(ids = playlistIds)
-            ToastUtils.showShort("已删除${playlistIds.size}个歌单")
-            selector.remove(selectedPlaylist)
-        }.getOrElse {
-            it.printStackTrace()
-            ToastUtils.showShort("删除失败")
+        playlistRepo?.let {
+            it.addMediaIdsToFavourite(items)
+            ToastUtils.showShort("已添加${items.size}首歌曲至我喜欢")
         }
     }
-}
+)

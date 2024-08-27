@@ -18,6 +18,7 @@ import com.lalilu.lmedia.indexer.FilterProvider
 import com.lalilu.lmusic.utils.extension.ignoreSSLVerification
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplaylist.PlaylistModule
+import com.lalilu.lplaylist.PlaylistModule2
 import com.zhangke.krouter.KRouter
 import com.zhangke.krouter.generated.KRouterInjectMap
 import org.koin.android.ext.android.inject
@@ -61,6 +62,7 @@ class LMusicApp : Application(), SingletonImageLoader.Factory, FilterProvider, V
                 PlaylistModule,
                 ComponentModule,
                 HistoryModule.module,
+                PlaylistModule2.module,
                 ArtistModule,
                 AlbumModule,
                 DictionaryModule,

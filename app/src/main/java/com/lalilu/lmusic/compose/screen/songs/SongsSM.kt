@@ -4,7 +4,9 @@ import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.lalilu.common.base.BaseSp
+import com.lalilu.common.base.Playable
 import com.lalilu.common.ext.requestFor
+import com.lalilu.component.extension.ItemSelector
 import com.lalilu.component.extension.toState
 import com.lalilu.component.viewmodel.SongsSp
 import com.lalilu.component.viewmodel.findInstance
@@ -85,6 +87,7 @@ internal class SongsSM(
     val searcher = ItemSearcher(flow())
     val sorter = ItemSorter(searcher.output, supportSortActions)
     val songs = sorter.output.toState(emptyMap(), screenModelScope)
+    val selector = ItemSelector<Playable>()
 }
 
 internal class ItemSearcher<T : BaseMatchable>(

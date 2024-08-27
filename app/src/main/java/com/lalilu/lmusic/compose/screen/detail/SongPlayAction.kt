@@ -23,23 +23,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
 import com.lalilu.RemixIcon
+import com.lalilu.common.base.Playable
 import com.lalilu.component.base.screen.ScreenAction
-import com.lalilu.lmusic.compose.presenter.DetailScreenAction
-import com.lalilu.lmusic.compose.presenter.DetailScreenIsPlayingPresenter
+import com.lalilu.component.extension.singleViewModel
+import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.remixicon.Media
 import com.lalilu.remixicon.media.pauseLine
 import com.lalilu.remixicon.media.playLine
 
-
 @OptIn(ExperimentalMaterialApi::class)
 fun provideSongPlayAction(mediaId: String): ScreenAction.Dynamic {
     return ScreenAction.Dynamic { actionContext ->
-        val state = DetailScreenIsPlayingPresenter(mediaId)
-        val color = Color(0xFF006E7C)
+        val playingVM: PlayingViewModel = singleViewModel()
+        val color = Color(0xFF008394)
 
         Surface(
             color = color.copy(0.2f),
-            onClick = { state.onAction(DetailScreenAction.PlayPause) }
+            onClick = {
+                playingVM.play(
+                    mediaId = mediaId,
+                    addToNext = true,
+                    playOrPause = true
+                )
+            }
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 20.dp),
@@ -49,7 +55,7 @@ fun provideSongPlayAction(mediaId: String): ScreenAction.Dynamic {
                 AnimatedContent(
                     modifier = Modifier
                         .fillMaxHeight(),
-                    targetState = state.isPlaying,
+                    targetState = playingVM.isItemPlaying(mediaId, Playable::mediaId),
                     transitionSpec = { fadeIn() togetherWith fadeOut() },
                     label = ""
                 ) { isPlaying ->

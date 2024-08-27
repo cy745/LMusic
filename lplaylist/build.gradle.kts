@@ -36,4 +36,5 @@ composeCompiler {
 
 dependencies {
     implementation(project(":component"))
+    ksp(libs.koin.compiler)
 }
