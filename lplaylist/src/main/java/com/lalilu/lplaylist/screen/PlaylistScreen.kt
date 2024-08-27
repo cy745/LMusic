@@ -52,11 +52,12 @@ import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.extension.rememberItemSelectHelper
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
-import com.lalilu.lplaylist.PlaylistActions
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.component.PlaylistCard
 import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.repository.PlaylistRepository
+import com.lalilu.lplaylist.screen.create.PlaylistCreateOrEditScreen
+import com.lalilu.lplaylist.screen.detail.PlaylistDetailScreen
 import com.zhangke.krouter.annotation.Destination
 import org.koin.compose.koinInject
 import sh.calvin.reorderable.ReorderableItem
@@ -116,7 +117,7 @@ private fun Screen.PlaylistScreen(
         selected = playlistSM.selectedItems
     )
     val selectActions = remember {
-        listOf<SelectAction>(PlaylistActions.removePlaylists)
+        listOf<SelectAction>()
     }
 
     if (this is ScreenBarFactory) {

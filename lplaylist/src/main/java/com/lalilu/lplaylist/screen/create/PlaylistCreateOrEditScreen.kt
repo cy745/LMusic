@@ -1,4 +1,4 @@
-package com.lalilu.lplaylist.screen
+package com.lalilu.lplaylist.screen.create
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
