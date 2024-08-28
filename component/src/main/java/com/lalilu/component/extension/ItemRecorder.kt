@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 
 class LazyListRecordScope internal constructor(
     var recorder: ItemRecorder,
@@ -45,7 +46,7 @@ class LazyListRecordScope internal constructor(
 }
 
 class ItemRecorder {
-    private val keys = mutableListOf<Any?>()
+    private val keys = mutableStateListOf<Any?>()
     private val scope = LazyListRecordScope(this)
 
     fun record(key: Any?) = this.keys.add(key)

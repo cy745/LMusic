@@ -19,6 +19,7 @@ import com.lalilu.component.viewmodel.findInstance
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.BaseMatchable
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.ListAction
 import com.lalilu.lmedia.extension.SortDynamicAction
 import com.lalilu.lmedia.extension.SortStaticAction
@@ -42,6 +43,7 @@ import org.koin.java.KoinJavaComponent.inject
 internal sealed interface SongsScreenAction {
     data object ToggleSortPanel : SongsScreenAction
     data object LocaleToPlayingItem : SongsScreenAction
+    data class LocaleToGroupItem(val item: GroupIdentity) : SongsScreenAction
     data class SearchFor(val keyword: String) : SongsScreenAction
 }
 
@@ -90,6 +92,15 @@ internal class SongsSM(
 
             is SongsScreenAction.SearchFor -> {
                 searcher.keywordState.value = action.keyword
+            }
+
+            is SongsScreenAction.LocaleToGroupItem -> {
+                val index = recorder.list()
+                    .indexOf(action.item)
+                    .takeIf { it >= 0 }
+                    ?: return@launch
+
+                eventFlow.emit(SongsScreenEvent.ScrollToItem(index))
             }
 
             else -> {}

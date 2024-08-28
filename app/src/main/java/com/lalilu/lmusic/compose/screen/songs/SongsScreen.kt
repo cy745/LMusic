@@ -16,6 +16,7 @@ import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.base.screen.ScreenType
 import com.lalilu.component.extension.DialogWrapper
+import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.remixicon.Design
 import com.lalilu.remixicon.Editor
 import com.lalilu.remixicon.System
@@ -104,7 +105,9 @@ data class SongsScreen(
         )
 
         SongsHeaderJumperDialog(
-            isVisible = sm.showJumperDialog
+            isVisible = sm.showJumperDialog,
+            items = { sm.recorder.list().filterIsInstance<GroupIdentity>() },
+            onSelectItem = { sm.action(SongsScreenAction.LocaleToGroupItem(it)) }
         )
 
         SongsSearcherPanel(
