@@ -11,6 +11,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.lalilu.common.base.BaseSp
 import com.lalilu.common.base.Playable
 import com.lalilu.common.ext.requestFor
+import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.ItemSelector
 import com.lalilu.component.extension.toState
 import com.lalilu.component.viewmodel.SongsSp
@@ -22,6 +23,7 @@ import com.lalilu.lmedia.extension.ListAction
 import com.lalilu.lmedia.extension.SortDynamicAction
 import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmedia.extension.Sortable
+import com.lalilu.lplayer.LPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
@@ -44,7 +46,7 @@ internal sealed interface SongsScreenAction {
 }
 
 internal sealed interface SongsScreenEvent {
-    data class ScrollToItem(val key: String) : SongsScreenEvent
+    data class ScrollToItem(val index: Int) : SongsScreenEvent
 }
 
 internal class SongsSM(
@@ -71,7 +73,15 @@ internal class SongsSM(
     fun action(action: SongsScreenAction) = screenModelScope.launch {
         when (action) {
             SongsScreenAction.LocaleToPlayingItem -> {
-                eventFlow.emit(SongsScreenEvent.ScrollToItem(""))
+                val mediaId = LPlayer.runtime.info.playingIdFlow.value
+                    ?: return@launch
+
+                val index = recorder.list()
+                    .indexOf(mediaId)
+                    .takeIf { it >= 0 }
+                    ?: return@launch
+
+                eventFlow.emit(SongsScreenEvent.ScrollToItem(index))
             }
 
             SongsScreenAction.ToggleSortPanel -> {
@@ -100,6 +110,7 @@ internal class SongsSM(
         context = Dispatchers.IO + SupervisorJob()
     )
     val selector = ItemSelector<Playable>()
+    val recorder = ItemRecorder()
 }
 
 internal class ItemSearcher<T : BaseMatchable>(

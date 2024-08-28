@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -27,6 +28,7 @@ fun LazyListScope.smartBarPadding() {
     ) {
         val bottomHeight = LocalSmartBarPadding.current.value.calculateBottomPadding() +
                 WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                WindowInsets.ime.asPaddingValues().calculateBottomPadding() +
                 16.dp
 
         Spacer(
