@@ -52,6 +52,7 @@ internal class SongsSM(
 ) : ScreenModel {
     // 持久化元素的状态
     val showSortPanel = mutableStateOf(false)
+    val showJumperDialog = mutableStateOf(false)
     val showSearcherPanel = mutableStateOf(false)
     val supportSortActions = setOf<ListAction?>(
         SortStaticAction.Normal,

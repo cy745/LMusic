@@ -81,7 +81,6 @@ data class SongsScreen(
             ),
             ScreenAction.Static(
                 title = { stringResource(id = R.string.screen_action_locate_playing_item) },
-                dotColor = { Color.Blue },
                 icon = { RemixIcon.Design.focus3Line },
                 color = { Color(0xFF8700FF) },
                 onAction = { songsSM?.action(SongsScreenAction.LocaleToPlayingItem) }
@@ -102,6 +101,10 @@ data class SongsScreen(
             supportSortActions = sm.supportSortActions,
             isSortActionSelected = { sm.sorter.isSortActionSelected(it) },
             onSelectSortAction = { sm.sorter.selectSortAction(it) }
+        )
+
+        SongsHeaderJumperDialog(
+            isVisible = sm.showJumperDialog
         )
 
         SongsSearcherPanel(
