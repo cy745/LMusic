@@ -1,6 +1,11 @@
 package com.lalilu.lmusic.compose.screen.songs
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.lalilu.common.base.BaseSp
@@ -17,10 +22,11 @@ import com.lalilu.lmedia.extension.ListAction
 import com.lalilu.lmedia.extension.SortDynamicAction
 import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmedia.extension.Sortable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -46,6 +52,7 @@ internal class SongsSM(
 ) : ScreenModel {
     // 持久化元素的状态
     val showSortPanel = mutableStateOf(false)
+    val showSearcherPanel = mutableStateOf(false)
     val supportSortActions = setOf<ListAction?>(
         SortStaticAction.Normal,
         SortStaticAction.Title,
@@ -71,7 +78,7 @@ internal class SongsSM(
             }
 
             is SongsScreenAction.SearchFor -> {
-                searcher.search(action.keyword)
+                searcher.keywordState.value = action.keyword
             }
 
             else -> {}
@@ -86,15 +93,19 @@ internal class SongsSM(
 
     val searcher = ItemSearcher(flow())
     val sorter = ItemSorter(searcher.output, supportSortActions)
-    val songs = sorter.output.toState(emptyMap(), screenModelScope)
+    val songs = sorter.output.toState(
+        defaultValue = emptyMap(),
+        scope = screenModelScope,
+        context = Dispatchers.IO + SupervisorJob()
+    )
     val selector = ItemSelector<Playable>()
 }
 
 internal class ItemSearcher<T : BaseMatchable>(
     sourceFlow: Flow<List<T>>
 ) {
-    private val keywordStr = MutableStateFlow("")
-    private val keywordFlow = keywordStr.map {
+    val keywordState = mutableStateOf("")
+    private val keywordFlow = snapshotFlow { keywordState.value }.map {
         when {
             it.isBlank() -> emptyList()
             it.contains(' ') -> it.split(' ')
@@ -106,13 +117,10 @@ internal class ItemSearcher<T : BaseMatchable>(
         source.filter { item -> keywords.all { item.matchStr.contains(it) } }
     }
 
-    fun search(keyword: String) {
-        keywordStr.value = keyword
-    }
-
-    fun clear() {
-        keywordStr.value = ""
-    }
+    val isSearching: State<Boolean>
+        @Composable get() = remember {
+            derivedStateOf { keywordState.value.isNotBlank() }
+        }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -16,8 +16,10 @@ sealed class ScreenAction {
     @Stable
     data class Static(
         val title: @Composable () -> String,
+        val subTitle: @Composable () -> String? = { null },
         val color: @Composable () -> Color = { Color.White },
         val icon: @Composable () -> ImageVector? = { null },
+        val dotColor: @Composable () -> Color? = { null },
         val onAction: () -> Unit = {}
     ) : ScreenAction()
 

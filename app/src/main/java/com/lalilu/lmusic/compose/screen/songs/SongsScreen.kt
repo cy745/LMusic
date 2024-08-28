@@ -15,11 +15,16 @@ import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.base.screen.ScreenType
+import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.remixicon.Design
 import com.lalilu.remixicon.Editor
+import com.lalilu.remixicon.System
 import com.lalilu.remixicon.design.editBoxLine
 import com.lalilu.remixicon.design.focus3Line
 import com.lalilu.remixicon.editor.sortDesc
+import com.lalilu.remixicon.system.checkboxMultipleBlankLine
+import com.lalilu.remixicon.system.checkboxMultipleLine
+import com.lalilu.remixicon.system.menuSearchLine
 import com.zhangke.krouter.annotation.Destination
 import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
@@ -54,7 +59,29 @@ data class SongsScreen(
                 onAction = { songsSM?.selector?.isSelecting?.value = true }
             ),
             ScreenAction.Static(
+                title = { "搜索" },
+                subTitle = {
+                    val isSearching = songsSM?.searcher?.isSearching
+
+                    if (isSearching?.value == true) "搜索中： ${songsSM?.searcher?.keywordState?.value}"
+                    else null
+                },
+                icon = { RemixIcon.System.menuSearchLine },
+                color = { Color(0xFF8BC34A) },
+                dotColor = {
+                    val isSearching = songsSM?.searcher?.isSearching
+
+                    if (isSearching?.value == true) Color.Red
+                    else null
+                },
+                onAction = {
+                    songsSM?.showSearcherPanel?.value = true
+                    DialogWrapper.dismiss()
+                }
+            ),
+            ScreenAction.Static(
                 title = { stringResource(id = R.string.screen_action_locate_playing_item) },
+                dotColor = { Color.Blue },
                 icon = { RemixIcon.Design.focus3Line },
                 color = { Color(0xFF8700FF) },
                 onAction = { songsSM?.action(SongsScreenAction.LocaleToPlayingItem) }
@@ -77,11 +104,19 @@ data class SongsScreen(
             onSelectSortAction = { sm.sorter.selectSortAction(it) }
         )
 
+        SongsSearcherPanel(
+            isVisible = sm.showSearcherPanel,
+            keyword = { sm.searcher.keywordState.value },
+            onUpdateKeyword = { sm.searcher.keywordState.value = it }
+        )
+
         SongsSelectorPanel(
             isVisible = sm.selector.isSelecting,
             screenActions = listOfNotNull(
                 ScreenAction.Static(
                     title = { "全选" },
+                    color = { Color(0xFF00ACF0) },
+                    icon = { RemixIcon.System.checkboxMultipleLine },
                     onAction = {
                         val songs = sm.songs.value.values.flatten()
                         sm.selector.selectAll(songs)
@@ -89,6 +124,8 @@ data class SongsScreen(
                 ),
                 ScreenAction.Static(
                     title = { "取消全选" },
+                    icon = { RemixIcon.System.checkboxMultipleBlankLine },
+                    color = { Color(0xFFFF5100) },
                     onAction = { sm.selector.clear() }
                 ),
                 requestFor<ScreenAction>(

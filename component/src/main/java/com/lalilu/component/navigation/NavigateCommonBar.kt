@@ -2,12 +2,22 @@ package com.lalilu.component.navigation
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,6 +31,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
@@ -30,6 +41,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.SubcomposeLayout
@@ -57,7 +70,11 @@ import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.remixicon.Arrows
 import com.lalilu.remixicon.System
 import com.lalilu.remixicon.arrows.arrowLeftSLine
-import com.lalilu.remixicon.system.more2Fill
+import com.lalilu.remixicon.system.moreLine
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 
 @Composable
@@ -105,7 +122,7 @@ fun NavigateCommonBarContent(
         TextButton(
             modifier = Modifier.fillMaxHeight(),
             shape = RectangleShape,
-            contentPadding = PaddingValues(start = 16.dp, end = 24.dp),
+            contentPadding = PaddingValues(start = 12.dp, end = 20.dp),
             colors = ButtonDefaults.textButtonColors(
                 contentColor = MaterialTheme.colors.onBackground
             ),
@@ -147,7 +164,14 @@ fun NavigateCommonBarContent(
                 if (actions == null) return@SubcomposeLayout layout(0, 0) {}
 
                 val moreBtnMeasurable = subcompose("moreBtn") {
-                    MoreActionBtn(onClick = { dialogVisible.value = true })
+                    val colors = screenActions?.filterIsInstance<ScreenAction.Static>()
+                        ?.mapNotNull { it.dotColor() }
+                        ?: emptyList()
+
+                    MoreActionBtn(
+                        dotColors = colors,
+                        onClick = { dialogVisible.value = true },
+                    )
                 }[0]
                 val moreBtnPlaceable = moreBtnMeasurable.measure(
                     constraints.copy(
@@ -199,24 +223,64 @@ fun NavigateCommonBarContent(
 private fun MoreActionBtn(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colors.onBackground,
+    dotColors: List<Color> = emptyList(),
     onClick: () -> Unit = {}
 ) {
     TextButton(
         modifier = modifier.fillMaxHeight(),
         shape = RectangleShape,
-        contentPadding = PaddingValues(horizontal = 10.dp),
         colors = ButtonDefaults.textButtonColors(
             backgroundColor = color.copy(alpha = 0.15f),
             contentColor = color
         ),
         onClick = onClick
     ) {
-        Image(
-            modifier = Modifier.size(20.dp),
-            imageVector = RemixIcon.System.more2Fill,
-            contentDescription = "More Actions",
-            colorFilter = ColorFilter.tint(color = color)
-        )
+        val showingColor = remember { mutableStateOf<Color?>(null) }
+
+        LaunchedEffect(showingColor.value) {
+            if (showingColor.value == null) {
+                showingColor.value = dotColors.firstOrNull()
+                return@LaunchedEffect
+            }
+
+            delay(3000)
+            if (!isActive) return@LaunchedEffect
+
+            val currentIndex = dotColors.indexOf(showingColor.value)
+            val nextIndex = (currentIndex + 1) % dotColors.size
+            showingColor.value = dotColors.getOrNull(nextIndex)
+        }
+
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                modifier = Modifier.size(20.dp),
+                imageVector = RemixIcon.System.moreLine,
+                contentDescription = null,
+                tint = color
+            )
+
+            showingColor.value?.let { dotColor ->
+                AnimatedContent(
+                    modifier = Modifier.align(Alignment.TopStart),
+                    transitionSpec = {
+                        fadeIn(spring(stiffness = Spring.StiffnessLow)) togetherWith
+                                fadeOut(spring(stiffness = Spring.StiffnessLow))
+                    },
+                    targetState = dotColor,
+                    label = ""
+                ) {
+                    Spacer(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(color = it)
+                            .size(8.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -235,33 +299,82 @@ private fun ActionItem(
         is ScreenAction.Static -> {
             val color = action.color()
             val title = action.title()
+            val subTitle = action.subTitle()
             val icon = action.icon()
+            val dotColor = action.dotColor()
 
             Surface(
                 modifier = modifier,
                 color = color.copy(0.2f),
                 onClick = { action.onAction() }
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier,
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    icon?.let {
-                        Image(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = icon,
-                            contentDescription = title,
-                            colorFilter = ColorFilter.tint(color = color)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
+                    Row(
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        icon?.let {
+                            Image(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = icon,
+                                contentDescription = title,
+                                colorFilter = ColorFilter.tint(color = color)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                        }
+
+                        Column(
+                            modifier = Modifier,
+                            verticalArrangement = Arrangement
+                                .spacedBy(2.dp, Alignment.CenterVertically)
+                        ) {
+                            Text(
+                                text = title,
+                                fontSize = 14.sp,
+                                lineHeight = 14.sp,
+                                color = color,
+                                fontWeight = FontWeight.Medium
+                            )
+
+                            if (actionContext.isFullyExpanded && subTitle != null) {
+                                Text(
+                                    text = subTitle,
+                                    fontSize = 10.sp,
+                                    lineHeight = 10.sp,
+                                    color = color.copy(0.5f),
+                                )
+                            }
+                        }
                     }
-                    Text(
-                        text = title,
-                        fontSize = 14.sp,
-                        lineHeight = 14.sp,
-                        color = color,
-                        fontWeight = FontWeight.Medium
-                    )
+
+                    if (dotColor != null) {
+                        val animation = rememberInfiniteTransition(label = "")
+                        val scaleValue = animation.animateFloat(
+                            initialValue = 0.1f,
+                            targetValue = 1f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(durationMillis = 1000),
+                                repeatMode = RepeatMode.Reverse,
+                                initialStartOffset = StartOffset(
+                                    offsetMillis = remember { Random.nextInt(0..1000) }
+                                )
+                            ),
+                            label = ""
+                        )
+
+                        Spacer(
+                            modifier = Modifier
+                                .graphicsLayer { alpha = scaleValue.value }
+                                .padding(8.dp)
+                                .align(Alignment.TopStart)
+                                .clip(CircleShape)
+                                .background(color = dotColor)
+                                .size(8.dp)
+                        )
+                    }
                 }
             }
         }
