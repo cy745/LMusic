@@ -15,7 +15,7 @@ import androidx.compose.ui.zIndex
 fun StickyHeaderOffsetHelper(
     modifier: Modifier = Modifier,
     key: Any,
-    minOffset: Int = 0,
+    minOffset: () -> Int = { 0 },
     listState: LazyListState,
     block: @Composable (Modifier, isFloating: Boolean) -> Unit
 ) {
@@ -38,14 +38,14 @@ fun StickyHeaderOffsetHelper(
                 zIndex.floatValue = index.toFloat()
 
                 when {
-                    offset > minOffset -> {
+                    offset > minOffset() -> {
                         floating.value = false
                         IntOffset.Zero
                     }
 
                     else -> {
                         floating.value = true
-                        IntOffset(0, minOffset - offset)
+                        IntOffset(0, minOffset() - offset)
                     }
                 }
             }
