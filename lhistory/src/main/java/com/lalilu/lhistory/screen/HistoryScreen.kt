@@ -1,15 +1,9 @@
 package com.lalilu.lhistory.screen
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.koin.getScreenModel
-import com.lalilu.component.Songs
 import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.LoadingScaffold
-import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
 import com.lalilu.lhistory.R
@@ -53,20 +47,20 @@ private fun DynamicScreen.HistoryScreen(
 ) {
     val mediaIdsState = historySM.mediaIds.collectAsLoadingState()
 
-    LoadingScaffold(
-        modifier = Modifier.fillMaxSize(),
-        targetState = mediaIdsState
-    ) { mediaIds ->
-        Songs(
-            modifier = Modifier.fillMaxSize(),
-            mediaIds = mediaIds,
-            supportListAction = { listOf() },
-            headerContent = {
-                item {
-                    NavigatorHeader(title = stringResource(id = R.string.history_screen_title))
-                }
-            },
-            footerContent = {}
-        )
-    }
+//    LoadingScaffold(
+//        modifier = Modifier.fillMaxSize(),
+//        targetState = mediaIdsState
+//    ) { mediaIds ->
+//        Songs(
+//            modifier = Modifier.fillMaxSize(),
+//            mediaIds = mediaIds,
+//            supportListAction = { listOf() },
+//            headerContent = {
+//                item {
+//                    NavigatorHeader(title = stringResource(id = R.string.history_screen_title))
+//                }
+//            },
+//            footerContent = {}
+//        )
+//    }
 }

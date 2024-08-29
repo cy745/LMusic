@@ -1,28 +1,15 @@
 package com.lalilu.lartist.screen
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.getScreenModel
-import com.lalilu.component.Songs
 import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.LoadingScaffold
-import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
-import com.lalilu.component.extension.SelectAction
-import com.lalilu.component.navigation.AppRouter
-import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lartist.R
-import com.lalilu.lartist.component.ArtistCard
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LArtist
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -67,57 +54,57 @@ private fun DynamicScreen.ArtistDetail(
 ) {
     val artistState = artistDetailSM.artist.collectAsLoadingState()
 
-    LoadingScaffold(targetState = artistState) { artist ->
-        val relateArtist = remember {
-            derivedStateOf {
-                artist.songs.map { it.artists }
-                    .flatten()
-                    .toSet()
-                    .filter { it.id != artist.name }
-            }
-        }
-
-        Songs(
-            mediaIds = artist.songs.map { it.mediaId },
-            selectActions = { getAll ->
-                listOf(SelectAction.StaticAction.SelectAll(getAll))
-            },
-            sortFor = "ArtistDetail",
-            supportListAction = { emptyList() },
-            headerContent = {
-                item {
-                    NavigatorHeader(
-                        title = artist.name,
-                        subTitle = "共 ${artist.requireItemsCount()} 首歌曲，总时长 ${
-                            artist.requireItemsDuration().durationToTime()
-                        }"
-                    )
-                }
-            },
-            footerContent = {
-                if (relateArtist.value.isNotEmpty()) {
-                    item {
-                        NavigatorHeader(
-                            modifier = Modifier.padding(top = 20.dp),
-                            titleScale = 0.8f,
-                            title = "相关歌手",
-                            subTitle = "共 ${relateArtist.value.size} 位"
-                        )
-                    }
-                    items(items = relateArtist.value) {
-                        ArtistCard(
-                            artist = it,
-                            onClick = {
-                                AppRouter.intent(
-                                    NavIntent.Push(ArtistDetailScreen(it.id))
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-        )
-    }
+//    LoadingScaffold(targetState = artistState) { artist ->
+//        val relateArtist = remember {
+//            derivedStateOf {
+//                artist.songs.map { it.artists }
+//                    .flatten()
+//                    .toSet()
+//                    .filter { it.id != artist.name }
+//            }
+//        }
+//
+//        Songs(
+//            mediaIds = artist.songs.map { it.mediaId },
+//            selectActions = { getAll ->
+//                listOf(SelectAction.StaticAction.SelectAll(getAll))
+//            },
+//            sortFor = "ArtistDetail",
+//            supportListAction = { emptyList() },
+//            headerContent = {
+//                item {
+//                    NavigatorHeader(
+//                        title = artist.name,
+//                        subTitle = "共 ${artist.requireItemsCount()} 首歌曲，总时长 ${
+//                            artist.requireItemsDuration().durationToTime()
+//                        }"
+//                    )
+//                }
+//            },
+//            footerContent = {
+//                if (relateArtist.value.isNotEmpty()) {
+//                    item {
+//                        NavigatorHeader(
+//                            modifier = Modifier.padding(top = 20.dp),
+//                            titleScale = 0.8f,
+//                            title = "相关歌手",
+//                            subTitle = "共 ${relateArtist.value.size} 位"
+//                        )
+//                    }
+//                    items(items = relateArtist.value) {
+//                        ArtistCard(
+//                            artist = it,
+//                            onClick = {
+//                                AppRouter.intent(
+//                                    NavIntent.Push(ArtistDetailScreen(it.id))
+//                                )
+//                            }
+//                        )
+//                    }
+//                }
+//            }
+//        )
+//    }
 }
 
 fun Long.durationToTime(): String {

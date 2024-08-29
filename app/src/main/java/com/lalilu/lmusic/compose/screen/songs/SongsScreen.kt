@@ -149,7 +149,8 @@ data class SongsScreen(
             songsSM = sm,
             isSelecting = { sm.selector.isSelecting.value },
             isSelected = { sm.selector.isSelected(it) },
-            onSelect = { sm.selector.onSelect(it) }
+            onSelect = { sm.selector.onSelect(it) },
+            onClickGroup = { sm.showJumperDialog.value = true }
         )
     }
 }

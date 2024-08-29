@@ -1,29 +1,18 @@
 package com.lalilu.lalbum.screen
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.getScreenModel
-import com.lalilu.component.Songs
-import com.lalilu.component.base.LoadingScaffold
-import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.collectAsLoadingState
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.base.screen.ScreenType
 import com.lalilu.lalbum.R
-import com.lalilu.lalbum.component.AlbumCoverCard
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LAlbum
 import com.zhangke.krouter.annotation.Destination
@@ -71,42 +60,42 @@ private fun Screen.AlbumDetail(
 ) {
     val albumLoadingState = albumDetailSM.album.collectAsLoadingState()
 
-    LoadingScaffold(
-        modifier = Modifier.fillMaxSize(),
-        targetState = albumLoadingState,
-        onLoadErrorContent = {
-            Box(modifier = Modifier.fillMaxSize()) {
-                Text(text = "loading")
-            }
-        }
-    ) { album ->
-        Songs(
-            modifier = Modifier.fillMaxSize(),
-            mediaIds = album.songs.map { it.mediaId },
-            sortFor = "ALBUM_DETAIL",
-            supportListAction = { emptyList() },
-            headerContent = {
-                item {
-                    AlbumCoverCard(
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        elevation = 2.dp,
-                        imageData = { album },
-                        onClick = { }
-                    )
-                }
-
-                item {
-                    NavigatorHeader(
-                        title = album.name,
-                        subTitle = "共 ${it.value.values.flatten().size} 首歌曲，总时长 ${
-                            album.requireItemsDuration().durationToTime()
-                        }"
-                    )
-                }
-            }
-        )
-    }
+//    LoadingScaffold(
+//        modifier = Modifier.fillMaxSize(),
+//        targetState = albumLoadingState,
+//        onLoadErrorContent = {
+//            Box(modifier = Modifier.fillMaxSize()) {
+//                Text(text = "loading")
+//            }
+//        }
+//    ) { album ->
+//        Songs(
+//            modifier = Modifier.fillMaxSize(),
+//            mediaIds = album.songs.map { it.mediaId },
+//            sortFor = "ALBUM_DETAIL",
+//            supportListAction = { emptyList() },
+//            headerContent = {
+//                item {
+//                    AlbumCoverCard(
+//                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+//                        shape = RoundedCornerShape(10.dp),
+//                        elevation = 2.dp,
+//                        imageData = { album },
+//                        onClick = { }
+//                    )
+//                }
+//
+//                item {
+//                    NavigatorHeader(
+//                        title = album.name,
+//                        subTitle = "共 ${it.value.values.flatten().size} 首歌曲，总时长 ${
+//                            album.requireItemsDuration().durationToTime()
+//                        }"
+//                    )
+//                }
+//            }
+//        )
+//    }
 }
 
 fun Long.durationToTime(): String {

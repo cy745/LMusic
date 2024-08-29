@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.compose.new_screen.search
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -27,21 +26,12 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
-import com.lalilu.component.Songs
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.extension.singleViewModel
-import com.lalilu.component.navigation.AppRouter
-import com.lalilu.component.navigation.NavIntent
-import com.lalilu.lartist.component.ArtistCard
-import com.lalilu.lmedia.entity.LArtist
-import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.base.SearchInputBar
-import com.lalilu.lmusic.compose.component.card.RecommendCardForAlbum
-import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
-import com.lalilu.lmusic.compose.screen.songs.SongsScreen
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
@@ -100,119 +90,119 @@ private fun Screen.SearchScreen(
         }
     }
 
-    Songs(
-        mediaIds = searchVM.songsResult.value.take(5).map { it.mediaId },
-        sortFor = "SearchResult",
-        supportListAction = { emptyList() },
-        headerContent = {
-            item(key = "Song_Header") {
-                RecommendTitle(
-                    modifier = Modifier.height(64.dp),
-                    title = "歌曲",
-                    onClick = {
-                        if (searchVM.songsResult.value.isNotEmpty()) {
-                            AppRouter.intent(NavIntent.Push(
-                                SongsScreen(
-                                    title = "[${searchVM.keyword.value}]\n歌曲搜索结果",
-                                    mediaIds = searchVM.songsResult.value.map { it.mediaId }
-                                )
-                            ))
-                        }
-                    }
-                )
-            }
-        },
-        footerContent = {
-            val onAlbumHeaderClick = {
-                if (searchVM.albumsResult.value.isNotEmpty()) {
-//                navigator.navigate(
-//                    AlbumsScreenDestination(
-//                        title = "[${keyword.value}]\n专辑搜索结果",
-//                        sortFor = "SearchResultForAlbum",
-//                        albumIdsText = searchVM.albumsResult.value.map(LAlbum::id).json()
-//                    )
+//    Songs(
+//        mediaIds = searchVM.songsResult.value.take(5).map { it.mediaId },
+//        sortFor = "SearchResult",
+//        supportListAction = { emptyList() },
+//        headerContent = {
+//            item(key = "Song_Header") {
+//                RecommendTitle(
+//                    modifier = Modifier.height(64.dp),
+//                    title = "歌曲",
+//                    onClick = {
+//                        if (searchVM.songsResult.value.isNotEmpty()) {
+//                            AppRouter.intent(NavIntent.Push(
+//                                SongsScreen(
+//                                    title = "[${searchVM.keyword.value}]\n歌曲搜索结果",
+//                                    mediaIds = searchVM.songsResult.value.map { it.mediaId }
+//                                )
+//                            ))
+//                        }
+//                    }
 //                )
-                }
-            }
-
-            item(key = "AlbumHeader") {
-                RecommendTitle(
-                    title = "专辑",
-                    modifier = Modifier.height(64.dp),
-                    onClick = onAlbumHeaderClick
-                ) {
-                    AnimatedVisibility(visible = searchVM.albumsResult.value.isNotEmpty()) {
-                        Chip(
-                            onClick = onAlbumHeaderClick,
-                        ) {
-                            Text(
-                                text = "${searchVM.albumsResult.value.size} 条结果",
-                                style = MaterialTheme.typography.caption,
-                            )
-                        }
-                    }
-                }
-            }
-            item(key = "AlbumItems") {
-                AnimatedContent(
-                    targetState = searchVM.albumsResult.value.isNotEmpty(),
-                    label = ""
-                ) { show ->
-                    if (show) {
-                        RecommendRow(
-                            items = { searchVM.albumsResult.value },
-                            getId = { it.id }
-                        ) {
-                            RecommendCardForAlbum(
-                                modifier = Modifier.animateItemPlacement(),
-                                width = { 100.dp },
-                                height = { 100.dp },
-                                item = { it },
-                                onClick = {
-//                                navigator.navigate(AlbumDetailScreenDestination(albumId = it.id))
-                                }
-                            )
-                        }
-                    } else {
-                        Text(modifier = Modifier.padding(20.dp), text = "无匹配专辑")
-                    }
-                }
-            }
-
-            searchItem(
-                name = "艺术家",
-                showCount = 5,
-                getId = { it.id },
-                items = searchVM.artistsResult.value,
-                getContentType = { LArtist::class },
-                onClickHeader = {
-                    if (searchVM.artistsResult.value.isNotEmpty()) {
-//                    navigator.navigate(
-//                        ArtistsScreenDestination(
-//                            title = "[${keyword.value}]\n艺术家搜索结果",
-//                            sortFor = "SearchResultForArtist",
-//                            artistIdsText = searchVM.artistsResult.value.map(LArtist::name).json()
-//                        )
-//                    )
-                    }
-                }
-            ) { item ->
-                ArtistCard(
-                    artist = item,
-                    isPlaying = {
-                        playingVM.isItemPlaying { playing ->
-                            playing.let { it as? LSong }
-                                ?.let { song -> song.artists.any { it.name == item.name } }
-                                ?: false
-                        }
-                    },
-                    onClick = {
-//                    navigator.navigate(ArtistDetailScreenDestination(artistName = item.name))
-                    }
-                )
-            }
-        }
-    )
+//            }
+//        },
+//        footerContent = {
+//            val onAlbumHeaderClick = {
+//                if (searchVM.albumsResult.value.isNotEmpty()) {
+////                navigator.navigate(
+////                    AlbumsScreenDestination(
+////                        title = "[${keyword.value}]\n专辑搜索结果",
+////                        sortFor = "SearchResultForAlbum",
+////                        albumIdsText = searchVM.albumsResult.value.map(LAlbum::id).json()
+////                    )
+////                )
+//                }
+//            }
+//
+//            item(key = "AlbumHeader") {
+//                RecommendTitle(
+//                    title = "专辑",
+//                    modifier = Modifier.height(64.dp),
+//                    onClick = onAlbumHeaderClick
+//                ) {
+//                    AnimatedVisibility(visible = searchVM.albumsResult.value.isNotEmpty()) {
+//                        Chip(
+//                            onClick = onAlbumHeaderClick,
+//                        ) {
+//                            Text(
+//                                text = "${searchVM.albumsResult.value.size} 条结果",
+//                                style = MaterialTheme.typography.caption,
+//                            )
+//                        }
+//                    }
+//                }
+//            }
+//            item(key = "AlbumItems") {
+//                AnimatedContent(
+//                    targetState = searchVM.albumsResult.value.isNotEmpty(),
+//                    label = ""
+//                ) { show ->
+//                    if (show) {
+//                        RecommendRow(
+//                            items = { searchVM.albumsResult.value },
+//                            getId = { it.id }
+//                        ) {
+//                            RecommendCardForAlbum(
+//                                modifier = Modifier.animateItemPlacement(),
+//                                width = { 100.dp },
+//                                height = { 100.dp },
+//                                item = { it },
+//                                onClick = {
+////                                navigator.navigate(AlbumDetailScreenDestination(albumId = it.id))
+//                                }
+//                            )
+//                        }
+//                    } else {
+//                        Text(modifier = Modifier.padding(20.dp), text = "无匹配专辑")
+//                    }
+//                }
+//            }
+//
+//            searchItem(
+//                name = "艺术家",
+//                showCount = 5,
+//                getId = { it.id },
+//                items = searchVM.artistsResult.value,
+//                getContentType = { LArtist::class },
+//                onClickHeader = {
+//                    if (searchVM.artistsResult.value.isNotEmpty()) {
+////                    navigator.navigate(
+////                        ArtistsScreenDestination(
+////                            title = "[${keyword.value}]\n艺术家搜索结果",
+////                            sortFor = "SearchResultForArtist",
+////                            artistIdsText = searchVM.artistsResult.value.map(LArtist::name).json()
+////                        )
+////                    )
+//                    }
+//                }
+//            ) { item ->
+//                ArtistCard(
+//                    artist = item,
+//                    isPlaying = {
+//                        playingVM.isItemPlaying { playing ->
+//                            playing.let { it as? LSong }
+//                                ?.let { song -> song.artists.any { it.name == item.name } }
+//                                ?: false
+//                        }
+//                    },
+//                    onClick = {
+////                    navigator.navigate(ArtistDetailScreenDestination(artistName = item.name))
+//                    }
+//                )
+//            }
+//        }
+//    )
 }
 
 @OptIn(ExperimentalMaterialApi::class)

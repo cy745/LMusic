@@ -8,6 +8,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.base.screen.ScreenType
 
 data object EmptyScreen : Screen, ScreenType.Empty {
+    private fun readResolve(): Any = EmptyScreen
 
     @Composable
     override fun Content() {

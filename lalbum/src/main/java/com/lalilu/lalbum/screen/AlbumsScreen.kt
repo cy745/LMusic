@@ -3,18 +3,23 @@ package com.lalilu.lalbum.screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -22,8 +27,8 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
-import com.lalilu.component.LLazyVerticalStaggeredGrid
 import com.lalilu.component.base.LoadingScaffold
+import com.lalilu.component.base.LocalSmartBarPadding
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.collectAsLoadingState
@@ -103,11 +108,12 @@ private fun AlbumsScreen(
     LoadingScaffold(
         targetState = albumsState
     ) { albums ->
-        LLazyVerticalStaggeredGrid(
+        LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Fixed(if (isPad) 3 else 2),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier,
+            contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = statusBarPadding),
             verticalItemSpacing = 10.dp,
-            contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = statusBarPadding)
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item(key = "Header", contentType = "Header") {
                 Surface(shape = RoundedCornerShape(5.dp)) {
@@ -146,6 +152,16 @@ private fun AlbumsScreen(
                             )
                         )
                     }
+                )
+            }
+
+            item(span = StaggeredGridItemSpan.FullLine) {
+                val padding by LocalSmartBarPadding.current
+
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(padding.calculateBottomPadding() + 20.dp)
                 )
             }
         }

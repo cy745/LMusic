@@ -1,16 +1,33 @@
 package com.lalilu.component.extension
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 
+@OptIn(ExperimentalFoundationApi::class)
 class LazyListRecordScope internal constructor(
     var recorder: ItemRecorder,
 ) {
     var lazyListScope: LazyListScope? = null
         internal set
+
+    fun stickyHeaderWithRecord(
+        key: Any? = null,
+        contentType: Any? = null,
+        content: @Composable LazyItemScope.() -> Unit
+    ) {
+        lazyListScope?.let { scope ->
+            recorder.record(key)
+            scope.stickyHeader(
+                key = key,
+                contentType = contentType,
+                content = content
+            )
+        }
+    }
 
     fun itemWithRecord(
         key: Any? = null,

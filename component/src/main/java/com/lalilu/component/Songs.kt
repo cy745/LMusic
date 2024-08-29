@@ -53,7 +53,6 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.ToastUtils
-import com.lalilu.common.base.BaseSp
 import com.lalilu.common.base.Playable
 import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.extension.DialogItem
@@ -65,12 +64,10 @@ import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.rememberItemSelectHelper
 import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.component.extension.singleViewModel
-import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.component.viewmodel.SongsViewModel
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.ListAction
-import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmedia.extension.Sortable
 
 class SongsScreenModel : ScreenModel {
@@ -134,12 +131,12 @@ fun Screen.Songs(
         selected = songsSM.selectedItems
     )
 
-    val sortRuleStr = registerSortPanel(
-        sp = songsVM.sp,
-        sortFor = sortFor,
-        showPanelState = songsSM.showSortPanel,
-        supportListAction = supportListAction,
-    )
+//    val sortRuleStr = registerSortPanel(
+//        sp = songsVM.sp,
+//        sortFor = sortFor,
+//        showPanelState = songsSM.showSortPanel,
+//        supportListAction = supportListAction,
+//    )
 
     registerGroupLabelJumper(
         items = { songsState.value.keys },
@@ -155,108 +152,108 @@ fun Screen.Songs(
     }
 
     if (onDragMoveEnd != null) {
-        ReorderableSongListWrapper(
-            modifier = modifier,
-            items = songsState.value.values.flatten(),
-            listState = listState,
-            onDragMoveEnd = onDragMoveEnd,
-            scrollToHelper = { scrollToHelper },
-            itemSelectHelper = { selectorHelper },
-            hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
-            isFavourite = { playingVM.isFavourite(it) },
-            isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
-            showPrefixContent = { showPrefixContent(sortRuleStr) },
-            headerContent = { headerContent(songsState) },
-            footerContent = { footerContent(songsState) },
-            emptyContent = emptyContent,
-            prefixContent = { prefixContent(it, sortRuleStr) },
-            onLongClickItem = {
-                AppRouter.route("/pages/songs/detail")
-                    .with("mediaId", it.mediaId)
-                    .push()
-            },
-            onClickItem = {
-                playingVM.play(
-                    mediaId = it.mediaId,
-                    mediaIds = songsState.value.values.flatten().map(Playable::mediaId),
-                    playOrPause = true
-                )
-            },
-        )
+//        ReorderableSongListWrapper(
+//            modifier = modifier,
+//            items = songsState.value.values.flatten(),
+//            listState = listState,
+//            onDragMoveEnd = onDragMoveEnd,
+//            scrollToHelper = { scrollToHelper },
+//            itemSelectHelper = { selectorHelper },
+//            hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
+//            isFavourite = { playingVM.isFavourite(it) },
+//            isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
+////            showPrefixContent = { showPrefixContent(sortRuleStr) },
+//            headerContent = { headerContent(songsState) },
+//            footerContent = { footerContent(songsState) },
+//            emptyContent = emptyContent,
+////            prefixContent = { prefixContent(it, sortRuleStr) },
+//            onLongClickItem = {
+//                AppRouter.route("/pages/songs/detail")
+//                    .with("mediaId", it.mediaId)
+//                    .push()
+//            },
+//            onClickItem = {
+//                playingVM.play(
+//                    mediaId = it.mediaId,
+//                    mediaIds = songsState.value.values.flatten().map(Playable::mediaId),
+//                    playOrPause = true
+//                )
+//            },
+//        )
     } else {
-        SongListWrapper(
-            modifier = modifier,
-            state = listState,
-            itemsMap = songsState.value,
-            idMapper = {
-                when {
-                    it is GroupIdentity.Time -> it.time
-                    it is GroupIdentity.FirstLetter -> it.letter
-                    it is GroupIdentity.DiskNumber && it.number > 0 -> it.number.toString()
-                    else -> ""
-                }
-            },
-            scrollToHelper = { scrollToHelper },
-            itemSelectHelper = { selectorHelper },
-            hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
-            isFavourite = { playingVM.isFavourite(it) },
-            isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
-            onHeaderClick = { songsSM.isFastJumping.value = true },
-            showPrefixContent = { showPrefixContent(sortRuleStr) },
-            headerContent = { headerContent(songsState) },
-            footerContent = { footerContent(songsState) },
-            emptyContent = emptyContent,
-            prefixContent = { prefixContent(it, sortRuleStr) },
-            onLongClickItem = {
-                AppRouter.route("/pages/songs/detail")
-                    .with("mediaId", it.mediaId)
-                    .push()
-            },
-            onClickItem = {
-                playingVM.play(
-                    mediaId = it.mediaId,
-                    playOrPause = true,
-                    addToNext = true
-                )
-            },
-            onDoubleClickItem = {
-                playingVM.play(
-                    mediaId = it.mediaId,
-                    mediaIds = songsState.value.values.flatten().map(Playable::mediaId),
-                    playOrPause = true
-                )
-            },
-        )
+//        SongListWrapper(
+//            modifier = modifier,
+//            state = listState,
+//            itemsMap = songsState.value,
+//            idMapper = {
+//                when {
+//                    it is GroupIdentity.Time -> it.time
+//                    it is GroupIdentity.FirstLetter -> it.letter
+//                    it is GroupIdentity.DiskNumber && it.number > 0 -> it.number.toString()
+//                    else -> ""
+//                }
+//            },
+//            scrollToHelper = { scrollToHelper },
+//            itemSelectHelper = { selectorHelper },
+//            hasLyric = { playingVM.requireHasLyric(it)[it.mediaId] ?: false },
+//            isFavourite = { playingVM.isFavourite(it) },
+//            isItemPlaying = { playingVM.isItemPlaying(it.mediaId, Playable::mediaId) },
+//            onHeaderClick = { songsSM.isFastJumping.value = true },
+////            showPrefixContent = { showPrefixContent(sortRuleStr) },
+//            headerContent = { headerContent(songsState) },
+//            footerContent = { footerContent(songsState) },
+//            emptyContent = emptyContent,
+////            prefixContent = { prefixContent(it, sortRuleStr) },
+//            onLongClickItem = {
+//                AppRouter.route("/pages/songs/detail")
+//                    .with("mediaId", it.mediaId)
+//                    .push()
+//            },
+//            onClickItem = {
+//                playingVM.play(
+//                    mediaId = it.mediaId,
+//                    playOrPause = true,
+//                    addToNext = true
+//                )
+//            },
+//            onDoubleClickItem = {
+//                playingVM.play(
+//                    mediaId = it.mediaId,
+//                    mediaIds = songsState.value.values.flatten().map(Playable::mediaId),
+//                    playOrPause = true
+//                )
+//            },
+//        )
     }
 }
 
 
-@Composable
-private fun registerSortPanel(
-    sortFor: String,
-    sp: BaseSp,
-    showPanelState: MutableState<Boolean>,
-    supportListAction: () -> List<ListAction>
-): State<String> {
-    val sortRule = sp.obtain("${sortFor}_SORT_RULE", SortStaticAction.Normal::class.java.name)
-    val reverseOrder = sp.obtain("${sortFor}_SORT_RULE_REVERSE_ORDER", false)
-    val flattenOverride = sp.obtain("${sortFor}_SORT_RULE_FLATTEN_OVERRIDE", false)
-
-    val dialog = remember {
-        DialogItem.Dynamic(backgroundColor = Color.Transparent) {
-            SortPanel(
-                sortRule = sortRule,
-                reverseOrder = reverseOrder,
-                flattenOverride = flattenOverride,
-                supportListAction = supportListAction,
-                onClose = { showPanelState.value = false }
-            )
-        }
-    }
-
-    DialogWrapper.register(isVisible = showPanelState, dialogItem = dialog)
-    return sortRule
-}
+//@Composable
+//private fun registerSortPanel(
+//    sortFor: String,
+//    sp: BaseSp,
+//    showPanelState: MutableState<Boolean>,
+//    supportListAction: () -> List<ListAction>
+//): State<String> {
+//    val sortRule = sp.obtain("${sortFor}_SORT_RULE", SortStaticAction.Normal::class.java.name)
+//    val reverseOrder = sp.obtain("${sortFor}_SORT_RULE_REVERSE_ORDER", false)
+//    val flattenOverride = sp.obtain("${sortFor}_SORT_RULE_FLATTEN_OVERRIDE", false)
+//
+//    val dialog = remember {
+//        DialogItem.Dynamic(backgroundColor = Color.Transparent) {
+//            SortPanel(
+//                sortRule = sortRule,
+//                reverseOrder = reverseOrder,
+//                flattenOverride = flattenOverride,
+//                supportListAction = supportListAction,
+//                onClose = { showPanelState.value = false }
+//            )
+//        }
+//    }
+//
+//    DialogWrapper.register(isVisible = showPanelState, dialogItem = dialog)
+//    return sortRule
+//}
 
 
 @Composable
