@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.screen.songs
+package com.lalilu.component.base.songs
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -40,18 +40,18 @@ import kotlinx.coroutines.launch
 import org.koin.core.qualifier.named
 import org.koin.java.KoinJavaComponent.inject
 
-internal sealed interface SongsScreenAction {
+sealed interface SongsScreenAction {
     data object ToggleSortPanel : SongsScreenAction
     data object LocaleToPlayingItem : SongsScreenAction
     data class LocaleToGroupItem(val item: GroupIdentity) : SongsScreenAction
     data class SearchFor(val keyword: String) : SongsScreenAction
 }
 
-internal sealed interface SongsScreenEvent {
+sealed interface SongsScreenEvent {
     data class ScrollToItem(val index: Int) : SongsScreenEvent
 }
 
-internal class SongsSM(
+class SongsSM(
     private val mediaIds: List<String>,
 ) : ScreenModel {
     // 持久化元素的状态
@@ -124,7 +124,7 @@ internal class SongsSM(
     val recorder = ItemRecorder()
 }
 
-internal class ItemSearcher<T : BaseMatchable>(
+class ItemSearcher<T : BaseMatchable>(
     sourceFlow: Flow<List<T>>
 ) {
     val keywordState = mutableStateOf("")
@@ -147,7 +147,7 @@ internal class ItemSearcher<T : BaseMatchable>(
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class ItemSorter<T : Sortable>(
+class ItemSorter<T : Sortable>(
     sourceFlow: Flow<List<T>>,
     private val supportSortActions: Set<ListAction>,
 ) {

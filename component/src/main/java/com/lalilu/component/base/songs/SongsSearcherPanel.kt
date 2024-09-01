@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.screen.songs
+package com.lalilu.component.base.songs
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedVisibility
@@ -48,7 +48,7 @@ import com.lalilu.remixicon.arrows.arrowLeftSLine
 import com.lalilu.remixicon.system.closeLine
 
 @Composable
-internal fun ScreenBarFactory.SongsSearcherPanel(
+fun ScreenBarFactory.SongsSearcherPanel(
     isVisible: MutableState<Boolean>,
     keyword: () -> String,
     onUpdateKeyword: (String) -> Unit
