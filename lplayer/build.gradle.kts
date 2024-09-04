@@ -28,4 +28,7 @@ android {
 dependencies {
     implementation(project(":common"))
     implementation("com.github.cy745:AndroidVideoCache:2.7.2")
+
+    implementation("androidx.media3:media3-exoplayer:1.4.1")
+    implementation("androidx.media3:media3-session:1.4.1")
 }
