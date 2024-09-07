@@ -42,6 +42,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.RemixIcon
 import com.lalilu.component.LLazyColumn
 import com.lalilu.component.LongClickableTextButton
 import com.lalilu.component.base.NavigatorHeader
@@ -58,6 +59,8 @@ import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.repository.PlaylistRepository
 import com.lalilu.lplaylist.screen.create.PlaylistCreateOrEditScreen
 import com.lalilu.lplaylist.screen.detail.PlaylistDetailScreen
+import com.lalilu.remixicon.Media
+import com.lalilu.remixicon.media.playListFill
 import com.zhangke.krouter.annotation.Destination
 import org.koin.compose.koinInject
 import sh.calvin.reorderable.ReorderableItem
@@ -71,12 +74,13 @@ class PlaylistScreenModel : ScreenModel {
 
 @Destination("/pages/playlist")
 data object PlaylistScreen : TabScreen, ScreenBarFactory {
+    private fun readResolve(): Any = PlaylistScreen
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
         ScreenInfo(
-            title = R.string.playlist_screen_title,
-            icon = ComponentR.drawable.ic_play_list_fill
+            title = { stringResource(id = R.string.playlist_screen_title) },
+            icon = RemixIcon.Media.playListFill,
         )
     }
 

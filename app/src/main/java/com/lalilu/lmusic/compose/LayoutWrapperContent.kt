@@ -41,7 +41,7 @@ import com.lalilu.component.extension.DynamicTipsHost
 import com.lalilu.component.navigation.CustomTransition
 import com.lalilu.component.navigation.HostNavigator
 import com.lalilu.component.navigation.NavigationSmartBar
-import com.lalilu.lmusic.compose.new_screen.home.HomeScreen
+import com.lalilu.lmusic.compose.screen.home.HomeScreen
 import com.lalilu.lmusic.compose.screen.playing.PlayingLayout
 import com.lalilu.lmusic.compose.screen.playing.PlayingLayoutExpended
 import com.lalilu.lmusic.compose.screen.playing.PlayingSmartCard

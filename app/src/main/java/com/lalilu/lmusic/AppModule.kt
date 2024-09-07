@@ -34,8 +34,6 @@ import com.lalilu.lmusic.utils.coil.keyer.PlayableKeyer
 import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
 import com.lalilu.lmusic.utils.coil.mapper.LSongMapper
 import com.lalilu.lmusic.utils.extension.toBitmap
-import com.lalilu.lmusic.viewmodel.HistoryViewModel
-import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
@@ -47,11 +45,17 @@ import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.net.URLDecoder
+
+@Module
+@ComponentScan("com.lalilu.lmusic")
+object MainModule
 
 val AppModule = module {
     single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
@@ -101,9 +105,7 @@ val ViewModelModule = module {
     viewModelOf(::SearchViewModel)
     viewModelOf(::AlbumsViewModel)
     viewModelOf(::ArtistsViewModel)
-    viewModelOf(::HistoryViewModel)
     viewModelOf(::SearchLyricViewModel)
-    viewModelOf(::LibraryViewModel)
 }
 
 val RuntimeModule = module {

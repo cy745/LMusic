@@ -25,10 +25,12 @@ import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.remixicon.Design
 import com.lalilu.remixicon.Editor
+import com.lalilu.remixicon.Media
 import com.lalilu.remixicon.System
 import com.lalilu.remixicon.design.editBoxLine
 import com.lalilu.remixicon.design.focus3Line
 import com.lalilu.remixicon.editor.sortDesc
+import com.lalilu.remixicon.media.music2Line
 import com.lalilu.remixicon.system.checkboxMultipleBlankLine
 import com.lalilu.remixicon.system.checkboxMultipleLine
 import com.lalilu.remixicon.system.menuSearchLine
@@ -45,8 +47,8 @@ data class SongsScreen(
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
         ScreenInfo(
-            title = R.string.screen_title_songs,
-            icon = R.drawable.ic_music_2_line
+            title = { stringResource(id = R.string.screen_title_songs) },
+            icon = RemixIcon.Media.music2Line,
         )
     }
 

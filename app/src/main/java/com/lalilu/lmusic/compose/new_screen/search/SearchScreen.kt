@@ -22,10 +22,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
+import com.lalilu.RemixIcon
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
@@ -35,6 +37,8 @@ import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.system.search2Line
 import com.zhangke.krouter.annotation.Destination
 
 @Destination("/pages/search")
@@ -44,8 +48,8 @@ object SearchScreen : Screen, TabScreen, ScreenBarFactory {
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
         ScreenInfo(
-            title = R.string.screen_title_search,
-            icon = R.drawable.ic_search_2_line
+            title = { stringResource(id = R.string.screen_title_search) },
+            icon = RemixIcon.System.search2Line,
         )
     }
 

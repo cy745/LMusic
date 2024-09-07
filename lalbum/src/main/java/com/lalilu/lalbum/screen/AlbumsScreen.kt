@@ -22,11 +22,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
+import com.lalilu.RemixIcon
 import com.lalilu.component.base.LoadingScaffold
 import com.lalilu.component.base.LocalSmartBarPadding
 import com.lalilu.component.base.LocalWindowSize
@@ -44,13 +46,14 @@ import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.Sortable
+import com.lalilu.remixicon.Media
+import com.lalilu.remixicon.media.albumFill
 import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import com.lalilu.component.R as ComponentR
 
 @Destination("/pages/albums")
 data class AlbumsScreen(
@@ -59,8 +62,8 @@ data class AlbumsScreen(
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
         ScreenInfo(
-            title = R.string.album_screen_title,
-            icon = ComponentR.drawable.ic_album_fill
+            title = { stringResource(id = R.string.album_screen_title) },
+            icon = RemixIcon.Media.albumFill
         )
     }
 

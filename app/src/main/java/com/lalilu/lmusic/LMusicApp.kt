@@ -54,6 +54,7 @@ class LMusicApp : Application(), SingletonImageLoader.Factory, FilterProvider, V
         startKoin {
             androidContext(this@LMusicApp)
             modules(
+                MainModule.module,
                 AppModule,
                 ApiModule,
                 ViewModelModule,

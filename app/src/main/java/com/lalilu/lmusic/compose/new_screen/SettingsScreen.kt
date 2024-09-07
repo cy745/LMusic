@@ -31,6 +31,7 @@ import com.blankj.utilcode.util.ToastUtils
 import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.BuildConfig
 import com.lalilu.R
+import com.lalilu.RemixIcon
 import com.lalilu.common.CustomRomUtils
 import com.lalilu.component.IconTextButton
 import com.lalilu.component.LLazyColumn
@@ -49,6 +50,8 @@ import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.system.settings4Line
 import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -60,8 +63,8 @@ object SettingsScreen : Screen, ScreenInfoFactory {
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
         ScreenInfo(
-            title = R.string.screen_title_settings,
-            icon = R.drawable.ic_settings_4_line
+            title = { stringResource(id = R.string.screen_title_settings) },
+            icon = RemixIcon.System.settings4Line,
         )
     }
 

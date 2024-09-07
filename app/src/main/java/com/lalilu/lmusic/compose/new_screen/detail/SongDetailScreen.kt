@@ -39,7 +39,9 @@ data class SongDetailScreen(
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
-        ScreenInfo(title = R.string.screen_title_song_detail)
+        ScreenInfo(
+            title = { stringResource(id = R.string.screen_title_song_detail) }
+        )
     }
 
     @Composable
