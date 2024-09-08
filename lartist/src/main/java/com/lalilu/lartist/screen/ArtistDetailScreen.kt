@@ -2,33 +2,43 @@ package com.lalilu.lartist.screen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
-import cafe.adriel.voyager.koin.getScreenModel
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.ScreenInfo
 import com.lalilu.component.base.collectAsLoadingState
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.lartist.R
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LArtist
+import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
+
+@Destination("/pages/artist/detail")
 data class ArtistDetailScreen(
     private val artistName: String
-) : DynamicScreen() {
+) : Screen, ScreenInfoFactory {
     override val key: ScreenKey = "ARTIST_DETAIL_$artistName"
 
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.artist_screen_detail,
-    )
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = { stringResource(id = R.string.artist_screen_detail) },
+        )
+    }
 
     @Composable
     override fun Content() {
-        val artistDetailSM: ArtistDetailScreenModel = getScreenModel()
+        val artistDetailSM: ArtistDetailScreenModel =
+            rememberScreenModel { ArtistDetailScreenModel() }
 
         LaunchedEffect(Unit) {
             artistDetailSM.updateArtistName(artistName)
@@ -49,7 +59,7 @@ class ArtistDetailScreenModel : ScreenModel {
 }
 
 @Composable
-private fun DynamicScreen.ArtistDetail(
+private fun ArtistDetail(
     artistDetailSM: ArtistDetailScreenModel
 ) {
     val artistState = artistDetailSM.artist.collectAsLoadingState()

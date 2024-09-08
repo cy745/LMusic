@@ -15,9 +15,8 @@ import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.ItemSelector
 import com.lalilu.component.extension.toState
 import com.lalilu.component.viewmodel.SongsSp
-import com.lalilu.component.viewmodel.findInstance
 import com.lalilu.lmedia.LMedia
-import com.lalilu.lmedia.entity.BaseMatchable
+import com.lalilu.lmedia.entity.FullTextMatchable
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.ListAction
@@ -25,9 +24,7 @@ import com.lalilu.lmedia.extension.SortDynamicAction
 import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lplayer.LPlayer
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -48,7 +45,7 @@ sealed interface SongsScreenAction {
 }
 
 sealed interface SongsScreenEvent {
-    data class ScrollToItem(val index: Int) : SongsScreenEvent
+    data class ScrollToItem(val key: Any) : SongsScreenEvent
 }
 
 class SongsSM(
@@ -78,12 +75,7 @@ class SongsSM(
                 val mediaId = LPlayer.runtime.info.playingIdFlow.value
                     ?: return@launch
 
-                val index = recorder.list()
-                    .indexOf(mediaId)
-                    .takeIf { it >= 0 }
-                    ?: return@launch
-
-                eventFlow.emit(SongsScreenEvent.ScrollToItem(index))
+                eventFlow.emit(SongsScreenEvent.ScrollToItem(mediaId))
             }
 
             SongsScreenAction.ToggleSortPanel -> {
@@ -118,13 +110,12 @@ class SongsSM(
     val songs = sorter.output.toState(
         defaultValue = emptyMap(),
         scope = screenModelScope,
-        context = Dispatchers.IO + SupervisorJob()
     )
     val selector = ItemSelector<Playable>()
     val recorder = ItemRecorder()
 }
 
-class ItemSearcher<T : BaseMatchable>(
+class ItemSearcher<T : FullTextMatchable>(
     sourceFlow: Flow<List<T>>
 ) {
     val keywordState = mutableStateOf("")
@@ -137,7 +128,7 @@ class ItemSearcher<T : BaseMatchable>(
     }
 
     val output: Flow<List<T>> = sourceFlow.combine(keywordFlow) { source, keywords ->
-        source.filter { item -> keywords.all { item.matchStr.contains(it) } }
+        source.filter { item -> keywords.all { item.getMatchStr().contains(it) } }
     }
 
     val isSearching: State<Boolean>
@@ -181,4 +172,9 @@ class ItemSorter<T : Sortable>(
 
         return sortActionKey.value == action::class.java.name
     }
+}
+
+inline fun <reified T> Collection<Any>.findInstance(check: (T) -> Boolean): T? {
+    return this.filterIsInstance(T::class.java)
+        .firstOrNull(check)
 }

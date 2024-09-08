@@ -1,8 +1,7 @@
 package com.lalilu.lartist.component
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.MarqueeSpacing
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +22,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -38,36 +39,27 @@ import coil3.request.placeholder
 import com.lalilu.component.R
 import com.lalilu.component.card.PlayingTipIcon
 import com.lalilu.component.extension.dayNightTextColor
-import com.lalilu.lmedia.entity.LArtist
 
-@Composable
-fun ArtistCard(
-    artist: LArtist,
-    isPlaying: () -> Boolean = { false },
-    onClick: () -> Unit = {}
-) = ArtistCard(
-    songCount = artist.requireItemsCount(),
-    title = artist.requireTitle(),
-    isPlaying = isPlaying,
-    imageSource = { artist.songs.firstOrNull()?.imageSource },
-    onClick = onClick
-)
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ArtistCard(
     modifier: Modifier = Modifier,
-    songCount: Long,
     title: String,
     subTitle: String? = null,
+    songCount: Long,
+    isSelected: () -> Boolean = { false },
     imageSource: () -> Any? = { null },
     isPlaying: () -> Boolean = { false },
     onClick: () -> Unit = {}
 ) {
+    val bgColor = animateColorAsState(
+        targetValue = if (isSelected()) MaterialTheme.colors.onBackground.copy(0.3f)
+        else Color.Transparent, label = ""
+    )
+
     Row(
         modifier = modifier
             .clickable(onClick = onClick)
-            .background(dayNightTextColor(0.05f))
+            .drawBehind { drawRect(bgColor.value) }
             .fillMaxWidth()
             .heightIn(min = 64.dp)
             .wrapContentHeight()
@@ -93,7 +85,7 @@ fun ArtistCard(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Black,
-                color = dayNightTextColor(),
+                color = MaterialTheme.colors.onBackground,
                 style = MaterialTheme.typography.subtitle1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -104,7 +96,7 @@ fun ArtistCard(
                     maxLines = 1,
                     text = subTitle,
                     fontSize = 10.sp,
-                    color = dayNightTextColor(0.5f),
+                    color = MaterialTheme.colors.onBackground.copy(0.5f),
                     style = MaterialTheme.typography.subtitle2
                 )
             }
@@ -150,7 +142,7 @@ fun ArtistCard(
                     text = "$songCount 首歌曲",
                     maxLines = 1,
                     fontSize = 12.sp,
-                    color = dayNightTextColor(),
+                    color = MaterialTheme.colors.onBackground,
                     fontWeight = FontWeight.Bold,
                     overflow = TextOverflow.Ellipsis
                 )

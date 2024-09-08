@@ -23,7 +23,7 @@ class SortRulePlayCount(
         return historyRepo
             .getHistoriesIdsMapWithCount()
             .combine(items) { map, sources ->
-                sources.sortedByDescending { song -> map[song.requireId()] }
+                sources.sortedByDescending { song -> map[song.getValueBy(Sortable.COMPARE_KEY_ID)] }
                     .let { if (reverse) it.reversed() else it }
                     .let { mapOf(GroupIdentity.None to it) }
             }
@@ -43,7 +43,7 @@ class SortRuleLastPlayTime(
         return historyRepo
             .getHistoriesIdsMapWithLastTime()
             .combine(items) { map, sources ->
-                sources.sortedByDescending { song -> map[song.requireId()] }
+                sources.sortedByDescending { song -> map[song.getValueBy(Sortable.COMPARE_KEY_ID)] }
                     .let { if (reverse) it.reversed() else it }
                     .let { mapOf(GroupIdentity.None to it) }
             }

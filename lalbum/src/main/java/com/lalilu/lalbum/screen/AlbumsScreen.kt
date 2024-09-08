@@ -102,7 +102,6 @@ private fun AlbumsScreen(
     title: String = "全部专辑",
     albumsSM: AlbumsScreenModel,
     playingVM: IPlayingViewModel = koinInject(),
-    sortFor: String = Sortable.SORT_FOR_ALBUMS,
 ) {
     val isPad = LocalWindowSize.current.widthSizeClass == WindowWidthSizeClass.Expanded
     val albumsState = albumsSM.albums.collectAsLoadingState()

@@ -29,12 +29,12 @@ import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.rememberGridItemPadding
 import com.lalilu.lalbum.screen.AlbumsScreen
-import com.lalilu.lartist.screen.ArtistsScreen
 import com.lalilu.ldictionary.screen.DictionaryScreen
 import com.lalilu.lhistory.screen.HistoryScreen
 import com.lalilu.lmusic.compose.new_screen.SettingsScreen
 import com.lalilu.lmusic.compose.screen.songs.SongsScreen
 import com.lalilu.lplaylist.screen.PlaylistScreen
+import com.zhangke.krouter.KRouter
 
 
 object EntryPanel : LazyGridContent {
@@ -42,9 +42,9 @@ object EntryPanel : LazyGridContent {
     @Composable
     override fun register(): LazyGridScope.() -> Unit {
         val screenEntry = remember {
-            listOf(
+            listOfNotNull(
                 SongsScreen(),
-                ArtistsScreen(),
+                KRouter.route("/pages/artists"),
                 AlbumsScreen(),
                 PlaylistScreen,
                 HistoryScreen,

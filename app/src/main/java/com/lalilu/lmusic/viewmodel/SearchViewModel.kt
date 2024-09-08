@@ -3,13 +3,13 @@ package com.lalilu.lmusic.viewmodel
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lalilu.component.extension.toState
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.Item
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LGenre
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.component.extension.toState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -39,7 +39,7 @@ class SearchViewModel : ViewModel() {
     private fun <T : Item> Flow<Collection<T>>.searchFor(keywords: Flow<Collection<String>>): Flow<List<T>> =
         combine(keywords) { items, keywordList ->
             if (keywordList.isEmpty()) return@combine emptyList()
-            items.filter { item -> keywordList.all { item.matchStr.contains(it) } }
+            items.filter { item -> keywordList.all { item.getMatchStr().contains(it) } }
         }
 
     fun searchFor(str: String) {
