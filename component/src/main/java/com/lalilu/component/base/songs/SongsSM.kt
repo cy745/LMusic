@@ -87,12 +87,7 @@ class SongsSM(
             }
 
             is SongsScreenAction.LocaleToGroupItem -> {
-                val index = recorder.list()
-                    .indexOf(action.item)
-                    .takeIf { it >= 0 }
-                    ?: return@launch
-
-                eventFlow.emit(SongsScreenEvent.ScrollToItem(index))
+                eventFlow.emit(SongsScreenEvent.ScrollToItem(action.item))
             }
 
             else -> {}

@@ -66,7 +66,19 @@ internal fun SongsScreenContent(
         songsSM.event().collectLatest { event ->
             when (event) {
                 is SongsScreenEvent.ScrollToItem -> {
-                    scroller.animateTo(event.key)
+                    scroller.animateTo(
+                        key = event.key,
+                        isStickyHeader = { it.contentType == "group" },
+                        offsetBlock = { state ->
+                            // TODO 待完善StickyHeader Item的offset计算逻辑
+                            val lastGroupItemOffset = state.layoutInfo.visibleItemsInfo
+                                .lastOrNull { it.contentType == "group" }
+                                ?.takeIf { it.key != event.key }
+                                ?.size ?: 0
+
+                            -(statusBar.getTop(density) + lastGroupItemOffset)
+                        }
+                    )
                 }
 
                 else -> {}
