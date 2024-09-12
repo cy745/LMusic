@@ -1,5 +1,9 @@
 package com.lalilu.component.extension
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
@@ -8,18 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
-import androidx.dynamicanimation.animation.SpringAnimation
-import androidx.dynamicanimation.animation.SpringForce
-import androidx.dynamicanimation.animation.springAnimationOf
-import androidx.dynamicanimation.animation.withSpringForceProperties
-import com.blankj.utilcode.util.LogUtils
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -41,69 +38,17 @@ class LazyListAnimateScroller internal constructor(
         val key: Any,
         val onEnd: (isCanceled: Boolean) -> Unit = {},
         val isStickyHeader: (LazyListItemInfo) -> Boolean = { false },
-        val offsetBlock: (LazyListState) -> Int = { 0 }
+        val offsetBlock: (LazyListItemInfo) -> Int = { 0 }
     ) {
         var isRectified = false
         var isFinished = false
         var targetIndex = -1
     }
 
+    private val animation by lazy { Animatable(0f, Float.VectorConverter) }
     private var task: ScrollTask? = null
-    private var currentValue: Float = 0f
-    private var targetValue: Float = 0f
     private var targetRange: IntRange = IntRange(0, 0)
     private val sizeMap = mutableMapOf<Int, Int>()
-
-    private val animator: SpringAnimation = springAnimationOf(
-        getter = { currentValue },
-        setter = { onScroll(dy = it - currentValue); currentValue = it },
-        finalPosition = 0f
-    ).withSpringForceProperties {
-        dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-        stiffness = SpringForce.STIFFNESS_VERY_LOW
-    }.addUpdateListener { _, _, _ ->
-        task?.apply {
-            // 若尚未纠正位移，且目标元素处于可见范围内，则重新启动计算动画位移
-            if (!isRectified && isItemVisible(targetIndex)) {
-                calcAndStartAnimation()
-                isRectified = true
-            }
-        }
-    }.addEndListener { _, canceled, _, _ ->
-        task?.apply {
-            // 若结束后，目标元素不在可见范围内，则重启计算动画
-            if (!canceled && !isRectified && !isItemVisible(targetIndex)) {
-                calcAndStartAnimation()
-                return@apply
-            }
-
-            isFinished = true
-            onEnd(canceled)
-            task = null
-        }
-    }
-
-    private fun isItemVisible(index: Int): Boolean {
-        val startIndex = listState.firstVisibleItemIndex
-        val endIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-
-        return index in startIndex..endIndex
-    }
-
-    private fun onScroll(dy: Float) {
-        if (!enable()) return
-
-        scope.launch {
-            try {
-                listState.scroll { scrollBy(dy) }
-            } catch (e: Exception) {
-                // 若是CancellationException，则停止animator动画
-                if (e is CancellationException) {
-                    animator.cancel()
-                }
-            }
-        }
-    }
 
     /**
      * 启动循环任务，用于监听可见元素列表的变化，并计算目标元素的偏移量
@@ -119,7 +64,7 @@ class LazyListAnimateScroller internal constructor(
         key: Any,
         onEnd: (Boolean) -> Unit = {},
         isStickyHeader: (LazyListItemInfo) -> Boolean = { false },
-        offsetBlock: (LazyListState) -> Int = { 0 },
+        offsetBlock: (LazyListItemInfo) -> Int = { 0 }
     ) = animateTo(
         ScrollTask(
             key = key,
@@ -131,71 +76,81 @@ class LazyListAnimateScroller internal constructor(
 
     fun animateTo(scrollTask: ScrollTask) {
         task = scrollTask
-        calcAndStartAnimation()
+        calcAndStartAnimation(scrollTask)
     }
 
-    private fun calcAndStartAnimation() = scope.launch {
-        // 若当前没有滚动任务，则不继续执行
-        task ?: return@launch
-
-        val key = task!!.key
-        val offsetBlock = task!!.offsetBlock
-
+    private fun calcAndStartAnimation(task: ScrollTask) {
         // 1. 从当前可见元素直接查找offset （准确值）
         // get the offset directly from the visibleItemsInfo
-        val tempIndex = listState.layoutInfo.visibleItemsInfo.indexOfFirst { it.key == key }
-        val targetItem = listState.layoutInfo.visibleItemsInfo.getOrNull(tempIndex)
+        val targetItem = listState.layoutInfo.visibleItemsInfo
+            .firstOrNull { it.key == task.key }
 
         val targetOffset = targetItem?.let { item ->
-            val isSticky = task!!.isStickyHeader.invoke(item)
-
-            // 若目标元素不是stickyHeader，则直接返回offset
-            if (!isSticky) {
+            // 若非StickyHeader，则其offset即为准确的滚动位移值
+            if (!task.isStickyHeader(item)) {
                 return@let item.offset
             }
 
-            // 若目标时是stickyHeader，则查找下一个元素，
-            // 若下一个元素的offset等于当前元素的offset + size，
-            // 则返回当前元素的offset
-            val nextItem = listState.layoutInfo.visibleItemsInfo.getOrNull(tempIndex + 1)
-            // TODO 待完善StickyHeader Item的offset计算逻辑
-            LogUtils.i("nexItem: ${nextItem?.offset} == ${item.offset} + ${item.size}")
-            if (nextItem != null && nextItem.offset == (item.offset + item.size)) {
-                return@let item.offset
-            }
-            null
+            // 若为StickyHeader则使用其下一个元素的offset - 当前元素的size计算获取
+            listState.layoutInfo.visibleItemsInfo
+                .firstOrNull { it.index == (item.index + 1) }
+                ?.let { it.offset - item.size - listState.layoutInfo.mainAxisItemSpacing }
         }
 
-        if (targetOffset != null) {
-            doScroll(targetOffset.toFloat() + offsetBlock(listState))
-            return@launch
+        // 若获取到offset，则直接进行滚动
+        targetOffset?.let { offset ->
+            doScroll(offset.toFloat() + task.offsetBlock(targetItem))
+            return
         }
 
-        val index = keysKeeper().indexOfFirst { it == key }
+        // 若未获取到offset，则使用keys列表查找目标元素，并计算其offset
+        val index = keysKeeper().indexOfFirst { it == task.key }
+        task.targetIndex = index
+
         if (index == -1) {
-            task = null
-            return@launch // 元素不存在keys列表中，则不进行滚动
+            this.task = null
+            return  // 元素不存在keys列表中，则不进行滚动
         }
 
         // 2. 使用实时维护的sizeMap查找并计算目标元素的offset （非准确值）
         // Use the real-time maintained sizeMap to find and calculate the offset of the target element
-        task?.targetIndex = index
         scrollTo(index)
+        return
     }
 
-    private fun doScroll(
-        targetOffset: Float,
-    ) {
-        animator.cancel()
+    private fun doScroll(targetOffset: Float) {
+        scope.launch {
+            // 获取上一次滚动时最终的滚动速度
+            val oldVelocity = animation.velocity
+            animation.snapTo(0f)
 
-        currentValue = 0f
-        targetValue = targetOffset
+            var lastValue = 0f
+            animation.animateTo(
+                targetValue = targetOffset,
+                animationSpec = spring(stiffness = Spring.StiffnessVeryLow),
+                initialVelocity = oldVelocity
+            ) {
+                val dy = value - lastValue
+                lastValue = value
 
-        animator.animateToFinalPosition(targetOffset)
+                scope.launch {
+                    try {
+                        listState.scroll { scrollBy(dy) }
+                    } catch (e: Exception) {
+                        if (e is CancellationException) {
+                            animation.stop()
+                        }
+                    }
+                }
+
+                // TODO 中途纠正
+            }
+
+            // TODO 末端纠正
+        }
     }
 
-    private suspend fun scrollTo(index: Int) = withContext(Dispatchers.Unconfined) {
-        if (!isActive) return@withContext
+    private fun scrollTo(index: Int) {
         val firstVisibleIndex = listState.firstVisibleItemIndex
         val firstVisibleOffset = listState.firstVisibleItemScrollOffset
         targetRange = minOf(firstVisibleIndex, index)..maxOf(firstVisibleIndex, index)
@@ -204,7 +159,6 @@ class LazyListAnimateScroller internal constructor(
         // calculate the direction multiplier, if scrolling down, it's positive
         val forwardMultiple = if (index >= firstVisibleIndex) 1f else -1f
 
-        if (!isActive) return@withContext
         // 计算目标距离，若未缓存有相应位置的值，则计算使用平均值
         // calculate the target offset，if these no value cached then use the average value
         val sizeAverage = sizeMap.values.average().toInt()
@@ -222,8 +176,24 @@ class LazyListAnimateScroller internal constructor(
 
         // 使用非准确值进行滚动
         // use the non-accurate value for scrolling
-        if (!isActive) return@withContext
         doScroll(offsetTemp * forwardMultiple)
+    }
+
+    private fun isItemVisible(task: ScrollTask, index: Int): Boolean {
+        val startIndex = listState.firstVisibleItemIndex
+        val endIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+
+        val isVisible = index in startIndex..endIndex
+        if (!isVisible) return false
+
+        val targetItem = listState.layoutInfo.visibleItemsInfo
+            .firstOrNull { it.index == index }
+            ?: return false
+
+        val isStickyHeader = task.isStickyHeader(targetItem)
+        if (!isStickyHeader) return true
+
+        return (index + 1) in startIndex..endIndex
     }
 }
 
