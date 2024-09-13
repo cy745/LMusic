@@ -123,6 +123,7 @@ class LazyListAnimateScroller internal constructor(
             // 获取上一次滚动时最终的滚动速度
             val oldVelocity = animation.velocity
             animation.snapTo(0f)
+            var canceled = false
 
             var lastValue = 0f
             animation.animateTo(
@@ -135,18 +136,39 @@ class LazyListAnimateScroller internal constructor(
 
                 scope.launch {
                     try {
-                        listState.scroll { scrollBy(dy) }
+                        if (!canceled && enable()) {
+                            listState.scroll { scrollBy(dy) }
+                        }
                     } catch (e: Exception) {
                         if (e is CancellationException) {
+                            canceled = true
                             animation.stop()
                         }
                     }
                 }
 
-                // TODO 中途纠正
+                task?.apply {
+                    if (!isRectified && !canceled && targetIndex != -1 &&
+                        isItemVisible(this, targetIndex)
+                    ) {
+                        // 更新阻止滚动继续的标志
+                        canceled = true
+                        // 触发计算新的目标元素偏移量
+                        calcAndStartAnimation(this)
+                        // 标记已纠正，避免无限重复调用计算逻辑
+                        isRectified = true
+                    }
+                }
             }
 
-            // TODO 末端纠正
+            task?.apply {
+                if (!isFinished && targetIndex != -1) {
+                    // 触发计算新的目标元素偏移量
+                    calcAndStartAnimation(this)
+                    // 标记已纠正，避免无限重复调用计算逻辑
+                    isRectified = true
+                }
+            }
         }
     }
 
