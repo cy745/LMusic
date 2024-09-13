@@ -59,7 +59,7 @@ internal fun SongsScreenContent(
     val songs by songsSM.songs
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
-        keysKeeper = { songsSM.recorder.list().filterNotNull() }
+        keys = { songsSM.recorder.list().filterNotNull() }
     )
 
     LaunchedEffect(Unit) {
@@ -69,14 +69,17 @@ internal fun SongsScreenContent(
                     scroller.animateTo(
                         key = event.key,
                         isStickyHeader = { it.contentType == "group" },
-                        offsetBlock = { state ->
-                            // TODO 待完善StickyHeader Item的offset计算逻辑
-                            val lastGroupItemOffset = state.layoutInfo.visibleItemsInfo
-                                .lastOrNull { it.contentType == "group" }
-                                ?.takeIf { it.key != event.key }
+                        offset = { item ->
+                            // 若是 sticky header，则滚动到顶部
+                            if (item.contentType == "group") {
+                                return@animateTo -statusBar.getTop(density)
+                            }
+
+                            val closestStickyHeaderSize = listState.layoutInfo.visibleItemsInfo
+                                .lastOrNull { it.index < item.index && it.contentType == "group" }
                                 ?.size ?: 0
 
-                            -(statusBar.getTop(density) + lastGroupItemOffset)
+                            -(statusBar.getTop(density) + closestStickyHeaderSize)
                         }
                     )
                 }

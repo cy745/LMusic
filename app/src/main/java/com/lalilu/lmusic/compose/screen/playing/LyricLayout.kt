@@ -136,7 +136,7 @@ fun LyricLayout(
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
         enableScrollAnimation = { !isUserScrolling.value },
-        keysKeeper = { recorder.list().filterNotNull() }
+        keys = { recorder.list().filterNotNull() }
     )
 
     val currentItemIndex = remember {

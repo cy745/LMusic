@@ -59,16 +59,32 @@ internal fun ArtistsScreenContent(
     val listState = rememberLazyListState()
     val statusBar = WindowInsets.statusBars
     val density = LocalDensity.current
+    val stickyHeaderContentType = remember { "group" }
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
-        keysKeeper = { artistsSM.recorder.list().filterNotNull() }
+        keys = { artistsSM.recorder.list().filterNotNull() }
     )
 
     LaunchedEffect(Unit) {
         artistsSM.eventFlow.collectLatest { event ->
             when (event) {
                 is ArtistsScreenEvent.ScrollToItem -> {
-                    scroller.animateTo(event.key)
+                    scroller.animateTo(
+                        key = event.key,
+                        isStickyHeader = { it.contentType == stickyHeaderContentType },
+                        offset = { item ->
+                            // 若是 sticky header，则滚动到顶部
+                            if (item.contentType == stickyHeaderContentType) {
+                                return@animateTo -statusBar.getTop(density)
+                            }
+
+                            val closestStickyHeaderSize = listState.layoutInfo.visibleItemsInfo
+                                .lastOrNull { it.index < item.index && it.contentType == stickyHeaderContentType }
+                                ?.size ?: 0
+
+                            -(statusBar.getTop(density) + closestStickyHeaderSize)
+                        }
+                    )
                 }
 
                 else -> {}
@@ -133,7 +149,7 @@ internal fun ArtistsScreenContent(
                     if (group !is GroupIdentity.None) {
                         stickyHeaderWithRecord(
                             key = group,
-                            contentType = "group"
+                            contentType = stickyHeaderContentType
                         ) {
                             SongsScreenStickyHeader(
                                 modifier = Modifier.animateItem(),

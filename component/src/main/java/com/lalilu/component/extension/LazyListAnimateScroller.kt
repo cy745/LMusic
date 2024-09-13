@@ -1,6 +1,7 @@
 package com.lalilu.component.extension
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.spring
@@ -21,24 +22,26 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class LazyListAnimateScroller internal constructor(
-    private val keysKeeper: () -> Collection<Any>,
-    private val enable: () -> Boolean = { true },
+    private val scope: CoroutineScope,
     private val listState: LazyListState,
-    private val scope: CoroutineScope
+    private val keys: () -> Collection<Any>,
+    private val enable: () -> Boolean = { true },
+    private val defaultAnimationSpec: AnimationSpec<Float> = spring(stiffness = Spring.StiffnessVeryLow),
 ) {
     /**
      * 滚动任务，用于缓存每一次的主动滚动
      *
      * @param key               目标元素key
-     * @param offsetBlock       当目标元素可见时，计算与顶部偏移量的回调
+     * @param offset            当目标元素可见时，计算与顶部偏移量的回调
      * @param isStickyHeader    判断元素是否StickyHeader
      * @param onEnd             滚动结束的回调
      */
     data class ScrollTask(
         val key: Any,
         val onEnd: (isCanceled: Boolean) -> Unit = {},
+        val animationSpec: AnimationSpec<Float>? = null,
         val isStickyHeader: (LazyListItemInfo) -> Boolean = { false },
-        val offsetBlock: (LazyListItemInfo) -> Int = { 0 }
+        val offset: (LazyListItemInfo) -> Int = { 0 }
     ) {
         var isRectified = false
         var isFinished = false
@@ -46,9 +49,9 @@ class LazyListAnimateScroller internal constructor(
     }
 
     private val animation by lazy { Animatable(0f, Float.VectorConverter) }
-    private var task: ScrollTask? = null
     private var targetRange: IntRange = IntRange(0, 0)
     private val sizeMap = mutableMapOf<Int, Int>()
+    private var task: ScrollTask? = null
 
     /**
      * 启动循环任务，用于监听可见元素列表的变化，并计算目标元素的偏移量
@@ -62,15 +65,17 @@ class LazyListAnimateScroller internal constructor(
 
     fun animateTo(
         key: Any,
+        animationSpec: AnimationSpec<Float>? = null,
         onEnd: (Boolean) -> Unit = {},
         isStickyHeader: (LazyListItemInfo) -> Boolean = { false },
-        offsetBlock: (LazyListItemInfo) -> Int = { 0 }
+        offset: (LazyListItemInfo) -> Int = { 0 }
     ) = animateTo(
         ScrollTask(
             key = key,
             onEnd = onEnd,
+            animationSpec = animationSpec,
             isStickyHeader = isStickyHeader,
-            offsetBlock = offsetBlock
+            offset = offset
         )
     )
 
@@ -99,12 +104,12 @@ class LazyListAnimateScroller internal constructor(
 
         // 若获取到offset，则直接进行滚动
         targetOffset?.let { offset ->
-            doScroll(offset.toFloat() + task.offsetBlock(targetItem))
+            doScroll(offset.toFloat() + task.offset(targetItem))
             return
         }
 
         // 若未获取到offset，则使用keys列表查找目标元素，并计算其offset
-        val index = keysKeeper().indexOfFirst { it == task.key }
+        val index = keys().indexOfFirst { it == task.key }
         task.targetIndex = index
 
         if (index == -1) {
@@ -116,60 +121,6 @@ class LazyListAnimateScroller internal constructor(
         // Use the real-time maintained sizeMap to find and calculate the offset of the target element
         scrollTo(index)
         return
-    }
-
-    private fun doScroll(targetOffset: Float) {
-        scope.launch {
-            // 获取上一次滚动时最终的滚动速度
-            val oldVelocity = animation.velocity
-            animation.snapTo(0f)
-            var canceled = false
-
-            var lastValue = 0f
-            animation.animateTo(
-                targetValue = targetOffset,
-                animationSpec = spring(stiffness = Spring.StiffnessVeryLow),
-                initialVelocity = oldVelocity
-            ) {
-                val dy = value - lastValue
-                lastValue = value
-
-                scope.launch {
-                    try {
-                        if (!canceled && enable()) {
-                            listState.scroll { scrollBy(dy) }
-                        }
-                    } catch (e: Exception) {
-                        if (e is CancellationException) {
-                            canceled = true
-                            animation.stop()
-                        }
-                    }
-                }
-
-                task?.apply {
-                    if (!isRectified && !canceled && targetIndex != -1 &&
-                        isItemVisible(this, targetIndex)
-                    ) {
-                        // 更新阻止滚动继续的标志
-                        canceled = true
-                        // 触发计算新的目标元素偏移量
-                        calcAndStartAnimation(this)
-                        // 标记已纠正，避免无限重复调用计算逻辑
-                        isRectified = true
-                    }
-                }
-            }
-
-            task?.apply {
-                if (!isFinished && targetIndex != -1) {
-                    // 触发计算新的目标元素偏移量
-                    calcAndStartAnimation(this)
-                    // 标记已纠正，避免无限重复调用计算逻辑
-                    isRectified = true
-                }
-            }
-        }
     }
 
     private fun scrollTo(index: Int) {
@@ -201,6 +152,56 @@ class LazyListAnimateScroller internal constructor(
         doScroll(offsetTemp * forwardMultiple)
     }
 
+    private fun doScroll(targetOffset: Float) = task?.apply {
+        scope.launch {
+            // 获取上一次滚动时最终的滚动速度
+            val oldVelocity = animation.velocity
+            animation.snapTo(0f)
+            var canceled = false
+
+            var lastValue = 0f
+            animation.animateTo(
+                targetValue = targetOffset,
+                animationSpec = animationSpec ?: defaultAnimationSpec,
+                initialVelocity = oldVelocity
+            ) {
+                val dy = value - lastValue
+                lastValue = value
+
+                scope.launch {
+                    try {
+                        if (!canceled && enable()) {
+                            listState.scroll { scrollBy(dy) }
+                        }
+                    } catch (e: Exception) {
+                        if (e is CancellationException) {
+                            canceled = true
+                            animation.stop()
+                        }
+                    }
+                }
+
+                if (!isRectified && !canceled && targetIndex != -1 &&
+                    isItemVisible(this@apply, targetIndex)
+                ) {
+                    // 更新阻止滚动继续的标志
+                    canceled = true
+                    // 触发计算新的目标元素偏移量
+                    calcAndStartAnimation(this@apply)
+                    // 标记已纠正，避免无限重复调用计算逻辑
+                    isRectified = true
+                }
+            }
+
+            if (!isFinished && targetIndex != -1) {
+                // 触发计算新的目标元素偏移量
+                calcAndStartAnimation(this@apply)
+                // 标记已纠正，避免无限重复调用计算逻辑
+                isFinished = true
+            }
+        }
+    }
+
     private fun isItemVisible(task: ScrollTask, index: Int): Boolean {
         val startIndex = listState.firstVisibleItemIndex
         val endIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
@@ -222,18 +223,20 @@ class LazyListAnimateScroller internal constructor(
 @Composable
 fun rememberLazyListAnimateScroller(
     listState: LazyListState,
+    keys: () -> Collection<Any> = { emptyList() },
+    defaultAnimationSpec: AnimationSpec<Float> = spring(stiffness = Spring.StiffnessVeryLow),
     enableScrollAnimation: () -> Boolean = { true },
-    keysKeeper: () -> Collection<Any> = { emptyList() },
 ): LazyListAnimateScroller {
     val enableAnimation = rememberUpdatedState(enableScrollAnimation())
     val scope = rememberCoroutineScope()
 
     val scroller = remember {
         LazyListAnimateScroller(
+            scope = scope,
+            keys = keys,
             listState = listState,
             enable = { enableAnimation.value },
-            keysKeeper = keysKeeper,
-            scope = scope
+            defaultAnimationSpec = defaultAnimationSpec,
         )
     }
 
