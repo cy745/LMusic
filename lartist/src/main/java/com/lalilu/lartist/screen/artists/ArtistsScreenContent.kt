@@ -28,6 +28,7 @@ import com.gigamole.composefadingedges.content.FadingEdgesContentType
 import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
 import com.gigamole.composefadingedges.fill.FadingEdgesFillType
 import com.gigamole.composefadingedges.verticalFadingEdges
+import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.base.songs.SongsScreenScrollBar
 import com.lalilu.component.base.songs.SongsScreenStickyHeader
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
@@ -36,7 +37,7 @@ import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lartist.component.ArtistCard
-import com.lalilu.lartist.screen.ArtistDetailScreen
+import com.lalilu.lartist.screen.detail.ArtistDetailScreen
 import com.lalilu.lartist.viewModel.ArtistsSM
 import com.lalilu.lartist.viewModel.ArtistsScreenEvent
 import com.lalilu.lmedia.entity.LArtist
@@ -191,6 +192,8 @@ internal fun ArtistsScreenContent(
                     }
                 }
             }
+
+            smartBarPadding()
         }
     }
 }

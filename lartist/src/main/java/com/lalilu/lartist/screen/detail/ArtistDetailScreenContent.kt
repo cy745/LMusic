@@ -1,4 +1,4 @@
-package com.lalilu.lartist.screen
+package com.lalilu.lartist.screen.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,6 +31,7 @@ import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollCon
 import com.gigamole.composefadingedges.fill.FadingEdgesFillType
 import com.gigamole.composefadingedges.verticalFadingEdges
 import com.lalilu.common.base.Playable
+import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.base.songs.SongsScreenStickyHeader
 import com.lalilu.component.card.SongCard
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
@@ -38,9 +40,11 @@ import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lartist.component.ArtistCard
 import com.lalilu.lartist.viewModel.ArtistDetailSM
+import com.lalilu.lartist.viewModel.ArtistDetailScreenEvent
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lplayer.extensions.PlayerAction
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 internal fun ArtistDetailScreenContent(
@@ -59,6 +63,31 @@ internal fun ArtistDetailScreenContent(
         listState = listState,
         keys = { artistDetailSM.recorder.list().filterNotNull() }
     )
+
+    LaunchedEffect(key1 = Unit) {
+        artistDetailSM.eventFlow.collectLatest { event ->
+            when (event) {
+                is ArtistDetailScreenEvent.ScrollToItem -> {
+                    scroller.animateTo(
+                        key = event.key,
+                        isStickyHeader = { it.contentType == stickyHeaderContentType },
+                        offset = { item ->
+                            // 若是 sticky header，则滚动到顶部
+                            if (item.contentType == stickyHeaderContentType) {
+                                return@animateTo -statusBar.getTop(density)
+                            }
+
+                            val closestStickyHeaderSize = listState.layoutInfo.visibleItemsInfo
+                                .lastOrNull { it.index < item.index && it.contentType == stickyHeaderContentType }
+                                ?.size ?: 0
+
+                            -(statusBar.getTop(density) + closestStickyHeaderSize)
+                        }
+                    )
+                }
+            }
+        }
+    }
 
     val artist by artistDetailSM.artist
     val songs by artistDetailSM.songs
@@ -111,7 +140,7 @@ internal fun ArtistDetailScreenContent(
                         color = MaterialTheme.colors.onBackground
                     )
                     Text(
-                        text = "共 ${artist?.songs?.size ?: 0} 首歌曲",
+                        text = "共 ${songs.size} 首歌曲",
                         color = MaterialTheme.colors.onBackground.copy(0.6f),
                         fontSize = 12.sp,
                         lineHeight = 12.sp,
@@ -209,5 +238,7 @@ internal fun ArtistDetailScreenContent(
                 }
             }
         }
+
+        smartBarPadding()
     }
 }

@@ -41,7 +41,6 @@ internal class ArtistDetailSM(
     val supportSortActions = setOf<ListAction?>(
         SortStaticAction.Normal,
         SortStaticAction.Title,
-        SortStaticAction.ItemsCount,
         SortStaticAction.Duration,
         SortStaticAction.AddTime,
         SortStaticAction.Shuffle,

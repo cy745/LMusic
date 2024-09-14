@@ -1,4 +1,4 @@
-package com.lalilu.lartist.screen
+package com.lalilu.lartist.screen.detail
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -14,7 +14,6 @@ import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
-import com.lalilu.component.base.screen.ScreenType
 import com.lalilu.component.base.songs.SongsHeaderJumperDialog
 import com.lalilu.component.base.songs.SongsSearcherPanel
 import com.lalilu.component.base.songs.SongsSelectorPanel
@@ -41,8 +40,10 @@ import org.koin.core.qualifier.named
 @Destination("/pages/artist/detail")
 data class ArtistDetailScreen(
     private val artistName: String
-) : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBarFactory, ScreenType.List {
-    override val key: ScreenKey = "ARTIST_DETAIL_$artistName"
+) : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBarFactory {
+    override val key: ScreenKey = "${super.key}_$artistName"
+
+    @Transient
     private var artistDetailSM: ArtistDetailSM? = null
 
     @Composable

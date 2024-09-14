@@ -15,8 +15,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.component.navigation.AppRouter
-import com.lalilu.component.navigation.NavIntent
-import com.lalilu.lartist.screen.ArtistDetailScreen
 import com.lalilu.lmedia.entity.LArtist
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
@@ -32,9 +30,9 @@ fun SongArtistsRow(
         artists.forEach {
             Chip(
                 onClick = {
-                    AppRouter.intent(
-                        NavIntent.Push(ArtistDetailScreen(artistName = it.name))
-                    )
+                    AppRouter.route("/pages/artist/detail")
+                        .with("artistName", it.name)
+                        .jump()
                 },
                 colors = ChipDefaults.outlinedChipColors(),
             ) {
