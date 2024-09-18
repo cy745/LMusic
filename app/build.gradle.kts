@@ -173,6 +173,7 @@ dependencies {
     implementation(project(":lartist"))
     implementation(project(":lalbum"))
     implementation(project(":ldictionary"))
+    ksp(libs.koin.compiler)
 
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)

@@ -58,6 +58,8 @@ dependencies {
     api("com.github.cy745.KRouter:core:fcf40f4b15")
     api("com.cheonjaeung.compose.grid:grid:2.0.0")
     api("com.github.cy745.RemixIcon-Kmp:core:1a3c554a35")
+    api("com.github.nanihadesuka:LazyColumnScrollbar:2.2.0")
+    api("com.github.GIGAMOLE:ComposeFadingEdges:1.0.4")
 
     // compose
 //    api(platform(libs.compose.bom))

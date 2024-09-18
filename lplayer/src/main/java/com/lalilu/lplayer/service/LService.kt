@@ -98,7 +98,7 @@ abstract class LService : MediaBrowserServiceCompat(), LifecycleOwner, Playback.
         runtime.info.updateIsPlaying(isPlaying)
         runtime.info.updatePosition(startPosition = position, isPlaying = isPlaying)
 
-        mediaSession.setMetadata(item?.metaDataCompat)
+        mediaSession.setMetadata(item?.provideMediaData())
         mediaSession.setPlaybackState(
             PlaybackStateCompat.Builder()
                 .setActions(LPlayer.MEDIA_DEFAULT_ACTION)

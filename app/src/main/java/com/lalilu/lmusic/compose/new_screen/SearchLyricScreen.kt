@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -61,7 +62,7 @@ data class SearchLyricScreen(
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
         ScreenInfo(
-            title = R.string.preference_lyric_settings
+            title = { stringResource(id = R.string.preference_lyric_settings) }
         )
     }
 

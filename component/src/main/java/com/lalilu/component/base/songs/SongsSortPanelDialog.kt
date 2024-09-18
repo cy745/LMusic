@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.screen.songs
+package com.lalilu.component.base.songs
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -39,11 +39,10 @@ import com.lalilu.component.extension.DialogItem
 import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.lmedia.extension.ListAction
 import com.lalilu.lmedia.extension.SortStaticAction
-import com.lalilu.lmusic.LMusicTheme
 
 
 @Composable
-internal fun SongsSortPanelDialog(
+fun SongsSortPanelDialog(
     isVisible: MutableState<Boolean>,
     supportSortActions: Set<ListAction>,
     isSortActionSelected: (ListAction) -> Boolean = { false },
@@ -188,11 +187,9 @@ private fun SortItem(
 )
 @Composable
 private fun SongsSortPanelDialogPVDay() {
-    LMusicTheme {
-        SongsSortPanelDialogContent(
-            supportSortActions = setOf(SortStaticAction.Normal)
-        )
-    }
+    SongsSortPanelDialogContent(
+        supportSortActions = setOf(SortStaticAction.Normal)
+    )
 }
 
 @Preview(
@@ -202,9 +199,7 @@ private fun SongsSortPanelDialogPVDay() {
 )
 @Composable
 private fun SongsSortPanelDialogPV() {
-    LMusicTheme {
-        SongsSortPanelDialogContent(
-            supportSortActions = setOf(SortStaticAction.Normal)
-        )
-    }
+    SongsSortPanelDialogContent(
+        supportSortActions = setOf(SortStaticAction.Normal)
+    )
 }

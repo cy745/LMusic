@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.screen.songs
+package com.lalilu.component.base.songs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -32,7 +32,7 @@ import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.lmedia.extension.GroupIdentity
 
 @Composable
-internal fun SongsHeaderJumperDialog(
+fun SongsHeaderJumperDialog(
     isVisible: MutableState<Boolean>,
     items: () -> Collection<GroupIdentity>,
     onSelectItem: (item: GroupIdentity) -> Unit = {}

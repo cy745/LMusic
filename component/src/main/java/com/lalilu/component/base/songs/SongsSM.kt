@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.screen.songs
+package com.lalilu.component.base.songs
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -15,9 +15,8 @@ import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.ItemSelector
 import com.lalilu.component.extension.toState
 import com.lalilu.component.viewmodel.SongsSp
-import com.lalilu.component.viewmodel.findInstance
 import com.lalilu.lmedia.LMedia
-import com.lalilu.lmedia.entity.BaseMatchable
+import com.lalilu.lmedia.entity.FullTextMatchable
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.ListAction
@@ -25,9 +24,7 @@ import com.lalilu.lmedia.extension.SortDynamicAction
 import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmedia.extension.Sortable
 import com.lalilu.lplayer.LPlayer
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -40,18 +37,18 @@ import kotlinx.coroutines.launch
 import org.koin.core.qualifier.named
 import org.koin.java.KoinJavaComponent.inject
 
-internal sealed interface SongsScreenAction {
+sealed interface SongsScreenAction {
     data object ToggleSortPanel : SongsScreenAction
     data object LocaleToPlayingItem : SongsScreenAction
     data class LocaleToGroupItem(val item: GroupIdentity) : SongsScreenAction
     data class SearchFor(val keyword: String) : SongsScreenAction
 }
 
-internal sealed interface SongsScreenEvent {
-    data class ScrollToItem(val index: Int) : SongsScreenEvent
+sealed interface SongsScreenEvent {
+    data class ScrollToItem(val key: Any) : SongsScreenEvent
 }
 
-internal class SongsSM(
+class SongsSM(
     private val mediaIds: List<String>,
 ) : ScreenModel {
     // 持久化元素的状态
@@ -78,12 +75,7 @@ internal class SongsSM(
                 val mediaId = LPlayer.runtime.info.playingIdFlow.value
                     ?: return@launch
 
-                val index = recorder.list()
-                    .indexOf(mediaId)
-                    .takeIf { it >= 0 }
-                    ?: return@launch
-
-                eventFlow.emit(SongsScreenEvent.ScrollToItem(index))
+                eventFlow.emit(SongsScreenEvent.ScrollToItem(mediaId))
             }
 
             SongsScreenAction.ToggleSortPanel -> {
@@ -95,12 +87,7 @@ internal class SongsSM(
             }
 
             is SongsScreenAction.LocaleToGroupItem -> {
-                val index = recorder.list()
-                    .indexOf(action.item)
-                    .takeIf { it >= 0 }
-                    ?: return@launch
-
-                eventFlow.emit(SongsScreenEvent.ScrollToItem(index))
+                eventFlow.emit(SongsScreenEvent.ScrollToItem(action.item))
             }
 
             else -> {}
@@ -118,13 +105,12 @@ internal class SongsSM(
     val songs = sorter.output.toState(
         defaultValue = emptyMap(),
         scope = screenModelScope,
-        context = Dispatchers.IO + SupervisorJob()
     )
     val selector = ItemSelector<Playable>()
     val recorder = ItemRecorder()
 }
 
-internal class ItemSearcher<T : BaseMatchable>(
+class ItemSearcher<T : FullTextMatchable>(
     sourceFlow: Flow<List<T>>
 ) {
     val keywordState = mutableStateOf("")
@@ -137,7 +123,7 @@ internal class ItemSearcher<T : BaseMatchable>(
     }
 
     val output: Flow<List<T>> = sourceFlow.combine(keywordFlow) { source, keywords ->
-        source.filter { item -> keywords.all { item.matchStr.contains(it) } }
+        source.filter { item -> keywords.all { item.getMatchStr().contains(it) } }
     }
 
     val isSearching: State<Boolean>
@@ -147,7 +133,7 @@ internal class ItemSearcher<T : BaseMatchable>(
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class ItemSorter<T : Sortable>(
+class ItemSorter<T : Sortable>(
     sourceFlow: Flow<List<T>>,
     private val supportSortActions: Set<ListAction>,
 ) {
@@ -181,4 +167,9 @@ internal class ItemSorter<T : Sortable>(
 
         return sortActionKey.value == action::class.java.name
     }
+}
+
+inline fun <reified T> Collection<Any>.findInstance(check: (T) -> Boolean): T? {
+    return this.filterIsInstance(T::class.java)
+        .firstOrNull(check)
 }

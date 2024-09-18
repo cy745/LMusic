@@ -3,6 +3,7 @@ package com.lalilu.lplaylist.screen.detail
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.ToastUtils
@@ -26,7 +27,9 @@ data class PlaylistDetailScreen(
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
-        ScreenInfo(title = R.string.playlist_screen_detail)
+        ScreenInfo(
+            title = { stringResource(id = R.string.playlist_screen_detail) }
+        )
     }
 
     @Composable

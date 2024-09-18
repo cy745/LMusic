@@ -20,5 +20,11 @@ interface Playable {
     val imageSource: Any?
     val sticker: List<Sticker>
 
-    val metaDataCompat: MediaMetadataCompat
+    fun provideMediaData(): MediaMetadataCompat = MediaMetadataCompat.Builder()
+        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, mediaId)
+        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, subTitle)
+        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationMs)
+        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, targetUri.toString())
+        .build()
 }

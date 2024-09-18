@@ -1,11 +1,8 @@
 package com.lalilu.lartist
 
-import com.lalilu.lartist.screen.ArtistDetailScreenModel
-import com.lalilu.lartist.screen.ArtistsScreenModel
-import org.koin.core.module.dsl.factoryOf
-import org.koin.dsl.module
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
 
-val ArtistModule = module {
-    factoryOf(::ArtistsScreenModel)
-    factoryOf(::ArtistDetailScreenModel)
-}
+@Module
+@ComponentScan("com.lalilu.lartist")
+object ArtistModule

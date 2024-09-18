@@ -19,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.lalilu.component.base.ScreenBarComponent
@@ -46,8 +45,9 @@ fun NavigationSmartBar(
         ?.previousScreen()
         ?.value
 
-    val previousTitle = (previousScreen as? ScreenInfoFactory)?.provideScreenInfo()
-        ?.let { stringResource(id = it.title) }
+    val previousTitle = (previousScreen as? ScreenInfoFactory)
+        ?.provideScreenInfo()
+        ?.title?.invoke()
         ?: "返回"
 
     val mainContent = (currentScreen as? ScreenBarFactory)?.content()

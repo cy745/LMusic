@@ -3,6 +3,7 @@ package com.lalilu.lalbum.screen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.Screen
@@ -29,7 +30,9 @@ data class AlbumDetailScreen(
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
-        ScreenInfo(title = R.string.album_screen_title)
+        ScreenInfo(
+            title = { stringResource(id = R.string.album_screen_title) }
+        )
     }
 
     @Composable

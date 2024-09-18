@@ -46,7 +46,6 @@ import com.lalilu.component.base.DynamicScreen
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.ScreenAction
 import com.lalilu.component.extension.dayNightTextColor
-import com.lalilu.component.extension.rememberLazyListScrollToHelper
 import com.lalilu.component.extension.toMutableState
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
@@ -177,7 +176,6 @@ private fun DynamicScreen.PlaylistCreateOrEditScreen(
     createOrEditSM: PlaylistCreateOrEditScreenModel
 ) {
     val state = rememberLazyListState()
-    val scrollToHelper = rememberLazyListScrollToHelper(listState = state)
 
     val onFocusCallback: (String) -> Unit = remember {
         {
@@ -204,10 +202,8 @@ private fun DynamicScreen.PlaylistCreateOrEditScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        scrollToHelper.startRecord()
 
         item(key = "header") {
-            scrollToHelper.doRecord("header")
             NavigatorHeader(
                 modifier = Modifier.statusBarsPadding(),
                 title = stringResource(id = headerTitleRes),
@@ -219,7 +215,7 @@ private fun DynamicScreen.PlaylistCreateOrEditScreen(
             title = "主标题",
             minLines = 1,
             value = createOrEditSM.title,
-            onInit = { scrollToHelper.doRecord(it) },
+            onInit = { },
             onFocus = onFocusCallback
         )
 
@@ -227,7 +223,7 @@ private fun DynamicScreen.PlaylistCreateOrEditScreen(
             title = "简介/备注",
             minLines = 3,
             value = createOrEditSM.subTitle,
-            onInit = { scrollToHelper.doRecord(it) },
+            onInit = { },
             onFocus = onFocusCallback
         )
     }

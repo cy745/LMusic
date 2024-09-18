@@ -21,8 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.FixedScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -32,7 +32,6 @@ import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.R
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.base.screen.ScreenInfoFactory
-import com.lalilu.component.extension.dayNightTextColor
 
 
 @Composable
@@ -42,6 +41,8 @@ fun NavigateTabBar(
     tabScreens: () -> List<TabScreen>,
     onSelectTab: (TabScreen) -> Unit = {}
 ) {
+    val defaultTitle = stringResource(id = R.string.empty_screen_no_items)
+
     Row(
         modifier = modifier
             .height(52.dp)
@@ -50,13 +51,13 @@ fun NavigateTabBar(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         tabScreens().forEach {
-            val screenInfo = (it as? ScreenInfoFactory)
-                ?.provideScreenInfo()
+            val screenInfo = (it as? ScreenInfoFactory)?.provideScreenInfo()
+            val title = screenInfo?.title?.invoke()
 
             NavigateItem(
                 modifier = Modifier.weight(1f),
-                titleRes = { screenInfo?.title ?: R.string.empty_screen_no_items },
-                iconRes = { screenInfo?.icon ?: R.drawable.ic_close_line },
+                title = { title ?: defaultTitle },
+                icon = { screenInfo?.icon },
                 isSelected = { currentScreen() === it },
                 onClick = { onSelectTab(it) }
             )
@@ -68,15 +69,14 @@ fun NavigateTabBar(
 @Composable
 fun NavigateItem(
     modifier: Modifier = Modifier,
-    titleRes: () -> Int,
-    iconRes: () -> Int,
+    title: () -> String,
+    icon: () -> ImageVector?,
     isSelected: () -> Boolean = { false },
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
     baseColor: Color = MaterialTheme.colors.primary,
     unSelectedColor: Color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
 ) {
-    val titleValue = stringResource(id = titleRes())
     val iconTintColor = animateColorAsState(
         targetValue = if (isSelected()) baseColor else unSelectedColor,
         label = ""
@@ -102,21 +102,23 @@ fun NavigateItem(
                     .animateContentSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    painter = painterResource(id = iconRes()),
-                    contentDescription = titleValue,
-                    colorFilter = ColorFilter.tint(iconTintColor.value),
-                    contentScale = FixedScale(if (isSelected()) 1.1f else 1f)
-                )
+                icon()?.let {
+                    Image(
+                        imageVector = it,
+                        contentDescription = title(),
+                        colorFilter = ColorFilter.tint(iconTintColor.value),
+                        contentScale = FixedScale(if (isSelected()) 1.1f else 1f)
+                    )
+                }
                 AnimatedVisibility(visible = isSelected()) {
                     Text(
-                        text = titleValue,
+                        text = title(),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Medium,
                         fontSize = 12.sp,
                         letterSpacing = 0.1.sp,
-                        color = dayNightTextColor()
+                        color = MaterialTheme.colors.onBackground
                     )
                 }
             }

@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
@@ -39,8 +38,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
-import com.lalilu.component.extension.rememberLazyListScrollToHelper
+import com.lalilu.component.extension.startRecord
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -132,11 +132,11 @@ fun LyricLayout(
 ) {
     val textMeasurer = rememberTextMeasurer()
     val isUserScrolling = remember(isUserScrollEnable()) { mutableStateOf(isUserScrollEnable()) }
-    val scrollToHelper = rememberLazyListScrollToHelper(listState)
+    val recorder = remember { ItemRecorder() }
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
         enableScrollAnimation = { !isUserScrolling.value },
-        keysKeeper = { scrollToHelper.getKeys() }
+        keys = { recorder.list().filterNotNull() }
     )
 
     val currentItemIndex = remember {
@@ -209,9 +209,9 @@ fun LyricLayout(
             userScrollEnabled = true,
             contentPadding = remember { PaddingValues(top = 300.dp, bottom = 500.dp) }
         ) {
-            scrollToHelper.record {
+            startRecord(recorder) {
                 if (lyricEntry.value.isEmpty()) {
-                    item {
+                    itemWithRecord(key = "EMPTY_TIPS") {
                         LyricSentence(
                             lyric = EMPTY_SENTENCE_TIPS,
                             maxWidth = maxWidth,
@@ -231,8 +231,7 @@ fun LyricLayout(
                         )
                     }
                 } else {
-                    record(lyricEntry.value.map { it.key })
-                    itemsIndexed(
+                    itemsIndexedWithRecord(
                         items = lyricEntry.value,
                         key = { _, item -> item.key },
                         contentType = { _, _ -> LyricEntry::class }

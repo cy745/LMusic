@@ -10,18 +10,25 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.Single
 import java.util.Calendar
 
+@Single
 @OptIn(ExperimentalCoroutinesApi::class)
 class LibraryViewModel(
     private val tempSp: TempSp
 ) : ViewModel() {
-    val recentlyAdded = LMedia.getFlow<LSong>().mapLatest { it.take(15) }
+    val recentlyAdded = LMedia.getFlow<LSong>()
+        .mapLatest { it.take(15) }
         .toState(emptyList(), viewModelScope)
 
     val dailyRecommends = tempSp.dailyRecommends.flow(true)
         .flatMapLatest { LMedia.flowMapBy<LSong>(it ?: emptyList()) }
         .toState(emptyList(), viewModelScope)
+
+    init {
+        checkOrUpdateToday()
+    }
 
     fun checkOrUpdateToday() = viewModelScope.launch {
         val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)

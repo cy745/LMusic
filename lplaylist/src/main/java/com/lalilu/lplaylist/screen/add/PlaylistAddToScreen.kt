@@ -30,7 +30,9 @@ data class PlaylistAddToScreen(
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember(this) {
-        ScreenInfo(title = R.string.playlist_action_add_to_playlist)
+        ScreenInfo(
+            title = { stringResource(id = R.string.playlist_action_add_to_playlist) }
+        )
     }
 
     @Composable
