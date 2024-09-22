@@ -28,7 +28,6 @@ import com.lalilu.component.divider
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.rememberGridItemPadding
-import com.lalilu.lalbum.screen.AlbumsScreen
 import com.lalilu.ldictionary.screen.DictionaryScreen
 import com.lalilu.lhistory.screen.HistoryScreen
 import com.lalilu.lmusic.compose.new_screen.SettingsScreen
@@ -45,7 +44,7 @@ object EntryPanel : LazyGridContent {
             listOfNotNull(
                 SongsScreen(),
                 KRouter.route("/pages/artists"),
-                AlbumsScreen(),
+                KRouter.route("/pages/albums"),
                 PlaylistScreen,
                 HistoryScreen,
                 DictionaryScreen,

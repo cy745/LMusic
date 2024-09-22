@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,11 +40,11 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
-import com.lalilu.component.R as ComponentR
 import com.lalilu.component.card.PlayingTipIcon
-import com.lalilu.lmedia.entity.LAlbum
-import com.lalilu.component.extension.requirePalette
 import com.lalilu.component.extension.dayNightTextColor
+import com.lalilu.component.extension.requirePalette
+import com.lalilu.lmedia.entity.LAlbum
+import com.lalilu.component.R as ComponentR
 
 
 @Composable
@@ -77,22 +78,25 @@ fun AlbumCard(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-    ) {
-        AlbumCoverCard(
-            imageData = imageData,
-            onClick = onClick,
-            isPlaying = isPlaying,
-            interactionSource = interactionSource
-        )
-        AlbumTitleText(
-            title = title,
-            showTitle = showTitle,
-            onClick = onClick,
-            interactionSource = interactionSource
-        )
+
+    Surface(shape = RoundedCornerShape(8.dp)) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+        ) {
+            AlbumCoverCard(
+                imageData = imageData,
+                onClick = onClick,
+                isPlaying = isPlaying,
+                interactionSource = interactionSource
+            )
+            AlbumTitleText(
+                title = title,
+                showTitle = showTitle,
+                onClick = onClick,
+                interactionSource = interactionSource
+            )
+        }
     }
 }
 
@@ -117,10 +121,12 @@ fun AlbumTitleText(
                     indication = null,
                     onClick = onClick
                 )
-                .padding(horizontal = 5.dp, vertical = 10.dp),
+                .padding(horizontal = 8.dp, vertical = 12.dp),
             text = title(),
             color = dayNightTextColor(0.8f),
-            fontSize = 14.sp
+            fontWeight = FontWeight.Bold,
+            fontSize = 10.sp,
+            lineHeight = 14.sp
         )
     }
 }

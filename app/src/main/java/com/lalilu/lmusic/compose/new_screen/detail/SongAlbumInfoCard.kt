@@ -15,8 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.navigation.AppRouter
-import com.lalilu.component.navigation.NavIntent
-import com.lalilu.lalbum.screen.AlbumDetailScreen
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmusic.compose.component.card.RecommendCardCover
 
@@ -31,11 +29,9 @@ fun SongAlbumInfoCard(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
         onClick = {
-            AppRouter.intent(
-                NavIntent.Push(
-                    AlbumDetailScreen(albumId = album.id)
-                )
-            )
+            AppRouter.route("/pages/album/detail")
+                .with("albumId", album.id)
+                .jump()
         }
     ) {
         Row(

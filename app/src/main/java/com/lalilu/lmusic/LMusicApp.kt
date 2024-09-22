@@ -65,7 +65,7 @@ class LMusicApp : Application(), SingletonImageLoader.Factory, FilterProvider, V
                 HistoryModule.module,
                 PlaylistModule2.module,
                 ArtistModule.module,
-                AlbumModule,
+                AlbumModule.module,
                 DictionaryModule,
                 LPlayer.module,
                 LMedia.module
