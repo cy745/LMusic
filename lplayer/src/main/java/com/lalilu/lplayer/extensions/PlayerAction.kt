@@ -1,9 +1,11 @@
 package com.lalilu.lplayer.extensions
 
-import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.MPlayer
 
 sealed class PlayerAction : Action {
-    override fun action(): Boolean = LPlayer.controller.doAction(this)
+    override fun action() {
+        MPlayer.doAction(this@PlayerAction)
+    }
 
     data object Play : PlayerAction()
     data object Pause : PlayerAction()

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
@@ -44,14 +43,14 @@ import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.mapLatest
 import org.koin.compose.koinInject
 import kotlin.math.pow
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun PlayingLayout(
     playingVM: PlayingViewModel = singleViewModel(),
@@ -199,7 +198,7 @@ fun PlayingLayout(
                     blurProgress = { middleToMaxProgress.value },
                     onBackgroundColorFetched = { backgroundColor.value = it },
                     imageData = {
-                        playingVM.playing.value
+                        MPlayer.currentMediaItem
                             ?: com.lalilu.component.R.drawable.ic_music_2_line_100dp
                     }
                 )
@@ -240,7 +239,7 @@ fun PlayingLayout(
                         if (isLyricScrollEnable.value) {
                             isLyricScrollEnable.value = false
                         }
-                        LPlayer.controller.doAction(PlayerAction.SeekTo(it.time))
+                        PlayerAction.SeekTo(it.time).action()
                     },
                     onItemLongClick = {
                         if (draggable.state.value == DragAnchor.Max) {
@@ -255,7 +254,8 @@ fun PlayingLayout(
             Surface(color = MaterialTheme.colors.background) {
                 PlaylistLayout(
                     modifier = modifier.clipToBounds(),
-                    forceRefresh = { draggable.state.value != DragAnchor.Min }
+                    forceRefresh = { draggable.state.value != DragAnchor.Min },
+                    items = { MPlayer.currentTimelineItems }
                 )
             }
         },
@@ -274,15 +274,12 @@ fun PlayingLayout(
                         translationY = (1f - animateProgress.value / 100f) * 500f
                     }
             ) {
-                val duration = LPlayer.runtime.info.durationFlow.collectAsState()
-                val currentValue = LPlayer.runtime.info.positionFlow.collectAsState()
-
                 SeekbarLayout2(
                     modifier = Modifier.hideControl(enable = { hideComponent.value }),
                     animateColor = { animateColor.value },
                     onValueChange = { seekbarTime.longValue = it.toLong() },
-                    maxValue = { duration.value.toFloat() },
-                    dataValue = { currentValue.value.toFloat() },
+                    maxValue = { MPlayer.currentDuration.toFloat() },
+                    dataValue = { MPlayer.currentPosition.toFloat() },
                     onDispatchDragOffset = { enhanceSheetState?.dispatch(it) },
                     onDragStop = { result ->
                         if (result == -1) enhanceSheetState?.hide()

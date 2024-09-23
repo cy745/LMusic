@@ -24,11 +24,12 @@ import com.lalilu.lmusic.datastore.TempSp
 import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lmusic.service.LMusicNotifier
-import com.lalilu.lmusic.service.LMusicServiceConnector
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.LAlbumFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.LSongFetcher
+import com.lalilu.lmusic.utils.coil.fetcher.MediaItemFetcher
+import com.lalilu.lmusic.utils.coil.keyer.MediaItemKeyer
 import com.lalilu.lmusic.utils.coil.keyer.PlayableKeyer
 import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
 import com.lalilu.lmusic.utils.coil.mapper.LSongMapper
@@ -89,6 +90,8 @@ val AppModule = module {
                 add(SongCoverKeyer())
                 add(PlayableKeyer())
                 add(LSongMapper())
+                add(MediaItemKeyer())
+                add(MediaItemFetcher.MediaItemFetcherFactory())
                 add(LSongFetcher.SongFactory())
                 add(LAlbumFetcher.AlbumFactory())
             }
@@ -109,7 +112,6 @@ val ViewModelModule = module {
 val RuntimeModule = module {
     singleOf(::LMusicNotifier)
     single<Notifier> { get<LMusicNotifier>() }
-    singleOf(::LMusicServiceConnector)
     singleOf(::CoverRepository)
     singleOf(::LyricRepository)
 }

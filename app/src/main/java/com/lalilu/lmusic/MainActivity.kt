@@ -23,13 +23,11 @@ import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.App
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.helper.LastTouchTimeHelper
-import com.lalilu.lmusic.service.LMusicServiceConnector
 import com.lalilu.lmusic.utils.dynamicUpdateStatusBarColor
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
     private val settingsSp: SettingsSp by inject()
-    private val connector: LMusicServiceConnector by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +70,6 @@ class MainActivity : ComponentActivity() {
 
         LMedia.initialize(this)
 
-        lifecycle.addObserver(connector)
         // 注册返回键事件回调
         onBackPressedDispatcher.addCallback { this@MainActivity.moveTaskToBack(false) }
 

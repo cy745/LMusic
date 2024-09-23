@@ -10,6 +10,7 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.LibraryParams
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
+import androidx.media3.session.SessionError
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -19,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
 
+@OptIn(UnstableApi::class)
 class MService : MediaLibraryService(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO + SupervisorJob()
 
@@ -52,7 +54,7 @@ class MService : MediaLibraryService(), CoroutineScope {
     ): MediaLibrarySession? = mediaSession
 }
 
-@UnstableApi
+@OptIn(UnstableApi::class)
 class MServiceCallback : MediaLibrarySession.Callback {
     companion object {
         const val ROOT = "root"
@@ -121,7 +123,7 @@ class MServiceCallback : MediaLibrarySession.Callback {
 
         return Futures.immediateFuture(
             if (item != null) LibraryResult.ofItem(item, null)
-            else LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+            else LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
         )
     }
 
@@ -147,7 +149,6 @@ class MServiceCallback : MediaLibrarySession.Callback {
         resolveMediaItems(mediaItems).toMutableList()
     )
 
-    @OptIn(UnstableApi::class)
     override fun onPlaybackResumption(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo

@@ -164,9 +164,9 @@ fun SleepTimer(
                     millisInFuture = millisSecond,
                     onFinish = {
                         if (pauseWhenCompletion.value) {
-                            LPlayer.controller.doAction(PlayerAction.PauseWhenCompletion())
+                            PlayerAction.PauseWhenCompletion().action()
                         } else {
-                            LPlayer.controller.doAction(PlayerAction.Pause)
+                            PlayerAction.Pause.action()
                         }
                     }
                 )
