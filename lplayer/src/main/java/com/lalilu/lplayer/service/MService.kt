@@ -31,6 +31,10 @@ class MService : MediaLibraryService(), CoroutineScope {
     override fun onCreate() {
         super.onCreate()
 
+        setMediaNotificationProvider(
+            MNotificationProvider(this)
+        )
+
         exoPlayer = ExoPlayer
             .Builder(this)
             .setRenderersFactory(FadeTransitionRenderersFactory(this, this))
