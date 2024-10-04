@@ -42,26 +42,6 @@
             android:name="ScopedStorage"
             android:value="true" />
 
-<!--        <receiver-->
-<!--            android:name="androidx.media.session.MediaButtonReceiver"-->
-<!--            android:exported="false">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MEDIA_BUTTON" />-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
-
-<!--        <service-->
-<!--            android:name="com.lalilu.lmusic.service.LMusicService"-->
-<!--            android:enabled="true"-->
-<!--            android:exported="true"-->
-<!--            android:foregroundServiceType="mediaPlayback">-->
-
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MEDIA_BUTTON" />-->
-<!--                <action android:name="android.media.browse.MediaBrowserService" />-->
-<!--            </intent-filter>-->
-<!--        </service>-->
-
         <activity
             android:name=".lmusic.MainActivity"
             android:configChanges="orientation|screenSize"

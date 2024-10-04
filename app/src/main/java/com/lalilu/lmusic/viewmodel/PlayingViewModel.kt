@@ -1,25 +1,18 @@
 package com.lalilu.lmusic.viewmodel
 
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.viewModelScope
 import com.lalilu.common.base.Playable
 import com.lalilu.component.extension.toState
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.repository.LyricRepository
 import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.extensions.QueueAction
 import com.lalilu.lplaylist.repository.PlaylistRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class PlayingViewModel(
     val settingsSp: SettingsSp,
-    val lyricRepository: LyricRepository,
     playlistRepo: PlaylistRepository
 ) : IPlayingViewModel() {
     val playing = LPlayer.runtime.info.playingFlow.toState(viewModelScope)
@@ -60,24 +53,6 @@ class PlayingViewModel(
     override fun isItemPlaying(compare: (Playable) -> Boolean): Boolean {
         if (!isPlaying.value) return false
         return playing.value?.let { compare(it) } ?: false
-    }
-
-    override fun requireLyric(item: Playable, callback: (hasLyric: Boolean) -> Unit) {
-        viewModelScope.launch {
-            if (isActive) {
-                val hasLyric = lyricRepository.hasLyric(item)
-                withContext(Dispatchers.Main) { callback(hasLyric) }
-            }
-        }
-    }
-
-    private val hasLyricList = mutableStateMapOf<String, Boolean>()
-    override fun requireHasLyric(item: Playable): SnapshotStateMap<String, Boolean> {
-        viewModelScope.launch {
-            if (!isActive) return@launch
-            hasLyricList[item.mediaId] = lyricRepository.hasLyric(item)
-        }
-        return hasLyricList
     }
 
     private val isFavouriteList = playlistRepo.getFavouriteMediaIds()

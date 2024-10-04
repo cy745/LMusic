@@ -199,11 +199,6 @@ dependencies {
     // Bitmap的Blur实现库
     implementation("com.github.Commit451:NativeStackBlur:1.0.4")
 
-    // https://github.com/Moriafly/LyricViewX
-    // GPL-3.0 License
-    // 歌词组件
-    implementation("com.github.cy745:LyricViewX:7c92c6d19a")
-
     // https://github.com/qinci/EdgeTranslucent
     // https://github.com/cy745/EdgeTranslucent
     // Undeclared License

@@ -23,7 +23,5 @@ abstract class IPlayingViewModel : ViewModel() {
     abstract fun <T> isItemPlaying(item: T, getter: (Playable) -> T): Boolean
     abstract fun isItemPlaying(compare: (Playable) -> Boolean): Boolean
 
-    abstract fun requireLyric(item: Playable, callback: (hasLyric: Boolean) -> Unit)
-    abstract fun requireHasLyric(item: Playable): SnapshotStateMap<String, Boolean>
     abstract fun isFavourite(item: Playable): Boolean
 }

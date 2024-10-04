@@ -22,8 +22,6 @@ import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.datastore.TempSp
 import com.lalilu.lmusic.repository.CoverRepository
-import com.lalilu.lmusic.repository.LyricRepository
-import com.lalilu.lmusic.service.LMusicNotifier
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.LAlbumFetcher
@@ -37,7 +35,6 @@ import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
-import com.lalilu.lplayer.notification.Notifier
 import com.lalilu.lplaylist.entity.LPlaylistFastEncoder
 import io.fastkv.FastKV
 import okhttp3.OkHttpClient
@@ -110,10 +107,7 @@ val ViewModelModule = module {
 }
 
 val RuntimeModule = module {
-    singleOf(::LMusicNotifier)
-    single<Notifier> { get<LMusicNotifier>() }
     singleOf(::CoverRepository)
-    singleOf(::LyricRepository)
 }
 
 val ApiModule = module {
