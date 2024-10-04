@@ -41,22 +41,17 @@ import androidx.compose.ui.unit.sp
 import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
+import com.lalilu.lmedia2.lyric.LyricItem
+import com.lalilu.lmedia2.lyric.LyricUtils
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.isActive
 import java.io.File
+import java.util.WeakHashMap
 import kotlin.math.abs
 
-data class LyricEntry(
-    val index: Int,
-    val time: Long,
-    val text: String,
-    val translate: String? = null
-) {
-    val key = "$index:$time"
-}
 
 /**
  * 读取字体文件，并将其转换成Compose可用的FontFamily
@@ -104,12 +99,18 @@ fun rememberTextSizeFromInt(textSize: () -> Int?): TextUnit {
     return remember(textSize()) { textSize()?.takeIf { it > 0 }?.sp ?: 26.sp }
 }
 
-private val EMPTY_SENTENCE_TIPS = LyricEntry(
-    index = 0,
+private val EMPTY_SENTENCE_TIPS = LyricItem.SingleLyric(
     time = 0,
-    text = "暂无歌词",
-    translate = null
+    content = "暂无歌词",
 )
+
+private val indexKeeper = WeakHashMap<LyricItem, Int>()
+var LyricItem.index: Int
+    get() = indexKeeper[this] ?: -1
+    set(value) = run { indexKeeper[this] = value }
+
+val LyricItem.key
+    get() = "${index}:$time"
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -125,9 +126,9 @@ fun LyricLayout(
     isUserScrollEnable: () -> Boolean = { false },
     isTranslationShow: () -> Boolean = { false },
     onPositionReset: () -> Unit = {},
-    onItemClick: (LyricEntry) -> Unit = {},
-    onItemLongClick: (LyricEntry) -> Unit = {},
-    lyricEntry: State<List<LyricEntry>> = remember { mutableStateOf(emptyList()) },
+    onItemClick: (LyricItem) -> Unit = {},
+    onItemLongClick: (LyricItem) -> Unit = {},
+    lyricEntry: State<List<LyricItem>> = remember { mutableStateOf(emptyList()) },
     fontFamily: State<FontFamily?> = remember { mutableStateOf<FontFamily?>(null) }
 ) {
     val textMeasurer = rememberTextMeasurer()
@@ -143,29 +144,12 @@ fun LyricLayout(
         derivedStateOf {
             val time = currentTime()
             val lyricEntryList = lyricEntry.value
-            if (lyricEntryList.isEmpty()) return@derivedStateOf Int.MAX_VALUE
 
-            var left = 0
-            var right = lyricEntryList.size
-            var currentItemIndex = 0
-            while (left <= right) {
-                val middle = (left + right) / 2
-                val middleTime = lyricEntryList[middle].time
-                if (time < middleTime) {
-                    right = middle - 1
-                } else {
-                    if (middle + 1 >= lyricEntryList.size || time < lyricEntryList[middle + 1].time) {
-                        currentItemIndex = middle
-                        break
-                    }
-                    left = middle + 1
-                }
-            }
-            currentItemIndex
+            LyricUtils.findPlayingIndex(time, lyricEntryList)
         }
     }
 
-    val currentItem: State<LyricEntry?> = remember {
+    val currentItem: State<LyricItem?> = remember {
         derivedStateOf {
             currentItemIndex.value
                 .takeIf { it != Int.MAX_VALUE }
@@ -234,7 +218,7 @@ fun LyricLayout(
                     itemsIndexedWithRecord(
                         items = lyricEntry.value,
                         key = { _, item -> item.key },
-                        contentType = { _, _ -> LyricEntry::class }
+                        contentType = { _, _ -> LyricItem::class }
                     ) { index, item ->
                         LyricSentence(
                             lyric = item,

@@ -13,7 +13,10 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.GradientDrawable.Orientation.*
+import android.graphics.drawable.GradientDrawable.Orientation.BOTTOM_TOP
+import android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT
+import android.graphics.drawable.GradientDrawable.Orientation.RIGHT_LEFT
+import android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -25,15 +28,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.GsonUtils
 import com.blankj.utilcode.util.LogUtils
-import com.dirror.lyricviewx.LyricEntry
 import com.google.gson.reflect.TypeToken
 import com.lalilu.R
 import com.lalilu.lmedia.entity.LSong
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl.HttpsURLConnection
@@ -224,34 +228,6 @@ fun <T : Any> List<T>.removeAt(index: Int): List<T> {
     return this.toMutableList().apply {
         removeAt(index)
     }
-}
-
-/**
- * 根据当前时间使用二分查找，查找最接近的歌词
- */
-fun findShowLine(list: List<LyricEntry>?, time: Long): Int {
-    if (list == null || list.isEmpty()) return 0
-    var left = 0
-    var right = list.size
-    while (left <= right) {
-        val middle = (left + right) / 2
-        val middleTime = list[middle].time
-        if (time < middleTime) {
-            right = middle - 1
-        } else {
-            if (middle + 1 >= list.size || time < list[middle + 1].time) {
-                return middle
-            }
-            left = middle + 1
-        }
-    }
-    return 0
-}
-
-fun <T> List<T>.average(numToCalc: (T) -> Number): Float {
-    return this.fold(0f) { acc, t ->
-        acc + numToCalc(t).toFloat()
-    } / this.size
 }
 
 fun calculateExtraLayoutSpace(context: Context, size: Int): LinearLayoutManager {

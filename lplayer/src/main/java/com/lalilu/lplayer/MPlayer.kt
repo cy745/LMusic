@@ -18,10 +18,7 @@ import com.lalilu.lplayer.service.MService
 import com.lalilu.lplayer.service.MServiceCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.guava.await
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
@@ -45,15 +42,18 @@ object MPlayer : CoroutineScope {
         private set
     var currentPlaylistMetadata: MediaMetadata? by mutableStateOf(null)
         private set
-    var currentPosition: Long by mutableLongStateOf(0L)
-        private set
     var currentDuration: Long by mutableLongStateOf(0L)
-        private set
-    var currentBufferedPosition: Long by mutableLongStateOf(0L)
         private set
     var currentTimelineItems by mutableStateOf<List<MediaItem>>(emptyList())
         private set
 
+    val currentPosition: Long
+        get() = runCatching { if (browserFuture.isDone) browserFuture.get()?.currentPosition else null }
+            .getOrNull() ?: 0L
+
+    val currentBufferedPosition: Long
+        get() = runCatching { if (browserFuture.isDone) browserFuture.get()?.bufferedPosition else null }
+            .getOrNull() ?: 0L
 
     internal fun init() {
         launch(Dispatchers.Main) {
@@ -122,42 +122,19 @@ object MPlayer : CoroutineScope {
     }
 
     private fun getListener(browser: MediaBrowser) = object : Player.Listener {
-        private var positionLoopJob: Job? = null
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             this@MPlayer.isPlaying = isPlaying
-
-            positionLoopJob?.cancel()
-            if (isPlaying) {
-                positionLoopJob = launch(Dispatchers.Main) {
-                    while (isActive) {
-                        currentPosition = browser.contentPosition
-                        currentBufferedPosition = browser.bufferedPosition
-                        delay(50)
-                    }
-                }
-            }
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_READY) {
                 currentDuration = browser.contentDuration.coerceAtLeast(0)
             }
-
-            currentPosition = browser.contentPosition.coerceAtLeast(0)
-            currentBufferedPosition = browser.bufferedPosition.coerceAtLeast(0)
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             currentMediaItem = mediaItem
-
-//            if (mediaItem == null) return
-//            val firstItem = currentTimelineItems.firstOrNull() ?: return
-//            if (firstItem.mediaId != mediaItem.mediaId) {
-//                val index = browser.currentMediaItemIndex
-//                val items = browser.currentTimeline.toMediaItems()
-//
-//                currentTimelineItems = items.drop(index) + items.take(index)
-//            }
+            updateItems()
         }
 
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -168,10 +145,9 @@ object MPlayer : CoroutineScope {
             currentPlaylistMetadata = mediaMetadata
         }
 
-//        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-//            currentTimelineItems = timeline.toMediaItems()
-//            LogUtils.i("onTimelineChanged: ${timeline.windowCount} ${timeline.periodCount}, reason: $reason ${currentTimelineItems.size}")
-//        }
+        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+            updateItems(timeline)
+        }
 
         override fun onRepeatModeChanged(repeatMode: Int) {
             super.onRepeatModeChanged(repeatMode)
@@ -179,6 +155,14 @@ object MPlayer : CoroutineScope {
 
         override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
             super.onShuffleModeEnabledChanged(shuffleModeEnabled)
+        }
+
+        fun updateItems(
+            timeline: Timeline = browser.currentTimeline,
+            currentIndex: Int = browser.currentMediaItemIndex
+        ) {
+            val items = timeline.toMediaItems()
+            currentTimelineItems = items.drop(currentIndex) + items.take(currentIndex)
         }
     }
 }

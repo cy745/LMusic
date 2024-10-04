@@ -33,13 +33,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lalilu.lmedia2.lyric.LyricItem
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LyricSentence(
     modifier: Modifier = Modifier,
-    lyric: LyricEntry,
+    lyric: LyricItem,
     textMeasurer: TextMeasurer,
     maxWidth: () -> Int = { 1080 },
     currentTime: () -> Long = { 0L },
@@ -71,26 +72,41 @@ fun LyricSentence(
         )
     }
     val (textResult, translateResult) = remember(textAlign, textSize, fontFamily, lyric) {
-        textMeasurer.measure(
-            text = lyric.text,
-            constraints = actualConstraints,
-            style = TextStyle.Default.copy(
-                fontSize = textSize,
-                textAlign = textAlign,
-                fontFamily = fontFamily.value
-                    ?: TextStyle.Default.fontFamily
-            )
-        ) to lyric.translate?.let {
-            textMeasurer.measure(
-                text = it,
-                constraints = actualConstraints,
-                style = TextStyle.Default.copy(
-                    fontSize = textSize * translationScale,
-                    textAlign = textAlign,
-                    fontFamily = fontFamily.value
-                        ?: TextStyle.Default.fontFamily
+        when (lyric) {
+            is LyricItem.SingleLyric -> {
+                textMeasurer.measure(
+                    text = lyric.content,
+                    constraints = actualConstraints,
+                    style = TextStyle.Default.copy(
+                        fontSize = textSize,
+                        textAlign = textAlign,
+                        fontFamily = fontFamily.value
+                            ?: TextStyle.Default.fontFamily
+                    )
+                ) to null
+            }
+
+            is LyricItem.TranslatedLyric -> {
+                textMeasurer.measure(
+                    text = lyric.content,
+                    constraints = actualConstraints,
+                    style = TextStyle.Default.copy(
+                        fontSize = textSize,
+                        textAlign = textAlign,
+                        fontFamily = fontFamily.value
+                            ?: TextStyle.Default.fontFamily
+                    )
+                ) to textMeasurer.measure(
+                    text = lyric.translated,
+                    constraints = actualConstraints,
+                    style = TextStyle.Default.copy(
+                        fontSize = textSize * translationScale,
+                        textAlign = textAlign,
+                        fontFamily = fontFamily.value
+                            ?: TextStyle.Default.fontFamily
+                    )
                 )
-            )
+            }
         }
     }
 

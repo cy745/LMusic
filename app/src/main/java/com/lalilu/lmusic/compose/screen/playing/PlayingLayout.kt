@@ -20,44 +20,53 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-import com.dirror.lyricviewx.LyricUtil
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.component.base.LocalEnhanceSheetState
 import com.lalilu.component.extension.hideControl
 import com.lalilu.component.extension.singleViewModel
+import com.lalilu.lmedia2.lyric.LyricItem
+import com.lalilu.lmedia2.lyric.LyricSourceEmbedded
+import com.lalilu.lmedia2.lyric.LyricUtils
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import kotlin.math.pow
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun PlayingLayout(
     playingVM: PlayingViewModel = singleViewModel(),
     settingsSp: SettingsSp = koinInject(),
 ) {
+    val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val enhanceSheetState = LocalEnhanceSheetState.current
+    val lifecycle = LocalLifecycleOwner.current
     val systemUiController = rememberSystemUiController()
     val lyricLayoutLazyListState = rememberLazyListState()
 
@@ -84,6 +93,21 @@ fun PlayingLayout(
 
     LaunchedEffect(hideComponent.value) {
         systemUiController.isStatusBarVisible = !hideComponent.value
+    }
+
+    val currentPosition = remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (isActive) {
+                withFrameMillis {
+                    val newValue = MPlayer.currentPosition.toFloat()
+                    if (currentPosition.floatValue != newValue) {
+                        currentPosition.floatValue = newValue
+                    }
+                }
+            }
+        }
     }
 
     NestedScrollBaseLayout(
@@ -122,23 +146,6 @@ fun PlayingLayout(
                     { x -> -2f * (x - 0.5f).pow(2) + 0.5f }
                 }
 
-                val flow = remember {
-                    playingVM.lyricRepository.currentLyric
-                        .mapLatest {
-                            LyricUtil
-                                .parseLrc(arrayOf(it?.first, it?.second))
-                                ?.mapIndexed { index, lyricEntry ->
-                                    LyricEntry(
-                                        index = index,
-                                        time = lyricEntry.time,
-                                        text = lyricEntry.text,
-                                        translate = lyricEntry.secondText
-                                    )
-                                }
-                                ?: emptyList()
-                        }
-                }
-                val lyricEntry = flow.collectAsState(initial = emptyList())
                 val minToMiddleProgress = remember {
                     derivedStateOf {
                         draggable.progressBetween(
@@ -203,6 +210,19 @@ fun PlayingLayout(
                     }
                 )
 
+                val lyricSource = remember { LyricSourceEmbedded(context = context) }
+                val lyrics = remember { mutableStateOf<List<LyricItem>>(emptyList()) }
+
+                LaunchedEffect(key1 = MPlayer.currentMediaItem) {
+                    launch(Dispatchers.IO) {
+                        MPlayer.currentMediaItem
+                            ?.let { lyricSource.loadLyric(it) }
+                            ?.let { LyricUtils.parseLrc(it.first, it.second) }
+                            ?.mapIndexed { index, lyricItem -> lyricItem.also { it.index = index } }
+                            .let { if (isActive) lyrics.value = it ?: emptyList() }
+                    }
+                }
+
                 LyricLayout(
                     modifier = Modifier
                         .fillMaxSize()
@@ -219,7 +239,7 @@ fun PlayingLayout(
                             translationY = additionalOffset + fixOffset
                             alpha = progressIncrease
                         },
-                    lyricEntry = lyricEntry,
+                    lyricEntry = lyrics,
                     listState = lyricLayoutLazyListState,
                     currentTime = { seekbarTime.longValue },
                     maxWidth = { constraints.maxWidth },
@@ -279,7 +299,7 @@ fun PlayingLayout(
                     animateColor = { animateColor.value },
                     onValueChange = { seekbarTime.longValue = it.toLong() },
                     maxValue = { MPlayer.currentDuration.toFloat() },
-                    dataValue = { MPlayer.currentPosition.toFloat() },
+                    dataValue = { currentPosition.floatValue },
                     onDispatchDragOffset = { enhanceSheetState?.dispatch(it) },
                     onDragStop = { result ->
                         if (result == -1) enhanceSheetState?.hide()
