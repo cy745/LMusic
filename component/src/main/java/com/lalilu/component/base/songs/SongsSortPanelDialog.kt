@@ -19,8 +19,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.SelectableChipColors
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
@@ -35,10 +33,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cheonjaeung.compose.grid.SimpleGridCells
 import com.cheonjaeung.compose.grid.VerticalGrid
+import com.lalilu.RemixIcon
 import com.lalilu.component.extension.DialogItem
 import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.lmedia.extension.ListAction
 import com.lalilu.lmedia.extension.SortStaticAction
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.system.closeLine
 
 
 @Composable
@@ -119,7 +120,7 @@ private fun SongsSortPanelDialogContent(
 
                 IconButton(onClick = { onDismiss() }) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        imageVector = RemixIcon.System.closeLine,
                         contentDescription = null
                     )
                 }

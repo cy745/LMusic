@@ -8,6 +8,7 @@ plugins {
     id("com.android.application")
     kotlin("android")
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
     id("com.google.devtools.ksp")
     id("android.aop")
 }
@@ -177,6 +178,8 @@ dependencies {
 
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
+    implementation(libs.kotlin.serialization)
+    implementation(libs.kotlinx.serialization.json)
     ksp(libs.room.compiler)
 
     // https://github.com/Block-Network/StatusBarApiExample

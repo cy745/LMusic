@@ -61,6 +61,10 @@ dependencies {
     api("com.github.nanihadesuka:LazyColumnScrollbar:2.2.0")
     api("com.github.GIGAMOLE:ComposeFadingEdges:1.0.4")
 
+    // https://mvnrepository.com/artifact/org.jetbrains.androidx.navigation/navigation-compose
+    api("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
+    api("androidx.compose.material3:material3-adaptive-navigation-suite")
+
     // compose
 //    api(platform(libs.compose.bom))
     api(platform(libs.compose.bom.alpha))
