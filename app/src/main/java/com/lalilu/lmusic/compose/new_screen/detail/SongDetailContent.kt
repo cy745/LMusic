@@ -42,7 +42,8 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.entity.Metadata
 
 private val lSong = LSong(
-    id = "inceptos", name = "Kim Serrano", metadata = Metadata(
+    id = "inceptos",
+    metadata = Metadata(
         title = "maluisset",
         album = "honestatis",
         artist = "persius",
@@ -206,7 +207,7 @@ fun SongDetailContent(
 
         Text(
             modifier = Modifier.layoutId("subTitle"),
-            text = song.subTitle,
+            text = song.name,
             color = MaterialTheme.colors.onBackground.copy(0.6f),
             fontWeight = FontWeight.Medium,
             fontSize = 12.sp,

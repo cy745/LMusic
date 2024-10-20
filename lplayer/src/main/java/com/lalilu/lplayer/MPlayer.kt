@@ -55,6 +55,11 @@ object MPlayer : CoroutineScope {
         get() = runCatching { if (browserFuture.isDone) browserFuture.get()?.bufferedPosition else null }
             .getOrNull() ?: 0L
 
+    fun isItemPlaying(mediaId: String): Boolean {
+        if (!isPlaying) return false
+        return currentMediaItem?.mediaId == mediaId
+    }
+
     internal fun init() {
         launch(Dispatchers.Main) {
             val browser = browserFuture.await()

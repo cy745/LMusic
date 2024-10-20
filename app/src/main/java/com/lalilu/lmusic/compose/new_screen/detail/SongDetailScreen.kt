@@ -55,11 +55,11 @@ data class SongDetailScreen(
                 onAction = {
                     val song = LMedia.get<LSong>(id = mediaId) ?: return@Static
 
-                    QueueAction.AddToNext(song.mediaId).action()
+                    QueueAction.AddToNext(song.id).action()
                     DynamicTipsItem.Static(
-                        title = song.title,
+                        title = song.metadata.title,
                         subTitle = "下一首播放",
-                        imageData = song.imageSource
+                        imageData = song
                     ).show()
                 }
             ),

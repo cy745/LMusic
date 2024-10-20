@@ -19,8 +19,7 @@ import androidx.compose.material.IconToggleButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,25 +30,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.MediaItem
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.transformations
 import com.lalilu.R
-import com.lalilu.common.base.Playable
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
-import com.lalilu.lplayer.playback.PlayMode
+import com.lalilu.lplayer.extensions.PlayMode
 
 @Composable
 fun PlayingLayoutExpended(
     modifier: Modifier = Modifier,
     playingVM: PlayingViewModel = singleViewModel(),
 ) {
-    val currentPlaying by playingVM.playing
+    val currentPlaying = MPlayer.currentMediaItem
     val context = LocalContext.current
     val data = remember(currentPlaying) {
         ImageRequest.Builder(context)
@@ -121,7 +120,7 @@ fun PlayingLayoutExpended(
 
 @Composable
 fun SongDetailPanel(
-    playable: Playable?,
+    playable: MediaItem?,
 ) {
     if (playable == null) {
         Text(
@@ -136,17 +135,17 @@ fun SongDetailPanel(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(
-            text = playable.title,
+            text = playable.mediaMetadata.title.toString(),
             color = Color.White,
             fontSize = 24.sp
         )
         Text(
-            text = playable.subTitle,
+            text = playable.mediaMetadata.subtitle.toString(),
             color = Color.White,
             fontSize = 16.sp
         )
         Text(
-            text = playable.subTitle,
+            text = playable.mediaMetadata.subtitle.toString(),
             color = Color.White,
             fontSize = 12.sp
         )
@@ -158,7 +157,7 @@ fun SongDetailPanel(
 fun ControlPanel(
     playingVM: PlayingViewModel = singleViewModel(),
 ) {
-    val isPlaying = LPlayer.runtime.info.isPlayingFlow.collectAsState(false)
+    val isPlaying = remember { derivedStateOf { MPlayer.isPlaying } }
     var playMode by playingVM.settingsSp.playMode
 
     Row(

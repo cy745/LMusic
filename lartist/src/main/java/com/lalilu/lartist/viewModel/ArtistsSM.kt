@@ -14,7 +14,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.ListAction
 import com.lalilu.lmedia.extension.SortStaticAction
-import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.MPlayer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -64,7 +64,7 @@ internal class ArtistsSM : ScreenModel {
         when (action) {
             ArtistsScreenAction.LocaleToPlayingItem -> {
                 // 获取正在播放的元素ID
-                val mediaId = LPlayer.runtime.info.playingIdFlow.value
+                val mediaId = MPlayer.currentMediaItem?.mediaId
                     ?: return@launch
 
                 // 获取该元素

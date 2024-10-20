@@ -23,10 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
 import com.lalilu.RemixIcon
-import com.lalilu.common.base.Playable
 import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.MPlayer
 import com.lalilu.remixicon.Media
 import com.lalilu.remixicon.media.pauseLine
 import com.lalilu.remixicon.media.playLine
@@ -55,7 +55,7 @@ fun provideSongPlayAction(mediaId: String): ScreenAction.Dynamic {
                 AnimatedContent(
                     modifier = Modifier
                         .fillMaxHeight(),
-                    targetState = playingVM.isItemPlaying(mediaId, Playable::mediaId),
+                    targetState = MPlayer.isItemPlaying(mediaId),
                     transitionSpec = { fadeIn() togetherWith fadeOut() },
                     label = ""
                 ) { isPlaying ->

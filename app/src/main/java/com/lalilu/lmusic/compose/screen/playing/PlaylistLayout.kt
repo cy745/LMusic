@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.compose.screen.playing
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,7 +36,6 @@ import androidx.media3.common.MediaItem
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListUpdateCallback
 import coil3.compose.AsyncImage
-import com.lalilu.common.base.Playable
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.lplayer.extensions.PlayerAction
 
@@ -145,7 +143,6 @@ fun PlaylistLayout(
         items(
             items = actualItems,
             key = { it.key },
-            contentType = { Playable::class.java }
         ) { item ->
             MediaCard(
                 modifier = Modifier.animateItem(),
@@ -163,7 +160,6 @@ fun PlaylistLayout(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MediaCard(
     modifier: Modifier = Modifier,

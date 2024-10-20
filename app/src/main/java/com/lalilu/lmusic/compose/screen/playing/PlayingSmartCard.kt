@@ -16,7 +16,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -25,15 +24,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.lalilu.component.extension.singleViewModel
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.MPlayer
 
 @Composable
 fun PlayingSmartCard(
     modifier: Modifier = Modifier,
-    playingVM: PlayingViewModel = singleViewModel(),
 ) {
-    val currentPlaying by playingVM.playing
+    val currentPlaying = MPlayer.currentMediaItem
 
     Surface(modifier) {
         AnimatedContent(
@@ -69,7 +66,7 @@ fun PlayingSmartCard(
                             iterations = Int.MAX_VALUE,
                             spacing = MarqueeSpacing(30.dp)
                         ),
-                        text = playing?.title ?: "Unknown",
+                        text = playing?.mediaMetadata?.title?.toString() ?: "Unknown",
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colors.onBackground,
                         fontSize = 14.sp,
@@ -82,7 +79,7 @@ fun PlayingSmartCard(
                             iterations = Int.MAX_VALUE,
                             spacing = MarqueeSpacing(30.dp)
                         ),
-                        text = playing?.subTitle ?: "Unknown",
+                        text = playing?.mediaMetadata?.subtitle?.toString() ?: "Unknown",
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colors.onBackground.copy(0.6f),
                         fontSize = 10.sp,

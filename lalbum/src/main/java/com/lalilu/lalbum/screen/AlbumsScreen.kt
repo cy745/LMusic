@@ -44,8 +44,7 @@ import com.lalilu.lalbum.R
 import com.lalilu.lalbum.component.AlbumCard
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LAlbum
-import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.extension.Sortable
+import com.lalilu.lplayer.MPlayer
 import com.lalilu.remixicon.Media
 import com.lalilu.remixicon.media.albumFill
 import com.zhangke.krouter.annotation.Destination
@@ -139,13 +138,7 @@ private fun AlbumsScreen(
             ) { item ->
                 AlbumCard(
                     album = { item },
-                    isPlaying = {
-                        playingVM.isItemPlaying { playing ->
-                            playing.let { it as? LSong }
-                                ?.let { it.album?.id == item.id }
-                                ?: false
-                        }
-                    },
+                    isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
                     showTitle = { albumsSM.showTitle.value },
                     onClick = {
                         AppRouter.intent(

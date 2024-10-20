@@ -14,7 +14,7 @@ import androidx.media3.session.SessionError
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import com.lalilu.lmedia2.LMedia
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lplayer.extensions.FadeTransitionRenderersFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

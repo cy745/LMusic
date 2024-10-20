@@ -29,7 +29,6 @@ import com.gigamole.composefadingedges.content.FadingEdgesContentType
 import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
 import com.gigamole.composefadingedges.fill.FadingEdgesFillType
 import com.gigamole.composefadingedges.verticalFadingEdges
-import com.lalilu.common.base.Playable
 import com.lalilu.component.base.songs.SongsScreenStickyHeader
 import com.lalilu.component.card.SongCard
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
@@ -39,15 +38,17 @@ import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lartist.component.ArtistCard
 import com.lalilu.lartist.viewModel.ArtistDetailSM
 import com.lalilu.lmedia.entity.LArtist
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
+import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 
 @Composable
 internal fun ArtistDetailScreenContent(
     artistDetailSM: ArtistDetailSM,
     isSelecting: () -> Boolean = { false },
-    isSelected: (Playable) -> Boolean = { false },
-    onSelect: (Playable) -> Unit = {},
+    isSelected: (LSong) -> Boolean = { false },
+    onSelect: (LSong) -> Unit = {},
     onClickGroup: (GroupIdentity) -> Unit = {}
 ) {
     val listState = rememberLazyListState()
@@ -137,7 +138,7 @@ internal fun ArtistDetailScreenContent(
 
                 itemsWithRecord(
                     items = list,
-                    key = { it.mediaId },
+                    key = { it.id },
                     contentType = { it::class.java }
                 ) {
                     SongCard(
@@ -147,7 +148,7 @@ internal fun ArtistDetailScreenContent(
                             if (isSelecting()) {
                                 onSelect(it)
                             } else {
-                                PlayerAction.PlayById(it.mediaId).action()
+                                PlayerAction.PlayById(it.id).action()
                             }
                         },
                         onLongClick = {
@@ -157,7 +158,7 @@ internal fun ArtistDetailScreenContent(
                                 onSelect(it)
                             } else {
                                 AppRouter.route("/pages/songs/detail")
-                                    .with("mediaId", it.mediaId)
+                                    .with("mediaId", it.id)
                                     .jump()
                             }
                         },
@@ -195,15 +196,8 @@ internal fun ArtistDetailScreenContent(
                         title = item.name,
                         subTitle = "#$index",
                         songCount = item.songs.size.toLong(),
-                        imageSource = { item.songs.firstOrNull()?.imageSource },
-                        isPlaying = {
-                            false
-//                        playingVM.isItemPlaying { playing ->
-//                            playing.let { it as? LSong }
-//                                ?.let { song -> song.artists.any { it.name == item.name } }
-//                                ?: false
-//                        }
-                        },
+                        imageSource = { item.songs.firstOrNull() },
+                        isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
                         onClick = { AppRouter.intent(NavIntent.Push(ArtistDetailScreen(item.id))) }
                     )
                 }

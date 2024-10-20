@@ -1,4 +1,4 @@
-package com.lalilu.lplayer.playback
+package com.lalilu.lplayer.extensions
 
 import android.support.v4.media.session.PlaybackStateCompat.REPEAT_MODE_ALL
 import android.support.v4.media.session.PlaybackStateCompat.REPEAT_MODE_ONE

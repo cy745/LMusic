@@ -10,14 +10,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lalilu.common.base.Playable
 import com.lalilu.component.LazyGridContent
 import com.lalilu.component.navigation.AppRouter
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.MPlayer
 import org.koin.compose.koinInject
 
 
@@ -68,10 +69,10 @@ object LatestPanel : LazyGridContent {
                         modifier = Modifier.animateItem(),
                         onClick = {
                             AppRouter.route("/pages/songs/detail")
-                                .with("mediaId", it.mediaId)
+                                .with("mediaId", it.id)
                                 .jump()
                         },
-                        isPlaying = { playingVM.isItemPlaying(it.id, Playable::mediaId) },
+                        isPlaying = { MPlayer.isItemPlaying(it.id) },
                         onClickButton = {
                             playingVM.play(
                                 mediaId = it.id,

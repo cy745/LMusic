@@ -14,14 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import com.lalilu.common.base.Playable
 import com.lalilu.component.LazyGridContent
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.card.SongCard
 import com.lalilu.component.navigation.AppRouter
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.viewmodel.HistoryViewModel
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lplayer.MPlayer
 import org.koin.compose.koinInject
 
 object HistoryPanel : LazyGridContent {
@@ -55,7 +56,7 @@ object HistoryPanel : LazyGridContent {
 
             items(
                 items = items,
-                key = { it.mediaId },
+                key = { it.id },
                 contentType = { "History_item" },
                 span = {
                     if (widthSizeClass == WindowWidthSizeClass.Expanded) GridItemSpan(maxLineSpan / 2)
@@ -67,11 +68,11 @@ object HistoryPanel : LazyGridContent {
                         .animateItem()
                         .padding(bottom = 5.dp),
                     song = { item },
-                    isPlaying = { playingVM.isItemPlaying { it.mediaId == item.id } },
+                    isPlaying = { MPlayer.isItemPlaying(item.id) },
                     onClick = {
                         playingVM.play(
-                            mediaId = item.mediaId,
-                            mediaIds = items.map(Playable::mediaId),
+                            mediaId = item.id,
+                            mediaIds = items.map(LSong::id),
                             playOrPause = true
                         )
                     },
@@ -79,7 +80,7 @@ object HistoryPanel : LazyGridContent {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                         AppRouter.route("/pages/songs/detail")
-                            .with("mediaId", item.mediaId)
+                            .with("mediaId", item.id)
                             .jump()
                     }
                 )

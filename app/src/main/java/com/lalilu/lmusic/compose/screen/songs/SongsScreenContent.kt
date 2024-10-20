@@ -30,7 +30,6 @@ import com.gigamole.composefadingedges.content.FadingEdgesContentType
 import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
 import com.gigamole.composefadingedges.fill.FadingEdgesFillType
 import com.gigamole.composefadingedges.verticalFadingEdges
-import com.lalilu.common.base.Playable
 import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.base.songs.SongsSM
 import com.lalilu.component.base.songs.SongsScreenEvent
@@ -40,6 +39,7 @@ import com.lalilu.component.card.SongCard
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
 import com.lalilu.component.navigation.AppRouter
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lplayer.extensions.PlayerAction
 import kotlinx.coroutines.flow.collectLatest
@@ -48,8 +48,8 @@ import kotlinx.coroutines.flow.collectLatest
 internal fun SongsScreenContent(
     songsSM: SongsSM,
     isSelecting: () -> Boolean = { false },
-    isSelected: (Playable) -> Boolean = { false },
-    onSelect: (Playable) -> Unit = {},
+    isSelected: (LSong) -> Boolean = { false },
+    onSelect: (LSong) -> Unit = {},
     onClickGroup: (GroupIdentity) -> Unit = {}
 ) {
     val density = LocalDensity.current
@@ -157,7 +157,7 @@ internal fun SongsScreenContent(
 
                     itemsWithRecord(
                         items = list,
-                        key = { it.mediaId },
+                        key = { it.id },
                         contentType = { it::class.java }
                     ) {
                         SongCard(
@@ -167,7 +167,7 @@ internal fun SongsScreenContent(
                                 if (isSelecting()) {
                                     onSelect(it)
                                 } else {
-                                    PlayerAction.PlayById(it.mediaId).action()
+                                    PlayerAction.PlayById(it.id).action()
                                 }
                             },
                             onLongClick = {
@@ -177,7 +177,7 @@ internal fun SongsScreenContent(
                                     onSelect(it)
                                 } else {
                                     AppRouter.route("/pages/songs/detail")
-                                        .with("mediaId", it.mediaId)
+                                        .with("mediaId", it.id)
                                         .jump()
                                 }
                             },

@@ -28,9 +28,9 @@ import androidx.media3.session.R
 import androidx.media3.session.SessionCommand
 import com.google.common.collect.ImmutableList
 import com.lalilu.common.post
-import com.lalilu.lmedia2.lyric.LyricItem
-import com.lalilu.lmedia2.lyric.LyricSourceEmbedded
-import com.lalilu.lmedia2.lyric.LyricUtils
+import com.lalilu.lmedia.lyric.LyricItem
+import com.lalilu.lmedia.lyric.LyricSourceEmbedded
+import com.lalilu.lmedia.lyric.LyricUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

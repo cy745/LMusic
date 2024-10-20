@@ -40,8 +40,8 @@ import com.lalilu.lartist.screen.ArtistDetailScreen
 import com.lalilu.lartist.viewModel.ArtistsSM
 import com.lalilu.lartist.viewModel.ArtistsScreenEvent
 import com.lalilu.lmedia.entity.LArtist
-import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
+import com.lalilu.lplayer.MPlayer
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.koinInject
 
@@ -172,14 +172,8 @@ internal fun ArtistsScreenContent(
                             subTitle = "#$index",
                             isSelected = { isSelected(item) },
                             songCount = item.songs.size.toLong(),
-                            imageSource = { item.songs.firstOrNull()?.imageSource },
-                            isPlaying = {
-                                playingVM.isItemPlaying { playing ->
-                                    playing.let { it as? LSong }
-                                        ?.let { song -> song.artists.any { it.name == item.name } }
-                                        ?: false
-                                }
-                            },
+                            imageSource = { item.songs.firstOrNull() },
+                            isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
                             onClick = {
                                 if (isSelecting()) {
                                     onSelect(item)

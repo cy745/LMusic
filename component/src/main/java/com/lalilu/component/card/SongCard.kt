@@ -50,20 +50,20 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
-import com.lalilu.common.base.Playable
 import com.lalilu.common.base.Sticker
 import com.lalilu.component.R
 import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.dayNightTextColorFilter
 import com.lalilu.component.extension.durationMsToString
 import com.lalilu.component.extension.mimeTypeToIcon
+import com.lalilu.lmedia.entity.LSong
 
 @Composable
 fun SongCard(
     modifier: Modifier = Modifier,
     dragModifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    song: () -> Playable,
+    song: () -> LSong,
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
     onDoubleClick: (() -> Unit)? = null,
@@ -81,10 +81,10 @@ fun SongCard(
         modifier = modifier,
         dragModifier = dragModifier,
         interactionSource = interactionSource,
-        title = { item.title },
-        subTitle = { item.subTitle },
-        duration = { item.durationMs },
-        sticker = { item.sticker },
+        title = { item.metadata.title },
+        subTitle = { item.metadata.artist },
+        duration = { item.metadata.duration },
+        sticker = { emptyList() },
         imageData = { item },
         onClick = onClick,
         onLongClick = onLongClick,
@@ -100,7 +100,6 @@ fun SongCard(
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SongCard(
     modifier: Modifier = Modifier,
@@ -253,7 +252,6 @@ fun SongCardContent(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SongCardImage(
     modifier: Modifier = Modifier,

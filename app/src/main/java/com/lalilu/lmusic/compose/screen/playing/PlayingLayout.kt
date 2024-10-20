@@ -43,9 +43,9 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.component.base.LocalEnhanceSheetState
 import com.lalilu.component.extension.hideControl
 import com.lalilu.component.extension.singleViewModel
-import com.lalilu.lmedia2.lyric.LyricItem
-import com.lalilu.lmedia2.lyric.LyricSourceEmbedded
-import com.lalilu.lmedia2.lyric.LyricUtils
+import com.lalilu.lmedia.lyric.LyricItem
+import com.lalilu.lmedia.lyric.LyricSourceEmbedded
+import com.lalilu.lmedia.lyric.LyricUtils
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.datastore.SettingsSp
@@ -125,7 +125,7 @@ fun PlayingLayout(
                     .padding(bottom = 10.dp)
             ) {
                 PlayingToolbar(
-                    isItemPlaying = { mediaId -> playingVM.isItemPlaying { it.mediaId == mediaId } },
+                    isItemPlaying = { mediaId -> MPlayer.isItemPlaying(mediaId) },
                     isUserTouchEnable = { draggable.state.value == DragAnchor.Min || draggable.state.value == DragAnchor.Max },
                     isExtraVisible = { draggable.state.value == DragAnchor.Max },
                     onClick = { scrollToTopEvent.value = System.currentTimeMillis() },

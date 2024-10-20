@@ -1,23 +1,16 @@
 package com.lalilu.lmusic.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.lalilu.common.base.Playable
-import com.lalilu.component.extension.toState
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.extensions.QueueAction
-import com.lalilu.lplaylist.repository.PlaylistRepository
 import kotlinx.coroutines.launch
 
 class PlayingViewModel(
-    val settingsSp: SettingsSp,
-    playlistRepo: PlaylistRepository
+    val settingsSp: SettingsSp
 ) : IPlayingViewModel() {
-    val playing = LPlayer.runtime.info.playingFlow.toState(viewModelScope)
-    val isPlaying = LPlayer.runtime.info.isPlayingFlow.toState(false, viewModelScope)
-
     /**
      * 综合播放操作
      *
@@ -39,26 +32,11 @@ class PlayingViewModel(
             if (addToNext) {
                 QueueAction.AddToNext(mediaId).action()
             }
-            if (mediaId == LPlayer.runtime.queue.getCurrentId() && playOrPause) {
+            if (mediaId == MPlayer.currentMediaItem?.mediaId && playOrPause) {
                 PlayerAction.PlayOrPause.action()
             } else {
                 PlayerAction.PlayById(mediaId).action()
             }
         }
-    }
-
-    override fun <T> isItemPlaying(item: T, getter: (Playable) -> T): Boolean =
-        isItemPlaying { item == getter(it) }
-
-    override fun isItemPlaying(compare: (Playable) -> Boolean): Boolean {
-        if (!isPlaying.value) return false
-        return playing.value?.let { compare(it) } ?: false
-    }
-
-    private val isFavouriteList = playlistRepo.getFavouriteMediaIds()
-        .toState(viewModelScope)
-
-    override fun isFavourite(item: Playable): Boolean {
-        return isFavouriteList.value?.contains(item.mediaId) ?: false
     }
 }

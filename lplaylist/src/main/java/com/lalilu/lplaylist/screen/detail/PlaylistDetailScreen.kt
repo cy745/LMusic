@@ -7,7 +7,6 @@ import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.ToastUtils
-import com.lalilu.common.base.Playable
 import com.lalilu.common.toCachedFlow
 import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
@@ -15,6 +14,7 @@ import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.extension.SelectAction
 import com.lalilu.component.viewmodel.IPlayingViewModel
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.repository.PlaylistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,8 +63,8 @@ class PlaylistDetailScreenModel(
         icon = componentR.drawable.ic_delete_bin_6_line,
         color = Color.Red
     ) { selector ->
-        val mediaIds = selector.selected.value.filterIsInstance(Playable::class.java)
-            .map { it.mediaId }
+        val mediaIds = selector.selected.value.filterIsInstance<LSong>()
+            .map { it.id }
 
         playlistRepo.removeMediaIdsFromPlaylist(mediaIds, playlistId.value)
         ToastUtils.showShort("Removed from playlist")

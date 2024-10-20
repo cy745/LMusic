@@ -3,7 +3,6 @@ package com.lalilu.lartist.viewModel
 import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.lalilu.common.base.Playable
 import com.lalilu.component.base.songs.ItemSearcher
 import com.lalilu.component.base.songs.ItemSorter
 import com.lalilu.component.extension.ItemRecorder
@@ -15,7 +14,7 @@ import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.ListAction
 import com.lalilu.lmedia.extension.SortStaticAction
-import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.MPlayer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -62,7 +61,7 @@ internal class ArtistDetailSM(
         scope = screenModelScope,
     )
 
-    val selector = ItemSelector<Playable>()
+    val selector = ItemSelector<LSong>()
     val recorder = ItemRecorder()
 
     private val _eventFlow = MutableSharedFlow<ArtistDetailScreenEvent>()
@@ -72,7 +71,7 @@ internal class ArtistDetailSM(
         when (action) {
             ArtistDetailScreenAction.LocaleToPlayingItem -> {
                 // 获取正在播放的元素ID
-                val mediaId = LPlayer.runtime.info.playingIdFlow.value
+                val mediaId = MPlayer.currentMediaItem?.mediaId
                     ?: return@launch
 
                 // 获取该元素

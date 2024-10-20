@@ -33,10 +33,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lalilu.lmedia2.lyric.LyricItem
+import com.lalilu.lmedia.lyric.LyricItem
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LyricSentence(
     modifier: Modifier = Modifier,

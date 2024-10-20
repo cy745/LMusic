@@ -2,16 +2,11 @@ package com.lalilu.lmusic.compose.presenter
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import com.lalilu.common.base.Playable
 import com.lalilu.component.base.UiAction
 import com.lalilu.component.base.UiState
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplaylist.repository.PlaylistRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,11 +20,6 @@ sealed class DetailScreenAction : UiAction {
 
 data class DetailScreenLikeBtnState(
     val isLiked: Boolean,
-    val onAction: (action: UiAction) -> Unit
-) : UiState
-
-data class DetailScreenIsPlayingState(
-    val isPlaying: Boolean,
     val onAction: (action: UiAction) -> Unit
 ) : UiState
 
@@ -51,31 +41,6 @@ fun DetailScreenLikeBtnPresenter(
             DetailScreenAction.UnLike -> scope.launch {
                 playlistRepo.removeMediaIdsFromFavourite(mediaIds = listOf(mediaId))
             }
-        }
-    }
-}
-
-@SuppressLint("ComposableNaming")
-@Composable
-fun DetailScreenIsPlayingPresenter(
-    mediaId: String,
-    playingVM: PlayingViewModel = koinInject()
-): DetailScreenIsPlayingState {
-    val isPlaying = remember {
-        derivedStateOf { playingVM.isItemPlaying(mediaId, Playable::mediaId) }
-    }
-
-    SideEffect {
-        println("isPlaying: ${isPlaying}")
-    }
-
-    return DetailScreenIsPlayingState(isPlaying = isPlaying.value) {
-        when (it) {
-            DetailScreenAction.PlayPause -> playingVM.play(
-                mediaId = mediaId,
-                addToNext = true,
-                playOrPause = true
-            )
         }
     }
 }

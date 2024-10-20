@@ -22,13 +22,11 @@ import androidx.lifecycle.lifecycleScope
 import com.lalilu.R
 import com.lalilu.common.HapticUtils
 import com.lalilu.component.extension.DynamicTipsItem
-import com.lalilu.component.extension.collectWithLifeCycleOwner
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.extension.durationToTime
 import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
-import com.lalilu.lplayer.playback.PlayMode
+import com.lalilu.lplayer.extensions.PlayMode
 import com.lalilu.ui.CLICK_PART_LEFT
 import com.lalilu.ui.CLICK_PART_MIDDLE
 import com.lalilu.ui.CLICK_PART_RIGHT
@@ -146,13 +144,12 @@ fun BoxScope.SeekbarLayout(
                         })
                     }
 
-                    LPlayer.runtime.info.durationFlow.collectWithLifeCycleOwner(activity) {
-                        maxValue = it.takeIf { it > 0f }?.toFloat() ?: 0f
-                    }
-
-                    LPlayer.runtime.info.positionFlow.collectWithLifeCycleOwner(activity) {
-                        updateValue(it.toFloat())
-                    }
+//                    LPlayer.runtime.info.durationFlow.collectWithLifeCycleOwner(activity) {
+//                        maxValue = it.takeIf { it > 0f }?.toFloat() ?: 0f
+//                    }
+//                    LPlayer.runtime.info.positionFlow.collectWithLifeCycleOwner(activity) {
+//                        updateValue(it.toFloat())
+//                    }
 
                     snapshotFlow { animateColor.value }
                         .onEach { thumbColor = it.toArgb() }

@@ -54,7 +54,6 @@ import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.enableFor
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lplayer.LPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -155,7 +154,7 @@ fun SleepTimer(
         defaultSecondToCountDown = defaultSecondToCountDown,
         onActionBtnLongClick = {
             if (isRunning.value) {
-                LPlayer.controller.doAction(PlayerAction.PauseWhenCompletion(true))
+                PlayerAction.PauseWhenCompletion(true).action()
                 SleepTimerContext.stop()
             } else {
                 val millisSecond = defaultSecondToCountDown.value.toLong()

@@ -1,10 +1,12 @@
 package com.lalilu.lmusic
 
 import StatusBarLyric.API.StatusBarLyric
+import android.app.Application
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.ViewModelStoreOwner
 import coil3.ImageLoader
+import coil3.SingletonImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.transitionFactory
 import coil3.util.DebugLogger
@@ -28,7 +30,6 @@ import com.lalilu.lmusic.utils.coil.fetcher.LAlbumFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.LSongFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.MediaItemFetcher
 import com.lalilu.lmusic.utils.coil.keyer.MediaItemKeyer
-import com.lalilu.lmusic.utils.coil.keyer.PlayableKeyer
 import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
 import com.lalilu.lmusic.utils.coil.mapper.LSongMapper
 import com.lalilu.lmusic.utils.extension.toBitmap
@@ -44,6 +45,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
+import org.koin.core.annotation.Single
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -53,6 +55,28 @@ import java.net.URLDecoder
 @Module
 @ComponentScan("com.lalilu.lmusic")
 object MainModule
+
+@Single(createdAtStart = true)
+fun provideImageLoaderFactory(
+    context: Application,
+    client: OkHttpClient,
+): SingletonImageLoader.Factory {
+    return SingletonImageLoader.Factory {
+        ImageLoader.Builder(context)
+            .components {
+                add(OkHttpNetworkFetcherFactory(client))
+                add(SongCoverKeyer())
+                add(LSongMapper())
+                add(MediaItemKeyer())
+                add(MediaItemFetcher.MediaItemFetcherFactory())
+                add(LSongFetcher.SongFactory())
+                add(LAlbumFetcher.AlbumFactory())
+            }
+            .transitionFactory(CrossfadeTransitionFactory())
+            .logger(DebugLogger())
+            .build()
+    }
+}
 
 val AppModule = module {
     single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
@@ -79,22 +103,6 @@ val AppModule = module {
             "com.lalilu.lmusic",
             false
         )
-    }
-    single {
-        ImageLoader.Builder(androidApplication())
-            .components {
-                add(OkHttpNetworkFetcherFactory(get<OkHttpClient>()))
-                add(SongCoverKeyer())
-                add(PlayableKeyer())
-                add(LSongMapper())
-                add(MediaItemKeyer())
-                add(MediaItemFetcher.MediaItemFetcherFactory())
-                add(LSongFetcher.SongFactory())
-                add(LAlbumFetcher.AlbumFactory())
-            }
-            .transitionFactory(CrossfadeTransitionFactory())
-            .logger(DebugLogger())
-            .build()
     }
 }
 
@@ -136,7 +144,7 @@ val FilterModule = module {
         )
         val durationFilter = Filter(
             flow = settingSp.durationFilter.flow(true),
-            getter = LSong::durationMs::get,
+            getter = { it.metadata.duration },
             targetClass = LSong::class.java,
             ignoreRule = { flowValue, getterValue ->
                 getterValue <= (flowValue ?: 15)

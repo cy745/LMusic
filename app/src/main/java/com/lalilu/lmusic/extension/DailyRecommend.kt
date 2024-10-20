@@ -47,7 +47,7 @@ object DailyRecommend : LazyGridContent {
                     modifier = Modifier.padding(vertical = 8.dp),
                     title = "每日推荐",
                     onClick = {
-                        val ids = libraryVM.dailyRecommends.value.map { it.mediaId }
+                        val ids = libraryVM.dailyRecommends.value.map { it.id }
                         AppRouter.intent(NavIntent.Push(SongsScreen(mediaIds = ids)))
                     }
                 ) {

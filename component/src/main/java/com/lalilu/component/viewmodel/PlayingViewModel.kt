@@ -1,8 +1,6 @@
 package com.lalilu.component.viewmodel
 
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
-import com.lalilu.common.base.Playable
 
 abstract class IPlayingViewModel : ViewModel() {
     /**
@@ -19,9 +17,4 @@ abstract class IPlayingViewModel : ViewModel() {
         playOrPause: Boolean = false,
         addToNext: Boolean = false,
     )
-
-    abstract fun <T> isItemPlaying(item: T, getter: (Playable) -> T): Boolean
-    abstract fun isItemPlaying(compare: (Playable) -> Boolean): Boolean
-
-    abstract fun isFavourite(item: Playable): Boolean
 }

@@ -9,21 +9,20 @@ import androidx.compose.runtime.snapshotFlow
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.lalilu.common.base.BaseSp
-import com.lalilu.common.base.Playable
 import com.lalilu.common.ext.requestFor
 import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.ItemSelector
 import com.lalilu.component.extension.toState
 import com.lalilu.component.viewmodel.SongsSp
 import com.lalilu.lmedia.LMedia
-import com.lalilu.lmedia.entity.FullTextMatchable
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmedia.extension.ListAction
+import com.lalilu.lmedia.extension.Searchable
 import com.lalilu.lmedia.extension.SortDynamicAction
 import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lmedia.extension.Sortable
-import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.MPlayer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -72,7 +71,7 @@ class SongsSM(
     fun action(action: SongsScreenAction) = screenModelScope.launch {
         when (action) {
             SongsScreenAction.LocaleToPlayingItem -> {
-                val mediaId = LPlayer.runtime.info.playingIdFlow.value
+                val mediaId = MPlayer.currentMediaItem?.mediaId
                     ?: return@launch
 
                 eventFlow.emit(SongsScreenEvent.ScrollToItem(mediaId))
@@ -106,11 +105,11 @@ class SongsSM(
         defaultValue = emptyMap(),
         scope = screenModelScope,
     )
-    val selector = ItemSelector<Playable>()
+    val selector = ItemSelector<LSong>()
     val recorder = ItemRecorder()
 }
 
-class ItemSearcher<T : FullTextMatchable>(
+class ItemSearcher<T : Searchable>(
     sourceFlow: Flow<List<T>>
 ) {
     val keywordState = mutableStateOf("")

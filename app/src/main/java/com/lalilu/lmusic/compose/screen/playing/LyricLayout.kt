@@ -41,8 +41,8 @@ import androidx.compose.ui.unit.sp
 import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
-import com.lalilu.lmedia2.lyric.LyricItem
-import com.lalilu.lmedia2.lyric.LyricUtils
+import com.lalilu.lmedia.lyric.LyricItem
+import com.lalilu.lmedia.lyric.LyricUtils
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
