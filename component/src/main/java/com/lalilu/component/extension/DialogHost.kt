@@ -18,7 +18,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,7 +63,11 @@ interface DialogHost {
     fun push(dialogItem: DialogItem)
 
     @Composable
-    fun register(isVisible: MutableState<Boolean>, dialogItem: DialogItem)
+    fun register(
+        isVisible: () -> Boolean,
+        onDismiss: () -> Unit,
+        dialogItem: DialogItem
+    )
 }
 
 interface DialogContext {
@@ -84,17 +87,21 @@ object DialogWrapper : DialogHost, DialogContext {
     }
 
     @Composable
-    override fun register(isVisible: MutableState<Boolean>, dialogItem: DialogItem) {
+    override fun register(
+        isVisible: () -> Boolean,
+        onDismiss: () -> Unit,
+        dialogItem: DialogItem
+    ) {
         LaunchedEffect(Unit) {
             snapshotFlow { this@DialogWrapper.dialogItem }
                 .collectLatest {
-                    if (it != null || !isVisible.value) return@collectLatest
-                    isVisible.value = false
+                    if (it != null || !isVisible()) return@collectLatest
+                    onDismiss()
                 }
         }
 
         LaunchedEffect(Unit) {
-            snapshotFlow { isVisible.value }
+            snapshotFlow { isVisible() }
                 .collectLatest { visible ->
                     if (visible) {
                         this@DialogWrapper.dialogItem = dialogItem

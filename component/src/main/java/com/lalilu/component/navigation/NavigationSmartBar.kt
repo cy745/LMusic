@@ -38,8 +38,7 @@ fun NavigationSmartBar(
     modifier: Modifier = Modifier,
 ) {
     val currentScreen = LocalNavigator.current
-        ?.currentScreen()
-        ?.value
+        ?.lastItemOrNull
 
     val previousScreen = LocalNavigator.current
         ?.previousScreen()

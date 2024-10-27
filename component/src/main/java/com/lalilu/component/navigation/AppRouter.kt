@@ -4,7 +4,6 @@ import android.util.Log
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import com.lalilu.component.base.TabScreen
-import com.lalilu.component.base.screen.ScreenType
 import com.zhangke.krouter.KRouter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,37 +53,12 @@ val DefaultInterceptorForTabScreen = NavInterceptor { navigator, intent ->
     }
 }
 
-val DefaultInterceptorForListScreen = NavInterceptor { _, intent ->
-    fun transform(screen: Screen): Screen =
-        if (screen is ScreenType.List) ListDetailContainer(screen) else screen
-
-    when (intent) {
-        is NavIntent.Jump -> intent.copy(transform(intent.screen))
-        is NavIntent.Push -> intent.copy(transform(intent.screen))
-        is NavIntent.Replace -> intent.copy(transform(intent.screen))
-        else -> intent
-    }
-}
-
 val DefaultHandler = NavHandler { navigator, intent ->
-    val screen = when (intent) {
-        is NavIntent.Push -> intent.screen
-        is NavIntent.Replace -> intent.screen
-        is NavIntent.Jump -> intent.screen
-        else -> null
-    }
-
-    val actualNavigator = if (screen is ScreenType.Detail) {
-        navigator.nestedNavigatorInLastScreen() ?: navigator
-    } else {
-        navigator
-    }
-
     when (intent) {
-        NavIntent.Pop -> actualNavigator.pop()
-        is NavIntent.Push -> actualNavigator.push(intent.screen)
-        is NavIntent.Replace -> actualNavigator.replace(intent.screen)
-        is NavIntent.Jump -> actualNavigator.push(intent.screen)
+        NavIntent.Pop -> navigator.pop()
+        is NavIntent.Push -> navigator.push(intent.screen)
+        is NavIntent.Replace -> navigator.replace(intent.screen)
+        is NavIntent.Jump -> navigator.push(intent.screen)
         NavIntent.None -> {}
     }
 }
@@ -95,7 +69,6 @@ object AppRouter : CoroutineScope {
     private var handler: NavHandler = DefaultHandler
     private val interceptors = mutableListOf(
         DefaultInterceptorForTabScreen,
-        DefaultInterceptorForListScreen,
     )
 
     suspend fun bind(
