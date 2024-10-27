@@ -20,7 +20,6 @@ import androidx.compose.material.SelectableChipColors
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +43,8 @@ import com.lalilu.remixicon.system.closeLine
 
 @Composable
 fun SongsSortPanelDialog(
-    isVisible: MutableState<Boolean>,
+    isVisible: () -> Boolean,
+    onDismiss: () -> Unit,
     supportSortActions: Set<ListAction>,
     isSortActionSelected: (ListAction) -> Boolean = { false },
     onSelectSortAction: (ListAction) -> Unit
@@ -62,6 +62,7 @@ fun SongsSortPanelDialog(
 
     DialogWrapper.register(
         isVisible = isVisible,
+        onDismiss = onDismiss,
         dialogItem = dialog
     )
 }

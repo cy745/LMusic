@@ -55,8 +55,11 @@ object SearchScreen : Screen, TabScreen, ScreenBarFactory {
 
     @Composable
     override fun Content() {
+        val visible = remember { mutableStateOf(true) }
+
         RegisterContent(
-            isVisible = remember { mutableStateOf(true) },
+            isVisible = { visible.value },
+            onDismiss = { visible.value = false },
             onBackPressed = null,
             content = { SearchBar() }
         )

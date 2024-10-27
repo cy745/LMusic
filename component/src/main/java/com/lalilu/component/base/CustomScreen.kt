@@ -3,7 +3,6 @@ package com.lalilu.component.base
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,23 +40,9 @@ sealed interface ScreenAction {
 }
 
 data class ScreenBarComponent(
-    val state: MutableState<Boolean>,
-    val key: String = state.hashCode().toString(),
+    val key: String,
     val content: @Composable () -> Unit
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as ScreenBarComponent
-
-        return key == other.key
-    }
-
-    override fun hashCode(): Int {
-        return key.hashCode()
-    }
-}
+)
 
 interface CustomScreen : Screen {
     fun getScreenInfo(): ScreenInfo? = null

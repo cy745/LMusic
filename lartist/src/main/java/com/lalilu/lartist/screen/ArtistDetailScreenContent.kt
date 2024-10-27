@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,23 +29,32 @@ import com.gigamole.composefadingedges.content.FadingEdgesContentType
 import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
 import com.gigamole.composefadingedges.fill.FadingEdgesFillType
 import com.gigamole.composefadingedges.verticalFadingEdges
+import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.base.songs.SongsScreenStickyHeader
 import com.lalilu.component.card.SongCard
+import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lartist.component.ArtistCard
-import com.lalilu.lartist.viewModel.ArtistDetailSM
+import com.lalilu.lartist.viewModel.ArtistDetailEvent
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
 internal fun ArtistDetailScreenContent(
-    artistDetailSM: ArtistDetailSM,
+    artist: LArtist? = null,
+    songs: Map<GroupIdentity, List<LSong>> = emptyMap(),
+    eventFlow: Flow<ArtistDetailEvent> = emptyFlow(),
+    keys: () -> Collection<Any> = { emptyList() },
+    recorder: ItemRecorder = ItemRecorder(),
     isSelecting: () -> Boolean = { false },
     isSelected: (LSong) -> Boolean = { false },
     onSelect: (LSong) -> Unit = {},
@@ -58,19 +67,43 @@ internal fun ArtistDetailScreenContent(
     val hapticFeedback = LocalHapticFeedback.current
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
-        keys = { artistDetailSM.recorder.list().filterNotNull() }
+        keys = keys
     )
-
-    val artist by artistDetailSM.artist
-    val songs by artistDetailSM.songs
 
     val relateArtist = remember(artist) {
         artist?.songs?.map { it.artists }
             ?.flatten()
             ?.toSet()
-            ?.filter { it.id != artist!!.name }
+            ?.filter { it.id != artist.name }
             ?.toList()
             ?: emptyList()
+    }
+
+    LaunchedEffect(Unit) {
+        eventFlow.collectLatest { event ->
+            when (event) {
+                is ArtistDetailEvent.ScrollToItem -> {
+                    scroller.animateTo(
+                        key = event.key,
+                        isStickyHeader = { it.contentType == "group" },
+                        offset = { item ->
+                            // 若是 sticky header，则滚动到顶部
+                            if (item.contentType == "group") {
+                                return@animateTo -statusBar.getTop(density)
+                            }
+
+                            val closestStickyHeaderSize = listState.layoutInfo.visibleItemsInfo
+                                .lastOrNull { it.index < item.index && it.contentType == "group" }
+                                ?.size ?: 0
+
+                            -(statusBar.getTop(density) + closestStickyHeaderSize)
+                        }
+                    )
+                }
+
+                else -> {}
+            }
+        }
     }
 
     LazyColumn(
@@ -95,7 +128,7 @@ internal fun ArtistDetailScreenContent(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        startRecord(artistDetailSM.recorder) {
+        startRecord(recorder) {
             itemWithRecord(key = "HEADER") {
                 Column(
                     modifier = Modifier
@@ -203,5 +236,7 @@ internal fun ArtistDetailScreenContent(
                 }
             }
         }
+
+        smartBarPadding()
     }
 }

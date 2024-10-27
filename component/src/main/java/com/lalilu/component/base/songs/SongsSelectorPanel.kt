@@ -1,7 +1,6 @@
 package com.lalilu.component.base.songs
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -16,14 +15,19 @@ import com.lalilu.remixicon.system.closeLine
 
 @Composable
 fun ScreenBarFactory.SongsSelectorPanel(
-    isVisible: MutableState<Boolean>,
+    isVisible: () -> Boolean,
+    onDismiss: () -> Unit,
     screenActions: List<ScreenAction>? = null,
 ) {
-    RegisterContent(isVisible = isVisible, onBackPressed = { }) {
+    RegisterContent(
+        isVisible = isVisible,
+        onDismiss = onDismiss,
+        onBackPressed = { }
+    ) {
         SongsSelectorPanelContent(
             modifier = Modifier,
             screenActions = screenActions,
-            onBackPress = { isVisible.value = false }
+            onBackPress = { onDismiss() }
         )
     }
 }

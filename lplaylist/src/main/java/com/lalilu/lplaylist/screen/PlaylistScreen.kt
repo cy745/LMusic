@@ -126,7 +126,8 @@ private fun Screen.PlaylistScreen(
 
     if (this is ScreenBarFactory) {
         RegisterContent(
-            isVisible = selectHelper.isSelecting,
+            isVisible = { selectHelper.isSelecting.value },
+            onDismiss = { selectHelper.isSelecting.value = false },
             onBackPressed = { selectHelper.clear() }
         ) {
             Row(

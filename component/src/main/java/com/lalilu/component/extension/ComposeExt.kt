@@ -12,11 +12,20 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.contentColorFor
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
@@ -25,13 +34,22 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.component.R
 import com.lalilu.component.base.LocalWindowSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.currentKoinScope
 import org.koin.compose.koinInject
+import org.koin.core.parameter.ParametersDefinition
+import org.koin.core.qualifier.Qualifier
+import org.koin.core.scope.Scope
+import org.koin.viewmodel.defaultExtras
+import java.lang.ref.WeakReference
 import kotlin.math.roundToInt
 
 @Composable
@@ -273,3 +291,47 @@ fun rememberIsPadLandScape(): State<Boolean> {
 @Composable
 inline fun <reified T : ViewModel> singleViewModel(): T =
     koinViewModel(viewModelStoreOwner = koinInject())
+
+val registerMap = mutableMapOf<Class<*>, WeakReference<ViewModelStoreOwner>>()
+
+@Composable
+inline fun <reified T : ViewModel> registerAndGetViewModel(
+    qualifier: Qualifier? = null,
+    viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
+        "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
+    },
+    key: String? = null,
+    extras: CreationExtras = defaultExtras(viewModelStoreOwner),
+    scope: Scope = currentKoinScope(),
+    noinline parameters: ParametersDefinition? = null,
+): T {
+    return koinViewModel<T>(
+        qualifier = qualifier,
+        viewModelStoreOwner = viewModelStoreOwner,
+        key = key,
+        extras = extras,
+        scope = scope,
+        parameters = parameters
+    ).also { registerMap[T::class.java] = WeakReference(viewModelStoreOwner) }
+}
+
+@Composable
+inline fun <reified T : ViewModel> getViewModel(
+    qualifier: Qualifier? = null,
+    viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(registerMap[T::class.java]?.get()) {
+        "No Registered ViewModelStoreOwner was provided via registerMap for ${T::class.java}"
+    },
+    key: String? = null,
+    extras: CreationExtras = defaultExtras(viewModelStoreOwner),
+    scope: Scope = currentKoinScope(),
+    noinline parameters: ParametersDefinition? = null,
+): T {
+    return koinViewModel<T>(
+        qualifier = qualifier,
+        viewModelStoreOwner = viewModelStoreOwner,
+        key = key,
+        extras = extras,
+        scope = scope,
+        parameters = parameters
+    )
+}

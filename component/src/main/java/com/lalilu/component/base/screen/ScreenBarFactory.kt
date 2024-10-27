@@ -3,7 +3,7 @@ package com.lalilu.component.base.screen
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,28 +34,31 @@ interface ScreenBarFactory {
 
     @Composable
     fun RegisterContent(
-        isVisible: MutableState<Boolean>,
+        isVisible: () -> Boolean,
+        onDismiss: () -> Unit,
         onBackPressed: (() -> Unit)?,
         content: @Composable () -> Unit
     ) {
-        LaunchedEffect(isVisible.value) {
-            if (isVisible.value) {
+        val key = currentCompositeKeyHash
+
+        LaunchedEffect(isVisible()) {
+            if (isVisible()) {
                 stack.stack += ScreenBarComponent(
-                    state = isVisible,
+                    key = key.toString(),
                     content = {
                         content.invoke()
 
                         if (onBackPressed != null) {
                             BackHandler {
-                                isVisible.value = false
+                                onDismiss()
                                 onBackPressed()
                             }
                         }
                     }
                 )
             } else {
-                val key = isVisible.hashCode().toString()
-                stack.stack = stack.stack.filter { it.key != key }
+                stack.stack = stack.stack
+                    .filter { it.key != key.toString() }
             }
         }
     }

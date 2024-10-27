@@ -15,7 +15,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,47 +27,49 @@ import com.gigamole.composefadingedges.content.FadingEdgesContentType
 import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
 import com.gigamole.composefadingedges.fill.FadingEdgesFillType
 import com.gigamole.composefadingedges.verticalFadingEdges
+import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.base.songs.SongsScreenScrollBar
 import com.lalilu.component.base.songs.SongsScreenStickyHeader
+import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
-import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lartist.component.ArtistCard
 import com.lalilu.lartist.screen.ArtistDetailScreen
-import com.lalilu.lartist.viewModel.ArtistsSM
-import com.lalilu.lartist.viewModel.ArtistsScreenEvent
+import com.lalilu.lartist.viewModel.ArtistsEvent
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lplayer.MPlayer
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import org.koin.compose.koinInject
+import kotlinx.coroutines.flow.emptyFlow
 
 
 @Composable
 internal fun ArtistsScreenContent(
-    artistsSM: ArtistsSM,
-    playingVM: IPlayingViewModel = koinInject(),
+    artists: Map<GroupIdentity, List<LArtist>> = emptyMap(),
+    keys: () -> Collection<Any> = { emptyList() },
+    recorder: ItemRecorder = ItemRecorder(),
+    eventFlow: Flow<ArtistsEvent> = emptyFlow(),
     isSelecting: () -> Boolean = { false },
     isSelected: (LArtist) -> Boolean = { false },
     onSelect: (LArtist) -> Unit = {},
     onClickGroup: (GroupIdentity) -> Unit = {},
 ) {
-    val artists by artistsSM.artists
     val listState = rememberLazyListState()
     val statusBar = WindowInsets.statusBars
     val density = LocalDensity.current
     val stickyHeaderContentType = remember { "group" }
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
-        keys = { artistsSM.recorder.list().filterNotNull() }
+        keys = keys
     )
 
     LaunchedEffect(Unit) {
-        artistsSM.eventFlow.collectLatest { event ->
+        eventFlow.collectLatest { event ->
             when (event) {
-                is ArtistsScreenEvent.ScrollToItem -> {
+                is ArtistsEvent.ScrollToItem -> {
                     scroller.animateTo(
                         key = event.key,
                         isStickyHeader = { it.contentType == stickyHeaderContentType },
@@ -118,7 +119,7 @@ internal fun ArtistsScreenContent(
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            startRecord(artistsSM.recorder) {
+            startRecord(recorder) {
                 itemWithRecord(key = "艺术家") {
                     val count = remember(artists) { artists.values.flatten().size }
 
@@ -185,6 +186,8 @@ internal fun ArtistsScreenContent(
                     }
                 }
             }
+
+            smartBarPadding()
         }
     }
 }

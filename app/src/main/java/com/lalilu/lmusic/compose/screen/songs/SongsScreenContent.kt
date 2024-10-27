@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen.songs
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -16,13 +17,13 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gigamole.composefadingedges.FadingEdgesGravity
@@ -30,23 +31,32 @@ import com.gigamole.composefadingedges.content.FadingEdgesContentType
 import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
 import com.gigamole.composefadingedges.fill.FadingEdgesFillType
 import com.gigamole.composefadingedges.verticalFadingEdges
+import com.lalilu.common.base.SourceType
 import com.lalilu.component.base.smartBarPadding
-import com.lalilu.component.base.songs.SongsSM
-import com.lalilu.component.base.songs.SongsScreenEvent
 import com.lalilu.component.base.songs.SongsScreenScrollBar
 import com.lalilu.component.base.songs.SongsScreenStickyHeader
 import com.lalilu.component.card.SongCard
+import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
 import com.lalilu.component.navigation.AppRouter
+import com.lalilu.lmedia.entity.FileInfo
 import com.lalilu.lmedia.entity.LSong
+import com.lalilu.lmedia.entity.Metadata
 import com.lalilu.lmedia.extension.GroupIdentity
+import com.lalilu.lmusic.LMusicTheme
+import com.lalilu.lmusic.viewmodel.SongsEvent
 import com.lalilu.lplayer.extensions.PlayerAction
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 internal fun SongsScreenContent(
-    songsSM: SongsSM,
+    recorder: ItemRecorder = ItemRecorder(),
+    eventFlow: SharedFlow<SongsEvent> = MutableSharedFlow(),
+    keys: () -> Collection<Any> = { emptyList() },
+    songs: Map<GroupIdentity, List<LSong>> = emptyMap(),
     isSelecting: () -> Boolean = { false },
     isSelected: (LSong) -> Boolean = { false },
     onSelect: (LSong) -> Unit = {},
@@ -56,16 +66,15 @@ internal fun SongsScreenContent(
     val hapticFeedback = LocalHapticFeedback.current
     val listState: LazyListState = rememberLazyListState()
     val statusBar = WindowInsets.statusBars
-    val songs by songsSM.songs
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
-        keys = { songsSM.recorder.list().filterNotNull() }
+        keys = keys
     )
 
     LaunchedEffect(Unit) {
-        songsSM.event().collectLatest { event ->
+        eventFlow.collectLatest { event ->
             when (event) {
-                is SongsScreenEvent.ScrollToItem -> {
+                is SongsEvent.ScrollToItem -> {
                     scroller.animateTo(
                         key = event.key,
                         isStickyHeader = { it.contentType == "group" },
@@ -113,7 +122,7 @@ internal fun SongsScreenContent(
                 ),
             state = listState,
         ) {
-            startRecord(songsSM.recorder) {
+            startRecord(recorder) {
                 itemWithRecord(key = "全部歌曲") {
                     val count = remember(songs) { songs.values.flatten().size }
 
@@ -191,3 +200,47 @@ internal fun SongsScreenContent(
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun SongsScreenContentPreview(modifier: Modifier = Modifier) {
+    LMusicTheme {
+        SongsScreenContent(
+            songs = mapOf(
+                GroupIdentity.None to emptyList(),
+                GroupIdentity.FirstLetter("A") to buildList {
+                    repeat(20) { add(testItem(it)) }
+                }
+            )
+        )
+    }
+}
+
+private fun testItem(id: Int) = LSong(
+    id = "$id",
+    metadata = Metadata(
+        title = "Test",
+        album = "album",
+        artist = "artist",
+        albumArtist = "albumArtist",
+        composer = "composer",
+        lyricist = "lyricist",
+        comment = "comment",
+        genre = "genre",
+        track = "track",
+        disc = "disc",
+        date = "date",
+        duration = 100000,
+        dateAdded = 0,
+        dateModified = 0
+    ),
+    fileInfo = FileInfo(
+        mimeType = "audio/mp3",
+        directoryPath = "directoryPath",
+        pathStr = "pathStr",
+        fileName = "fileName",
+        size = 1000
+    ),
+    uri = Uri.EMPTY,
+    sourceType = SourceType.Local
+)

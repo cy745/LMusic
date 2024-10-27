@@ -398,7 +398,8 @@ private fun MoreActionPanelDialog(
     }
 
     DialogWrapper.register(
-        isVisible = isVisible,
+        isVisible = { isVisible.value },
+        onDismiss = { isVisible.value = false },
         dialogItem = dialog
     )
 }

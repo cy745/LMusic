@@ -69,6 +69,7 @@ data class SearchLyricScreen(
     @Composable
     override fun Content() {
         val state = SearchLyricPresenter.presentState()
+        val visible = remember { mutableStateOf(true) }
 
         LaunchedEffect(Unit) {
             if (state.mediaId != mediaId) {
@@ -80,7 +81,8 @@ data class SearchLyricScreen(
         }
 
         RegisterContent(
-            isVisible = remember { mutableStateOf(true) },
+            isVisible = { visible.value },
+            onDismiss = { visible.value = false },
             onBackPressed = null
         ) {
             SearchInputBar(

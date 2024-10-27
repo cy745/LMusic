@@ -18,7 +18,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +32,8 @@ import com.lalilu.lmedia.extension.GroupIdentity
 
 @Composable
 fun SongsHeaderJumperDialog(
-    isVisible: MutableState<Boolean>,
+    isVisible: () -> Boolean,
+    onDismiss: () -> Unit,
     items: () -> Collection<GroupIdentity>,
     onSelectItem: (item: GroupIdentity) -> Unit = {}
 ) {
@@ -48,6 +48,7 @@ fun SongsHeaderJumperDialog(
 
     DialogWrapper.register(
         isVisible = isVisible,
+        onDismiss = onDismiss,
         dialogItem = dialog
     )
 }

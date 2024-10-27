@@ -1,10 +1,10 @@
 package com.lalilu.lartist.screen.artists
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.RemixIcon
@@ -18,10 +18,11 @@ import com.lalilu.component.base.songs.SongsSearcherPanel
 import com.lalilu.component.base.songs.SongsSelectorPanel
 import com.lalilu.component.base.songs.SongsSortPanelDialog
 import com.lalilu.component.extension.DialogWrapper
+import com.lalilu.component.extension.getViewModel
+import com.lalilu.component.extension.registerAndGetViewModel
 import com.lalilu.lartist.R
-import com.lalilu.lartist.viewModel.ArtistsSM
-import com.lalilu.lartist.viewModel.ArtistsScreenAction
-import com.lalilu.lmedia.extension.GroupIdentity
+import com.lalilu.lartist.viewModel.ArtistsAction
+import com.lalilu.lartist.viewModel.ArtistsVM
 import com.lalilu.remixicon.Design
 import com.lalilu.remixicon.Editor
 import com.lalilu.remixicon.System
@@ -38,7 +39,6 @@ import com.zhangke.krouter.annotation.Destination
 @Destination("/pages/artists")
 object ArtistsScreen : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBarFactory {
     private fun readResolve(): Any = ArtistsScreen
-    private var artistsSM: ArtistsSM? = null
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
@@ -50,38 +50,37 @@ object ArtistsScreen : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBar
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
+        val vm = getViewModel<ArtistsVM>()
+        val state by vm.state
+
         return remember {
             listOf(
                 ScreenAction.Static(
                     title = { "排序" },
                     icon = { RemixIcon.Editor.sortDesc },
                     color = { Color(0xFF1793FF) },
-                    onAction = { artistsSM?.showSortPanel?.value = true }
+                    onAction = { vm.intent(ArtistsAction.ToggleSortPanel) }
                 ),
                 ScreenAction.Static(
                     title = { "选择" },
                     icon = { RemixIcon.Design.editBoxLine },
                     color = { Color(0xFF009673) },
-                    onAction = { artistsSM?.selector?.isSelecting?.value = true }
+                    onAction = { vm.selector.isSelecting.value = true }
                 ),
                 ScreenAction.Static(
                     title = { "搜索" },
                     subTitle = {
-                        val isSearching = artistsSM?.searcher?.isSearching
-
-                        if (isSearching?.value == true) "搜索中： ${artistsSM?.searcher?.keywordState?.value}"
-                        else null
+                        val keyword = state.searchKeyWord
+                        if (keyword.isNotBlank()) "搜索中： $keyword" else null
                     },
                     icon = { RemixIcon.System.menuSearchLine },
                     color = { Color(0xFF8BC34A) },
                     dotColor = {
-                        val isSearching = artistsSM?.searcher?.isSearching
-
-                        if (isSearching?.value == true) Color.Red
-                        else null
+                        val keyword = state.searchKeyWord
+                        if (keyword.isNotBlank()) Color.Red else null
                     },
                     onAction = {
-                        artistsSM?.showSearcherPanel?.value = true
+                        vm.intent(ArtistsAction.ToggleSearcherPanel)
                         DialogWrapper.dismiss()
                     }
                 ),
@@ -89,7 +88,7 @@ object ArtistsScreen : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBar
                     title = { "定位当前播放所属" },
                     icon = { RemixIcon.Design.focus3Line },
                     color = { Color(0xFF8700FF) },
-                    onAction = { artistsSM?.doAction(ArtistsScreenAction.LocaleToPlayingItem) }
+                    onAction = { vm.intent(ArtistsAction.LocaleToPlayingItem) }
                 ),
             )
         }
@@ -97,45 +96,47 @@ object ArtistsScreen : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBar
 
     @Composable
     override fun Content() {
-        val sm = rememberScreenModel { ArtistsSM() }
-            .also { artistsSM = it }
+        val vm = registerAndGetViewModel<ArtistsVM>()
+        val state by vm.state
+        val artists by vm.artists
 
         SongsSortPanelDialog(
-            isVisible = sm.showSortPanel,
-            supportSortActions = sm.supportSortActions,
-            isSortActionSelected = { sm.sorter.isSortActionSelected(it) },
-            onSelectSortAction = { sm.sorter.selectSortAction(it) }
+            isVisible = { state.showSortPanel },
+            onDismiss = { vm.intent(ArtistsAction.HideSortPanel) },
+            supportSortActions = vm.supportSortActions,
+            isSortActionSelected = { state.selectedSortAction == it },
+            onSelectSortAction = { vm.intent(ArtistsAction.SelectSortAction(it)) }
         )
 
         SongsHeaderJumperDialog(
-            isVisible = sm.showJumperDialog,
-            items = { sm.recorder.list().filterIsInstance<GroupIdentity>() },
-            onSelectItem = { sm.doAction(ArtistsScreenAction.LocaleToGroupItem(it)) }
+            isVisible = { state.showJumperDialog },
+            onDismiss = { vm.intent(ArtistsAction.HideJumperDialog) },
+            items = { artists.keys },
+            onSelectItem = { vm.intent(ArtistsAction.LocaleToGroupItem(it)) }
         )
 
         SongsSearcherPanel(
-            isVisible = sm.showSearcherPanel,
-            keyword = { sm.searcher.keywordState.value },
-            onUpdateKeyword = { sm.searcher.keywordState.value = it }
+            isVisible = { state.showSearcherPanel },
+            onDismiss = { vm.intent(ArtistsAction.HideSearcherPanel) },
+            keyword = { state.searchKeyWord },
+            onUpdateKeyword = { vm.intent(ArtistsAction.SearchFor(it)) }
         )
 
         SongsSelectorPanel(
-            isVisible = sm.selector.isSelecting,
+            isVisible = { vm.selector.isSelecting.value },
+            onDismiss = { vm.selector.isSelecting.value = false },
             screenActions = listOfNotNull(
                 ScreenAction.Static(
                     title = { "全选" },
                     color = { Color(0xFF00ACF0) },
                     icon = { RemixIcon.System.checkboxMultipleLine },
-                    onAction = {
-                        val artists = sm.artists.value.values.flatten()
-                        sm.selector.selectAll(artists)
-                    }
+                    onAction = { vm.selector.selectAll(artists.values.flatten()) }
                 ),
                 ScreenAction.Static(
                     title = { "取消全选" },
                     icon = { RemixIcon.System.checkboxMultipleBlankLine },
                     color = { Color(0xFFFF5100) },
-                    onAction = { sm.selector.clear() }
+                    onAction = { vm.selector.clear() }
                 ),
                 ScreenAction.Static(
                     title = { "添加到播放列表" },
@@ -150,11 +151,14 @@ object ArtistsScreen : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBar
         )
 
         ArtistsScreenContent(
-            artistsSM = sm,
-            isSelecting = { sm.selector.isSelecting.value },
-            isSelected = { sm.selector.isSelected(it) },
-            onSelect = { sm.selector.onSelect(it) },
-            onClickGroup = { sm.showJumperDialog.value = true }
+            artists = artists,
+            recorder = vm.recorder,
+            eventFlow = vm.eventFlow(),
+            keys = { vm.recorder.list().filterNotNull() },
+            isSelecting = { vm.selector.isSelecting.value },
+            isSelected = { vm.selector.isSelected(it) },
+            onSelect = { vm.selector.onSelect(it) },
+            onClickGroup = { vm.intent(ArtistsAction.ToggleJumperDialog) }
         )
     }
 }
