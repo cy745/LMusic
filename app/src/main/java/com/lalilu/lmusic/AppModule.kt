@@ -13,7 +13,6 @@ import coil3.util.DebugLogger
 import com.lalilu.R
 import com.lalilu.common.base.SourceType
 import com.lalilu.component.viewmodel.IPlayingViewModel
-import com.lalilu.lalbum.viewModel.AlbumsViewModel
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
@@ -110,7 +109,6 @@ val ViewModelModule = module {
     viewModelOf(::PlayingViewModel)
     viewModel<IPlayingViewModel> { get<PlayingViewModel>() }
     viewModelOf(::SearchViewModel)
-    viewModelOf(::AlbumsViewModel)
     viewModelOf(::SearchLyricViewModel)
 }
 

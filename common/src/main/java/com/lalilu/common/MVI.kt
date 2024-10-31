@@ -1,5 +1,6 @@
 package com.lalilu.common
 
+import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -9,7 +10,11 @@ interface Mvi<State, Event> {
     suspend fun reduce(action: suspend (State) -> State)
     suspend fun postEvent(event: Event)
     suspend fun postEvent(action: suspend () -> Event) = postEvent(action())
+
+    @Stable
     fun stateFlow(): StateFlow<State>
+
+    @Stable
     fun eventFlow(): SharedFlow<Event>
 }
 

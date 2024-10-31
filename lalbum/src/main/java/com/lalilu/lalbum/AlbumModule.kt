@@ -1,11 +1,8 @@
 package com.lalilu.lalbum
 
-import com.lalilu.lalbum.screen.AlbumDetailScreenModel
-import com.lalilu.lalbum.screen.AlbumsScreenModel
-import org.koin.core.module.dsl.factoryOf
-import org.koin.dsl.module
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
 
-val AlbumModule = module {
-    factoryOf(::AlbumDetailScreenModel)
-    factoryOf(::AlbumsScreenModel)
-}
+@Module
+@ComponentScan("com.lalilu.lalbum")
+object AlbumModule

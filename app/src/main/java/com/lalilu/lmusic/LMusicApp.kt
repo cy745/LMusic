@@ -50,7 +50,7 @@ class LMusicApp : Application(), FilterProvider, ViewModelStoreOwner {
                 HistoryModule.module,
                 PlaylistModule2.module,
                 ArtistModule.module,
-                AlbumModule,
+                AlbumModule.module,
                 DictionaryModule,
                 LMedia.module
             )
