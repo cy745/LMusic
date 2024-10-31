@@ -1,5 +1,7 @@
 package com.lalilu.lartist.viewModel
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.LogUtils
@@ -18,12 +20,16 @@ import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lplayer.MPlayer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
+
+@Stable
+@Immutable
 data class ArtistsState(
     // control flags
     val showSortPanel: Boolean = false,
@@ -34,6 +40,8 @@ data class ArtistsState(
     val searchKeyWord: String = "",
     val selectedSortAction: ListAction = SortStaticAction.Normal,
 ) {
+    val distinctKey: Int = searchKeyWord.hashCode() + selectedSortAction.hashCode()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getArtistsFlow(): Flow<Map<GroupIdentity, List<LArtist>>> {
         val source = LMedia.getFlow<LArtist>()
@@ -85,7 +93,9 @@ class ArtistsVM : ViewModel(),
     val recorder = ItemRecorder()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val artists = stateFlow().flatMapLatest { it.getArtistsFlow() }
+    val artists = stateFlow()
+        .distinctUntilChangedBy { it.distinctKey }
+        .flatMapLatest { it.getArtistsFlow() }
         .toState(emptyMap(), viewModelScope)
     val state = stateFlow().toState(ArtistsState(), viewModelScope)
 

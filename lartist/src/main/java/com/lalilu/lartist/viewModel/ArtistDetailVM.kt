@@ -1,5 +1,7 @@
 package com.lalilu.lartist.viewModel
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.LogUtils
@@ -19,6 +21,7 @@ import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lplayer.MPlayer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -27,7 +30,8 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.qualifier.named
 
-
+@Stable
+@Immutable
 data class ArtistDetailState(
     val artistName: String,
 
@@ -40,6 +44,8 @@ data class ArtistDetailState(
     val searchKeyWord: String = "",
     val selectedSortAction: ListAction = SortStaticAction.Normal,
 ) {
+    val distinctKey: Int = searchKeyWord.hashCode() + selectedSortAction.hashCode()
+
     fun getArtistFlow(): Flow<LArtist?> {
         return LMedia.getFlow<LArtist>(artistName)
     }
@@ -99,9 +105,15 @@ class ArtistDetailVM(
     val selector = ItemSelector<LSong>()
     val recorder = ItemRecorder()
 
-    val songs = stateFlow().flatMapLatest { it.getSongsFlow() }.toState(emptyMap(), viewModelScope)
-    val artist = stateFlow().flatMapLatest { it.getArtistFlow() }.toState(viewModelScope)
-    val state = stateFlow().toState(ArtistDetailState(artistName), viewModelScope)
+    val songs = stateFlow()
+        .distinctUntilChangedBy { it.distinctKey }
+        .flatMapLatest { it.getSongsFlow() }
+        .toState(emptyMap(), viewModelScope)
+    val artist = stateFlow()
+        .flatMapLatest { it.getArtistFlow() }
+        .toState(viewModelScope)
+    val state = stateFlow()
+        .toState(ArtistDetailState(artistName), viewModelScope)
 
     val supportSortActions: Set<ListAction> =
         setOf<ListAction?>(

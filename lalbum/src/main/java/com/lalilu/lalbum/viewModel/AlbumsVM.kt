@@ -1,5 +1,7 @@
 package com.lalilu.lalbum.viewModel
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lalilu.common.MviWithIntent
@@ -14,6 +16,7 @@ import com.lalilu.lmedia.extension.SortDynamicAction
 import com.lalilu.lmedia.extension.SortStaticAction
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
@@ -21,7 +24,8 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.qualifier.named
 
-
+@Stable
+@Immutable
 data class AlbumsState(
     val albumIds: List<String> = emptyList(),
 
@@ -34,6 +38,9 @@ data class AlbumsState(
     val searchKeyWord: String = "",
     val selectedSortAction: ListAction = SortStaticAction.Normal,
 ) {
+    val distinctKey: Int =
+        albumIds.hashCode() + searchKeyWord.hashCode() + selectedSortAction.hashCode()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getAlbumsFlow(): Flow<Map<GroupIdentity, List<LAlbum>>> {
         val source = LMedia.getFlow<LAlbum>()
@@ -84,9 +91,12 @@ class AlbumsVM(
     MviWithIntent<AlbumsState, AlbumsEvent, AlbumsAction> by mviImplWithIntent(AlbumsState(albumIds)) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val albums = stateFlow().flatMapLatest { it.getAlbumsFlow() }
+    val albums = stateFlow()
+        .distinctUntilChangedBy { it.distinctKey }
+        .flatMapLatest { it.getAlbumsFlow() }
         .toState(emptyMap(), viewModelScope)
-    val state = stateFlow().toState(AlbumsState(), viewModelScope)
+    val state = stateFlow()
+        .toState(AlbumsState(), viewModelScope)
 
     val supportSortActions: Set<ListAction> =
         setOf<ListAction?>(

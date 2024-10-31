@@ -1,5 +1,7 @@
 package com.lalilu.lmusic.viewmodel
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.LogUtils
@@ -18,6 +20,7 @@ import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lplayer.MPlayer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
@@ -26,6 +29,8 @@ import org.koin.android.annotation.KoinViewModel
 import org.koin.core.qualifier.named
 
 
+@Stable
+@Immutable
 data class SongsState(
     // initialize values
     val mediaIds: List<String> = emptyList(),
@@ -39,6 +44,9 @@ data class SongsState(
     val searchKeyWord: String = "",
     val selectedSortAction: ListAction = SortStaticAction.Normal,
 ) {
+    val distinctKey: Int =
+        mediaIds.hashCode() + searchKeyWord.hashCode() + selectedSortAction.hashCode()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getSongsFlow(): Flow<Map<GroupIdentity, List<LSong>>> {
         val source = if (mediaIds.isEmpty()) LMedia.getFlow<LSong>()
@@ -93,7 +101,9 @@ class SongsVM(
     val recorder = ItemRecorder()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val songs = stateFlow().flatMapLatest { it.getSongsFlow() }
+    val songs = stateFlow()
+        .distinctUntilChangedBy { it.distinctKey }
+        .flatMapLatest { it.getSongsFlow() }
         .toState(emptyMap(), viewModelScope)
     val state = stateFlow().toState(SongsState(), viewModelScope)
 

@@ -91,7 +91,10 @@ internal fun AlbumsScreenContent(
                     contentType = "group",
                     span = StaggeredGridItemSpan.FullLine
                 ) {
-                    Text(group.text)
+                    Text(
+                        modifier = Modifier.animateItem(),
+                        text = group.text
+                    )
                 }
             }
 
@@ -101,6 +104,7 @@ internal fun AlbumsScreenContent(
                 contentType = { LAlbum::class }
             ) { item ->
                 AlbumCard(
+                    modifier = Modifier.animateItem(),
                     album = { item },
                     isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
                     showTitle = showText,
