@@ -28,9 +28,9 @@ import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.LAlbumFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.LSongFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.MediaItemFetcher
+import com.lalilu.lmusic.utils.coil.keyer.LAlbumCoverKeyer
+import com.lalilu.lmusic.utils.coil.keyer.LSongCoverKeyer
 import com.lalilu.lmusic.utils.coil.keyer.MediaItemKeyer
-import com.lalilu.lmusic.utils.coil.keyer.SongCoverKeyer
-import com.lalilu.lmusic.utils.coil.mapper.LSongMapper
 import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
@@ -64,12 +64,12 @@ fun provideImageLoaderFactory(
         ImageLoader.Builder(context)
             .components {
                 add(OkHttpNetworkFetcherFactory(client))
-                add(SongCoverKeyer())
-                add(LSongMapper())
+                add(LSongCoverKeyer())
+                add(LAlbumCoverKeyer())
                 add(MediaItemKeyer())
-                add(MediaItemFetcher.MediaItemFetcherFactory())
                 add(LSongFetcher.SongFactory())
                 add(LAlbumFetcher.AlbumFactory())
+                add(MediaItemFetcher.MediaItemFetcherFactory())
             }
             .transitionFactory(CrossfadeTransitionFactory())
             .logger(DebugLogger())

@@ -54,14 +54,14 @@ class LMusicApp : Application(), FilterProvider, ViewModelStoreOwner {
                 DictionaryModule,
                 LMedia.module
             )
+
+            SingletonImageLoader
+                .setSafe(KoinJavaComponent.get(SingletonImageLoader.Factory::class.java))
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-
-        SingletonImageLoader
-            .setSafe(KoinJavaComponent.get(SingletonImageLoader.Factory::class.java))
 
         LogUtils.getConfig()
             .setLog2FileSwitch(true)
