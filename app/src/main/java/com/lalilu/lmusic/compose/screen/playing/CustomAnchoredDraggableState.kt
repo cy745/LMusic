@@ -4,11 +4,10 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.MutatorMutex
-import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollScope
-import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -20,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.lalilu.component.OverScroller
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -48,7 +48,7 @@ enum class DragAnchor {
 
 class CustomAnchoredDraggableState(
     private val scope: CoroutineScope,
-    private val flingBehavior: FlingBehavior,
+    private val overScroller: OverScroller,
     private val initAnchor: () -> DragAnchor,
     private val onStateChange: (DragAnchor, DragAnchor) -> Unit = { _, _ -> },
 ) : ScrollableState {
@@ -210,36 +210,48 @@ class CustomAnchoredDraggableState(
             return velocityY
         }
 
-        var velocityLeft = velocityY
-        scroll { velocityLeft = with(flingBehavior) { performFling(velocityY) } }
+        // 使用自定义的OverScroller进行Fling推算，获取终速
+        val velocityLeft = overScroller.fling(
+            initialVelocity = velocityY,
+            startPosition = position.floatValue,
+            min = minPosition.toFloat(),
+            max = maxPosition.toFloat()
+        )
 
-        if (velocityLeft == 0f) {
-            snapBy(position.floatValue.toInt())
-        }
+        val targetPosition = calcSnapByTargetPosition(
+            targetPosition = overScroller.finalPosition.toInt()
+        )
+
+        doAnimateTo(
+            offset = targetPosition.toFloat(),
+            initialVelocity = velocityY
+        )
 
         return velocityLeft
     }
 
-    fun snapBy(targetPosition: Int) {
-        when (stateValue) {
-            DragAnchor.Middle -> {
-                val position =
-                    calcSnapToPosition(targetPosition, minPosition, middlePosition, maxPosition)
-                scope.launch { doAnimateTo(position.toFloat()) }
-            }
+    fun calcSnapByTargetPosition(targetPosition: Int): Int {
+        return when (stateValue) {
+            DragAnchor.Middle -> calcSnapToPosition(
+                targetPosition,
+                minPosition,
+                middlePosition,
+                maxPosition
+            )
 
-            DragAnchor.Min -> {
-                val position = calcSnapToPosition(targetPosition, minPosition, middlePosition)
-                scope.launch { doAnimateTo(position.toFloat()) }
-            }
+            DragAnchor.Min -> calcSnapToPosition(
+                targetPosition,
+                minPosition,
+                middlePosition
+            )
 
-            DragAnchor.Max -> {
-                val position =
-                    calcSnapToPosition(targetPosition, middlePosition, maxPosition)
-                scope.launch { doAnimateTo(position.toFloat()) }
-            }
+            DragAnchor.Max -> calcSnapToPosition(
+                targetPosition,
+                middlePosition,
+                maxPosition
+            )
 
-            else -> animateToState()
+            else -> getSnapPositionByState(stateValue)
         }
     }
 
@@ -254,11 +266,15 @@ class CustomAnchoredDraggableState(
         }
     }
 
-    suspend fun doAnimateTo(offset: Float) {
+    suspend fun doAnimateTo(
+        offset: Float,
+        initialVelocity: Float = animation.velocity
+    ) {
         animation.apply {
             snapTo(position.floatValue)
             animateTo(
                 targetValue = offset,
+                initialVelocity = initialVelocity,
                 animationSpec = spring(stiffness = Spring.StiffnessLow)
             ) {
                 updatePosition(value)
@@ -267,19 +283,19 @@ class CustomAnchoredDraggableState(
     }
 }
 
-
 @Composable
 fun rememberCustomAnchoredDraggableState(
     onStateChange: (DragAnchor, DragAnchor) -> Unit = { _, _ -> }
 ): CustomAnchoredDraggableState {
     var initAnchor by rememberSaveable(saver = DragAnchor.Saver) { mutableStateOf(DragAnchor.Middle) }
-    val flingBehavior = ScrollableDefaults.flingBehavior()
+    val flingSpec = rememberSplineBasedDecay<Float>()
+    val overScroller = remember { OverScroller(flingSpec) }
     val scope = rememberCoroutineScope()
 
     return remember {
         CustomAnchoredDraggableState(
             scope = scope,
-            flingBehavior = flingBehavior,
+            overScroller = overScroller,
             initAnchor = { initAnchor },
             onStateChange = { oldState, newState ->
                 initAnchor = newState
