@@ -15,7 +15,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Velocity
-import kotlinx.coroutines.CancellationException
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.roundToInt
 
 
@@ -45,7 +45,7 @@ fun NestedScrollBaseLayout(
                 if (
                     !isLyricScrollEnable.value
                     && available.y > 0
-                    && source == NestedScrollSource.Drag
+                    && source == NestedScrollSource.UserInput
                     && draggable.position.floatValue.toInt()
                     == draggable.getPositionByAnchor(DragAnchor.Max)
                 ) {
@@ -56,8 +56,8 @@ fun NestedScrollBaseLayout(
                 return if (isLyricScrollEnable.value) {
                     super.onPreScroll(available, source)
                 } else {
-                    if (source == NestedScrollSource.Drag) {
-                        draggable.scrollBy(available.y)
+                    if (source == NestedScrollSource.UserInput) {
+                        draggable.dispatchRawDelta(available.y)
                     }
                     available
                 }
@@ -71,7 +71,7 @@ fun NestedScrollBaseLayout(
                 return if (isLyricScrollEnable.value) {
                     super.onPreScroll(available, source)
                 } else {
-                    draggable.scrollBy(available.y)
+                    draggable.dispatchRawDelta(available.y)
                     available
                 }
             }
@@ -99,7 +99,7 @@ fun NestedScrollBaseLayout(
                 draggable.tryCancel()
 
                 if (available.y < 0f) {
-                    return available.copy(y = draggable.scrollBy(available.y))
+                    return available.copy(y = draggable.dispatchRawDelta(available.y))
                 }
 
                 return super.onPreScroll(available, source)
@@ -111,19 +111,20 @@ fun NestedScrollBaseLayout(
                 source: NestedScrollSource
             ): Offset {
                 if (available.y > 0f) {
-                    val consumedY = draggable.scrollBy(available.y)
+                    val consumedY = draggable.dispatchRawDelta(available.y)
 
-                    if (available.y - consumedY > 0.005f && source == NestedScrollSource.SideEffect) {
+                    println("onPostScroll ${available.y} = $consumedY $source")
+                    if ((available.y - consumedY) > 0.005f && source == NestedScrollSource.SideEffect) {
                         throw CancellationException()
                     }
-                    return available
+                    return available.copy(y = consumedY)
                 }
 
                 return super.onPostScroll(consumed, available, source)
             }
 
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                draggable.fling(0f)
+                draggable.fling(available.y)
 
                 return if (available.y > 0) {
                     // 向下滑动的情况，消耗剩余的所有速度，避免剩余的速度传递给OverScroll
