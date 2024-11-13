@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -45,12 +44,15 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.blankj.utilcode.util.TimeUtils
+import androidx.compose.ui.unit.sp
 import com.lalilu.lmusic.utils.extension.durationToTime
 import kotlinx.coroutines.launch
 
@@ -72,7 +74,6 @@ sealed interface ClickPart {
 }
 
 @Preview
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SeekbarLayout2(
     modifier: Modifier = Modifier,
@@ -132,22 +133,22 @@ fun SeekbarLayout2(
         val deltaY = offset.y
         val deltaX = offset.x
 
+        // 直接记录Y轴上的滚动距离
         seekbarOffsetY.floatValue += deltaY
-        currentValue.floatValue = if (isCanceled.value) {
-            animateValue.value
-        } else {
+
+        // 根据当前状态控制进度变量
+        currentValue.floatValue = if (oldState == SeekbarVerticalState.ProgressBar) {
             (currentValue.floatValue + deltaX / boxSize.width * (maxValue() - minValue()) * scrollSensitivity)
                 .coerceIn(minValue(), maxValue())
+        } else {
+            animateValue.value
         }
 
-        when {
-            seekbarOffsetY.floatValue < -200f -> seekbarVerticalState.value =
-                SeekbarVerticalState.Dispatcher
-
-            seekbarOffsetY.floatValue < -100f -> seekbarVerticalState.value =
-                SeekbarVerticalState.Cancel
-
-            else -> seekbarVerticalState.value = SeekbarVerticalState.ProgressBar
+        // 根据Y轴滚动距离决定新的状态
+        seekbarVerticalState.value = when {
+            seekbarOffsetY.floatValue < -200f -> SeekbarVerticalState.Dispatcher
+            seekbarOffsetY.floatValue < -100f -> SeekbarVerticalState.Cancel
+            else -> SeekbarVerticalState.ProgressBar
         }
 
         // 当状态发生变化的时候，进行震动
@@ -181,12 +182,11 @@ fun SeekbarLayout2(
             else -> {}
         }
 
+        // 若当前状态为Dispatcher，则将滚动的位移量向外分发
         if (seekbarVerticalState.value == SeekbarVerticalState.Dispatcher) {
             onDispatchDragOffset(deltaY)
         }
     }
-
-
 
     Box(
         modifier = modifier
@@ -259,6 +259,14 @@ fun SeekbarLayout2(
             animationSpec = spring(stiffness = Spring.StiffnessLow),
             label = ""
         )
+        val textStyle = remember {
+            TextStyle.Default.copy(
+                fontSize = 16.sp,
+                lineHeight = 16.sp,
+                fontWeight = FontWeight.Bold,
+                baselineShift = BaselineShift.None
+            )
+        }
 
         Box(
             modifier = Modifier
@@ -273,73 +281,111 @@ fun SeekbarLayout2(
                     val maxValueText = maxValue()
                         .toLong()
                         .durationToTime()
-                    val currentValueTextResult = textMeasurer.measure(currentValueText)
-                    val maxValueTextResult = textMeasurer.measure(maxValueText)
+                    val currentValueTextResult = textMeasurer.measure(
+                        text = currentValueText,
+                        style = textStyle
+                    )
+                    val maxValueTextResult = textMeasurer.measure(
+                        text = maxValueText,
+                        style = textStyle
+                    )
+
+                    val maxPadding = 4.dp.toPx()
+                    val paddingAnimate = maxPadding * alpha.value
+
+                    val innerRadius = 16.dp.toPx() - paddingAnimate
+                    val innerHeight = size.height - (paddingAnimate * 2f)
+                    val innerWidth = size.width - (paddingAnimate * 2f)
+
+                    val actualValue = animateValue.value
+                    val actualProgress = actualValue.normalize(minValue(), maxValue())
+
+                    val thumbWidth = innerWidth * actualProgress
+                    val thumbHeight = innerHeight
+
+                    innerPath.reset()
+                    innerPath.addRoundRect(
+                        RoundRect(
+                            rect = Rect(
+                                offset = Offset(x = paddingAnimate, y = paddingAnimate),
+                                size = Size(width = innerWidth, height = innerHeight)
+                            ),
+                            cornerRadius = CornerRadius(innerRadius, innerRadius)
+                        )
+                    )
 
                     onDrawBehind {
-                        val maxPadding = 4.dp.toPx()
-                        val paddingAnimate = maxPadding * alpha.value
-
-                        val innerRadius = 16.dp.toPx() - paddingAnimate
-                        val innerHeight = size.height - (paddingAnimate * 2f)
-                        val innerWidth = size.width - (paddingAnimate * 2f)
-
-                        innerPath.reset()
-                        innerPath.addRoundRect(
-                            RoundRect(
-                                rect = Rect(
-                                    offset = Offset(x = paddingAnimate, y = paddingAnimate),
-                                    size = Size(width = innerWidth, height = innerHeight)
-                                ),
-                                cornerRadius = CornerRadius(innerRadius, innerRadius)
-                            )
-                        )
-
+                        // 纯色背景
                         drawRect(color = bgColor, alpha = alpha.value)
 
+                        // 圆角裁切
                         clipPath(innerPath) {
                             drawRect(color = Color(100, 100, 100, 50))
-
-                            drawText(
-                                textLayoutResult = currentValueTextResult,
-                                topLeft = Offset(
-                                    x = size.width - currentValueTextResult.size.width,
-                                    y = 0f
-                                )
-                            )
-
-                            val actualValue = animateValue.value
-                            val actualProgress = actualValue.normalize(minValue(), maxValue())
                             onValueChange(actualValue)
 
+                            // 绘制总时长文本（固定右侧）
+                            drawText(
+                                textLayoutResult = maxValueTextResult,
+                                topLeft = Offset(
+                                    x = size.width - maxValueTextResult.size.width - 16.dp.toPx(),
+                                    y = (size.height - maxValueTextResult.size.height) / 2f
+                                ),
+                                color = Color.White,
+                            )
+
+                            // 绘制滑块
                             drawRoundRect(
                                 color = animateColor(),
                                 cornerRadius = CornerRadius(innerRadius, innerRadius),
                                 topLeft = Offset(x = paddingAnimate, y = paddingAnimate),
-                                size = Size(
-                                    width = innerWidth * actualProgress,
-                                    height = innerHeight
-                                )
+                                size = Size(width = thumbWidth, height = thumbHeight)
                             )
 
-                            drawRoundRect(
-                                color = Color.White,
-                                alpha = alpha.value,
-                                cornerRadius = CornerRadius(50f),
+                            // 绘制实时进度文本（移动）
+                            drawText(
+                                textLayoutResult = currentValueTextResult,
                                 topLeft = Offset(
-                                    x = innerWidth * actualProgress + paddingAnimate - 8.dp.toPx(),
-                                    y = (size.height - (innerHeight * 0.5f)) / 2f
+                                    x = (thumbWidth - 16.dp.toPx() - currentValueTextResult.size.width)
+                                        .coerceAtLeast(16.dp.toPx()),
+                                    y = (size.height - currentValueTextResult.size.height) / 2f
                                 ),
-                                size = Size(
-                                    width = 4.dp.toPx(),
-                                    height = innerHeight * 0.5f
-                                )
+                                color = Color.White,
                             )
+
+//                            // 绘制把手元素
+//                            drawRoundRect(
+//                                color = Color.White,
+//                                alpha = alpha.value,
+//                                cornerRadius = CornerRadius(50f),
+//                                topLeft = Offset(
+//                                    x = innerWidth * actualProgress + paddingAnimate - 8.dp.toPx(),
+//                                    y = (size.height - (innerHeight * 0.5f)) / 2f
+//                                ),
+//                                size = Size(
+//                                    width = 4.dp.toPx(),
+//                                    height = innerHeight * 0.5f
+//                                )
+//                            )
                         }
                     }
                 }
         ) {
-
+//            Row {
+//                Icon(
+//                    imageVector = RemixIcon.Media.repeatFill,
+//                    contentDescription = null
+//                )
+//
+//                Icon(
+//                    imageVector = RemixIcon.Media.repeatFill,
+//                    contentDescription = null
+//                )
+//
+//                Icon(
+//                    imageVector = RemixIcon.Media.repeatFill,
+//                    contentDescription = null
+//                )
+//            }
         }
     }
 }
