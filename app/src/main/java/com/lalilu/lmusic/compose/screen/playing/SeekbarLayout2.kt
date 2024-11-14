@@ -49,10 +49,12 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lalilu.common.AccumulatedValue
 import com.lalilu.lmusic.utils.extension.durationToTime
 import kotlinx.coroutines.launch
 
@@ -264,8 +266,24 @@ fun SeekbarLayout2(
                 fontSize = 16.sp,
                 lineHeight = 16.sp,
                 fontWeight = FontWeight.Bold,
-                baselineShift = BaselineShift.None
+                baselineShift = BaselineShift.None,
+                textAlign = TextAlign.End,
+                color = Color.White
             )
+        }
+        val accumulator = remember { AccumulatedValue() }
+        val textSize = remember {
+            derivedStateOf {
+                // 获取最大时长，并使用0替换其内部的数字，计算其最大宽度
+                val text = maxValue().toLong()
+                    .durationToTime()
+                    .replace(Regex("[0-9]"), "0")
+                val result = textMeasurer.measure(
+                    text = text,
+                    style = textStyle
+                )
+                result.size.width to result.size.height
+            }
         }
 
         Box(
@@ -281,14 +299,6 @@ fun SeekbarLayout2(
                     val maxValueText = maxValue()
                         .toLong()
                         .durationToTime()
-                    val currentValueTextResult = textMeasurer.measure(
-                        text = currentValueText,
-                        style = textStyle
-                    )
-                    val maxValueTextResult = textMeasurer.measure(
-                        text = maxValueText,
-                        style = textStyle
-                    )
 
                     val maxPadding = 4.dp.toPx()
                     val paddingAnimate = maxPadding * alpha.value
@@ -325,12 +335,13 @@ fun SeekbarLayout2(
 
                             // 绘制总时长文本（固定右侧）
                             drawText(
-                                textLayoutResult = maxValueTextResult,
+                                textMeasurer = textMeasurer,
+                                text = maxValueText,
+                                style = textStyle,
                                 topLeft = Offset(
-                                    x = size.width - maxValueTextResult.size.width - 16.dp.toPx(),
-                                    y = (size.height - maxValueTextResult.size.height) / 2f
-                                ),
-                                color = Color.White,
+                                    x = size.width - textSize.value.first - 16.dp.toPx(),
+                                    y = (size.height - textSize.value.second) / 2f
+                                )
                             )
 
                             // 绘制滑块
@@ -341,15 +352,19 @@ fun SeekbarLayout2(
                                 size = Size(width = thumbWidth, height = thumbHeight)
                             )
 
+                            val textX =
+                                (paddingAnimate + thumbWidth - 16.dp.toPx() - textSize.value.first)
+                                    .let { accumulator.accumulate(it) }
+                                    .coerceAtLeast(16.dp.roundToPx())
                             // 绘制实时进度文本（移动）
                             drawText(
-                                textLayoutResult = currentValueTextResult,
+                                textMeasurer = textMeasurer,
+                                text = currentValueText,
+                                style = textStyle,
                                 topLeft = Offset(
-                                    x = (thumbWidth - 16.dp.toPx() - currentValueTextResult.size.width)
-                                        .coerceAtLeast(16.dp.toPx()),
-                                    y = (size.height - currentValueTextResult.size.height) / 2f
-                                ),
-                                color = Color.White,
+                                    x = textX.toFloat(),
+                                    y = (size.height - textSize.value.second) / 2f
+                                )
                             )
 
 //                            // 绘制把手元素
@@ -391,7 +406,7 @@ fun SeekbarLayout2(
 }
 
 @Composable
-fun Modifier.combineDetectDrag(
+private fun Modifier.combineDetectDrag(
     key: Any = Unit,
     onDragStart: (Offset) -> Unit = { },
     onDragEnd: () -> Unit = { },
