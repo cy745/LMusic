@@ -10,9 +10,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -33,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
@@ -42,14 +45,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.component.base.LocalEnhanceSheetState
 import com.lalilu.component.extension.hideControl
-import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.LyricSourceEmbedded
 import com.lalilu.lmedia.lyric.LyricUtils
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
 import kotlinx.coroutines.Dispatchers
@@ -60,21 +61,21 @@ import kotlin.math.pow
 
 @Composable
 fun PlayingLayout(
-    playingVM: PlayingViewModel = singleViewModel(),
     settingsSp: SettingsSp = koinInject(),
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val enhanceSheetState = LocalEnhanceSheetState.current
     val lifecycle = LocalLifecycleOwner.current
+    val enhanceSheetState = LocalEnhanceSheetState.current
     val systemUiController = rememberSystemUiController()
-    val lyricLayoutLazyListState = rememberLazyListState()
+    val listState = rememberLazyListState()
 
     val isLyricScrollEnable = remember { mutableStateOf(false) }
     val backgroundColor = remember { mutableStateOf(Color.DarkGray) }
     val animateColor = animateColorAsState(targetValue = backgroundColor.value, label = "")
     val scrollToTopEvent = remember { mutableStateOf(0L) }
     val seekbarTime = remember { mutableLongStateOf(0L) }
+    val currentPosition = remember { mutableFloatStateOf(0f) }
 
     val draggable = rememberCustomAnchoredDraggableState { oldState, newState ->
         if (newState == DragAnchor.MiddleXMax && oldState != DragAnchor.MiddleXMax) {
@@ -95,8 +96,6 @@ fun PlayingLayout(
         systemUiController.isStatusBarVisible = !hideComponent.value
     }
 
-    val currentPosition = remember { mutableFloatStateOf(0f) }
-
     LaunchedEffect(Unit) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (isActive) {
@@ -114,6 +113,18 @@ fun PlayingLayout(
         draggable = draggable,
         isLyricScrollEnable = isLyricScrollEnable,
         toolbarContent = {
+            val density = LocalDensity.current
+            val navigationBar = WindowInsets.navigationBars
+            val middleToMaxProgress = remember {
+                derivedStateOf {
+                    draggable.progressBetween(
+                        from = DragAnchor.Middle,
+                        to = DragAnchor.Max,
+                        offset = draggable.position.floatValue
+                    )
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .hideControl(
@@ -123,6 +134,15 @@ fun PlayingLayout(
                     .fillMaxWidth()
                     .statusBarsPadding()
                     .padding(bottom = 10.dp)
+                    .graphicsLayer {
+                        translationY = lerp(
+                            start = 0f,
+                            stop = -navigationBar
+                                .getBottom(density)
+                                .toFloat() + 10.dp.toPx(),
+                            fraction = middleToMaxProgress.value
+                        )
+                    }
             ) {
                 PlayingToolbar(
                     isItemPlaying = { mediaId -> MPlayer.isItemPlaying(mediaId) },
@@ -240,7 +260,7 @@ fun PlayingLayout(
                             alpha = progressIncrease
                         },
                     lyricEntry = lyrics,
-                    listState = lyricLayoutLazyListState,
+                    listState = listState,
                     currentTime = { seekbarTime.longValue },
                     maxWidth = { constraints.maxWidth },
                     textSize = rememberTextSizeFromInt { settingsSp.lyricTextSize.value },

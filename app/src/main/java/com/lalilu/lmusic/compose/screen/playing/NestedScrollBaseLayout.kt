@@ -113,7 +113,6 @@ fun NestedScrollBaseLayout(
                 if (available.y > 0f) {
                     val consumedY = draggable.dispatchRawDelta(available.y)
 
-                    println("onPostScroll ${available.y} = $consumedY $source")
                     if ((available.y - consumedY) > 0.005f && source == NestedScrollSource.SideEffect) {
                         throw CancellationException()
                     }
