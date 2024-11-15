@@ -57,7 +57,7 @@ class CustomAnchoredDraggableState(
     private var minPosition = Int.MIN_VALUE
     private var middlePosition = Int.MIN_VALUE
     private var maxPosition = Int.MIN_VALUE
-    val position = mutableFloatStateOf(Float.MIN_VALUE)
+    val position = mutableFloatStateOf(Float.MAX_VALUE)
     val state = mutableStateOf(initAnchor())
 
     private val scrollMutex = MutatorMutex()
@@ -114,13 +114,32 @@ class CustomAnchoredDraggableState(
         }
 
     fun updateAnchor(min: Int, middle: Int, max: Int) {
+        val maxPositionChange = maxPosition != max
+
         minPosition = min
         middlePosition = middle
         maxPosition = max
 
-        if (position.floatValue == Float.MIN_VALUE) {
-            val targetPosition = getPositionByAnchor(initAnchor()) ?: middlePosition
-            updatePosition(targetPosition.toFloat())
+        when {
+            // 若位置未初始化，则尝试初始化
+            position.floatValue == Float.MAX_VALUE -> {
+                val targetPosition = getPositionByAnchor(initAnchor()) ?: middlePosition
+                updatePosition(targetPosition.toFloat())
+            }
+
+            // 若位置超出范围，则尝试修正
+            position.floatValue.toInt() !in minPosition..maxPosition -> {
+                val targetPosition = position.floatValue.coerceIn(min.toFloat(), max.toFloat())
+                updatePosition(targetPosition)
+            }
+
+            // 若最大值改变，则尝试修正
+            maxPositionChange -> {
+                val targetPosition = position.floatValue.coerceIn(min.toFloat(), max.toFloat())
+                    .let { calcSnapByTargetPosition(it.toInt()) }
+                    .toFloat()
+                updatePosition(targetPosition)
+            }
         }
     }
 
