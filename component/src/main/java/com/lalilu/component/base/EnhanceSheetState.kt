@@ -30,19 +30,11 @@ class EnhanceBottomSheetState(
         get() = bottomSheetState.isExpanded
 
     override fun show() {
-        scope.launch {
-            if (bottomSheetState.isCollapsed) {
-                bottomSheetState.expand()
-            }
-        }
+        scope.launch { bottomSheetState.expand() }
     }
 
     override fun hide() {
-        scope.launch {
-            if (bottomSheetState.isExpanded) {
-                bottomSheetState.collapse()
-            }
-        }
+        scope.launch { bottomSheetState.collapse() }
     }
 
     override fun progress(from: Any, to: Any): Float {
@@ -73,15 +65,11 @@ class EnhanceModalSheetState(
     }
 
     override fun hide() {
-        if (isVisible) {
-            scope.launch { sheetState.hide() }
-        }
+        scope.launch { sheetState.hide() }
     }
 
     override fun show() {
-        if (!isVisible) {
-            scope.launch { sheetState.show() }
-        }
+        scope.launch { sheetState.show() }
     }
 
     override fun progress(from: Any, to: Any): Float {
