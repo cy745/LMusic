@@ -1,6 +1,7 @@
 package com.lalilu.lplayer
 
 import android.content.ComponentName
+import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -9,6 +10,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.blankj.utilcode.util.LogUtils
@@ -22,6 +24,7 @@ import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
+@OptIn(UnstableApi::class)
 object MPlayer : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val sessionToken by lazy {
@@ -131,10 +134,9 @@ object MPlayer : CoroutineScope {
             this@MPlayer.isPlaying = isPlaying
         }
 
+        @OptIn(UnstableApi::class)
         override fun onPlaybackStateChanged(playbackState: Int) {
-            if (playbackState == Player.STATE_READY) {
-                currentDuration = browser.contentDuration.coerceAtLeast(0)
-            }
+
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -144,6 +146,8 @@ object MPlayer : CoroutineScope {
 
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
             currentMediaMetadata = mediaMetadata
+            currentDuration = mediaMetadata.durationMs ?: browser.duration
+            // TODO 此处获取到的duration仍然可能是上一首歌曲的时长
         }
 
         override fun onPlaylistMetadataChanged(mediaMetadata: MediaMetadata) {
