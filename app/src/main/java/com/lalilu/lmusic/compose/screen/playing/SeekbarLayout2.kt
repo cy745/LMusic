@@ -234,11 +234,12 @@ fun SeekbarLayout2(
             .combineDetectDrag(
                 onLongClickStart = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    seekbarHorizontalState.value = SeekbarHorizontalState.Follow
+                    seekbarVerticalState.value = SeekbarVerticalState.Cancel
                 },
                 onDragStart = {
                     moved.value = true
                     seekbarVerticalState.value = SeekbarVerticalState.ProgressBar
-                    seekbarHorizontalState.value = SeekbarHorizontalState.Follow
 
                     seekbarOffsetY.floatValue = it.y
                     scope.launch { onDragStart(it) }
@@ -256,8 +257,13 @@ fun SeekbarLayout2(
     ) {
         val textMeasurer = rememberTextMeasurer()
         val bgColor = MaterialTheme.colors.background
-        val alpha = animateFloatAsState(
+        val bgAlpha = animateFloatAsState(
             targetValue = if (isTouching.value) 1f else 0f,
+            animationSpec = spring(stiffness = Spring.StiffnessLow),
+            label = ""
+        )
+        val textAlpha = animateFloatAsState(
+            targetValue = if (seekbarHorizontalState.value is SeekbarHorizontalState.Idle) 1f else 0f,
             animationSpec = spring(stiffness = Spring.StiffnessLow),
             label = ""
         )
@@ -300,8 +306,17 @@ fun SeekbarLayout2(
                         .toLong()
                         .durationToTime()
 
+                    val currentTextResult = textMeasurer.measure(
+                        text = currentValueText,
+                        style = textStyle
+                    )
+                    val maxTextResult = textMeasurer.measure(
+                        text = maxValueText,
+                        style = textStyle
+                    )
+
                     val maxPadding = 4.dp.toPx()
-                    val paddingAnimate = maxPadding * alpha.value
+                    val paddingAnimate = maxPadding * bgAlpha.value
 
                     val innerRadius = 16.dp.toPx() - paddingAnimate
                     val innerHeight = size.height - (paddingAnimate * 2f)
@@ -326,7 +341,7 @@ fun SeekbarLayout2(
 
                     onDrawBehind {
                         // 纯色背景
-                        drawRect(color = bgColor, alpha = alpha.value)
+                        drawRect(color = bgColor, alpha = bgAlpha.value)
 
                         // 圆角裁切
                         clipPath(innerPath) {
@@ -335,9 +350,9 @@ fun SeekbarLayout2(
 
                             // 绘制总时长文本（固定右侧）
                             drawText(
-                                textMeasurer = textMeasurer,
-                                text = maxValueText,
-                                style = textStyle,
+                                textLayoutResult = maxTextResult,
+                                color = Color.White,
+                                alpha = textAlpha.value,
                                 topLeft = Offset(
                                     x = size.width - textSize.value.first - 16.dp.toPx(),
                                     y = (size.height - textSize.value.second) / 2f
@@ -356,11 +371,12 @@ fun SeekbarLayout2(
                                 (paddingAnimate + thumbWidth - 16.dp.toPx() - textSize.value.first)
                                     .let { accumulator.accumulate(it) }
                                     .coerceAtLeast(16.dp.roundToPx())
+
                             // 绘制实时进度文本（移动）
                             drawText(
-                                textMeasurer = textMeasurer,
-                                text = currentValueText,
-                                style = textStyle,
+                                textLayoutResult = currentTextResult,
+                                color = Color.White,
+                                alpha = textAlpha.value,
                                 topLeft = Offset(
                                     x = textX.toFloat(),
                                     y = (size.height - textSize.value.second) / 2f
