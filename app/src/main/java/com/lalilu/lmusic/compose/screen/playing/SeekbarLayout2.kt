@@ -6,18 +6,21 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberDraggable2DState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -27,7 +30,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -54,6 +56,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blankj.utilcode.util.LogUtils
 import com.lalilu.common.AccumulatedValue
 import com.lalilu.lmusic.utils.extension.durationToTime
 import kotlinx.coroutines.launch
@@ -62,11 +65,6 @@ sealed class SeekbarVerticalState {
     data object ProgressBar : SeekbarVerticalState()
     data object Cancel : SeekbarVerticalState()
     data object Dispatcher : SeekbarVerticalState()
-}
-
-sealed class SeekbarHorizontalState {
-    data object Idle : SeekbarHorizontalState()
-    data object Follow : SeekbarHorizontalState()
 }
 
 sealed interface ClickPart {
@@ -93,32 +91,48 @@ fun SeekbarLayout2(
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
+    val textMeasurer = rememberTextMeasurer()
+    val bgColor = MaterialTheme.colors.background
+    val accumulator = remember { AccumulatedValue() }
+
+    LaunchedEffect(maxValue()) {
+        LogUtils.i("maxValue: ${maxValue()}")
+    }
 
     val scrollSensitivity = remember { 1.3f }
     val scrollThreadHold = remember { 200f }
     val seekbarPaddingBottom = remember { density.run { 156.dp.toPx() } }
 
-    val currentValue = remember { mutableFloatStateOf(0f) }
-    val seekbarOffsetY = remember { mutableFloatStateOf(0f) }
     var boxSize by remember { mutableStateOf(IntSize.Zero) }
 
-    val seekbarVerticalState =
-        remember { mutableStateOf<SeekbarVerticalState>(SeekbarVerticalState.ProgressBar) }
-    val seekbarHorizontalState =
-        remember { mutableStateOf<SeekbarHorizontalState>(SeekbarHorizontalState.Idle) }
+    val progressKeeper = rememberSeekbarProgressKeeper(
+        sizeWidth = { boxSize.width.toFloat() },
+        minValue = minValue,
+        maxValue = maxValue,
+        dataValue = dataValue,
+        scrollSensitivity = scrollSensitivity
+    )
 
-    val moved = remember { mutableStateOf(false) }
-    val isTouching = remember { mutableStateOf(false) }
-    val isCanceled = remember {
-        derivedStateOf { seekbarVerticalState.value != SeekbarVerticalState.ProgressBar }
+    val seekbarOffsetY = remember { mutableFloatStateOf(0f) }
+    val switchModeX = remember { mutableFloatStateOf(0f) }
+    val switchMode = remember { mutableStateOf(false) }
+    val seekbarVerticalState = remember {
+        mutableStateOf<SeekbarVerticalState>(SeekbarVerticalState.ProgressBar)
+    }
+
+    var isMoved by remember { mutableStateOf(false) }
+    var isTouching by remember { mutableStateOf(false) }
+    val isCanceled by remember {
+        derivedStateOf {
+            seekbarVerticalState.value != SeekbarVerticalState.ProgressBar
+        }
     }
 
     val resultValue = remember {
         derivedStateOf {
-            val value = if (isTouching.value && !isCanceled.value) currentValue.floatValue
+            if (switchMode.value) dataValue()
+            else if (isTouching && !isCanceled) progressKeeper.nowValue
             else dataValue()
-
-            value.coerceIn(minValue(), maxValue())
         }
     }
 
@@ -126,9 +140,43 @@ fun SeekbarLayout2(
     val animateValue = animateFloatAsState(
         targetValue = resultValue.value,
         visibilityThreshold = 0.005f,
-        animationSpec = if (isTouching.value && !isCanceled.value) snap() else spring(stiffness = Spring.StiffnessLow),
+        animationSpec = if (isTouching && !isCanceled) snap() else spring(stiffness = Spring.StiffnessLow),
         label = ""
     )
+
+    val bgAlpha = animateFloatAsState(
+        targetValue = if (isTouching) 1f else 0f,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = ""
+    )
+    val textAlpha = animateFloatAsState(
+        targetValue = if (switchMode.value) 0f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = ""
+    )
+    val textStyle = remember {
+        TextStyle.Default.copy(
+            fontSize = 16.sp,
+            lineHeight = 16.sp,
+            fontWeight = FontWeight.Bold,
+            baselineShift = BaselineShift.None,
+            textAlign = TextAlign.End,
+            color = Color.White
+        )
+    }
+    val textSize = remember {
+        derivedStateOf {
+            // 获取最大时长，并使用0替换其内部的数字，计算其最大宽度
+            val text = maxValue().toLong()
+                .durationToTime()
+                .replace(Regex("[0-9]"), "0")
+            val result = textMeasurer.measure(
+                text = text,
+                style = textStyle
+            )
+            result.size.width to result.size.height
+        }
+    }
 
     val draggableState = rememberDraggable2DState { offset ->
         val oldState = seekbarVerticalState.value
@@ -139,11 +187,14 @@ fun SeekbarLayout2(
         seekbarOffsetY.floatValue += deltaY
 
         // 根据当前状态控制进度变量
-        currentValue.floatValue = if (oldState == SeekbarVerticalState.ProgressBar) {
-            (currentValue.floatValue + deltaX / boxSize.width * (maxValue() - minValue()) * scrollSensitivity)
-                .coerceIn(minValue(), maxValue())
-        } else {
-            animateValue.value
+        when {
+            switchMode.value -> {
+                switchModeX.floatValue = offset.x
+            }
+
+            oldState == SeekbarVerticalState.ProgressBar -> {
+                progressKeeper.updateProgressByDelta(delta = deltaX)
+            }
         }
 
         // 根据Y轴滚动距离决定新的状态
@@ -194,7 +245,7 @@ fun SeekbarLayout2(
         modifier = modifier
             .padding(bottom = 100.dp)
             .fillMaxWidth(0.7f)
-            .wrapContentHeight()
+            .height(IntrinsicSize.Max)
             .onPlaced { boxSize = it.size }
             .pointerInput(Unit) {
                 awaitPointerEventScope {
@@ -204,16 +255,16 @@ fun SeekbarLayout2(
                         when (event.type) {
                             PointerEventType.Press -> {
                                 // 开始触摸时，将当前可见的进度值记录下来
-                                currentValue.floatValue = animateValue.value
-                                isTouching.value = true
-                                moved.value = false
+                                progressKeeper.updateProgress(animateValue.value)
+                                isTouching = true
+                                isMoved = false
                             }
 
                             PointerEventType.Release -> {
-                                if (moved.value && !isCanceled.value) {
-                                    onSeekTo(currentValue.floatValue)
+                                if (isMoved && !isCanceled) {
+                                    onSeekTo(progressKeeper.nowValue)
                                 }
-                                isTouching.value = false
+                                isTouching = false
                             }
                         }
                     }
@@ -234,11 +285,11 @@ fun SeekbarLayout2(
             .combineDetectDrag(
                 onLongClickStart = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    seekbarHorizontalState.value = SeekbarHorizontalState.Follow
-                    seekbarVerticalState.value = SeekbarVerticalState.Cancel
+                    switchModeX.floatValue = it.x
+                    switchMode.value = true
                 },
                 onDragStart = {
-                    moved.value = true
+                    isMoved = true
                     seekbarVerticalState.value = SeekbarVerticalState.ProgressBar
 
                     seekbarOffsetY.floatValue = it.y
@@ -246,160 +297,127 @@ fun SeekbarLayout2(
                 },
                 onDragEnd = {
                     seekbarVerticalState.value = SeekbarVerticalState.ProgressBar
-                    seekbarHorizontalState.value = SeekbarHorizontalState.Idle
+                    switchMode.value = false
 
                     scope.launch { onDragStop(0) }
                 },
-                onDrag = { change, dragAmount ->
+                onDrag = { _, dragAmount ->
                     draggableState.dispatchRawDelta(dragAmount)
                 }
             )
     ) {
-        val textMeasurer = rememberTextMeasurer()
-        val bgColor = MaterialTheme.colors.background
-        val bgAlpha = animateFloatAsState(
-            targetValue = if (isTouching.value) 1f else 0f,
-            animationSpec = spring(stiffness = Spring.StiffnessLow),
-            label = ""
-        )
-        val textAlpha = animateFloatAsState(
-            targetValue = if (seekbarHorizontalState.value is SeekbarHorizontalState.Idle) 1f else 0f,
-            animationSpec = spring(stiffness = Spring.StiffnessLow),
-            label = ""
-        )
-        val textStyle = remember {
-            TextStyle.Default.copy(
-                fontSize = 16.sp,
-                lineHeight = 16.sp,
-                fontWeight = FontWeight.Bold,
-                baselineShift = BaselineShift.None,
-                textAlign = TextAlign.End,
-                color = Color.White
-            )
-        }
-        val accumulator = remember { AccumulatedValue() }
-        val textSize = remember {
-            derivedStateOf {
-                // 获取最大时长，并使用0替换其内部的数字，计算其最大宽度
-                val text = maxValue().toLong()
-                    .durationToTime()
-                    .replace(Regex("[0-9]"), "0")
-                val result = textMeasurer.measure(
-                    text = text,
-                    style = textStyle
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .clip(RoundedCornerShape(16.dp))
+        ) {
+
+            val innerPath = Path()
+            val currentValueText = animateValue.value
+                .toLong()
+                .durationToTime()
+            val maxValueText = maxValue()
+                .toLong()
+                .durationToTime()
+
+            val currentTextResult = textMeasurer
+                .measure(text = currentValueText, style = textStyle)
+            val maxTextResult = textMeasurer
+                .measure(text = maxValueText, style = textStyle)
+
+            val maxPadding = 4.dp.toPx()
+            val paddingAnimate = maxPadding * bgAlpha.value
+
+            val innerRadius = 16.dp.toPx() - paddingAnimate
+            val innerHeight = size.height - (paddingAnimate * 2f)
+            val innerWidth = size.width - (paddingAnimate * 2f)
+
+            innerPath.reset()
+            innerPath.addRoundRect(
+                RoundRect(
+                    rect = Rect(
+                        offset = Offset(x = paddingAnimate, y = paddingAnimate),
+                        size = Size(width = innerWidth, height = innerHeight)
+                    ),
+                    cornerRadius = CornerRadius(innerRadius, innerRadius)
                 )
-                result.size.width to result.size.height
+            )
+
+            val actualValue = animateValue.value
+            val actualProgress = actualValue.normalize(minValue(), maxValue())
+            onValueChange(actualValue)
+
+//            // 通过Value计算Progress，从而获取滑块应有的宽度
+//            thumbWidth = normalize(nowValue, minValue, maxValue) * actualWidth
+//            thumbWidth = lerp(thumbWidth, actualWidth / thumbCount, switchModeProgress)
+
+            val thumbWidth = innerWidth * actualProgress
+            val thumbHeight = innerHeight
+
+            // 纯色背景
+            drawRect(color = bgColor, alpha = bgAlpha.value)
+
+            // 圆角裁切
+            clipPath(innerPath) {
+                drawRect(color = Color(100, 100, 100, 50))
+
+                // 绘制总时长文本（固定右侧）
+                drawText(
+                    textLayoutResult = maxTextResult,
+                    color = Color.White,
+                    alpha = textAlpha.value,
+                    topLeft = Offset(
+                        x = size.width - textSize.value.first - 16.dp.toPx(),
+                        y = (size.height - textSize.value.second) / 2f
+                    )
+                )
+
+                // 绘制滑块
+                drawRoundRect(
+                    color = animateColor(),
+                    cornerRadius = CornerRadius(innerRadius, innerRadius),
+                    topLeft = Offset(x = paddingAnimate, y = paddingAnimate),
+                    size = Size(width = thumbWidth, height = thumbHeight)
+                )
+
+                val textX =
+                    (paddingAnimate + thumbWidth - 16.dp.toPx() - textSize.value.first)
+                        .let { accumulator.accumulate(it) }
+                        .coerceAtLeast(16.dp.roundToPx())
+
+                // 绘制实时进度文本（移动）
+                drawText(
+                    textLayoutResult = currentTextResult,
+                    color = Color.White,
+                    alpha = textAlpha.value,
+                    topLeft = Offset(
+                        x = textX.toFloat(),
+                        y = (size.height - textSize.value.second) / 2f
+                    )
+                )
+
+                // 绘制把手元素
+//                drawRoundRect(
+//                    color = Color.White,
+//                    alpha = alpha.value,
+//                    cornerRadius = CornerRadius(50f),
+//                    topLeft = Offset(
+//                        x = innerWidth * actualProgress + paddingAnimate - 8.dp.toPx(),
+//                        y = (size.height - (innerHeight * 0.5f)) / 2f
+//                    ),
+//                    size = Size(
+//                        width = 4.dp.toPx(),
+//                        height = innerHeight * 0.5f
+//                    )
+//                )
             }
         }
 
         Box(
             modifier = Modifier
-                .height(56.dp)
+                .fillMaxHeight()
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .drawWithCache {
-                    val innerPath = Path()
-                    val currentValueText = animateValue.value
-                        .toLong()
-                        .durationToTime()
-                    val maxValueText = maxValue()
-                        .toLong()
-                        .durationToTime()
-
-                    val currentTextResult = textMeasurer.measure(
-                        text = currentValueText,
-                        style = textStyle
-                    )
-                    val maxTextResult = textMeasurer.measure(
-                        text = maxValueText,
-                        style = textStyle
-                    )
-
-                    val maxPadding = 4.dp.toPx()
-                    val paddingAnimate = maxPadding * bgAlpha.value
-
-                    val innerRadius = 16.dp.toPx() - paddingAnimate
-                    val innerHeight = size.height - (paddingAnimate * 2f)
-                    val innerWidth = size.width - (paddingAnimate * 2f)
-
-                    val actualValue = animateValue.value
-                    val actualProgress = actualValue.normalize(minValue(), maxValue())
-
-                    val thumbWidth = innerWidth * actualProgress
-                    val thumbHeight = innerHeight
-
-                    innerPath.reset()
-                    innerPath.addRoundRect(
-                        RoundRect(
-                            rect = Rect(
-                                offset = Offset(x = paddingAnimate, y = paddingAnimate),
-                                size = Size(width = innerWidth, height = innerHeight)
-                            ),
-                            cornerRadius = CornerRadius(innerRadius, innerRadius)
-                        )
-                    )
-
-                    onDrawBehind {
-                        // 纯色背景
-                        drawRect(color = bgColor, alpha = bgAlpha.value)
-
-                        // 圆角裁切
-                        clipPath(innerPath) {
-                            drawRect(color = Color(100, 100, 100, 50))
-                            onValueChange(actualValue)
-
-                            // 绘制总时长文本（固定右侧）
-                            drawText(
-                                textLayoutResult = maxTextResult,
-                                color = Color.White,
-                                alpha = textAlpha.value,
-                                topLeft = Offset(
-                                    x = size.width - textSize.value.first - 16.dp.toPx(),
-                                    y = (size.height - textSize.value.second) / 2f
-                                )
-                            )
-
-                            // 绘制滑块
-                            drawRoundRect(
-                                color = animateColor(),
-                                cornerRadius = CornerRadius(innerRadius, innerRadius),
-                                topLeft = Offset(x = paddingAnimate, y = paddingAnimate),
-                                size = Size(width = thumbWidth, height = thumbHeight)
-                            )
-
-                            val textX =
-                                (paddingAnimate + thumbWidth - 16.dp.toPx() - textSize.value.first)
-                                    .let { accumulator.accumulate(it) }
-                                    .coerceAtLeast(16.dp.roundToPx())
-
-                            // 绘制实时进度文本（移动）
-                            drawText(
-                                textLayoutResult = currentTextResult,
-                                color = Color.White,
-                                alpha = textAlpha.value,
-                                topLeft = Offset(
-                                    x = textX.toFloat(),
-                                    y = (size.height - textSize.value.second) / 2f
-                                )
-                            )
-
-//                            // 绘制把手元素
-//                            drawRoundRect(
-//                                color = Color.White,
-//                                alpha = alpha.value,
-//                                cornerRadius = CornerRadius(50f),
-//                                topLeft = Offset(
-//                                    x = innerWidth * actualProgress + paddingAnimate - 8.dp.toPx(),
-//                                    y = (size.height - (innerHeight * 0.5f)) / 2f
-//                                ),
-//                                size = Size(
-//                                    width = 4.dp.toPx(),
-//                                    height = innerHeight * 0.5f
-//                                )
-//                            )
-                        }
-                    }
-                }
         ) {
 //            Row {
 //                Icon(
@@ -427,7 +445,7 @@ private fun Modifier.combineDetectDrag(
     onDragStart: (Offset) -> Unit = { },
     onDragEnd: () -> Unit = { },
     onDrag: (change: PointerInputChange, dragAmount: Offset) -> Unit,
-    onLongClickStart: () -> Unit = {}
+    onLongClickStart: (Offset) -> Unit = {}
 ) = this.then(
     Modifier
         .pointerInput(key) {
@@ -436,7 +454,7 @@ private fun Modifier.combineDetectDrag(
         .pointerInput(key) {
             detectDragGesturesAfterLongPress(
                 onDragStart = {
-                    onLongClickStart()
+                    onLongClickStart(it)
                     onDragStart(it)
                 },
                 onDragEnd = onDragEnd,
@@ -446,6 +464,45 @@ private fun Modifier.combineDetectDrag(
         }
 )
 
+
+class SeekbarProgressKeeper(
+    private val minValue: () -> Float,
+    private val maxValue: () -> Float,
+    private val sizeWidth: () -> Float,
+    private val dataValue: () -> Float,
+    private val scrollSensitivity: Float,
+) {
+    var nowValue: Float by mutableFloatStateOf(0f)
+        private set
+
+    fun updateProgress(value: Float) {
+        nowValue = value.coerceIn(minValue(), maxValue())
+    }
+
+    fun updateProgressByDelta(delta: Float) {
+        val value = nowValue + delta / sizeWidth() * (maxValue() - minValue()) * scrollSensitivity
+        updateProgress(value)
+    }
+}
+
+@Composable
+fun rememberSeekbarProgressKeeper(
+    minValue: () -> Float,
+    maxValue: () -> Float,
+    sizeWidth: () -> Float,
+    dataValue: () -> Float,
+    scrollSensitivity: Float = 1f
+): SeekbarProgressKeeper {
+    return remember {
+        SeekbarProgressKeeper(
+            minValue = minValue,
+            maxValue = maxValue,
+            sizeWidth = sizeWidth,
+            dataValue = dataValue,
+            scrollSensitivity = scrollSensitivity
+        )
+    }
+}
 
 private fun Float.normalize(minValue: Float, maxValue: Float): Float {
     val min = minOf(minValue, maxValue)
