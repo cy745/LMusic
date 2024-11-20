@@ -4,7 +4,6 @@ import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateTo
-import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -13,14 +12,12 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberDraggable2DState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -38,6 +35,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -56,15 +54,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.blankj.utilcode.util.LogUtils
 import com.lalilu.common.AccumulatedValue
 import com.lalilu.lmusic.utils.extension.durationToTime
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
-sealed class SeekbarVerticalState {
-    data object ProgressBar : SeekbarVerticalState()
-    data object Cancel : SeekbarVerticalState()
-    data object Dispatcher : SeekbarVerticalState()
+sealed class SeekbarState {
+    data object Idle : SeekbarState()
+    data object ProgressBar : SeekbarState()
+    data object Switcher : SeekbarState()
+    data object Cancel : SeekbarState()
+    data object Dispatcher : SeekbarState()
 }
 
 sealed interface ClickPart {
@@ -95,10 +95,6 @@ fun SeekbarLayout2(
     val bgColor = MaterialTheme.colors.background
     val accumulator = remember { AccumulatedValue() }
 
-    LaunchedEffect(maxValue()) {
-        LogUtils.i("maxValue: ${maxValue()}")
-    }
-
     val scrollSensitivity = remember { 1.3f }
     val scrollThreadHold = remember { 200f }
     val seekbarPaddingBottom = remember { density.run { 156.dp.toPx() } }
@@ -114,23 +110,27 @@ fun SeekbarLayout2(
     )
 
     val seekbarOffsetY = remember { mutableFloatStateOf(0f) }
-    val switchModeX = remember { mutableFloatStateOf(0f) }
     val switchMode = remember { mutableStateOf(false) }
-    val seekbarVerticalState = remember {
-        mutableStateOf<SeekbarVerticalState>(SeekbarVerticalState.ProgressBar)
-    }
+    val switchModeX = remember { mutableFloatStateOf(0f) }
+    val seekbarState = remember { mutableStateOf<SeekbarState>(SeekbarState.Idle) }
 
     var isMoved by remember { mutableStateOf(false) }
     var isTouching by remember { mutableStateOf(false) }
-    val isCanceled by remember {
+    val isCanceled by remember { derivedStateOf { seekbarState.value != SeekbarState.ProgressBar } }
+    val isSwitching by remember { derivedStateOf { seekbarState.value is SeekbarState.Switcher } }
+
+    val seekbarValue = remember {
         derivedStateOf {
-            seekbarVerticalState.value != SeekbarVerticalState.ProgressBar
+            when {
+                seekbarState.value is SeekbarState.ProgressBar -> progressKeeper.nowValue
+                else -> dataValue()
+            }
         }
     }
 
     val resultValue = remember {
         derivedStateOf {
-            if (switchMode.value) dataValue()
+            if (isSwitching) dataValue()
             else if (isTouching && !isCanceled) progressKeeper.nowValue
             else dataValue()
         }
@@ -140,7 +140,7 @@ fun SeekbarLayout2(
     val animateValue = animateFloatAsState(
         targetValue = resultValue.value,
         visibilityThreshold = 0.005f,
-        animationSpec = if (isTouching && !isCanceled) snap() else spring(stiffness = Spring.StiffnessLow),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = ""
     )
 
@@ -150,7 +150,7 @@ fun SeekbarLayout2(
         label = ""
     )
     val textAlpha = animateFloatAsState(
-        targetValue = if (switchMode.value) 0f else 1f,
+        targetValue = if (isSwitching) 0f else 1f,
         animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = ""
     )
@@ -179,7 +179,8 @@ fun SeekbarLayout2(
     }
 
     val draggableState = rememberDraggable2DState { offset ->
-        val oldState = seekbarVerticalState.value
+        val oldState = seekbarState.value
+
         val deltaY = offset.y
         val deltaX = offset.x
 
@@ -188,33 +189,33 @@ fun SeekbarLayout2(
 
         // 根据当前状态控制进度变量
         when {
-            switchMode.value -> {
+            isSwitching -> {
                 switchModeX.floatValue = offset.x
             }
 
-            oldState == SeekbarVerticalState.ProgressBar -> {
+            oldState == SeekbarState.ProgressBar -> {
                 progressKeeper.updateProgressByDelta(delta = deltaX)
             }
         }
 
         // 根据Y轴滚动距离决定新的状态
-        seekbarVerticalState.value = when {
-            seekbarOffsetY.floatValue < -200f -> SeekbarVerticalState.Dispatcher
-            seekbarOffsetY.floatValue < -100f -> SeekbarVerticalState.Cancel
-            else -> SeekbarVerticalState.ProgressBar
+        seekbarState.value = when {
+            seekbarOffsetY.floatValue < -scrollThreadHold -> SeekbarState.Dispatcher
+            seekbarOffsetY.floatValue < -(scrollThreadHold / 2f) -> SeekbarState.Cancel
+            else -> if (switchMode.value) SeekbarState.Switcher else SeekbarState.ProgressBar
         }
 
         // 当状态发生变化的时候，进行震动
-        if (oldState != seekbarVerticalState.value) {
+        if (oldState != seekbarState.value) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
 
         when (oldState) {
-            seekbarVerticalState.value -> {}
-            SeekbarVerticalState.Dispatcher -> scope.launch { onDragStop(-1) }
+            seekbarState.value -> {}
+            SeekbarState.Dispatcher -> scope.launch { onDragStop(-1) }
 
-            SeekbarVerticalState.Cancel -> when (seekbarVerticalState.value) {
-                SeekbarVerticalState.Dispatcher -> {
+            SeekbarState.Cancel -> when (seekbarState.value) {
+                SeekbarState.Dispatcher -> {
                     val animationState = AnimationState(
                         initialValue = 0f,
                         initialVelocity = 100f,
@@ -236,7 +237,7 @@ fun SeekbarLayout2(
         }
 
         // 若当前状态为Dispatcher，则将滚动的位移量向外分发
-        if (seekbarVerticalState.value == SeekbarVerticalState.Dispatcher) {
+        if (seekbarState.value is SeekbarState.Dispatcher) {
             onDispatchDragOffset(deltaY)
         }
     }
@@ -290,15 +291,18 @@ fun SeekbarLayout2(
                 },
                 onDragStart = {
                     isMoved = true
-                    seekbarVerticalState.value = SeekbarVerticalState.ProgressBar
+                    seekbarState.value = if (switchMode.value) SeekbarState.Switcher
+                    else SeekbarState.ProgressBar
 
                     seekbarOffsetY.floatValue = it.y
                     scope.launch { onDragStart(it) }
                 },
                 onDragEnd = {
-                    seekbarVerticalState.value = SeekbarVerticalState.ProgressBar
                     switchMode.value = false
+                    seekbarState.value = SeekbarState.Idle
 
+                    switchModeX.floatValue = 0f
+                    seekbarOffsetY.floatValue = 0f
                     scope.launch { onDragStop(0) }
                 },
                 onDrag = { _, dragAmount ->
@@ -306,13 +310,36 @@ fun SeekbarLayout2(
                 }
             )
     ) {
+        val yProgressValue = remember {
+            derivedStateOf {
+                val value = seekbarOffsetY.floatValue.coerceAtMost(0f)
+                    .absoluteValue
+                    .takeIf { it < (scrollThreadHold / 2f) }
+                    ?: 0f
+
+                (value / (scrollThreadHold / 2f)).coerceIn(0f, 1f)
+            }
+        }
+        val yTranslationAnimateValue = animateFloatAsState(
+            targetValue = yProgressValue.value,
+            animationSpec = spring(
+                stiffness = Spring.StiffnessLow,
+                dampingRatio = Spring.DampingRatioMediumBouncy
+            ),
+            label = ""
+        )
+
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
+                .graphicsLayer {
+                    translationY = -yTranslationAnimateValue.value * (scrollThreadHold / 2f)
+                    scaleX = 1f - (yTranslationAnimateValue.value * 0.1f)
+                    scaleY = scaleX
+                }
                 .clip(RoundedCornerShape(16.dp))
         ) {
-
             val innerPath = Path()
             val currentValueText = animateValue.value
                 .toLong()
@@ -414,11 +441,11 @@ fun SeekbarLayout2(
             }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth()
-        ) {
+//        Box(
+//            modifier = Modifier
+//                .fillMaxHeight()
+//                .fillMaxWidth()
+//        ) {
 //            Row {
 //                Icon(
 //                    imageVector = RemixIcon.Media.repeatFill,
@@ -435,34 +462,36 @@ fun SeekbarLayout2(
 //                    contentDescription = null
 //                )
 //            }
-        }
+//        }
     }
 }
 
-@Composable
 private fun Modifier.combineDetectDrag(
     key: Any = Unit,
     onDragStart: (Offset) -> Unit = { },
     onDragEnd: () -> Unit = { },
     onDrag: (change: PointerInputChange, dragAmount: Offset) -> Unit,
     onLongClickStart: (Offset) -> Unit = {}
-) = this.then(
-    Modifier
-        .pointerInput(key) {
-            detectDragGestures(onDragStart, onDragEnd, onDragEnd, onDrag)
-        }
-        .pointerInput(key) {
-            detectDragGesturesAfterLongPress(
-                onDragStart = {
-                    onLongClickStart(it)
-                    onDragStart(it)
-                },
-                onDragEnd = onDragEnd,
-                onDragCancel = onDragEnd,
-                onDrag = onDrag
-            )
-        }
-)
+): Modifier = this
+    .pointerInput(key) {
+        detectDragGestures(
+            onDragStart = onDragStart,
+            onDragEnd = onDragEnd,
+            onDragCancel = onDragEnd,
+            onDrag = onDrag
+        )
+    }
+    .pointerInput(key) {
+        detectDragGesturesAfterLongPress(
+            onDragStart = {
+                onLongClickStart(it)
+                onDragStart(it)
+            },
+            onDragEnd = onDragEnd,
+            onDragCancel = onDragEnd,
+            onDrag = onDrag
+        )
+    }
 
 
 class SeekbarProgressKeeper(
