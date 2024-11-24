@@ -50,6 +50,8 @@ import com.lalilu.lmedia.lyric.LyricSourceEmbedded
 import com.lalilu.lmedia.lyric.LyricUtils
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
+import com.lalilu.lmusic.compose.screen.playing.seekbar.ClickPart
+import com.lalilu.lmusic.compose.screen.playing.seekbar.SeekbarLayout
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
@@ -314,7 +316,7 @@ fun PlayingLayout(
                         translationY = (1f - animateProgress.value / 100f) * 500f
                     }
             ) {
-                SeekbarLayout2(
+                SeekbarLayout(
                     modifier = Modifier.hideControl(enable = { hideComponent.value }),
                     animateColor = { animateColor.value },
                     onValueChange = { seekbarTime.longValue = it.toLong() },

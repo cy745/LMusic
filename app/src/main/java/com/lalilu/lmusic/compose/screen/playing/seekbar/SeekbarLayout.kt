@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.screen.playing
+package com.lalilu.lmusic.compose.screen.playing.seekbar
 
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.Spring
@@ -55,12 +55,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
 import com.lalilu.common.AccumulatedValue
 import com.lalilu.lmusic.utils.extension.durationToTime
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
-sealed class SeekbarState {
+private sealed class SeekbarState {
     data object Idle : SeekbarState()
     data object ProgressBar : SeekbarState()
     data object Switcher : SeekbarState()
@@ -76,17 +77,19 @@ sealed interface ClickPart {
 
 @Preview
 @Composable
-fun SeekbarLayout2(
+fun SeekbarLayout(
     modifier: Modifier = Modifier,
     minValue: () -> Float = { 0f },
     maxValue: () -> Float = { 0f },
     dataValue: () -> Float = { 0f },
+    switchIndex: () -> Int = { 0 },
     animateColor: () -> Color = { Color.DarkGray },
     onDragStart: suspend (Offset) -> Unit = {},
     onDragStop: suspend (Int) -> Unit = {},
     onDispatchDragOffset: (Float) -> Unit = {},
     onValueChange: (Float) -> Unit = {},
     onSeekTo: (Float) -> Unit = {},
+    onSwitchTo: (Int) -> Unit = {},
     onClick: (ClickPart) -> Unit = {}
 ) {
     val haptic = LocalHapticFeedback.current
@@ -144,15 +147,16 @@ fun SeekbarLayout2(
         visibilityThreshold = 0.005f,
         label = ""
     )
-
-    val bgAlpha = animateFloatAsState(
+    val touchingProgress = animateFloatAsState(
         targetValue = if (isTouching && !isCanceled) 1f else 0f,
         animationSpec = spring(stiffness = Spring.StiffnessLow),
+        visibilityThreshold = 0.001f,
         label = ""
     )
-    val textAlpha = animateFloatAsState(
-        targetValue = if (isSwitching) 0f else 1f,
+    val switchingProgress = animateFloatAsState(
+        targetValue = if (isSwitching) 1f else 0f,
         animationSpec = spring(stiffness = Spring.StiffnessLow),
+        visibilityThreshold = 0.001f,
         label = ""
     )
     val textStyle = remember {
@@ -191,7 +195,7 @@ fun SeekbarLayout2(
         // 根据当前状态控制进度变量
         when {
             isSwitching -> {
-                switchModeX.floatValue = offset.x
+                switchModeX.floatValue += deltaX
             }
 
             oldState == SeekbarState.ProgressBar -> {
@@ -263,7 +267,7 @@ fun SeekbarLayout2(
                             }
 
                             PointerEventType.Release -> {
-                                if (isMoved && !isCanceled) {
+                                if (isMoved && !isCanceled && !isSwitching) {
                                     onSeekTo(progressKeeper.nowValue)
                                 }
                                 isTouching = false
@@ -303,7 +307,6 @@ fun SeekbarLayout2(
                     switchMode.value = false
                     seekbarState.value = SeekbarState.Idle
 
-                    switchModeX.floatValue = 0f
                     seekbarOffsetY.floatValue = 0f
                     scope.launch { onDragStop(0) }
                 },
@@ -356,17 +359,17 @@ fun SeekbarLayout2(
                 .measure(text = maxValueText, style = textStyle)
 
             val maxPadding = 4.dp.toPx()
-            val paddingAnimate = maxPadding * bgAlpha.value
+            val paddingValue = maxPadding * touchingProgress.value
 
-            val innerRadius = 16.dp.toPx() - paddingAnimate
-            val innerHeight = size.height - (paddingAnimate * 2f)
-            val innerWidth = size.width - (paddingAnimate * 2f)
+            val innerRadius = 16.dp.toPx() - paddingValue
+            val innerHeight = size.height - (paddingValue * 2f)
+            val innerWidth = size.width - (paddingValue * 2f)
 
             innerPath.reset()
             innerPath.addRoundRect(
                 RoundRect(
                     rect = Rect(
-                        offset = Offset(x = paddingAnimate, y = paddingAnimate),
+                        offset = Offset(x = paddingValue, y = paddingValue),
                         size = Size(width = innerWidth, height = innerHeight)
                     ),
                     cornerRadius = CornerRadius(innerRadius, innerRadius)
@@ -377,15 +380,34 @@ fun SeekbarLayout2(
             val actualProgress = actualValue.normalize(minValue(), maxValue())
             onValueChange(actualValue)
 
-//            // 通过Value计算Progress，从而获取滑块应有的宽度
-//            thumbWidth = normalize(nowValue, minValue, maxValue) * actualWidth
-//            thumbWidth = lerp(thumbWidth, actualWidth / thumbCount, switchModeProgress)
+            val thumbWidth = lerp(
+                start = innerWidth * actualProgress,    // 根据进度计算的宽度
+                stop = innerWidth / 3f,                 // 进度条均分宽度
+                fraction = switchingProgress.value      // 根据切换进度进行插值
+            ).coerceIn(0f, innerWidth)
 
-            val thumbWidth = innerWidth * actualProgress
+            val thumbLeft = lerp(
+                start = paddingValue,
+                stop = paddingValue + switchModeX.floatValue - (innerWidth / 3f) / 2f,
+                fraction = switchingProgress.value
+            ).coerceIn(
+                paddingValue,
+                paddingValue + innerWidth - (innerWidth / 3f)
+            )    // 限制滑块位置，确保其始终处于可见范围内
+
+            val thumbTop = paddingValue
             val thumbHeight = innerHeight
 
+            val textX =
+                (paddingValue + (innerWidth * actualProgress) - 16.dp.toPx() - textSize.value.first)
+                    .let { accumulator.accumulate(it) }
+                    .coerceAtLeast(16.dp.roundToPx())
+
             // 纯色背景
-            drawRect(color = bgColor, alpha = bgAlpha.value)
+            drawRect(
+                color = bgColor,
+                alpha = touchingProgress.value
+            )
 
             // 圆角裁切
             clipPath(innerPath) {
@@ -395,7 +417,7 @@ fun SeekbarLayout2(
                 drawText(
                     textLayoutResult = maxTextResult,
                     color = Color.White,
-                    alpha = textAlpha.value,
+                    alpha = 1f - switchingProgress.value,
                     topLeft = Offset(
                         x = size.width - textSize.value.first - 16.dp.toPx(),
                         y = (size.height - textSize.value.second) / 2f
@@ -406,20 +428,15 @@ fun SeekbarLayout2(
                 drawRoundRect(
                     color = animateColor(),
                     cornerRadius = CornerRadius(innerRadius, innerRadius),
-                    topLeft = Offset(x = paddingAnimate, y = paddingAnimate),
+                    topLeft = Offset(x = thumbLeft, y = thumbTop),
                     size = Size(width = thumbWidth, height = thumbHeight)
                 )
-
-                val textX =
-                    (paddingAnimate + thumbWidth - 16.dp.toPx() - textSize.value.first)
-                        .let { accumulator.accumulate(it) }
-                        .coerceAtLeast(16.dp.roundToPx())
 
                 // 绘制实时进度文本（移动）
                 drawText(
                     textLayoutResult = currentTextResult,
                     color = Color.White,
-                    alpha = textAlpha.value,
+                    alpha = 1f - switchingProgress.value,
                     topLeft = Offset(
                         x = textX.toFloat(),
                         y = (size.height - textSize.value.second) / 2f
@@ -494,43 +511,6 @@ private fun Modifier.combineDetectDrag(
             onDrag = onDrag
         )
     }
-
-
-class SeekbarProgressKeeper(
-    private val minValue: () -> Float,
-    private val maxValue: () -> Float,
-    private val sizeWidth: () -> Float,
-    private val scrollSensitivity: Float,
-) {
-    var nowValue: Float by mutableFloatStateOf(0f)
-        private set
-
-    fun updateValue(value: Float) {
-        nowValue = value.coerceIn(minValue(), maxValue())
-    }
-
-    fun updateValueByDelta(delta: Float) {
-        val value = nowValue + delta / sizeWidth() * (maxValue() - minValue()) * scrollSensitivity
-        updateValue(value)
-    }
-}
-
-@Composable
-fun rememberSeekbarProgressKeeper(
-    minValue: () -> Float,
-    maxValue: () -> Float,
-    sizeWidth: () -> Float,
-    scrollSensitivity: Float = 1f
-): SeekbarProgressKeeper {
-    return remember {
-        SeekbarProgressKeeper(
-            minValue = minValue,
-            maxValue = maxValue,
-            sizeWidth = sizeWidth,
-            scrollSensitivity = scrollSensitivity
-        )
-    }
-}
 
 private fun Float.normalize(minValue: Float, maxValue: Float): Float {
     val min = minOf(minValue, maxValue)
