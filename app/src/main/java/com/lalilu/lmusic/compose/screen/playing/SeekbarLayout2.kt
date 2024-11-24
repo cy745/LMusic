@@ -4,6 +4,7 @@ import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateTo
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -98,14 +99,12 @@ fun SeekbarLayout2(
     val scrollSensitivity = remember { 1.3f }
     val scrollThreadHold = remember { 200f }
     val seekbarPaddingBottom = remember { density.run { 156.dp.toPx() } }
-
     var boxSize by remember { mutableStateOf(IntSize.Zero) }
 
     val progressKeeper = rememberSeekbarProgressKeeper(
-        sizeWidth = { boxSize.width.toFloat() },
         minValue = minValue,
         maxValue = maxValue,
-        dataValue = dataValue,
+        sizeWidth = { boxSize.width.toFloat() },
         scrollSensitivity = scrollSensitivity
     )
 
@@ -116,36 +115,38 @@ fun SeekbarLayout2(
 
     var isMoved by remember { mutableStateOf(false) }
     var isTouching by remember { mutableStateOf(false) }
-    val isCanceled by remember { derivedStateOf { seekbarState.value != SeekbarState.ProgressBar } }
     val isSwitching by remember { derivedStateOf { seekbarState.value is SeekbarState.Switcher } }
-
-    val seekbarValue = remember {
-        derivedStateOf {
-            when {
-                seekbarState.value is SeekbarState.ProgressBar -> progressKeeper.nowValue
-                else -> dataValue()
-            }
-        }
+    val isCanceled by remember {
+        derivedStateOf { seekbarState.value is SeekbarState.Cancel || seekbarState.value is SeekbarState.Dispatcher }
     }
 
     val resultValue = remember {
         derivedStateOf {
-            if (isSwitching) dataValue()
-            else if (isTouching && !isCanceled) progressKeeper.nowValue
-            else dataValue()
+            when {
+                isSwitching -> {
+                    progressKeeper.updateValue(dataValue())
+                    false to dataValue()
+                }
+
+                isTouching && !isCanceled -> true to progressKeeper.nowValue
+                else -> {
+                    progressKeeper.updateValue(dataValue())
+                    false to dataValue()
+                }
+            }
         }
     }
 
     // 使值的变化平滑
     val animateValue = animateFloatAsState(
-        targetValue = resultValue.value,
+        targetValue = resultValue.value.second,
+        animationSpec = if (resultValue.value.first) snap() else spring(stiffness = Spring.StiffnessLow),
         visibilityThreshold = 0.005f,
-        animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = ""
     )
 
     val bgAlpha = animateFloatAsState(
-        targetValue = if (isTouching) 1f else 0f,
+        targetValue = if (isTouching && !isCanceled) 1f else 0f,
         animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = ""
     )
@@ -194,7 +195,7 @@ fun SeekbarLayout2(
             }
 
             oldState == SeekbarState.ProgressBar -> {
-                progressKeeper.updateProgressByDelta(delta = deltaX)
+                progressKeeper.updateValueByDelta(delta = deltaX)
             }
         }
 
@@ -256,7 +257,7 @@ fun SeekbarLayout2(
                         when (event.type) {
                             PointerEventType.Press -> {
                                 // 开始触摸时，将当前可见的进度值记录下来
-                                progressKeeper.updateProgress(animateValue.value)
+                                progressKeeper.updateValue(animateValue.value)
                                 isTouching = true
                                 isMoved = false
                             }
@@ -288,6 +289,7 @@ fun SeekbarLayout2(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     switchModeX.floatValue = it.x
                     switchMode.value = true
+                    seekbarState.value = SeekbarState.Switcher
                 },
                 onDragStart = {
                     isMoved = true
@@ -498,19 +500,18 @@ class SeekbarProgressKeeper(
     private val minValue: () -> Float,
     private val maxValue: () -> Float,
     private val sizeWidth: () -> Float,
-    private val dataValue: () -> Float,
     private val scrollSensitivity: Float,
 ) {
     var nowValue: Float by mutableFloatStateOf(0f)
         private set
 
-    fun updateProgress(value: Float) {
+    fun updateValue(value: Float) {
         nowValue = value.coerceIn(minValue(), maxValue())
     }
 
-    fun updateProgressByDelta(delta: Float) {
+    fun updateValueByDelta(delta: Float) {
         val value = nowValue + delta / sizeWidth() * (maxValue() - minValue()) * scrollSensitivity
-        updateProgress(value)
+        updateValue(value)
     }
 }
 
@@ -519,7 +520,6 @@ fun rememberSeekbarProgressKeeper(
     minValue: () -> Float,
     maxValue: () -> Float,
     sizeWidth: () -> Float,
-    dataValue: () -> Float,
     scrollSensitivity: Float = 1f
 ): SeekbarProgressKeeper {
     return remember {
@@ -527,7 +527,6 @@ fun rememberSeekbarProgressKeeper(
             minValue = minValue,
             maxValue = maxValue,
             sizeWidth = sizeWidth,
-            dataValue = dataValue,
             scrollSensitivity = scrollSensitivity
         )
     }

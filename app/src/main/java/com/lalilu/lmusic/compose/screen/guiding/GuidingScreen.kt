@@ -124,9 +124,7 @@ fun GuidingScreen() {
                 }
                 Navigator(
                     AgreementScreen(
-                        nextScreen = PermissionsScreen(
-                            nextScreen = SeekbarGuidingScreen
-                        )
+                        nextScreen = PermissionsScreen()
                     )
                 ) { navigator ->
                     navigatorState.value = navigator
