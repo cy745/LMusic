@@ -35,27 +35,28 @@ composeCompiler {
 }
 
 dependencies {
-    api(libs.lottie.compose)
-
-    api(libs.bundles.voyager)
+    // compose
+    api(platform(libs.compose.bom.alpha))
+    api(libs.activity.compose)
+    api(libs.bundles.compose)
+    api(libs.bundles.compose.debug)
 
     // accompanist
     // https://google.github.io/accompanist
     api(libs.bundles.accompanist)
+    api(libs.bundles.voyager)
+    api(libs.bundles.coil3)
+    api(libs.lottie.compose)
 
     api(project(":lmedia"))
     api(project(":common"))
     api(project(":lplayer"))
 
-    api(libs.bundles.coil3)
-
     // https://github.com/Calvin-LL/Reorderable
     // Apache-2.0 license
-    api("sh.calvin.reorderable:reorderable:1.1.0")
+    api("sh.calvin.reorderable:reorderable:2.4.0")
     api("com.github.cy745:AnyPopDialog-Compose:cb92c5b6dc")
     api("me.rosuh:AndroidFilePicker:1.0.1")
-    api("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
-    api("com.github.cy745.KRouter:core:fcf40f4b15")
     api("com.cheonjaeung.compose.grid:grid:2.0.0")
     api("com.github.cy745.RemixIcon-Kmp:core:1a3c554a35")
     api("com.github.nanihadesuka:LazyColumnScrollbar:2.2.0")
@@ -64,11 +65,4 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.androidx.navigation/navigation-compose
     api("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
     api("androidx.compose.material3:material3-adaptive-navigation-suite")
-
-    // compose
-//    api(platform(libs.compose.bom))
-    api(platform(libs.compose.bom.alpha))
-    api(libs.activity.compose)
-    api(libs.bundles.compose)
-    api(libs.bundles.compose.debug)
 }

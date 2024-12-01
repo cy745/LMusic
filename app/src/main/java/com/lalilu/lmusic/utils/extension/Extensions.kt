@@ -24,8 +24,6 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.GsonUtils
 import com.blankj.utilcode.util.LogUtils
 import com.google.gson.reflect.TypeToken
@@ -227,18 +225,6 @@ fun <T : Any> List<T>.add(index: Int = -1, item: T): List<T> {
 fun <T : Any> List<T>.removeAt(index: Int): List<T> {
     return this.toMutableList().apply {
         removeAt(index)
-    }
-}
-
-fun calculateExtraLayoutSpace(context: Context, size: Int): LinearLayoutManager {
-    return object : LinearLayoutManager(context) {
-        override fun calculateExtraLayoutSpace(
-            state: RecyclerView.State,
-            extraLayoutSpace: IntArray
-        ) {
-            extraLayoutSpace[0] = size
-            extraLayoutSpace[1] = size
-        }
     }
 }
 

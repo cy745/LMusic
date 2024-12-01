@@ -4,6 +4,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.OptIn
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -26,6 +28,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(UnstableApi::class)
@@ -34,6 +40,14 @@ class MService : MediaLibraryService(), CoroutineScope {
 
     private var exoPlayer: ExoPlayer? = null
     private var mediaSession: MediaLibrarySession? = null
+    private val defaultAudioAttributes by lazy {
+        AudioAttributes.Builder()
+            .setUsage(C.USAGE_MEDIA)
+            .setSpatializationBehavior(C.SPATIALIZATION_BEHAVIOR_AUTO)
+            .setAllowedCapturePolicy(C.ALLOW_CAPTURE_BY_ALL)
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+            .build()
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -45,12 +59,16 @@ class MService : MediaLibraryService(), CoroutineScope {
         exoPlayer = ExoPlayer
             .Builder(this)
             .setRenderersFactory(FadeTransitionRenderersFactory(this, this))
+            .setHandleAudioBecomingNoisy(MPlayerKV.handleBecomeNoisy.value ?: true)
+            .setAudioAttributes(defaultAudioAttributes, MPlayerKV.handleAudioFocus.value ?: true)
             .build()
 
         mediaSession = MediaLibrarySession
             .Builder(this, exoPlayer!!, MServiceCallback())
             .setSessionActivity(getLauncherPendingIntent())
             .build()
+
+        startListenForValuesUpdate()
     }
 
     override fun onDestroy() {
@@ -66,6 +84,20 @@ class MService : MediaLibraryService(), CoroutineScope {
     override fun onGetSession(
         controllerInfo: MediaSession.ControllerInfo
     ): MediaLibrarySession? = mediaSession
+
+    private fun startListenForValuesUpdate() = launch {
+        MPlayerKV.handleAudioFocus.flow().onEach {
+            withContext(Dispatchers.Main) {
+                exoPlayer?.setAudioAttributes(defaultAudioAttributes, it ?: true)
+            }
+        }.launchIn(this)
+
+        MPlayerKV.handleBecomeNoisy.flow().onEach {
+            withContext(Dispatchers.Main) {
+                exoPlayer?.setHandleAudioBecomingNoisy(it ?: true)
+            }
+        }.launchIn(this)
+    }
 }
 
 @OptIn(UnstableApi::class)
@@ -192,7 +224,7 @@ private fun Context.getLauncherPendingIntent(): PendingIntent {
 internal fun getHistoryItems(): List<MediaItem> {
     val history = MPlayerKV.historyPlaylistIds.get()
 
-    return if (history != null) LMedia.mapItems(history)
+    return if (!history.isNullOrEmpty()) LMedia.mapItems(history)
     else LMedia.getChildren(MServiceCallback.ALL_SONGS)
 }
 

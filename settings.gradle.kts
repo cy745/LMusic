@@ -18,14 +18,15 @@ dependencyResolutionManagement {
 
 rootProject.name = "LMusic"
 include(":app")
-include(":ui")
 include(":common")
+include(":component")
+include(":crash")
+
 include(":lmedia")
 include(":lplayer")
+
 include(":lplaylist")
 include(":lhistory")
 include(":lartist")
 include(":lalbum")
 include(":ldictionary")
-include(":crash")
-include(":component")

@@ -152,3 +152,24 @@ class BoolListKVImpl(
         }
     }
 }
+
+class ObjectListKVImpl<T : Serializable>(
+    private val key: String,
+    private val clazz: Class<T>
+) : KVListItem<T>() {
+    override fun get(): List<T>? {
+        val json = SPUtils.getInstance().getString(key)
+        return GsonUtils.fromJson<List<T>>(json, clazz)
+    }
+
+    override fun set(value: List<T>?) {
+        super.set(value)
+
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            val json = GsonUtils.toJson(value)
+            SPUtils.getInstance().put(key, json)
+        }
+    }
+}

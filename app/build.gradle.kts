@@ -166,7 +166,6 @@ composeCompiler {
 }
 
 dependencies {
-    implementation(project(":ui"))
     implementation(project(":crash"))
     implementation(project(":component"))
     implementation(project(":lplaylist"))

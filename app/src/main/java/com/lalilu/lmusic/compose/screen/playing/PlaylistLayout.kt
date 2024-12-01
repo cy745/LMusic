@@ -33,10 +33,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListUpdateCallback
 import coil3.compose.AsyncImage
 import com.lalilu.component.navigation.AppRouter
+import com.lalilu.lmusic.compose.screen.playing.util.DiffUtil
+import com.lalilu.lmusic.compose.screen.playing.util.ListUpdateCallback
 import com.lalilu.lplayer.extensions.PlayerAction
 
 

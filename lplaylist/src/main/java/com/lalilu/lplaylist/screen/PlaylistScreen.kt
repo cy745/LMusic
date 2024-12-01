@@ -90,7 +90,6 @@ data object PlaylistScreen : TabScreen, ScreenBarFactory {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Screen.PlaylistScreen(
     playlistSM: PlaylistScreenModel = rememberScreenModel { PlaylistScreenModel() },
@@ -244,7 +243,7 @@ private fun Screen.PlaylistScreen(
             contentType = { LPlaylist::class.java }
         ) { playlist ->
             ReorderableItem(
-                reorderableLazyListState = reorderableState,
+                state = reorderableState,
                 key = playlist.id
             ) { isDragging ->
                 PlaylistCard(

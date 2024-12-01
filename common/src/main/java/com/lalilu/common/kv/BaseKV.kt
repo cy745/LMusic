@@ -32,7 +32,7 @@ abstract class BaseKV(val prefix: String = "") {
                 T::class == Float::class -> FloatListKVImpl(actualKey)
                 T::class == Double::class -> DoubleListKVImpl(actualKey)
                 T::class == String::class -> StringListKVImpl(actualKey)
-                else -> throw IllegalArgumentException("Unsupported type")
+                else -> ObjectListKVImpl(actualKey, T::class.java)
             }
         } as KVListItem<T>
     }
