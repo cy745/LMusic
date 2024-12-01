@@ -2,7 +2,7 @@ package com.lalilu.common.kv
 
 import com.blankj.utilcode.util.GsonUtils
 import com.blankj.utilcode.util.SPUtils
-import com.google.common.reflect.TypeToken
+import com.google.gson.reflect.TypeToken
 import java.io.Serializable
 
 abstract class KVListItem<T : Serializable> : KVItem<List<T>>()
@@ -155,11 +155,13 @@ class BoolListKVImpl(
 
 class ObjectListKVImpl<T : Serializable>(
     private val key: String,
-    private val clazz: Class<T>
+    clazz: Class<T>
 ) : KVListItem<T>() {
+    private val typeToken = TypeToken.getParameterized(List::class.java, clazz)
+
     override fun get(): List<T>? {
         val json = SPUtils.getInstance().getString(key)
-        return GsonUtils.fromJson<List<T>>(json, clazz)
+        return GsonUtils.fromJson<List<T>>(json, typeToken.type)
     }
 
     override fun set(value: List<T>?) {

@@ -26,14 +26,14 @@ android {
 
 dependencies {
     api(libs.utilcodex)
+    api(libs.gson)
     api(libs.appcompat)
     api(libs.core.ktx)
     api(libs.palette.ktx)
     api(libs.dynamicanimation.ktx)
     api(libs.media)
 
-    api("com.russhwolf:multiplatform-settings:1.3.0")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.9.0")
+    api(libs.kotlinx.coroutines.guava)
 
     api(libs.bundles.koin)
     api(libs.krouter.core)

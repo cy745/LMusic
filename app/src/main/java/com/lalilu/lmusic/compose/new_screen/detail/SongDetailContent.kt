@@ -4,15 +4,11 @@ import android.net.Uri
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -23,15 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.Dimension
-import androidx.constraintlayout.compose.MotionLayout
-import androidx.constraintlayout.compose.MotionScene
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -74,105 +66,14 @@ fun SongDetailContent(
     song: LSong = lSong,
     progress: Float = 0f,
 ) {
-    val paddingTop = WindowInsets.statusBars.asPaddingValues()
-        .calculateTopPadding()
-
-    val scene = remember {
-        MotionScene {
-            val coverRef = createRefFor("cover")
-            val titleRow = createRefFor("title")
-            val subTitleRow = createRefFor("subTitle")
-            val content = createRefFor("content")
-
-            val collapsed = constraintSet {
-                constrain(coverRef) {
-                    top.linkTo(parent.top, 16.dp)
-                    start.linkTo(parent.start, 16.dp)
-
-                    width = Dimension.value(72.dp)
-                    height = Dimension.value(72.dp)
-                }
-
-                constrain(titleRow) {
-                    top.linkTo(coverRef.top)
-                    start.linkTo(coverRef.end, 16.dp)
-                    end.linkTo(parent.end, 16.dp)
-
-                    width = Dimension.fillToConstraints
-                    height = Dimension.wrapContent
-                }
-
-                constrain(subTitleRow) {
-                    top.linkTo(titleRow.bottom, 8.dp)
-                    start.linkTo(coverRef.end, 16.dp)
-                    end.linkTo(parent.end, 16.dp)
-
-                    width = Dimension.fillToConstraints
-                    height = Dimension.wrapContent
-                }
-
-                val barrier = createBottomBarrier(coverRef, subTitleRow)
-
-                constrain(content) {
-                    top.linkTo(barrier, 16.dp)
-                    start.linkTo(parent.start, 16.dp)
-                    end.linkTo(parent.end, 16.dp)
-
-                    width = Dimension.fillToConstraints
-                    height = Dimension.wrapContent
-                }
-            }
-            val expended = constraintSet {
-                constrain(coverRef) {
-                    top.linkTo(parent.top, 16.dp + paddingTop + 24.dp)
-                    start.linkTo(parent.start, 16.dp)
-                    end.linkTo(parent.end, 16.dp)
-
-                    width = Dimension.fillToConstraints
-                    height = Dimension.preferredWrapContent
-                }
-
-                constrain(titleRow) {
-                    top.linkTo(coverRef.bottom, 16.dp)
-                    start.linkTo(parent.start, 16.dp)
-                    end.linkTo(parent.end, 16.dp)
-
-                    width = Dimension.fillToConstraints
-                    height = Dimension.preferredWrapContent
-                }
-
-                constrain(subTitleRow) {
-                    top.linkTo(titleRow.bottom, 8.dp)
-                    start.linkTo(parent.start, 16.dp)
-                    end.linkTo(parent.end, 16.dp)
-
-                    width = Dimension.fillToConstraints
-                    height = Dimension.wrapContent
-                }
-
-                val barrier = createBottomBarrier(coverRef, subTitleRow)
-
-                constrain(content) {
-                    top.linkTo(barrier, 16.dp)
-                    start.linkTo(parent.start, 16.dp)
-                    end.linkTo(parent.end, 16.dp)
-
-                    width = Dimension.fillToConstraints
-                    height = Dimension.wrapContent
-                }
-            }
-
-            defaultTransition(from = collapsed, to = expended)
-        }
-    }
-
-    MotionLayout(
-        modifier = modifier.fillMaxSize(),
-        motionScene = scene,
-        progress = progress
+    Column(
+        modifier = modifier
+            .statusBarsPadding()
+            .padding(bottom = LocalSmartBarPadding.current.value.calculateBottomPadding() + 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Surface(
-            modifier = Modifier.layoutId("cover"),
+            modifier = Modifier,
             elevation = 2.dp,
             shape = RoundedCornerShape(10.dp)
         ) {
@@ -192,7 +93,6 @@ fun SongDetailContent(
 
         Text(
             modifier = Modifier
-                .layoutId("title")
                 .graphicsLayer {
                     scaleX = 1f + (0.1f * progress)
                     scaleY = scaleX
@@ -205,43 +105,27 @@ fun SongDetailContent(
             lineHeight = 16.sp
         )
 
-        Text(
-            modifier = Modifier.layoutId("subTitle"),
-            text = song.name,
-            color = MaterialTheme.colors.onBackground.copy(0.6f),
-            fontWeight = FontWeight.Medium,
-            fontSize = 12.sp,
-            lineHeight = 12.sp
+        SongArtistsRow(
+            modifier = Modifier.fillMaxWidth(),
+            artists = song.artists
         )
 
-        Column(
-            modifier = Modifier
-                .layoutId("content")
-                .padding(bottom = LocalSmartBarPadding.current.value.calculateBottomPadding() + 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            SongArtistsRow(
+        song.album?.let {
+            SongAlbumInfoCard(
                 modifier = Modifier.fillMaxWidth(),
-                artists = song.artists
-            )
-
-            song.album?.let {
-                SongAlbumInfoCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    album = it
-                )
-            }
-
-            SongActionsCard(
-                modifier = Modifier.fillMaxWidth(),
-                song = song
-            )
-
-            SongInformationCard(
-                modifier = Modifier.fillMaxWidth(),
-                song = song
+                album = it
             )
         }
+
+        SongActionsCard(
+            modifier = Modifier.fillMaxWidth(),
+            song = song
+        )
+
+        SongInformationCard(
+            modifier = Modifier.fillMaxWidth(),
+            song = song
+        )
     }
 }
 
