@@ -14,6 +14,7 @@ import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.indexer.FilterGroup
 import com.lalilu.lmedia.indexer.FilterProvider
 import com.lalilu.lmusic.utils.extension.ignoreSSLVerification
+import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplaylist.PlaylistModule
 import com.lalilu.lplaylist.PlaylistModule2
 import com.zhangke.krouter.KRouter
@@ -52,7 +53,8 @@ class LMusicApp : Application(), FilterProvider, ViewModelStoreOwner {
                 ArtistModule.module,
                 AlbumModule.module,
                 DictionaryModule,
-                LMedia.module
+                LMedia.module,
+                MPlayer.module,
             )
 
             SingletonImageLoader

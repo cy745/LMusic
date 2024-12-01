@@ -10,23 +10,22 @@ import kotlinx.coroutines.flow.mapLatest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PlaylistRepositoryImpl(
-    private val kv: PlaylistKV,
     private val context: Application,
 ) : PlaylistRepository {
 
     override fun getPlaylistsFlow(): Flow<List<LPlaylist>> {
-        return kv.playlistList.flow()
+        return PlaylistKV.playlistList.flow()
             .mapLatest { playlists ->
                 playlists?.distinctBy { it.id } ?: emptyList()
             }
     }
 
     override fun getPlaylists(): List<LPlaylist> {
-        return kv.playlistList.value ?: emptyList()
+        return PlaylistKV.playlistList.value ?: emptyList()
     }
 
     override fun setPlaylists(playlists: List<LPlaylist>) {
-        kv.playlistList.apply {
+        PlaylistKV.playlistList.apply {
             value = playlists.distinctBy { it.id }
             if (!autoSave) save()
         }

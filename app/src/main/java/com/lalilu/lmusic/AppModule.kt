@@ -9,14 +9,12 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.transitionFactory
-import coil3.util.DebugLogger
 import com.lalilu.R
 import com.lalilu.common.base.SourceType
 import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.indexer.Filter
 import com.lalilu.lmedia.indexer.FilterGroup
-import com.lalilu.lmedia.repository.LSongFastEncoder
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
 import com.lalilu.lmusic.datastore.LastPlayedSp
@@ -35,8 +33,6 @@ import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import com.lalilu.lmusic.viewmodel.SearchViewModel
-import com.lalilu.lplaylist.entity.LPlaylistFastEncoder
-import io.fastkv.FastKV
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
@@ -72,24 +68,13 @@ fun provideImageLoaderFactory(
                 add(MediaItemFetcher.MediaItemFetcherFactory())
             }
             .transitionFactory(CrossfadeTransitionFactory())
-            .logger(DebugLogger())
+//            .logger(DebugLogger())
             .build()
     }
 }
 
 val AppModule = module {
     single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
-    single<FastKV> {
-        FastKV.Builder(androidApplication(), "LMusic")
-            .encoder(
-                arrayOf(
-                    LSongFastEncoder,
-                    LPlaylistFastEncoder
-                )
-            )
-            .build()
-    }
-
     single { SettingsSp(androidApplication()) }
     single { LastPlayedSp(androidApplication()) }
     single { TempSp(androidApplication()) }

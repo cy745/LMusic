@@ -1,5 +1,8 @@
 package com.lalilu.lplayer.service
 
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -11,14 +14,18 @@ import androidx.media3.session.MediaLibraryService.LibraryParams
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionError
+import com.blankj.utilcode.util.ActivityUtils
+import com.blankj.utilcode.util.AppUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.lalilu.lmedia.LMedia
+import com.lalilu.lplayer.MPlayerKV
 import com.lalilu.lplayer.extensions.FadeTransitionRenderersFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asExecutor
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(UnstableApi::class)
@@ -42,6 +49,7 @@ class MService : MediaLibraryService(), CoroutineScope {
 
         mediaSession = MediaLibrarySession
             .Builder(this, exoPlayer!!, MServiceCallback())
+            .setSessionActivity(getLauncherPendingIntent())
             .build()
     }
 
@@ -159,9 +167,35 @@ class MServiceCallback : MediaLibrarySession.Callback {
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo
     ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-        // TODO 待完成继续播放的逻辑
-        return Futures.immediateFuture(
-            MediaSession.MediaItemsWithStartPosition(emptyList(), 0, 0L)
-        )
+        return Futures.submitAsync({
+            Futures.immediateFuture(
+                MediaSession.MediaItemsWithStartPosition(getHistoryItems(), 0, 0L)
+            )
+        }, Dispatchers.IO.asExecutor())
     }
+}
+
+private fun Context.getLauncherPendingIntent(): PendingIntent {
+    return PendingIntent.getActivity(
+        this,
+        0,
+        Intent().apply {
+            setClassName(
+                AppUtils.getAppPackageName(),
+                ActivityUtils.getLauncherActivity()
+            )
+        },
+        PendingIntent.FLAG_IMMUTABLE
+    )
+}
+
+internal fun getHistoryItems(): List<MediaItem> {
+    val history = MPlayerKV.historyPlaylistIds.get()
+
+    return if (history != null) LMedia.mapItems(history)
+    else LMedia.getChildren(MServiceCallback.ALL_SONGS)
+}
+
+internal fun saveHistoryIds(mediaIds: List<String>) {
+    MPlayerKV.historyPlaylistIds.set(mediaIds)
 }

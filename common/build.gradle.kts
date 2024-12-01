@@ -32,9 +32,8 @@ dependencies {
     api(libs.dynamicanimation.ktx)
     api(libs.media)
 
+    api("com.russhwolf:multiplatform-settings:1.3.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.9.0")
-    api("io.github.billywei01:fastkv:2.4.2")
-    api("io.github.billywei01:packable:1.1.0")
 
     api(libs.bundles.koin)
     api(libs.krouter.core)

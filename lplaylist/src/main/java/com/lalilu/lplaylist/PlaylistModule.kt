@@ -1,6 +1,5 @@
 package com.lalilu.lplaylist
 
-import com.lalilu.lplaylist.repository.PlaylistKV
 import com.lalilu.lplaylist.repository.PlaylistRepository
 import com.lalilu.lplaylist.repository.PlaylistRepositoryImpl
 import com.lalilu.lplaylist.screen.create.PlaylistCreateOrEditScreenModel
@@ -16,8 +15,6 @@ import org.koin.dsl.module
 object PlaylistModule2
 
 val PlaylistModule = module {
-    singleOf(::PlaylistKV)
-
     singleOf(::PlaylistRepositoryImpl)
     factoryOf(::PlaylistDetailScreenModel)
     factoryOf(::PlaylistCreateOrEditScreenModel)

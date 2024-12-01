@@ -17,11 +17,13 @@ import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.Utils
 import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.service.MService
-import com.lalilu.lplayer.service.MServiceCallback
+import com.lalilu.lplayer.service.getHistoryItems
+import com.lalilu.lplayer.service.saveHistoryIds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
+import org.koin.dsl.module
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(UnstableApi::class)
@@ -35,6 +37,9 @@ object MPlayer : CoroutineScope {
         MediaBrowser
             .Builder(Utils.getApp(), sessionToken)
             .buildAsync()
+    }
+
+    val module = module {
     }
 
     var isPlaying: Boolean by mutableStateOf(false)
@@ -68,11 +73,8 @@ object MPlayer : CoroutineScope {
             val browser = browserFuture.await()
             browser.addListener(getListener(browser))
 
-            val items = browser.getChildren(MServiceCallback.ALL_SONGS, 0, Int.MAX_VALUE, null)
-                .await()
-                .value
-
-            if (items.isNullOrEmpty()) {
+            val items = getHistoryItems()
+            if (items.isEmpty()) {
                 LogUtils.i("No songs found")
                 return@launch
             }
@@ -172,6 +174,9 @@ object MPlayer : CoroutineScope {
         ) {
             val items = timeline.toMediaItems()
             currentTimelineItems = items.drop(currentIndex) + items.take(currentIndex)
+
+            val ids = currentTimelineItems.map { it.mediaId }
+            saveHistoryIds(mediaIds = ids)
         }
     }
 }
