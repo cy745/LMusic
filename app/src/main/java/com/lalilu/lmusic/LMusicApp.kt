@@ -16,7 +16,6 @@ import com.lalilu.lmedia.indexer.FilterProvider
 import com.lalilu.lmusic.utils.extension.ignoreSSLVerification
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplaylist.PlaylistModule
-import com.lalilu.lplaylist.PlaylistModule2
 import com.zhangke.krouter.KRouter
 import com.zhangke.krouter.generated.KRouterInjectMap
 import org.koin.android.ext.android.inject
@@ -46,10 +45,9 @@ class LMusicApp : Application(), FilterProvider, ViewModelStoreOwner {
                 ViewModelModule,
                 RuntimeModule,
                 FilterModule,
-                PlaylistModule,
                 ComponentModule,
                 HistoryModule.module,
-                PlaylistModule2.module,
+                PlaylistModule.module,
                 ArtistModule.module,
                 AlbumModule.module,
                 DictionaryModule,

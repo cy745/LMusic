@@ -1,31 +1,45 @@
 package com.lalilu.lplaylist.screen.detail
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.screen.Screen
-import com.blankj.utilcode.util.ToastUtils
-import com.lalilu.common.toCachedFlow
+import com.lalilu.RemixIcon
+import com.lalilu.common.ext.requestFor
 import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
+import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
-import com.lalilu.component.extension.SelectAction
-import com.lalilu.component.viewmodel.IPlayingViewModel
-import com.lalilu.lmedia.entity.LSong
+import com.lalilu.component.base.songs.SongsHeaderJumperDialog
+import com.lalilu.component.base.songs.SongsSearcherPanel
+import com.lalilu.component.base.songs.SongsSelectorPanel
+import com.lalilu.component.base.songs.SongsSortPanelDialog
+import com.lalilu.component.extension.DialogWrapper
+import com.lalilu.component.extension.registerAndGetViewModel
+import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lplaylist.R
-import com.lalilu.lplaylist.repository.PlaylistRepository
+import com.lalilu.lplaylist.viewmodel.PlaylistDetailAction
+import com.lalilu.lplaylist.viewmodel.PlaylistDetailVM
+import com.lalilu.remixicon.Design
+import com.lalilu.remixicon.Editor
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.design.editBoxLine
+import com.lalilu.remixicon.design.focus3Line
+import com.lalilu.remixicon.editor.sortDesc
+import com.lalilu.remixicon.system.checkboxMultipleBlankLine
+import com.lalilu.remixicon.system.checkboxMultipleLine
+import com.lalilu.remixicon.system.menuSearchLine
 import com.zhangke.krouter.annotation.Destination
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import com.lalilu.component.R as componentR
+import org.koin.core.parameter.parametersOf
+import org.koin.core.qualifier.named
 
 @Destination("/pages/playlist/detail")
 data class PlaylistDetailScreen(
     val playlistId: String
-) : Screen, ScreenInfoFactory, ScreenActionFactory {
+) : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBarFactory {
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {
@@ -36,82 +50,124 @@ data class PlaylistDetailScreen(
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
-        return remember { listOf() }
+        val vm = registerAndGetViewModel<PlaylistDetailVM>(
+            parameters = { parametersOf(playlistId) }
+        )
+
+        val state by vm.state
+
+        return remember {
+            listOf(
+                ScreenAction.Static(
+                    title = { "排序" },
+                    icon = { RemixIcon.Editor.sortDesc },
+                    color = { Color(0xFF1793FF) },
+                    onAction = { vm.intent(PlaylistDetailAction.ToggleSortPanel) }
+                ),
+                ScreenAction.Static(
+                    title = { "选择" },
+                    icon = { RemixIcon.Design.editBoxLine },
+                    color = { Color(0xFF009673) },
+                    onAction = { vm.selector.isSelecting.value = true }
+                ),
+                ScreenAction.Static(
+                    title = { "搜索" },
+                    subTitle = {
+                        val keyword = state.searchKeyWord
+                        if (keyword.isNotBlank()) "搜索中： $keyword" else null
+                    },
+                    icon = { RemixIcon.System.menuSearchLine },
+                    color = { Color(0xFF8BC34A) },
+                    dotColor = {
+                        val keyword = state.searchKeyWord
+                        if (keyword.isNotBlank()) Color.Red else null
+                    },
+                    onAction = {
+                        vm.intent(PlaylistDetailAction.ToggleSearcherPanel)
+                        DialogWrapper.dismiss()
+                    }
+                ),
+                ScreenAction.Static(
+                    title = { "定位至当前播放歌曲" },
+                    icon = { RemixIcon.Design.focus3Line },
+                    color = { Color(0xFF8700FF) },
+                    onAction = { vm.intent(PlaylistDetailAction.LocaleToPlayingItem) }
+                ),
+            )
+        }
     }
 
     @Composable
     override fun Content() {
+        val vm = registerAndGetViewModel<PlaylistDetailVM>(
+            parameters = { parametersOf(playlistId) }
+        )
 
-        PlaylistDetailScreen(
-            playlistId = playlistId,
+        val state by vm.state
+        val songs by vm.songs
+        val playlist by vm.playlist
+
+        SongsSortPanelDialog(
+            isVisible = { state.showSortPanel },
+            onDismiss = { vm.intent(PlaylistDetailAction.HideSortPanel) },
+            supportSortActions = vm.supportSortActions,
+            isSortActionSelected = { state.selectedSortAction == it },
+            onSelectSortAction = { vm.intent(PlaylistDetailAction.SelectSortAction(it)) }
+        )
+
+        SongsHeaderJumperDialog(
+            isVisible = { state.showJumperDialog },
+            onDismiss = { vm.intent(PlaylistDetailAction.HideJumperDialog) },
+            items = { songs.keys },
+            onSelectItem = { vm.intent(PlaylistDetailAction.LocaleToGroupItem(it)) }
+        )
+
+        SongsSearcherPanel(
+            isVisible = { state.showSearcherPanel },
+            onDismiss = { vm.intent(PlaylistDetailAction.HideSearcherPanel) },
+            keyword = { state.searchKeyWord },
+            onUpdateKeyword = { vm.intent(PlaylistDetailAction.SearchFor(it)) }
+        )
+
+        SongsSelectorPanel(
+            isVisible = { vm.selector.isSelecting.value },
+            onDismiss = { vm.selector.isSelecting.value = false },
+            screenActions = listOfNotNull(
+                ScreenAction.Static(
+                    title = { "全选" },
+                    color = { Color(0xFF00ACF0) },
+                    icon = { RemixIcon.System.checkboxMultipleLine },
+                    onAction = { vm.selector.selectAll(vm.songs.value.values.flatten()) }
+                ),
+                ScreenAction.Static(
+                    title = { "取消全选" },
+                    icon = { RemixIcon.System.checkboxMultipleBlankLine },
+                    color = { Color(0xFFFF5100) },
+                    onAction = { vm.selector.clear() }
+                ),
+                requestFor<ScreenAction>(
+                    qualifier = named("add_to_favourite_action"),
+                    parameters = { parametersOf(vm.selector::selected) }
+                ),
+                requestFor<ScreenAction>(
+                    qualifier = named("add_to_playlist_action"),
+                    parameters = { parametersOf(vm.selector::selected) }
+                )
+            )
+        )
+
+        PlaylistDetailScreenContent(
+            songs = songs,
+            playlist = playlist,
+            enableDraggable = state.selectedSortAction is SortStaticAction.Normal,
+            keys = { vm.recorder.list().filterNotNull() },
+            recorder = vm.recorder,
+            eventFlow = vm.eventFlow(),
+            isSelecting = { vm.selector.isSelecting.value },
+            isSelected = { vm.selector.isSelected(it) },
+            onSelect = { vm.selector.onSelect(it) },
+            onClickGroup = { vm.intent(PlaylistDetailAction.ToggleJumperDialog) },
+            onUpdatePlaylist = { vm.intent(PlaylistDetailAction.UpdatePlaylist(it)) }
         )
     }
-}
-
-class PlaylistDetailScreenModel(
-    private val playingVM: IPlayingViewModel,
-    private val playlistRepo: PlaylistRepository,
-) : ScreenModel {
-    private val playlistId = MutableStateFlow("")
-
-    val playlist = playlistId
-        .combine(playlistRepo.getPlaylistsFlow()) { id, playlists ->
-            playlists.firstOrNull { it.id == id }
-        }.toCachedFlow()
-
-    val deleteAction = SelectAction.StaticAction.Custom(
-        title = R.string.playlist_action_remove_from_playlist,
-        forLongClick = true,
-        icon = componentR.drawable.ic_delete_bin_6_line,
-        color = Color.Red
-    ) { selector ->
-        val mediaIds = selector.selected.value.filterIsInstance<LSong>()
-            .map { it.id }
-
-        playlistRepo.removeMediaIdsFromPlaylist(mediaIds, playlistId.value)
-        ToastUtils.showShort("Removed from playlist")
-    }
-
-//    val playAllAction = ScreenAction.StaticAction(
-//        title = R.string.playlist_action_play_all,
-//        icon = componentR.drawable.ic_play_list_2_fill,
-//        color = Color(0xFF008521)
-//    ) {
-//        val mediaIds = playlist.get()?.mediaIds ?: emptyList()
-//
-//        if (mediaIds.isEmpty()) {
-//            ToastUtils.showShort("No item to play")
-//        } else {
-//            playingVM.play(
-//                mediaIds = mediaIds,
-//                mediaId = mediaIds.first()
-//            )
-//        }
-//    }
-//
-//    val playAllRandomlyAction = ScreenAction.StaticAction(
-//        title = R.string.playlist_action_play_randomly,
-//        icon = componentR.drawable.ic_dice_line,
-//        color = Color(0xFF8D01B4)
-//    ) {
-//        val mediaIds = playlist.get()?.mediaIds ?: emptyList()
-//
-//        if (mediaIds.isEmpty()) {
-//            ToastUtils.showShort("No item to play")
-//        } else {
-//            playingVM.play(
-//                mediaIds = mediaIds.shuffled(),
-//                mediaId = mediaIds.random()
-//            )
-//        }
-//    }
-//
-//    fun updatePlaylistId(playlistId: String) {
-//        this.playlistId.tryEmit(playlistId)
-//    }
-//
-//    fun onDragMoveEnd(items: List<Playable>) {
-//        val mediaId = items.map { it.mediaId }
-//        playlistRepo.updateMediaIdsToPlaylist(mediaId, playlistId.value)
-//    }
 }
