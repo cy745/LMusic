@@ -17,10 +17,12 @@ import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.repository.PlaylistRepository
+import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import com.lalilu.component.R as componentR
 
+@Destination("/pages/playlist/detail")
 data class PlaylistDetailScreen(
     val playlistId: String
 ) : Screen, ScreenInfoFactory, ScreenActionFactory {

@@ -305,16 +305,19 @@ inline fun <reified T : ViewModel> registerAndGetViewModel(
     scope: Scope = currentKoinScope(),
     noinline parameters: ParametersDefinition? = null,
 ): T {
+    val actualViewModelStoreOwner = registerMap[T::class.java]?.get() ?: viewModelStoreOwner
+
     return koinViewModel<T>(
         qualifier = qualifier,
-        viewModelStoreOwner = viewModelStoreOwner,
+        viewModelStoreOwner = actualViewModelStoreOwner,
         key = key,
         extras = extras,
         scope = scope,
         parameters = parameters
-    ).also { registerMap[T::class.java] = WeakReference(viewModelStoreOwner) }
+    ).also { registerMap[T::class.java] = WeakReference(actualViewModelStoreOwner) }
 }
 
+@Deprecated(message = "弃用")
 @Composable
 inline fun <reified T : ViewModel> getViewModel(
     qualifier: Qualifier? = null,

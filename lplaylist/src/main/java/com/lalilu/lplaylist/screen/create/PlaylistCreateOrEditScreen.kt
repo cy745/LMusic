@@ -52,6 +52,7 @@ import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.repository.PlaylistRepository
+import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -136,6 +137,7 @@ class PlaylistCreateOrEditScreenModel(
 /**
  * [targetPlaylistId]   目标操作歌单的Id
  */
+@Destination("/pages/playlist/create_or_edit")
 data class PlaylistCreateOrEditScreen(
     private val targetPlaylistId: String? = null
 ) : DynamicScreen(), DialogScreen {
