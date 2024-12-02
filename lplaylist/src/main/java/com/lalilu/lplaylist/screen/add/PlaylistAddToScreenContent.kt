@@ -20,7 +20,7 @@ import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.component.PlaylistCard
 import com.lalilu.lplaylist.entity.LPlaylist
-import com.lalilu.lplaylist.screen.create.PlaylistCreateOrEditScreen
+import com.lalilu.lplaylist.screen.create.PlaylistEditScreen
 
 
 @Composable
@@ -44,7 +44,7 @@ internal fun PlaylistAddToScreenContent(
                 IconButton(
                     onClick = {
                         AppRouter.intent(
-                            NavIntent.Push(PlaylistCreateOrEditScreen())
+                            NavIntent.Push(PlaylistEditScreen())
                         )
                     }
                 ) {

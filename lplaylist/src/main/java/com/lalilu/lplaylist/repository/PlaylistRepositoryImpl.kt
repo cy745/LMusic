@@ -7,7 +7,9 @@ import com.lalilu.lplaylist.entity.LPlaylist
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
+import org.koin.core.annotation.Single
 
+@Single(binds = [PlaylistRepository::class])
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PlaylistRepositoryImpl(
     private val context: Application,

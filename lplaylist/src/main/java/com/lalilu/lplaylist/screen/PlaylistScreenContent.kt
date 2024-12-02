@@ -93,7 +93,10 @@ internal fun PlaylistScreenContent(
                 ),
                 title = stringResource(id = R.string.playlist_screen_title)
             ) {
-                IconButton(onClick = { AppRouter.route("/pages/playlist/create_or_edit").push() }) {
+                IconButton(onClick = {
+                    AppRouter.route("/pages/playlist/edit")
+                        .push()
+                }) {
                     Icon(
                         imageVector = RemixIcon.System.addLargeLine,
                         contentDescription = null

@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.base.screen.ScreenInfoFactory
@@ -33,10 +32,6 @@ sealed interface ScreenAction {
         val isLongClickAction: Boolean = false,
         val onAction: () -> Unit
     ) : ScreenAction
-
-    data class ComposeAction(
-        val content: @Composable (Modifier) -> Unit
-    ) : ScreenAction
 }
 
 data class ScreenBarComponent(
@@ -49,8 +44,6 @@ interface CustomScreen : Screen {
 }
 
 interface TabScreen : Screen, ScreenInfoFactory
-interface DialogScreen : CustomScreen
-
 
 interface UiState
 interface UiAction

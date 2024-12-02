@@ -53,7 +53,7 @@ fun PlaylistCard(
 
     Row(
         modifier = modifier
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(bgColor)
             .combinedClickable(

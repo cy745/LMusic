@@ -107,9 +107,13 @@ data object PlaylistScreen : TabScreen, ScreenBarFactory {
             onUpdatePlaylist = { vm.intent(PlaylistsAction.UpdatePlaylist(it)) },
             onLongClickPlaylist = { vm.selector.onSelect(it) },
             onClickPlaylist = {
-                AppRouter.route("/pages/playlist/detail")
-                    .with("playlistId", it.id)
-                    .push()
+                if (vm.selector.isSelecting.value) {
+                    vm.selector.onSelect(it)
+                } else {
+                    AppRouter.route("/pages/playlist/detail")
+                        .with("playlistId", it.id)
+                        .push()
+                }
             }
         )
     }
