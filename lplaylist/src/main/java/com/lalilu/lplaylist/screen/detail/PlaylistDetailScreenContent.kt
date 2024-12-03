@@ -131,37 +131,68 @@ internal fun PlaylistDetailScreenContent(
                 }
             }
 
-            songs.forEach { (group, list) ->
-                if (group !is GroupIdentity.None) {
-                    stickyHeaderWithRecord(
-                        key = group,
-                        contentType = stickyHeaderContentType
-                    ) {
-                        SongsScreenStickyHeader(
-                            modifier = Modifier.animateItem(),
-                            listState = listState,
-                            group = group,
-                            minOffset = { statusBar.getTop(density) },
-                            onClickGroup = onClickGroup
-                        )
-                    }
-                }
-
+            if (enableDraggable) {
                 itemsWithRecord(
-                    items = list,
+                    items = playlistState,
                     key = { it.id },
                     contentType = { it::class.java }
                 ) { item ->
                     ReorderableItem(
                         state = reorderableState,
-                        enabled = enableDraggable,
                         key = item.id
                     ) {
                         SongCard(
                             dragModifier = Modifier.draggableHandle(
-                                enabled = enableDraggable,
                                 onDragStopped = { onUpdatePlaylist(playlistState.map { it.id }) }
                             ),
+                            song = { item },
+                            isSelected = { isSelected(item) },
+                            onClick = {
+                                if (isSelecting()) {
+                                    onSelect(item)
+                                } else {
+                                    PlayerAction.PlayById(item.id).action()
+                                }
+                            },
+                            onLongClick = {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                                if (isSelecting()) {
+                                    onSelect(item)
+                                } else {
+                                    AppRouter.route("/pages/songs/detail")
+                                        .with("mediaId", item.id)
+                                        .jump()
+                                }
+                            },
+                            onEnterSelect = { onSelect(item) }
+                        )
+                    }
+                }
+            } else {
+                songs.forEach { (group, list) ->
+                    if (group !is GroupIdentity.None) {
+                        stickyHeaderWithRecord(
+                            key = group,
+                            contentType = stickyHeaderContentType
+                        ) {
+                            SongsScreenStickyHeader(
+                                modifier = Modifier.animateItem(),
+                                listState = listState,
+                                group = group,
+                                minOffset = { statusBar.getTop(density) },
+                                onClickGroup = onClickGroup
+                            )
+                        }
+                    }
+
+                    itemsWithRecord(
+                        items = list,
+                        key = { it.id },
+                        contentType = { it::class.java }
+                    ) { item ->
+                        SongCard(
+                            modifier = Modifier.animateItem(),
                             song = { item },
                             isSelected = { isSelected(item) },
                             onClick = {
