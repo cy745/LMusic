@@ -16,6 +16,7 @@ sealed interface NavIntent {
     data class Jump(val screen: Screen) : NavIntent
     data class Push(val screen: Screen) : NavIntent
     data class Replace(val screen: Screen) : NavIntent
+    data class PopUtil(val screen: Screen) : NavIntent
     data object Pop : NavIntent
     data object None : NavIntent
 }
@@ -59,6 +60,7 @@ val DefaultHandler = NavHandler { navigator, intent ->
         is NavIntent.Push -> navigator.push(intent.screen)
         is NavIntent.Replace -> navigator.replace(intent.screen)
         is NavIntent.Jump -> navigator.push(intent.screen)
+        is NavIntent.PopUtil -> navigator.popUntil { intent.screen == it }
         NavIntent.None -> {}
     }
 }

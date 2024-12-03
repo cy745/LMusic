@@ -20,8 +20,7 @@ import com.lalilu.component.base.songs.SongsSearcherPanel
 import com.lalilu.component.base.songs.SongsSelectorPanel
 import com.lalilu.component.base.songs.SongsSortPanelDialog
 import com.lalilu.component.extension.DialogWrapper
-import com.lalilu.component.extension.getViewModel
-import com.lalilu.component.extension.registerAndGetViewModel
+import com.lalilu.component.extension.screenVM
 import com.lalilu.lartist.R
 import com.lalilu.lartist.viewModel.ArtistDetailAction
 import com.lalilu.lartist.viewModel.ArtistDetailVM
@@ -54,7 +53,7 @@ data class ArtistDetailScreen(
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
-        val vm = getViewModel<ArtistDetailVM>()
+        val vm = screenVM<ArtistDetailVM>()
         val state by vm.state
 
         return remember {
@@ -100,7 +99,7 @@ data class ArtistDetailScreen(
 
     @Composable
     override fun Content() {
-        val vm = registerAndGetViewModel<ArtistDetailVM>(parameters = { parametersOf(artistName) })
+        val vm = screenVM<ArtistDetailVM>(parameters = { parametersOf(artistName) })
         val songs by vm.songs
         val state by vm.state
         val artist by vm.artist

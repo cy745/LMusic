@@ -27,7 +27,7 @@ import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.songs.SongsSearcherPanel
 import com.lalilu.component.base.songs.SongsSelectorPanel
-import com.lalilu.component.extension.registerAndGetViewModel
+import com.lalilu.component.extension.screenVM
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.viewmodel.PlaylistsAction
@@ -53,7 +53,7 @@ data object PlaylistScreen : TabScreen, ScreenBarFactory {
 
     @Composable
     override fun Content() {
-        val vm = registerAndGetViewModel<PlaylistsVM>()
+        val vm = screenVM<PlaylistsVM>()
         val state by vm.state
 
         SongsSearcherPanel(

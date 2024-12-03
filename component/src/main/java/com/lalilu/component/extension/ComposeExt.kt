@@ -18,8 +18,6 @@ import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -37,6 +35,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
+import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
+import cafe.adriel.voyager.core.lifecycle.LocalNavigatorScreenLifecycleProvider
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.jetpack.ScreenLifecycleKMPOwner
 import com.lalilu.common.SystemUiUtil
 import com.lalilu.component.R
 import com.lalilu.component.base.LocalWindowSize
@@ -49,7 +52,6 @@ import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.scope.Scope
 import org.koin.viewmodel.defaultExtras
-import java.lang.ref.WeakReference
 import kotlin.math.roundToInt
 
 @Composable
@@ -192,30 +194,6 @@ fun <T> buildScrollToItemAction(
     }
 }
 
-
-/**
- * [LaunchedEffect] 在监听值的变化的同时无法兼顾Composition的变化，会在Compose移除后继续执行内部代码
- * [DisposableEffect] 在进入Composition的时候无法处理初始值，只会处理之后值变化的情况
- *
- * 为了处理初始值和避免Compose移除后仍处理值的变化的问题，创建了这个Effect
- */
-@Composable
-fun <T> LaunchedDisposeEffect(
-    key: () -> T,
-    onDispose: () -> Unit = {},
-    onUpdate: (key: T) -> Unit
-) {
-    val item = key()
-    DisposableEffect(item) {
-        onUpdate(item)
-        onDispose(onDispose)
-    }
-
-    LaunchedEffect(Unit) {
-        onUpdate(item)
-    }
-}
-
 /**
  * 监听滚动位置的变化，计算总的滚动距离
  */
@@ -288,42 +266,18 @@ fun rememberIsPadLandScape(): State<Boolean> {
     }
 }
 
+@Deprecated(message = "弃用")
 @Composable
 inline fun <reified T : ViewModel> singleViewModel(): T =
     koinViewModel(viewModelStoreOwner = koinInject())
 
-val registerMap = mutableMapOf<Class<*>, WeakReference<ViewModelStoreOwner>>()
-
 @Composable
-inline fun <reified T : ViewModel> registerAndGetViewModel(
+inline fun <reified T : ViewModel> Screen.screenVM(
     qualifier: Qualifier? = null,
-    viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
-        "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
-    },
-    key: String? = null,
-    extras: CreationExtras = defaultExtras(viewModelStoreOwner),
-    scope: Scope = currentKoinScope(),
-    noinline parameters: ParametersDefinition? = null,
-): T {
-    val actualViewModelStoreOwner = registerMap[T::class.java]?.get() ?: viewModelStoreOwner
-
-    return koinViewModel<T>(
-        qualifier = qualifier,
-        viewModelStoreOwner = actualViewModelStoreOwner,
-        key = key,
-        extras = extras,
-        scope = scope,
-        parameters = parameters
-    ).also { registerMap[T::class.java] = WeakReference(actualViewModelStoreOwner) }
-}
-
-@Deprecated(message = "弃用")
-@Composable
-inline fun <reified T : ViewModel> getViewModel(
-    qualifier: Qualifier? = null,
-    viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(registerMap[T::class.java]?.get()) {
-        "No Registered ViewModelStoreOwner was provided via registerMap for ${T::class.java}"
-    },
+    viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(
+        value = getScreenViewModelStoreOwner() ?: LocalViewModelStoreOwner.current,
+        lazyMessage = { "No Registered ViewModelStoreOwner was provided via registerMap for ${T::class.java}" }
+    ),
     key: String? = null,
     extras: CreationExtras = defaultExtras(viewModelStoreOwner),
     scope: Scope = currentKoinScope(),
@@ -337,4 +291,16 @@ inline fun <reified T : ViewModel> getViewModel(
         scope = scope,
         parameters = parameters
     )
+}
+
+@OptIn(ExperimentalVoyagerApi::class, InternalVoyagerApi::class)
+@Composable
+fun Screen.getScreenViewModelStoreOwner(): ViewModelStoreOwner? {
+    val provider = LocalNavigatorScreenLifecycleProvider.current
+
+    return remember {
+        provider?.provide(this)?.get(0)
+            ?.let { it as? ScreenLifecycleKMPOwner }
+            ?.owner
+    }
 }

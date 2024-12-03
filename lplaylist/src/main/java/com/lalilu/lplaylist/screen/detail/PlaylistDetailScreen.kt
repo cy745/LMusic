@@ -18,7 +18,7 @@ import com.lalilu.component.base.songs.SongsSearcherPanel
 import com.lalilu.component.base.songs.SongsSelectorPanel
 import com.lalilu.component.base.songs.SongsSortPanelDialog
 import com.lalilu.component.extension.DialogWrapper
-import com.lalilu.component.extension.registerAndGetViewModel
+import com.lalilu.component.extension.screenVM
 import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.viewmodel.PlaylistDetailAction
@@ -50,7 +50,7 @@ data class PlaylistDetailScreen(
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
-        val vm = registerAndGetViewModel<PlaylistDetailVM>(
+        val vm = screenVM<PlaylistDetailVM>(
             parameters = { parametersOf(playlistId) }
         )
 
@@ -99,7 +99,7 @@ data class PlaylistDetailScreen(
 
     @Composable
     override fun Content() {
-        val vm = registerAndGetViewModel<PlaylistDetailVM>(
+        val vm = screenVM<PlaylistDetailVM>(
             parameters = { parametersOf(playlistId) }
         )
 

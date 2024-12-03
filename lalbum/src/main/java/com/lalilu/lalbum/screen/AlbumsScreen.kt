@@ -15,8 +15,7 @@ import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.base.songs.SongsSearcherPanel
 import com.lalilu.component.base.songs.SongsSortPanelDialog
 import com.lalilu.component.extension.DialogWrapper
-import com.lalilu.component.extension.getViewModel
-import com.lalilu.component.extension.registerAndGetViewModel
+import com.lalilu.component.extension.screenVM
 import com.lalilu.lalbum.R
 import com.lalilu.lalbum.viewModel.AlbumsAction
 import com.lalilu.lalbum.viewModel.AlbumsVM
@@ -44,7 +43,7 @@ data class AlbumsScreen(
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
-        val albumsVM = getViewModel<AlbumsVM>()
+        val albumsVM = screenVM<AlbumsVM>()
         val state by albumsVM.state
 
         return remember {
@@ -83,7 +82,7 @@ data class AlbumsScreen(
 
     @Composable
     override fun Content() {
-        val vm = registerAndGetViewModel<AlbumsVM>()
+        val vm = screenVM<AlbumsVM>()
         val state by vm.state
         val albums by vm.albums
 

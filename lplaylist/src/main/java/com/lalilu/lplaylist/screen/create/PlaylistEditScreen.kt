@@ -25,11 +25,13 @@ import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
-import com.lalilu.component.extension.registerAndGetViewModel
+import com.lalilu.component.extension.screenVM
 import com.lalilu.lplaylist.viewmodel.PlaylistEditAction
 import com.lalilu.lplaylist.viewmodel.PlaylistEditVM
 import com.lalilu.remixicon.Design
+import com.lalilu.remixicon.System
 import com.lalilu.remixicon.design.editBoxFill
+import com.lalilu.remixicon.system.deleteBinLine
 import com.zhangke.krouter.annotation.Destination
 import org.koin.core.parameter.parametersOf
 
@@ -53,12 +55,40 @@ data class PlaylistEditScreen(
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
-        val vm = registerAndGetViewModel<PlaylistEditVM>(
+        val vm = screenVM<PlaylistEditVM>(
             parameters = { parametersOf(playlistId) }
         )
 
         return remember {
             listOfNotNull(
+                ScreenAction.Dynamic {
+                    val color = Color(0xFFF5381D)
+
+                    LongClickableTextButton(
+                        modifier = Modifier.fillMaxHeight(),
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        colors = ButtonDefaults.textButtonColors(
+                            backgroundColor = color.copy(alpha = 0.15f),
+                            contentColor = color
+                        ),
+                        enableLongClickMask = true,
+                        onLongClick = { vm.intent(PlaylistEditAction.Delete) },
+                        onClick = { ToastUtils.showShort("请长按此按钮以继续") },
+                    ) {
+                        Image(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = RemixIcon.System.deleteBinLine,
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(color = color)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "删除歌单",
+                            fontSize = 14.sp
+                        )
+                    }
+                },
                 ScreenAction.Dynamic {
                     val color = Color(0xFF0074FF)
 
@@ -93,11 +123,13 @@ data class PlaylistEditScreen(
 
     @Composable
     override fun Content() {
-        val vm = registerAndGetViewModel<PlaylistEditVM>(
+        val vm = screenVM<PlaylistEditVM>(
             parameters = { parametersOf(playlistId) }
         )
 
         PlaylistEditScreenContent(
+            titleHint = { vm.playlist.value?.title ?: "" },
+            subTitleHint = { vm.playlist.value?.subTitle ?: "" },
             titleValue = { vm.titleState.value },
             onUpdateTitle = { vm.titleState.value = it },
             subTitleValue = { vm.subTitleState.value },
