@@ -1,28 +1,13 @@
 package com.lalilu.lplaylist.screen.detail
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.RemixIcon
 import com.lalilu.common.ext.requestFor
-import com.lalilu.component.LongClickableTextButton
 import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.base.screen.ScreenBarFactory
@@ -86,38 +71,6 @@ data class PlaylistDetailScreen(
                     color = { Color(0xFF009673) },
                     onAction = { vm.selector.isSelecting.value = true }
                 ),
-                ScreenAction.Dynamic {
-                    val color = Color(0xFFF5381D)
-
-                    LongClickableTextButton(
-                        modifier = Modifier.fillMaxHeight(),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        colors = ButtonDefaults.textButtonColors(
-                            backgroundColor = color.copy(alpha = 0.15f),
-                            contentColor = color
-                        ),
-                        enableLongClickMask = true,
-                        onLongClick = {
-                            val ids = vm.selector.selected().map { it.id }
-
-                            vm.intent(PlaylistDetailAction.RemoveItems(ids))
-                        },
-                        onClick = { ToastUtils.showShort("请长按此按钮以继续") },
-                    ) {
-                        Image(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = RemixIcon.System.deleteBinLine,
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(color = color)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "删除歌单",
-                            fontSize = 14.sp
-                        )
-                    }
-                },
                 ScreenAction.Static(
                     title = { "搜索" },
                     subTitle = {
@@ -192,6 +145,16 @@ data class PlaylistDetailScreen(
                     icon = { RemixIcon.System.checkboxMultipleBlankLine },
                     color = { Color(0xFFFF5100) },
                     onAction = { vm.selector.clear() }
+                ),
+                ScreenAction.Static(
+                    title = { "删除" },
+                    icon = { RemixIcon.System.deleteBinLine },
+                    longClick = { true },
+                    color = { Color(0xFFF5381D) },
+                    onAction = {
+                        val ids = vm.selector.selected().map { it.id }
+                        vm.intent(PlaylistDetailAction.RemoveItems(ids))
+                    }
                 ),
                 requestFor<ScreenAction>(
                     qualifier = named("add_to_favourite_action"),

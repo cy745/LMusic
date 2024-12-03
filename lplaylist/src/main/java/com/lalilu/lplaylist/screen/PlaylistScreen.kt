@@ -78,7 +78,6 @@ data object PlaylistScreen : TabScreen, ScreenBarFactory {
                             backgroundColor = color.copy(alpha = 0.15f),
                             contentColor = color
                         ),
-                        enableLongClickMask = true,
                         onLongClick = { vm.intent(PlaylistsAction.TryRemovePlaylist(vm.selector.selected())) },
                         onClick = { ToastUtils.showShort("请长按此按钮以继续") },
                     ) {

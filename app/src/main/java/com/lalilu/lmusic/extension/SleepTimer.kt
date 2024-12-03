@@ -243,7 +243,6 @@ fun SleepTimer(
                     .fillMaxWidth()
                     .heightIn(min = 60.dp),
                 shape = RoundedCornerShape(8.dp),
-                enableLongClickMask = true,
                 colors = ButtonDefaults.textButtonColors(
                     backgroundColor = animateColor.value.copy(alpha = 0.15f),
                     contentColor = animateColor.value

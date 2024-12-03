@@ -163,6 +163,13 @@ class PlaylistDetailVM(
                     ?.let { playlistRepo.save(it) }
             }
 
+            is PlaylistDetailAction.RemoveItems -> {
+                playlistRepo.removeMediaIdsFromPlaylist(
+                    mediaIds = intent.mediaIds,
+                    playlistId = playlistId
+                )
+            }
+
             else -> {
                 LogUtils.i("Not implemented action: $intent")
             }

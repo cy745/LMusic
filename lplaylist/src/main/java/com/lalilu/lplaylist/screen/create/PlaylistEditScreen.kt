@@ -1,26 +1,11 @@
 package com.lalilu.lplaylist.screen.create
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
-import com.blankj.utilcode.util.ToastUtils
 import com.lalilu.RemixIcon
-import com.lalilu.component.LongClickableTextButton
 import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.base.screen.ScreenInfo
@@ -61,62 +46,22 @@ data class PlaylistEditScreen(
 
         return remember {
             listOfNotNull(
-                ScreenAction.Dynamic {
-                    val color = Color(0xFFF5381D)
-
-                    LongClickableTextButton(
-                        modifier = Modifier.fillMaxHeight(),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        colors = ButtonDefaults.textButtonColors(
-                            backgroundColor = color.copy(alpha = 0.15f),
-                            contentColor = color
-                        ),
-                        enableLongClickMask = true,
-                        onLongClick = { vm.intent(PlaylistEditAction.Delete) },
-                        onClick = { ToastUtils.showShort("请长按此按钮以继续") },
-                    ) {
-                        Image(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = RemixIcon.System.deleteBinLine,
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(color = color)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "删除歌单",
-                            fontSize = 14.sp
-                        )
-                    }
-                },
-                ScreenAction.Dynamic {
-                    val color = Color(0xFF0074FF)
-
-                    LongClickableTextButton(
-                        modifier = Modifier.fillMaxHeight(),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        colors = ButtonDefaults.textButtonColors(
-                            backgroundColor = color.copy(alpha = 0.15f),
-                            contentColor = color
-                        ),
-                        enableLongClickMask = true,
-                        onLongClick = { vm.intent(PlaylistEditAction.Confirm) },
-                        onClick = { ToastUtils.showShort("请长按此按钮以继续") },
-                    ) {
-                        Image(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = RemixIcon.Design.editBoxFill,
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(color = color)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = if (vm.playlist.value == null) "创建歌单" else "更新歌单",
-                            fontSize = 14.sp
-                        )
-                    }
-                }
+                if (vm.playlist.value != null) {
+                    ScreenAction.Static(
+                        title = { "删除歌单" },
+                        icon = { RemixIcon.System.deleteBinLine },
+                        longClick = { true },
+                        color = { Color(0xFFF5381D) },
+                        onAction = { vm.intent(PlaylistEditAction.Delete) }
+                    )
+                } else null,
+                ScreenAction.Static(
+                    title = { if (vm.playlist.value == null) "创建歌单" else "更新歌单" },
+                    icon = { RemixIcon.Design.editBoxFill },
+                    longClick = { true },
+                    color = { Color(0xFF0074FF) },
+                    onAction = { vm.intent(PlaylistEditAction.Confirm) }
+                ),
             )
         }
     }
@@ -128,6 +73,7 @@ data class PlaylistEditScreen(
         )
 
         PlaylistEditScreenContent(
+            isEditing = { vm.playlist.value != null },
             titleHint = { vm.playlist.value?.title ?: "" },
             subTitleHint = { vm.playlist.value?.subTitle ?: "" },
             titleValue = { vm.titleState.value },
