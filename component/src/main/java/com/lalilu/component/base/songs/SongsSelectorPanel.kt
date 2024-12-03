@@ -8,7 +8,7 @@ import com.lalilu.RemixIcon
 import com.lalilu.component.base.screen.ActionContext
 import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenBarFactory
-import com.lalilu.component.navigation.NavigateCommonBarContent
+import com.lalilu.component.smartbar.NavigateCommonBarContent
 import com.lalilu.remixicon.System
 import com.lalilu.remixicon.system.closeLine
 

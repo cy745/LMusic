@@ -98,6 +98,7 @@ sealed interface PlaylistDetailAction {
     data class SearchFor(val keyword: String) : PlaylistDetailAction
     data class SelectSortAction(val action: ListAction) : PlaylistDetailAction
     data class UpdatePlaylist(val mediaIds: List<String>) : PlaylistDetailAction
+    data class RemoveItems(val mediaIds: List<String>) : PlaylistDetailAction
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
