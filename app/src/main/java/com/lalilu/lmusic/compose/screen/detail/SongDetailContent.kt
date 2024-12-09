@@ -1,20 +1,23 @@
 package com.lalilu.lmusic.compose.screen.detail
 
 import android.net.Uri
-import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +29,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.lalilu.common.base.SourceType
 import com.lalilu.component.base.LocalSmartBarPadding
+import com.lalilu.component.extension.clipFade
 import com.lalilu.lmedia.entity.FileInfo
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.entity.Metadata
@@ -39,7 +43,6 @@ import com.lalilu.lmusic.compose.new_screen.detail.SongInformationCard
 fun SongDetailContent(
     modifier: Modifier = Modifier,
     song: () -> LSong? = { lSong },
-    progress: Float = 0f,
 ) {
     val bottomPadding = LocalSmartBarPadding.current.value
     val navigationBar = WindowInsets.navigationBars.asPaddingValues()
@@ -51,52 +54,64 @@ fun SongDetailContent(
             bottom = navigationBar.calculateBottomPadding()
                     + bottomPadding.calculateBottomPadding()
                     + 16.dp
-        )
+        ),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item(key = "MAIN_COVER") {
-            AsyncImage(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .animateContentSize()
-                    .height(300.dp),
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(song())
-                    .size(width = 1024, height = 1024)
-                    .crossfade(true)
-                    .build(),
-                contentScale = ContentScale.FillWidth,
-                contentDescription = ""
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                AsyncImage(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clipFade(
+                            lengthDp = 300.dp,
+                            alignmentY = Alignment.Bottom
+                        ),
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(song())
+                        .size(1024)
+                        .crossfade(true)
+                        .build(),
+                    contentScale = ContentScale.FillWidth,
+                    contentDescription = ""
+                )
+
+                song()?.let { song ->
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 2.dp),
+                            text = song.name,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            lineHeight = 26.sp,
+                            color = MaterialTheme.colors.onBackground,
+                        )
+
+                        SongArtistsRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            artists = song.artists
+                        )
+                    }
+                }
+            }
         }
 
         song()?.let { song ->
-            item(key = "TITLE") {
-                Text(
-                    modifier = Modifier
-                        .graphicsLayer {
-                            scaleX = 1f + (0.1f * progress)
-                            scaleY = scaleX
-
-                            transformOrigin = TransformOrigin(0f, 0f)
-                        },
-                    text = song.name,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    lineHeight = 16.sp
-                )
-            }
-
-            item(key = "ARTISTS") {
-                SongArtistsRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    artists = song.artists
-                )
-            }
-
             item(key = "ALBUM") {
                 song.album?.let {
                     SongAlbumInfoCard(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
                         album = it
                     )
                 }
@@ -104,14 +119,18 @@ fun SongDetailContent(
 
             item(key = "ACTIONS") {
                 SongActionsCard(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
                     song = song
                 )
             }
 
             item(key = "INFOS") {
                 SongInformationCard(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
                     song = song
                 )
             }

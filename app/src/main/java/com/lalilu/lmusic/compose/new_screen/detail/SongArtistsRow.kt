@@ -8,15 +8,11 @@ import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.component.navigation.AppRouter
-import com.lalilu.component.navigation.NavIntent
-import com.lalilu.lartist.screen.ArtistDetailScreen
 import com.lalilu.lmedia.entity.LArtist
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
@@ -32,18 +28,18 @@ fun SongArtistsRow(
         artists.forEach {
             Chip(
                 onClick = {
-                    AppRouter.intent(
-                        NavIntent.Push(ArtistDetailScreen(artistName = it.name))
-                    )
+                    AppRouter.route("/pages/artist/detail")
+                        .with("artistName", it.name)
+                        .push()
                 },
                 colors = ChipDefaults.outlinedChipColors(),
             ) {
                 Text(
                     text = it.name,
                     fontSize = 14.sp,
+                    lineHeight = 14.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+                    color = MaterialTheme.colors.onBackground
                         .copy(alpha = 0.7f)
                 )
             }

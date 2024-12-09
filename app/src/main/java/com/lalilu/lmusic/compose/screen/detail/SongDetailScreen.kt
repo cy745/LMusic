@@ -38,7 +38,7 @@ data class SongDetailScreen(
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> = remember(this) {
-        listOfNotNull<ScreenAction>(
+        listOfNotNull(
             requestFor<ScreenAction>(
                 qualifier = named("like_action"),
                 parameters = { parametersOf(mediaId) }
