@@ -1,4 +1,4 @@
-package com.lalilu.component.navigation
+package com.lalilu.component.smartbar
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState

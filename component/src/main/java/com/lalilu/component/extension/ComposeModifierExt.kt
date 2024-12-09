@@ -43,10 +43,7 @@ fun Modifier.longClickable(
 
     this
         .semantics { role = Role.Button }
-        .indication(
-            interactionSource = interactionSource,
-            indication = indication ?: LocalIndication.current
-        )
+        .indication(interactionSource, indication ?: LocalIndication.current)
         .hoverable(interactionSource, true)
         .pointerInput(Unit) {
             var timer: Job?
@@ -76,7 +73,7 @@ fun Modifier.longClickable(
                     }
 
                     // 取消计时器
-                    timer?.cancel()
+                    timer.cancel()
                     onRelease()
                 },
                 onTap = { onClick() },

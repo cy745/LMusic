@@ -52,3 +52,18 @@
 -keep class StatusBarLyric.API.StatusBarLyric { *; }
 
 -printmapping ../mapping.txt
+
+-dontwarn org.gradle.api.Action
+-dontwarn org.gradle.api.Named
+-dontwarn org.gradle.api.Plugin
+-dontwarn org.gradle.api.Task
+-dontwarn org.gradle.api.artifacts.Dependency
+-dontwarn org.gradle.api.artifacts.ExternalModuleDependency
+-dontwarn org.gradle.api.attributes.Attribute
+-dontwarn org.gradle.api.attributes.AttributeCompatibilityRule
+-dontwarn org.gradle.api.attributes.AttributeContainer
+-dontwarn org.gradle.api.attributes.AttributeDisambiguationRule
+-dontwarn org.gradle.api.attributes.HasAttributes
+-dontwarn org.gradle.api.component.SoftwareComponent
+-dontwarn org.gradle.api.plugins.ExtensionAware
+-dontwarn org.gradle.api.tasks.util.PatternFilterable

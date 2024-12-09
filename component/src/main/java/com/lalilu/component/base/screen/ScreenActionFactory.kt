@@ -20,6 +20,7 @@ sealed class ScreenAction {
         val color: @Composable () -> Color = { Color.White },
         val icon: @Composable () -> ImageVector? = { null },
         val dotColor: @Composable () -> Color? = { null },
+        val longClick: () -> Boolean = { false },
         val onAction: () -> Unit = {}
     ) : ScreenAction()
 

@@ -25,9 +25,11 @@ import com.lalilu.component.base.ScreenBarComponent
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.component.smartbar.NavigateCommonBar
+import com.lalilu.component.smartbar.NavigateTabBar
 
 
-sealed interface NavigationBarType {
+private sealed interface NavigationBarType {
     data object TabBar : NavigationBarType
     data object CommonBar : NavigationBarType
     data class NormalBar(val barComponent: ScreenBarComponent) : NavigationBarType

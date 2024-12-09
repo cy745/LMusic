@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.4.2
+        uses: actions/checkout@v4.2.2
         with:
           repository: cy745/lmusic
           ref: dev
@@ -22,7 +22,7 @@ jobs:
           clean: true
           fetch-depth: 1
           lfs: false
-          submodules: true
+          submodules: recursive
 
       - name: Create the Keystore from Secrets to Sign the App
         env:
@@ -35,7 +35,7 @@ jobs:
           echo $KEYSTORE_PROPERTIES_BASE64 | base64 -di > ${{ github.workspace }}/keystore.properties
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4.5.0
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -47,7 +47,7 @@ jobs:
         run: ./gradlew build
 
       - name: Upload Apk to Artifact
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v4.4.3
         with:
           name: LMusic-Apks
           path: ${{ github.workspace }}/app/build/outputs/apk/release/*.apk

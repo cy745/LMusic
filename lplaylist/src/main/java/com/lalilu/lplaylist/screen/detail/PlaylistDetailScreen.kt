@@ -18,7 +18,7 @@ import com.lalilu.component.base.songs.SongsSearcherPanel
 import com.lalilu.component.base.songs.SongsSelectorPanel
 import com.lalilu.component.base.songs.SongsSortPanelDialog
 import com.lalilu.component.extension.DialogWrapper
-import com.lalilu.component.extension.registerAndGetViewModel
+import com.lalilu.component.extension.screenVM
 import com.lalilu.lmedia.extension.SortStaticAction
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.viewmodel.PlaylistDetailAction
@@ -31,6 +31,7 @@ import com.lalilu.remixicon.design.focus3Line
 import com.lalilu.remixicon.editor.sortDesc
 import com.lalilu.remixicon.system.checkboxMultipleBlankLine
 import com.lalilu.remixicon.system.checkboxMultipleLine
+import com.lalilu.remixicon.system.deleteBinLine
 import com.lalilu.remixicon.system.menuSearchLine
 import com.zhangke.krouter.annotation.Destination
 import org.koin.core.parameter.parametersOf
@@ -50,7 +51,7 @@ data class PlaylistDetailScreen(
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
-        val vm = registerAndGetViewModel<PlaylistDetailVM>(
+        val vm = screenVM<PlaylistDetailVM>(
             parameters = { parametersOf(playlistId) }
         )
 
@@ -99,7 +100,7 @@ data class PlaylistDetailScreen(
 
     @Composable
     override fun Content() {
-        val vm = registerAndGetViewModel<PlaylistDetailVM>(
+        val vm = screenVM<PlaylistDetailVM>(
             parameters = { parametersOf(playlistId) }
         )
 
@@ -144,6 +145,16 @@ data class PlaylistDetailScreen(
                     icon = { RemixIcon.System.checkboxMultipleBlankLine },
                     color = { Color(0xFFFF5100) },
                     onAction = { vm.selector.clear() }
+                ),
+                ScreenAction.Static(
+                    title = { "删除" },
+                    icon = { RemixIcon.System.deleteBinLine },
+                    longClick = { true },
+                    color = { Color(0xFFF5381D) },
+                    onAction = {
+                        val ids = vm.selector.selected().map { it.id }
+                        vm.intent(PlaylistDetailAction.RemoveItems(ids))
+                    }
                 ),
                 requestFor<ScreenAction>(
                     qualifier = named("add_to_favourite_action"),

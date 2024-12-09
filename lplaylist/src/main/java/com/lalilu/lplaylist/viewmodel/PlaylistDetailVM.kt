@@ -98,6 +98,7 @@ sealed interface PlaylistDetailAction {
     data class SearchFor(val keyword: String) : PlaylistDetailAction
     data class SelectSortAction(val action: ListAction) : PlaylistDetailAction
     data class UpdatePlaylist(val mediaIds: List<String>) : PlaylistDetailAction
+    data class RemoveItems(val mediaIds: List<String>) : PlaylistDetailAction
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -160,6 +161,13 @@ class PlaylistDetailVM(
             is PlaylistDetailAction.UpdatePlaylist -> {
                 playlist.value?.copy(mediaIds = intent.mediaIds)
                     ?.let { playlistRepo.save(it) }
+            }
+
+            is PlaylistDetailAction.RemoveItems -> {
+                playlistRepo.removeMediaIdsFromPlaylist(
+                    mediaIds = intent.mediaIds,
+                    playlistId = playlistId
+                )
             }
 
             else -> {

@@ -56,6 +56,7 @@ compose-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie-compose" }
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
+voyager-lifecycle-kmp = { module = "cafe.adriel.voyager:voyager-lifecycle-kmp", version.ref = "voyager" }
 voyager-tabNavigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
 voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
 voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
@@ -145,6 +146,7 @@ compose = [
 ]
 voyager = [
     "voyager-navigator",
+    "voyager-lifecycle-kmp",
     "voyager-tabNavigator",
     "voyager-transitions",
     "voyager-koin"
