@@ -10,17 +10,11 @@ import coil3.SingletonImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.transitionFactory
 import com.lalilu.R
-import com.lalilu.common.base.SourceType
 import com.lalilu.component.viewmodel.IPlayingViewModel
-import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.indexer.Filter
-import com.lalilu.lmedia.indexer.FilterGroup
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
-import com.lalilu.lmusic.datastore.LastPlayedSp
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.datastore.TempSp
-import com.lalilu.lmusic.repository.CoverRepository
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.LAlbumFetcher
@@ -41,11 +35,9 @@ import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
-import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.net.URLDecoder
 
 @Module
 @ComponentScan("com.lalilu.lmusic")
@@ -76,7 +68,6 @@ fun provideImageLoaderFactory(
 val AppModule = module {
     single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
     single { SettingsSp(androidApplication()) }
-    single { LastPlayedSp(androidApplication()) }
     single { TempSp(androidApplication()) }
     single { EQHelper(androidApplication()) }
     single {
@@ -97,10 +88,6 @@ val ViewModelModule = module {
     viewModelOf(::SearchLyricViewModel)
 }
 
-val RuntimeModule = module {
-    singleOf(::CoverRepository)
-}
-
 val ApiModule = module {
     single { GsonConverterFactory.create() }
     single { OkHttpClient.Builder().build() }
@@ -111,45 +98,5 @@ val ApiModule = module {
             .baseUrl(LRCSHARE_BASEURL)
             .build()
             .create(LrcShareApi::class.java)
-    }
-}
-
-val FilterModule = module {
-    single<FilterGroup> {
-        val settingSp: SettingsSp = get()
-        val unknownArtistFilter = Filter(
-            flow = settingSp.enableUnknownFilter.flow(true),
-            getter = { it.metadata.artist },
-            targetClass = LSong::class.java,
-            ignoreRule = { flowValue, getterValue ->
-                flowValue == true && getterValue == "<unknown>"
-            }
-        )
-        val durationFilter = Filter(
-            flow = settingSp.durationFilter.flow(true),
-            getter = { it.metadata.duration },
-            targetClass = LSong::class.java,
-            ignoreRule = { flowValue, getterValue ->
-                getterValue <= (flowValue ?: 15)
-            }
-        )
-        val excludePathFilter = Filter(
-            flow = settingSp.excludePath.flow(true),
-            getter = { it },
-            targetClass = LSong::class.java,
-            ignoreRule = { flowValue, getterValue ->
-                if (flowValue.isNullOrEmpty()) return@Filter false
-                // 排除目录功能只涉及 FileSystemScanner 和 MediaStoreScanner的
-                if (getterValue.sourceType != SourceType.Local && getterValue.sourceType != SourceType.MediaStore)
-                    return@Filter false
-
-                val path = getterValue.fileInfo.directoryPath
-                flowValue.any { path.startsWith(URLDecoder.decode(it, "UTF-8")) }
-            }
-        )
-
-        FilterGroup.Builder()
-            .add(unknownArtistFilter, durationFilter, excludePathFilter)
-            .build()
     }
 }

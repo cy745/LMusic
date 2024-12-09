@@ -101,14 +101,7 @@ class MService : MediaLibraryService(), CoroutineScope {
 }
 
 @OptIn(UnstableApi::class)
-class MServiceCallback : MediaLibrarySession.Callback {
-    companion object {
-        const val ROOT = "root"
-        const val ALL_SONGS = "all_songs"
-        const val ALL_ARTISTS = "all_artists"
-        const val ALL_ALBUMS = "all_albums"
-    }
-
+private class MServiceCallback : MediaLibrarySession.Callback {
     private fun buildBrowsableItem(id: String, title: String): MediaItem {
         val metadata = MediaMetadata.Builder()
             .setTitle(title)
@@ -131,7 +124,7 @@ class MServiceCallback : MediaLibrarySession.Callback {
         browser: MediaSession.ControllerInfo,
         params: LibraryParams?
     ): ListenableFuture<LibraryResult<MediaItem>> = Futures.immediateFuture(
-        LibraryResult.ofItem(buildBrowsableItem(ROOT, "LMedia Library"), params)
+        LibraryResult.ofItem(buildBrowsableItem(LMedia.ROOT, "LMedia Library"), params)
     )
 
     override fun onGetChildren(
@@ -142,13 +135,13 @@ class MServiceCallback : MediaLibrarySession.Callback {
         pageSize: Int,
         params: LibraryParams?
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-        if (parentId == ROOT) {
+        if (parentId == LMedia.ROOT) {
             return Futures.immediateFuture(
                 LibraryResult.ofItemList(
                     listOf(
-                        buildBrowsableItem(ALL_SONGS, "All Songs"),
-                        buildBrowsableItem(ALL_ARTISTS, "All Artists"),
-                        buildBrowsableItem(ALL_ALBUMS, "All Albums")
+                        buildBrowsableItem(LMedia.ALL_SONGS, "All Songs"),
+                        buildBrowsableItem(LMedia.ALL_ARTISTS, "All Artists"),
+                        buildBrowsableItem(LMedia.ALL_ALBUMS, "All Albums")
                     ),
                     params
                 )
@@ -225,7 +218,7 @@ internal fun getHistoryItems(): List<MediaItem> {
     val history = MPlayerKV.historyPlaylistIds.get()
 
     return if (!history.isNullOrEmpty()) LMedia.mapItems(history)
-    else LMedia.getChildren(MServiceCallback.ALL_SONGS)
+    else LMedia.getChildren(LMedia.ALL_SONGS)
 }
 
 internal fun saveHistoryIds(mediaIds: List<String>) {
