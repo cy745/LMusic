@@ -26,7 +26,8 @@ fun SongInformationCard(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(12.dp),
+        elevation = 1.dp
     ) {
         Column(
             modifier = Modifier

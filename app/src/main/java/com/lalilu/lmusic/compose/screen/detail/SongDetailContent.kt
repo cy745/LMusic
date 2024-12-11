@@ -91,8 +91,8 @@ fun SongDetailContent(
                                 .padding(horizontal = 2.dp),
                             text = song.name,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            lineHeight = 26.sp,
+                            fontSize = 24.sp,
+                            lineHeight = 30.sp,
                             color = MaterialTheme.colors.onBackground,
                         )
 
