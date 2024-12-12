@@ -42,24 +42,7 @@ fun NavigationSmartBar(
     val currentScreen = LocalNavigator.current
         ?.lastItemOrNull
 
-    val previousScreen = LocalNavigator.current
-        ?.previousScreen()
-        ?.value
-
-    val previousTitle = (previousScreen as? ScreenInfoFactory)
-        ?.provideScreenInfo()
-        ?.title?.invoke()
-        ?: "返回"
-
     val mainContent = (currentScreen as? ScreenBarFactory)?.content()
-    val tabScreenRoutes = remember {
-        listOf("/pages/home", "/pages/playlist", "/pages/search")
-    }
-
-    val tabScreens = remember(tabScreenRoutes) {
-        tabScreenRoutes.mapNotNull { AppRouter.route(it).get() as? TabScreen }
-    }
-
     val navigationBar: NavigationBarType = remember(mainContent, currentScreen) {
         when {
             mainContent != null -> NavigationBarType.NormalBar(mainContent)
@@ -76,7 +59,10 @@ fun NavigationSmartBar(
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Up,
                 animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
-            ) togetherWith slideOutOfContainer(towards = AnimatedContentTransitionScope.SlideDirection.Down)
+            ) togetherWith slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Down,
+                animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+            )
         },
         contentAlignment = Alignment.BottomCenter,
         targetState = navigationBar,
@@ -96,6 +82,14 @@ fun NavigationSmartBar(
                 }
 
                 is NavigationBarType.TabBar -> {
+                    val tabScreenRoutes = remember {
+                        listOf("/pages/home", "/pages/playlist", "/pages/search")
+                    }
+
+                    val tabScreens = remember(tabScreenRoutes) {
+                        tabScreenRoutes.mapNotNull { AppRouter.route(it).get() as? TabScreen }
+                    }
+
                     NavigateTabBar(
                         modifier = Modifier.fillMaxHeight(),
                         currentScreen = { currentScreen },
@@ -105,6 +99,15 @@ fun NavigationSmartBar(
                 }
 
                 is NavigationBarType.CommonBar -> {
+                    val previousScreen = LocalNavigator.current
+                        ?.previousScreen()
+                        ?.value
+
+                    val previousTitle = (previousScreen as? ScreenInfoFactory)
+                        ?.provideScreenInfo()
+                        ?.title?.invoke()
+                        ?: "返回"
+
                     NavigateCommonBar(
                         modifier = Modifier.fillMaxHeight(),
                         previousTitle = previousTitle,

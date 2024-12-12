@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -76,51 +75,46 @@ fun NavigateCommonBarContent(
         actions = screenActions ?: emptyList()
     )
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        TextButton(
-            modifier = Modifier.fillMaxHeight(),
-            shape = RectangleShape,
-            contentPadding = PaddingValues(start = 12.dp, end = 20.dp),
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = MaterialTheme.colors.onBackground
-            ),
-            onClick = {
-                if (onBackPress != null) {
-                    onBackPress()
-                } else {
-                    onBackPressedDispatcher?.onBackPressed()
-                }
-            }
+    AnimatedContent(
+        modifier = modifier.fillMaxHeight(),
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        targetState = previousTitle to screenActions,
+        label = "ExtraActions"
+    ) { (title, actions) ->
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                imageVector = previousIcon,
-                tint = MaterialTheme.colors.onBackground,
-                contentDescription = null
-            )
-            AnimatedContent(
-                targetState = previousTitle, label = ""
+            TextButton(
+                modifier = Modifier.fillMaxHeight(),
+                shape = RectangleShape,
+                contentPadding = PaddingValues(start = 12.dp, end = 20.dp),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colors.onBackground
+                ),
+                onClick = {
+                    if (onBackPress != null) {
+                        onBackPress()
+                    } else {
+                        onBackPressedDispatcher?.onBackPressed()
+                    }
+                }
             ) {
+                Icon(
+                    imageVector = previousIcon,
+                    tint = MaterialTheme.colors.onBackground,
+                    contentDescription = null
+                )
                 Text(
-                    text = it,
+                    text = title,
                     fontSize = 14.sp
                 )
             }
-        }
 
-        AnimatedContent(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            targetState = screenActions,
-            label = "ExtraActions"
-        ) { actions ->
             SubcomposeLayout(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
             ) { constraints ->
                 // 若actions为空，则不显示
                 if (actions == null) return@SubcomposeLayout layout(0, 0) {}
