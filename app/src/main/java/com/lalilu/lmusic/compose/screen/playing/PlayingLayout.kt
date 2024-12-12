@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.component.base.LocalEnhanceSheetState
+import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.extension.hideControl
 import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.LyricSourceEmbedded
@@ -54,6 +55,7 @@ import com.lalilu.lmusic.compose.screen.playing.seekbar.ClickPart
 import com.lalilu.lmusic.compose.screen.playing.seekbar.SeekbarLayout
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lplayer.MPlayer
+import com.lalilu.lplayer.extensions.PlayMode
 import com.lalilu.lplayer.extensions.PlayerAction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
@@ -329,6 +331,23 @@ fun PlayingLayout(
                     },
                     onSeekTo = { position ->
                         PlayerAction.SeekTo(position.toLong()).action()
+                    },
+                    onSwitchTo = { index ->
+                        val playMode = when (index) {
+                            1 -> PlayMode.RepeatOne
+                            2 -> PlayMode.Shuffle
+                            else -> PlayMode.ListRecycle
+                        }
+                        PlayerAction.SetPlayMode(playMode)
+                            .action()
+                        DynamicTipsItem.Static(
+                            title = when (playMode) {
+                                PlayMode.ListRecycle -> "列表循环"
+                                PlayMode.RepeatOne -> "单曲循环"
+                                PlayMode.Shuffle -> "随机播放"
+                            },
+                            subTitle = "切换播放模式",
+                        ).show()
                     },
                     onClick = { clickPart ->
                         when (clickPart) {

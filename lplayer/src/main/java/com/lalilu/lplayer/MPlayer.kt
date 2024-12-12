@@ -16,6 +16,7 @@ import androidx.media3.session.SessionToken
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.Utils
 import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.extensions.playMode
 import com.lalilu.lplayer.service.MService
 import com.lalilu.lplayer.service.getHistoryItems
 import com.lalilu.lplayer.service.saveHistoryIds
@@ -127,6 +128,10 @@ object MPlayer : CoroutineScope {
             is PlayerAction.CustomAction -> {}
             is PlayerAction.PauseWhenCompletion -> {
 //                if (action.cancel) cancelPauseWhenCompletion() else pauseWhenCompletion()
+            }
+
+            is PlayerAction.SetPlayMode -> {
+                browser.playMode = action.playMode
             }
         }
     }

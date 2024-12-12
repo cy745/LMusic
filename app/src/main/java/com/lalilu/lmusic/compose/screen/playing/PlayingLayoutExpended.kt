@@ -36,12 +36,14 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.transformations
 import com.lalilu.R
+import com.lalilu.RemixIcon
 import com.lalilu.component.extension.singleViewModel
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.extensions.PlayerAction
-import com.lalilu.lplayer.extensions.PlayMode
+import com.lalilu.remixicon.Media
+import com.lalilu.remixicon.media.playLine
 
 @Composable
 fun PlayingLayoutExpended(
@@ -194,13 +196,15 @@ fun ControlPanel(
         }
         IconButton(onClick = { playMode = (playMode + 1) % 3 }) {
             Image(
-                painter = painterResource(
-                    when (PlayMode.values()[playMode]) {
-                        PlayMode.ListRecycle -> R.drawable.ic_order_play_line
-                        PlayMode.RepeatOne -> R.drawable.ic_repeat_one_line
-                        PlayMode.Shuffle -> R.drawable.ic_shuffle_line
-                    }
-                ),
+                // TODO 待完善播放模式的显示
+                imageVector = RemixIcon.Media.playLine,
+//                painter = painterResource(
+//                    when (PlayMode.values()[playMode]) {
+//                        PlayMode.ListRecycle -> R.drawable.ic_order_play_line
+//                        PlayMode.RepeatOne -> R.drawable.ic_repeat_one_line
+//                        PlayMode.Shuffle -> R.drawable.ic_shuffle_line
+//                    }
+//                ),
                 contentDescription = "play_pause",
                 colorFilter = ColorFilter.tint(color = Color.White),
                 modifier = Modifier.size(24.dp)

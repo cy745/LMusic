@@ -1,22 +1,29 @@
 package com.lalilu.lmusic.compose.screen.playing.seekbar
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberDraggable2DState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -26,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
@@ -56,8 +64,13 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
+import com.lalilu.RemixIcon
 import com.lalilu.common.AccumulatedValue
 import com.lalilu.lmusic.utils.extension.durationToTime
+import com.lalilu.remixicon.Media
+import com.lalilu.remixicon.media.orderPlayFill
+import com.lalilu.remixicon.media.repeatOneFill
+import com.lalilu.remixicon.media.shuffleFill
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
@@ -157,6 +170,24 @@ fun SeekbarLayout(
         targetValue = if (isSwitching) 1f else 0f,
         animationSpec = spring(stiffness = Spring.StiffnessLow),
         visibilityThreshold = 0.001f,
+        label = ""
+    )
+    val yProgressValue = remember {
+        derivedStateOf {
+            val value = seekbarOffsetY.floatValue.coerceAtMost(0f)
+                .absoluteValue
+                .takeIf { it < (scrollThreadHold / 2f) }
+                ?: 0f
+
+            (value / (scrollThreadHold / 2f)).coerceIn(0f, 1f)
+        }
+    }
+    val yTranslationAnimateValue = animateFloatAsState(
+        targetValue = yProgressValue.value,
+        animationSpec = spring(
+            stiffness = Spring.StiffnessLow,
+            dampingRatio = Spring.DampingRatioMediumBouncy
+        ),
         label = ""
     )
     val textStyle = remember {
@@ -304,6 +335,17 @@ fun SeekbarLayout(
                     scope.launch { onDragStart(it) }
                 },
                 onDragEnd = {
+                    if (isSwitching) {
+                        val actualWidth = boxSize.width - density.run { 4.dp.roundToPx() }
+                        val singleWidth = actualWidth / 3f
+
+                        when (switchModeX.floatValue) {
+                            in 0f..singleWidth -> onSwitchTo(0)
+                            in singleWidth..(singleWidth * 2) -> onSwitchTo(1)
+                            else -> onSwitchTo(2)
+                        }
+                    }
+
                     switchMode.value = false
                     seekbarState.value = SeekbarState.Idle
 
@@ -314,35 +356,16 @@ fun SeekbarLayout(
                     draggableState.dispatchRawDelta(dragAmount)
                 }
             )
-    ) {
-        val yProgressValue = remember {
-            derivedStateOf {
-                val value = seekbarOffsetY.floatValue.coerceAtMost(0f)
-                    .absoluteValue
-                    .takeIf { it < (scrollThreadHold / 2f) }
-                    ?: 0f
-
-                (value / (scrollThreadHold / 2f)).coerceIn(0f, 1f)
+            .graphicsLayer {
+                translationY = -yTranslationAnimateValue.value * (scrollThreadHold / 2f)
+                scaleX = 1f - (yTranslationAnimateValue.value * 0.1f)
+                scaleY = scaleX
             }
-        }
-        val yTranslationAnimateValue = animateFloatAsState(
-            targetValue = yProgressValue.value,
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-                dampingRatio = Spring.DampingRatioMediumBouncy
-            ),
-            label = ""
-        )
-
+    ) {
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .graphicsLayer {
-                    translationY = -yTranslationAnimateValue.value * (scrollThreadHold / 2f)
-                    scaleX = 1f - (yTranslationAnimateValue.value * 0.1f)
-                    scaleY = scaleX
-                }
                 .clip(RoundedCornerShape(16.dp))
         ) {
             val innerPath = Path()
@@ -388,7 +411,7 @@ fun SeekbarLayout(
 
             val thumbLeft = lerp(
                 start = paddingValue,
-                stop = paddingValue + switchModeX.floatValue - (innerWidth / 3f) / 2f,
+                stop = switchModeX.floatValue - (innerWidth / 3f) / 2f,
                 fraction = switchingProgress.value
             ).coerceIn(
                 paddingValue,
@@ -460,28 +483,36 @@ fun SeekbarLayout(
             }
         }
 
-//        Box(
-//            modifier = Modifier
-//                .fillMaxHeight()
-//                .fillMaxWidth()
-//        ) {
-//            Row {
-//                Icon(
-//                    imageVector = RemixIcon.Media.repeatFill,
-//                    contentDescription = null
-//                )
-//
-//                Icon(
-//                    imageVector = RemixIcon.Media.repeatFill,
-//                    contentDescription = null
-//                )
-//
-//                Icon(
-//                    imageVector = RemixIcon.Media.repeatFill,
-//                    contentDescription = null
-//                )
-//            }
-//        }
+        AnimatedVisibility(
+            modifier = Modifier.fillMaxSize(),
+            visible = isSwitching,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                Icon(
+                    imageVector = RemixIcon.Media.orderPlayFill,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+                Icon(
+                    imageVector = RemixIcon.Media.repeatOneFill,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+                Icon(
+                    imageVector = RemixIcon.Media.shuffleFill,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+            }
+        }
     }
 }
 
