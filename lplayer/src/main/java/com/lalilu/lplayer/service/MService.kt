@@ -3,11 +3,13 @@ package com.lalilu.lplayer.service
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.LibraryResult
@@ -15,7 +17,10 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.LibraryParams
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSession.ConnectionResult.AcceptedResultBuilder
+import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
+import androidx.media3.session.SessionResult
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.AppUtils
 import com.google.common.collect.ImmutableList
@@ -24,6 +29,9 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lplayer.MPlayerKV
 import com.lalilu.lplayer.extensions.FadeTransitionRenderersFactory
+import com.lalilu.lplayer.extensions.setUpQueueControl
+import com.lalilu.lplayer.service.CustomCommand.SeekToNext
+import com.lalilu.lplayer.service.CustomCommand.SeekToPrevious
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,7 +46,7 @@ import kotlin.coroutines.CoroutineContext
 class MService : MediaLibraryService(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO + SupervisorJob()
 
-    private var exoPlayer: ExoPlayer? = null
+    private var exoPlayer: Player? = null
     private var mediaSession: MediaLibrarySession? = null
     private val defaultAudioAttributes by lazy {
         AudioAttributes.Builder()
@@ -56,15 +64,15 @@ class MService : MediaLibraryService(), CoroutineScope {
             MNotificationProvider(this)
         )
 
-        exoPlayer = ExoPlayer
-            .Builder(this)
+        exoPlayer = ExoPlayer.Builder(this)
             .setRenderersFactory(FadeTransitionRenderersFactory(this, this))
-            .setHandleAudioBecomingNoisy(MPlayerKV.handleBecomeNoisy.value ?: true)
-            .setAudioAttributes(defaultAudioAttributes, MPlayerKV.handleAudioFocus.value ?: true)
+            .setHandleAudioBecomingNoisy(MPlayerKV.handleBecomeNoisy.value != false)
+            .setAudioAttributes(defaultAudioAttributes, MPlayerKV.handleAudioFocus.value != false)
             .build()
+            .setUpQueueControl()
 
         mediaSession = MediaLibrarySession
-            .Builder(this, exoPlayer!!, MServiceCallback())
+            .Builder(this, exoPlayer!!, MServiceCallback(exoPlayer!!))
             .setSessionActivity(getLauncherPendingIntent())
             .build()
 
@@ -88,20 +96,52 @@ class MService : MediaLibraryService(), CoroutineScope {
     private fun startListenForValuesUpdate() = launch {
         MPlayerKV.handleAudioFocus.flow().onEach {
             withContext(Dispatchers.Main) {
-                exoPlayer?.setAudioAttributes(defaultAudioAttributes, it ?: true)
+                exoPlayer?.setAudioAttributes(defaultAudioAttributes, it != false)
             }
         }.launchIn(this)
 
         MPlayerKV.handleBecomeNoisy.flow().onEach {
             withContext(Dispatchers.Main) {
-                exoPlayer?.setHandleAudioBecomingNoisy(it ?: true)
+                (exoPlayer as? ExoPlayer)
+                    ?.setHandleAudioBecomingNoisy(it != false)
             }
         }.launchIn(this)
     }
 }
 
 @OptIn(UnstableApi::class)
-private class MServiceCallback : MediaLibrarySession.Callback {
+private class MServiceCallback(private val player: Player) : MediaLibrarySession.Callback {
+    override fun onConnect(
+        session: MediaSession,
+        controller: MediaSession.ControllerInfo
+    ): MediaSession.ConnectionResult {
+        val sessionCommands = MediaSession.ConnectionResult
+            .DEFAULT_SESSION_COMMANDS.buildUpon()
+            .registerCustomCommands()
+            .build()
+
+        return AcceptedResultBuilder(session)
+            .setAvailableSessionCommands(sessionCommands)
+            .build()
+    }
+
+    override fun onCustomCommand(
+        session: MediaSession,
+        controller: MediaSession.ControllerInfo,
+        customCommand: SessionCommand,
+        args: Bundle
+    ): ListenableFuture<SessionResult> {
+        val action = customCommand.toCustomCommendOrNull()
+            ?: return Futures.immediateFuture(SessionResult(SessionError.ERROR_NOT_SUPPORTED))
+
+        when (action) {
+            SeekToNext -> player.seekToNext()
+            SeekToPrevious -> player.seekToPrevious()
+        }
+
+        return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+    }
+
     private fun buildBrowsableItem(id: String, title: String): MediaItem {
         val metadata = MediaMetadata.Builder()
             .setTitle(title)
@@ -202,15 +242,12 @@ private class MServiceCallback : MediaLibrarySession.Callback {
 
 private fun Context.getLauncherPendingIntent(): PendingIntent {
     return PendingIntent.getActivity(
-        this,
-        0,
-        Intent().apply {
+        this, 0, Intent().apply {
             setClassName(
                 AppUtils.getAppPackageName(),
                 ActivityUtils.getLauncherActivity()
             )
-        },
-        PendingIntent.FLAG_IMMUTABLE
+        }, PendingIntent.FLAG_IMMUTABLE
     )
 }
 

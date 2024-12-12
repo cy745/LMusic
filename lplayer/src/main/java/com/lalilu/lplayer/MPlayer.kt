@@ -1,6 +1,7 @@
 package com.lalilu.lplayer
 
 import android.content.ComponentName
+import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -15,8 +16,10 @@ import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.Utils
+import com.lalilu.lplayer.extensions.PlayMode
 import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.extensions.playMode
+import com.lalilu.lplayer.service.CustomCommand
 import com.lalilu.lplayer.service.MService
 import com.lalilu.lplayer.service.getHistoryItems
 import com.lalilu.lplayer.service.saveHistoryIds
@@ -93,8 +96,27 @@ object MPlayer : CoroutineScope {
             PlayerAction.Play -> browser.play()
             PlayerAction.Pause -> browser.pause()
 
-            PlayerAction.SkipToNext -> browser.seekToNext()
-            PlayerAction.SkipToPrevious -> browser.seekToPrevious()
+            PlayerAction.SkipToNext -> {
+                if (browser.playMode is PlayMode.Shuffle) {
+                    browser.sendCustomCommand(
+                        CustomCommand.SeekToNext.toSessionCommand(),
+                        Bundle.EMPTY
+                    )
+                } else {
+                    browser.seekToNext()
+                }
+            }
+
+            PlayerAction.SkipToPrevious -> {
+                if (browser.playMode is PlayMode.Shuffle) {
+                    browser.sendCustomCommand(
+                        CustomCommand.SeekToPrevious.toSessionCommand(),
+                        Bundle.EMPTY
+                    )
+                } else {
+                    browser.seekToPrevious()
+                }
+            }
 
             PlayerAction.PlayOrPause -> {
                 if (browser.isPlaying) {
