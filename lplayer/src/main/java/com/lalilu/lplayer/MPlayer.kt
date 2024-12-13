@@ -187,14 +187,6 @@ object MPlayer : CoroutineScope {
             updateItems(timeline)
         }
 
-        override fun onRepeatModeChanged(repeatMode: Int) {
-            super.onRepeatModeChanged(repeatMode)
-        }
-
-        override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-            super.onShuffleModeEnabledChanged(shuffleModeEnabled)
-        }
-
         fun updateItems(
             timeline: Timeline = browser.currentTimeline,
             currentIndex: Int = browser.currentMediaItemIndex
@@ -208,12 +200,12 @@ object MPlayer : CoroutineScope {
     }
 }
 
-fun Timeline.toMediaItems(): List<MediaItem> {
+private fun Timeline.toMediaItems(): List<MediaItem> {
     return (0 until this.windowCount)
         .mapNotNull { this.getWindow(it, Timeline.Window()).mediaItem }
 }
 
-fun Timeline.indexOf(mediaId: String): Int {
+private fun Timeline.indexOf(mediaId: String): Int {
     return (0 until this.windowCount).firstOrNull {
         this.getWindow(it, Timeline.Window())
             .mediaItem.mediaId == mediaId

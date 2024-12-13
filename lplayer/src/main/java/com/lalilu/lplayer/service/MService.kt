@@ -116,7 +116,7 @@ private class MServiceCallback(private val player: Player) : MediaLibrarySession
         controller: MediaSession.ControllerInfo
     ): MediaSession.ConnectionResult {
         val sessionCommands = MediaSession.ConnectionResult
-            .DEFAULT_SESSION_COMMANDS.buildUpon()
+            .DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
             .registerCustomCommands()
             .build()
 
