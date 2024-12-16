@@ -11,8 +11,24 @@ import androidx.media3.exoplayer.source.ShuffleOrder
 internal class QueueControlPlayer(player: Player) : ForwardingPlayer(player) {
     override fun seekToNext() {
         if (playMode == PlayMode.Shuffle) {
-            // TODO 待完善随机播放模式的列表变换效果
-            super.seekToPrevious()
+            val maxIndex = currentTimeline.windowCount - 1
+            val currentIndex = currentMediaItemIndex
+
+            // 获取下一个元素的index
+            val nextIndex = (0..maxIndex)
+                .filter { (it - currentIndex) / maxIndex.toFloat() > 0.5f } // 获取距离当前元素至少0.5f总长度距离的元素
+                .randomOrNull()
+
+            if (nextIndex != null) {
+                moveMediaItem(nextIndex, currentIndex)
+                seekTo(currentIndex, 0)
+            } else {
+                val previousIndex = (currentIndex - 1)
+                    .takeIf { it >= 0 }
+                    ?: maxIndex
+
+                seekTo(previousIndex, 0)
+            }
             return
         }
 
