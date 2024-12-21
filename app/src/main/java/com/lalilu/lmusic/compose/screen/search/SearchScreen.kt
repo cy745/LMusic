@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.new_screen.search
+package com.lalilu.lmusic.compose.screen.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -18,31 +18,27 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import com.blankj.utilcode.util.KeyboardUtils
 import com.lalilu.R
 import com.lalilu.RemixIcon
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
-import com.lalilu.component.extension.singleViewModel
-import com.lalilu.lmusic.compose.component.base.SearchInputBar
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
-import com.lalilu.lmusic.utils.extension.getActivity
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
-import com.lalilu.lmusic.viewmodel.SearchViewModel
+import com.lalilu.lmusic.viewmodel.SearchVM
 import com.lalilu.remixicon.System
 import com.lalilu.remixicon.system.search2Line
 import com.zhangke.krouter.annotation.Destination
+import org.koin.compose.koinInject
 
 @Destination("/pages/search")
-object SearchScreen : Screen, TabScreen, ScreenBarFactory {
+data object SearchScreen : Screen, TabScreen, ScreenInfoFactory, ScreenBarFactory {
     private fun readResolve(): Any = SearchScreen
 
     @Composable
@@ -55,29 +51,12 @@ object SearchScreen : Screen, TabScreen, ScreenBarFactory {
 
     @Composable
     override fun Content() {
-        val visible = remember { mutableStateOf(true) }
+        val searchVM: SearchVM = koinInject()
 
-        RegisterContent(
-            isVisible = { visible.value },
-            onDismiss = { visible.value = false },
-            onBackPressed = null,
-            content = { SearchBar() }
-        )
+        SearchBar(searchVM = searchVM)
 
-        SearchScreen()
+        SearchScreenContent(searchVM = searchVM)
     }
-}
-
-@Composable
-fun SearchBar(
-    searchVM: SearchViewModel = singleViewModel(),
-) {
-    SearchInputBar(
-        modifier = Modifier,
-        value = searchVM.keyword,
-        onValueChange = { searchVM.searchFor(it) },
-        onSubmit = { searchVM.searchFor(it) }
-    )
 }
 
 @OptIn(
@@ -85,16 +64,13 @@ fun SearchBar(
     ExperimentalMaterialApi::class
 )
 @Composable
-private fun Screen.SearchScreen(
-    playingVM: PlayingViewModel = singleViewModel(),
-    searchVM: SearchViewModel = singleViewModel(),
+private fun SearchScreenContent(
+    searchVM: SearchVM = koinInject(),
 ) {
-    val context = LocalContext.current
+    val keyboard = LocalSoftwareKeyboardController.current
 
     DisposableEffect(Unit) {
-        onDispose {
-            context.getActivity()?.let { KeyboardUtils.hideSoftInput(it) }
-        }
+        onDispose { keyboard?.hide() }
     }
 
 //    Songs(

@@ -26,7 +26,6 @@ import com.lalilu.lmusic.utils.coil.keyer.MediaItemKeyer
 import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
-import com.lalilu.lmusic.viewmodel.SearchViewModel
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
@@ -84,7 +83,6 @@ val AppModule = module {
 val ViewModelModule = module {
     viewModelOf(::PlayingViewModel)
     viewModel<IPlayingViewModel> { get<PlayingViewModel>() }
-    viewModelOf(::SearchViewModel)
     viewModelOf(::SearchLyricViewModel)
 }
 

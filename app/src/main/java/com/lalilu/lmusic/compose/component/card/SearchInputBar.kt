@@ -26,7 +26,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.R
-import com.lalilu.lmusic.compose.component.base.InputBar
 
 
 @Composable
@@ -45,11 +44,11 @@ fun SearchInputBar(
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        InputBar(
-            modifier = Modifier.weight(1f),
-            value = text,
-            onSubmit = onSearchFor
-        )
+//        InputBar(
+//            modifier = Modifier.weight(1f),
+//            value = text,
+//            onSubmit = onSearchFor
+//        )
         IconButton(onClick = { onSearchFor(text.value) }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_search_2_line),
