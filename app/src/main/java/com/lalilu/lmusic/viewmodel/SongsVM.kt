@@ -59,7 +59,7 @@ data class SongsState(
         }
 
         val searchResult = source.mapLatest { flow ->
-            flow.filter { item -> keywords.all { item.getMatchStr().contains(it) } }
+            flow.filter { item -> keywords.all { item.getMatchStr().contains(it.uppercase()) } }
         }
 
         return when (selectedSortAction) {

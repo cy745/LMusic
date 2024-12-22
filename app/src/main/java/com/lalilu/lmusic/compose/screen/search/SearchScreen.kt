@@ -1,39 +1,51 @@
 package com.lalilu.lmusic.compose.screen.search
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Chip
-import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.R
 import com.lalilu.RemixIcon
+import com.lalilu.component.base.LocalSmartBarPadding
 import com.lalilu.component.base.TabScreen
 import com.lalilu.component.base.screen.ScreenBarFactory
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
-import com.lalilu.lmusic.compose.component.card.RecommendTitle
+import com.lalilu.component.base.smartBarPadding
+import com.lalilu.lmusic.compose.screen.search.extensions.SearchArtistsResult
+import com.lalilu.lmusic.compose.screen.search.extensions.SearchSongsResult
+import com.lalilu.lmusic.viewmodel.SearchScreenState
 import com.lalilu.lmusic.viewmodel.SearchVM
 import com.lalilu.remixicon.System
 import com.lalilu.remixicon.system.search2Line
+import com.lalilu.remixicon.system.searchLine
 import com.zhangke.krouter.annotation.Destination
 import org.koin.compose.koinInject
 
@@ -55,186 +67,111 @@ data object SearchScreen : Screen, TabScreen, ScreenInfoFactory, ScreenBarFactor
 
         SearchBar(searchVM = searchVM)
 
-        SearchScreenContent(searchVM = searchVM)
+        SearchScreenContent(
+            searchVM = searchVM
+        )
     }
 }
 
-@OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalMaterialApi::class
-)
 @Composable
 private fun SearchScreenContent(
     searchVM: SearchVM = koinInject(),
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
+    val statusBar = WindowInsets.statusBars.asPaddingValues()
+    val state = searchVM.searchState.value
 
     DisposableEffect(Unit) {
         onDispose { keyboard?.hide() }
     }
 
-//    Songs(
-//        mediaIds = searchVM.songsResult.value.take(5).map { it.mediaId },
-//        sortFor = "SearchResult",
-//        supportListAction = { emptyList() },
-//        headerContent = {
-//            item(key = "Song_Header") {
-//                RecommendTitle(
-//                    modifier = Modifier.height(64.dp),
-//                    title = "歌曲",
-//                    onClick = {
-//                        if (searchVM.songsResult.value.isNotEmpty()) {
-//                            AppRouter.intent(NavIntent.Push(
-//                                SongsScreen(
-//                                    title = "[${searchVM.keyword.value}]\n歌曲搜索结果",
-//                                    mediaIds = searchVM.songsResult.value.map { it.mediaId }
-//                                )
-//                            ))
-//                        }
-//                    }
-//                )
-//            }
-//        },
-//        footerContent = {
-//            val onAlbumHeaderClick = {
-//                if (searchVM.albumsResult.value.isNotEmpty()) {
-////                navigator.navigate(
-////                    AlbumsScreenDestination(
-////                        title = "[${keyword.value}]\n专辑搜索结果",
-////                        sortFor = "SearchResultForAlbum",
-////                        albumIdsText = searchVM.albumsResult.value.map(LAlbum::id).json()
-////                    )
-////                )
-//                }
-//            }
-//
-//            item(key = "AlbumHeader") {
-//                RecommendTitle(
-//                    title = "专辑",
-//                    modifier = Modifier.height(64.dp),
-//                    onClick = onAlbumHeaderClick
-//                ) {
-//                    AnimatedVisibility(visible = searchVM.albumsResult.value.isNotEmpty()) {
-//                        Chip(
-//                            onClick = onAlbumHeaderClick,
-//                        ) {
-//                            Text(
-//                                text = "${searchVM.albumsResult.value.size} 条结果",
-//                                style = MaterialTheme.typography.caption,
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//            item(key = "AlbumItems") {
-//                AnimatedContent(
-//                    targetState = searchVM.albumsResult.value.isNotEmpty(),
-//                    label = ""
-//                ) { show ->
-//                    if (show) {
-//                        RecommendRow(
-//                            items = { searchVM.albumsResult.value },
-//                            getId = { it.id }
-//                        ) {
-//                            RecommendCardForAlbum(
-//                                modifier = Modifier.animateItemPlacement(),
-//                                width = { 100.dp },
-//                                height = { 100.dp },
-//                                item = { it },
-//                                onClick = {
-////                                navigator.navigate(AlbumDetailScreenDestination(albumId = it.id))
-//                                }
-//                            )
-//                        }
-//                    } else {
-//                        Text(modifier = Modifier.padding(20.dp), text = "无匹配专辑")
-//                    }
-//                }
-//            }
-//
-//            searchItem(
-//                name = "艺术家",
-//                showCount = 5,
-//                getId = { it.id },
-//                items = searchVM.artistsResult.value,
-//                getContentType = { LArtist::class },
-//                onClickHeader = {
-//                    if (searchVM.artistsResult.value.isNotEmpty()) {
-////                    navigator.navigate(
-////                        ArtistsScreenDestination(
-////                            title = "[${keyword.value}]\n艺术家搜索结果",
-////                            sortFor = "SearchResultForArtist",
-////                            artistIdsText = searchVM.artistsResult.value.map(LArtist::name).json()
-////                        )
-////                    )
-//                    }
-//                }
-//            ) { item ->
-//                ArtistCard(
-//                    artist = item,
-//                    isPlaying = {
-//                        playingVM.isItemPlaying { playing ->
-//                            playing.let { it as? LSong }
-//                                ?.let { song -> song.artists.any { it.name == item.name } }
-//                                ?: false
-//                        }
-//                    },
-//                    onClick = {
-////                    navigator.navigate(ArtistDetailScreenDestination(artistName = item.name))
-//                    }
-//                )
-//            }
-//        }
-//    )
+    AnimatedContent(
+        modifier = Modifier.fillMaxSize(),
+        targetState = when {
+            state is SearchScreenState.Idle -> "Idle"
+            state is SearchScreenState.Empty -> "Empty"
+            else -> "Searching"
+        },
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        label = ""
+    ) { searchState ->
+        if (searchState == "Idle") {
+            SearchTips(
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+            return@AnimatedContent
+        }
+
+        if (searchState == "Empty") {
+            SearchTips(
+                modifier = Modifier
+                    .fillMaxSize(),
+                title = "暂无搜索结果"
+            )
+            return@AnimatedContent
+        }
+
+        val songsResult = remember {
+            SearchSongsResult {
+                (searchVM.searchState.value as? SearchScreenState.Searching)
+                    ?.songs ?: emptyList()
+            }
+        }.register()
+
+        val artistsResult = remember {
+            SearchArtistsResult {
+                (searchVM.searchState.value as? SearchScreenState.Searching)
+                    ?.artists ?: emptyList()
+            }
+        }.register()
+
+        LazyVerticalGrid(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = statusBar,
+            columns = GridCells.Fixed(6)
+        ) {
+            songsResult(this)
+            artistsResult(this)
+            smartBarPadding()
+        }
+    }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
-fun <I> LazyListScope.searchItem(
-    name: String,
-    items: List<I>,
-    getId: (I) -> Any,
-    showCount: Int = items.size,
-    getContentType: (I) -> Any,
-    onClickHeader: () -> Unit = {},
-    itemContent: @Composable LazyItemScope.(I) -> Unit,
+@Preview
+@Composable
+fun SearchTips(
+    modifier: Modifier = Modifier,
+    title: String = "搜索曲库内所有内容"
 ) {
-    item(key = "${name}_Header") {
-        RecommendTitle(
-            modifier = Modifier.height(64.dp),
-            title = name,
-            onClick = onClickHeader
-        ) {
-            AnimatedVisibility(visible = items.isNotEmpty()) {
-                Chip(
-                    onClick = onClickHeader,
-                ) {
-                    Text(
-                        text = "${items.size} 条结果",
-                        style = MaterialTheme.typography.caption,
-                    )
-                }
+    val paddingBottom = LocalSmartBarPadding.current.value.calculateBottomPadding()
+    val imePadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(bottom = paddingBottom + imePadding),
+        contentAlignment = Alignment.Center
+    ) {
+        Column {
+            Row(
+                modifier = Modifier,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    imageVector = RemixIcon.System.searchLine,
+                    contentDescription = null,
+                    tint = MaterialTheme.colors.onBackground.copy(0.4f)
+                )
+                Text(
+                    text = title,
+                    fontSize = 14.sp,
+                    lineHeight = 14.sp,
+                    color = MaterialTheme.colors.onBackground.copy(0.6f)
+                )
             }
         }
     }
-    item(key = "${name}_EmptyTips") {
-        AnimatedVisibility(
-            modifier = Modifier.fillMaxWidth(),
-            visible = items.isEmpty(),
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically()
-        ) {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                text = "无匹配$name"
-            )
-        }
-    }
-    items(
-        items = items.take(showCount),
-        key = getId,
-        contentType = getContentType,
-        itemContent = itemContent
-    )
 }

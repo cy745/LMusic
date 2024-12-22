@@ -19,6 +19,17 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.mapLatest
 import org.koin.core.annotation.Single
 
+sealed interface SearchScreenState {
+    data object Idle : SearchScreenState
+    data object Empty : SearchScreenState
+    data class Searching(
+        val songs: List<LSong>,
+        val artists: List<LArtist>,
+        val albums: List<LAlbum>,
+        val genres: List<LGenre>
+    ) : SearchScreenState
+}
+
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @Single
 class SearchVM : ViewModel() {
@@ -36,18 +47,24 @@ class SearchVM : ViewModel() {
         it.trim().uppercase().split(' ')
     }
 
-    val songsResult = LMedia.getFlow<LSong>()
-        .searchFor(keywords)
-        .toState(emptyList(), viewModelScope)
-    val artistsResult = LMedia.getFlow<LArtist>()
-        .searchFor(keywords)
-        .toState(emptyList(), viewModelScope)
-    val albumsResult = LMedia.getFlow<LAlbum>()
-        .searchFor(keywords)
-        .toState(emptyList(), viewModelScope)
-    val genresResult = LMedia.getFlow<LGenre>()
-        .searchFor(keywords)
-        .toState(emptyList(), viewModelScope)
+    val searchState = combine(
+        flow = keywords,
+        flow2 = LMedia.getFlow<LSong>().searchFor(keywords),
+        flow3 = LMedia.getFlow<LArtist>().searchFor(keywords),
+        flow4 = LMedia.getFlow<LAlbum>().searchFor(keywords),
+        flow5 = LMedia.getFlow<LGenre>().searchFor(keywords)
+    ) { keywords, songs, artists, albums, genres ->
+        if (keywords.isEmpty()) return@combine SearchScreenState.Idle
+        if (songs.isEmpty() && artists.isEmpty() && albums.isEmpty() && genres.isEmpty())
+            return@combine SearchScreenState.Empty
+
+        SearchScreenState.Searching(
+            songs = songs,
+            artists = artists,
+            albums = albums,
+            genres = genres
+        )
+    }.toState(SearchScreenState.Idle, viewModelScope)
 
     private fun <T : Item> Flow<Collection<T>>.searchFor(keywords: Flow<Collection<String>>): Flow<List<T>> =
         combine(keywords) { items, keywordList ->
