@@ -3,11 +3,9 @@ package com.lalilu.lalbum.screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -21,13 +19,12 @@ import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.LogUtils
-import com.lalilu.component.base.LocalSmartBarPadding
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.base.NavigatorHeader
+import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lalbum.component.AlbumCard
@@ -119,14 +116,6 @@ internal fun AlbumsScreenContent(
             }
         }
 
-        item(span = StaggeredGridItemSpan.FullLine) {
-            val padding by LocalSmartBarPadding.current
-
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(padding.calculateBottomPadding() + 20.dp)
-            )
-        }
+        smartBarPadding()
     }
 }
