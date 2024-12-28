@@ -50,6 +50,7 @@ data class AlbumsScreen(
             listOf(
                 ScreenAction.Static(
                     title = { if (state.showText) "隐藏专辑名" else "显示专辑名" },
+                    color = { Color(0xFF6E4AC3) },
                     icon = { if (state.showText) RemixIcon.Editor.text else RemixIcon.Editor.formatClear },
                     onAction = { albumsVM.intent(AlbumsAction.ToggleShowText) }
                 ),

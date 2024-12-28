@@ -45,7 +45,6 @@ fun SongAlbumInfoCard(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
-        elevation = 1.dp,
         onClick = {
             AppRouter.route("/pages/albums/detail")
                 .with("albumId", album.id)

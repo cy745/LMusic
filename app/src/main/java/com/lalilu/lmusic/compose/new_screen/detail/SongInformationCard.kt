@@ -2,11 +2,9 @@ package com.lalilu.lmusic.compose.new_screen.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -27,7 +25,6 @@ fun SongInformationCard(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
-        elevation = 1.dp
     ) {
         Column(
             modifier = Modifier
