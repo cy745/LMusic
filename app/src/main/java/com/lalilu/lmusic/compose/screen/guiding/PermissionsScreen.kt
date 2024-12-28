@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -14,6 +15,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.lalilu.R
 import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.ScreenInfo
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.MainActivity
 import com.lalilu.lmusic.datastore.SettingsSp
@@ -41,6 +43,12 @@ private fun PermissionsPage(
     val permission = rememberPermissionState(permission = REQUIRE_PERMISSIONS)
     var isGuidingOver by settingsSp.isGuidingOver
     val context = LocalContext.current
+
+    LaunchedEffect(permission.status) {
+        if (permission.status is PermissionStatus.Granted) {
+            LMedia.init(context)
+        }
+    }
 
     Column(
         modifier = Modifier
