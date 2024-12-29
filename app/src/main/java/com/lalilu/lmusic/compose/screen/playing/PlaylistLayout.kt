@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +39,7 @@ import com.lalilu.component.navigation.AppRouter
 import com.lalilu.lmusic.compose.screen.playing.util.DiffUtil
 import com.lalilu.lmusic.compose.screen.playing.util.ListUpdateCallback
 import com.lalilu.lplayer.extensions.PlayerAction
+import kotlinx.coroutines.launch
 
 
 data class Item<T>(
@@ -102,6 +104,7 @@ fun PlaylistLayout(
 ) {
     val haptic = LocalHapticFeedback.current
     val view = LocalView.current
+    val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
     var actualItems by remember { mutableStateOf(emptyList<Item<MediaItem>>()) }
@@ -129,7 +132,10 @@ fun PlaylistLayout(
 
         if (isNewListTopVisible || isOldListTopVisible || forceRefresh()) {
             actualItems = emptyList()
-            view.post { actualItems = newList }
+            view.post {
+                actualItems = newList
+                scope.launch { listState.animateScrollToItem(0) }
+            }
         } else {
             actualItems = newList
         }
