@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.combine
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 
+
 @Named("sort_rule_play_count")
 @Single(binds = [ListAction::class])
 class SortRulePlayCount(

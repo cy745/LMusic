@@ -12,6 +12,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.LibraryParams
@@ -40,11 +41,14 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.android.ext.android.inject
+import org.koin.core.qualifier.named
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(UnstableApi::class)
 class MService : MediaLibraryService(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO + SupervisorJob()
+    private val historyAnalyticsListener by inject<AnalyticsListener>(named("history_analytics_listener"))
 
     private var exoPlayer: Player? = null
     private var mediaSession: MediaLibrarySession? = null
@@ -69,6 +73,7 @@ class MService : MediaLibraryService(), CoroutineScope {
             .setHandleAudioBecomingNoisy(MPlayerKV.handleBecomeNoisy.value != false)
             .setAudioAttributes(defaultAudioAttributes, MPlayerKV.handleAudioFocus.value != false)
             .build()
+            .apply { addAnalyticsListener(historyAnalyticsListener) }
             .setUpQueueControl()
 
         mediaSession = MediaLibrarySession

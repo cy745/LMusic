@@ -1,27 +1,25 @@
 package com.lalilu.lhistory.repository
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.MapInfo
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
 import com.lalilu.lhistory.entity.LHistory
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HistoryDao {
-    @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun save(vararg history: LHistory)
-
-    @Transaction
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun save(history: List<LHistory>)
+    fun save(history: LHistory): Long
 
     @Update(entity = LHistory::class)
     fun update(vararg history: LHistory)
 
-    @Query("UPDATE m_history SET duration = :duration WHERE contentId = :contentId AND duration = -1;")
-    fun updatePreSavedHistory(contentId: String, duration: Long)
-
-    @Query("DELETE FROM m_history WHERE contentId = :contentId AND duration = -1;")
-    fun deletePreSavedHistory(contentId: String)
+    @Query("UPDATE m_history SET duration = :duration, repeatCount = :repeatCount WHERE id = :id;")
+    fun updateHistory(id: Long, duration: Long, repeatCount: Int)
 
     @Query("DELETE FROM m_history;")
     fun clear()
@@ -40,7 +38,7 @@ interface HistoryDao {
      */
     @Query(
         "SELECT * FROM " +
-                "(SELECT id, contentId, duration, type, max(startTime) as 'startTime' FROM m_history GROUP BY contentId) as A " +
+                "(SELECT id, contentId, contentTitle, parentId, parentTitle, duration, repeatCount, max(startTime) as 'startTime' FROM m_history GROUP BY contentId) as A " +
                 "ORDER BY A.startTime DESC LIMIT :limit;"
     )
     fun getFlow(limit: Int): Flow<List<LHistory>>
@@ -51,14 +49,14 @@ interface HistoryDao {
     @MapInfo(valueColumn = "count")
     @Query(
         "SELECT * FROM " +
-                "(SELECT id, contentId, duration, type, count(contentId) as 'count', max(startTime) as 'startTime' FROM m_history GROUP BY contentId) as A " +
+                "(SELECT id, contentId, contentTitle, parentId, parentTitle, duration, repeatCount, (count(contentId) + repeatCount) as 'count', max(startTime) as 'startTime' FROM m_history GROUP BY contentId) as A " +
                 "ORDER BY A.startTime DESC LIMIT :limit;"
     )
     fun getFlowWithCount(limit: Int): Flow<Map<LHistory, Int>>
 
     @MapInfo(keyColumn = "contentId", valueColumn = "count")
     @Query(
-        "SELECT contentId, count(contentId) as 'count' FROM m_history GROUP BY contentId " +
+        "SELECT contentId, (count(contentId) + repeatCount) as 'count' FROM m_history GROUP BY contentId " +
                 "LIMIT :limit;"
     )
     fun getFlowIdsMapWithCount(limit: Int): Flow<Map<String, Int>>

@@ -4,12 +4,8 @@ import com.lalilu.lhistory.entity.LHistory
 import kotlinx.coroutines.flow.Flow
 
 interface HistoryRepository {
-    fun saveHistory(vararg history: LHistory)
-    fun saveHistories(history: List<LHistory>)
-
-    fun preSaveHistory(history: LHistory)
-    fun updatePreSavedHistory(contentId: String, duration: Long)
-    fun removePreSavedHistory(contentId: String)
+    suspend fun preSaveHistory(history: LHistory): Long
+    suspend fun updateHistory(id: Long, duration: Long, repeatCount: Int)
     fun clearHistories()
 
     fun getHistoriesFlow(limit: Int): Flow<List<LHistory>>

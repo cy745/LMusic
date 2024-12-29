@@ -1,51 +1,36 @@
 package com.lalilu.lhistory.screen
 
 import androidx.compose.runtime.Composable
-import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.koin.getScreenModel
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.ScreenInfo
-import com.lalilu.component.base.collectAsLoadingState
-import com.lalilu.lhistory.R
-import com.lalilu.lhistory.repository.HistoryRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.mapLatest
-import org.koin.core.annotation.Factory
-import com.lalilu.component.R as ComponentR
+import androidx.compose.runtime.remember
+import cafe.adriel.voyager.core.screen.Screen
+import com.lalilu.RemixIcon
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.remixicon.Editor
+import com.lalilu.remixicon.editor.draggable
 
-data object HistoryScreen : DynamicScreen() {
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.history_screen_title,
-        icon = ComponentR.drawable.ic_play_list_fill
-    )
+data object HistoryScreen : Screen, ScreenInfoFactory {
+    private fun readResolve(): Any = HistoryScreen
+
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo {
+        return remember {
+            ScreenInfo(
+                title = { "History" },
+                icon = RemixIcon.Editor.draggable
+            )
+        }
+    }
 
     @Composable
     override fun Content() {
-        val historySM = getScreenModel<HistoryScreenModel>()
-
-        HistoryScreen(historySM = historySM)
+        HistoryScreenContent()
     }
 }
 
-@Factory
-class HistoryScreenModel(
-    historyRepo: HistoryRepository
-) : ScreenModel {
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val mediaIds = historyRepo
-        .getHistoriesIdsMapWithLastTime()
-        .mapLatest { map ->
-            map.toList()
-                .sortedByDescending { it.second }
-                .map { it.first }
-        }
-}
-
 @Composable
-private fun DynamicScreen.HistoryScreen(
-    historySM: HistoryScreenModel
+private fun HistoryScreenContent(
 ) {
-    val mediaIdsState = historySM.mediaIds.collectAsLoadingState()
 
 //    LoadingScaffold(
 //        modifier = Modifier.fillMaxSize(),
