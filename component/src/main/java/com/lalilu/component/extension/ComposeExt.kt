@@ -276,9 +276,9 @@ inline fun <reified T : ViewModel> Screen.screenVM(
     qualifier: Qualifier? = null,
     viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(
         value = getScreenViewModelStoreOwner() ?: LocalViewModelStoreOwner.current,
-        lazyMessage = { "No Registered ViewModelStoreOwner was provided via registerMap for ${T::class.java}" }
+        lazyMessage = { "No ViewModelStoreOwner was provided for ${T::class.java}" }
     ),
-    key: String? = null,
+    key: String? = this.key,
     extras: CreationExtras = defaultExtras(viewModelStoreOwner),
     scope: Scope = currentKoinScope(),
     noinline parameters: ParametersDefinition? = null,

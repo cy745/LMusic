@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.core.screen.ScreenKey
 import com.lalilu.RemixIcon
 import com.lalilu.common.ext.requestFor
 import com.lalilu.component.base.screen.ScreenAction
@@ -41,6 +42,7 @@ import org.koin.core.qualifier.named
 data class PlaylistDetailScreen(
     val playlistId: String
 ) : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBarFactory {
+    override val key: ScreenKey = "${super.key}:$playlistId"
 
     @Composable
     override fun provideScreenInfo(): ScreenInfo = remember {

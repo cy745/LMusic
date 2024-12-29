@@ -51,7 +51,9 @@ data class AlbumDetailScreen(
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
-        val vm = screenVM<AlbumDetailVM>()
+        val vm = screenVM<AlbumDetailVM>(
+            parameters = { parametersOf(albumId) }
+        )
         val state by vm.state
 
         return remember {
@@ -97,7 +99,9 @@ data class AlbumDetailScreen(
 
     @Composable
     override fun Content() {
-        val vm = screenVM<AlbumDetailVM>(parameters = { parametersOf(albumId) })
+        val vm = screenVM<AlbumDetailVM>(
+            parameters = { parametersOf(albumId) }
+        )
         val songs by vm.songs
         val state by vm.state
         val album by vm.album

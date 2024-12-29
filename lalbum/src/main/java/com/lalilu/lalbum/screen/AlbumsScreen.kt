@@ -28,6 +28,7 @@ import com.lalilu.remixicon.editor.text
 import com.lalilu.remixicon.media.albumFill
 import com.lalilu.remixicon.system.menuSearchLine
 import com.zhangke.krouter.annotation.Destination
+import org.koin.core.parameter.parametersOf
 
 @Destination("/pages/albums")
 data class AlbumsScreen(
@@ -43,7 +44,9 @@ data class AlbumsScreen(
 
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
-        val albumsVM = screenVM<AlbumsVM>()
+        val albumsVM = screenVM<AlbumsVM>(
+            parameters = { parametersOf(albumsId) }
+        )
         val state by albumsVM.state
 
         return remember {
@@ -83,7 +86,9 @@ data class AlbumsScreen(
 
     @Composable
     override fun Content() {
-        val vm = screenVM<AlbumsVM>()
+        val vm = screenVM<AlbumsVM>(
+            parameters = { parametersOf(albumsId) }
+        )
         val state by vm.state
         val albums by vm.albums
 
