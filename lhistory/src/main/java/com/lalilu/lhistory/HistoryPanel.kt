@@ -1,15 +1,12 @@
-package com.lalilu.lmusic.extension
+package com.lalilu.lhistory
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.Chip
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -18,41 +15,27 @@ import com.lalilu.component.LazyGridContent
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.card.SongCard
 import com.lalilu.component.navigation.AppRouter
-import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.compose.component.card.RecommendTitle
-import com.lalilu.lmusic.viewmodel.HistoryViewModel
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
+import com.lalilu.lhistory.viewmodel.HistoryVM
 import com.lalilu.lplayer.MPlayer
 import org.koin.compose.koinInject
+import org.koin.core.annotation.Named
+import org.koin.core.annotation.Single
 
-object HistoryPanel : LazyGridContent {
 
-    @OptIn(ExperimentalMaterialApi::class)
+@Named("history_panel")
+@Single(binds = [LazyGridContent::class])
+class HistoryPanel : LazyGridContent {
+
     @Composable
     override fun register(): LazyGridScope.() -> Unit {
-        val historyVM: HistoryViewModel = koinInject()
-        val playingVM: PlayingViewModel = koinInject()
+        val historyVM = koinInject<HistoryVM>()
         val widthSizeClass = LocalWindowSize.current.widthSizeClass
         val haptic = LocalHapticFeedback.current
-        val items = historyVM.historyState.value
+        val items by historyVM.historyState
 
         return fun LazyGridScope.() {
             // 若列表为空，则不显示
             if (items.isEmpty()) return
-
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                RecommendTitle(
-                    title = "最近播放",
-                    onClick = { }
-                ) {
-                    Chip(
-                        onClick = { // navigator.navigate(HistoryScreenDestination)
-                        },
-                    ) {
-                        Text(style = MaterialTheme.typography.caption, text = "历史记录")
-                    }
-                }
-            }
 
             items(
                 items = items,
@@ -70,11 +53,7 @@ object HistoryPanel : LazyGridContent {
                     song = { item },
                     isPlaying = { MPlayer.isItemPlaying(item.id) },
                     onClick = {
-                        playingVM.play(
-                            mediaId = item.id,
-                            mediaIds = items.map(LSong::id),
-                            playOrPause = true
-                        )
+
                     },
                     onLongClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)

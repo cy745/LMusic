@@ -1,7 +1,10 @@
 package com.lalilu.lhistory.screen
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.RemixIcon
 import com.lalilu.component.base.screen.ScreenInfo
@@ -31,21 +34,9 @@ data object HistoryScreen : Screen, ScreenInfoFactory {
 @Composable
 private fun HistoryScreenContent(
 ) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
 
-//    LoadingScaffold(
-//        modifier = Modifier.fillMaxSize(),
-//        targetState = mediaIdsState
-//    ) { mediaIds ->
-//        Songs(
-//            modifier = Modifier.fillMaxSize(),
-//            mediaIds = mediaIds,
-//            supportListAction = { listOf() },
-//            headerContent = {
-//                item {
-//                    NavigatorHeader(title = stringResource(id = R.string.history_screen_title))
-//                }
-//            },
-//            footerContent = {}
-//        )
-//    }
+    }
 }

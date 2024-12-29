@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.viewmodel
+package com.lalilu.lhistory.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Single
 
-@Single
 @OptIn(ExperimentalCoroutinesApi::class)
-class HistoryViewModel(
+@Single
+class HistoryVM(
     private val historyRepo: HistoryRepository
 ) : ViewModel() {
     val historyState = historyRepo
@@ -26,15 +26,5 @@ class HistoryViewModel(
         }.map { it.take(6) }
         .toState(emptyList(), viewModelScope)
 
-    private val historyCountState = historyRepo
-        .getHistoriesIdsMapWithCount()
-        .toState(emptyMap(), viewModelScope)
 
-    fun requiteHistoryCountById(mediaId: String): Int {
-        return historyCountState.value[mediaId] ?: 0
-    }
-
-    fun clearHistories() {
-        historyRepo.clearHistories()
-    }
 }
