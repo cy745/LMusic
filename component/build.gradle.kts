@@ -47,6 +47,8 @@ dependencies {
     api(libs.bundles.voyager)
     api(libs.bundles.coil3)
     api(libs.lottie.compose)
+    api(libs.human.readable)
+    api(libs.kotlinx.datetime)
 
     api(project(":lmedia"))
     api(project(":common"))

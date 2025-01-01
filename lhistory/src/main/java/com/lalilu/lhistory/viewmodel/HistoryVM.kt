@@ -2,6 +2,9 @@ package com.lalilu.lhistory.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import com.lalilu.component.extension.toState
 import com.lalilu.lhistory.repository.HistoryRepository
 import com.lalilu.lmedia.LMedia
@@ -26,5 +29,14 @@ class HistoryVM(
         }.map { it.take(6) }
         .toState(emptyList(), viewModelScope)
 
+    val pager = Pager(
+        config = PagingConfig(
+            pageSize = 20,
+            enablePlaceholders = true,
+        ),
+        pagingSourceFactory = {
+            historyRepo.getAllData()
+        }
+    ).flow.cachedIn(viewModelScope)
 
 }

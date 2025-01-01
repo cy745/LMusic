@@ -20,8 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import cafe.adriel.voyager.core.screen.Screen
@@ -29,8 +28,12 @@ import com.lalilu.RemixIcon
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.base.smartBarPadding
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.lhistory.component.HistoryItemCard
 import com.lalilu.lhistory.entity.LHistory
 import com.lalilu.lhistory.viewmodel.HistoryVM
+import com.lalilu.lmedia.LMedia
+import com.lalilu.lmedia.entity.LSong
 import com.lalilu.remixicon.Editor
 import com.lalilu.remixicon.editor.draggable
 import org.koin.compose.koinInject
@@ -51,29 +54,18 @@ data object HistoryScreen : Screen, ScreenInfoFactory {
     @Composable
     override fun Content() {
         val historyVM = koinInject<HistoryVM>()
-        val pager = remember {
-            Pager(
-                config = PagingConfig(
-                    pageSize = 20,
-                    enablePlaceholders = true,
-                ),
-                pagingSourceFactory = {
-                    historyVM.historyRepo.getAllData()
-                }
-            )
-        }
+        val items = historyVM.pager.collectAsLazyPagingItems()
 
         HistoryScreenContent(
-            pager = pager
+            items = items
         )
     }
 }
 
 @Composable
 private fun HistoryScreenContent(
-    pager: Pager<Int, LHistory>,
+    items: LazyPagingItems<LHistory>
 ) {
-    val items = pager.flow.collectAsLazyPagingItems()
     val listState = rememberLazyListState()
 
     LazyColumn(
@@ -109,12 +101,19 @@ private fun HistoryScreenContent(
             key = items.itemKey { it.id }
         ) { index ->
             val item = items[index]
-            Text(
-                modifier = Modifier
-                    .animateItem()
-                    .padding(16.dp),
-                text = "${item?.contentTitle} ${item?.repeatCount}",
-                fontSize = 14.sp
+
+            HistoryItemCard(
+                modifier = Modifier.animateItem(),
+                imageData = { LMedia.get<LSong>(item?.contentId) },
+                title = { item?.contentTitle ?: "" },
+                startTime = { item?.startTime ?: System.currentTimeMillis() },
+                duration = { item?.duration ?: 0 },
+                repeatCount = { item?.repeatCount ?: 0 },
+                onClick = {
+                    AppRouter.route("/pages/songs/detail")
+                        .with("mediaId", item?.contentId)
+                        .jump()
+                }
             )
         }
 

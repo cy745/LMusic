@@ -38,6 +38,7 @@ krouter_version = "0.0.1"
 kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin_version" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.3" }
 kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version = "1.9.0" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.6.1" }
 
 # compose
 compose-bom-alpha = { module = "androidx.compose:compose-bom-alpha", version.ref = "compose_bom_alpha_version" }
@@ -112,6 +113,8 @@ flyjingfish-aop-ksp = { module = "io.github.FlyJingFish.AndroidAop:android-aop-k
 # KRouter
 krouter-core = { module = "com.github.cy745.KRouter:core", version.ref = "krouter_version" }
 krouter-plugin = { module = "com.github.cy745.KRouter:plugin", version.ref = "krouter_version" }
+
+human-readable = { module = "nl.jacobras:Human-Readable", version = "1.10.0" }
 
 [plugins]
 application = { id = "com.android.application", version.ref = "agp_version" }
