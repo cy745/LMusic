@@ -67,3 +67,25 @@
 -dontwarn org.gradle.api.component.SoftwareComponent
 -dontwarn org.gradle.api.plugins.ExtensionAware
 -dontwarn org.gradle.api.tasks.util.PatternFilterable
+
+
+-dontwarn coil3.PlatformContext
+-dontwarn libcore.icu.NativePluralRules
+-dontwarn org.jetbrains.kotlin.library.BaseKotlinLibrary
+-dontwarn org.jetbrains.kotlin.library.BaseWriter
+-dontwarn org.jetbrains.kotlin.library.IrKotlinLibraryLayout
+-dontwarn org.jetbrains.kotlin.library.IrLibrary
+-dontwarn org.jetbrains.kotlin.library.IrWriter
+-dontwarn org.jetbrains.kotlin.library.KotlinLibrary
+-dontwarn org.jetbrains.kotlin.library.KotlinLibraryLayout
+-dontwarn org.jetbrains.kotlin.library.KotlinLibraryProperResolverWithAttributes
+-dontwarn org.jetbrains.kotlin.library.MetadataKotlinLibraryLayout
+-dontwarn org.jetbrains.kotlin.library.MetadataLibrary
+-dontwarn org.jetbrains.kotlin.library.MetadataWriter
+-dontwarn org.jetbrains.kotlin.library.SearchPathResolver
+-dontwarn org.jetbrains.kotlin.library.impl.BaseLibraryAccess
+-dontwarn org.jetbrains.kotlin.library.impl.ExtractingKotlinLibraryLayout
+-dontwarn org.jetbrains.kotlin.library.impl.FromZipBaseLibraryImpl
+-dontwarn org.jetbrains.kotlin.library.impl.KotlinLibraryLayoutForWriter
+-dontwarn org.jetbrains.kotlin.library.impl.KotlinLibraryLayoutImpl
+-dontwarn org.jetbrains.kotlin.library.impl.KotlinLibraryLayoutImplKt
