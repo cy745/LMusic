@@ -6,11 +6,8 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.flyjingfish.aop) apply false
     alias(libs.plugins.compose.compiler) apply false
+    alias(libs.plugins.krouter.plugin)
 }
 
-buildscript {
-    dependencies { classpath(libs.krouter.plugin) }
-}
-
+// 配置注入遍历的起点项目
 ext { set("targetInjectProjectName", "app") }
-apply(plugin = "krouter-plugin")

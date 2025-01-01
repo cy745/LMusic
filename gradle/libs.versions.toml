@@ -30,8 +30,7 @@ media3 = "1.5.0"
 gson = "2.11.0"
 flyjingfish-aop = "1.9.7"
 paging_version = "3.3.5"
-
-krouter_version = "0.0.1"
+krouter_version = "0.0.3"
 
 [libraries]
 # kotlin
@@ -110,10 +109,7 @@ flyjingfish-aop-core = { module = "io.github.FlyJingFish.AndroidAop:android-aop-
 flyjingfish-aop-annotation = { module = "io.github.FlyJingFish.AndroidAop:android-aop-annotation", version.ref = "flyjingfish-aop" }
 flyjingfish-aop-ksp = { module = "io.github.FlyJingFish.AndroidAop:android-aop-ksp", version.ref = "flyjingfish-aop" }
 
-# KRouter
-krouter-core = { module = "com.github.cy745.KRouter:core", version.ref = "krouter_version" }
-krouter-plugin = { module = "com.github.cy745.KRouter:plugin", version.ref = "krouter_version" }
-
+krouter-core = { module = "io.github.cy745.KRouter:core", version.ref = "krouter_version" }
 human-readable = { module = "nl.jacobras:Human-Readable", version = "1.10.0" }
 
 [plugins]
@@ -124,6 +120,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp_version" }
 flyjingfish-aop = { id = "io.github.FlyJingFish.AndroidAop.android-aop", version.ref = "flyjingfish-aop" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin_version" }
+krouter-plugin = { id = "io.github.cy745.KRouter.plugin", version.ref = "krouter_version" }
 
 
 [bundles]
