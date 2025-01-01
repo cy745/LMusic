@@ -5,8 +5,9 @@ import com.lalilu.lhistory.entity.LHistory
 import kotlinx.coroutines.flow.Flow
 
 interface HistoryRepository {
+    suspend fun getUnUsedPreSaveHistory(mediaId: String): LHistory?
     suspend fun preSaveHistory(history: LHistory): Long
-    suspend fun updateHistory(id: Long, duration: Long, repeatCount: Int)
+    suspend fun updateHistory(id: Long, duration: Long, repeatCount: Int, startTime: Long)
     fun clearHistories()
 
     fun getAllData(): PagingSource<Int, LHistory>

@@ -31,12 +31,28 @@ class HistoryRepositoryImpl(
         .toCachedFlow()
         .also { it.launchIn(this) }
 
+    override suspend fun getUnUsedPreSaveHistory(mediaId: String): LHistory? =
+        withContext(Dispatchers.IO) {
+            historyDao.getLatestHistory()
+                ?.takeIf { it.contentId == mediaId && it.duration <= 1000L }
+        }
+
     override suspend fun preSaveHistory(history: LHistory): Long = withContext(Dispatchers.IO) {
         historyDao.save(history.copy(duration = -1L))
     }
 
-    override suspend fun updateHistory(id: Long, duration: Long, repeatCount: Int) {
-        historyDao.updateHistory(id = id, duration = duration, repeatCount = repeatCount)
+    override suspend fun updateHistory(
+        id: Long,
+        duration: Long,
+        repeatCount: Int,
+        startTime: Long
+    ) {
+        historyDao.updateHistory(
+            id = id,
+            duration = duration,
+            repeatCount = repeatCount,
+            startTime = startTime
+        )
     }
 
     override fun clearHistories() {

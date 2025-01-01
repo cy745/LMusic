@@ -88,7 +88,8 @@ class HistoryAnalyticsListener(
             historyRepo.updateHistory(
                 id = item.primaryKey,
                 duration = item.duration,
-                repeatCount = item.repeatCount
+                repeatCount = item.repeatCount,
+                startTime = item.startTime
             )
         }
     }
@@ -99,7 +100,8 @@ class HistoryAnalyticsListener(
         isPlaying: Boolean = false
     ) = scope.launch(Dispatchers.Main.immediate) {
         val startTime = System.currentTimeMillis()
-        val primaryKey = historyRepo.preSaveHistory(
+        val unUsedHistory = historyRepo.getUnUsedPreSaveHistory(mediaId)
+        val primaryKey = unUsedHistory?.id ?: historyRepo.preSaveHistory(
             LHistory(
                 contentId = mediaId,
                 contentTitle = title,

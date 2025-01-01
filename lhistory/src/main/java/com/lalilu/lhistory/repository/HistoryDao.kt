@@ -19,8 +19,8 @@ interface HistoryDao {
     @Update(entity = LHistory::class)
     fun update(vararg history: LHistory)
 
-    @Query("UPDATE m_history SET duration = :duration, repeatCount = :repeatCount WHERE id = :id;")
-    fun updateHistory(id: Long, duration: Long, repeatCount: Int)
+    @Query("UPDATE m_history SET duration = :duration, repeatCount = :repeatCount, startTime = :startTime WHERE id = :id;")
+    fun updateHistory(id: Long, duration: Long, repeatCount: Int, startTime: Long)
 
     @Query("DELETE FROM m_history;")
     fun clear()
@@ -33,6 +33,9 @@ interface HistoryDao {
 
     @Query("SELECT * FROM m_history WHERE id = :id;")
     fun getById(id: Long): LHistory?
+
+    @Query("SELECT * FROM m_history ORDER BY id DESC LIMIT 1")
+    fun getLatestHistory(): LHistory?
 
     /**
      * 查询播放历史，去除重复的记录，只保留最近的一条，按照最近播放时间排序
