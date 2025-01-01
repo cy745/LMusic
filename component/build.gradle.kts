@@ -49,6 +49,7 @@ dependencies {
     api(libs.lottie.compose)
     api(libs.human.readable)
     api(libs.kotlinx.datetime)
+    api(libs.remixicon.kmp)
 
     api(project(":lmedia"))
     api(project(":common"))
@@ -60,7 +61,6 @@ dependencies {
     api("com.github.cy745:AnyPopDialog-Compose:cb92c5b6dc")
     api("me.rosuh:AndroidFilePicker:1.0.1")
     api("com.cheonjaeung.compose.grid:grid:2.0.0")
-    api("com.github.cy745.RemixIcon-Kmp:core:1a3c554a35")
     api("com.github.nanihadesuka:LazyColumnScrollbar:2.2.0")
     api("com.github.GIGAMOLE:ComposeFadingEdges:1.0.4")
 

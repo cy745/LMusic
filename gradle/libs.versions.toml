@@ -111,6 +111,7 @@ flyjingfish-aop-ksp = { module = "io.github.FlyJingFish.AndroidAop:android-aop-k
 
 krouter-core = { module = "io.github.cy745.KRouter:core", version.ref = "krouter_version" }
 human-readable = { module = "nl.jacobras:Human-Readable", version = "1.10.0" }
+remixicon-kmp = { module = "io.github.cy745:remixicon-kmp", version = "0.0.2" }
 
 [plugins]
 application = { id = "com.android.application", version.ref = "agp_version" }
