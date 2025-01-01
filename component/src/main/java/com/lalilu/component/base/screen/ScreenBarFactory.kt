@@ -8,8 +8,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.lalilu.component.base.ScreenBarComponent
 
+data class ScreenBarComponent(
+    val key: String,
+    val content: @Composable () -> Unit
+)
 
 class ComponentStack {
     var stack: List<ScreenBarComponent> by mutableStateOf(emptyList())

@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="dictionary_screen_title">文件夹</string>
+    <string name="folder_screen_title">Folder</string>
 </resources>

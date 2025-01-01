@@ -5,7 +5,7 @@ import com.blankj.utilcode.util.LogUtils
 import com.flyjingfish.android_aop_annotation.anno.AndroidAopReplaceClass
 import com.flyjingfish.android_aop_annotation.anno.AndroidAopReplaceMethod
 
-@AndroidAopReplaceClass("android.util.Log")
+//@AndroidAopReplaceClass("android.util.Log")
 class LogOverride {
 
     companion object {

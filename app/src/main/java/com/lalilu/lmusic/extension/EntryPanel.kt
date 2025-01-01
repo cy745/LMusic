@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
 import com.lalilu.component.LazyGridContent
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.base.screen.ScreenInfoFactory
@@ -28,12 +29,6 @@ import com.lalilu.component.divider
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.component.rememberGridItemPadding
-import com.lalilu.lalbum.screen.AlbumsScreen
-import com.lalilu.ldictionary.screen.DictionaryScreen
-import com.lalilu.lhistory.screen.HistoryScreen
-import com.lalilu.lmusic.compose.new_screen.SettingsScreen
-import com.lalilu.lmusic.compose.screen.songs.SongsScreen
-import com.lalilu.lplaylist.screen.PlaylistScreen
 import com.zhangke.krouter.KRouter
 
 
@@ -42,14 +37,14 @@ object EntryPanel : LazyGridContent {
     @Composable
     override fun register(): LazyGridScope.() -> Unit {
         val screenEntry = remember {
-            listOfNotNull(
-                SongsScreen(),
+            listOfNotNull<Screen>(
+                KRouter.route("/pages/songs"),
                 KRouter.route("/pages/artists"),
-                AlbumsScreen(),
-                PlaylistScreen,
-                HistoryScreen,
-                DictionaryScreen,
-                SettingsScreen
+                KRouter.route("/pages/albums"),
+                KRouter.route("/pages/playlist"),
+                KRouter.route("/pages/history"),
+                KRouter.route("/pages/folders"),
+                KRouter.route("/pages/settings")
             )
         }
         val defaultString = "Undefined"

@@ -4,22 +4,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.lalilu.R
-import com.lalilu.component.base.CustomScreen
-import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import kotlin.system.exitProcess
 
 class AgreementScreen(
     private val nextScreen: Screen
-) : CustomScreen {
+) : Screen, ScreenInfoFactory {
 
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(title = R.string.screen_title_agreement)
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo {
+        return remember {
+            ScreenInfo(title = { stringResource(R.string.screen_title_agreement) })
+        }
+    }
 
     @Composable
     override fun Content() {

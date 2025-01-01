@@ -34,10 +34,12 @@ import com.lalilu.lhistory.entity.LHistory
 import com.lalilu.lhistory.viewmodel.HistoryVM
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.remixicon.Editor
-import com.lalilu.remixicon.editor.draggable
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.system.historyLine
+import com.zhangke.krouter.annotation.Destination
 import org.koin.compose.koinInject
 
+@Destination("/pages/history")
 data object HistoryScreen : Screen, ScreenInfoFactory {
     private fun readResolve(): Any = HistoryScreen
 
@@ -45,8 +47,8 @@ data object HistoryScreen : Screen, ScreenInfoFactory {
     override fun provideScreenInfo(): ScreenInfo {
         return remember {
             ScreenInfo(
-                title = { "History" },
-                icon = RemixIcon.Editor.draggable
+                title = { "历史记录" },
+                icon = RemixIcon.System.historyLine
             )
         }
     }

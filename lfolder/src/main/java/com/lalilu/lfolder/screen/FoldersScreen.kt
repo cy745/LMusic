@@ -1,51 +1,57 @@
-package com.lalilu.ldictionary.screen
+package com.lalilu.lfolder.screen
 
 import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
-import com.lalilu.component.LLazyColumn
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.LoadingScaffold
+import com.lalilu.RemixIcon
 import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.ScreenAction
-import com.lalilu.component.base.ScreenInfo
-import com.lalilu.component.base.collectAsLoadingState
-import com.lalilu.ldictionary.R
+import com.lalilu.component.base.screen.ScreenAction
+import com.lalilu.component.base.screen.ScreenActionFactory
+import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.lfolder.R
 import com.lalilu.lmedia.repository.LMediaSp
 import com.lalilu.lmedia.scanner.FileSource
+import com.lalilu.remixicon.Document
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.document.folderMusicLine
+import com.lalilu.remixicon.system.addLine
+import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.mapLatest
 import me.rosuh.filepicker.FilePickerActivity
 import me.rosuh.filepicker.bean.FileItemBeanImpl
 import me.rosuh.filepicker.config.AbstractFileFilter
 import me.rosuh.filepicker.config.FilePickerManager
-import com.lalilu.component.R as ComponentR
 
+@Deprecated("弃用")
 @OptIn(ExperimentalCoroutinesApi::class)
 class DictionaryScreenModel(
     private val application: Application,
@@ -71,14 +77,22 @@ class DictionaryScreenModel(
     }
 }
 
-object DictionaryScreen : DynamicScreen() {
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.dictionary_screen_title,
-        icon = ComponentR.drawable.ic_disc_line
-    )
+@Destination("/pages/folders")
+object FoldersScreen : Screen, ScreenInfoFactory, ScreenActionFactory {
+    private fun readResolve(): Any = FoldersScreen
 
     @Composable
-    override fun registerActions(): List<ScreenAction> {
+    override fun provideScreenInfo(): com.lalilu.component.base.screen.ScreenInfo {
+        return remember {
+            com.lalilu.component.base.screen.ScreenInfo(
+                title = { stringResource(R.string.folder_screen_title) },
+                icon = RemixIcon.Document.folderMusicLine
+            )
+        }
+    }
+
+    @Composable
+    override fun provideScreenActions(): List<ScreenAction> {
         val context = LocalContext.current
         val dictionarySM = getScreenModel<DictionaryScreenModel>()
 
@@ -101,15 +115,15 @@ object DictionaryScreen : DynamicScreen() {
 
         return remember {
             listOf(
-                ScreenAction.StaticAction(
-                    title = R.string.dictionary_screen_title,
-                    icon = ComponentR.drawable.ic_add_line,
-                    color = Color(0xFF037200)
+                ScreenAction.Static(
+                    title = { stringResource(R.string.folder_screen_title) },
+                    icon = { RemixIcon.System.addLine },
+                    color = { Color(0xFF037200) }
                 ) {
                     runCatching { pickFileLauncher.launch(null) }
                         .getOrElse {
                             val activity =
-                                ActivityUtils.getActivityByContext(context) ?: return@StaticAction
+                                ActivityUtils.getActivityByContext(context) ?: return@Static
                             FilePickerManager.from(activity)
                                 .skipDirWhenSelect(false)
                                 .maxSelectable(Int.MAX_VALUE)
@@ -134,46 +148,39 @@ object DictionaryScreen : DynamicScreen() {
     }
 }
 
-
 @Composable
 private fun DictionaryScreen(
     dictionarySM: DictionaryScreenModel
 ) {
-    val targetDirectory = dictionarySM.targetDirectory.collectAsLoadingState()
+    val directory by dictionarySM.targetDirectory.collectAsState(initial = emptyList())
 
-    LoadingScaffold(
-        modifier = Modifier.fillMaxSize(),
-        targetState = targetDirectory,
-    ) { directory ->
-        LLazyColumn(
-            modifier = Modifier,
-            contentPadding = WindowInsets.statusBars.asPaddingValues()
-        ) {
-            item {
-                NavigatorHeader(
-                    title = "文件夹",
-                    subTitle = "长按以移除该文件夹"
-                )
-            }
+    LazyColumn(
+        modifier = Modifier,
+        contentPadding = WindowInsets.statusBars.asPaddingValues()
+    ) {
+        item {
+            NavigatorHeader(
+                title = "文件夹",
+                subTitle = "长按以移除该文件夹"
+            )
+        }
 
-            items(items = directory) {
-                DirectoryCard(
-                    title = it.name() ?: "unknown",
-                    subTitle = it.path() ?: "unknown",
-                    onLongClick = {
-                        val id = when (it) {
-                            is FileSource.Document -> it.id
-                            is FileSource.IOFile -> it.id
-                        }
-                        dictionarySM.remove(id)
+        items(items = directory) {
+            DirectoryCard(
+                title = it.name() ?: "unknown",
+                subTitle = it.path() ?: "unknown",
+                onLongClick = {
+                    val id = when (it) {
+                        is FileSource.Document -> it.id
+                        is FileSource.IOFile -> it.id
                     }
-                )
-            }
+                    dictionarySM.remove(id)
+                }
+            )
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DirectoryCard(
     title: String,

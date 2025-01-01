@@ -172,7 +172,7 @@ dependencies {
     implementation(project(":lhistory"))
     implementation(project(":lartist"))
     implementation(project(":lalbum"))
-    implementation(project(":ldictionary"))
+    implementation(project(":lfolder"))
     ksp(libs.koin.compiler)
 
     implementation(libs.room.ktx)

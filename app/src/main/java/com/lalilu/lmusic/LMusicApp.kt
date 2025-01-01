@@ -7,7 +7,7 @@ import coil3.SingletonImageLoader
 import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lalbum.AlbumModule
 import com.lalilu.lartist.ArtistModule
-import com.lalilu.ldictionary.DictionaryModule
+import com.lalilu.lfolder.FolderModule
 import com.lalilu.lhistory.HistoryModule
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.utils.extension.ignoreSSLVerification
@@ -40,7 +40,7 @@ class LMusicApp : Application(), ViewModelStoreOwner {
                 PlaylistModule.module,
                 ArtistModule.module,
                 AlbumModule.module,
-                DictionaryModule,
+                FolderModule,
                 LMedia.module,
                 MPlayer.module,
             )

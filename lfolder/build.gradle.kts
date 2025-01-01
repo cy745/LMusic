@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.lalilu.ldictionary"
+    namespace = "com.lalilu.lfolder"
     compileSdk = libs.versions.compile.version.get().toIntOrNull()
 
     defaultConfig {
