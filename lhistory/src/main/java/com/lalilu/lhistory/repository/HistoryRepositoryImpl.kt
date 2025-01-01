@@ -1,5 +1,6 @@
 package com.lalilu.lhistory.repository
 
+import androidx.paging.PagingSource
 import com.lalilu.common.toCachedFlow
 import com.lalilu.lhistory.entity.LHistory
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +41,10 @@ class HistoryRepositoryImpl(
 
     override fun clearHistories() {
         launch { historyDao.clear() }
+    }
+
+    override fun getAllData(): PagingSource<Int, LHistory> {
+        return historyDao.getAllData()
     }
 
     override fun getHistoriesFlow(limit: Int): Flow<List<LHistory>> {

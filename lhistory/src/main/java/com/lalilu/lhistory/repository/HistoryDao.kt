@@ -1,5 +1,6 @@
 package com.lalilu.lhistory.repository
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -27,8 +28,8 @@ interface HistoryDao {
     @Delete(entity = LHistory::class)
     fun delete(vararg history: LHistory)
 
-    @Query("SELECT * FROM m_history;")
-    fun getAll(): List<LHistory>
+    @Query("SELECT * FROM m_history ORDER BY startTime DESC")
+    fun getAllData(): PagingSource<Int, LHistory>
 
     @Query("SELECT * FROM m_history WHERE id = :id;")
     fun getById(id: Long): LHistory?

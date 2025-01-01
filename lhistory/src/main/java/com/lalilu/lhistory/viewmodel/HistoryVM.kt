@@ -14,7 +14,7 @@ import org.koin.core.annotation.Single
 @OptIn(ExperimentalCoroutinesApi::class)
 @Single
 class HistoryVM(
-    private val historyRepo: HistoryRepository
+    val historyRepo: HistoryRepository
 ) : ViewModel() {
     val historyState = historyRepo
         .getHistoriesIdsMapWithLastTime()

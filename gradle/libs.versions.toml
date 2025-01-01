@@ -29,6 +29,7 @@ media = "1.7.0"
 media3 = "1.5.0"
 gson = "2.11.0"
 flyjingfish-aop = "1.9.7"
+paging_version = "3.3.5"
 
 krouter_version = "0.0.1"
 
@@ -94,7 +95,10 @@ activity-compose = { module = "androidx.activity:activity-compose", version.ref 
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room_version" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room_version" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room_version" }
+room-paging = { module = "androidx.room:room-paging", version.ref = "room_version" }
 media = { module = "androidx.media:media", version.ref = "media" }
+paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging_version" }
+paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging_version" }
 
 # [Apache-2.0 License] 安卓工具类库 https://github.com/Blankj/AndroidUtilCode/
 utilcodex = { module = "com.blankj:utilcodex", version.ref = "utilcodex_version" }
