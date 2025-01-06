@@ -6,7 +6,6 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -53,9 +52,9 @@ import coil3.request.placeholder
 import com.lalilu.common.base.Sticker
 import com.lalilu.component.R
 import com.lalilu.component.extension.dayNightTextColor
-import com.lalilu.component.extension.dayNightTextColorFilter
 import com.lalilu.component.extension.durationMsToString
 import com.lalilu.component.extension.mimeTypeToIcon
+import com.lalilu.component.extension.toColorFilter
 import com.lalilu.lmedia.entity.LSong
 
 @Composable
@@ -84,24 +83,29 @@ fun SongCard(
         title = { item.metadata.title },
         subTitle = { item.metadata.artist },
         duration = { item.metadata.duration },
-        sticker = { emptyList() },
+        sticker = {
+            listOfNotNull(
+                Sticker.ExtSticker(item.fileInfo.mimeType),
+                if (hasLyric()) Sticker.HasLyricSticker else null,
+                Sticker.SourceSticker(item.sourceType)
+            )
+        },
         imageData = { item },
         onClick = onClick,
         onLongClick = onLongClick,
         onDoubleClick = onDoubleClick,
         onEnterSelect = onEnterSelect,
-        hasLyric = hasLyric,
         isPlaying = isPlaying,
+        fixedHeight = fixedHeight,
         isSelected = isSelected,
         showPrefix = showPrefix,
-        fixedHeight = fixedHeight,
         prefixContent = prefixContent
     )
 }
 
 
 @Composable
-fun SongCard(
+internal fun SongCard(
     modifier: Modifier = Modifier,
     dragModifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -114,7 +118,6 @@ fun SongCard(
     onLongClick: (() -> Unit)? = null,
     onDoubleClick: (() -> Unit)? = null,
     onEnterSelect: () -> Unit = {},
-    hasLyric: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
     fixedHeight: () -> Boolean = { false },
     isSelected: () -> Boolean = { false },
@@ -153,17 +156,31 @@ fun SongCard(
             fixedHeight = fixedHeight,
             prefixContent = prefixContent,
             stickerContent = {
-                HasLyricIcon(
-                    hasLyric = hasLyric,
-                    fixedHeight = fixedHeight
-                )
-
                 val stickers = remember { sticker() }
+
+                stickers.firstOrNull { it is Sticker.HasLyricSticker }?.let {
+                    HasLyricIcon(
+                        hasLyric = { true },
+                        fixedHeight = fixedHeight
+                    )
+                }
+
+                stickers.firstOrNull { it is Sticker.HiresSticker }?.let {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_ape_line),
+                        contentDescription = "Hires Icon",
+                        colorFilter = Color(0xFFFFC107).copy(0.9f).toColorFilter(),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .aspectRatio(1f)
+                    )
+                }
+
                 stickers.firstOrNull { it is Sticker.ExtSticker }?.let {
                     Image(
                         painter = painterResource(id = mimeTypeToIcon(mimeType = it.name)),
                         contentDescription = "MediaType Icon",
-                        colorFilter = dayNightTextColorFilter(0.9f),
+                        colorFilter = MaterialTheme.colors.onBackground.copy(0.9f).toColorFilter(),
                         modifier = Modifier
                             .size(20.dp)
                             .aspectRatio(1f)
@@ -300,7 +317,6 @@ private fun SongCardPreview() {
         title = { "歌いましょう鳴らしましょう" },
         subTitle = { "MyGO!!!!!" },
         duration = { 189999L },
-        hasLyric = { true },
         sticker = { emptyList() },
         imageData = { "https://api.sretna.cn/layout/pc.php" }
     )
@@ -314,7 +330,6 @@ private fun SongCardPreviewMulti() {
             title = { "测试" },
             subTitle = { "测试" },
             duration = { 159999L },
-            hasLyric = { true },
             sticker = { emptyList() },
             imageData = { "https://api.sretna.cn/layout/pc.php" }
         )
@@ -322,7 +337,6 @@ private fun SongCardPreviewMulti() {
             title = { "测试" },
             subTitle = { "测试" },
             duration = { 159999L },
-            hasLyric = { true },
             sticker = { emptyList() },
             imageData = { "https://api.sretna.cn/layout/pc.php" }
         )
@@ -330,7 +344,6 @@ private fun SongCardPreviewMulti() {
             title = { "测试" },
             subTitle = { "测试" },
             duration = { 159999L },
-            hasLyric = { true },
             sticker = { emptyList() },
             imageData = { "https://api.sretna.cn/layout/pc.php" }
         )
@@ -338,7 +351,6 @@ private fun SongCardPreviewMulti() {
             title = { "测试" },
             subTitle = { "测试" },
             duration = { 159999L },
-            hasLyric = { true },
             sticker = { emptyList() },
             imageData = { "https://api.sretna.cn/layout/pc.php" }
         )
