@@ -26,9 +26,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -102,7 +100,6 @@ fun PlaylistLayout(
     forceRefresh: () -> Boolean = { false },
     items: () -> List<MediaItem> = { emptyList() }
 ) {
-    val haptic = LocalHapticFeedback.current
     val view = LocalView.current
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
@@ -155,8 +152,6 @@ fun PlaylistLayout(
                 item = item.data,
                 onPlayItem = { PlayerAction.PlayById(item.data.mediaId).action() },
                 onLongClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-
                     AppRouter.route("/pages/songs/detail")
                         .with("mediaId", item.data.mediaId)
                         .jump()
