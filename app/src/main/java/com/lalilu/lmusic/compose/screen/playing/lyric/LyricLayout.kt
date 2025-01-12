@@ -1,4 +1,4 @@
-package com.lalilu.lmusic.compose.screen.playing
+package com.lalilu.lmusic.compose.screen.playing.lyric
 
 import android.graphics.Typeface
 import androidx.activity.compose.BackHandler

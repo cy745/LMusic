@@ -31,6 +31,7 @@ gson = "2.11.0"
 flyjingfish-aop = "1.9.7"
 paging_version = "3.3.5"
 krouter_version = "0.0.3"
+xmlutil = "0.90.3"
 
 [libraries]
 # kotlin
@@ -112,6 +113,8 @@ flyjingfish-aop-ksp = { module = "io.github.FlyJingFish.AndroidAop:android-aop-k
 krouter-core = { module = "io.github.cy745.KRouter:core", version.ref = "krouter_version" }
 human-readable = { module = "nl.jacobras:Human-Readable", version = "1.10.0" }
 remixicon-kmp = { module = "io.github.cy745:remixicon-kmp", version = "0.0.2" }
+xmlutil-core = { module = "io.github.pdvrieze.xmlutil:core", version.ref = "xmlutil" }
+xmlutil-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
 
 [plugins]
 application = { id = "com.android.application", version.ref = "agp_version" }

@@ -181,6 +181,9 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     ksp(libs.room.compiler)
 
+    implementation(libs.xmlutil.core)
+    implementation(libs.xmlutil.serialization)
+
     // https://github.com/Block-Network/StatusBarApiExample
     // 墨 · 状态栏歌词 API
     implementation("com.github.577fkj:StatusBarApiExample:v2.0")
@@ -210,11 +213,11 @@ dependencies {
     implementation("com.github.commandiron:WheelPickerCompose:1.1.11")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
-    debugImplementation("com.github.getActivity:Logcat:11.8")
+//    debugImplementation("com.github.getActivity:Logcat:11.8")
 //    debugImplementation("io.github.knight-zxw:blockcanary:0.0.5")
 //    debugImplementation("io.github.knight-zxw:blockcanary-ui:0.0.5")
-    debugImplementation("com.github.cy745:wytrace:d0df4c2d15")
-    debugImplementation("com.bytedance.android:shadowhook:1.0.10")
+//    debugImplementation("com.github.cy745:wytrace:d0df4c2d15")
+//    debugImplementation("com.bytedance.android:shadowhook:1.0.10")
 
     implementation(libs.bundles.flyjingfish.aop)
     ksp(libs.flyjingfish.aop.ksp)
