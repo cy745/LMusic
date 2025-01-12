@@ -51,6 +51,11 @@ import com.lalilu.lmedia.lyric.LyricSourceEmbedded
 import com.lalilu.lmedia.lyric.LyricUtils
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
+import com.lalilu.lmusic.compose.screen.playing.lyric.LyricLayout
+import com.lalilu.lmusic.compose.screen.playing.lyric.index
+import com.lalilu.lmusic.compose.screen.playing.lyric.rememberFontFamilyFromPath
+import com.lalilu.lmusic.compose.screen.playing.lyric.rememberTextAlignFromGravity
+import com.lalilu.lmusic.compose.screen.playing.lyric.rememberTextSizeFromInt
 import com.lalilu.lmusic.compose.screen.playing.seekbar.ClickPart
 import com.lalilu.lmusic.compose.screen.playing.seekbar.SeekbarLayout
 import com.lalilu.lmusic.datastore.SettingsSp
