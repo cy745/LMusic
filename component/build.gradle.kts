@@ -63,6 +63,8 @@ dependencies {
     api("com.cheonjaeung.compose.grid:grid:2.0.0")
     api("com.github.nanihadesuka:LazyColumnScrollbar:2.2.0")
     api("com.github.GIGAMOLE:ComposeFadingEdges:1.0.4")
+    api("dev.chrisbanes.haze:haze:1.2.2")
+    api("dev.chrisbanes.haze:haze-materials:1.2.2")
 
     // https://mvnrepository.com/artifact/org.jetbrains.androidx.navigation/navigation-compose
     api("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
