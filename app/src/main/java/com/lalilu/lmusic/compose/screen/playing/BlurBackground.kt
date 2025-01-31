@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.palette.graphics.Palette
-import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
@@ -28,7 +27,6 @@ import coil3.toBitmap
 import com.lalilu.common.getAutomaticColor
 import com.lalilu.lmusic.utils.StackBlurUtils
 
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun BlurBackground(
     modifier: Modifier = Modifier,

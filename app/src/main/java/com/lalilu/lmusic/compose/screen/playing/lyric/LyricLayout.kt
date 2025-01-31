@@ -1,6 +1,5 @@
 package com.lalilu.lmusic.compose.screen.playing.lyric
 
-import android.graphics.Typeface
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -33,83 +32,33 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
 import com.lalilu.lmedia.lyric.LyricItem
-import com.lalilu.lmedia.lyric.LyricUtils
+import com.lalilu.lmedia.lyric.findPlayingIndex
+import com.lalilu.lmedia.lyric.toNormal
+import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricContentNormal
+import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricContentWords
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.isActive
-import java.io.File
 import java.util.WeakHashMap
 import kotlin.math.abs
 
-
-/**
- * 读取字体文件，并将其转换成Compose可用的FontFamily
- *
- * @param path 字体所在路径
- * @return 字体文件对应的FontFamily
- */
-@Composable
-fun rememberFontFamilyFromPath(path: () -> String?): State<FontFamily?> {
-    val fontFamily = remember { mutableStateOf<FontFamily?>(null) }
-
-    LaunchedEffect(path()) {
-        val fontFile = path()?.takeIf { it.isNotBlank() }
-            ?.let { File(it) }
-            ?.takeIf { it.exists() && it.canRead() }
-            ?: return@LaunchedEffect
-
-        fontFamily.value = runCatching { FontFamily(Typeface.createFromFile(fontFile)) }
-            .getOrNull()
-    }
-
-    return fontFamily
-}
-
-/**
- * 将存储的Gravity的Int值转换成Compose可用的TextAlign
- */
-@Composable
-fun rememberTextAlignFromGravity(gravity: () -> Int?): TextAlign {
-    return remember(gravity()) {
-        when (gravity()) {
-            0 -> TextAlign.Start
-            1 -> TextAlign.Center
-            2 -> TextAlign.End
-            else -> TextAlign.Start
-        }
-    }
-}
-
-/**
- *  将存储的Int值转换成Compose可用的TextUnit
- */
-@Composable
-fun rememberTextSizeFromInt(textSize: () -> Int?): TextUnit {
-    return remember(textSize()) { textSize()?.takeIf { it > 0 }?.sp ?: 26.sp }
-}
-
-private val EMPTY_SENTENCE_TIPS = LyricItem.SingleLyric(
-    time = 0,
-    content = "暂无歌词",
-)
 
 private val indexKeeper = WeakHashMap<LyricItem, Int>()
 var LyricItem.index: Int
     get() = indexKeeper[this] ?: -1
     set(value) = run { indexKeeper[this] = value }
 
-val LyricItem.key
+val LyricItem.tempKey
     get() = "${index}:$time"
 
 @OptIn(FlowPreview::class)
@@ -118,13 +67,9 @@ fun LyricLayout(
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
     currentTime: () -> Long = { 0L },
-    maxWidth: () -> Int = { 1080 },
-    textSize: TextUnit = 26.sp,
-    textAlign: TextAlign = TextAlign.Start,
-    isBlurredEnable: () -> Boolean = { false },
+    screenConstraints: Constraints,
     isUserClickEnable: () -> Boolean = { false },
     isUserScrollEnable: () -> Boolean = { false },
-    isTranslationShow: () -> Boolean = { false },
     onPositionReset: () -> Unit = {},
     onItemClick: (LyricItem) -> Unit = {},
     onItemLongClick: (LyricItem) -> Unit = {},
@@ -145,7 +90,28 @@ fun LyricLayout(
             val time = currentTime()
             val lyricEntryList = lyricEntry.value
 
-            LyricUtils.findPlayingIndex(time, lyricEntryList)
+            lyricEntryList.findPlayingIndex(time)
+        }
+    }
+
+    val lyrics: State<List<LyricContent>> = remember {
+        derivedStateOf {
+            lyricEntry.value.mapNotNull {
+                when (it) {
+                    is LyricItem.WordsLyric -> LyricContentWords(
+                        key = it.tempKey,
+                        lyric = it
+                    )
+
+                    else -> {
+                        val item = it.toNormal() ?: return@mapNotNull null
+                        LyricContentNormal(
+                            key = item.tempKey,
+                            lyric = item
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -159,7 +125,7 @@ fun LyricLayout(
 
     BackHandler(enabled = isUserScrolling.value) {
         isUserScrolling.value = false
-        currentItem.value?.key?.let(scroller::animateTo)
+        currentItem.value?.tempKey?.let(scroller::animateTo)
         onPositionReset()
     }
 
@@ -167,7 +133,7 @@ fun LyricLayout(
         snapshotFlow { currentItem.value }
             .collectLatest {
                 it ?: return@collectLatest
-                scroller.animateTo(it.key)
+                scroller.animateTo(it.tempKey)
             }
     }
 
@@ -179,7 +145,7 @@ fun LyricLayout(
                 if (!isActive || isDragging || !isScrolling) return@collectLatest
 
                 isUserScrolling.value = false
-                currentItem.value?.key?.let(scroller::animateTo)
+                currentItem.value?.tempKey?.let(scroller::animateTo)
                 onPositionReset()
             }
     }
@@ -194,46 +160,26 @@ fun LyricLayout(
             contentPadding = remember { PaddingValues(top = 300.dp, bottom = 500.dp) }
         ) {
             startRecord(recorder) {
-                if (lyricEntry.value.isEmpty()) {
+                if (lyrics.value.isEmpty()) {
                     itemWithRecord(key = "EMPTY_TIPS") {
-                        LyricSentence(
-                            lyric = EMPTY_SENTENCE_TIPS,
-                            maxWidth = maxWidth,
-                            textMeasurer = textMeasurer,
-                            fontFamily = fontFamily,
-                            textAlign = textAlign,
-                            textSize = textSize,
-                            currentTime = currentTime,
-                            isBlurredEnable = isBlurredEnable,
-                            isTranslationShow = isTranslationShow,
-                            isCurrent = { true },
-                            onLongClick = {
-                                if (isUserClickEnable()) onItemLongClick(
-                                    EMPTY_SENTENCE_TIPS
-                                )
-                            }
-                        )
+                        Text("暂无歌词")
                     }
                 } else {
                     itemsIndexedWithRecord(
-                        items = lyricEntry.value,
+                        items = lyrics.value,
                         key = { _, item -> item.key },
                         contentType = { _, _ -> LyricItem::class }
                     ) { index, item ->
-                        LyricSentence(
-                            lyric = item,
-                            maxWidth = maxWidth,
+                        item.Draw(
+                            modifier = Modifier,
                             textMeasurer = textMeasurer,
-                            fontFamily = fontFamily,
-                            textAlign = textAlign,
-                            textSize = textSize,
+                            fontFamily = { fontFamily.value },
                             currentTime = currentTime,
-                            positionToCurrent = { abs(index - currentItemIndex.value) },
-                            isBlurredEnable = isBlurredEnable,
-                            isTranslationShow = isTranslationShow,
-                            isCurrent = { item.key == currentItem.value?.key },
-                            onLongClick = { if (isUserClickEnable()) onItemLongClick(item) },
-                            onClick = { if (isUserClickEnable()) onItemClick(item) }
+                            screenConstraints = screenConstraints,
+                            offsetToCurrent = { abs(index - currentItemIndex.value) },
+                            isCurrent = { item.key == currentItem.value?.tempKey },
+                            onLongClick = { if (isUserClickEnable()) onItemLongClick(item.item) },
+                            onClick = { if (isUserClickEnable()) onItemClick(item.item) }
                         )
                     }
                 }
@@ -261,7 +207,7 @@ fun LyricLayout(
                 colors = colors,
                 onClick = {
                     isUserScrolling.value = false
-                    currentItem.value?.key?.let(scroller::animateTo)
+                    currentItem.value?.tempKey?.let(scroller::animateTo)
                     onPositionReset()
                 }
             ) {

@@ -31,6 +31,8 @@ import com.lalilu.common.post
 import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.LyricSourceEmbedded
 import com.lalilu.lmedia.lyric.LyricUtils
+import com.lalilu.lmedia.lyric.findPlayingIndex
+import com.lalilu.lmedia.lyric.getSentenceContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -189,7 +191,7 @@ class MNotificationProvider(
                 val list = lyrics?.second ?: break
                 val time = withContext(Dispatchers.Main) { mediaSession.player.currentPosition }
 
-                val index = LyricUtils.findPlayingIndex(time, list)
+                val index = list.findPlayingIndex(time)
                 if (lastIndex == index) {
                     delay(50)
                     continue
@@ -201,8 +203,8 @@ class MNotificationProvider(
                 if (current != null) {
                     post {
                         val text = when (current) {
-                            is LyricItem.SingleLyric -> current.content
-                            is LyricItem.TranslatedLyric -> current.content
+                            is LyricItem.NormalLyric -> current.content
+                            is LyricItem.WordsLyric -> current.getSentenceContent()
                             else -> ""
                         }
 

@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
@@ -34,10 +34,10 @@ import com.lalilu.R
 import com.lalilu.RemixIcon
 import com.lalilu.common.CustomRomUtils
 import com.lalilu.component.IconTextButton
-import com.lalilu.component.LLazyColumn
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
 import com.lalilu.component.settings.SettingCategory
 import com.lalilu.component.settings.SettingFilePicker
@@ -85,7 +85,6 @@ private fun SettingsScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
     val darkModeOption = settingsSp.darkModeOption
     val ignoreAudioFocus = settingsSp.ignoreAudioFocus
     val enableUnknownFilter = settingsSp.enableUnknownFilter
@@ -107,7 +106,7 @@ private fun SettingsScreen(
     ) {
     }
 
-    LLazyColumn(
+    LazyColumn(
         contentPadding = PaddingValues(top = rememberFixedStatusBarHeightDp())
     ) {
         item {
@@ -323,5 +322,7 @@ private fun SettingsScreen(
                 }
             }
         }
+
+        smartBarPadding()
     }
 }

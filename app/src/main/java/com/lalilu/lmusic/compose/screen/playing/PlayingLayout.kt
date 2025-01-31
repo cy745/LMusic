@@ -53,9 +53,7 @@ import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricLayout
 import com.lalilu.lmusic.compose.screen.playing.lyric.index
-import com.lalilu.lmusic.compose.screen.playing.lyric.rememberFontFamilyFromPath
-import com.lalilu.lmusic.compose.screen.playing.lyric.rememberTextAlignFromGravity
-import com.lalilu.lmusic.compose.screen.playing.lyric.rememberTextSizeFromInt
+import com.lalilu.lmusic.compose.screen.playing.lyric.utils.rememberFontFamilyFromPath
 import com.lalilu.lmusic.compose.screen.playing.seekbar.ClickPart
 import com.lalilu.lmusic.compose.screen.playing.seekbar.SeekbarLayout
 import com.lalilu.lmusic.datastore.SettingsSp
@@ -271,12 +269,8 @@ fun PlayingLayout(
                     lyricEntry = lyrics,
                     listState = listState,
                     currentTime = { seekbarTime.longValue },
-                    maxWidth = { constraints.maxWidth },
-                    textSize = rememberTextSizeFromInt { settingsSp.lyricTextSize.value },
-                    textAlign = rememberTextAlignFromGravity { settingsSp.lyricGravity.value },
+                    screenConstraints = constraints,
                     fontFamily = rememberFontFamilyFromPath { settingsSp.lyricTypefacePath.value },
-                    isBlurredEnable = { !isLyricScrollEnable.value && settingsSp.isEnableBlurEffect.value },
-                    isTranslationShow = { settingsSp.isDrawTranslation.value },
                     isUserClickEnable = { draggable.state.value == DragAnchor.Max },
                     isUserScrollEnable = { isLyricScrollEnable.value },
                     onPositionReset = {
@@ -292,7 +286,6 @@ fun PlayingLayout(
                     },
                     onItemLongClick = {
                         if (draggable.state.value == DragAnchor.Max) {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             isLyricScrollEnable.value = !isLyricScrollEnable.value
                         }
                     },
