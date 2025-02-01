@@ -52,7 +52,6 @@ import com.lalilu.lmedia.lyric.LyricUtils
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricLayout
-import com.lalilu.lmusic.compose.screen.playing.lyric.index
 import com.lalilu.lmusic.compose.screen.playing.lyric.utils.rememberFontFamilyFromPath
 import com.lalilu.lmusic.compose.screen.playing.seekbar.ClickPart
 import com.lalilu.lmusic.compose.screen.playing.seekbar.SeekbarLayout
@@ -245,7 +244,6 @@ fun PlayingLayout(
                         MPlayer.currentMediaItem
                             ?.let { lyricSource.loadLyric(it) }
                             ?.let { LyricUtils.parseLrc(it.first, it.second) }
-                            ?.mapIndexed { index, lyricItem -> lyricItem.also { it.index = index } }
                             .let { if (isActive) lyrics.value = it ?: emptyList() }
                     }
                 }

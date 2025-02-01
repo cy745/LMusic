@@ -1,5 +1,7 @@
 package com.lalilu.lmusic.compose.screen.playing.lyric.utils
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.TextLayoutResult
@@ -41,6 +43,13 @@ fun TextLayoutResult.getWidthForOffset(offset: Int): Int {
     return sumWidthForLine(lineIndex - 1) + position
 }
 
+@Immutable
+data class WordsLayoutResult(
+    @Stable val path: Path,
+    @Stable val rect: Rect,
+    @Stable val position: Float
+)
+
 /**
  * 获取指定进度对应的路径
  *
@@ -52,7 +61,7 @@ fun TextLayoutResult.getPathForProgress(
     progress: Float,
     offset: Int = 0,
     length: Int? = null
-): Path {
+): WordsLayoutResult {
     val offsetWidth = getWidthForOffset(offset)
     val maxWidth = if (length == null) {
         sumWidthForLine(lineCount - 1)
@@ -64,6 +73,8 @@ fun TextLayoutResult.getPathForProgress(
     var addedWidth = 0f
 
     val path = Path()
+    var rect: Rect? = null
+    var position = 0f
     for (lineIndex in 0 until lineCount) {
         val lineWidth = getLineWidth(lineIndex)
 
@@ -71,17 +82,32 @@ fun TextLayoutResult.getPathForProgress(
         if (addedWidth + lineWidth >= targetWidth) {
             val widthToAdd = targetWidth - addedWidth
 
-            val rect = getLineRect(lineIndex)
-                .let { it.copy(right = it.left + widthToAdd) }
-            path.addRect(rect)
+            val lineRect = getLineRect(lineIndex)
+            val lineRectWithProgress = lineRect.let { it.copy(right = it.left + widthToAdd) }
+            path.addRect(lineRectWithProgress)
+
+            // 获取当前行（词）的左右边界
+            rect = lineRect.copy(
+                left = lineRect.left + offsetWidth - addedWidth,
+                right = lineRect.left + maxWidth - addedWidth
+            )
+
+            // 获取当前行（词）的播放位置
+            position = lineRectWithProgress.right
             addedWidth += widthToAdd
             break
         } else {
-            val rect = getLineRect(lineIndex)
-            path.addRect(rect)
+            val lineRect = getLineRect(lineIndex)
+            path.addRect(lineRect)
+            position = lineRect.right
             addedWidth += lineWidth
+            rect = lineRect
         }
     }
 
-    return path
+    return WordsLayoutResult(
+        path = path,
+        rect = rect ?: Rect.Zero,
+        position = position
+    )
 }

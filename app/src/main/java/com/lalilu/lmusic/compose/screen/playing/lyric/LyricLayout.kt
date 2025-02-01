@@ -41,7 +41,6 @@ import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
 import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.findPlayingIndex
-import com.lalilu.lmedia.lyric.toNormal
 import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricContentNormal
 import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricContentWords
 import com.lalilu.lmusic.utils.extension.edgeTransparent
@@ -49,17 +48,8 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.isActive
-import java.util.WeakHashMap
 import kotlin.math.abs
 
-
-private val indexKeeper = WeakHashMap<LyricItem, Int>()
-var LyricItem.index: Int
-    get() = indexKeeper[this] ?: -1
-    set(value) = run { indexKeeper[this] = value }
-
-val LyricItem.tempKey
-    get() = "${index}:$time"
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -94,27 +84,6 @@ fun LyricLayout(
         }
     }
 
-    val lyrics: State<List<LyricContent>> = remember {
-        derivedStateOf {
-            lyricEntry.value.mapNotNull {
-                when (it) {
-                    is LyricItem.WordsLyric -> LyricContentWords(
-                        key = it.tempKey,
-                        lyric = it
-                    )
-
-                    else -> {
-                        val item = it.toNormal() ?: return@mapNotNull null
-                        LyricContentNormal(
-                            key = item.tempKey,
-                            lyric = item
-                        )
-                    }
-                }
-            }
-        }
-    }
-
     val currentItem: State<LyricItem?> = remember {
         derivedStateOf {
             currentItemIndex.value
@@ -125,7 +94,7 @@ fun LyricLayout(
 
     BackHandler(enabled = isUserScrolling.value) {
         isUserScrolling.value = false
-        currentItem.value?.tempKey?.let(scroller::animateTo)
+        currentItem.value?.key?.let(scroller::animateTo)
         onPositionReset()
     }
 
@@ -133,7 +102,7 @@ fun LyricLayout(
         snapshotFlow { currentItem.value }
             .collectLatest {
                 it ?: return@collectLatest
-                scroller.animateTo(it.tempKey)
+                scroller.animateTo(it.key)
             }
     }
 
@@ -145,7 +114,7 @@ fun LyricLayout(
                 if (!isActive || isDragging || !isScrolling) return@collectLatest
 
                 isUserScrolling.value = false
-                currentItem.value?.tempKey?.let(scroller::animateTo)
+                currentItem.value?.key?.let(scroller::animateTo)
                 onPositionReset()
             }
     }
@@ -160,27 +129,43 @@ fun LyricLayout(
             contentPadding = remember { PaddingValues(top = 300.dp, bottom = 500.dp) }
         ) {
             startRecord(recorder) {
-                if (lyrics.value.isEmpty()) {
+                if (lyricEntry.value.isEmpty()) {
                     itemWithRecord(key = "EMPTY_TIPS") {
                         Text("暂无歌词")
                     }
                 } else {
                     itemsIndexedWithRecord(
-                        items = lyrics.value,
+                        items = lyricEntry.value,
                         key = { _, item -> item.key },
                         contentType = { _, _ -> LyricItem::class }
                     ) { index, item ->
-                        item.Draw(
-                            modifier = Modifier,
-                            textMeasurer = textMeasurer,
-                            fontFamily = { fontFamily.value },
-                            currentTime = currentTime,
-                            screenConstraints = screenConstraints,
-                            offsetToCurrent = { abs(index - currentItemIndex.value) },
-                            isCurrent = { item.key == currentItem.value?.tempKey },
-                            onLongClick = { if (isUserClickEnable()) onItemLongClick(item.item) },
-                            onClick = { if (isUserClickEnable()) onItemClick(item.item) }
-                        )
+                        when (item) {
+                            is LyricItem.NormalLyric -> LyricContentNormal(
+                                lyric = item,
+                                modifier = Modifier,
+                                textMeasurer = textMeasurer,
+                                fontFamily = { fontFamily.value },
+                                currentTime = currentTime,
+                                screenConstraints = screenConstraints,
+                                offsetToCurrent = { abs(index - currentItemIndex.value) },
+                                isCurrent = { item.key == currentItem.value?.key },
+                                onLongClick = { if (isUserClickEnable()) onItemLongClick(item) },
+                                onClick = { if (isUserClickEnable()) onItemClick(item) }
+                            )
+
+                            is LyricItem.WordsLyric -> LyricContentWords(
+                                lyric = item,
+                                modifier = Modifier,
+                                textMeasurer = textMeasurer,
+                                fontFamily = { fontFamily.value },
+                                currentTime = currentTime,
+                                screenConstraints = screenConstraints,
+                                offsetToCurrent = { abs(index - currentItemIndex.value) },
+                                isCurrent = { item.key == currentItem.value?.key },
+                                onLongClick = { if (isUserClickEnable()) onItemLongClick(item) },
+                                onClick = { if (isUserClickEnable()) onItemClick(item) }
+                            )
+                        }
                     }
                 }
             }
@@ -207,7 +192,7 @@ fun LyricLayout(
                 colors = colors,
                 onClick = {
                     isUserScrolling.value = false
-                    currentItem.value?.tempKey?.let(scroller::animateTo)
+                    currentItem.value?.key?.let(scroller::animateTo)
                     onPositionReset()
                 }
             ) {
