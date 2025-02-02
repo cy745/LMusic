@@ -19,9 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,7 +44,7 @@ import com.lalilu.lmedia.entity.Metadata
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lmusic.LMusicTheme
 import com.lalilu.lmusic.viewmodel.SongsEvent
-import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.action.MediaControl
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -63,7 +61,6 @@ internal fun SongsScreenContent(
     onClickGroup: (GroupIdentity) -> Unit = {}
 ) {
     val density = LocalDensity.current
-    val hapticFeedback = LocalHapticFeedback.current
     val listState: LazyListState = rememberLazyListState()
     val statusBar = WindowInsets.statusBars
     val scroller = rememberLazyListAnimateScroller(
@@ -176,12 +173,13 @@ internal fun SongsScreenContent(
                                 if (isSelecting()) {
                                     onSelect(it)
                                 } else {
-                                    PlayerAction.PlayById(it.id).action()
+                                    MediaControl.playWithList(
+                                        mediaIds = list.map(LSong::id),
+                                        mediaId = it.id
+                                    )
                                 }
                             },
                             onLongClick = {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-
                                 if (isSelecting()) {
                                     onSelect(it)
                                 } else {

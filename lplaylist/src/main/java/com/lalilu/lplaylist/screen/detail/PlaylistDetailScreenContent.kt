@@ -22,9 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gigamole.composefadingedges.FadingEdgesGravity
@@ -43,7 +41,7 @@ import com.lalilu.component.extension.startRecord
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
-import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.action.MediaControl
 import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.viewmodel.PlaylistDetailEvent
 import com.lalilu.remixicon.Design
@@ -70,7 +68,6 @@ internal fun PlaylistDetailScreenContent(
 ) {
     val density = LocalDensity.current
     val statusBar = WindowInsets.statusBars
-    val hapticFeedback = LocalHapticFeedback.current
     val listState: LazyListState = rememberLazyListState()
     val stickyHeaderContentType = remember { "group" }
     val scroller = rememberLazyListAnimateScroller(
@@ -207,12 +204,13 @@ internal fun PlaylistDetailScreenContent(
                                 if (isSelecting()) {
                                     onSelect(item)
                                 } else {
-                                    PlayerAction.PlayById(item.id).action()
+                                    MediaControl.playWithList(
+                                        mediaIds = playlistState.map(LSong::id),
+                                        mediaId = item.id
+                                    )
                                 }
                             },
                             onLongClick = {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-
                                 if (isSelecting()) {
                                     onSelect(item)
                                 } else {
@@ -255,12 +253,13 @@ internal fun PlaylistDetailScreenContent(
                                 if (isSelecting()) {
                                     onSelect(item)
                                 } else {
-                                    PlayerAction.PlayById(item.id).action()
+                                    MediaControl.playWithList(
+                                        mediaIds = playlistState.map(LSong::id),
+                                        mediaId = item.id
+                                    )
                                 }
                             },
                             onLongClick = {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-
                                 if (isSelecting()) {
                                     onSelect(item)
                                 } else {

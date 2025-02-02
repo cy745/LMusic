@@ -10,7 +10,6 @@ import coil3.SingletonImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.transitionFactory
 import com.lalilu.R
-import com.lalilu.component.viewmodel.IPlayingViewModel
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
 import com.lalilu.lmusic.datastore.SettingsSp
@@ -24,12 +23,10 @@ import com.lalilu.lmusic.utils.coil.keyer.LAlbumCoverKeyer
 import com.lalilu.lmusic.utils.coil.keyer.LSongCoverKeyer
 import com.lalilu.lmusic.utils.coil.keyer.MediaItemKeyer
 import com.lalilu.lmusic.utils.extension.toBitmap
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
@@ -81,8 +78,6 @@ val AppModule = module {
 }
 
 val ViewModelModule = module {
-    viewModelOf(::PlayingViewModel)
-    viewModel<IPlayingViewModel> { get<PlayingViewModel>() }
     viewModelOf(::SearchLyricViewModel)
 }
 

@@ -167,7 +167,7 @@ private fun LayoutForMobile(
     BottomSheetLayout(
         modifier = modifier.fillMaxSize(),
         scrimColor = Color.Black.copy(alpha = 0.5f),
-        skipHalfExpanded = false,
+        skipHalfExpanded = true,
         sheetBackgroundColor = MaterialTheme.colors.background,
         animationSpec = tween(
             durationMillis = 200,

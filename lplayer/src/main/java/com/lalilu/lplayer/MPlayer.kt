@@ -16,8 +16,10 @@ import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.Utils
+import com.lalilu.lmedia.LMedia
+import com.lalilu.lplayer.action.Action
+import com.lalilu.lplayer.action.PlayerAction
 import com.lalilu.lplayer.extensions.PlayMode
-import com.lalilu.lplayer.extensions.PlayerAction
 import com.lalilu.lplayer.extensions.playMode
 import com.lalilu.lplayer.service.CustomCommand
 import com.lalilu.lplayer.service.MService
@@ -89,7 +91,7 @@ object MPlayer : CoroutineScope {
         }
     }
 
-    fun doAction(action: PlayerAction) = launch(Dispatchers.Main) {
+    fun doAction(action: Action) = launch(Dispatchers.Main) {
         val browser = browserFuture.await()
 
         when (action) {
@@ -154,6 +156,27 @@ object MPlayer : CoroutineScope {
 
             is PlayerAction.SetPlayMode -> {
                 browser.playMode = action.playMode
+            }
+
+            is PlayerAction.AddToNext -> {
+                val item = browser.getItem(action.mediaId).await().value ?: return@launch
+                val index = browser.currentTimeline.indexOf(action.mediaId)
+
+                if (index != -1) {
+                    val offset = if (index > browser.currentMediaItemIndex) 1 else 0
+                    browser.moveMediaItem(index, browser.currentMediaItemIndex + offset)
+                } else {
+                    browser.addMediaItem(browser.currentMediaItemIndex + 1, item)
+                }
+            }
+
+            is PlayerAction.UpdateList -> {
+                val index = action.mediaId?.let { action.mediaIds.indexOf(it) }
+                    ?.takeIf { it >= 0 }
+                    ?: 0
+
+                val items = LMedia.mapItems(action.mediaIds)
+                browser.setMediaItems(items, index, 0)
             }
         }
     }

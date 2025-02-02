@@ -17,7 +17,7 @@ import com.lalilu.component.base.screen.ScreenType
 import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lplayer.extensions.QueueAction
+import com.lalilu.lplayer.action.PlayerAction
 import com.zhangke.krouter.annotation.Destination
 import com.zhangke.krouter.annotation.Param
 import org.koin.core.parameter.parametersOf
@@ -50,7 +50,7 @@ data class SongDetailScreen(
                 onAction = {
                     val song = LMedia.get<LSong>(id = mediaId) ?: return@Static
 
-                    QueueAction.AddToNext(song.id).action()
+                    PlayerAction.AddToNext(song.id).action()
                     DynamicTipsItem.Static(
                         title = song.metadata.title,
                         subTitle = "下一首播放",

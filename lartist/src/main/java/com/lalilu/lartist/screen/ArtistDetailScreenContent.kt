@@ -18,9 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +41,7 @@ import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.GroupIdentity
 import com.lalilu.lplayer.MPlayer
-import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.action.MediaControl
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
@@ -64,7 +62,6 @@ internal fun ArtistDetailScreenContent(
     val statusBar = WindowInsets.statusBars
     val density = LocalDensity.current
     val stickyHeaderContentType = remember { "group" }
-    val hapticFeedback = LocalHapticFeedback.current
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
         keys = keys
@@ -181,12 +178,13 @@ internal fun ArtistDetailScreenContent(
                             if (isSelecting()) {
                                 onSelect(it)
                             } else {
-                                PlayerAction.PlayById(it.id).action()
+                                MediaControl.playWithList(
+                                    mediaIds = list.map(LSong::id),
+                                    mediaId = it.id
+                                )
                             }
                         },
                         onLongClick = {
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-
                             if (isSelecting()) {
                                 onSelect(it)
                             } else {

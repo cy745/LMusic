@@ -12,13 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.LazyGridContent
 import com.lalilu.component.navigation.AppRouter
-import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmusic.compose.component.card.RecommendCard
 import com.lalilu.lmusic.compose.component.card.RecommendRow
 import com.lalilu.lmusic.compose.component.card.RecommendTitle
 import com.lalilu.lmusic.viewmodel.LibraryViewModel
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.MPlayer
+import com.lalilu.lplayer.action.MediaControl
 import org.koin.compose.koinInject
 
 
@@ -28,7 +27,6 @@ object LatestPanel : LazyGridContent {
     @Composable
     override fun register(): LazyGridScope.() -> Unit {
         val libraryVM: LibraryViewModel = koinInject()
-        val playingVM: PlayingViewModel = koinInject()
         val items by libraryVM.recentlyAdded
 
         return fun LazyGridScope.() {
@@ -73,13 +71,7 @@ object LatestPanel : LazyGridContent {
                                 .jump()
                         },
                         isPlaying = { MPlayer.isItemPlaying(it.id) },
-                        onClickButton = {
-                            playingVM.play(
-                                mediaId = it.id,
-                                playOrPause = true,
-                                addToNext = true
-                            )
-                        }
+                        onClickButton = { MediaControl.addAndPlay(mediaId = it.id) }
                     )
                 }
             }

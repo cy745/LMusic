@@ -54,7 +54,7 @@ import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.enableFor
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.action.PlayerAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import org.koin.compose.koinInject

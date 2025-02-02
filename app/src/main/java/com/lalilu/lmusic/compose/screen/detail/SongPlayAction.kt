@@ -24,9 +24,8 @@ import androidx.compose.ui.unit.sp
 import com.lalilu.R
 import com.lalilu.RemixIcon
 import com.lalilu.component.base.screen.ScreenAction
-import com.lalilu.component.extension.singleViewModel
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.MPlayer
+import com.lalilu.lplayer.action.MediaControl
 import com.lalilu.remixicon.Media
 import com.lalilu.remixicon.media.pauseLine
 import com.lalilu.remixicon.media.playLine
@@ -34,18 +33,11 @@ import com.lalilu.remixicon.media.playLine
 @OptIn(ExperimentalMaterialApi::class)
 fun provideSongPlayAction(mediaId: String): ScreenAction.Dynamic {
     return ScreenAction.Dynamic { actionContext ->
-        val playingVM: PlayingViewModel = singleViewModel()
         val color = Color(0xFF008394)
 
         Surface(
             color = color.copy(0.2f),
-            onClick = {
-                playingVM.play(
-                    mediaId = mediaId,
-                    addToNext = true,
-                    playOrPause = true
-                )
-            }
+            onClick = { MediaControl.addAndPlay(mediaId) }
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 20.dp),

@@ -37,18 +37,17 @@ import coil3.request.crossfade
 import coil3.request.transformations
 import com.lalilu.R
 import com.lalilu.RemixIcon
-import com.lalilu.component.extension.singleViewModel
+import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.coil.BlurTransformation
-import com.lalilu.lmusic.viewmodel.PlayingViewModel
 import com.lalilu.lplayer.MPlayer
-import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.action.PlayerAction
 import com.lalilu.remixicon.Media
 import com.lalilu.remixicon.media.playLine
+import org.koin.compose.koinInject
 
 @Composable
 fun PlayingLayoutExpended(
     modifier: Modifier = Modifier,
-    playingVM: PlayingViewModel = singleViewModel(),
 ) {
     val currentPlaying = MPlayer.currentMediaItem
     val context = LocalContext.current
@@ -114,7 +113,7 @@ fun PlayingLayoutExpended(
                 }
 
                 SongDetailPanel(playable = currentPlaying)
-                ControlPanel(playingVM)
+                ControlPanel()
             }
         }
     }
@@ -157,10 +156,10 @@ fun SongDetailPanel(
 
 @Composable
 fun ControlPanel(
-    playingVM: PlayingViewModel = singleViewModel(),
+    settingsSp: SettingsSp = koinInject()
 ) {
     val isPlaying = remember { derivedStateOf { MPlayer.isPlaying } }
-    var playMode by playingVM.settingsSp.playMode
+    var playMode by settingsSp.playMode
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

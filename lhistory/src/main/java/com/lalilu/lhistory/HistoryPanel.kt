@@ -8,8 +8,6 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.LazyGridContent
 import com.lalilu.component.base.LocalWindowSize
@@ -30,7 +28,6 @@ class HistoryPanel : LazyGridContent {
     override fun register(): LazyGridScope.() -> Unit {
         val historyVM = koinInject<HistoryVM>()
         val widthSizeClass = LocalWindowSize.current.widthSizeClass
-        val haptic = LocalHapticFeedback.current
         val items by historyVM.historyState
 
         return fun LazyGridScope.() {
@@ -56,8 +53,6 @@ class HistoryPanel : LazyGridContent {
 
                     },
                     onLongClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-
                         AppRouter.route("/pages/songs/detail")
                             .with("mediaId", item.id)
                             .jump()

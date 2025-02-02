@@ -36,7 +36,7 @@ import coil3.compose.AsyncImage
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.lmusic.compose.screen.playing.util.DiffUtil
 import com.lalilu.lmusic.compose.screen.playing.util.ListUpdateCallback
-import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.action.PlayerAction
 import kotlinx.coroutines.launch
 
 

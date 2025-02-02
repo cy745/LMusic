@@ -1,4 +1,4 @@
-package com.lalilu.lplayer.extensions
+package com.lalilu.lplayer.action
 
 
 interface Action {
