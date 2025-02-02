@@ -70,6 +70,7 @@ fun LyricContentWords(
     val paddingHorizontal = remember { 40.dp }
     val paddingVerticalPx = remember { with(density) { paddingVertical.roundToPx() } }
     val paddingHorizontalPx = remember { with(density) { paddingHorizontal.roundToPx() } }
+    val gapHeight = remember(translationGap) { with(density) { translationGap.toPx() } }
 
     val fullSentence = remember { lyric.getSentenceContent() }
     val actualConstraints = remember {
@@ -103,6 +104,16 @@ fun LyricContentWords(
             style = textStyle
         )
     }
+
+    val translateResult = remember {
+        val text = lyric.translation.firstOrNull()?.content ?: return@remember null
+        textMeasurer.measure(
+            text = text,
+            constraints = actualConstraints,
+            style = textStyle.copy(fontSize = textStyle.fontSize * 0.7f)
+        )
+    }
+
     val scale = animateFloatAsState(
         targetValue = when {
             isCurrent() -> 100f
@@ -131,10 +142,14 @@ fun LyricContentWords(
     )
 
     val textHeight = remember(textResult) { textResult.getLineBottom(textResult.lineCount - 1) }
-    val pivotOffset = remember(textHeight) { Offset.Zero.copy(y = textHeight / 2f, x = 0f) }
-    val heightDp = remember(textHeight) {
-        density.run { textHeight.toDp() + paddingVertical * 2 }
+    val translateHeight = remember(translateResult) {
+        translateResult?.let { it.getLineBottom(it.lineCount - 1) } ?: 0f
     }
+    val pivotOffset = remember(textHeight) { Offset.Zero.copy(y = textHeight / 2f, x = 0f) }
+    val height = remember(isTranslationShow(), textHeight, translateHeight) {
+        textHeight + if (isTranslationShow() && translateHeight > 0) translateHeight + gapHeight else 0f
+    }
+    val heightDp = remember(height) { density.run { height.toDp() + paddingVertical * 2 } }
     val animateHeight = animateDpAsState(
         targetValue = heightDp,
         animationSpec = spring(
@@ -143,6 +158,9 @@ fun LyricContentWords(
         ),
         label = ""
     )
+    val translationTopLeft = remember(textHeight) {
+        Offset.Zero.copy(y = textHeight + gapHeight)
+    }
 
     Canvas(
         modifier = modifier
@@ -182,7 +200,7 @@ fun LyricContentWords(
             pivot = pivotOffset
         ) {
             drawText(
-                color = Color(0x50FFFFFF),
+                color = Color(0x80FFFFFF),
                 shadow = DEFAULT_TEXT_SHADOW,
                 textLayoutResult = textResult,
             )
@@ -231,6 +249,14 @@ fun LyricContentWords(
                     }
                 }
             }
+
+            if (translateResult == null) return@scale
+            drawText(
+                color = Color(0x80FFFFFF),
+                topLeft = translationTopLeft,
+                shadow = DEFAULT_TEXT_SHADOW,
+                textLayoutResult = translateResult,
+            )
         }
     }
 }
