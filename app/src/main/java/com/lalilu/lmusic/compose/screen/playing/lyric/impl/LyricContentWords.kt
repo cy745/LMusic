@@ -101,19 +101,28 @@ fun LyricContentWords(
         ),
         label = ""
     )
-    val alpha = animateFloatAsState(
-        targetValue = when {
-            isCurrent -> 1f
-            context.currentTime() in lyric.startTime..lyric.endTime -> 0.75f
-            else -> 0.5f
-        },
+
+    val animateAlpha = animateFloatAsState(
+        targetValue = if (settings.translationVisible) 1f else 0f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMediumLow
         ),
-        visibilityThreshold = 0.001f,
         label = ""
     )
+//    val alpha = animateFloatAsState(
+//        targetValue = when {
+//            isCurrent -> 1f
+//            context.currentTime() in lyric.startTime..lyric.endTime -> 0.75f
+//            else -> 0.5f
+//        },
+//        animationSpec = spring(
+//            dampingRatio = Spring.DampingRatioNoBouncy,
+//            stiffness = Spring.StiffnessLow
+//        ),
+//        visibilityThreshold = 0.001f,
+//        label = ""
+//    )
 
     val (heightDp, translationTopLeft, pivotOffset) = remember(
         textResult, translateResult, settings
@@ -255,8 +264,9 @@ fun LyricContentWords(
             drawText(
                 color = Color(0x80FFFFFF),
                 topLeft = translationTopLeft as? Offset ?: Offset.Zero,
-                shadow = DEFAULT_TEXT_SHADOW,
+//                shadow = DEFAULT_TEXT_SHADOW,
                 textLayoutResult = translateResult,
+                alpha = animateAlpha.value
             )
         }
     }
