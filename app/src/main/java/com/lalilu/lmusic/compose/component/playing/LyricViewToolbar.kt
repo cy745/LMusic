@@ -3,12 +3,16 @@ package com.lalilu.lmusic.compose.component.playing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
@@ -21,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.funny.data_saver.core.DataSaverMutableState
@@ -39,6 +44,8 @@ import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.extension.SleepTimerSmallEntry
 import org.koin.compose.koinInject
 import org.koin.core.qualifier.named
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transparent) {
     val settingsSp: SettingsSp = koinInject()
@@ -64,7 +71,11 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
             .navigationBarsPadding(),
         shape = RoundedCornerShape(15.dp)
     ) {
-        Column(modifier = Modifier) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight(0.4f)
+                .verticalScroll(state = rememberScrollState())
+        ) {
             SettingStateSeekBar(
                 state = {
                     when (settings.value.textAlign) {
@@ -92,6 +103,80 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 onValueUpdate = { settings.value = settings.value.copy(mainFontSize = it.sp) },
                 title = "歌词文字大小",
                 valueRange = 14..36
+            )
+            SettingProgressSeekBar(
+                value = { settings.value.mainLineHeight.value },
+                onValueUpdate = { settings.value = settings.value.copy(mainLineHeight = it.sp) },
+                title = "歌词行高大小",
+                valueRange = 14..48
+            )
+            SettingProgressSeekBar(
+                value = { settings.value.mainFontWeight.toFloat() },
+                onValueUpdate = {
+                    settings.value = settings.value.copy(mainFontWeight = it.roundToInt())
+                },
+                title = "歌词字重",
+                valueRange = 50..900
+            )
+            SettingProgressSeekBar(
+                value = { settings.value.translationFontSize.value },
+                onValueUpdate = {
+                    settings.value = settings.value.copy(translationFontSize = it.sp)
+                },
+                title = "翻译文字大小",
+                valueRange = 14..36
+            )
+            SettingProgressSeekBar(
+                value = { settings.value.translationLineHeight.value },
+                onValueUpdate = {
+                    settings.value = settings.value.copy(translationLineHeight = it.sp)
+                },
+                title = "翻译行高大小",
+                valueRange = 14..48
+            )
+            SettingProgressSeekBar(
+                value = { settings.value.translationFontWeight.toFloat() },
+                onValueUpdate = {
+                    settings.value = settings.value.copy(translationFontWeight = it.roundToInt())
+                },
+                title = "翻译字重",
+                valueRange = 50..900
+            )
+            SettingProgressSeekBar(
+                value = { settings.value.timeOffset.toFloat() },
+                onValueUpdate = {
+                    settings.value = settings.value.copy(timeOffset = it.roundToLong())
+                },
+                title = "歌词偏移时间(ms)",
+                valueRange = 0..500
+            )
+            SettingProgressSeekBar(
+                value = { settings.value.gapSize.value },
+                onValueUpdate = {
+                    settings.value = settings.value.copy(gapSize = it.dp)
+                },
+                title = "歌词翻译间距",
+                valueRange = 0..50
+            )
+
+            SettingProgressSeekBar(
+                value = {
+                    settings.value.containerPadding.run {
+                        (calculateLeftPadding(LayoutDirection.Ltr) +
+                                calculateRightPadding(LayoutDirection.Ltr)) / 2
+                    }.value
+                },
+                onValueUpdate = {
+                    settings.value = settings.value.copy(
+                        containerPadding = PaddingValues(
+                            horizontal = it.dp,
+                            vertical = (settings.value.containerPadding.calculateTopPadding() +
+                                    settings.value.containerPadding.calculateBottomPadding()) / 2
+                        )
+                    )
+                },
+                title = "横向边距",
+                valueRange = 0..50
             )
             SettingSwitcher(
                 title = "歌词模糊效果",

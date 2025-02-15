@@ -2,6 +2,7 @@
     TextAlignSerializer::class,
     TextUnitSerializer::class,
     DpSerializer::class,
+    PaddingValueSerializer::class
 )
 
 package com.lalilu.lmusic.compose.screen.playing.lyric
@@ -22,9 +23,11 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.lmusic.compose.screen.playing.lyric.serializable.DpSerializer
+import com.lalilu.lmusic.compose.screen.playing.lyric.serializable.PaddingValueSerializer
 import com.lalilu.lmusic.compose.screen.playing.lyric.serializable.TextAlignSerializer
 import com.lalilu.lmusic.compose.screen.playing.lyric.serializable.TextUnitSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.UseSerializers
 
 
@@ -58,39 +61,41 @@ data class LyricSettings(
     val translationVisible: Boolean = true,
     val variableFontWeightEnable: Boolean = false
 ) {
-    val mainTextStyle: TextStyle by lazy {
-        TextStyle.Default.copy(
-            fontSize = mainFontSize,
-            textAlign = textAlign,
-            lineHeight = mainLineHeight,
-            fontWeight = FontWeight(mainFontWeight),
-            fontFamily = FontFamily(
-                mainFont?.toFont(
-                    variationSettings = FontVariation.Settings(FontVariation.weight(mainFontWeight))
-                ) ?: Font(
-                    familyName = DeviceFontFamilyName("FontFamily.Monospace"),
-                    variationSettings = FontVariation.Settings(FontVariation.weight(mainFontWeight))
-                )
+    @Transient
+    val mainTextStyle: TextStyle = TextStyle.Default.copy(
+        fontSize = mainFontSize,
+        textAlign = textAlign,
+        lineHeight = mainLineHeight,
+        fontWeight = FontWeight(mainFontWeight),
+        fontFamily = FontFamily(
+            mainFont?.toFont(
+                weight = FontWeight(mainFontWeight),
+                variationSettings = FontVariation.Settings(FontVariation.weight(mainFontWeight))
+            ) ?: Font(
+                familyName = DeviceFontFamilyName("FontFamily.Monospace"),
+                weight = FontWeight(mainFontWeight),
+                variationSettings = FontVariation.Settings(FontVariation.weight(mainFontWeight))
             )
         )
-    }
+    )
 
-    val translationTextStyle: TextStyle by lazy {
-        TextStyle.Default.copy(
-            fontSize = translationFontSize,
-            textAlign = textAlign,
-            lineHeight = translationLineHeight,
-            fontWeight = FontWeight(translationFontWeight),
-            fontFamily = FontFamily(
-                translationFont?.toFont(
-                    variationSettings = FontVariation.Settings(FontVariation.weight(mainFontWeight))
-                ) ?: Font(
-                    familyName = DeviceFontFamilyName("FontFamily.Monospace"),
-                    variationSettings = FontVariation.Settings(
-                        FontVariation.weight(translationFontWeight)
-                    )
+    @Transient
+    val translationTextStyle: TextStyle = TextStyle.Default.copy(
+        fontSize = translationFontSize,
+        textAlign = textAlign,
+        lineHeight = translationLineHeight,
+        fontWeight = FontWeight(translationFontWeight),
+        fontFamily = FontFamily(
+            translationFont?.toFont(
+                weight = FontWeight(mainFontWeight),
+                variationSettings = FontVariation.Settings(FontVariation.weight(mainFontWeight))
+            ) ?: Font(
+                familyName = DeviceFontFamilyName("FontFamily.Monospace"),
+                weight = FontWeight(mainFontWeight),
+                variationSettings = FontVariation.Settings(
+                    FontVariation.weight(translationFontWeight)
                 )
             )
         )
-    }
+    )
 }
