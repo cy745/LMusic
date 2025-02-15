@@ -29,13 +29,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.funny.data_saver.core.DataSaverMutableState
 import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
@@ -48,6 +48,8 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.isActive
+import org.koin.compose.koinInject
+import org.koin.core.qualifier.named
 
 
 @OptIn(FlowPreview::class)
@@ -56,15 +58,15 @@ fun LyricLayout(
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
     currentTime: () -> Long = { 0L },
+    lyricEntry: State<List<LyricItem>> = remember { mutableStateOf(emptyList()) },
     screenConstraints: Constraints,
     isUserClickEnable: () -> Boolean = { false },
     isUserScrollEnable: () -> Boolean = { false },
     onPositionReset: () -> Unit = {},
     onItemClick: (LyricItem) -> Unit = {},
     onItemLongClick: (LyricItem) -> Unit = {},
-    lyricEntry: State<List<LyricItem>> = remember { mutableStateOf(emptyList()) },
-    fontFamily: State<FontFamily?> = remember { mutableStateOf<FontFamily?>(null) }
 ) {
+    val settings: DataSaverMutableState<LyricSettings> = koinInject(named("LyricSettings"))
     val textMeasurer = rememberTextMeasurer()
     val isUserScrolling = remember { mutableStateOf(isUserScrollEnable()) }
         .also { it.value = isUserScrollEnable() }
@@ -77,7 +79,7 @@ fun LyricLayout(
 
     val currentItemIndex = remember {
         derivedStateOf {
-            val time = currentTime()
+            val time = currentTime() + settings.value.timeOffset
             val lyricEntryList = lyricEntry.value
 
             lyricEntryList.findPlayingIndex(time)
@@ -119,10 +121,9 @@ fun LyricLayout(
             }
     }
 
-    val settings = remember { mutableStateOf(LyricSettings()) }
     val context = remember {
         LyricContext(
-            currentTime = currentTime,
+            currentTime = { currentTime() + settings.value.timeOffset },
             currentIndex = { currentItemIndex.value },
             isUserScrolling = { isUserScrolling.value },
             screenConstraints = screenConstraints,

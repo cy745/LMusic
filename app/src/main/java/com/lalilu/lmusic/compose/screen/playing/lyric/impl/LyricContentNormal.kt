@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
@@ -142,14 +141,16 @@ fun LyricContentNormal(
         label = ""
     )
 
-    val blurRadius = remember {
-        derivedStateOf {
-            if (context.isUserScrolling()) return@derivedStateOf 0.dp
-            if (!settings.blurEffectEnable) return@derivedStateOf 0.dp
-            abs(index - context.currentIndex()).coerceAtMost(5).dp
-        }
+    val blurRadius = remember(
+        context.isUserScrolling(),
+        context.currentIndex(),
+        settings.blurEffectEnable
+    ) {
+        if (context.isUserScrolling()) return@remember 0.dp
+        if (!settings.blurEffectEnable) return@remember 0.dp
+        abs(index - context.currentIndex()).coerceAtMost(5).dp
     }
-    val animateBlurRadius = animateDpAsState(targetValue = blurRadius.value, label = "")
+    val animateBlurRadius = animateDpAsState(targetValue = blurRadius, label = "")
 
     Canvas(
         modifier = modifier

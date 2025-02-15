@@ -55,6 +55,7 @@ import com.lalilu.remixicon.system.settings4Line
 import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import kotlin.math.roundToInt
 
 @Destination("/pages/settings")
 object SettingsScreen : Screen, ScreenInfoFactory {
@@ -126,7 +127,8 @@ private fun SettingsScreen(
                     state = ignoreAudioFocus
                 )
                 SettingProgressSeekBar(
-                    state = volumeControl,
+                    value = { volumeControl.value.toFloat() },
+                    onValueUpdate = { volumeControl.value = it.roundToInt() },
                     title = "独立音量控制",
                     valueRange = 0..100
                 )
@@ -195,11 +197,11 @@ private fun SettingsScreen(
                     selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
                     titleRes = R.string.preference_lyric_settings_text_gravity
                 )
-                SettingProgressSeekBar(
-                    state = lyricTextSize,
-                    title = "歌词文字大小",
-                    valueRange = 14..36
-                )
+//                SettingProgressSeekBar(
+//                    state = lyricTextSize,
+//                    title = "歌词文字大小",
+//                    valueRange = 14..36
+//                )
             }
         }
 
@@ -208,11 +210,11 @@ private fun SettingsScreen(
                 iconRes = R.drawable.ic_scan_line,
                 titleRes = R.string.preference_media_source_settings
             ) {
-                SettingProgressSeekBar(
-                    state = durationFilter,
-                    title = "筛除小于时长的文件",
-                    valueRange = 0..60
-                )
+//                SettingProgressSeekBar(
+//                    state = durationFilter,
+//                    title = "筛除小于时长的文件",
+//                    valueRange = 0..60
+//                )
                 SettingSwitcher(
                     state = enableUnknownFilter,
                     titleRes = R.string.preference_media_source_settings_unknown_filter,

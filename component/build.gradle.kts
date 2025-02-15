@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
+
 plugins {
     id("com.android.library")
     kotlin("android")
@@ -31,7 +33,11 @@ android {
 }
 
 composeCompiler {
-    enableStrongSkippingMode = true
+    featureFlags.set(
+        listOf(
+            ComposeFeatureFlag.StrongSkipping
+        )
+    )
 }
 
 dependencies {
@@ -65,6 +71,8 @@ dependencies {
     api("com.github.GIGAMOLE:ComposeFadingEdges:1.0.4")
     api("dev.chrisbanes.haze:haze:1.2.2")
     api("dev.chrisbanes.haze:haze-materials:1.2.2")
+
+    api("io.github.FunnySaltyFish:data-saver-core:1.2.2")
 
     // https://mvnrepository.com/artifact/org.jetbrains.androidx.navigation/navigation-compose
     api("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")

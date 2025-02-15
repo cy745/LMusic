@@ -1,3 +1,9 @@
+@file:UseSerializers(
+    TextAlignSerializer::class,
+    TextUnitSerializer::class,
+    DpSerializer::class,
+)
+
 package com.lalilu.lmusic.compose.screen.playing.lyric
 
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,6 +21,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lalilu.lmusic.compose.screen.playing.lyric.serializable.DpSerializer
+import com.lalilu.lmusic.compose.screen.playing.lyric.serializable.TextAlignSerializer
+import com.lalilu.lmusic.compose.screen.playing.lyric.serializable.TextUnitSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+
 
 internal val DEFAULT_TEXT_SHADOW = Shadow(
     color = Color.Black.copy(alpha = 0.2f),
@@ -22,22 +34,24 @@ internal val DEFAULT_TEXT_SHADOW = Shadow(
     blurRadius = 1f
 )
 
+@Serializable
 data class LyricSettings(
     // 布局样式配置
     val textAlign: TextAlign = TextAlign.Start,
     val containerPadding: PaddingValues = PaddingValues(horizontal = 40.dp, vertical = 15.dp),
     val gapSize: Dp = 10.dp,
     val scaleRange: ClosedRange<Float> = 0.85f..1f,
+    val timeOffset: Long = 50L,
 
     // 字体样式配置
     val mainFontSize: TextUnit = 26.sp,
     val mainLineHeight: TextUnit = 28.sp,
     val mainFontWeight: Int = FontWeight.Black.weight,
-    val mainFontFamily: FontFamily? = null,
+    val mainFont: SerializableFont? = null,
     val translationFontSize: TextUnit = 22.sp,
     val translationLineHeight: TextUnit = 26.sp,
     val translationFontWeight: Int = FontWeight.Bold.weight,
-    val translationFontFamily: FontFamily? = null,
+    val translationFont: SerializableFont? = null,
 
     // 特殊效果开关
     val blurEffectEnable: Boolean = true,
@@ -50,8 +64,10 @@ data class LyricSettings(
             textAlign = textAlign,
             lineHeight = mainLineHeight,
             fontWeight = FontWeight(mainFontWeight),
-            fontFamily = mainFontFamily ?: FontFamily(
-                Font(
+            fontFamily = FontFamily(
+                mainFont?.toFont(
+                    variationSettings = FontVariation.Settings(FontVariation.weight(mainFontWeight))
+                ) ?: Font(
                     familyName = DeviceFontFamilyName("FontFamily.Monospace"),
                     variationSettings = FontVariation.Settings(FontVariation.weight(mainFontWeight))
                 )
@@ -65,8 +81,10 @@ data class LyricSettings(
             textAlign = textAlign,
             lineHeight = translationLineHeight,
             fontWeight = FontWeight(translationFontWeight),
-            fontFamily = translationFontFamily ?: FontFamily(
-                Font(
+            fontFamily = FontFamily(
+                translationFont?.toFont(
+                    variationSettings = FontVariation.Settings(FontVariation.weight(mainFontWeight))
+                ) ?: Font(
                     familyName = DeviceFontFamilyName("FontFamily.Monospace"),
                     variationSettings = FontVariation.Settings(
                         FontVariation.weight(translationFontWeight)

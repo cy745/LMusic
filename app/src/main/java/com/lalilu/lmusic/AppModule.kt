@@ -9,6 +9,8 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.transitionFactory
+import com.funny.data_saver.core.DataSaverInterface
+import com.funny.data_saver.core.DataSaverPreferences
 import com.lalilu.R
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
@@ -24,6 +26,7 @@ import com.lalilu.lmusic.utils.coil.keyer.LSongCoverKeyer
 import com.lalilu.lmusic.utils.coil.keyer.MediaItemKeyer
 import com.lalilu.lmusic.utils.extension.toBitmap
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
@@ -38,6 +41,21 @@ import retrofit2.converter.gson.GsonConverterFactory
 @Module
 @ComponentScan("com.lalilu.lmusic")
 object MainModule
+
+@Single
+fun provideDataSaverInterface(
+    application: Application
+): DataSaverInterface {
+    val sp = application.getSharedPreferences("settings", Application.MODE_PRIVATE)
+    return DataSaverPreferences(sp)
+}
+
+@Single
+fun provideJson(): Json {
+    return Json {
+        ignoreUnknownKeys = true
+    }
+}
 
 @Single(createdAtStart = true)
 fun provideImageLoaderFactory(

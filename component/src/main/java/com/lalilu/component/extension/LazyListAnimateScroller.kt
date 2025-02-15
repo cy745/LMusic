@@ -224,7 +224,10 @@ class LazyListAnimateScroller internal constructor(
 fun rememberLazyListAnimateScroller(
     listState: LazyListState,
     keys: () -> Collection<Any> = { emptyList() },
-    defaultAnimationSpec: AnimationSpec<Float> = spring(stiffness = Spring.StiffnessVeryLow),
+    defaultAnimationSpec: AnimationSpec<Float> = spring(
+        stiffness = Spring.StiffnessVeryLow,
+        visibilityThreshold = 0.001f
+    ),
     enableScrollAnimation: () -> Boolean = { true },
 ): LazyListAnimateScroller {
     val enableAnimation = rememberUpdatedState(enableScrollAnimation())

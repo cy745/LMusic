@@ -11,8 +11,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.jetpack.ProvideNavigatorLifecycleKMPSupport
+import com.funny.data_saver.core.LocalDataSaver
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.lmusic.LMusicTheme
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 object App {
@@ -35,6 +37,7 @@ object App {
             MaterialTheme {
                 CompositionLocalProvider(
                     LocalWindowSize provides calculateWindowSizeClass(activity = activity),
+                    LocalDataSaver provides koinInject(),
                     content = content
                 )
             }

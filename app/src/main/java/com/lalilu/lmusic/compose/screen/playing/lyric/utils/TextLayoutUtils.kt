@@ -111,3 +111,15 @@ fun TextLayoutResult.getPathForProgress(
         position = position
     )
 }
+
+fun normalized(start: Long, end: Long, current: Long): Float {
+    if (start >= end) return 0f
+    val result = (current - start).toFloat() / (end - start).toFloat()
+    return result.coerceIn(0f, 1f)
+}
+
+fun normalized(start: Float, end: Float, current: Float): Float {
+    if (start >= end) return 0f
+    val result = (current - start) / (end - start)
+    return result.coerceIn(0f, 1f)
+}
