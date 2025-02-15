@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
@@ -19,62 +22,51 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.DeviceFontFamilyName
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.findPlayingIndexForWords
 import com.lalilu.lmedia.lyric.getSentenceContent
+import com.lalilu.lmusic.compose.screen.playing.lyric.DEFAULT_TEXT_SHADOW
+import com.lalilu.lmusic.compose.screen.playing.lyric.LyricContext
+import com.lalilu.lmusic.compose.screen.playing.lyric.LyricSettings
 import com.lalilu.lmusic.compose.screen.playing.lyric.utils.getPathForProgress
 import com.lalilu.lmusic.compose.screen.playing.lyric.utils.normalized
+import kotlin.math.abs
 
-
-private val DEFAULT_TEXT_SHADOW = Shadow(
-    color = Color.Black.copy(alpha = 0.2f),
-    offset = Offset(x = 0f, y = 1f),
-    blurRadius = 1f
-)
 
 private val DEFAULT_GRADIENT_GAP = 48.dp
 
 @Composable
 fun LyricContentWords(
-    modifier: Modifier,
+    index: Int,
     lyric: LyricItem.WordsLyric,
-    isCurrent: () -> Boolean,
-    offsetToCurrent: () -> Int,
-    currentTime: () -> Long,
-    screenConstraints: Constraints,
+    modifier: Modifier = Modifier,
+    settings: LyricSettings,
+    context: LyricContext,
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)?,
-    textMeasurer: TextMeasurer,
-    fontFamily: () -> FontFamily?
 ) {
     val density = LocalDensity.current
-    val paddingVertical = remember { 15.dp }
-    val paddingHorizontal = remember { 40.dp }
-    val paddingVerticalPx = remember { with(density) { paddingVertical.roundToPx() } }
-    val paddingHorizontalPx = remember { with(density) { paddingHorizontal.roundToPx() } }
-    val gapHeight = remember(translationGap) { with(density) { translationGap.toPx() } }
+    val direction = LocalLayoutDirection.current
+    val isCurrent = context.currentIndex() == index
 
     val fullSentence = remember { lyric.getSentenceContent() }
-    val actualConstraints = remember {
-        val width = screenConstraints.maxWidth - paddingHorizontalPx * 2
+    val actualConstraints = remember(context, settings) {
+        val paddingHorizontal = settings.containerPadding.calculateLeftPadding(direction) +
+                settings.containerPadding.calculateRightPadding(direction)
+        val paddingHorizontalPx = with(density) { paddingHorizontal.roundToPx() }
+        val width = context.screenConstraints.maxWidth - paddingHorizontalPx
         Constraints(
             maxWidth = width,
             minWidth = width,
@@ -82,43 +74,26 @@ fun LyricContentWords(
         )
     }
 
-    val textStyle = remember {
-        TextStyle.Default.copy(
-            fontSize = 34.sp,
-            textAlign = TextAlign.Start,
-            fontFamily = fontFamily() ?: FontFamily(
-                Font(
-                    familyName = DeviceFontFamilyName("FontFamily.Monospace"),
-                    variationSettings = FontVariation.Settings(
-                        FontVariation.weight(900)
-                    )
-                )
-            )
-        )
-    }
-
-    val textResult = remember {
-        textMeasurer.measure(
+    val (textResult, translateResult) = remember(context, settings, lyric) {
+        context.textMeasurer.measure(
             text = fullSentence,
             constraints = actualConstraints,
-            style = textStyle
-        )
-    }
-
-    val translateResult = remember {
-        val text = lyric.translation.firstOrNull()?.content ?: return@remember null
-        textMeasurer.measure(
-            text = text,
-            constraints = actualConstraints,
-            style = textStyle.copy(fontSize = textStyle.fontSize * 0.7f)
-        )
+            style = settings.mainTextStyle
+        ) to run {
+            val text = lyric.translation.firstOrNull()?.content ?: return@run null
+            context.textMeasurer.measure(
+                text = text,
+                constraints = actualConstraints,
+                style = settings.translationTextStyle
+            )
+        }
     }
 
     val scale = animateFloatAsState(
         targetValue = when {
-            isCurrent() -> 100f
-            currentTime() in lyric.startTime..lyric.endTime -> 95f
-            else -> 90f
+            isCurrent -> settings.scaleRange.endInclusive
+            context.currentTime() in lyric.startTime..lyric.endTime -> 0.95f
+            else -> settings.scaleRange.start
         },
         visibilityThreshold = 0.001f,
         animationSpec = spring(
@@ -129,8 +104,8 @@ fun LyricContentWords(
     )
     val alpha = animateFloatAsState(
         targetValue = when {
-            isCurrent() -> 1f
-            currentTime() in lyric.startTime..lyric.endTime -> 0.75f
+            isCurrent -> 1f
+            context.currentTime() in lyric.startTime..lyric.endTime -> 0.75f
             else -> 0.5f
         },
         animationSpec = spring(
@@ -141,38 +116,63 @@ fun LyricContentWords(
         label = ""
     )
 
-    val textHeight = remember(textResult) { textResult.getLineBottom(textResult.lineCount - 1) }
-    val translateHeight = remember(translateResult) {
-        translateResult?.let { it.getLineBottom(it.lineCount - 1) } ?: 0f
+    val (heightDp, translationTopLeft, pivotOffset) = remember(
+        textResult, translateResult, settings
+    ) {
+        val gapHeight = with(density) { settings.gapSize.toPx() }
+        val textHeight = textResult.getLineBottom(textResult.lineCount - 1)
+        val translateHeight = translateResult?.let { it.getLineBottom(it.lineCount - 1) } ?: 0f
+
+        val height =
+            if (settings.translationVisible && translateHeight > 0) textHeight + translateHeight + gapHeight
+            else textHeight
+        val paddingVertical = settings.containerPadding.calculateTopPadding() +
+                settings.containerPadding.calculateBottomPadding()
+
+        val width = context.screenConstraints.maxWidth
+        val x = when (settings.textAlign) {
+            TextAlign.End -> width.toFloat()
+            TextAlign.Center -> width / 2f
+            else -> 0f
+        }
+        val pivotOffset = Offset.Zero.copy(y = height / 2f, x = x)
+
+        listOf(
+            density.run { height.toDp() + paddingVertical },
+            Offset.Zero.copy(y = textHeight + gapHeight),
+            pivotOffset
+        )
     }
-    val pivotOffset = remember(textHeight) { Offset.Zero.copy(y = textHeight / 2f, x = 0f) }
-    val height = remember(isTranslationShow(), textHeight, translateHeight) {
-        textHeight + if (isTranslationShow() && translateHeight > 0) translateHeight + gapHeight else 0f
-    }
-    val heightDp = remember(height) { density.run { height.toDp() + paddingVertical * 2 } }
     val animateHeight = animateDpAsState(
-        targetValue = heightDp,
+        targetValue = heightDp as? Dp ?: 0.dp,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioLowBouncy,
             stiffness = Spring.StiffnessLow
         ),
         label = ""
     )
-    val translationTopLeft = remember(textHeight) {
-        Offset.Zero.copy(y = textHeight + gapHeight)
+
+    val blurRadius = remember {
+        derivedStateOf {
+            if (context.isUserScrolling()) return@derivedStateOf 0.dp
+            if (!settings.blurEffectEnable) return@derivedStateOf 0.dp
+            abs(index - context.currentIndex()).coerceAtMost(5).dp
+        }
     }
+    val animateBlurRadius = animateDpAsState(targetValue = blurRadius.value, label = "")
 
     Canvas(
         modifier = modifier
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
             .fillMaxWidth()
             .height(animateHeight.value)
             .combinedClickable(onLongClick = onLongClick, onClick = onClick ?: {})
-            .padding(vertical = paddingVertical, horizontal = paddingHorizontal)
-            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+            .blur(animateBlurRadius.value, BlurredEdgeTreatment.Unbounded) // TODO 对性能影响较大，待进一步优化
+            .padding(settings.containerPadding)
     ) {
-        val now = currentTime()
-        val index = lyric.words.findPlayingIndexForWords(now)
-        val word = lyric.words.getOrNull(index)
+        val now = context.currentTime()
+        val wordIndex = lyric.words.findPlayingIndexForWords(now)
+        val word = lyric.words.getOrNull(wordIndex)
 
         // 获取某一词的播放进度
         var progress = normalized(
@@ -182,11 +182,11 @@ fun LyricContentWords(
         )
 
         // 若当前句的歌词已经播放完毕，则进度固定为1
-        if (lyric.words.maxOf { it.endTime } < currentTime()) {
+        if (lyric.words.maxOf { it.endTime } < context.currentTime()) {
             progress = 1f
         }
 
-        val offset = lyric.words.take(index)
+        val offset = lyric.words.take(wordIndex)
             .sumOf { it.content.length }
 
         val (path, rect, position) = textResult.getPathForProgress(
@@ -196,8 +196,8 @@ fun LyricContentWords(
         )
 
         scale(
-            scale = scale.value / 100f,
-            pivot = pivotOffset
+            scale = scale.value,
+            pivot = pivotOffset as? Offset ?: Offset.Zero,
         ) {
             drawText(
                 color = Color(0x80FFFFFF),
@@ -253,7 +253,7 @@ fun LyricContentWords(
             if (translateResult == null) return@scale
             drawText(
                 color = Color(0x80FFFFFF),
-                topLeft = translationTopLeft,
+                topLeft = translationTopLeft as? Offset ?: Offset.Zero,
                 shadow = DEFAULT_TEXT_SHADOW,
                 textLayoutResult = translateResult,
             )

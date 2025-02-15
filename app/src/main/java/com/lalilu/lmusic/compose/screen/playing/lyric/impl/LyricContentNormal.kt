@@ -18,92 +18,94 @@ import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lalilu.lmedia.lyric.LyricItem
-
-
-val translationGap: Dp = 10.dp
-val textAlign: TextAlign = TextAlign.Start
-val textSize: TextUnit = 26.sp
-val translationScale: Float = 0.8f
-val isTranslationShow: () -> Boolean = { true }
-val isBlurredEnable: () -> Boolean = { false }
+import com.lalilu.lmusic.compose.screen.playing.lyric.DEFAULT_TEXT_SHADOW
+import com.lalilu.lmusic.compose.screen.playing.lyric.LyricContext
+import com.lalilu.lmusic.compose.screen.playing.lyric.LyricSettings
+import kotlin.math.abs
 
 
 @Composable
 fun LyricContentNormal(
+    index: Int,
     lyric: LyricItem.NormalLyric,
     modifier: Modifier = Modifier,
-    isCurrent: () -> Boolean,
-    offsetToCurrent: () -> Int,
-    currentTime: () -> Long,
-    screenConstraints: Constraints,
+    settings: LyricSettings,
+    context: LyricContext,
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)?,
-    textMeasurer: TextMeasurer,
-    fontFamily: () -> FontFamily?,
 ) {
     val density = LocalDensity.current
-    val paddingVertical = remember { 15.dp }
-    val paddingHorizontal = remember { 40.dp }
-    val paddingVerticalPx = remember { with(density) { paddingVertical.roundToPx() } }
-    val paddingHorizontalPx = remember { with(density) { paddingHorizontal.roundToPx() } }
-    val gapHeight = remember(translationGap) { with(density) { translationGap.toPx() } }
+    val direction = LocalLayoutDirection.current
+    val isCurrent = context.currentIndex() == index
 
-    val actualConstraints = remember {
-        val width = screenConstraints.maxWidth - paddingHorizontalPx * 2
+    val actualConstraints = remember(context, settings) {
+        val paddingHorizontal = settings.containerPadding.calculateLeftPadding(direction) +
+                settings.containerPadding.calculateRightPadding(direction)
+        val paddingHorizontalPx = with(density) { paddingHorizontal.roundToPx() }
+        val width = context.screenConstraints.maxWidth - paddingHorizontalPx
         Constraints(
             maxWidth = width,
             minWidth = width,
             maxHeight = Int.MAX_VALUE
         )
     }
-    val (textResult, translateResult) = remember(textAlign, textSize, fontFamily, lyric) {
-        textMeasurer.measure(
+    val (textResult, translateResult) = remember(settings, context, lyric) {
+        context.textMeasurer.measure(
             text = lyric.content,
             constraints = actualConstraints,
-            style = TextStyle.Default.copy(
-                fontSize = textSize,
-                textAlign = textAlign,
-                fontFamily = fontFamily() ?: TextStyle.Default.fontFamily
-            )
+            style = settings.mainTextStyle
         ) to lyric.translation
             ?.takeIf(String::isNotBlank)
             ?.let {
-                textMeasurer.measure(
+                context.textMeasurer.measure(
                     text = it,
                     constraints = actualConstraints,
-                    style = TextStyle.Default.copy(
-                        fontSize = textSize * translationScale,
-                        textAlign = textAlign,
-                        fontFamily = fontFamily() ?: TextStyle.Default.fontFamily
-                    )
+                    style = settings.translationTextStyle
                 )
             }
     }
 
-    val textHeight = remember(textResult) { textResult.getLineBottom(textResult.lineCount - 1) }
-    val translateHeight = remember(translateResult) {
-        translateResult?.let { it.getLineBottom(it.lineCount - 1) } ?: 0f
+    val (heightDp, translationTopLeft, pivotOffset) = remember(
+        textResult, translateResult, settings
+    ) {
+        val gapHeight = with(density) { settings.gapSize.toPx() }
+        val textHeight = textResult.getLineBottom(textResult.lineCount - 1)
+        val translateHeight = translateResult?.let { it.getLineBottom(it.lineCount - 1) } ?: 0f
+
+        val height =
+            if (settings.translationVisible && translateHeight > 0) textHeight + translateHeight + gapHeight
+            else textHeight
+        val paddingVertical = settings.containerPadding.calculateTopPadding() +
+                settings.containerPadding.calculateBottomPadding()
+
+        val width = context.screenConstraints.maxWidth
+        val x = when (settings.textAlign) {
+            TextAlign.End -> width.toFloat()
+            TextAlign.Center -> width / 2f
+            else -> 0f
+        }
+        val pivotOffset = Offset.Zero.copy(y = height / 2f, x = x)
+
+        listOf(
+            density.run { height.toDp() + paddingVertical },
+            Offset.Zero.copy(y = textHeight + gapHeight),
+            pivotOffset
+        )
     }
-    val height = remember(isTranslationShow(), textHeight, translateHeight) {
-        textHeight + if (isTranslationShow() && translateHeight > 0) translateHeight + gapHeight else 0f
-    }
-    val heightDp = remember(height) { density.run { height.toDp() + paddingVertical * 2 } }
+
     val animateHeight = animateDpAsState(
-        targetValue = heightDp,
+        targetValue = heightDp as? Dp ?: 0.dp,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioLowBouncy,
             stiffness = Spring.StiffnessLow
@@ -112,7 +114,7 @@ fun LyricContentNormal(
     )
 
     val animateAlpha = animateFloatAsState(
-        targetValue = if (isTranslationShow()) 1f else 0f,
+        targetValue = if (settings.translationVisible) 1f else 0f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
             stiffness = Spring.StiffnessMediumLow
@@ -121,7 +123,7 @@ fun LyricContentNormal(
     )
 
     val color = animateColorAsState(
-        targetValue = if (isCurrent()) Color.White else Color(0x80FFFFFF),
+        targetValue = if (isCurrent) Color.White else Color(0x80FFFFFF),
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
             stiffness = Spring.StiffnessLow
@@ -130,7 +132,9 @@ fun LyricContentNormal(
     )
 
     val scale = animateFloatAsState(
-        targetValue = if (isCurrent()) 100f else 90f,
+        targetValue = if (isCurrent) settings.scaleRange.endInclusive
+        else settings.scaleRange.start,
+        visibilityThreshold = 0.001f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
             stiffness = Spring.StiffnessLow
@@ -138,58 +142,38 @@ fun LyricContentNormal(
         label = ""
     )
 
-    val textShadow = remember {
-        Shadow(
-            color = Color.Black.copy(alpha = 0.2f),
-            offset = Offset(x = 0f, y = 1f),
-            blurRadius = 1f
-        )
-    }
-    val translationTopLeft = remember(textHeight) {
-        Offset.Zero.copy(y = textHeight + gapHeight)
-    }
-    val pivotOffset = remember(height, textAlign) {
-        val width = screenConstraints.maxWidth
-        val x = when (textAlign) {
-            TextAlign.End -> width.toFloat()
-            TextAlign.Center -> width / 2f
-            else -> 0f
-        }
-        Offset.Zero.copy(y = height / 2f, x = x)
-    }
     val blurRadius = remember {
         derivedStateOf {
-            if (!isBlurredEnable()) return@derivedStateOf 0.dp
-            offsetToCurrent().coerceAtMost(5).dp
+            if (context.isUserScrolling()) return@derivedStateOf 0.dp
+            if (!settings.blurEffectEnable) return@derivedStateOf 0.dp
+            abs(index - context.currentIndex()).coerceAtMost(5).dp
         }
     }
     val animateBlurRadius = animateDpAsState(targetValue = blurRadius.value, label = "")
 
     Canvas(
         modifier = modifier
-            .blur(
-                animateBlurRadius.value,
-                BlurredEdgeTreatment.Unbounded
-            ) // TODO 对性能影响较大，待进一步优化
             .fillMaxWidth()
             .height(animateHeight.value)
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+            .blur(animateBlurRadius.value, BlurredEdgeTreatment.Unbounded) // TODO 对性能影响较大，待进一步优化
             .combinedClickable(onLongClick = onLongClick, onClick = onClick ?: {})
-            .padding(vertical = paddingVertical, horizontal = paddingHorizontal)
+            .padding(settings.containerPadding)
     ) {
         scale(
-            scale = scale.value / 100f,
-            pivot = pivotOffset
+            scale = scale.value,
+            pivot = pivotOffset as? Offset ?: Offset.Zero
         ) {
             drawText(
                 color = color.value,
-                shadow = textShadow,
+                shadow = DEFAULT_TEXT_SHADOW,
                 textLayoutResult = textResult
             )
 
             if (translateResult == null) return@scale
             drawText(
                 color = color.value,
-                topLeft = translationTopLeft,
+                topLeft = translationTopLeft as? Offset ?: Offset.Zero,
                 textLayoutResult = translateResult,
                 alpha = animateAlpha.value
             )

@@ -48,7 +48,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.isActive
-import kotlin.math.abs
 
 
 @OptIn(FlowPreview::class)
@@ -67,7 +66,8 @@ fun LyricLayout(
     fontFamily: State<FontFamily?> = remember { mutableStateOf<FontFamily?>(null) }
 ) {
     val textMeasurer = rememberTextMeasurer()
-    val isUserScrolling = remember(isUserScrollEnable()) { mutableStateOf(isUserScrollEnable()) }
+    val isUserScrolling = remember { mutableStateOf(isUserScrollEnable()) }
+        .also { it.value = isUserScrollEnable() }
     val recorder = remember { ItemRecorder() }
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
@@ -119,6 +119,17 @@ fun LyricLayout(
             }
     }
 
+    val settings = remember { mutableStateOf(LyricSettings()) }
+    val context = remember {
+        LyricContext(
+            currentTime = currentTime,
+            currentIndex = { currentItemIndex.value },
+            isUserScrolling = { isUserScrolling.value },
+            screenConstraints = screenConstraints,
+            textMeasurer = textMeasurer,
+        )
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
@@ -142,26 +153,20 @@ fun LyricLayout(
                         when (item) {
                             is LyricItem.NormalLyric -> LyricContentNormal(
                                 lyric = item,
+                                index = index,
                                 modifier = Modifier,
-                                textMeasurer = textMeasurer,
-                                fontFamily = { fontFamily.value },
-                                currentTime = currentTime,
-                                screenConstraints = screenConstraints,
-                                offsetToCurrent = { abs(index - currentItemIndex.value) },
-                                isCurrent = { item.key == currentItem.value?.key },
+                                settings = settings.value,
+                                context = context,
                                 onLongClick = { if (isUserClickEnable()) onItemLongClick(item) },
                                 onClick = { if (isUserClickEnable()) onItemClick(item) }
                             )
 
                             is LyricItem.WordsLyric -> LyricContentWords(
                                 lyric = item,
+                                index = index,
                                 modifier = Modifier,
-                                textMeasurer = textMeasurer,
-                                fontFamily = { fontFamily.value },
-                                currentTime = currentTime,
-                                screenConstraints = screenConstraints,
-                                offsetToCurrent = { abs(index - currentItemIndex.value) },
-                                isCurrent = { item.key == currentItem.value?.key },
+                                settings = settings.value,
+                                context = context,
                                 onLongClick = { if (isUserClickEnable()) onItemLongClick(item) },
                                 onClick = { if (isUserClickEnable()) onItemClick(item) }
                             )
