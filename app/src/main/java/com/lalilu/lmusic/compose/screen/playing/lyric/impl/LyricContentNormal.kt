@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
@@ -31,6 +29,7 @@ import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmusic.compose.screen.playing.lyric.DEFAULT_TEXT_SHADOW
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricContext
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricSettings
+import com.lalilu.lmusic.compose.screen.playing.lyric.utils.blur
 import kotlin.math.abs
 
 
@@ -150,14 +149,17 @@ fun LyricContentNormal(
         if (!settings.blurEffectEnable) return@remember 0.dp
         abs(index - context.currentIndex()).coerceAtMost(5).dp
     }
-    val animateBlurRadius = animateDpAsState(targetValue = blurRadius, label = "")
+    val animateBlurRadius = animateDpAsState(
+        targetValue = blurRadius,
+        label = ""
+    )
 
     Canvas(
         modifier = modifier
             .fillMaxWidth()
             .height(animateHeight.value)
             .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-            .blur(animateBlurRadius.value, BlurredEdgeTreatment.Unbounded) // TODO 对性能影响较大，待进一步优化
+            .blur { animateBlurRadius.value }
             .combinedClickable(onLongClick = onLongClick, onClick = onClick ?: {})
             .padding(settings.containerPadding)
     ) {

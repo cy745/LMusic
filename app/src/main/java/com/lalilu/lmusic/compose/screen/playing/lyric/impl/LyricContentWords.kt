@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
@@ -39,6 +37,7 @@ import com.lalilu.lmedia.lyric.getSentenceContent
 import com.lalilu.lmusic.compose.screen.playing.lyric.DEFAULT_TEXT_SHADOW
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricContext
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricSettings
+import com.lalilu.lmusic.compose.screen.playing.lyric.utils.blur
 import com.lalilu.lmusic.compose.screen.playing.lyric.utils.getPathForProgress
 import com.lalilu.lmusic.compose.screen.playing.lyric.utils.normalized
 import kotlin.math.abs
@@ -169,7 +168,10 @@ fun LyricContentWords(
         if (!settings.blurEffectEnable) return@remember 0.dp
         abs(index - context.currentIndex()).coerceAtMost(5).dp
     }
-    val animateBlurRadius = animateDpAsState(targetValue = blurRadius, label = "")
+    val animateBlurRadius = animateDpAsState(
+        targetValue = blurRadius,
+        label = ""
+    )
 
     Canvas(
         modifier = modifier
@@ -177,7 +179,7 @@ fun LyricContentWords(
             .fillMaxWidth()
             .height(animateHeight.value)
             .combinedClickable(onLongClick = onLongClick, onClick = onClick ?: {})
-            .blur(animateBlurRadius.value, BlurredEdgeTreatment.Unbounded) // TODO 对性能影响较大，待进一步优化
+            .blur { animateBlurRadius.value }
             .padding(settings.containerPadding)
     ) {
         val now = context.currentTime()
