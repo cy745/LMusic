@@ -62,14 +62,13 @@ fun ComponentActivity.dynamicUpdateStatusBarColor(
 
             if (!isActive) break
             // 计算Bitmap内的平均亮度
-            val averageLuminance = (0..<bitmap.width)
-                .map { x ->
-                    (0..<bitmap.height).map { y ->
-                        Color(bitmap.getPixel(x, y)).luminance()
-                    }
+            var sumValue = 0f
+            for (x in 0..<bitmap.width) {
+                for (y in 0..<bitmap.height) {
+                    sumValue += Color(bitmap.getPixel(x, y)).luminance()
                 }
-                .flatten()
-                .average()
+            }
+            val averageLuminance = sumValue / (bitmap.width * bitmap.height)
 
             if (!isActive) break
             // 更新状态栏上的内容颜色
