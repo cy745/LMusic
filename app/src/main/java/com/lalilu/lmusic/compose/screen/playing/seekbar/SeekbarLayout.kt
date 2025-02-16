@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -33,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +44,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
@@ -53,8 +56,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.DeviceFontFamilyName
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.BaselineShift
@@ -71,6 +78,9 @@ import com.lalilu.remixicon.Media
 import com.lalilu.remixicon.media.orderPlayFill
 import com.lalilu.remixicon.media.repeatOneFill
 import com.lalilu.remixicon.media.shuffleFill
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
@@ -160,6 +170,11 @@ fun SeekbarLayout(
         visibilityThreshold = 0.005f,
         label = ""
     )
+    LaunchedEffect(Unit) {
+        snapshotFlow { animateValue.value }
+            .onEach { onValueChange(it) }
+            .launchIn(this)
+    }
     val touchingProgress = animateFloatAsState(
         targetValue = if (isTouching && !isCanceled) 1f else 0f,
         animationSpec = spring(stiffness = Spring.StiffnessLow),
@@ -197,7 +212,8 @@ fun SeekbarLayout(
             fontWeight = FontWeight.Bold,
             baselineShift = BaselineShift.None,
             textAlign = TextAlign.End,
-            color = Color.White
+            color = Color.White,
+            fontFamily = FontFamily(Font(familyName = DeviceFontFamilyName("FontFamily.Monospace")))
         )
     }
     val textSize = remember {
@@ -212,6 +228,29 @@ fun SeekbarLayout(
             )
             result.size.width to result.size.height
         }
+    }
+
+    val currentTextResult = remember { mutableStateOf<TextLayoutResult?>(null) }
+    val maxTextResult = remember { mutableStateOf<TextLayoutResult?>(null) }
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { animateValue.value.toLong() }
+            .distinctUntilChangedBy { it / 1000L }
+            .onEach {
+                val text = it.durationToTime()
+                val result = textMeasurer.measure(text = text, style = textStyle)
+                currentTextResult.value = result
+            }
+            .launchIn(this)
+
+        snapshotFlow { maxValue().toLong() }
+            .distinctUntilChangedBy { it / 1000L }
+            .onEach {
+                val text = it.durationToTime()
+                val result = textMeasurer.measure(text = text, style = textStyle)
+                maxTextResult.value = result
+            }
+            .launchIn(this)
     }
 
     val draggableState = rememberDraggable2DState { offset ->
@@ -357,6 +396,7 @@ fun SeekbarLayout(
                 }
             )
             .graphicsLayer {
+                compositingStrategy = CompositingStrategy.Offscreen
                 translationY = -yTranslationAnimateValue.value * (scrollThreadHold / 2f)
                 scaleX = 1f - (yTranslationAnimateValue.value * 0.1f)
                 scaleY = scaleX
@@ -369,17 +409,6 @@ fun SeekbarLayout(
                 .clip(RoundedCornerShape(16.dp))
         ) {
             val innerPath = Path()
-            val currentValueText = animateValue.value
-                .toLong()
-                .durationToTime()
-            val maxValueText = maxValue()
-                .toLong()
-                .durationToTime()
-
-            val currentTextResult = textMeasurer
-                .measure(text = currentValueText, style = textStyle)
-            val maxTextResult = textMeasurer
-                .measure(text = maxValueText, style = textStyle)
 
             val maxPadding = 4.dp.toPx()
             val paddingValue = maxPadding * touchingProgress.value
@@ -401,7 +430,6 @@ fun SeekbarLayout(
 
             val actualValue = animateValue.value
             val actualProgress = actualValue.normalize(minValue(), maxValue())
-            onValueChange(actualValue)
 
             val thumbWidth = lerp(
                 start = innerWidth * actualProgress,    // 根据进度计算的宽度
@@ -437,15 +465,17 @@ fun SeekbarLayout(
                 drawRect(color = Color(100, 100, 100, 50))
 
                 // 绘制总时长文本（固定右侧）
-                drawText(
-                    textLayoutResult = maxTextResult,
-                    color = Color.White,
-                    alpha = 1f - switchingProgress.value,
-                    topLeft = Offset(
-                        x = size.width - textSize.value.first - 16.dp.toPx(),
-                        y = (size.height - textSize.value.second) / 2f
+                maxTextResult.value?.let {
+                    drawText(
+                        textLayoutResult = it,
+                        color = Color.White,
+                        alpha = 1f - switchingProgress.value,
+                        topLeft = Offset(
+                            x = size.width - textSize.value.first - 16.dp.toPx(),
+                            y = (size.height - textSize.value.second) / 2f
+                        )
                     )
-                )
+                }
 
                 // 绘制滑块
                 drawRoundRect(
@@ -456,15 +486,17 @@ fun SeekbarLayout(
                 )
 
                 // 绘制实时进度文本（移动）
-                drawText(
-                    textLayoutResult = currentTextResult,
-                    color = Color.White,
-                    alpha = 1f - switchingProgress.value,
-                    topLeft = Offset(
-                        x = textX.toFloat(),
-                        y = (size.height - textSize.value.second) / 2f
+                currentTextResult.value?.let {
+                    drawText(
+                        textLayoutResult = it,
+                        color = Color.White,
+                        alpha = 1f - switchingProgress.value,
+                        topLeft = Offset(
+                            x = textX.toFloat(),
+                            y = (size.height - textSize.value.second) / 2f
+                        )
                     )
-                )
+                }
 
                 // 绘制把手元素
 //                drawRoundRect(
