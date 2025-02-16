@@ -94,6 +94,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                             else -> TextAlign.Start
                         }
                     )
+                    settings.saveData()
                 },
                 selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
                 title = stringResource(R.string.preference_lyric_settings_text_gravity)
@@ -101,12 +102,14 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
             SettingProgressSeekBar(
                 value = { settings.value.mainFontSize.value },
                 onValueUpdate = { settings.value = settings.value.copy(mainFontSize = it.sp) },
+                onFinishedUpdate = { settings.saveData() },
                 title = "歌词文字大小",
                 valueRange = 14..36
             )
             SettingProgressSeekBar(
                 value = { settings.value.mainLineHeight.value },
                 onValueUpdate = { settings.value = settings.value.copy(mainLineHeight = it.sp) },
+                onFinishedUpdate = { settings.saveData() },
                 title = "歌词行高大小",
                 valueRange = 14..48
             )
@@ -115,6 +118,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 onValueUpdate = {
                     settings.value = settings.value.copy(mainFontWeight = it.roundToInt())
                 },
+                onFinishedUpdate = { settings.saveData() },
                 title = "歌词字重",
                 valueRange = 50..900
             )
@@ -123,6 +127,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 onValueUpdate = {
                     settings.value = settings.value.copy(translationFontSize = it.sp)
                 },
+                onFinishedUpdate = { settings.saveData() },
                 title = "翻译文字大小",
                 valueRange = 14..36
             )
@@ -131,6 +136,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 onValueUpdate = {
                     settings.value = settings.value.copy(translationLineHeight = it.sp)
                 },
+                onFinishedUpdate = { settings.saveData() },
                 title = "翻译行高大小",
                 valueRange = 14..48
             )
@@ -139,6 +145,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 onValueUpdate = {
                     settings.value = settings.value.copy(translationFontWeight = it.roundToInt())
                 },
+                onFinishedUpdate = { settings.saveData() },
                 title = "翻译字重",
                 valueRange = 50..900
             )
@@ -147,6 +154,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 onValueUpdate = {
                     settings.value = settings.value.copy(timeOffset = it.roundToLong())
                 },
+                onFinishedUpdate = { settings.saveData() },
                 title = "歌词偏移时间(ms)",
                 valueRange = 0..500
             )
@@ -155,6 +163,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 onValueUpdate = {
                     settings.value = settings.value.copy(gapSize = it.dp)
                 },
+                onFinishedUpdate = { settings.saveData() },
                 title = "歌词翻译间距",
                 valueRange = 0..50
             )
@@ -175,6 +184,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                         )
                     )
                 },
+                onFinishedUpdate = { settings.saveData() },
                 title = "横向边距",
                 valueRange = 0..50
             )
@@ -182,7 +192,10 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 title = "歌词模糊效果",
                 subTitle = "为歌词添加一点模糊效果",
                 state = { settings.value.blurEffectEnable },
-                onStateUpdate = { settings.value = settings.value.copy(blurEffectEnable = it) }
+                onStateUpdate = {
+                    settings.value = settings.value.copy(blurEffectEnable = it)
+                    settings.saveData()
+                }
             )
             SettingSwitcher(
                 title = "歌词页展开时隐藏其他组件",

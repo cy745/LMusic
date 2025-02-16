@@ -24,6 +24,7 @@ import com.lalilu.component.base.ProgressSeekBar
 fun SettingProgressSeekBar(
     value: () -> Float,
     onValueUpdate: (Float) -> Unit = {},
+    onFinishedUpdate: (Float) -> Unit = {},
     title: String,
     subTitle: String? = null,
     valueRange: IntRange
@@ -57,7 +58,7 @@ fun SettingProgressSeekBar(
             },
             valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
             steps = valueRange.last - valueRange.first - 1,
-            onValueChangeFinished = { onValueUpdate(tempValue.floatValue) }
+            onValueChangeFinished = { onFinishedUpdate(tempValue.floatValue) }
         )
         if (subTitle != null) {
             Text(

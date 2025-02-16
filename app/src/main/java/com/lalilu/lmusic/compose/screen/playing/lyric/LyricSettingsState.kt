@@ -3,6 +3,7 @@ package com.lalilu.lmusic.compose.screen.playing.lyric
 import com.funny.data_saver.core.DataSaverConverter
 import com.funny.data_saver.core.DataSaverInterface
 import com.funny.data_saver.core.DataSaverMutableState
+import com.funny.data_saver.core.SavePolicy
 import com.funny.data_saver.core.mutableDataSaverStateOf
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -23,6 +24,7 @@ fun provideLyricSettingsState(
     return mutableDataSaverStateOf<LyricSettings>(
         dataSaverInterface = dataSaverInterface,
         key = "LyricSettings",
-        initialValue = LyricSettings()
+        initialValue = LyricSettings(),
+        savePolicy = SavePolicy.NEVER
     )
 }
