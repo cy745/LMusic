@@ -146,27 +146,19 @@ fun SeekbarLayout(
         derivedStateOf { seekbarState.value is SeekbarState.Cancel || seekbarState.value is SeekbarState.Dispatcher }
     }
 
-    val resultValue = remember {
-        derivedStateOf {
-            when {
-                isSwitching -> {
-                    progressKeeper.updateValue(dataValue())
-                    false to dataValue()
-                }
-
-                isTouching && !isCanceled -> true to progressKeeper.nowValue
-                else -> {
-                    progressKeeper.updateValue(dataValue())
-                    false to dataValue()
-                }
+    val snap = remember { derivedStateOf { !(isSwitching || !isTouching || isCanceled) } }
+    LaunchedEffect(Unit) {
+        snapshotFlow { dataValue() }.onEach {
+            if (isSwitching || !isTouching || isCanceled) {
+                progressKeeper.updateValue(it)
             }
-        }
+        }.launchIn(this)
     }
 
     // 使值的变化平滑
     val animateValue = animateFloatAsState(
-        targetValue = resultValue.value.second,
-        animationSpec = if (resultValue.value.first) snap() else spring(stiffness = Spring.StiffnessLow),
+        targetValue = if (snap.value) progressKeeper.nowValue else dataValue(),
+        animationSpec = if (snap.value) snap() else spring(stiffness = Spring.StiffnessLow),
         visibilityThreshold = 0.005f,
         label = ""
     )
