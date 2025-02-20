@@ -1,6 +1,12 @@
 package com.lalilu.component.extension
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,6 +39,7 @@ import com.melody.dialog.any_pop.AnyPopDialog
 import com.melody.dialog.any_pop.AnyPopDialogProperties
 import com.melody.dialog.any_pop.DirectionState
 import kotlinx.coroutines.flow.collectLatest
+import kotlin.math.roundToInt
 
 private val DEFAULT_DIALOG_PROPERTIES = AnyPopDialogProperties(
     direction = DirectionState.BOTTOM
@@ -161,7 +168,19 @@ object DialogWrapper : DialogHost, DialogContext {
             content = {
                 AnimatedContent(
                     targetState = dialogItem,
-                    label = ""
+                    label = "",
+                    transitionSpec = {
+                        slideInVertically(
+                            animationSpec = spring(stiffness = Spring.StiffnessLow),
+                            initialOffsetY = { (it * 1.2f).roundToInt() }
+                        ) togetherWith slideOutVertically(
+                            animationSpec = spring(stiffness = Spring.StiffnessVeryLow),
+                            targetOffsetY = { (it * 1.2f).roundToInt() }
+                        ) + scaleOut(
+                            animationSpec = spring(stiffness = Spring.StiffnessVeryLow),
+                            targetScale = 0.6f
+                        )
+                    }
                 ) { dialog ->
                     dialog?.apply {
                         when (this) {
