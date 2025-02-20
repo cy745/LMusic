@@ -60,7 +60,7 @@ import com.lalilu.lplayer.action.PlayerAction
 import com.lalilu.lplayer.extensions.PlayMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.compose.koinInject
 import kotlin.math.pow
 
@@ -239,7 +239,7 @@ fun PlayingLayout(
                 val lyrics = remember { mutableStateOf<List<LyricItem>>(emptyList()) }
 
                 LaunchedEffect(key1 = MPlayer.currentMediaItem) {
-                    launch(Dispatchers.IO) {
+                    withContext(Dispatchers.IO) {
                         MPlayer.currentMediaItem
                             ?.let { lyricSource.loadLyric(it) }
                             ?.let { LyricUtils.parseLrc(it.first, it.second) }
