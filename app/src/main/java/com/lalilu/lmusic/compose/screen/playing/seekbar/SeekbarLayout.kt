@@ -1,11 +1,11 @@
 package com.lalilu.lmusic.compose.screen.playing.seekbar
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateTo
-import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -78,6 +78,7 @@ import com.lalilu.remixicon.Media
 import com.lalilu.remixicon.media.orderPlayFill
 import com.lalilu.remixicon.media.repeatOneFill
 import com.lalilu.remixicon.media.shuffleFill
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -147,26 +148,27 @@ fun SeekbarLayout(
     }
 
     val snap = remember { derivedStateOf { !(isSwitching || !isTouching || isCanceled) } }
-    LaunchedEffect(Unit) {
-        snapshotFlow { dataValue() }.onEach {
-            if (isSwitching || !isTouching || isCanceled) {
-                progressKeeper.updateValue(it)
-            }
-        }.launchIn(this)
-    }
+    val animation = remember { Animatable(0f) }
 
     // 使值的变化平滑
-    val animateValue = animateFloatAsState(
-        targetValue = if (snap.value) progressKeeper.nowValue else dataValue(),
-        animationSpec = if (snap.value) snap() else spring(stiffness = Spring.StiffnessLow),
-        visibilityThreshold = 0.005f,
-        label = ""
-    )
     LaunchedEffect(Unit) {
-        snapshotFlow { animateValue.value }
-            .onEach { onValueChange(it) }
-            .launchIn(this)
+        snapshotFlow { if (snap.value) progressKeeper.nowValue else dataValue() }
+            .distinctUntilChanged()
+            .onEach { value ->
+                if (snap.value) {
+                    animation.snapTo(value)
+                } else {
+                    progressKeeper.updateValue(value)
+                    launch {
+                        animation.animateTo(
+                            targetValue = value,
+                            animationSpec = spring(stiffness = Spring.StiffnessLow)
+                        )
+                    }
+                }
+            }.launchIn(this)
     }
+
     val touchingProgress = animateFloatAsState(
         targetValue = if (isTouching && !isCanceled) 1f else 0f,
         animationSpec = spring(stiffness = Spring.StiffnessLow),
@@ -226,7 +228,7 @@ fun SeekbarLayout(
     val maxTextResult = remember { mutableStateOf<TextLayoutResult?>(null) }
 
     LaunchedEffect(Unit) {
-        snapshotFlow { animateValue.value.toLong() }
+        snapshotFlow { animation.value.toLong() }
             .distinctUntilChangedBy { it / 1000L }
             .onEach {
                 val text = it.durationToTime()
@@ -323,7 +325,7 @@ fun SeekbarLayout(
                         when (event.type) {
                             PointerEventType.Press -> {
                                 // 开始触摸时，将当前可见的进度值记录下来
-                                progressKeeper.updateValue(animateValue.value)
+                                progressKeeper.updateValue(animation.value)
                                 isTouching = true
                                 isMoved = false
                             }
@@ -394,14 +396,14 @@ fun SeekbarLayout(
                 scaleY = scaleX
             }
     ) {
+        val innerPath = remember { Path() }
+
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
                 .clip(RoundedCornerShape(16.dp))
         ) {
-            val innerPath = Path()
-
             val maxPadding = 4.dp.toPx()
             val paddingValue = maxPadding * touchingProgress.value
 
@@ -420,7 +422,7 @@ fun SeekbarLayout(
                 )
             )
 
-            val actualValue = animateValue.value
+            val actualValue = animation.value.also { onValueChange(it) }
             val actualProgress = actualValue.normalize(minValue(), maxValue())
 
             val thumbWidth = lerp(
