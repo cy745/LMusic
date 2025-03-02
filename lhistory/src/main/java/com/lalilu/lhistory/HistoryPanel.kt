@@ -12,9 +12,13 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.component.LazyGridContent
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.card.SongCard
+import com.lalilu.component.extension.DynamicTipsHost
+import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.state
 import com.lalilu.lhistory.viewmodel.HistoryVM
 import com.lalilu.lplayer.MPlayer
+import com.lalilu.lplayer.action.MediaControl
 import org.koin.compose.koinInject
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
@@ -29,6 +33,7 @@ class HistoryPanel : LazyGridContent {
         val historyVM = koinInject<HistoryVM>()
         val widthSizeClass = LocalWindowSize.current.widthSizeClass
         val items by historyVM.historyState
+        val favouriteIds = state("favourite_ids", emptyList<String>())
 
         return fun LazyGridScope.() {
             // 若列表为空，则不显示
@@ -48,9 +53,23 @@ class HistoryPanel : LazyGridContent {
                         .animateItem()
                         .padding(bottom = 5.dp),
                     song = { item },
+                    isFavour = { favouriteIds.value.contains(item.id) },
                     isPlaying = { MPlayer.isItemPlaying(item.id) },
                     onClick = {
+                        historyVM.getHistoryPlayedIds { list ->
+                            MediaControl.playWithList(
+                                mediaIds = list,
+                                mediaId = item.id
+                            )
 
+                            DynamicTipsHost.show(
+                                DynamicTipsItem.Static(
+                                    title = "历史播放",
+                                    imageData = item,
+                                    subTitle = "播放历史列表"
+                                )
+                            )
+                        }
                     },
                     onLongClick = {
                         AppRouter.route("/pages/songs/detail")

@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.lalilu.RemixIcon
 import com.lalilu.component.LazyGridContent
 import com.lalilu.component.card.SongCard
+import com.lalilu.component.state
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.remixicon.Arrows
 import com.lalilu.remixicon.Media
@@ -41,6 +42,7 @@ class SearchSongsResult(
     @Composable
     override fun register(): LazyGridScope.() -> Unit {
         val collapsed = remember { mutableStateOf(false) }
+        val favouriteIds = state("favourite_ids", emptyList<String>())
 
         return fun LazyGridScope.() {
             if (songsResult().isNotEmpty()) {
@@ -101,7 +103,8 @@ class SearchSongsResult(
                         modifier = Modifier
                             .fillMaxWidth()
                             .animateItem(),
-                        song = { it }
+                        song = { it },
+                        isFavour = { favouriteIds.value.contains(it.id) }
                     )
                 }
             }

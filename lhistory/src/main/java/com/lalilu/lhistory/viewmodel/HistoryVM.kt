@@ -10,8 +10,10 @@ import com.lalilu.lhistory.repository.HistoryRepository
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LSong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -39,4 +41,13 @@ class HistoryVM(
         }
     ).flow.cachedIn(viewModelScope)
 
+    fun getHistoryPlayedIds(block: (list: List<String>) -> Unit) = viewModelScope.launch {
+        val list = historyRepo.getHistoriesIdsMapWithLastTime()
+            .firstOrNull()
+            ?.toList()
+            ?.sortedByDescending { it.second }
+            ?.map { it.first }
+            ?: emptyList()
+        block(list)
+    }
 }

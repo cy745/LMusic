@@ -40,6 +40,7 @@ import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
 import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.state
 import com.lalilu.lalbum.viewModel.AlbumDetailEvent
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
@@ -64,6 +65,7 @@ fun AlbumDetailScreenContent(
     val listState = rememberLazyListState()
     val statusBar = WindowInsets.statusBars
     val density = LocalDensity.current
+    val favouriteIds = state("favourite_ids", emptyList<String>())
     val stickyHeaderContentType = remember { "group" }
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
@@ -182,6 +184,7 @@ fun AlbumDetailScreenContent(
                     SongCard(
                         song = { it },
                         isSelected = { isSelected(it) },
+                        isFavour = { favouriteIds.value.contains(it.id) },
                         onClick = {
                             if (isSelecting()) {
                                 onSelect(it)

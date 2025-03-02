@@ -1,7 +1,13 @@
 package com.lalilu.common.base
 
+import androidx.compose.runtime.Stable
+
+@Stable
 sealed class Sticker(val name: String) {
+    @Stable
     open class ExtSticker(ext: String) : Sticker(ext)
+
+    @Stable
     open class SourceSticker(sourceType: SourceType) : Sticker(sourceType.name)
     data object HasLyricSticker : Sticker("LRC")
     data object HiresSticker : Sticker("HIRES")
