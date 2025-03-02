@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.screen.playing.seekbar
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.AnimationVector1D
@@ -7,19 +8,24 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberDraggable2DState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -62,14 +68,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
+import com.lalilu.RemixIcon
 import com.lalilu.common.AccumulatedValue
+import com.lalilu.remixicon.Media
+import com.lalilu.remixicon.media.orderPlayFill
+import com.lalilu.remixicon.media.repeatOneFill
+import com.lalilu.remixicon.media.shuffleFill
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
-sealed interface SeekbarState {
+private sealed interface SeekbarState {
     data object Idle : SeekbarState
     data object ProgressBar : SeekbarState
     data object Switcher : SeekbarState
@@ -83,7 +94,7 @@ sealed interface ClickPart {
     data object End : ClickPart
 }
 
-fun SeekbarState.isCanceled(): Boolean {
+private fun SeekbarState.isCanceled(): Boolean {
     return when (this) {
         is SeekbarState.Cancel, is SeekbarState.Dispatcher -> true
         else -> false
@@ -363,12 +374,13 @@ fun SeekbarLayout(
                 textStyle = textStyle,
                 offsetProgress = { animation.value.normalize(minValue(), maxValue()) }
             )
+            SeekbarSwitcher(switching = { isSwitching })
         }
     }
 }
 
 @Composable
-fun SeekbarBackground(
+private fun SeekbarBackground(
     modifier: Modifier = Modifier,
     bgColor: Color = MaterialTheme.colors.background,
     visible: () -> Boolean = { false }
@@ -388,7 +400,7 @@ fun SeekbarBackground(
 }
 
 @Composable
-fun SeekbarContentMask(
+private fun SeekbarContentMask(
     modifier: Modifier = Modifier,
     maskColor: Color = Color(0x33646464),
     clip: () -> Boolean = { false }
@@ -427,7 +439,7 @@ fun SeekbarContentMask(
 }
 
 @Composable
-fun SeekbarDuration(
+private fun SeekbarDuration(
     modifier: Modifier = Modifier,
     text: () -> String,
     textStyle: TextStyle,
@@ -464,7 +476,7 @@ fun SeekbarDuration(
 }
 
 @Composable
-fun SeekbarThumb(
+private fun SeekbarThumb(
     modifier: Modifier = Modifier,
     thumbColor: () -> Color = { Color(0xFF007AD5) },
     progress: () -> Float = { 1f },
@@ -532,6 +544,43 @@ fun SeekbarThumb(
     }
 }
 
+@Composable
+private fun SeekbarSwitcher(
+    modifier: Modifier = Modifier,
+    switching: () -> Boolean = { false },
+) {
+    AnimatedVisibility(
+        modifier = modifier.fillMaxSize(),
+        visible = switching(),
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            Icon(
+                imageVector = RemixIcon.Media.orderPlayFill,
+                contentDescription = null,
+                tint = Color.White
+            )
+            Icon(
+                imageVector = RemixIcon.Media.repeatOneFill,
+                contentDescription = null,
+                tint = Color.White
+            )
+            Icon(
+                imageVector = RemixIcon.Media.shuffleFill,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
+    }
+}
+
 private fun Modifier.combineDetectDrag(
     key: Any = Unit,
     onDragStart: (Offset) -> Unit = { },
@@ -571,7 +620,7 @@ private fun Float.normalize(minValue: Float, maxValue: Float): Float {
         .coerceIn(0f, 1f)
 }
 
-fun Long.durationToTime(): String {
+private fun Long.durationToTime(): String {
     val hour = this / 3600000
     val minute = this / 60000 % 60
     val second = this / 1000 % 60
@@ -580,7 +629,7 @@ fun Long.durationToTime(): String {
 }
 
 @Composable
-fun durationToText(
+private fun durationToText(
     duration: () -> Long = { 0L }
 ): MutableState<String> {
     val durationText = remember { mutableStateOf(duration().durationToTime()) }
