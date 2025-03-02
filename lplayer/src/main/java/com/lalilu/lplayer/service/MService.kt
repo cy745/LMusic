@@ -72,6 +72,7 @@ class MService : MediaLibraryService(), CoroutineScope {
             .setRenderersFactory(FadeTransitionRenderersFactory(this, this))
             .setHandleAudioBecomingNoisy(MPlayerKV.handleBecomeNoisy.value != false)
             .setAudioAttributes(defaultAudioAttributes, MPlayerKV.handleAudioFocus.value != false)
+            .setMaxSeekToPreviousPositionMs(Long.MAX_VALUE) // 避免播放上一首需要点两次
             .build()
             .apply { addAnalyticsListener(historyAnalyticsListener) }
             .setUpQueueControl()
