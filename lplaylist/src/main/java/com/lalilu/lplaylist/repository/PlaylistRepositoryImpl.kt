@@ -92,7 +92,7 @@ internal class PlaylistRepositoryImpl(
     }
 
     override fun addMediaIdsToPlaylist(mediaIds: List<String>, playlistId: String) {
-        updatePlaylist(playlistId) { it.copy(mediaIds = it.mediaIds.plus(mediaIds).distinct()) }
+        updatePlaylist(playlistId) { it.copy(mediaIds = mediaIds.plus(it.mediaIds).distinct()) }
     }
 
     override fun addMediaIdsToPlaylists(mediaIds: List<String>, playlistIds: List<String>) {
