@@ -3,6 +3,7 @@ package com.lalilu.lmusic.compose.screen.playing
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -24,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameMillis
@@ -79,8 +79,8 @@ fun PlayingLayout(
     val backgroundColor = remember { mutableStateOf(Color.DarkGray) }
     val animateColor = animateColorAsState(targetValue = backgroundColor.value, label = "")
     val scrollToTopEvent = remember { mutableStateOf(0L) }
-    val seekbarTime = remember { mutableLongStateOf(0L) }
     val currentPosition = remember { mutableFloatStateOf(0f) }
+    val animation = remember { Animatable(0f) }
 
     val draggable = rememberCustomAnchoredDraggableState { oldState, newState ->
         if (newState == DragAnchor.MiddleXMax && oldState != DragAnchor.MiddleXMax) {
@@ -265,7 +265,7 @@ fun PlayingLayout(
                         },
                     lyricEntry = lyrics,
                     listState = listState,
-                    currentTime = { seekbarTime.longValue },
+                    currentTime = { animation.value.toLong() },
                     screenConstraints = constraints,
                     isUserClickEnable = { draggable.state.value == DragAnchor.Max },
                     isUserScrollEnable = { isLyricScrollEnable.value },
@@ -313,10 +313,13 @@ fun PlayingLayout(
                     }
             ) {
                 SeekbarLayout(
-                    modifier = Modifier.hideControl(enable = { hideComponent.value }),
+                    modifier = Modifier
+                        .hideControl(enable = { hideComponent.value })
+                        .padding(horizontal = 40.dp)
+                        .padding(bottom = 100.dp),
                     animateColor = { animateColor.value },
-                    onValueChange = { seekbarTime.longValue = it.toLong() },
                     maxValue = { MPlayer.currentDuration.toFloat() },
+                    animation = animation,
                     dataValue = { currentPosition.floatValue },
                     onDispatchDragOffset = { enhanceSheetState?.dispatch(it) },
                     onDragStop = { result ->
