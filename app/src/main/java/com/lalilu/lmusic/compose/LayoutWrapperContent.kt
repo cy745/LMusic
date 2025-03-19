@@ -72,7 +72,7 @@ fun BoxScope.LayoutWrapperContent() {
         }
     }
 
-    if (windowClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+    if (windowClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         LayoutForPad(
             navHostContent = navHostContent,
             navigationSmartBar = navigationSmartBar

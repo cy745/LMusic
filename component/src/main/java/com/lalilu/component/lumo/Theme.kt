@@ -11,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import com.lalilu.component.lumo.foundation.ripple
 
-object LMusicTheme {
+object LumoTheme {
     val colors: Colors
         @ReadOnlyComposable @Composable
         get() = LocalColors.current
@@ -22,7 +22,7 @@ object LMusicTheme {
 }
 
 @Composable
-fun LMusicTheme(
+fun LumoTheme(
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
@@ -44,7 +44,7 @@ fun LMusicTheme(
 
 @Composable
 fun contentColorFor(color: Color): Color {
-    return LMusicTheme.colors.contentColorFor(color)
+    return LumoTheme.colors.contentColorFor(color)
 }
 
 @Composable

@@ -13,6 +13,7 @@ import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.jetpack.ProvideNavigatorLifecycleKMPSupport
 import com.funny.data_saver.core.LocalDataSaver
 import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.lumo.LumoTheme
 import com.lalilu.lmusic.LMusicTheme
 import org.koin.compose.koinInject
 
@@ -35,11 +36,13 @@ object App {
     fun Environment(activity: Activity, content: @Composable () -> Unit) {
         LMusicTheme {
             MaterialTheme {
-                CompositionLocalProvider(
-                    LocalWindowSize provides calculateWindowSizeClass(activity = activity),
-                    LocalDataSaver provides koinInject(),
-                    content = content
-                )
+                LumoTheme {
+                    CompositionLocalProvider(
+                        LocalWindowSize provides calculateWindowSizeClass(activity = activity),
+                        LocalDataSaver provides koinInject(),
+                        content = content
+                    )
+                }
             }
         }
     }
