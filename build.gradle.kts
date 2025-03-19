@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.flyjingfish.aop) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.krouter.plugin)
+    alias(libs.plugins.lumo)
 }
 
 // 配置注入遍历的起点项目

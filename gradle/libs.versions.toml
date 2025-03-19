@@ -8,8 +8,8 @@ ksp_version = "2.1.0-1.0.29"
 
 koin_version = "4.0.1"
 koin_ksp_version = "1.4.0"
-compose_bom_alpha_version = "2025.01.00"
-compose_bom_version = "2025.01.00"
+compose_bom_alpha_version = "2025.03.00"
+compose_bom_version = "2025.03.00"
 accompanist_version = "0.32.0"
 voyager = "1.1.0-beta03"
 lottie-compose = "6.6.0"
@@ -21,15 +21,15 @@ utilcodex_version = "1.31.1"
 appcompat = "1.7.0"
 core-ktx = "1.15.0"
 palette-ktx = "1.0.0"
-dynamicanimation-ktx = "1.0.0-alpha03"
+dynamicanimation-ktx = "1.0.0-beta01"
 startup-runtime = "1.2.0"
-activity-compose = "1.10.0"
+activity-compose = "1.10.1"
 room_version = "2.6.1"
 media = "1.7.0"
 media3 = "1.5.1"
 gson = "2.11.0"
 flyjingfish-aop = "1.9.7"
-paging_version = "3.3.5"
+paging_version = "3.3.6"
 krouter_version = "0.0.3"
 xmlutil = "0.90.3"
 
@@ -125,6 +125,7 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp_version" }
 flyjingfish-aop = { id = "io.github.FlyJingFish.AndroidAop.android-aop", version.ref = "flyjingfish-aop" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin_version" }
 krouter-plugin = { id = "io.github.cy745.KRouter.plugin", version.ref = "krouter_version" }
+lumo = { id = "com.nomanr.plugin.lumo", version = "1.2.1" }
 
 
 [bundles]
