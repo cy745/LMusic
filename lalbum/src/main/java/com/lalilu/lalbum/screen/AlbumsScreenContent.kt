@@ -43,7 +43,7 @@ internal fun AlbumsScreenContent(
     albums: () -> Map<GroupIdentity, List<LAlbum>> = { emptyMap() },
     showText: () -> Boolean = { false },
 ) {
-    val isPad = LocalWindowSize.current.widthSizeClass == WindowWidthSizeClass.Expanded
+    val isPad = LocalWindowSize.current.widthSizeClass != WindowWidthSizeClass.Compact
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val gridState = rememberLazyStaggeredGridState()
 
