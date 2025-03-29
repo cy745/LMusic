@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -143,6 +144,9 @@ android {
             versionNameSuffix = "-DEBUG_${releaseTime("yyyyMMdd")}"
             applicationIdSuffix = ".debug"
             signingConfig = signingConfigs.getByName("debug")
+            isProfileable = true
+            isDebuggable = true
+            isJniDebuggable = true
 
             resValue("string", "app_name", "@string/app_name_debug")
         }
@@ -162,7 +166,8 @@ android {
 }
 
 composeCompiler {
-    enableStrongSkippingMode = true
+    composeCompiler.featureFlags.add(ComposeFeatureFlag.StrongSkipping)
+    composeCompiler.featureFlags.add(ComposeFeatureFlag.PausableComposition)
 }
 
 dependencies {
@@ -218,6 +223,7 @@ dependencies {
 //    debugImplementation("io.github.knight-zxw:blockcanary-ui:0.0.5")
 //    debugImplementation("com.github.cy745:wytrace:d0df4c2d15")
 //    debugImplementation("com.bytedance.android:shadowhook:1.0.10")
+    implementation("io.github.theapache64:rebugger:1.0.0-rc03")
 
     implementation(libs.bundles.flyjingfish.aop)
     ksp(libs.flyjingfish.aop.ksp)
