@@ -35,7 +35,7 @@ import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.split
 import com.lalilu.component.extension.transform
 import com.lalilu.component.settings.SettingFilePicker
-import com.lalilu.component.settings.SettingProgressSeekBar
+import com.lalilu.component.settings.SettingSmallProgressSeekBar
 import com.lalilu.component.settings.SettingStateSeekBar
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricSettings
@@ -47,7 +47,7 @@ import org.koin.core.qualifier.named
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
-private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transparent) {
+val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transparent) {
     val settingsSp: SettingsSp = koinInject()
     val settings: DataSaverMutableState<LyricSettings> = koinInject(named("LyricSettings"))
     val lyricTypefacePath = settings.split(
@@ -73,7 +73,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
     ) {
         Column(
             modifier = Modifier
-                .fillMaxHeight(0.4f)
+                .fillMaxHeight(0.6f)
                 .verticalScroll(state = rememberScrollState())
         ) {
             SettingStateSeekBar(
@@ -99,21 +99,25 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
                 title = stringResource(R.string.preference_lyric_settings_text_gravity)
             )
-            SettingProgressSeekBar(
+            SettingSmallProgressSeekBar(
                 value = { settings.value.mainFontSize.value },
-                onValueUpdate = { settings.value = settings.value.copy(mainFontSize = it.sp) },
+                onValueUpdate = {
+                    settings.value = settings.value.copy(mainFontSize = it.sp)
+                },
                 onFinishedUpdate = { settings.saveData() },
                 title = "歌词文字大小",
-                valueRange = 14..36
+                valueRange = 14..64
             )
-            SettingProgressSeekBar(
+            SettingSmallProgressSeekBar(
                 value = { settings.value.mainLineHeight.value },
-                onValueUpdate = { settings.value = settings.value.copy(mainLineHeight = it.sp) },
+                onValueUpdate = {
+                    settings.value = settings.value.copy(mainLineHeight = it.sp)
+                },
                 onFinishedUpdate = { settings.saveData() },
                 title = "歌词行高大小",
-                valueRange = 14..48
+                valueRange = 14..72
             )
-            SettingProgressSeekBar(
+            SettingSmallProgressSeekBar(
                 value = { settings.value.mainFontWeight.toFloat() },
                 onValueUpdate = {
                     settings.value = settings.value.copy(mainFontWeight = it.roundToInt())
@@ -122,34 +126,35 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 title = "歌词字重",
                 valueRange = 50..900
             )
-            SettingProgressSeekBar(
+            SettingSmallProgressSeekBar(
                 value = { settings.value.translationFontSize.value },
                 onValueUpdate = {
                     settings.value = settings.value.copy(translationFontSize = it.sp)
                 },
                 onFinishedUpdate = { settings.saveData() },
                 title = "翻译文字大小",
-                valueRange = 14..36
+                valueRange = 14..64
             )
-            SettingProgressSeekBar(
+            SettingSmallProgressSeekBar(
                 value = { settings.value.translationLineHeight.value },
                 onValueUpdate = {
                     settings.value = settings.value.copy(translationLineHeight = it.sp)
                 },
                 onFinishedUpdate = { settings.saveData() },
                 title = "翻译行高大小",
-                valueRange = 14..48
+                valueRange = 14..72
             )
-            SettingProgressSeekBar(
+            SettingSmallProgressSeekBar(
                 value = { settings.value.translationFontWeight.toFloat() },
                 onValueUpdate = {
-                    settings.value = settings.value.copy(translationFontWeight = it.roundToInt())
+                    settings.value =
+                        settings.value.copy(translationFontWeight = it.roundToInt())
                 },
                 onFinishedUpdate = { settings.saveData() },
                 title = "翻译字重",
                 valueRange = 50..900
             )
-            SettingProgressSeekBar(
+            SettingSmallProgressSeekBar(
                 value = { settings.value.timeOffset.toFloat() },
                 onValueUpdate = {
                     settings.value = settings.value.copy(timeOffset = it.roundToLong())
@@ -158,7 +163,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 title = "歌词偏移时间(ms)",
                 valueRange = 0..500
             )
-            SettingProgressSeekBar(
+            SettingSmallProgressSeekBar(
                 value = { settings.value.gapSize.value },
                 onValueUpdate = {
                     settings.value = settings.value.copy(gapSize = it.dp)
@@ -168,7 +173,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
                 valueRange = 0..50
             )
 
-            SettingProgressSeekBar(
+            SettingSmallProgressSeekBar(
                 value = {
                     settings.value.containerPadding.run {
                         (calculateLeftPadding(LayoutDirection.Ltr) +
@@ -205,7 +210,7 @@ private val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.T
             SettingFilePicker(
                 state = lyricTypefacePath,
                 title = "自定义字体",
-                subTitle = "请选择TTF格式的字体文件",
+                subTitle = "请选择TTF格式的字体文件（存在bug，待修复）",
                 mimeType = "font/ttf"
             )
         }
