@@ -7,9 +7,9 @@ import androidx.palette.graphics.Palette
 
 fun Palette?.getAutomaticColor(): Int {
     if (this == null) return Color.DKGRAY
-    var oldColor = this.getDarkVibrantColor(Color.LTGRAY)
+    var oldColor = this.getDarkVibrantColor(Color.DKGRAY)
     if (ColorUtils.isLightColor(oldColor))
-        oldColor = this.getDarkMutedColor(Color.LTGRAY)
+        oldColor = this.getDarkMutedColor(Color.DKGRAY)
     return oldColor
 }
 
