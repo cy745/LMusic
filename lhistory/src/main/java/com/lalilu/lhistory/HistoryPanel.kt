@@ -6,7 +6,9 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.LazyGridContent
@@ -33,6 +35,22 @@ class HistoryPanel : LazyGridContent {
         val historyVM = koinInject<HistoryVM>()
         val widthSizeClass = LocalWindowSize.current.widthSizeClass
         val items by historyVM.historyState
+        val itemsWithReplace = remember {
+            derivedStateOf {
+                if (widthSizeClass == WindowWidthSizeClass.Compact) {
+                    items
+                } else {
+                    listOfNotNull(
+                        items.getOrNull(0),
+                        items.getOrNull(3),
+                        items.getOrNull(1),
+                        items.getOrNull(4),
+                        items.getOrNull(2),
+                        items.getOrNull(5)
+                    )
+                }
+            }
+        }
         val favouriteIds = state("favourite_ids", emptyList<String>())
 
         return fun LazyGridScope.() {
@@ -40,11 +58,11 @@ class HistoryPanel : LazyGridContent {
             if (items.isEmpty()) return
 
             items(
-                items = items,
+                items = itemsWithReplace.value,
                 key = { it.id },
                 contentType = { "History_item" },
                 span = {
-                    if (widthSizeClass == WindowWidthSizeClass.Expanded) GridItemSpan(maxLineSpan / 2)
+                    if (widthSizeClass != WindowWidthSizeClass.Compact) GridItemSpan(maxLineSpan / 2)
                     else GridItemSpan(maxLineSpan)
                 }
             ) { item ->
