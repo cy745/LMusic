@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.BottomSheetValue
@@ -92,15 +95,16 @@ fun BoxScope.LayoutWrapperContent() {
 @Composable
 private fun LayoutForPad(
     modifier: Modifier = Modifier,
-    navigatorBarHeight: Dp = 56.dp,
+    smartBarHeight: Dp = 56.dp,
     navHostContent: @Composable ((Navigator) -> Unit) -> Unit,
     navigationSmartBar: @Composable (Modifier) -> Unit
 ) {
     val navigator = remember { mutableStateOf<Navigator?>(null) }
+    val navigatorBar = WindowInsets.navigationBars.asPaddingValues()
 
     BottomSheetLayout2(
         modifier = modifier,
-        sheetPeekHeight = navigatorBarHeight,
+        sheetPeekHeight = smartBarHeight + navigatorBar.calculateBottomPadding(),
         sheetContent = { enhanceSheetState ->
             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                 Box(
@@ -121,7 +125,7 @@ private fun LayoutForPad(
                 Row(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
-                        .height(navigatorBarHeight)
+                        .height(smartBarHeight + navigatorBar.calculateBottomPadding())
                         .align(Alignment.TopCenter)
                         .graphicsLayer {
                             val progress = enhanceSheetState.progress(
