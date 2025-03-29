@@ -29,6 +29,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
@@ -66,6 +67,7 @@ fun LyricLayout(
     onItemClick: (LyricItem) -> Unit = {},
     onItemLongClick: (LyricItem) -> Unit = {},
 ) {
+    val density = LocalDensity.current
     val settings: DataSaverMutableState<LyricSettings> = koinInject(named("LyricSettings"))
     val textMeasurer = rememberTextMeasurer()
     val isUserScrolling = remember { mutableStateOf(isUserScrollEnable()) }
@@ -132,18 +134,41 @@ fun LyricLayout(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        val heightSplit = remember(screenConstraints) {
+            density.run { screenConstraints.maxHeight.toDp() / 3f }
+        }
+
         LazyColumn(
             state = listState,
             modifier = modifier
                 .fillMaxSize()
-                .edgeTransparent(top = 300.dp, bottom = 250.dp),
+                .edgeTransparent(top = heightSplit, bottom = heightSplit),
             userScrollEnabled = true,
-            contentPadding = remember { PaddingValues(top = 300.dp, bottom = 500.dp) }
+            contentPadding = PaddingValues(
+                top = heightSplit,
+                bottom = heightSplit * 2f
+            )
         ) {
             startRecord(recorder) {
                 if (lyricEntry.value.isEmpty()) {
                     itemWithRecord(key = "EMPTY_TIPS") {
-                        Text("暂无歌词")
+                        val item = remember {
+                            LyricItem.NormalLyric(
+                                key = "0",
+                                content = "暂无歌词",
+                                time = 0L
+                            )
+                        }
+
+                        LyricContentNormal(
+                            lyric = item,
+                            index = context.currentIndex(),
+                            modifier = Modifier,
+                            settings = settings.value,
+                            context = context,
+                            onLongClick = { if (isUserClickEnable()) onItemLongClick(item) },
+                            onClick = { }
+                        )
                     }
                 } else {
                     itemsIndexedWithRecord(
