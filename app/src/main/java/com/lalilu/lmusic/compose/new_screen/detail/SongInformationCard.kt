@@ -64,10 +64,12 @@ fun SongInformationCard(
                 },
             )
 
-            ColumnItem(
-                title = "平均码率",
-                content = remember(song) { "%.1f kbps".format(song.fileInfo.bitrate / 1000f) },
-            )
+            if (song.fileInfo.bitrate > 0) {
+                ColumnItem(
+                    title = "平均码率",
+                    content = remember(song) { "%.1f kbps".format(song.fileInfo.bitrate / 1000f) },
+                )
+            }
 
             song.metadata.dateAdded.let { date ->
                 ColumnItem(
