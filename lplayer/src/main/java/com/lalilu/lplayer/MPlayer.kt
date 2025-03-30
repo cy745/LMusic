@@ -197,6 +197,7 @@ object MPlayer : CoroutineScope {
         }
 
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+            currentMediaItem = browser.currentMediaItem
             currentMediaMetadata = mediaMetadata
             currentDuration = mediaMetadata.durationMs ?: browser.duration
             // TODO 此处获取到的duration仍然可能是上一首歌曲的时长
