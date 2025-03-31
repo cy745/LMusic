@@ -135,6 +135,7 @@ fun PlaylistLayout(
         state = listState,
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 200.dp),
+        overscrollEffect = null
     ) {
         items(
             items = actualItems,
