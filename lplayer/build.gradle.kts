@@ -31,4 +31,5 @@ dependencies {
     implementation(libs.startup.runtime)
 
     api(libs.bundles.media3)
+    api("com.github.cy745:fpcalc:1.2")
 }

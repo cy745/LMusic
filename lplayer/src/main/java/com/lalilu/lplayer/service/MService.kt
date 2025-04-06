@@ -41,14 +41,14 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.android.ext.android.inject
+import org.koin.android.ext.android.getKoin
 import org.koin.core.qualifier.named
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(UnstableApi::class)
 class MService : MediaLibraryService(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO + SupervisorJob()
-    private val historyAnalyticsListener by inject<AnalyticsListener>(named("history_analytics_listener"))
+    private val historyAnalyticsListener by getKoin().injectOrNull<AnalyticsListener>(named("history_analytics_listener"))
 
     private var exoPlayer: Player? = null
     private var mediaSession: MediaLibrarySession? = null
@@ -74,7 +74,10 @@ class MService : MediaLibraryService(), CoroutineScope {
             .setAudioAttributes(defaultAudioAttributes, MPlayerKV.handleAudioFocus.value != false)
             .setMaxSeekToPreviousPositionMs(Long.MAX_VALUE) // 避免播放上一首需要点两次
             .build()
-            .apply { addAnalyticsListener(historyAnalyticsListener) }
+            .apply {
+                historyAnalyticsListener
+                    ?.let { addAnalyticsListener(it) }
+            }
             .setUpQueueControl()
 
         mediaSession = MediaLibrarySession

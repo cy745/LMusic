@@ -18,7 +18,7 @@ val keystoreProps = rootProject.file("keystore.properties")
     .takeIf { it.exists() }
     ?.let { Properties().apply { load(FileInputStream(it)) } }
 
-fun releaseTime(pattern: String = "yyyyMMdd_HHmmZ"): String = SimpleDateFormat(pattern).run {
+fun releaseTime(pattern: String = "MMdd_HHmm"): String = SimpleDateFormat(pattern).run {
     timeZone = TimeZone.getTimeZone("Asia/Shanghai")
     format(Date())
 }
@@ -97,7 +97,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
 
-            versionNameSuffix = "-ALPHA_${releaseTime()}"
+            versionNameSuffix = "-Aplha-${releaseTime()}"
             applicationIdSuffix = ".alpha"
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
