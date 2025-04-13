@@ -30,6 +30,8 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lplayer.MPlayerKV
 import com.lalilu.lplayer.extensions.FadeTransitionRenderersFactory
+import com.lalilu.lplayer.extensions.PlayMode
+import com.lalilu.lplayer.extensions.playMode
 import com.lalilu.lplayer.extensions.setUpQueueControl
 import com.lalilu.lplayer.service.CustomCommand.SeekToNext
 import com.lalilu.lplayer.service.CustomCommand.SeekToPrevious
@@ -75,8 +77,8 @@ class MService : MediaLibraryService(), CoroutineScope {
             .setMaxSeekToPreviousPositionMs(Long.MAX_VALUE) // 避免播放上一首需要点两次
             .build()
             .apply {
-                historyAnalyticsListener
-                    ?.let { addAnalyticsListener(it) }
+                historyAnalyticsListener?.let { addAnalyticsListener(it) }
+                addListener(MPlayerListener(this))
             }
             .setUpQueueControl()
 
@@ -115,6 +117,30 @@ class MService : MediaLibraryService(), CoroutineScope {
                     ?.setHandleAudioBecomingNoisy(it != false)
             }
         }.launchIn(this)
+
+        MPlayerKV.playMode.flow().onEach {
+            withContext(Dispatchers.Main) {
+                exoPlayer?.playMode = PlayMode.from(it)
+            }
+        }.launchIn(this)
+    }
+}
+
+private class MPlayerListener(val player: Player) : Player.Listener {
+    override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+        val playMode = PlayMode.of(
+            repeatMode = player.repeatMode,
+            shuffleModeEnabled = shuffleModeEnabled
+        )
+        MPlayerKV.playMode.value = playMode.name
+    }
+
+    override fun onRepeatModeChanged(repeatMode: Int) {
+        val playMode = PlayMode.of(
+            repeatMode = repeatMode,
+            shuffleModeEnabled = player.shuffleModeEnabled
+        )
+        MPlayerKV.playMode.value = playMode.name
     }
 }
 

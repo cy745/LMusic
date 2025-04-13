@@ -99,7 +99,7 @@ object MPlayer : CoroutineScope {
             PlayerAction.Pause -> browser.pause()
 
             PlayerAction.SkipToNext -> {
-                if (browser.playMode is PlayMode.Shuffle) {
+                if (browser.playMode == PlayMode.Shuffle) {
                     browser.sendCustomCommand(
                         CustomCommand.SeekToNext.toSessionCommand(),
                         Bundle.EMPTY
@@ -110,7 +110,7 @@ object MPlayer : CoroutineScope {
             }
 
             PlayerAction.SkipToPrevious -> {
-                if (browser.playMode is PlayMode.Shuffle) {
+                if (browser.playMode == PlayMode.Shuffle) {
                     browser.sendCustomCommand(
                         CustomCommand.SeekToPrevious.toSessionCommand(),
                         Bundle.EMPTY

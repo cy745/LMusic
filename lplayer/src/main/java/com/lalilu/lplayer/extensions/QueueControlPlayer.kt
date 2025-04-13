@@ -23,6 +23,7 @@ internal class QueueControlPlayer(player: ExoPlayer) : ForwardingPlayer(player),
     private fun tryMoveNext() {
         if (playMode == PlayMode.Shuffle) {
             val target = getRandomNextIndex()
+            if (target < 0) return
 
             val targetMediaItem = currentTimeline
                 .getWindow(target, Timeline.Window())
@@ -36,6 +37,8 @@ internal class QueueControlPlayer(player: ExoPlayer) : ForwardingPlayer(player),
     }
 
     private fun getRandomNextIndex(): Int {
+        if (currentTimeline.windowCount <= 0) return -1
+
         val maxIndex = currentTimeline.windowCount - 1
         val currentIndex = currentMediaItemIndex
 
