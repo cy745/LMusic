@@ -30,7 +30,7 @@ dependencies {
     implementation(project(":lmedia"))
     implementation(libs.startup.runtime)
 
-    api(files("libs/lib-decoder-flac-release.aar"))
+    api(project(":lplayer:lib-decoder-flac"))
     api(libs.bundles.media3)
     api("com.github.cy745:fpcalc:1.2")
 }
