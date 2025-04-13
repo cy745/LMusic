@@ -1,10 +1,14 @@
 package com.lalilu.lalbum.screen
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,10 +28,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.gigamole.composefadingedges.FadingEdgesGravity
 import com.gigamole.composefadingedges.content.FadingEdgesContentType
 import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
@@ -130,7 +138,7 @@ fun AlbumDetailScreenContent(
                         .statusBarsPadding(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    AsyncImage(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
@@ -138,11 +146,26 @@ fun AlbumDetailScreenContent(
                                 width = 1.dp,
                                 color = Color.White.copy(0.3f),
                                 shape = RoundedCornerShape(8.dp)
-                            ),
-                        model = album,
-                        contentScale = ContentScale.FillWidth,
-                        contentDescription = "Album art"
-                    )
+                            )
+                            .animateContentSize()
+                    ) {
+                        Image(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f),
+                            painter = painterResource(com.lalilu.component.R.drawable.ic_music_2_line_100dp),
+                            contentDescription = null
+                        )
+                        AsyncImage(
+                            modifier = Modifier.fillMaxWidth(),
+                            model = ImageRequest.Builder(LocalPlatformContext.current)
+                                .data(album)
+                                .crossfade(true)
+                                .build(),
+                            contentScale = ContentScale.FillWidth,
+                            contentDescription = "Album art"
+                        )
+                    }
 
                     Text(
                         text = album?.name ?: "Unknown",
