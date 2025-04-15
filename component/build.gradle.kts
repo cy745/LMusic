@@ -52,6 +52,7 @@ dependencies {
     api(libs.bundles.accompanist)
     api(libs.bundles.voyager)
     api(libs.bundles.coil3)
+    api(libs.bundles.sketch)
     api(libs.lottie.compose)
     api(libs.human.readable)
     api(libs.kotlinx.datetime)

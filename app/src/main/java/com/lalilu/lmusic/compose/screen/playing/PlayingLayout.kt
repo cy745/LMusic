@@ -195,8 +195,8 @@ fun PlayingLayout(
                         .fillMaxWidth()
                         .aspectRatio(1f)
                         .graphicsLayer {
-                            val maxHeight = constraints.maxHeight
-                            val maxWidth = constraints.maxWidth
+                            val maxHeight = this@BoxWithConstraints.constraints.maxHeight
+                            val maxWidth = this@BoxWithConstraints.constraints.maxWidth
 
                             // min至middle阶段中的位移
                             val minToMiddleInterpolated =

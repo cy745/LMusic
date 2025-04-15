@@ -14,6 +14,7 @@ accompanist_version = "0.32.0"
 voyager = "1.1.0-beta03"
 lottie-compose = "6.6.0"
 
+sketch_version = "4.0.5"
 coil3_version = "3.1.0"
 utilcodex_version = "1.31.1"
 
@@ -81,6 +82,9 @@ koin-compiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "ko
 coil3-android = { module = "io.coil-kt.coil3:coil-android", version.ref = "coil3_version" }
 coil3-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil3_version" }
 coil3-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil3_version" }
+
+sketch-compose = { module = "io.github.panpf.sketch4:sketch-compose", version.ref = "sketch_version" }
+sketch-http = { module = "io.github.panpf.sketch4:sketch-http", version.ref = "sketch_version" }
 
 # media3
 media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
@@ -168,6 +172,10 @@ coil3 = [
     "coil3-android",
     "coil3-compose",
     "coil3-okhttp"
+]
+sketch = [
+    "sketch-compose",
+    "sketch-http"
 ]
 koin = [
     "koin-android",
