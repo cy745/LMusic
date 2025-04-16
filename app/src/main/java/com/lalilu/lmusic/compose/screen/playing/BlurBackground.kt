@@ -55,12 +55,13 @@ fun BlurBackground(
             modifier = Modifier
                 .fillMaxSize()
                 .drawWithContent {
+                    drawContent()
+
                     val progress = blurProgress()
                     val radius = (progress * StackBlurUtils.MAX_RADIUS).toInt()
 
-                    // 若无降采样图片或当前Radius为0则直接绘制原图
+                    // 若无降采样图片或当前Radius为0则只绘制原图
                     if (samplingBitmap.value == null || radius <= 0) {
-                        this.drawContent()
                         return@drawWithContent
                     }
 
