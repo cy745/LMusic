@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
 import com.lalilu.component.extension.enableFor
-import com.lalilu.lplayer.LPlayer
+import com.lalilu.lplayer.MPlayer
 
 
 @Composable
@@ -40,7 +38,7 @@ fun PlayingToolbar(
     fixContent: @Composable RowScope.() -> Unit = {},
     extraContent: @Composable AnimatedVisibilityScope.() -> Unit = {}
 ) {
-    val song by LPlayer.runtime.info.playingFlow.collectAsState(null)
+    val metadata = MPlayer.currentMediaMetadata
     val defaultSloganStr = stringResource(id = R.string.default_slogan)
 
     val enter = remember {
@@ -98,9 +96,9 @@ fun PlayingToolbar(
             modifier = Modifier
                 .weight(1f)
                 .padding(end = 10.dp),
-            title = { song?.title?.takeIf(String::isNotBlank) ?: defaultSloganStr },
-            subTitle = { song?.subTitle ?: defaultSloganStr },
-            isPlaying = { song?.let { isItemPlaying(it.mediaId) } ?: false }
+            title = { metadata?.title?.toString()?.takeIf(String::isNotBlank) ?: defaultSloganStr },
+            subTitle = { metadata?.subtitle?.toString()?.takeIf(String::isNotBlank) ?: defaultSloganStr },
+            isPlaying = { MPlayer.isPlaying }
         )
 
         fixContent()

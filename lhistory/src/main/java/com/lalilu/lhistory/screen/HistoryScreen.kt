@@ -1,70 +1,134 @@
 package com.lalilu.lhistory.screen
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.koin.getScreenModel
-import com.lalilu.component.Songs
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.LoadingScaffold
-import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.ScreenInfo
-import com.lalilu.component.base.collectAsLoadingState
-import com.lalilu.lhistory.R
-import com.lalilu.lhistory.repository.HistoryRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.mapLatest
-import com.lalilu.component.R as ComponentR
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import cafe.adriel.voyager.core.screen.Screen
+import com.lalilu.RemixIcon
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.component.base.smartBarPadding
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.lhistory.component.HistoryItemCard
+import com.lalilu.lhistory.entity.LHistory
+import com.lalilu.lhistory.viewmodel.HistoryVM
+import com.lalilu.lmedia.LMedia
+import com.lalilu.lmedia.entity.LSong
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.system.historyLine
+import com.zhangke.krouter.annotation.Destination
+import org.koin.compose.koinInject
 
-data object HistoryScreen : DynamicScreen() {
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.history_screen_title,
-        icon = ComponentR.drawable.ic_play_list_fill
-    )
+@Destination("/pages/history")
+data object HistoryScreen : Screen, ScreenInfoFactory {
+    private fun readResolve(): Any = HistoryScreen
+
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo {
+        return remember {
+            ScreenInfo(
+                title = { "历史记录" },
+                icon = RemixIcon.System.historyLine
+            )
+        }
+    }
 
     @Composable
     override fun Content() {
-        val historySM = getScreenModel<HistoryScreenModel>()
+        val historyVM = koinInject<HistoryVM>()
+        val items = historyVM.pager.collectAsLazyPagingItems()
 
-        HistoryScreen(historySM = historySM)
+        HistoryScreenContent(
+            items = items
+        )
     }
 }
 
-class HistoryScreenModel(
-    historyRepo: HistoryRepository
-) : ScreenModel {
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val mediaIds = historyRepo
-        .getHistoriesIdsMapWithLastTime()
-        .mapLatest { map ->
-            map.toList()
-                .sortedByDescending { it.second }
-                .map { it.first }
-        }
-}
-
 @Composable
-private fun DynamicScreen.HistoryScreen(
-    historySM: HistoryScreenModel
+private fun HistoryScreenContent(
+    items: LazyPagingItems<LHistory>
 ) {
-    val mediaIdsState = historySM.mediaIds.collectAsLoadingState()
+    val listState = rememberLazyListState()
 
-    LoadingScaffold(
+    LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        targetState = mediaIdsState
-    ) { mediaIds ->
-        Songs(
-            modifier = Modifier.fillMaxSize(),
-            mediaIds = mediaIds,
-            supportListAction = { listOf() },
-            headerContent = {
-                item {
-                    NavigatorHeader(title = stringResource(id = R.string.history_screen_title))
+        state = listState
+    ) {
+        item(key = "历史记录") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .statusBarsPadding(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "历史记录",
+                    fontSize = 20.sp,
+                    lineHeight = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colors.onBackground
+                )
+                Text(
+                    text = "播放过的歌曲记录",
+                    color = MaterialTheme.colors.onBackground.copy(0.6f),
+                    fontSize = 12.sp,
+                    lineHeight = 12.sp,
+                )
+            }
+        }
+
+        items(
+            count = items.itemCount,
+            key = items.itemKey { it.id }
+        ) { index ->
+            val item = items[index]
+
+            HistoryItemCard(
+                modifier = Modifier.animateItem(),
+                imageData = { LMedia.get<LSong>(item?.contentId) },
+                title = { item?.contentTitle ?: "" },
+                startTime = { item?.startTime ?: System.currentTimeMillis() },
+                duration = { item?.duration ?: 0 },
+                repeatCount = { item?.repeatCount ?: 0 },
+                onClick = {
+                    AppRouter.route("/pages/songs/detail")
+                        .with("mediaId", item?.contentId)
+                        .jump()
                 }
-            },
-            footerContent = {}
-        )
+            )
+        }
+
+        if (items.loadState.append == LoadState.Loading) {
+            item {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth(Alignment.CenterHorizontally)
+                )
+            }
+        }
+
+        smartBarPadding()
     }
 }

@@ -1,6 +1,7 @@
 package com.lalilu.component.settings
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -73,7 +73,7 @@ fun SettingStateSeekBar(
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,
-                indication = rememberRipple(),
+                indication = LocalIndication.current,
                 onClick = { }
             )
             .padding(paddingValues),

@@ -1,7 +1,7 @@
 package com.lalilu.lmusic.utils.coil.mapper
 
-import coil.map.Mapper
-import coil.request.Options
+import coil3.map.Mapper
+import coil3.request.Options
 import com.lalilu.lmedia.entity.LSong
 
 class LSongMapper : Mapper<LSong, Any> {

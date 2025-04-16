@@ -4,43 +4,57 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.navigator.currentOrThrow
+import com.blankj.utilcode.util.ActivityUtils
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.lalilu.R
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
-import com.lalilu.component.base.CustomScreen
-import com.lalilu.component.base.ScreenInfo
+import com.lalilu.lmusic.MainActivity
+import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.utils.extension.getActivity
+import org.koin.compose.koinInject
 import kotlin.system.exitProcess
 
-class PermissionsScreen(
-    private val nextScreen: Screen
-) : CustomScreen {
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.screen_title_permissions
-    )
+class PermissionsScreen : Screen, ScreenInfoFactory {
+
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo {
+        return remember {
+            ScreenInfo(title = { stringResource(R.string.screen_title_permissions) })
+        }
+    }
 
     @Composable
     override fun Content() {
-        PermissionsPage(
-            nextScreen = nextScreen
-        )
+        PermissionsPage()
     }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun PermissionsPage(
-    nextScreen: Screen,
-    navigator: Navigator = LocalNavigator.currentOrThrow
+    settingsSp: SettingsSp = koinInject()
 ) {
     val permission = rememberPermissionState(permission = REQUIRE_PERMISSIONS)
+    var isGuidingOver by settingsSp.isGuidingOver
+    val context = LocalContext.current
+
+    LaunchedEffect(permission.status) {
+        if (permission.status is PermissionStatus.Granted) {
+            LMedia.init(context)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -50,8 +64,17 @@ private fun PermissionsPage(
         when (permission.status) {
             PermissionStatus.Granted -> {
                 ActionCard(
-                    confirmTitle = "已授权，下一步",
-                    onConfirm = { navigator.push(nextScreen) }
+                    confirmTitle = "已授权，进入",
+                    onConfirm = {
+                        context.getActivity()?.apply {
+                            isGuidingOver = true
+
+                            if (!ActivityUtils.isActivityExistsInStack(MainActivity::class.java)) {
+                                ActivityUtils.startActivity(MainActivity::class.java)
+                            }
+                            finishAfterTransition()
+                        }
+                    }
                 ) {
                     """
                     本应用需要获取本地存储权限，以访问本机存储的所有歌曲文件

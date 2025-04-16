@@ -1,5 +1,7 @@
 package com.lalilu.common.kv
 
+import android.annotation.SuppressLint
+import androidx.annotation.CallSuper
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.flow.Flow
@@ -7,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
+@SuppressLint("UnrememberedMutableState")
 abstract class KVItem<T> : MutableState<T?>, ReadWriteProperty<KVItem<T>, T?>, UpdatableKV<T> {
     var autoSave = true
         private set
@@ -36,6 +39,7 @@ abstract class KVItem<T> : MutableState<T?>, ReadWriteProperty<KVItem<T>, T?>, U
     override fun enableAutoSave() = run { autoSave = true }
     override fun disableAutoSave() = run { autoSave = false }
 
+    @CallSuper
     override fun set(value: T?) {
         flowInternal.tryEmit(value)
     }

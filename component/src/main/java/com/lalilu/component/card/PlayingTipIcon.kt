@@ -33,8 +33,8 @@ fun PlayingTipIcon(
     AnimatedVisibility(
         visible = isPlaying(),
         modifier = modifier.wrapContentWidth(),
-        enter = fadeIn() + expandHorizontally(),
-        exit = fadeOut() + shrinkHorizontally()
+        enter = fadeIn() + expandHorizontally(clip = false),
+        exit = fadeOut() + shrinkHorizontally(clip = false)
     ) {
         val composition by rememberLottieComposition(LottieCompositionSpec.Asset("anim/90463-wave.json"))
         val properties = rememberLottieDynamicProperties(

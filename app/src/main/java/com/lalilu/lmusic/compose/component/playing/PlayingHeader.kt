@@ -1,7 +1,6 @@
 package com.lalilu.lmusic.compose.component.playing
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import com.lalilu.component.card.PlayingTipIcon
 import com.lalilu.lmusic.utils.extension.slideTransition
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlayingHeader(
     modifier: Modifier = Modifier,

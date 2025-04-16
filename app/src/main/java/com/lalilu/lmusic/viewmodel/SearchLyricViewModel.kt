@@ -86,6 +86,7 @@ class SearchLyricViewModel(
                 ToastUtils.showShort("歌词保存成功")
                 onSuccess()
             } catch (e: Exception) {
+                searchState.value = SearchState.Error
                 ToastUtils.showShort(e.message)
             }
         }

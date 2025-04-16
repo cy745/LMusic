@@ -25,7 +25,10 @@ fun <T> Flow<T>.toState(scope: CoroutineScope): State<T?> {
 /**
  * 将Flow转换为State，附带初始值
  */
-fun <T> Flow<T>.toState(defaultValue: T, scope: CoroutineScope): State<T> {
+fun <T> Flow<T>.toState(
+    defaultValue: T,
+    scope: CoroutineScope,
+): State<T> {
     return mutableStateOf(defaultValue).also { state ->
         this.onEach { state.value = it }.launchIn(scope)
     }

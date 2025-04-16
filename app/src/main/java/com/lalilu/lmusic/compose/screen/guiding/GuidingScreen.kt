@@ -3,13 +3,12 @@ package com.lalilu.lmusic.compose.screen.guiding
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,18 +42,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.Navigator
 import com.lalilu.R
-import com.lalilu.component.base.CustomScreen
-import com.lalilu.lmusic.compose.component.CustomTransition
 import com.lalilu.component.base.LocalWindowSize
+import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.extension.rememberIsPad
+import com.lalilu.component.navigation.CustomTransition
 
 @Composable
-@OptIn(ExperimentalAnimationApi::class)
 fun GuidingScreen() {
     val windowSize = LocalWindowSize.current
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp +
@@ -65,14 +62,10 @@ fun GuidingScreen() {
     val navigatorState = remember { mutableStateOf<Navigator?>(null) }
     val backStackSize = remember { derivedStateOf { navigatorState.value?.items?.size ?: 0 } }
     val showPopUpBtn = remember { derivedStateOf { backStackSize.value > 1 } }
-    val currentScreenTitleRes by remember {
-        derivedStateOf {
-            (navigatorState.value?.lastItemOrNull as? CustomScreen)
-                ?.getScreenInfo()
-                ?.title
-                ?: R.string.app_name
-        }
-    }
+    val currentScreen by remember { derivedStateOf { (navigatorState.value?.lastItemOrNull as? ScreenInfoFactory) } }
+    val currentScreenTitle = currentScreen
+        ?.provideScreenInfo()
+        ?.title?.invoke()
 
     Surface(color = MaterialTheme.colors.background) {
         Box(
@@ -109,13 +102,17 @@ fun GuidingScreen() {
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.Start
                     ) {
-                        AnimatedContent(targetState = currentScreenTitleRes, transitionSpec = {
-                            (slideInVertically { height -> height } + fadeIn() with
-                                    slideOutVertically { height -> -height } + fadeOut()).using(
-                                SizeTransform(clip = false)
-                            )
-                        }, label = "") {
-                            Text(text = stringResource(id = it), fontSize = 22.sp)
+                        AnimatedContent(
+                            targetState = currentScreenTitle,
+                            transitionSpec = {
+                                ((slideInVertically { height -> height } + fadeIn()).togetherWith(
+                                    slideOutVertically { height -> -height } + fadeOut())).using(
+                                    SizeTransform(clip = false)
+                                )
+                            },
+                            label = ""
+                        ) { title ->
+                            Text(text = title ?: "", fontSize = 22.sp)
                         }
                         Text(
                             text = "${backStackSize.value} / 3",
@@ -126,17 +123,13 @@ fun GuidingScreen() {
                 }
                 Navigator(
                     AgreementScreen(
-                        nextScreen = PermissionsScreen(
-                            nextScreen = SeekbarGuidingScreen
-                        )
+                        nextScreen = PermissionsScreen()
                     )
                 ) { navigator ->
                     navigatorState.value = navigator
                     CustomTransition(
                         navigator = navigator
-                    ) {
-                        it.Content()
-                    }
+                    )
                 }
             }
         }

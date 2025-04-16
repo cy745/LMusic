@@ -1,45 +1,39 @@
 package com.lalilu.common.kv
 
-import io.fastkv.FastKV
-import io.fastkv.interfaces.FastEncoder
+import java.io.Serializable
 
 @Suppress("UNCHECKED_CAST")
-abstract class BaseKV {
+abstract class BaseKV(val prefix: String = "") {
     val kvMap = LinkedHashMap<String, KVItem<out Any>>()
-    abstract val fastKV: FastKV
 
-    inline fun <reified T : Any> obtain(key: String): KVItem<T> = kvMap.getOrPut(key) {
-        when {
-            T::class.java.isAssignableFrom(Int::class.java) -> IntKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(Long::class.java) -> LongKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(Float::class.java) -> FloatKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(Double::class.java) -> DoubleKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(Boolean::class.java) -> BooleanKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(String::class.java) -> StringKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(ByteArray::class.java) -> ByteArrayKVItem(key, fastKV)
-            else -> throw IllegalArgumentException("Unsupported type")
-        }
-    } as KVItem<T>
+    inline fun <reified T : Serializable> obtain(key: String): KVItem<T> {
+        val actualKey = if (prefix.isNotBlank()) "${prefix}_$key" else key
+        return kvMap.getOrPut(actualKey) {
+            when {
+                T::class == Boolean::class -> BoolKVImpl(actualKey)
+                T::class == Int::class -> IntKVImpl(actualKey)
+                T::class == Long::class -> LongKVImpl(actualKey)
+                T::class == Float::class -> FloatKVImpl(actualKey)
+                T::class == Double::class -> DoubleKVImpl(actualKey)
+                T::class == String::class -> StringKVImpl(actualKey)
+                else -> ObjectKVImpl(actualKey, T::class.java)
+            }
+        } as KVItem<T>
+    }
 
-    inline fun <reified T : Any> obtainList(key: String): KVListItem<T> = kvMap.getOrPut(key) {
-        when {
-            T::class.java.isAssignableFrom(Int::class.java) -> IntListKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(Long::class.java) -> LongListKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(Float::class.java) -> FloatListKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(Double::class.java) -> DoubleListKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(Boolean::class.java) -> BooleanListKVItem(key, fastKV)
-            T::class.java.isAssignableFrom(String::class.java) -> StringListKVItem(key, fastKV)
-            else -> throw IllegalArgumentException("Unsupported type")
-        }
-    } as KVListItem<T>
+    inline fun <reified T : Serializable> obtainList(key: String): KVListItem<T> {
+        val actualKey = if (prefix.isNotBlank()) "${prefix}_$key" else key
 
-    inline fun <reified T : Any> obtain(key: String, encoder: FastEncoder<T>): KVItem<T> =
-        kvMap.getOrPut(key) { ObjectKVItem(key, fastKV, encoder) } as KVItem<T>
-
-    inline fun <reified T : Any> obtainList(key: String, encoder: FastEncoder<T>): KVListItem<T> =
-        kvMap.getOrPut(key) { ObjectListKVItem(key, fastKV, encoder) } as KVListItem<T>
-
-    inline fun <reified T : Any> obtainMap(key: String, encoder: FastEncoder<T>): KVMapItem<T> =
-        kvMap.getOrPut(key) { ObjectMapKVItem(key, fastKV, encoder) } as KVMapItem<T>
-
+        return kvMap.getOrPut(actualKey) {
+            when {
+                T::class == Boolean::class -> BoolListKVImpl(actualKey)
+                T::class == Int::class -> IntListKVImpl(actualKey)
+                T::class == Long::class -> LongListKVImpl(actualKey)
+                T::class == Float::class -> FloatListKVImpl(actualKey)
+                T::class == Double::class -> DoubleListKVImpl(actualKey)
+                T::class == String::class -> StringListKVImpl(actualKey)
+                else -> ObjectListKVImpl(actualKey, T::class.java)
+            }
+        } as KVListItem<T>
+    }
 }

@@ -5,10 +5,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.lalilu.lmusic.compose.NavigationWrapper
 import com.lalilu.component.base.UiAction
 import com.lalilu.component.base.UiPresenter
 import com.lalilu.component.base.UiState
+import com.lalilu.component.navigation.AppRouter
+import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lmusic.viewmodel.SearchLyricViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -58,7 +59,7 @@ object SearchLyricPresenter : UiPresenter<SearchLyricState> {
 
             is SearchLyricAction.SaveFor -> {
                 vm.saveLyricInto(lyricId = selectedId, mediaId = mediaId) {
-                    launch { NavigationWrapper.navigator?.pop() }
+                    launch { AppRouter.intent(NavIntent.Pop) }
                 }
             }
 

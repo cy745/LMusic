@@ -7,26 +7,27 @@ import com.lalilu.lplaylist.entity.LPlaylist
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
+import org.koin.core.annotation.Single
 
+@Single(binds = [PlaylistRepository::class])
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PlaylistRepositoryImpl(
-    private val kv: PlaylistKV,
     private val context: Application,
 ) : PlaylistRepository {
 
     override fun getPlaylistsFlow(): Flow<List<LPlaylist>> {
-        return kv.playlistList.flow()
+        return PlaylistKV.playlistList.flow()
             .mapLatest { playlists ->
                 playlists?.distinctBy { it.id } ?: emptyList()
             }
     }
 
     override fun getPlaylists(): List<LPlaylist> {
-        return kv.playlistList.value ?: emptyList()
+        return PlaylistKV.playlistList.value ?: emptyList()
     }
 
     override fun setPlaylists(playlists: List<LPlaylist>) {
-        kv.playlistList.apply {
+        PlaylistKV.playlistList.apply {
             value = playlists.distinctBy { it.id }
             if (!autoSave) save()
         }
@@ -91,7 +92,7 @@ internal class PlaylistRepositoryImpl(
     }
 
     override fun addMediaIdsToPlaylist(mediaIds: List<String>, playlistId: String) {
-        updatePlaylist(playlistId) { it.copy(mediaIds = it.mediaIds.plus(mediaIds).distinct()) }
+        updatePlaylist(playlistId) { it.copy(mediaIds = mediaIds.plus(it.mediaIds).distinct()) }
     }
 
     override fun addMediaIdsToPlaylists(mediaIds: List<String>, playlistIds: List<String>) {

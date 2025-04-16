@@ -5,8 +5,8 @@ import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -16,8 +16,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lalilu.component.base.LocalPaddingValue
+import com.lalilu.component.base.LocalSmartBarPadding
 
+@Deprecated("弃用")
 @Composable
 fun LLazyColumn(
     modifier: Modifier = Modifier,
@@ -31,7 +32,7 @@ fun LLazyColumn(
     userScrollEnabled: Boolean = true,
     content: LazyListScope.() -> Unit
 ) {
-    val padding by LocalPaddingValue.current
+    val padding by LocalSmartBarPadding.current
 
     LazyColumn(
         modifier = modifier,
@@ -47,7 +48,7 @@ fun LLazyColumn(
         item {
             Spacer(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .width(1.dp)
                     .height(padding.calculateBottomPadding() + 20.dp)
             )
         }

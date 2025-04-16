@@ -1,258 +1,138 @@
 package com.lalilu.common.kv
 
-import io.fastkv.FastKV
-import io.fastkv.interfaces.FastEncoder
+import com.blankj.utilcode.util.GsonUtils
+import com.blankj.utilcode.util.SPUtils
+import java.io.Serializable
 
-class IntKVItem(
+
+class BoolKVImpl(
     val key: String,
-    private val fastKV: FastKV
-) : KVItem<Int>() {
-    override fun get(): Int? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getInt(key)
-    }
-
-    override fun set(value: Int?) {
-        if (value == null) fastKV.remove(key)
-        else fastKV.putInt(key, value)
-    }
-}
-
-
-class LongKVItem(
-    val key: String,
-    private val fastKV: FastKV
-) : KVItem<Long>() {
-
-    override fun get(): Long? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getLong(key)
-    }
-
-    override fun set(value: Long?) {
-        if (value == null) fastKV.remove(key)
-        else fastKV.putLong(key, value)
-    }
-}
-
-class BooleanKVItem(
-    val key: String,
-    private val fastKV: FastKV
 ) : KVItem<Boolean>() {
     override fun get(): Boolean? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getBoolean(key)
+        if (!SPUtils.getInstance().contains(key)) return null
+        return SPUtils.getInstance().getBoolean(key)
     }
 
     override fun set(value: Boolean?) {
         super.set(value)
-        if (value == null) fastKV.remove(key)
-        else fastKV.putBoolean(key, value)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            SPUtils.getInstance().put(key, value)
+        }
     }
 }
 
-class FloatKVItem(
+class IntKVImpl(
     val key: String,
-    private val fastKV: FastKV
+) : KVItem<Int>() {
+    override fun get(): Int? {
+        if (!SPUtils.getInstance().contains(key)) return null
+        return SPUtils.getInstance().getInt(key)
+    }
+
+    override fun set(value: Int?) {
+        super.set(value)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            SPUtils.getInstance().put(key, value)
+        }
+    }
+}
+
+class LongKVImpl(
+    val key: String,
+) : KVItem<Long>() {
+    override fun get(): Long? {
+        if (!SPUtils.getInstance().contains(key)) return null
+        return SPUtils.getInstance().getLong(key)
+    }
+
+    override fun set(value: Long?) {
+        super.set(value)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            SPUtils.getInstance().put(key, value)
+        }
+    }
+}
+
+class FloatKVImpl(
+    val key: String,
 ) : KVItem<Float>() {
     override fun get(): Float? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getFloat(key)
+        if (!SPUtils.getInstance().contains(key)) return null
+        return SPUtils.getInstance().getFloat(key)
     }
 
     override fun set(value: Float?) {
         super.set(value)
-        if (value == null) fastKV.remove(key)
-        else fastKV.putFloat(key, value)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            SPUtils.getInstance().put(key, value)
+        }
     }
 }
 
-
-class DoubleKVItem(
+class StringKVImpl(
     val key: String,
-    private val fastKV: FastKV
-) : KVItem<Double>() {
-    override fun get(): Double? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getDouble(key)
-    }
-
-    override fun set(value: Double?) {
-        super.set(value)
-        if (value == null) fastKV.remove(key)
-        else fastKV.putDouble(key, value)
-    }
-}
-
-class StringKVItem(
-    val key: String,
-    private val fastKV: FastKV
 ) : KVItem<String>() {
     override fun get(): String? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getString(key)
+        if (!SPUtils.getInstance().contains(key)) return null
+        return SPUtils.getInstance().getString(key)
     }
 
     override fun set(value: String?) {
         super.set(value)
-        if (value == null) fastKV.remove(key)
-        else fastKV.putString(key, value)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            SPUtils.getInstance().put(key, value)
+        }
     }
 }
 
-class ByteArrayKVItem(
+class DoubleKVImpl(
     val key: String,
-    private val fastKV: FastKV
-) : KVItem<ByteArray>() {
-    override fun get(): ByteArray? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getArray(key)
+) : KVItem<Double>() {
+    override fun get(): Double? {
+        if (!SPUtils.getInstance().contains(key)) return null
+        val bitValue = SPUtils.getInstance().getLong(key)
+        return Double.fromBits(bitValue)
     }
 
-    override fun set(value: ByteArray?) {
+    override fun set(value: Double?) {
         super.set(value)
-        if (value == null) fastKV.remove(key)
-        else fastKV.putArray(key, value)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            val bitValue = value.toRawBits()
+            SPUtils.getInstance().put(key, bitValue)
+        }
     }
 }
 
-class ObjectKVItem<T>(
-    val key: String,
-    private val fastKV: FastKV,
-    private val encoder: FastEncoder<T>
+class ObjectKVImpl<T : Serializable>(
+    private val key: String,
+    private val clazz: Class<T>
 ) : KVItem<T>() {
     override fun get(): T? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getObject<T>(key)
+        if (!SPUtils.getInstance().contains(key)) return null
+        val json = SPUtils.getInstance().getString(key)
+        return GsonUtils.fromJson(json, clazz)
     }
 
     override fun set(value: T?) {
         super.set(value)
-        if (value == null) fastKV.remove(key)
-        else fastKV.putObject(key, value, encoder)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            val json = GsonUtils.toJson(value)
+            SPUtils.getInstance().put(key, json)
+        }
     }
 }
 
-
-class IntListKVItem(
-    val key: String,
-    private val fastKV: FastKV
-) : KVListItem<Int>(key, fastKV) {
-    override fun set(key: String, value: Int?) {
-        if (value == null) fastKV.remove(key)
-        else fastKV.putInt(key, value)
-    }
-
-    override fun get(key: String): Int? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getInt(key)
-    }
-}
-
-class LongListKVItem(
-    val key: String,
-    private val fastKV: FastKV
-) : KVListItem<Long>(key, fastKV) {
-    override fun set(key: String, value: Long?) {
-        if (value == null) fastKV.remove(key)
-        else fastKV.putLong(key, value)
-    }
-
-    override fun get(key: String): Long? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getLong(key)
-    }
-}
-
-class BooleanListKVItem(
-    val key: String,
-    private val fastKV: FastKV
-) : KVListItem<Boolean>(key, fastKV) {
-    override fun set(key: String, value: Boolean?) {
-        if (value == null) fastKV.remove(key)
-        else fastKV.putBoolean(key, value)
-    }
-
-    override fun get(key: String): Boolean? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getBoolean(key)
-    }
-}
-
-class FloatListKVItem(
-    val key: String,
-    private val fastKV: FastKV
-) : KVListItem<Float>(key, fastKV) {
-    override fun set(key: String, value: Float?) {
-        if (value == null) fastKV.remove(key)
-        else fastKV.putFloat(key, value)
-    }
-
-    override fun get(key: String): Float? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getFloat(key)
-    }
-}
-
-class DoubleListKVItem(
-    val key: String,
-    private val fastKV: FastKV
-) : KVListItem<Double>(key, fastKV) {
-    override fun set(key: String, value: Double?) {
-        if (value == null) fastKV.remove(key)
-        else fastKV.putDouble(key, value)
-    }
-
-    override fun get(key: String): Double? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getDouble(key)
-    }
-}
-
-class StringListKVItem(
-    val key: String,
-    private val fastKV: FastKV
-) : KVListItem<String>(key, fastKV) {
-    override fun set(key: String, value: String?) {
-        if (value == null) fastKV.remove(key)
-        else fastKV.putString(key, value)
-    }
-
-    override fun get(key: String): String? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getString(key)
-    }
-}
-
-
-class ObjectListKVItem<T>(
-    val key: String,
-    private val fastKV: FastKV,
-    private val encoder: FastEncoder<T>
-) : KVListItem<T>(key, fastKV) {
-    override fun set(key: String, value: T?) {
-        if (value == null) fastKV.remove(key)
-        else fastKV.putObject(key, value, encoder)
-    }
-
-    override fun get(key: String): T? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getObject<T>(key)
-    }
-}
-
-class ObjectMapKVItem<T>(
-    val key: String,
-    private val fastKV: FastKV,
-    private val encoder: FastEncoder<T>
-) : KVMapItem<T>(key, fastKV) {
-    override fun set(key: String, value: T?) {
-        if (value == null) fastKV.remove(key)
-        else fastKV.putObject(key, value, encoder)
-    }
-
-    override fun get(key: String): T? {
-        return if (!fastKV.contains(key)) null
-        else fastKV.getObject<T>(key)
-    }
-}

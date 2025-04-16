@@ -4,14 +4,11 @@ plugins {
     alias(libs.plugins.library) apply false
     alias(libs.plugins.kotlin) apply false
     alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.flyjingfish.aop) apply false
+    alias(libs.plugins.compose.compiler) apply false
+    alias(libs.plugins.krouter.plugin)
+    alias(libs.plugins.lumo)
 }
 
-gradle.taskGraph.whenReady {
-    allTasks.onEach {
-        // 避免ksp类型任务被跳过
-        if (it.name.startsWith("ksp") && it.name.endsWith("Kotlin")) {
-            it.setOnlyIf { true }
-            it.outputs.upToDateWhen { false }
-        }
-    }
-}
+// 配置注入遍历的起点项目
+ext { set("targetInjectProjectName", "app") }

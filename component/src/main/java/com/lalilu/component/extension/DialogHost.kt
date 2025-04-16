@@ -1,5 +1,12 @@
 package com.lalilu.component.extension
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,7 +24,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +39,7 @@ import com.melody.dialog.any_pop.AnyPopDialog
 import com.melody.dialog.any_pop.AnyPopDialogProperties
 import com.melody.dialog.any_pop.DirectionState
 import kotlinx.coroutines.flow.collectLatest
+import kotlin.math.roundToInt
 
 private val DEFAULT_DIALOG_PROPERTIES = AnyPopDialogProperties(
     direction = DirectionState.BOTTOM
@@ -63,7 +70,11 @@ interface DialogHost {
     fun push(dialogItem: DialogItem)
 
     @Composable
-    fun register(isVisible: MutableState<Boolean>, dialogItem: DialogItem)
+    fun register(
+        isVisible: () -> Boolean,
+        onDismiss: () -> Unit,
+        dialogItem: DialogItem
+    )
 }
 
 interface DialogContext {
@@ -83,17 +94,21 @@ object DialogWrapper : DialogHost, DialogContext {
     }
 
     @Composable
-    override fun register(isVisible: MutableState<Boolean>, dialogItem: DialogItem) {
+    override fun register(
+        isVisible: () -> Boolean,
+        onDismiss: () -> Unit,
+        dialogItem: DialogItem
+    ) {
         LaunchedEffect(Unit) {
             snapshotFlow { this@DialogWrapper.dialogItem }
                 .collectLatest {
-                    if (it != null || !isVisible.value) return@collectLatest
-                    isVisible.value = false
+                    if (it != null || !isVisible()) return@collectLatest
+                    onDismiss()
                 }
         }
 
         LaunchedEffect(Unit) {
-            snapshotFlow { isVisible.value }
+            snapshotFlow { isVisible() }
                 .collectLatest { visible ->
                     if (visible) {
                         this@DialogWrapper.dialogItem = dialogItem
@@ -110,7 +125,7 @@ object DialogWrapper : DialogHost, DialogContext {
     @Composable
     override fun Content() {
         if (dialogItem == null) return
-        
+
         val isActiveClose by remember {
             mutableStateOf(false)
                 .also { dismissFunc = { it.value = true } }
@@ -136,8 +151,8 @@ object DialogWrapper : DialogHost, DialogContext {
 
         AnyPopDialog(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 0.dp)
+                .wrapContentHeight()
+                .widthIn(max = 560.dp)
                 .background(color = backgroundColor ?: MaterialTheme.colors.background),
             isActiveClose = isActiveClose,
             properties = properties,
@@ -151,24 +166,37 @@ object DialogWrapper : DialogHost, DialogContext {
                 dialogItem = null
             },
             content = {
-                dialogItem?.let {
-                    when (it) {
-                        is DialogItem.Static -> {
-                            StaticDialogCard(
-                                title = it.title,
-                                message = it.message,
-                                onConfirm = {
-                                    dismiss()
-                                    it.onConfirm()
-                                },
-                                onCancel = {
-                                    dismiss()
-                                    it.onCancel()
-                                }
-                            )
-                        }
+                AnimatedContent(
+                    targetState = dialogItem,
+                    label = "",
+                    transitionSpec = {
+                        slideInVertically(
+                            animationSpec = spring(stiffness = Spring.StiffnessLow),
+                            initialOffsetY = { (it * 1.2f).roundToInt() }
+                        ) togetherWith slideOutVertically(
+                            animationSpec = spring(stiffness = Spring.StiffnessVeryLow),
+                            targetOffsetY = { (it * 1.2f).roundToInt() }
+                        ) + scaleOut(
+                            animationSpec = spring(stiffness = Spring.StiffnessVeryLow),
+                            targetScale = 0.6f
+                        )
+                    }
+                ) { dialog ->
+                    dialog?.apply {
+                        when (this) {
+                            is DialogItem.Static -> {
+                                StaticDialogCard(
+                                    title = title,
+                                    message = message,
+                                    onConfirm = { dismiss(); onConfirm() },
+                                    onCancel = { dismiss(); onCancel() }
+                                )
+                            }
 
-                        is DialogItem.Dynamic -> it.content.invoke(this@DialogWrapper)
+                            is DialogItem.Dynamic -> {
+                                content.invoke(this@DialogWrapper)
+                            }
+                        }
                     }
                 }
             }

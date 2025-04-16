@@ -1,20 +1,27 @@
 package com.lalilu.lhistory
 
+import android.app.Application
 import androidx.room.Room
-import com.lalilu.lhistory.repository.HistoryRepository
-import com.lalilu.lhistory.repository.HistoryRepositoryImpl
+import com.lalilu.lhistory.repository.HistoryDao
 import com.lalilu.lhistory.repository.LDatabase
-import com.lalilu.lhistory.screen.HistoryScreenModel
-import org.koin.android.ext.koin.androidApplication
-import org.koin.core.module.dsl.factoryOf
-import org.koin.dsl.module
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
+import org.koin.core.annotation.Single
 
-val HistoryModule = module {
-    single {
-        Room.databaseBuilder(androidApplication(), LDatabase::class.java, "lmedia.db")
-            .fallbackToDestructiveMigration()
-            .build()
-    }
-    single<HistoryRepository> { HistoryRepositoryImpl(get<LDatabase>().historyDao()) }
-    factoryOf(::HistoryScreenModel)
+@Module
+@ComponentScan("com.lalilu.lhistory")
+object HistoryModule
+
+@Single
+fun provideRoom(
+    application: Application
+): LDatabase {
+    return Room.databaseBuilder(application, LDatabase::class.java, "lmedia.db")
+        .fallbackToDestructiveMigration()
+        .build()
+}
+
+@Single
+fun provideHistoryDao(database: LDatabase): HistoryDao {
+    return database.historyDao()
 }

@@ -1,20 +1,23 @@
 package com.lalilu.lplaylist
 
-import com.lalilu.lplaylist.repository.PlaylistKV
+import androidx.compose.runtime.collectAsState
+import com.lalilu.component.SlotState
 import com.lalilu.lplaylist.repository.PlaylistRepository
-import com.lalilu.lplaylist.repository.PlaylistRepositoryImpl
-import com.lalilu.lplaylist.screen.PlaylistCreateOrEditScreenModel
-import com.lalilu.lplaylist.screen.PlaylistDetailScreenModel
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.module
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
+import org.koin.core.annotation.Named
+import org.koin.core.annotation.Single
 
-val PlaylistModule = module {
-    singleOf(::PlaylistKV)
+@Module
+@ComponentScan("com.lalilu.lplaylist")
+object PlaylistModule
 
-    singleOf(::PlaylistRepositoryImpl)
-    factoryOf(::PlaylistDetailScreenModel)
-    factoryOf(::PlaylistCreateOrEditScreenModel)
 
-    single<PlaylistRepository> { get<PlaylistRepositoryImpl>() }
+@Single
+@Named("favourite_ids")
+fun provideFavouriteIds(
+    playlistRepo: PlaylistRepository,
+) = SlotState {
+    playlistRepo.getFavouriteMediaIds()
+        .collectAsState(emptyList())
 }

@@ -1,7 +1,7 @@
 package com.lalilu.component.settings
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -13,11 +13,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Switch
-import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
@@ -28,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.component.extension.enableFor
+import com.lalilu.component.lumo.components.Switch
 
 @Composable
 fun SettingSwitcher(
@@ -60,7 +58,6 @@ fun SettingSwitcher(
     enableContentClickable = enableContentClickable
 )
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingSwitcher(
     modifier: Modifier = Modifier,
@@ -103,9 +100,6 @@ fun SettingSwitcher(
                 checked = state(),
                 onCheckedChange = { onStateUpdate(it) },
                 interactionSource = interaction,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = textColor.multiply(0.7f)
-                )
             )
         }
     )
@@ -127,7 +121,7 @@ fun SettingSwitcher(
             .enableFor(enable = { enableContentClickable }) {
                 clickable(
                     interactionSource = interactionSource,
-                    indication = rememberRipple(),
+                    indication = LocalIndication.current,
                     onClick = onContentStartClick
                 )
             }

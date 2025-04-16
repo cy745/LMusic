@@ -1,17 +1,16 @@
 package com.lalilu.lhistory.repository
 
+import androidx.paging.PagingSource
 import com.lalilu.lhistory.entity.LHistory
 import kotlinx.coroutines.flow.Flow
 
 interface HistoryRepository {
-    fun saveHistory(vararg history: LHistory)
-    fun saveHistories(history: List<LHistory>)
-
-    fun preSaveHistory(history: LHistory)
-    fun updatePreSavedHistory(contentId: String, duration: Long)
-    fun removePreSavedHistory(contentId: String)
+    suspend fun getUnUsedPreSaveHistory(mediaId: String): LHistory?
+    suspend fun preSaveHistory(history: LHistory): Long
+    suspend fun updateHistory(id: Long, duration: Long, repeatCount: Int, startTime: Long)
     fun clearHistories()
 
+    fun getAllData(): PagingSource<Int, LHistory>
     fun getHistoriesFlow(limit: Int): Flow<List<LHistory>>
     fun getHistoriesWithCount(limit: Int): Flow<Map<LHistory, Int>>
     fun getHistoriesIdsMapWithCount(): Flow<Map<String, Int>>

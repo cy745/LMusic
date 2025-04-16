@@ -1,164 +1,117 @@
 package com.lalilu.lalbum.screen
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.screenModelScope
-import cafe.adriel.voyager.koin.getScreenModel
-import com.lalilu.component.LLazyVerticalStaggeredGrid
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.LoadingScaffold
-import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.ScreenInfo
-import com.lalilu.component.base.collectAsLoadingState
-import com.lalilu.component.navigation.GlobalNavigator
-import com.lalilu.component.viewmodel.IPlayingViewModel
-import com.lalilu.component.viewmodel.SongsSp
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import cafe.adriel.voyager.core.screen.Screen
+import com.lalilu.RemixIcon
+import com.lalilu.component.base.screen.ScreenAction
+import com.lalilu.component.base.screen.ScreenActionFactory
+import com.lalilu.component.base.screen.ScreenBarFactory
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.component.base.songs.SongsSearcherPanel
+import com.lalilu.component.base.songs.SongsSortPanelDialog
+import com.lalilu.component.extension.DialogWrapper
+import com.lalilu.component.extension.screenVM
 import com.lalilu.lalbum.R
-import com.lalilu.lalbum.component.AlbumCard
-import com.lalilu.lmedia.LMedia
-import com.lalilu.lmedia.entity.LAlbum
-import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.extension.Sortable
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
-import com.lalilu.component.R as ComponentR
+import com.lalilu.lalbum.viewModel.AlbumsAction
+import com.lalilu.lalbum.viewModel.AlbumsVM
+import com.lalilu.remixicon.Editor
+import com.lalilu.remixicon.Media
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.editor.formatClear
+import com.lalilu.remixicon.editor.sortDesc
+import com.lalilu.remixicon.editor.text
+import com.lalilu.remixicon.media.albumFill
+import com.lalilu.remixicon.system.menuSearchLine
+import com.zhangke.krouter.annotation.Destination
+import org.koin.core.parameter.parametersOf
 
+@Destination("/pages/albums")
 data class AlbumsScreen(
     val albumsId: List<String> = emptyList()
-) : DynamicScreen() {
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.album_screen_title,
-        icon = ComponentR.drawable.ic_album_fill
-    )
+) : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBarFactory {
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = { stringResource(id = R.string.album_screen_title) },
+            icon = RemixIcon.Media.albumFill
+        )
+    }
+
+    @Composable
+    override fun provideScreenActions(): List<ScreenAction> {
+        val albumsVM = screenVM<AlbumsVM>(
+            parameters = { parametersOf(albumsId) }
+        )
+        val state by albumsVM.state
+
+        return remember {
+            listOf(
+                ScreenAction.Static(
+                    title = { if (state.showText) "隐藏专辑名" else "显示专辑名" },
+                    color = { Color(0xFF6E4AC3) },
+                    icon = { if (state.showText) RemixIcon.Editor.text else RemixIcon.Editor.formatClear },
+                    onAction = { albumsVM.intent(AlbumsAction.ToggleShowText) }
+                ),
+                ScreenAction.Static(
+                    title = { "排序" },
+                    icon = { RemixIcon.Editor.sortDesc },
+                    color = { Color(0xFF1793FF) },
+                    onAction = { albumsVM.intent(AlbumsAction.ToggleSortPanel) }
+                ),
+                ScreenAction.Static(
+                    title = { "搜索" },
+                    subTitle = {
+                        val keyword = state.searchKeyWord
+                        if (keyword.isNotBlank()) "搜索中： $keyword" else null
+                    },
+                    icon = { RemixIcon.System.menuSearchLine },
+                    color = { Color(0xFF8BC34A) },
+                    dotColor = {
+                        val keyword = state.searchKeyWord
+                        if (keyword.isNotBlank()) Color.Red else null
+                    },
+                    onAction = {
+                        albumsVM.intent(AlbumsAction.ToggleSearcherPanel)
+                        DialogWrapper.dismiss()
+                    }
+                ),
+            )
+        }
+    }
 
     @Composable
     override fun Content() {
-        val albumsSM = getScreenModel<AlbumsScreenModel>()
+        val vm = screenVM<AlbumsVM>(
+            parameters = { parametersOf(albumsId) }
+        )
+        val state by vm.state
+        val albums by vm.albums
 
-        LaunchedEffect(Unit) {
-            albumsSM.updateAlbumsId(albumsId)
-        }
+        SongsSortPanelDialog(
+            isVisible = { state.showSortPanel },
+            onDismiss = { vm.intent(AlbumsAction.HideSortPanel) },
+            supportSortActions = vm.supportSortActions,
+            isSortActionSelected = { state.selectedSortAction == it },
+            onSelectSortAction = { vm.intent(AlbumsAction.SelectSortAction(it)) }
+        )
 
-        AlbumsScreen(
-            albumsSM = albumsSM,
+        SongsSearcherPanel(
+            isVisible = { state.showSearcherPanel },
+            onDismiss = { vm.intent(AlbumsAction.HideSearcherPanel) },
+            keyword = { state.searchKeyWord },
+            onUpdateKeyword = { vm.intent(AlbumsAction.SearchFor(it)) }
+        )
+
+        AlbumsScreenContent(
+            eventFlow = vm.eventFlow(),
+            title = { "全部专辑" },
+            albums = { albums },
+            showText = { state.showText }
         )
     }
-}
-
-@OptIn(ExperimentalCoroutinesApi::class)
-class AlbumsScreenModel(
-    sp: SongsSp
-) : ScreenModel {
-    private val albumsId = MutableStateFlow<List<String>>(emptyList())
-    val showTitle = sp.obtain<Boolean>("test")
-    val albums = albumsId.flatMapLatest {
-        if (it.isEmpty()) LMedia.getFlow<LAlbum>()
-        else LMedia.flowMapBy<LAlbum>(it)
-    }
-
-    fun updateAlbumsId(albumsId: List<String>) = screenModelScope.launch {
-        this@AlbumsScreenModel.albumsId.emit(albumsId)
-    }
-}
-
-@Composable
-private fun DynamicScreen.AlbumsScreen(
-    title: String = "全部专辑",
-    albumsSM: AlbumsScreenModel,
-    playingVM: IPlayingViewModel = koinInject(),
-    sortFor: String = Sortable.SORT_FOR_ALBUMS,
-) {
-    val albumsState = albumsSM.albums.collectAsLoadingState()
-    val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val navigator = koinInject<GlobalNavigator>()
-
-    LoadingScaffold(
-        targetState = albumsState
-    ) { albums ->
-        LLazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalItemSpacing = 10.dp,
-            contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = statusBarPadding)
-        ) {
-            item(key = "Header", contentType = "Header") {
-                Surface(shape = RoundedCornerShape(5.dp)) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 10.dp)
-                    ) {
-                        NavigatorHeader(
-                            title = title,
-                            subTitle = "共 ${albums.size} 张专辑"
-                        )
-                    }
-                }
-            }
-
-            items(
-                items = albums,
-                key = { it.id },
-                contentType = { LAlbum::class }
-            ) { item ->
-                AlbumCard(
-                    album = { item },
-                    isPlaying = {
-                        playingVM.isItemPlaying { playing ->
-                            playing.let { it as? LSong }
-                                ?.let { it.album?.id == item.id }
-                                ?: false
-                        }
-                    },
-                    showTitle = { albumsSM.showTitle.value },
-                    onClick = {
-                        navigator.navigateTo(AlbumDetailScreen(item.id))
-                    }
-                )
-            }
-        }
-    }
-
-//    val scrollProgress = remember(gridState) {
-//        derivedStateOf {
-//            if (gridState.layoutInfo.totalItemsCount == 0) return@derivedStateOf 0f
-//            gridState.firstVisibleItemIndex / gridState.layoutInfo.totalItemsCount.toFloat()
-//        }
-//    }
-//
-////    LaunchedEffect(albumIdsText) {
-////        albumsVM.updateByIds(
-////            ids = albumIdsText.getIds(),
-////            sortFor = sortFor,
-////            supportSortRules = supportSortRules,
-////            supportGroupRules = supportGroupRules,
-////            supportOrderRules = supportOrderRules
-////        )
-////    }
-//
-//    SortPanelWrapper(
-//        sortFor = sortFor,
-//        showPanelState = showSortPanel,
-//        supportListAction = { emptyList() },
-//        sp = koinInject<SettingsSp>()
-//    ) {
-//    }
 }

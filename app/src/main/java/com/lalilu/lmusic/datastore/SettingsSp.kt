@@ -10,8 +10,6 @@ class SettingsSp(private val context: Application) : BaseSp() {
         return context.getSharedPreferences(context.packageName, Application.MODE_PRIVATE)
     }
 
-    val excludePath = obtainSet<String>("EXCLUDE_PATH")
-
     val playMode = obtain<Int>(
         Config.KEY_SETTINGS_PLAY_MODE,
         Config.DEFAULT_SETTINGS_PLAY_MODE

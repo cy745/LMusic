@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.lalilu.lplayer"
-    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
+    compileSdk = libs.versions.compile.version.get().toIntOrNull()
 
     defaultConfig {
-        minSdk = AndroidConfig.MIN_SDK_VERSION
-
+        minSdk = libs.versions.min.sdk.version.get().toIntOrNull()
     }
+
     buildTypes {
         release {
             consumerProguardFiles("proguard-rules.pro")
@@ -27,5 +27,10 @@ android {
 
 dependencies {
     implementation(project(":common"))
-    implementation("com.github.cy745:AndroidVideoCache:2.7.2")
+    implementation(project(":lmedia"))
+    implementation(libs.startup.runtime)
+
+    api(project(":lplayer:lib-decoder-flac"))
+    api(libs.bundles.media3)
+    api("com.github.cy745:fpcalc:1.2")
 }

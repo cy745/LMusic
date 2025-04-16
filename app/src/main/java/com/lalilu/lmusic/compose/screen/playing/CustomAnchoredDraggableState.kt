@@ -1,21 +1,27 @@
 package com.lalilu.lmusic.compose.screen.playing
 
-import android.content.Context
-import android.widget.OverScroller
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.MutatorMutex
+import androidx.compose.foundation.gestures.ScrollScope
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.dynamicanimation.animation.SpringAnimation
-import androidx.dynamicanimation.animation.SpringForce
-import androidx.dynamicanimation.animation.springAnimationOf
-import androidx.dynamicanimation.animation.withSpringForceProperties
+import com.lalilu.component.OverScroller
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 enum class DragAnchor {
@@ -27,7 +33,7 @@ enum class DragAnchor {
             restore = { mutableStateOf(getByOrdinal(it)) }
         )
 
-        fun getByOrdinal(ordinal: Int): DragAnchor {
+        private fun getByOrdinal(ordinal: Int): DragAnchor {
             return when (ordinal) {
                 0 -> Min
                 1 -> MinXMiddle
@@ -41,33 +47,56 @@ enum class DragAnchor {
 }
 
 class CustomAnchoredDraggableState(
-    context: Context,
+    private val scope: CoroutineScope,
+    private val overScroller: OverScroller,
     private val initAnchor: () -> DragAnchor,
-    private val onStateChange: (DragAnchor, DragAnchor) -> Unit = { _, _ -> }
-) {
-    private val animator: SpringAnimation by lazy {
-        springAnimationOf(
-            setter = { updatePosition(it) },
-            getter = { position.floatValue },
-            finalPosition = 0f
-        ).withSpringForceProperties {
-            dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
-            stiffness = SpringForce.STIFFNESS_LOW
-        }.apply {
-            addEndListener { animation, canceled, value, velocity ->
-
-            }
-        }
-    }
+    private val onStateChange: (DragAnchor, DragAnchor) -> Unit = { _, _ -> },
+) : ScrollableState {
+    private val animation by lazy { Animatable(0f, Float.VectorConverter) }
     private val dragThreshold = 120
-    private val overScroller by lazy { OverScroller(context) }
-
     private var minPosition = Int.MIN_VALUE
     private var middlePosition = Int.MIN_VALUE
     private var maxPosition = Int.MIN_VALUE
-
-    val position = mutableFloatStateOf(Float.MIN_VALUE)
+    val position = mutableFloatStateOf(Float.MAX_VALUE)
     val state = mutableStateOf(initAnchor())
+
+    private val scrollMutex = MutatorMutex()
+    private val isScrollingState = mutableStateOf(false)
+    private val isLastScrollForwardState = mutableStateOf(false)
+    private val isLastScrollBackwardState = mutableStateOf(false)
+    override val isScrollInProgress: Boolean
+        get() = isScrollingState.value
+
+    private val scrollScope: ScrollScope = object : ScrollScope {
+        override fun scrollBy(pixels: Float): Float {
+            if (pixels.isNaN()) return 0f
+            val delta = dispatchRawDelta(pixels)
+            isLastScrollForwardState.value = delta > 0
+            isLastScrollBackwardState.value = delta < 0
+            return delta
+        }
+    }
+
+    override fun dispatchRawDelta(delta: Float): Float {
+        val dyResult = dampDy(delta)
+        val oldPosition = position.floatValue
+        updatePosition(position.floatValue + dyResult)
+        return position.floatValue - oldPosition
+    }
+
+    override suspend fun scroll(
+        scrollPriority: MutatePriority,
+        block: suspend ScrollScope.() -> Unit
+    ) {
+        scrollMutex.mutateWith(scrollScope, scrollPriority) {
+            isScrollingState.value = true
+            try {
+                block()
+            } finally {
+                isScrollingState.value = false
+            }
+        }
+    }
 
     private var oldStateValue: DragAnchor = initAnchor()
         set(value) {
@@ -85,13 +114,32 @@ class CustomAnchoredDraggableState(
         }
 
     fun updateAnchor(min: Int, middle: Int, max: Int) {
+        val maxPositionChange = maxPosition != max
+
         minPosition = min
         middlePosition = middle
         maxPosition = max
 
-        if (position.floatValue == Float.MIN_VALUE) {
-            val targetPosition = getPositionByAnchor(initAnchor()) ?: middlePosition
-            updatePosition(targetPosition.toFloat())
+        when {
+            // 若位置未初始化，则尝试初始化
+            position.floatValue == Float.MAX_VALUE -> {
+                val targetPosition = getPositionByAnchor(initAnchor()) ?: middlePosition
+                updatePosition(targetPosition.toFloat())
+            }
+
+            // 若位置超出范围，则尝试修正
+            position.floatValue.toInt() !in minPosition..maxPosition -> {
+                val targetPosition = position.floatValue.coerceIn(min.toFloat(), max.toFloat())
+                updatePosition(targetPosition)
+            }
+
+            // 若最大值改变，则尝试修正
+            maxPositionChange -> {
+                val targetPosition = position.floatValue.coerceIn(min.toFloat(), max.toFloat())
+                    .let { calcSnapByTargetPosition(it.toInt()) }
+                    .toFloat()
+                updatePosition(targetPosition)
+            }
         }
     }
 
@@ -175,78 +223,98 @@ class CustomAnchoredDraggableState(
         return if (progress < 1e-6f) 0f else if (progress > 1 - 1e-6f) 1f else progress
     }
 
-    fun scrollBy(dy: Float): Float {
-        val dyResult = dampDy(dy)
-        val oldPosition = position.floatValue
-        updatePosition(position.floatValue + dyResult)
-        return position.floatValue - oldPosition
-    }
-
-    fun fling(velocityY: Float): Float {
+    suspend fun fling(velocityY: Float): Float {
         if (velocityY == 0f) {
             animateToState()
             return velocityY
         }
 
-        overScroller.fling(
-            0, position.floatValue.toInt(),
-            0, velocityY.toInt(),
-            0, 0,
-            minPosition,
-            maxPosition
+        // 使用自定义的OverScroller进行Fling推算，获取终速
+        val velocityLeft = overScroller.fling(
+            initialVelocity = velocityY,
+            startPosition = position.floatValue,
+            min = minPosition.toFloat(),
+            max = maxPosition.toFloat()
         )
 
-        snapBy(overScroller.finalY)
-        return velocityY
+        val targetPosition = calcSnapByTargetPosition(
+            targetPosition = overScroller.finalPosition.toInt()
+        )
+
+        doAnimateTo(
+            offset = targetPosition.toFloat(),
+            initialVelocity = velocityY
+        )
+
+        return velocityLeft
     }
 
-    fun snapBy(targetPosition: Int) {
-        when (stateValue) {
-            DragAnchor.Middle -> {
-                val position =
-                    calcSnapToPosition(targetPosition, minPosition, middlePosition, maxPosition)
-                animator.animateToFinalPosition(position.toFloat())
-            }
+    fun calcSnapByTargetPosition(targetPosition: Int): Int {
+        return when (stateValue) {
+            DragAnchor.Middle -> calcSnapToPosition(
+                targetPosition,
+                minPosition,
+                middlePosition,
+                maxPosition
+            )
 
-            DragAnchor.Min -> {
-                val position =
-                    calcSnapToPosition(targetPosition, minPosition, middlePosition)
-                animator.animateToFinalPosition(position.toFloat())
-            }
+            DragAnchor.Min -> calcSnapToPosition(
+                targetPosition,
+                minPosition,
+                middlePosition
+            )
 
-            DragAnchor.Max -> {
-                val position =
-                    calcSnapToPosition(targetPosition, middlePosition, maxPosition)
-                animator.animateToFinalPosition(position.toFloat())
-            }
+            DragAnchor.Max -> calcSnapToPosition(
+                targetPosition,
+                middlePosition,
+                maxPosition
+            )
 
-            else -> animateToState()
+            else -> getSnapPositionByState(stateValue)
         }
     }
 
     fun animateToState(newState: DragAnchor = stateValue) {
         val targetPosition = getSnapPositionByState(newState)
-        animator.animateToFinalPosition(targetPosition.toFloat())
+        scope.launch { doAnimateTo(targetPosition.toFloat()) }
     }
 
     fun tryCancel() {
-        if (animator.isRunning) {
-            animator.cancel()
+        if (animation.isRunning) {
+            scope.launch { animation.stop() }
+        }
+    }
+
+    suspend fun doAnimateTo(
+        offset: Float,
+        initialVelocity: Float = animation.velocity
+    ) {
+        animation.apply {
+            snapTo(position.floatValue)
+            animateTo(
+                targetValue = offset,
+                initialVelocity = initialVelocity,
+                animationSpec = spring(stiffness = Spring.StiffnessLow)
+            ) {
+                updatePosition(value)
+            }
         }
     }
 }
 
-
 @Composable
 fun rememberCustomAnchoredDraggableState(
-    context: Context = LocalContext.current,
     onStateChange: (DragAnchor, DragAnchor) -> Unit = { _, _ -> }
 ): CustomAnchoredDraggableState {
     var initAnchor by rememberSaveable(saver = DragAnchor.Saver) { mutableStateOf(DragAnchor.Middle) }
+    val flingSpec = rememberSplineBasedDecay<Float>()
+    val overScroller = remember { OverScroller(flingSpec) }
+    val scope = rememberCoroutineScope()
 
     return remember {
         CustomAnchoredDraggableState(
-            context = context,
+            scope = scope,
+            overScroller = overScroller,
             initAnchor = { initAnchor },
             onStateChange = { oldState, newState ->
                 initAnchor = newState

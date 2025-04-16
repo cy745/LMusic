@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -7,15 +8,17 @@ import java.util.TimeZone
 plugins {
     id("com.android.application")
     kotlin("android")
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
     id("com.google.devtools.ksp")
-    alias(libs.plugins.flyjingfish.aop)
+    id("android.aop")
 }
 
 val keystoreProps = rootProject.file("keystore.properties")
     .takeIf { it.exists() }
     ?.let { Properties().apply { load(FileInputStream(it)) } }
 
-fun releaseTime(pattern: String = "yyyyMMdd_HHmmZ"): String = SimpleDateFormat(pattern).run {
+fun releaseTime(pattern: String = "MMdd_HHmm"): String = SimpleDateFormat(pattern).run {
     timeZone = TimeZone.getTimeZone("Asia/Shanghai")
     format(Date())
 }
@@ -39,12 +42,12 @@ androidAopConfig {
 
 android {
     namespace = "com.lalilu"
-    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
+    compileSdk = libs.versions.compile.version.get().toIntOrNull()
 
     defaultConfig {
         applicationId = "com.lalilu.lmusic"
-        minSdk = AndroidConfig.MIN_SDK_VERSION
-        targetSdk = AndroidConfig.TARGET_SDK_VERSION
+        minSdk = libs.versions.min.sdk.version.get().toIntOrNull()
+        targetSdk = libs.versions.compile.version.get().toIntOrNull()
         versionCode = 42
         versionName = "1.5.4"
 
@@ -58,7 +61,6 @@ android {
 
     buildFeatures {
         compose = true
-        viewBinding = true
         buildConfig = true
     }
 
@@ -95,7 +97,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
 
-            versionNameSuffix = "-ALPHA_${releaseTime()}"
+            versionNameSuffix = "-Aplha-${releaseTime()}"
             applicationIdSuffix = ".alpha"
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -142,6 +144,9 @@ android {
             versionNameSuffix = "-DEBUG_${releaseTime("yyyyMMdd")}"
             applicationIdSuffix = ".debug"
             signingConfig = signingConfigs.getByName("debug")
+            isProfileable = true
+            isDebuggable = true
+            isJniDebuggable = true
 
             resValue("string", "app_name", "@string/app_name_debug")
         }
@@ -154,28 +159,35 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.compose.compiler.get().version.toString()
-    }
     lint {
         disable += "Instantiatable"
         abortOnError = false
     }
 }
 
+composeCompiler {
+    composeCompiler.featureFlags.add(ComposeFeatureFlag.StrongSkipping)
+    composeCompiler.featureFlags.add(ComposeFeatureFlag.PausableComposition)
+}
+
 dependencies {
-    implementation(project(":ui"))
     implementation(project(":crash"))
     implementation(project(":component"))
     implementation(project(":lplaylist"))
     implementation(project(":lhistory"))
     implementation(project(":lartist"))
     implementation(project(":lalbum"))
-    implementation(project(":ldictionary"))
+    implementation(project(":lfolder"))
+    ksp(libs.koin.compiler)
 
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
+    implementation(libs.kotlin.serialization)
+    implementation(libs.kotlinx.serialization.json)
     ksp(libs.room.compiler)
+
+    implementation(libs.xmlutil.core)
+    implementation(libs.xmlutil.serialization)
 
     // https://github.com/Block-Network/StatusBarApiExample
     // 墨 · 状态栏歌词 API
@@ -197,11 +209,6 @@ dependencies {
     // Bitmap的Blur实现库
     implementation("com.github.Commit451:NativeStackBlur:1.0.4")
 
-    // https://github.com/Moriafly/LyricViewX
-    // GPL-3.0 License
-    // 歌词组件
-    implementation("com.github.cy745:LyricViewX:7c92c6d19a")
-
     // https://github.com/qinci/EdgeTranslucent
     // https://github.com/cy745/EdgeTranslucent
     // Undeclared License
@@ -211,10 +218,18 @@ dependencies {
     implementation("com.github.commandiron:WheelPickerCompose:1.1.11")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
-    debugImplementation("com.github.getActivity:Logcat:11.8")
+//    debugImplementation("com.github.getActivity:Logcat:11.8")
 //    debugImplementation("io.github.knight-zxw:blockcanary:0.0.5")
 //    debugImplementation("io.github.knight-zxw:blockcanary-ui:0.0.5")
+//    debugImplementation("com.github.cy745:wytrace:d0df4c2d15")
+//    debugImplementation("com.bytedance.android:shadowhook:1.0.10")
+    implementation("io.github.theapache64:rebugger:1.0.0-rc03")
 
     implementation(libs.bundles.flyjingfish.aop)
     ksp(libs.flyjingfish.aop.ksp)
+
+    implementation("com.google.accompanist:accompanist-adaptive:0.35.1-alpha")
+    implementation("androidx.compose.material3.adaptive:adaptive:1.0.0-beta04")
+    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.0.0-beta04")
+    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.0.0-beta04")
 }

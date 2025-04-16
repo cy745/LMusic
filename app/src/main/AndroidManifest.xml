@@ -6,6 +6,8 @@
         android:glEsVersion="0x00030000"
         android:required="true" />
 
+    <uses-sdk tools:overrideLibrary="com.funny.data_saver,com.nomanr.composables" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
@@ -36,37 +38,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Music"
         android:usesCleartextTraffic="true"
-        tools:ignore="AllowBackup,UnusedAttribute">
+        tools:ignore="AllowBackup,UnusedAttribute"
+        tools:overrideLibrary="com.nomanr.composables">
 
         <meta-data
             android:name="ScopedStorage"
             android:value="true" />
 
-        <receiver
-            android:name="androidx.media.session.MediaButtonReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
-
-        <service
-            android:name="com.lalilu.lmusic.service.LMusicService"
-            android:enabled="true"
-            android:exported="true"
-            android:foregroundServiceType="mediaPlayback">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-                <action android:name="android.media.browse.MediaBrowserService" />
-            </intent-filter>
-        </service>
-
         <activity
             android:name=".lmusic.MainActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustNothing">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.MUSIC_PLAYER" />
@@ -95,5 +80,11 @@
             android:launchMode="singleTop">
 
         </activity>
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge"></provider>
     </application>
 </manifest>

@@ -1,70 +1,177 @@
 package com.lalilu.common.kv
 
-import com.blankj.utilcode.util.EncryptUtils
-import com.blankj.utilcode.util.LogUtils
-import io.fastkv.FastKV
+import com.blankj.utilcode.util.GsonUtils
+import com.blankj.utilcode.util.SPUtils
+import com.google.gson.reflect.TypeToken
+import java.io.Serializable
 
-abstract class KVListItem<T>(
-    private val key: String,
-    private val fastKV: FastKV
-) : KVItem<List<T>>() {
-    private val identityKey by lazy {
-        if (key.length <= 20) return@lazy key
+abstract class KVListItem<T : Serializable> : KVItem<List<T>>()
 
-        key.take(20) + EncryptUtils.encryptMD5ToString(key).take(8)
-    }
-
+@Suppress("UnstableApiUsage")
+class StringListKVImpl(
+    private val key: String
+) : KVListItem<String>() {
     companion object {
-        const val countKeyTemplate = "#COUNT_%s"
-        const val valueKeyTemplate = "#INDEX_%s_%d"
+        val typeToken by lazy { object : TypeToken<List<String>>() {} }
     }
 
-    protected abstract fun set(key: String, value: T?)
-    protected abstract fun get(key: String): T?
+    override fun get(): List<String>? {
+        val json = SPUtils.getInstance().getString(key)
+        return GsonUtils.fromJson<List<String>>(json, typeToken.type)
+    }
+
+    override fun set(value: List<String>?) {
+        super.set(value)
+
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            val json = GsonUtils.toJson(value)
+            SPUtils.getInstance().put(key, json)
+        }
+    }
+}
+
+@Suppress("UnstableApiUsage")
+class IntListKVImpl(
+    private val key: String
+) : KVListItem<Int>() {
+    companion object {
+        val typeToken by lazy { object : TypeToken<List<Int>>() {} }
+    }
+
+    override fun get(): List<Int>? {
+        val json = SPUtils.getInstance().getString(key)
+        return GsonUtils.fromJson<List<Int>>(json, typeToken.type)
+    }
+
+    override fun set(value: List<Int>?) {
+        super.set(value)
+
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            val json = GsonUtils.toJson(value)
+            SPUtils.getInstance().put(key, json)
+        }
+    }
+}
+
+@Suppress("UnstableApiUsage")
+class LongListKVImpl(
+    private val key: String
+) : KVListItem<Long>() {
+    companion object {
+        val typeToken by lazy { object : TypeToken<List<Long>>() {} }
+    }
+
+    override fun get(): List<Long>? {
+        val json = SPUtils.getInstance().getString(key)
+        return GsonUtils.fromJson<List<Long>>(json, typeToken.type)
+    }
+
+    override fun set(value: List<Long>?) {
+        super.set(value)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            val json = GsonUtils.toJson(value)
+            SPUtils.getInstance().put(key, json)
+        }
+    }
+}
+
+@Suppress("UnstableApiUsage")
+class FloatListKVImpl(
+    private val key: String
+) : KVListItem<Float>() {
+    companion object {
+        val typeToken by lazy { object : TypeToken<List<Float>>() {} }
+    }
+
+    override fun get(): List<Float>? {
+        val json = SPUtils.getInstance().getString(key)
+        return GsonUtils.fromJson<List<Float>>(json, typeToken.type)
+    }
+
+    override fun set(value: List<Float>?) {
+        super.set(value)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            val json = GsonUtils.toJson(value)
+            SPUtils.getInstance().put(key, json)
+        }
+    }
+}
+
+@Suppress("UnstableApiUsage")
+class DoubleListKVImpl(
+    private val key: String
+) : KVListItem<Double>() {
+    companion object {
+        val typeToken by lazy { object : TypeToken<List<Double>>() {} }
+    }
+
+    override fun get(): List<Double>? {
+        val json = SPUtils.getInstance().getString(key)
+        return GsonUtils.fromJson<List<Double>>(json, typeToken.type)
+    }
+
+    override fun set(value: List<Double>?) {
+        super.set(value)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            val json = GsonUtils.toJson(value)
+            SPUtils.getInstance().put(key, json)
+        }
+    }
+}
+
+@Suppress("UnstableApiUsage")
+class BoolListKVImpl(
+    private val key: String
+) : KVListItem<Boolean>() {
+    companion object {
+        val typeToken by lazy { object : TypeToken<List<Boolean>>() {} }
+    }
+
+    override fun get(): List<Boolean>? {
+        val json = SPUtils.getInstance().getString(key)
+        return GsonUtils.fromJson<List<Boolean>>(json, typeToken.type)
+    }
+
+    override fun set(value: List<Boolean>?) {
+        super.set(value)
+        if (value == null) {
+            SPUtils.getInstance().remove(key)
+        } else {
+            val json = GsonUtils.toJson(value)
+            SPUtils.getInstance().put(key, json)
+        }
+    }
+}
+
+class ObjectListKVImpl<T : Serializable>(
+    private val key: String,
+    clazz: Class<T>
+) : KVListItem<T>() {
+    private val typeToken = TypeToken.getParameterized(List::class.java, clazz)
+
+    override fun get(): List<T>? {
+        val json = SPUtils.getInstance().getString(key)
+        return GsonUtils.fromJson<List<T>>(json, typeToken.type)
+    }
 
     override fun set(value: List<T>?) {
         super.set(value)
-        val countKey = countKeyTemplate.format(identityKey)
 
-        // 若列表为null，则删除计数键
         if (value == null) {
-            fastKV.remove(countKey)
-            return
-        }
-
-        // 若列表元素为空，则设计数键为0
-        if (value.isEmpty()) {
-            fastKV.putInt(countKey, 0)
-            return
-        }
-
-        // 先进行数据存入
-        for (index in value.indices) {
-            val valueKey = valueKeyTemplate.format(identityKey, index)
-            set(valueKey, value[index])
-        }
-
-        // 后更新计数键值，避免数据更新失败时导致计数键丢失，进而导致后期读取时异常
-        fastKV.putInt(countKey, value.size)
-    }
-
-    override fun get(): List<T>? {
-        val countKey = countKeyTemplate.format(identityKey)
-
-        if (!fastKV.contains(countKey)) {
-            LogUtils.i("[$key] is undefined, return null [countKey: $countKey]")
-            return null
-        }
-
-        val count = fastKV.getInt(countKey)
-        if (count == 0) {
-            LogUtils.i("[$key] is empty, return emptyList [countKey: $countKey]")
-            return emptyList()
-        }
-
-        return (0..count).mapNotNull {
-            val valueKey = valueKeyTemplate.format(identityKey, it)
-            get(valueKey)
+            SPUtils.getInstance().remove(key)
+        } else {
+            val json = GsonUtils.toJson(value)
+            SPUtils.getInstance().put(key, json)
         }
     }
 }

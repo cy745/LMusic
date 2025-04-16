@@ -54,12 +54,12 @@ import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.enableFor
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lplayer.LPlayer
-import com.lalilu.lplayer.extensions.PlayerAction
+import com.lalilu.lplayer.action.PlayerAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import org.koin.compose.koinInject
 import java.time.LocalTime
+import com.lalilu.component.R as ComponentR
 
 
 data class CustomCountDownTimer(
@@ -131,7 +131,7 @@ private val SleepTimerDialog = DialogItem.Dynamic(backgroundColor = Color.Transp
 fun SleepTimerSmallEntry() {
     IconButton(onClick = { DialogWrapper.push(SleepTimerDialog) }) {
         Icon(
-            painter = painterResource(id = StatusBarLyric.API.R.drawable.ic_clock_black_24dp),
+            painter = painterResource(id = ComponentR.drawable.ic_time_line),
             contentDescription = "",
             tint = Color.White
         )
@@ -154,7 +154,7 @@ fun SleepTimer(
         defaultSecondToCountDown = defaultSecondToCountDown,
         onActionBtnLongClick = {
             if (isRunning.value) {
-                LPlayer.controller.doAction(PlayerAction.PauseWhenCompletion(true))
+                PlayerAction.PauseWhenCompletion(true).action()
                 SleepTimerContext.stop()
             } else {
                 val millisSecond = defaultSecondToCountDown.value.toLong()
@@ -163,9 +163,9 @@ fun SleepTimer(
                     millisInFuture = millisSecond,
                     onFinish = {
                         if (pauseWhenCompletion.value) {
-                            LPlayer.controller.doAction(PlayerAction.PauseWhenCompletion())
+                            PlayerAction.PauseWhenCompletion().action()
                         } else {
-                            LPlayer.controller.doAction(PlayerAction.Pause)
+                            PlayerAction.Pause.action()
                         }
                     }
                 )
@@ -243,7 +243,6 @@ fun SleepTimer(
                     .fillMaxWidth()
                     .heightIn(min = 60.dp),
                 shape = RoundedCornerShape(8.dp),
-                enableLongClickMask = true,
                 colors = ButtonDefaults.textButtonColors(
                     backgroundColor = animateColor.value.copy(alpha = 0.15f),
                     contentColor = animateColor.value

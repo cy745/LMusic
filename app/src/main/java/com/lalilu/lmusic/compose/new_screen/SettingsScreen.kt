@@ -11,17 +11,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.RomUtils
@@ -29,12 +31,13 @@ import com.blankj.utilcode.util.ToastUtils
 import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.BuildConfig
 import com.lalilu.R
+import com.lalilu.RemixIcon
 import com.lalilu.common.CustomRomUtils
 import com.lalilu.component.IconTextButton
-import com.lalilu.component.LLazyColumn
-import com.lalilu.component.base.CustomScreen
 import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
 import com.lalilu.component.settings.SettingCategory
 import com.lalilu.component.settings.SettingFilePicker
@@ -47,14 +50,24 @@ import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.system.settings4Line
+import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import kotlin.math.roundToInt
 
-object SettingsScreen : CustomScreen {
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.screen_title_settings,
-        icon = R.drawable.ic_settings_4_line
-    )
+@Destination("/pages/settings")
+object SettingsScreen : Screen, ScreenInfoFactory {
+    private fun readResolve(): Any = SettingsScreen
+
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = { stringResource(id = R.string.screen_title_settings) },
+            icon = RemixIcon.System.settings4Line,
+        )
+    }
 
     @Composable
     override fun Content() {
@@ -73,7 +86,6 @@ private fun SettingsScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
     val darkModeOption = settingsSp.darkModeOption
     val ignoreAudioFocus = settingsSp.ignoreAudioFocus
     val enableUnknownFilter = settingsSp.enableUnknownFilter
@@ -95,7 +107,7 @@ private fun SettingsScreen(
     ) {
     }
 
-    LLazyColumn(
+    LazyColumn(
         contentPadding = PaddingValues(top = rememberFixedStatusBarHeightDp())
     ) {
         item {
@@ -115,7 +127,8 @@ private fun SettingsScreen(
                     state = ignoreAudioFocus
                 )
                 SettingProgressSeekBar(
-                    state = volumeControl,
+                    value = { volumeControl.value.toFloat() },
+                    onValueUpdate = { volumeControl.value = it.roundToInt() },
                     title = "独立音量控制",
                     valueRange = 0..100
                 )
@@ -184,11 +197,11 @@ private fun SettingsScreen(
                     selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
                     titleRes = R.string.preference_lyric_settings_text_gravity
                 )
-                SettingProgressSeekBar(
-                    state = lyricTextSize,
-                    title = "歌词文字大小",
-                    valueRange = 14..36
-                )
+//                SettingProgressSeekBar(
+//                    state = lyricTextSize,
+//                    title = "歌词文字大小",
+//                    valueRange = 14..36
+//                )
             }
         }
 
@@ -197,11 +210,11 @@ private fun SettingsScreen(
                 iconRes = R.drawable.ic_scan_line,
                 titleRes = R.string.preference_media_source_settings
             ) {
-                SettingProgressSeekBar(
-                    state = durationFilter,
-                    title = "筛除小于时长的文件",
-                    valueRange = 0..60
-                )
+//                SettingProgressSeekBar(
+//                    state = durationFilter,
+//                    title = "筛除小于时长的文件",
+//                    valueRange = 0..60
+//                )
                 SettingSwitcher(
                     state = enableUnknownFilter,
                     titleRes = R.string.preference_media_source_settings_unknown_filter,
@@ -311,5 +324,7 @@ private fun SettingsScreen(
                 }
             }
         }
+
+        smartBarPadding()
     }
 }

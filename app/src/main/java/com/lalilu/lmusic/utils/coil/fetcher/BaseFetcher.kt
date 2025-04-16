@@ -3,7 +3,7 @@ package com.lalilu.lmusic.utils.coil.fetcher
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import coil.fetch.Fetcher
+import coil3.fetch.Fetcher
 import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.wrapper.Taglib

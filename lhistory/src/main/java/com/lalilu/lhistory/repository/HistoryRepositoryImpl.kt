@@ -1,5 +1,6 @@
 package com.lalilu.lhistory.repository
 
+import androidx.paging.PagingSource
 import com.lalilu.common.toCachedFlow
 import com.lalilu.lhistory.entity.LHistory
 import kotlinx.coroutines.CoroutineScope
@@ -8,8 +9,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.koin.core.annotation.Single
 import kotlin.coroutines.CoroutineContext
 
+@Single(binds = [HistoryRepository::class])
 class HistoryRepositoryImpl(
     private val historyDao: HistoryDao
 ) : HistoryRepository, CoroutineScope {
@@ -27,28 +31,36 @@ class HistoryRepositoryImpl(
         .toCachedFlow()
         .also { it.launchIn(this) }
 
-    override fun saveHistory(vararg history: LHistory) {
-        launch { historyDao.save(history.toList()) }
+    override suspend fun getUnUsedPreSaveHistory(mediaId: String): LHistory? =
+        withContext(Dispatchers.IO) {
+            historyDao.getLatestHistory()
+                ?.takeIf { it.contentId == mediaId && it.duration <= 1000L }
+        }
+
+    override suspend fun preSaveHistory(history: LHistory): Long = withContext(Dispatchers.IO) {
+        historyDao.save(history.copy(duration = -1L))
     }
 
-    override fun saveHistories(history: List<LHistory>) {
-        launch { historyDao.save(history) }
-    }
-
-    override fun preSaveHistory(history: LHistory) {
-        launch { historyDao.save(history.copy(duration = -1L)) }
-    }
-
-    override fun updatePreSavedHistory(contentId: String, duration: Long) {
-        launch { historyDao.updatePreSavedHistory(contentId, duration) }
-    }
-
-    override fun removePreSavedHistory(contentId: String) {
-        launch { historyDao.deletePreSavedHistory(contentId) }
+    override suspend fun updateHistory(
+        id: Long,
+        duration: Long,
+        repeatCount: Int,
+        startTime: Long
+    ) {
+        historyDao.updateHistory(
+            id = id,
+            duration = duration,
+            repeatCount = repeatCount,
+            startTime = startTime
+        )
     }
 
     override fun clearHistories() {
         launch { historyDao.clear() }
+    }
+
+    override fun getAllData(): PagingSource<Int, LHistory> {
+        return historyDao.getAllData()
     }
 
     override fun getHistoriesFlow(limit: Int): Flow<List<LHistory>> {

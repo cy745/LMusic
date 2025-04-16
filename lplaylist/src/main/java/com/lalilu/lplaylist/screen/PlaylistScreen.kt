@@ -1,150 +1,119 @@
 package com.lalilu.lplaylist.screen
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.rememberScreenModel
-import com.lalilu.component.LLazyColumn
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.ScreenInfo
+import androidx.compose.ui.unit.sp
+import com.blankj.utilcode.util.ToastUtils
+import com.lalilu.RemixIcon
+import com.lalilu.component.LongClickableTextButton
 import com.lalilu.component.base.TabScreen
-import com.lalilu.component.extension.rememberItemSelectHelper
-import com.lalilu.component.navigation.GlobalNavigator
-import com.lalilu.component.registerSelectPanel
-import com.lalilu.lplaylist.PlaylistActions
+import com.lalilu.component.base.screen.ScreenAction
+import com.lalilu.component.base.screen.ScreenBarFactory
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.songs.SongsSearcherPanel
+import com.lalilu.component.base.songs.SongsSelectorPanel
+import com.lalilu.component.extension.screenVM
+import com.lalilu.component.navigation.AppRouter
 import com.lalilu.lplaylist.R
-import com.lalilu.lplaylist.component.PlaylistCard
-import com.lalilu.lplaylist.entity.LPlaylist
-import com.lalilu.lplaylist.repository.PlaylistRepository
-import org.koin.compose.koinInject
-import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyColumnState
-import com.lalilu.component.R as ComponentR
+import com.lalilu.lplaylist.viewmodel.PlaylistsAction
+import com.lalilu.lplaylist.viewmodel.PlaylistsVM
+import com.lalilu.remixicon.Media
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.media.playListFill
+import com.lalilu.remixicon.system.deleteBinLine
+import com.zhangke.krouter.annotation.Destination
 
-class PlaylistScreenModel : ScreenModel {
-    val isSelecting = mutableStateOf(false)
-    val selectedItems = mutableStateOf<List<Any>>(emptyList())
-}
 
-data object PlaylistScreen : DynamicScreen(), TabScreen {
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.playlist_screen_title,
-        icon = ComponentR.drawable.ic_play_list_fill
-    )
+@Destination("/pages/playlist")
+data object PlaylistScreen : TabScreen, ScreenBarFactory {
+    private fun readResolve(): Any = PlaylistScreen
+
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = { stringResource(id = R.string.playlist_screen_title) },
+            icon = RemixIcon.Media.playListFill,
+        )
+    }
 
     @Composable
     override fun Content() {
-        PlaylistScreen()
-    }
-}
+        val vm = screenVM<PlaylistsVM>()
+        val state by vm.state
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun DynamicScreen.PlaylistScreen(
-    playlistSM: PlaylistScreenModel = rememberScreenModel { PlaylistScreenModel() },
-    playlistRepo: PlaylistRepository = koinInject(),
-    navigator: GlobalNavigator = koinInject()
-) {
-    val listState = rememberLazyListState()
-    val playlists by remember { derivedStateOf { playlistRepo.getPlaylists() } }
-    val playlistState = remember(playlists) { playlists.toMutableStateList() }
+        SongsSearcherPanel(
+            isVisible = { state.showSearcherPanel },
+            onDismiss = { vm.intent(PlaylistsAction.HideSearcherPanel) },
+            keyword = { state.searchKeyWord },
+            onUpdateKeyword = { vm.intent(PlaylistsAction.SearchFor(it)) }
+        )
 
-    val reorderableState = rememberReorderableLazyColumnState(listState) { from, to ->
-        playlistState.toMutableList().apply {
-            val toIndex = indexOfFirst { it.id == to.key }
-            val fromIndex = indexOfFirst { it.id == from.key }
-            if (toIndex < 0 || fromIndex < 0) return@rememberReorderableLazyColumnState
+        SongsSelectorPanel(
+            isVisible = { vm.selector.isSelecting.value },
+            onDismiss = { vm.selector.isSelecting.value = false },
+            screenActions = listOfNotNull(
+                ScreenAction.Dynamic {
+                    val color = Color(0xFFFF3C3C)
 
-            add(toIndex, removeAt(fromIndex))
-            playlistState.clear()
-            playlistState.addAll(this)
-        }
-    }
+                    LongClickableTextButton(
+                        modifier = Modifier.fillMaxHeight(),
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        colors = ButtonDefaults.textButtonColors(
+                            backgroundColor = color.copy(alpha = 0.15f),
+                            contentColor = color
+                        ),
+                        onLongClick = { vm.intent(PlaylistsAction.TryRemovePlaylist(vm.selector.selected())) },
+                        onClick = { ToastUtils.showShort("请长按此按钮以继续") },
+                    ) {
+                        Image(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = RemixIcon.System.deleteBinLine,
+                            contentDescription = "删除歌单",
+                            colorFilter = ColorFilter.tint(color = color)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "删除歌单",
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            )
+        )
 
-    LaunchedEffect(Unit) {
-        playlistRepo.checkFavouriteExist()
-    }
-
-    val selectHelper = rememberItemSelectHelper(
-        isSelecting = playlistSM.isSelecting,
-        selected = playlistSM.selectedItems
-    )
-
-    registerSelectPanel(
-        selectActions = { listOf(PlaylistActions.removePlaylists) },
-        selector = selectHelper
-    )
-
-    LLazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        item {
-            NavigatorHeader(
-                modifier = Modifier
-                    .statusBarsPadding()
-                    .fillMaxWidth(),
-                title = stringResource(id = R.string.playlist_screen_title)
-            ) {
-                IconButton(
-                    onClick = { navigator.navigateTo(PlaylistCreateOrEditScreen()) }
-                ) {
-                    Icon(
-                        painter = painterResource(ComponentR.drawable.ic_add_line),
-                        contentDescription = null
-                    )
+        PlaylistScreenContent(
+            isSearching = { state.searchKeyWord.isNotBlank() && !state.showSearcherPanel },
+            onStartSearch = { vm.intent(PlaylistsAction.ShowSearcherPanel) },
+            isSelected = { vm.selector.isSelected(it) },
+            isSelecting = { vm.selector.isSelecting.value },
+            playlists = { vm.playlists.value },
+            onUpdatePlaylist = { vm.intent(PlaylistsAction.UpdatePlaylist(it)) },
+            onLongClickPlaylist = { vm.selector.onSelect(it) },
+            onClickPlaylist = {
+                if (vm.selector.isSelecting.value) {
+                    vm.selector.onSelect(it)
+                } else {
+                    AppRouter.route("/pages/playlist/detail")
+                        .with("playlistId", it.id)
+                        .push()
                 }
             }
-        }
-
-        items(
-            items = playlistState,
-            key = { it.id },
-            contentType = { LPlaylist::class.java }
-        ) { playlist ->
-            ReorderableItem(
-                reorderableLazyListState = reorderableState,
-                key = playlist.id
-            ) { isDragging ->
-                PlaylistCard(
-                    playlist = playlist,
-                    draggingModifier = Modifier.draggableHandle(
-                        onDragStopped = { playlistRepo.setPlaylists(playlistState) }
-                    ),
-                    isDragging = { isDragging },
-                    isSelected = { selectHelper.isSelected(playlist) },
-                    isSelecting = { selectHelper.isSelecting.value },
-                    onClick = {
-                        if (selectHelper.isSelecting()) {
-                            selectHelper.onSelect(playlist)
-                        } else {
-                            navigator.navigateTo(PlaylistDetailScreen(playlistId = playlist.id))
-                        }
-                    },
-                    onLongClick = { selectHelper.onSelect(playlist) }
-                )
-            }
-        }
+        )
     }
 }

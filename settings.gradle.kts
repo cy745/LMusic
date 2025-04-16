@@ -3,34 +3,31 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-//        maven("https://maven.aliyun.com/repository/central")
-//        maven("https://maven.aliyun.com/repository/google")
+        maven("https://jitpack.io")
     }
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-//        maven("https://maven.aliyun.com/repository/google")
-//        maven("https://maven.aliyun.com/repository/central")
         maven("https://jitpack.io")
     }
 }
 
 
-rootProject.name = "lmusic"
+rootProject.name = "LMusic"
 include(":app")
-include(":ui")
 include(":common")
+include(":component")
+include(":crash")
+
 include(":lmedia")
 include(":lplayer")
+include(":lplayer:lib-decoder-flac")
+
 include(":lplaylist")
 include(":lhistory")
 include(":lartist")
 include(":lalbum")
-include(":ldictionary")
-include(":crash")
-include(":component")
-include(":value-cat")
+include(":lfolder")

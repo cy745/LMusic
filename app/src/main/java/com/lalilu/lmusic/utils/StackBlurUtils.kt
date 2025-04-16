@@ -13,13 +13,29 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 object StackBlurUtils : NativeBlurProcess(), CoroutineScope {
-    const val MAX_RADIUS = 40
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
-    private val cache = LruCache<String, Bitmap?>(MAX_RADIUS + 1)
-    override val coroutineContext: CoroutineContext = Dispatchers.Default
+    const val MAX_RADIUS = 40
+    private val cache = object : LruCache<String, Bitmap>(50 * 1024 * 1024) {
+        override fun sizeOf(key: String?, value: Bitmap?): Int {
+            return value?.byteCount ?: 0
+        }
+
+        override fun entryRemoved(
+            evicted: Boolean,
+            key: String?,
+            oldValue: Bitmap?,
+            newValue: Bitmap?
+        ) {
+            runCatching {
+                if (oldValue?.isRecycled == false) {
+                    oldValue.recycle()
+                }
+            }
+        }
+    }
     private var preloadJob: Job? = null
 
-    fun evictAll() = cache.evictAll()
 
     fun processWithCache(
         source: Bitmap,

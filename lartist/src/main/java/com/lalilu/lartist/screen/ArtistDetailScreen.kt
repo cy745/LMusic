@@ -1,123 +1,172 @@
 package com.lalilu.lartist.screen
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.screenModelScope
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
-import cafe.adriel.voyager.koin.getScreenModel
-import com.lalilu.component.Songs
-import com.lalilu.component.base.DynamicScreen
-import com.lalilu.component.base.LoadingScaffold
-import com.lalilu.component.base.NavigatorHeader
-import com.lalilu.component.base.ScreenInfo
-import com.lalilu.component.base.collectAsLoadingState
-import com.lalilu.component.extension.SelectAction
-import com.lalilu.component.navigation.GlobalNavigator
+import com.lalilu.RemixIcon
+import com.lalilu.common.ext.requestFor
+import com.lalilu.component.base.screen.ScreenAction
+import com.lalilu.component.base.screen.ScreenActionFactory
+import com.lalilu.component.base.screen.ScreenBarFactory
+import com.lalilu.component.base.screen.ScreenInfo
+import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.component.base.screen.ScreenType
+import com.lalilu.component.base.songs.SongsHeaderJumperDialog
+import com.lalilu.component.base.songs.SongsSearcherPanel
+import com.lalilu.component.base.songs.SongsSelectorPanel
+import com.lalilu.component.base.songs.SongsSortPanelDialog
+import com.lalilu.component.extension.DialogWrapper
+import com.lalilu.component.extension.screenVM
 import com.lalilu.lartist.R
-import com.lalilu.lartist.component.ArtistCard
-import com.lalilu.lmedia.LMedia
-import com.lalilu.lmedia.entity.LArtist
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
+import com.lalilu.lartist.viewModel.ArtistDetailAction
+import com.lalilu.lartist.viewModel.ArtistDetailVM
+import com.lalilu.remixicon.Design
+import com.lalilu.remixicon.Editor
+import com.lalilu.remixicon.System
+import com.lalilu.remixicon.design.editBoxLine
+import com.lalilu.remixicon.design.focus3Line
+import com.lalilu.remixicon.editor.sortDesc
+import com.lalilu.remixicon.system.checkboxMultipleBlankLine
+import com.lalilu.remixicon.system.checkboxMultipleLine
+import com.lalilu.remixicon.system.menuSearchLine
+import com.zhangke.krouter.annotation.Destination
+import org.koin.core.parameter.parametersOf
+import org.koin.core.qualifier.named
 
+
+@Destination("/pages/artist/detail")
 data class ArtistDetailScreen(
     private val artistName: String
-) : DynamicScreen() {
+) : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBarFactory, ScreenType.List {
     override val key: ScreenKey = "ARTIST_DETAIL_$artistName"
 
-    override fun getScreenInfo(): ScreenInfo = ScreenInfo(
-        title = R.string.artist_screen_detail,
-    )
+    @Composable
+    override fun provideScreenInfo(): ScreenInfo = remember {
+        ScreenInfo(
+            title = { stringResource(id = R.string.artist_screen_detail) },
+        )
+    }
+
+    @Composable
+    override fun provideScreenActions(): List<ScreenAction> {
+        val vm = screenVM<ArtistDetailVM>(
+            parameters = { parametersOf(artistName) }
+        )
+        val state by vm.state
+
+        return remember {
+            listOf(
+                ScreenAction.Static(
+                    title = { "排序" },
+                    icon = { RemixIcon.Editor.sortDesc },
+                    color = { Color(0xFF1793FF) },
+                    onAction = { vm.intent(ArtistDetailAction.ToggleSortPanel) }
+                ),
+                ScreenAction.Static(
+                    title = { "选择" },
+                    icon = { RemixIcon.Design.editBoxLine },
+                    color = { Color(0xFF009673) },
+                    onAction = { vm.selector.isSelecting.value = true }
+                ),
+                ScreenAction.Static(
+                    title = { "搜索" },
+                    subTitle = {
+                        val keyword = state.searchKeyWord
+                        if (keyword.isNotBlank()) "搜索中： $keyword" else null
+                    },
+                    icon = { RemixIcon.System.menuSearchLine },
+                    color = { Color(0xFF8BC34A) },
+                    dotColor = {
+                        val keyword = state.searchKeyWord
+                        if (keyword.isNotBlank()) Color.Red else null
+                    },
+                    onAction = {
+                        vm.intent(ArtistDetailAction.ToggleSearcherPanel)
+                        DialogWrapper.dismiss()
+                    }
+                ),
+                ScreenAction.Static(
+                    title = { "定位至当前播放歌曲" },
+                    icon = { RemixIcon.Design.focus3Line },
+                    color = { Color(0xFF8700FF) },
+                    onAction = { vm.intent(ArtistDetailAction.LocaleToPlayingItem) }
+                ),
+            )
+        }
+    }
 
     @Composable
     override fun Content() {
-        val artistDetailSM: ArtistDetailScreenModel = getScreenModel()
+        val vm = screenVM<ArtistDetailVM>(
+            parameters = { parametersOf(artistName) }
+        )
+        val songs by vm.songs
+        val state by vm.state
+        val artist by vm.artist
 
-        LaunchedEffect(Unit) {
-            artistDetailSM.updateArtistName(artistName)
-        }
+        SongsSortPanelDialog(
+            isVisible = { state.showSortPanel },
+            onDismiss = { vm.intent(ArtistDetailAction.HideSortPanel) },
+            supportSortActions = vm.supportSortActions,
+            isSortActionSelected = { state.selectedSortAction == it },
+            onSelectSortAction = { vm.intent(ArtistDetailAction.SelectSortAction(it)) }
+        )
 
-        ArtistDetail(artistDetailSM = artistDetailSM)
-    }
-}
+        SongsHeaderJumperDialog(
+            isVisible = { state.showJumperDialog },
+            onDismiss = { vm.intent(ArtistDetailAction.HideJumperDialog) },
+            items = { songs.keys },
+            onSelectItem = { vm.intent(ArtistDetailAction.LocaleToGroupItem(it)) }
+        )
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class ArtistDetailScreenModel : ScreenModel {
-    private val artistName = MutableStateFlow<String?>(null)
-    val artist = artistName.flatMapLatest { LMedia.getFlow<LArtist>(it) }
+        SongsSearcherPanel(
+            isVisible = { state.showSearcherPanel },
+            onDismiss = { vm.intent(ArtistDetailAction.HideSearcherPanel) },
+            keyword = { state.searchKeyWord },
+            onUpdateKeyword = { vm.intent(ArtistDetailAction.SearchFor(it)) }
+        )
 
-    fun updateArtistName(artistName: String) = screenModelScope.launch {
-        this@ArtistDetailScreenModel.artistName.emit(artistName)
-    }
-}
+        SongsSelectorPanel(
+            isVisible = { vm.selector.isSelecting.value },
+            onDismiss = { vm.selector.isSelecting.value = false },
+            screenActions = listOfNotNull(
+                ScreenAction.Static(
+                    title = { "全选" },
+                    color = { Color(0xFF00ACF0) },
+                    icon = { RemixIcon.System.checkboxMultipleLine },
+                    onAction = { vm.selector.selectAll(songs.values.flatten()) }
+                ),
+                ScreenAction.Static(
+                    title = { "取消全选" },
+                    icon = { RemixIcon.System.checkboxMultipleBlankLine },
+                    color = { Color(0xFFFF5100) },
+                    onAction = { vm.selector.clear() }
+                ),
+                requestFor<ScreenAction>(
+                    qualifier = named("add_to_favourite_action"),
+                    parameters = { parametersOf(vm.selector::selected) }
+                ),
+                requestFor<ScreenAction>(
+                    qualifier = named("add_to_playlist_action"),
+                    parameters = { parametersOf(vm.selector::selected) }
+                )
+            )
+        )
 
-@Composable
-private fun DynamicScreen.ArtistDetail(
-    artistDetailSM: ArtistDetailScreenModel
-) {
-    val navigator = koinInject<GlobalNavigator>()
-    val artistState = artistDetailSM.artist.collectAsLoadingState()
-
-    LoadingScaffold(targetState = artistState) { artist ->
-        val relateArtist = remember {
-            derivedStateOf {
-                artist.songs.map { it.artists }
-                    .flatten()
-                    .toSet()
-                    .filter { it.id != artist.name }
-            }
-        }
-
-        Songs(
-            mediaIds = artist.songs.map { it.mediaId },
-            selectActions = { getAll ->
-                listOf(SelectAction.StaticAction.SelectAll(getAll))
-            },
-            sortFor = "ArtistDetail",
-            supportListAction = { emptyList() },
-            headerContent = {
-                item {
-                    NavigatorHeader(
-                        title = artist.name,
-                        subTitle = "共 ${artist.requireItemsCount()} 首歌曲，总时长 ${
-                            artist.requireItemsDuration().durationToTime()
-                        }"
-                    )
-                }
-            },
-            footerContent = {
-                if (relateArtist.value.isNotEmpty()) {
-                    item {
-                        NavigatorHeader(
-                            modifier = Modifier.padding(top = 20.dp),
-                            titleScale = 0.8f,
-                            title = "相关歌手",
-                            subTitle = "共 ${relateArtist.value.size} 位"
-                        )
-                    }
-                    items(items = relateArtist.value) {
-                        ArtistCard(
-                            artist = it,
-                            onClick = {
-                                navigator.navigateTo(
-                                    screen = ArtistDetailScreen(it.id),
-                                    singleTop = false
-                                )
-                            }
-                        )
-                    }
-                }
-            }
+        ArtistDetailScreenContent(
+            songs = songs,
+            artist = artist,
+            recorder = vm.recorder,
+            eventFlow = vm.eventFlow(),
+            keys = { vm.recorder.list().filterNotNull() },
+            isSelecting = { vm.selector.isSelecting.value },
+            isSelected = { vm.selector.isSelected(it) },
+            onSelect = { vm.selector.onSelect(it) },
+            onClickGroup = { vm.intent(ArtistDetailAction.ToggleJumperDialog) }
         )
     }
 }
