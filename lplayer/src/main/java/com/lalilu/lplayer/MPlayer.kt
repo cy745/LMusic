@@ -33,12 +33,13 @@ import org.koin.dsl.module
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(UnstableApi::class)
-object MPlayer : CoroutineScope {
+object MPlayer : CoroutineScope, Player.Listener {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     private val sessionToken by lazy {
         SessionToken(Utils.getApp(), ComponentName(Utils.getApp(), MService::class.java))
     }
 
+    private var browserInstance: MediaBrowser? = null
     private val browserFuture by lazy {
         MediaBrowser
             .Builder(Utils.getApp(), sessionToken)
@@ -48,6 +49,7 @@ object MPlayer : CoroutineScope {
     val module = module {
     }
 
+    var pauseWhenCompletion: Boolean by mutableStateOf(false)
     var isPlaying: Boolean by mutableStateOf(false)
         private set
     var currentMediaItem by mutableStateOf<MediaItem?>(null)
@@ -77,7 +79,8 @@ object MPlayer : CoroutineScope {
     internal fun init() {
         launch(Dispatchers.Main) {
             val browser = browserFuture.await()
-            browser.addListener(getListener(browser))
+            browserInstance = browser
+            browser.addListener(this@MPlayer)
 
             val items = getHistoryItems()
             if (items.isEmpty()) {
@@ -141,6 +144,7 @@ object MPlayer : CoroutineScope {
                         browser.play()
                     } else {
                         browser.seekTo(index, 0)
+                        browser.play()
                     }
                 }
             }
@@ -151,7 +155,7 @@ object MPlayer : CoroutineScope {
 
             is PlayerAction.CustomAction -> {}
             is PlayerAction.PauseWhenCompletion -> {
-//                if (action.cancel) cancelPauseWhenCompletion() else pauseWhenCompletion()
+                pauseWhenCompletion = !action.cancel
             }
 
             is PlayerAction.SetPlayMode -> {
@@ -177,50 +181,56 @@ object MPlayer : CoroutineScope {
 
                 val items = LMedia.mapItems(action.mediaIds)
                 browser.setMediaItems(items, index, 0)
+                if (action.start) {
+                    browser.play()
+                }
             }
         }
     }
 
-    private fun getListener(browser: MediaBrowser) = object : Player.Listener {
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-            this@MPlayer.isPlaying = isPlaying
+    override fun onIsPlayingChanged(isPlaying: Boolean) {
+        this@MPlayer.isPlaying = isPlaying
+    }
+
+    @OptIn(UnstableApi::class)
+    override fun onPlaybackStateChanged(playbackState: Int) {
+
+    }
+
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        currentMediaItem = mediaItem
+        updateItems()
+
+        if (pauseWhenCompletion) {
+            browserInstance?.pause()
+            pauseWhenCompletion = false
         }
+    }
 
-        @OptIn(UnstableApi::class)
-        override fun onPlaybackStateChanged(playbackState: Int) {
+    override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+        currentMediaItem = browserInstance?.currentMediaItem
+        currentMediaMetadata = mediaMetadata
+        currentDuration = mediaMetadata.durationMs ?: browserInstance?.duration ?: 0L
+        // TODO 此处获取到的duration仍然可能是上一首歌曲的时长
+    }
 
-        }
+    override fun onPlaylistMetadataChanged(mediaMetadata: MediaMetadata) {
+        currentPlaylistMetadata = mediaMetadata
+    }
 
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            currentMediaItem = mediaItem
-            updateItems()
-        }
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        updateItems(timeline)
+    }
 
-        override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-            currentMediaItem = browser.currentMediaItem
-            currentMediaMetadata = mediaMetadata
-            currentDuration = mediaMetadata.durationMs ?: browser.duration
-            // TODO 此处获取到的duration仍然可能是上一首歌曲的时长
-        }
+    fun updateItems(
+        timeline: Timeline? = browserInstance?.currentTimeline,
+        currentIndex: Int = browserInstance?.currentMediaItemIndex ?: 0
+    ) {
+        val items = timeline?.toMediaItems() ?: emptyList()
+        currentTimelineItems = items.drop(currentIndex) + items.take(currentIndex)
 
-        override fun onPlaylistMetadataChanged(mediaMetadata: MediaMetadata) {
-            currentPlaylistMetadata = mediaMetadata
-        }
-
-        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-            updateItems(timeline)
-        }
-
-        fun updateItems(
-            timeline: Timeline = browser.currentTimeline,
-            currentIndex: Int = browser.currentMediaItemIndex
-        ) {
-            val items = timeline.toMediaItems()
-            currentTimelineItems = items.drop(currentIndex) + items.take(currentIndex)
-
-            val ids = currentTimelineItems.map { it.mediaId }
-            saveHistoryIds(mediaIds = ids)
-        }
+        val ids = currentTimelineItems.map { it.mediaId }
+        saveHistoryIds(mediaIds = ids)
     }
 }
 

@@ -19,7 +19,8 @@ sealed class PlayerAction : Action {
     data class AddToNext(val mediaId: String) : PlayerAction()
     data class UpdateList(
         val mediaIds: List<String>,
-        val mediaId: String? = null
+        val mediaId: String? = null,
+        val start: Boolean = false
     ) : PlayerAction()
 
     sealed class CustomAction(val name: String) : PlayerAction()

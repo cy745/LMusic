@@ -26,7 +26,13 @@ object MediaControl {
     /**
      * 替换播放列表，并播放目标歌曲
      */
-    fun playWithList(mediaIds: List<String>, mediaId: String) {
-        PlayerAction.UpdateList(mediaIds, mediaId).action()
+    fun playWithList(
+        mediaIds: List<String>,
+        mediaId: String,
+        start: Boolean = true
+    ) {
+        PlayerAction
+            .UpdateList(mediaIds, mediaId, start)
+            .action()
     }
 }
