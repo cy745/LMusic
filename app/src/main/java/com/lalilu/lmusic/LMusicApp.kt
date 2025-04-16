@@ -5,12 +5,17 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import coil3.SingletonImageLoader
 import com.blankj.utilcode.util.LogUtils
+import com.github.panpf.sketch.PlatformContext
+import com.github.panpf.sketch.SingletonSketch
+import com.github.panpf.sketch.Sketch
+import com.github.panpf.sketch.util.Logger.Level
 import com.lalilu.lalbum.AlbumModule
 import com.lalilu.lartist.ArtistModule
 import com.lalilu.lfolder.FolderModule
 import com.lalilu.lhistory.HistoryModule
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.utils.extension.ignoreSSLVerification
+import com.lalilu.lmusic.utils.sketch.SongCoverFetcher
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplaylist.PlaylistModule
 import com.zhangke.krouter.KRouter
@@ -25,8 +30,17 @@ import java.io.File
 
 
 @Suppress("OPT_IN_USAGE")
-class LMusicApp : Application(), ViewModelStoreOwner, KoinStartup {
+class LMusicApp : Application(), ViewModelStoreOwner, KoinStartup, SingletonSketch.Factory {
     override val viewModelStore: ViewModelStore = ViewModelStore()
+
+    override fun createSketch(context: PlatformContext): Sketch {
+        return Sketch.Builder(context).apply {
+            components {
+                logger(Level.Debug)
+                addFetcher(SongCoverFetcher.Factory())
+            }
+        }.build()
+    }
 
     @KoinExperimentalAPI
     override fun onKoinStartup(): KoinConfiguration = KoinConfiguration {
