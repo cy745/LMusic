@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.media3.common.C
@@ -12,7 +13,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.Assertions
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
 import androidx.media3.session.CommandButton
@@ -26,6 +26,10 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaStyleNotificationHelper
 import androidx.media3.session.R
 import androidx.media3.session.SessionCommand
+import coil3.Bitmap
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.toBitmap
 import com.google.common.collect.ImmutableList
 import com.lalilu.common.post
 import com.lalilu.lmedia.lyric.LyricItem
@@ -38,7 +42,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -223,6 +226,8 @@ class MNotificationProvider(
         }
     }
 
+    private var loadedKey: Any? = null
+    private var loadedBitmap: Bitmap? = null
     private var loadBitmapJob: Job? = null
     private fun loadBitmapIntoNotification(
         mediaSession: MediaSession,
@@ -231,24 +236,34 @@ class MNotificationProvider(
         builder: NotificationCompat.Builder,
         onNotificationChangedCallback: Callback
     ) {
+        val data = mediaSession.player.currentMediaItem
+            ?: metadata.artworkUri
+
+        if (loadedKey != data) {
+            builder.setLargeIcon(loadedBitmap)
+            loadedKey = data
+        }
+
         loadBitmapJob?.cancel()
         loadBitmapJob = launch(Dispatchers.IO) {
-            val bitmapFuture = mediaSession.bitmapLoader
-                .loadBitmapFromMetadata(metadata)
-                ?: return@launch
-
-            val result = runCatching { bitmapFuture.await() }.getOrElse {
+            val result = runCatching {
+                context.imageLoader.execute(
+                    ImageRequest.Builder(context)
+                        .data(data)
+                        .build()
+                ).image?.toBitmap()
+            }.getOrElse {
                 Log.w("MNotificationProvider", "Failed to load bitmap: ${it.message}")
                 null
-            } ?: return@launch
+            }
 
-            if (isActive) {
-                post {
-                    builder.setLargeIcon(result)
-                    onNotificationChangedCallback.onNotificationChanged(
-                        MediaNotification(notificationId, builder.build())
-                    )
-                }
+            if (!isActive) return@launch
+            post {
+                loadedBitmap = result
+                builder.setLargeIcon(result)
+                onNotificationChangedCallback.onNotificationChanged(
+                    MediaNotification(notificationId, builder.build())
+                )
             }
         }
     }

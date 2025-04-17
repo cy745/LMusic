@@ -29,8 +29,9 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":lmedia"))
     implementation(libs.startup.runtime)
+    implementation(libs.coil3.android)
 
     api(project(":lplayer:lib-decoder-flac"))
     api(libs.bundles.media3)
-    api("com.github.cy745:fpcalc:1.2")
+    api("com.github.cy745:fpcalc:75daa4514f")
 }
