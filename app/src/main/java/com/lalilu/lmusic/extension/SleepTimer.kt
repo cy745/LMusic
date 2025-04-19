@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -128,12 +129,14 @@ private val SleepTimerDialog = DialogItem.Dynamic(backgroundColor = Color.Transp
 }
 
 @Composable
-fun SleepTimerSmallEntry() {
+fun SleepTimerSmallEntry(
+    contentColor: () -> Color
+) {
     IconButton(onClick = { DialogWrapper.push(SleepTimerDialog) }) {
         Icon(
             painter = painterResource(id = ComponentR.drawable.ic_time_line),
             contentDescription = "",
-            tint = Color.White
+            tint = contentColor()
         )
     }
 }

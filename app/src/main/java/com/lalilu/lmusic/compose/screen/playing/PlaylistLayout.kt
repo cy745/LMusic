@@ -1,14 +1,16 @@
 package com.lalilu.lmusic.compose.screen.playing
 
 import androidx.annotation.OptIn
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
@@ -28,6 +32,7 @@ import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.state
 import com.lalilu.lmusic.compose.screen.playing.util.DiffUtil
 import com.lalilu.lmusic.compose.screen.playing.util.ListUpdateCallback
+import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.action.PlayerAction
 import kotlinx.coroutines.launch
 
@@ -137,12 +142,19 @@ fun PlaylistLayout(
         contentPadding = PaddingValues(bottom = 200.dp),
         overscrollEffect = null
     ) {
-        items(
+        itemsIndexed(
             items = actualItems,
-            key = { it.key },
-        ) { item ->
+            key = { _, item -> item.key },
+        ) { index, item ->
+            val bgColor = animateColorAsState(
+                if (index == 0 && MPlayer.isPlaying) MaterialTheme.colors.onBackground.copy(0.01f)
+                else Color.Transparent
+            )
+
             SongCardReverse(
-                modifier = Modifier.animateItem(),
+                modifier = Modifier
+                    .animateItem()
+                    .drawBehind { drawRect(color = bgColor.value) },
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 song = { item.data },
                 isFavour = { favouriteIds.value.contains(item.data.mediaId) },

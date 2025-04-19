@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.R
@@ -32,8 +33,8 @@ import com.lalilu.lplayer.MPlayer
 fun PlayingToolbar(
     modifier: Modifier = Modifier,
     isUserTouchEnable: () -> Boolean = { false },
-    isItemPlaying: (mediaId: String) -> Boolean = { false },
     isExtraVisible: () -> Boolean = { true },
+    contentColor: () -> Color,
     onClick: () -> Unit = {},
     fixContent: @Composable RowScope.() -> Unit = {},
     extraContent: @Composable AnimatedVisibilityScope.() -> Unit = {}
@@ -48,10 +49,11 @@ fun PlayingToolbar(
                 stiffness = Spring.StiffnessLow
             )
         ) + expandHorizontally(
-            spring(
+            animationSpec = spring(
                 dampingRatio = Spring.DampingRatioNoBouncy,
                 stiffness = Spring.StiffnessLow
-            )
+            ),
+            clip = false
         ) + slideInHorizontally(
             spring(
                 dampingRatio = Spring.DampingRatioNoBouncy,
@@ -66,10 +68,11 @@ fun PlayingToolbar(
                 stiffness = Spring.StiffnessLow
             )
         ) + shrinkHorizontally(
-            spring(
+            animationSpec = spring(
                 dampingRatio = Spring.DampingRatioNoBouncy,
                 stiffness = Spring.StiffnessLow
-            )
+            ),
+            clip = false
         ) + slideOutHorizontally(
             spring(
                 dampingRatio = Spring.DampingRatioNoBouncy,
@@ -97,7 +100,10 @@ fun PlayingToolbar(
                 .weight(1f)
                 .padding(end = 10.dp),
             title = { metadata?.title?.toString()?.takeIf(String::isNotBlank) ?: defaultSloganStr },
-            subTitle = { metadata?.subtitle?.toString()?.takeIf(String::isNotBlank) ?: defaultSloganStr },
+            subTitle = {
+                metadata?.subtitle?.toString()?.takeIf(String::isNotBlank) ?: defaultSloganStr
+            },
+            contentColor = contentColor,
             isPlaying = { MPlayer.isPlaying }
         )
 

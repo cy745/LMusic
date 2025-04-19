@@ -77,7 +77,18 @@ fun PlayingLayout(
 
     val isLyricScrollEnable = remember { mutableStateOf(false) }
     val backgroundColor = remember { mutableStateOf(Color.DarkGray) }
-    val animateColor = animateColorAsState(targetValue = backgroundColor.value, label = "")
+    val contentColor = remember { mutableStateOf(Color.White) }
+
+    val contentAnimateColor = animateColorAsState(
+        targetValue = contentColor.value,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = ""
+    )
+    val bgAnimateColor = animateColorAsState(
+        targetValue = backgroundColor.value,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = ""
+    )
     val scrollToTopEvent = remember { mutableStateOf(0L) }
     val currentPosition = remember { mutableFloatStateOf(0f) }
     val animation = remember { Animatable(0f) }
@@ -94,6 +105,34 @@ fun PlayingLayout(
     val hideComponent = remember {
         derivedStateOf {
             settingsSp.autoHideSeekbar.value && draggable.state.value == DragAnchor.Max
+        }
+    }
+
+    val middleToMaxProgress = remember {
+        derivedStateOf {
+            draggable.progressBetween(
+                from = DragAnchor.Middle,
+                to = DragAnchor.Max,
+                offset = draggable.position.floatValue
+            )
+        }
+    }
+    val middleToMinProgress = remember {
+        derivedStateOf {
+            draggable.progressBetween(
+                from = DragAnchor.Middle,
+                to = DragAnchor.Min,
+                offset = draggable.position.floatValue
+            )
+        }
+    }
+    val minToMiddleProgress = remember {
+        derivedStateOf {
+            draggable.progressBetween(
+                from = DragAnchor.Min,
+                to = DragAnchor.Middle,
+                offset = draggable.position.floatValue
+            )
         }
     }
 
@@ -120,15 +159,6 @@ fun PlayingLayout(
         toolbarContent = {
             val density = LocalDensity.current
             val navigationBar = WindowInsets.navigationBars
-            val middleToMaxProgress = remember {
-                derivedStateOf {
-                    draggable.progressBetween(
-                        from = DragAnchor.Middle,
-                        to = DragAnchor.Max,
-                        offset = draggable.position.floatValue
-                    )
-                }
-            }
 
             Column(
                 modifier = Modifier
@@ -147,14 +177,25 @@ fun PlayingLayout(
                                 .toFloat() + 10.dp.toPx(),
                             fraction = middleToMaxProgress.value
                         )
+
+                        alpha =
+                            (1.25f * (middleToMaxProgress.value + middleToMinProgress.value) - 0.25f)
+                                .coerceAtLeast(0f)
                     }
             ) {
+                val actualContentColor = remember {
+                    derivedStateOf {
+                        val isExpending = 1.25f * middleToMaxProgress.value - 0.25f > 0f
+                        if (isExpending) Color.White else contentAnimateColor.value
+                    }
+                }
+
                 PlayingToolbar(
-                    isItemPlaying = { mediaId -> MPlayer.isItemPlaying(mediaId) },
                     isUserTouchEnable = { draggable.state.value == DragAnchor.Min || draggable.state.value == DragAnchor.Max },
                     isExtraVisible = { draggable.state.value == DragAnchor.Max },
                     onClick = { scrollToTopEvent.value = System.currentTimeMillis() },
-                    extraContent = { LyricViewToolbar() }
+                    contentColor = { actualContentColor.value },
+                    extraContent = { LyricViewToolbar(contentColor = { actualContentColor.value }) }
                 )
             }
         },
@@ -163,31 +204,12 @@ fun PlayingLayout(
                 modifier = modifier
                     .fillMaxSize()
                     .clipToBounds()
-                    .background(color = animateColor.value)
+                    .background(color = bgAnimateColor.value)
             ) {
                 val adInterpolator = remember { AccelerateDecelerateInterpolator() }
                 val dInterpolator = remember { DecelerateInterpolator() }
                 val transition: (Float) -> Float = remember {
                     { x -> -2f * (x - 0.5f).pow(2) + 0.5f }
-                }
-
-                val minToMiddleProgress = remember {
-                    derivedStateOf {
-                        draggable.progressBetween(
-                            from = DragAnchor.Min,
-                            to = DragAnchor.Middle,
-                            offset = draggable.position.floatValue
-                        )
-                    }
-                }
-                val middleToMaxProgress = remember {
-                    derivedStateOf {
-                        draggable.progressBetween(
-                            from = DragAnchor.Middle,
-                            to = DragAnchor.Max,
-                            offset = draggable.position.floatValue
-                        )
-                    }
                 }
 
                 BlurBackground(
@@ -228,7 +250,10 @@ fun PlayingLayout(
                             scaleX = scale
                         },
                     blurProgress = { middleToMaxProgress.value },
-                    onBackgroundColorFetched = { backgroundColor.value = it },
+                    onColorPairFetched = { bgColor, cColor ->
+                        backgroundColor.value = bgColor
+                        contentColor.value = cColor
+                    },
                     imageData = {
                         MPlayer.currentMediaItem
                             ?: com.lalilu.component.R.drawable.ic_music_2_line_100dp
@@ -317,7 +342,7 @@ fun PlayingLayout(
                         .hideControl(enable = { hideComponent.value })
                         .padding(horizontal = 40.dp)
                         .padding(bottom = 100.dp),
-                    animateColor = { animateColor.value },
+                    animateColor = { bgAnimateColor.value },
                     maxValue = { MPlayer.currentDuration.toFloat() },
                     animation = animation,
                     dataValue = { currentPosition.floatValue },

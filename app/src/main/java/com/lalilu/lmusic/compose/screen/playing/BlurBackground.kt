@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
@@ -24,19 +25,22 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
-import com.lalilu.common.getAutomaticColor
+import com.lalilu.common.getColorPair
 import com.lalilu.lmusic.utils.StackBlurUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun BlurBackground(
     modifier: Modifier = Modifier,
     imageData: () -> Any,
-    onBackgroundColorFetched: (Color) -> Unit,
+    onColorPairFetched: (bgColor: Color, contentColor: Color) -> Unit,
     blurProgress: () -> Float,
 ) {
     val context = LocalContext.current
     val maskPaint =
         remember { Paint(Paint.ANTI_ALIAS_FLAG).also { it.color = android.graphics.Color.BLACK } }
+    val scope = rememberCoroutineScope()
 
     AnimatedContent(
         label = "",
@@ -87,27 +91,33 @@ fun BlurBackground(
             contentScale = ContentScale.Crop,
             contentDescription = "",
             onSuccess = { state ->
-                val temp = state.result.image.toBitmap()
-                samplingBitmap.value = createSamplingBitmap(temp, 400).also {
-                    // 提前预加载BlurredBitmap
-                    StackBlurUtils.preload(it, extraKey)
+                scope.launch(Dispatchers.IO) {
+                    val temp = state.result.image.toBitmap()
+                    samplingBitmap.value = createSamplingBitmap(temp, 400).also {
+                        // 提前预加载BlurredBitmap
+                        StackBlurUtils.preload(it, extraKey)
 
-                    if (it.width > it.height) {
-                        val left = (it.width - it.height) / 2
-                        val right = it.width - left
-                        srcRect.set(left, 0, right, it.height)
-                    } else {
-                        val top = (it.height - it.width) / 2
-                        val bottom = it.height - top
-                        srcRect.set(0, top, it.width, bottom)
+                        if (it.width > it.height) {
+                            val left = (it.width - it.height) / 2
+                            val right = it.width - left
+                            srcRect.set(left, 0, right, it.height)
+                        } else {
+                            val top = (it.height - it.width) / 2
+                            val bottom = it.height - top
+                            srcRect.set(0, top, it.width, bottom)
+                        }
                     }
-                }
 
-                samplingBitmap.value?.let {
-                    val color = Palette.from(it)
-                        .generate()
-                        .getAutomaticColor()
-                    onBackgroundColorFetched(Color(color))
+                    samplingBitmap.value?.let {
+                        val (bgColor, contentColor) = Palette.from(it)
+                            .generate()
+                            .getColorPair()
+
+//                        val luminance = it.calcAverageLuminance(minY = it.height - 200)
+//                        val contentColor = if (luminance > 0.5f) Color.Black else Color.White
+
+                        onColorPairFetched(bgColor, contentColor)
+                    }
                 }
             }
         )

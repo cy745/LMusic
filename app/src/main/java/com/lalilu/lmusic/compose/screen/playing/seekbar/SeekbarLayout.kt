@@ -50,6 +50,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -470,7 +471,12 @@ private fun SeekbarDuration(
                             .coerceAtLeast(0f)
                 },
             text = text(),
-            style = textStyle
+            style = textStyle.copy(
+                shadow = Shadow(
+                    color = Color.Black.copy(0.2f),
+                    blurRadius = 5f
+                )
+            )
         )
     }
 }

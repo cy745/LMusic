@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.card.PlayingTipIcon
@@ -29,6 +30,7 @@ fun PlayingHeader(
     modifier: Modifier = Modifier,
     title: () -> String,
     subTitle: () -> String,
+    contentColor: () -> Color,
     isPlaying: () -> Boolean,
 ) {
     val density = LocalDensity.current
@@ -62,8 +64,9 @@ fun PlayingHeader(
                 text = text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = Color.White,
-                style = MaterialTheme.typography.subtitle1
+                color = contentColor(),
+                style = MaterialTheme.typography.subtitle1,
+                fontWeight = FontWeight.Medium
             )
         }
         Row(
@@ -96,7 +99,7 @@ fun PlayingHeader(
                     text = text,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = Color.White.copy(alpha = 0.5f),
+                    color = contentColor().copy(alpha = 0.5f),
                     style = MaterialTheme.typography.caption,
                 )
             }

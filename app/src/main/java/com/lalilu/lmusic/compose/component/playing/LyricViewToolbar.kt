@@ -218,7 +218,9 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
 }
 
 @Composable
-fun LyricViewToolbar() {
+fun LyricViewToolbar(
+    contentColor: () -> Color
+) {
     val settings: DataSaverMutableState<LyricSettings> = koinInject(named("LyricSettings"))
 
     Row(
@@ -233,13 +235,15 @@ fun LyricViewToolbar() {
             label = ""
         )
 
-        SleepTimerSmallEntry()
+        SleepTimerSmallEntry(
+            contentColor = contentColor
+        )
 
         IconButton(onClick = { DialogWrapper.push(LyricViewActionDialog) }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_text),
                 contentDescription = "",
-                tint = Color.White
+                tint = contentColor()
             )
         }
 
@@ -252,7 +256,7 @@ fun LyricViewToolbar() {
                 modifier = Modifier.graphicsLayer { alpha = iconAlpha.value },
                 painter = painterResource(id = R.drawable.translate_2),
                 contentDescription = "",
-                tint = Color.White
+                tint = contentColor()
             )
         }
     }
