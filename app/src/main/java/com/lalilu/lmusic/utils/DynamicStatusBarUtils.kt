@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.lalilu.common.post
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -57,7 +58,9 @@ fun ComponentActivity.dynamicUpdateStatusBarColor(
                 }
                 if (result != PixelCopy.SUCCESS) continue
             } else {
-                window.decorView.draw(canvas)
+                post {
+                    window.decorView.draw(canvas)
+                }
             }
 
             if (!isActive) break
