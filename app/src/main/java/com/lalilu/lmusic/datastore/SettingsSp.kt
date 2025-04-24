@@ -14,21 +14,9 @@ class SettingsSp(private val context: Application) : BaseSp() {
         Config.KEY_SETTINGS_PLAY_MODE,
         Config.DEFAULT_SETTINGS_PLAY_MODE
     )
-    val lyricTextSize = obtain<Int>(
-        Config.KEY_SETTINGS_LYRIC_TEXT_SIZE,
-        Config.DEFAULT_SETTINGS_LYRIC_TEXT_SIZE
-    )
     val lyricGravity = obtain<Int>(
         Config.KEY_SETTINGS_LYRIC_GRAVITY,
         Config.DEFAULT_SETTINGS_LYRIC_GRAVITY
-    )
-    val ignoreAudioFocus = obtain<Boolean>(
-        Config.KEY_SETTINGS_IGNORE_AUDIO_FOCUS,
-        Config.DEFAULT_SETTINGS_IGNORE_AUDIO_FOCUS
-    )
-    val volumeControl = obtain<Int>(
-        Config.KEY_SETTINGS_VOLUME_CONTROL,
-        Config.DEFAULT_SETTINGS_VOLUME_CONTROL
     )
     val lyricTypefacePath = obtain<String>(
         Config.KEY_SETTINGS_LYRIC_TYPEFACE_PATH,
@@ -69,14 +57,6 @@ class SettingsSp(private val context: Application) : BaseSp() {
     val durationFilter = obtain<Int>(
         Config.KEY_SETTINGS_DURATION_FILTER,
         Config.DEFAULT_SETTINGS_DURATION_FILTER
-    )
-    val isDrawTranslation = obtain<Boolean>(
-        Config.KEY_SETTINGS_IS_DRAW_TRANSLATION,
-        Config.DEFAULT_SETTINGS_IS_DRAW_TRANSLATION
-    )
-    val isEnableBlurEffect = obtain<Boolean>(
-        Config.KEY_SETTINGS_IS_ENABLE_BLUR_EFFECT,
-        Config.DEFAULT_SETTINGS_IS_ENABLE_BLUR_EFFECT
     )
     val isGuidingOver = obtain<Boolean>(
         Config.KEY_REMEMBER_IS_GUIDING_OVER,

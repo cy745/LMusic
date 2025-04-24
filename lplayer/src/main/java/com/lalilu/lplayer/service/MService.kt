@@ -52,7 +52,8 @@ class MService : MediaLibraryService(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.IO + SupervisorJob()
     private val historyAnalyticsListener by getKoin().injectOrNull<AnalyticsListener>(named("history_analytics_listener"))
 
-    private var exoPlayer: Player? = null
+    private var player: Player? = null
+    private var exoPlayer: ExoPlayer? = null
     private var mediaSession: MediaLibrarySession? = null
     private val defaultAudioAttributes by lazy {
         AudioAttributes.Builder()
@@ -70,20 +71,21 @@ class MService : MediaLibraryService(), CoroutineScope {
             MNotificationProvider(this)
         )
 
-        exoPlayer = ExoPlayer.Builder(this)
+        player = ExoPlayer.Builder(this)
             .setRenderersFactory(FadeTransitionRenderersFactory(this, this))
             .setHandleAudioBecomingNoisy(MPlayerKV.handleBecomeNoisy.value != false)
             .setAudioAttributes(defaultAudioAttributes, MPlayerKV.handleAudioFocus.value != false)
             .setMaxSeekToPreviousPositionMs(Long.MAX_VALUE) // 避免播放上一首需要点两次
             .build()
             .apply {
+                exoPlayer = this
                 historyAnalyticsListener?.let { addAnalyticsListener(it) }
                 addListener(MPlayerListener(this))
             }
             .setUpQueueControl()
 
         mediaSession = MediaLibrarySession
-            .Builder(this, exoPlayer!!, MServiceCallback(exoPlayer!!))
+            .Builder(this, player!!, MServiceCallback(player!!))
             .setSessionActivity(getLauncherPendingIntent())
             .build()
 
@@ -92,9 +94,9 @@ class MService : MediaLibraryService(), CoroutineScope {
 
     override fun onDestroy() {
         // 释放相关实例
-        exoPlayer?.stop()
-        exoPlayer?.release()
-        exoPlayer = null
+        player?.stop()
+        player?.release()
+        player = null
         mediaSession?.release()
         mediaSession = null
         super.onDestroy()
@@ -107,20 +109,19 @@ class MService : MediaLibraryService(), CoroutineScope {
     private fun startListenForValuesUpdate() = launch {
         MPlayerKV.handleAudioFocus.flow().onEach {
             withContext(Dispatchers.Main) {
-                exoPlayer?.setAudioAttributes(defaultAudioAttributes, it != false)
+                player?.setAudioAttributes(defaultAudioAttributes, it != false)
             }
         }.launchIn(this)
 
         MPlayerKV.handleBecomeNoisy.flow().onEach {
             withContext(Dispatchers.Main) {
-                (exoPlayer as? ExoPlayer)
-                    ?.setHandleAudioBecomingNoisy(it != false)
+                exoPlayer?.setHandleAudioBecomingNoisy(it != false)
             }
         }.launchIn(this)
 
         MPlayerKV.playMode.flow().onEach {
             withContext(Dispatchers.Main) {
-                exoPlayer?.playMode = PlayMode.from(it)
+                player?.playMode = PlayMode.from(it)
             }
         }.launchIn(this)
     }

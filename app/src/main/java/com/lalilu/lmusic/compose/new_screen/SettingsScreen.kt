@@ -41,7 +41,6 @@ import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
 import com.lalilu.component.settings.SettingCategory
 import com.lalilu.component.settings.SettingFilePicker
-import com.lalilu.component.settings.SettingProgressSeekBar
 import com.lalilu.component.settings.SettingStateSeekBar
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.crash.CrashHelper
@@ -50,12 +49,13 @@ import com.lalilu.lmusic.GuidingActivity
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
+import com.lalilu.lplayer.MPlayerKV
+import com.lalilu.lplayer.extensions.PlayMode
 import com.lalilu.remixicon.System
 import com.lalilu.remixicon.system.settings4Line
 import com.zhangke.krouter.annotation.Destination
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import kotlin.math.roundToInt
 
 @Destination("/pages/settings")
 object SettingsScreen : Screen, ScreenInfoFactory {
@@ -87,20 +87,15 @@ private fun SettingsScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val darkModeOption = settingsSp.darkModeOption
-    val ignoreAudioFocus = settingsSp.ignoreAudioFocus
     val enableUnknownFilter = settingsSp.enableUnknownFilter
     val statusBarLyric = settingsSp.enableStatusLyric
     val lyricGravity = settingsSp.lyricGravity
-    val lyricTextSize = settingsSp.lyricTextSize
-    val playMode = settingsSp.playMode
-    val volumeControl = settingsSp.volumeControl
     val lyricTypefacePath = settingsSp.lyricTypefacePath
     val enableSystemEq = settingsSp.enableSystemEq
     val enableDynamicTips = settingsSp.enableDynamicTips
     val autoHideSeekBar = settingsSp.autoHideSeekbar
     val forceHideStatusBar = settingsSp.forceHideStatusBar
     val keepScreenOnWhenLyricExpanded = settingsSp.keepScreenOnWhenLyricExpanded
-    val durationFilter = settingsSp.durationFilter
 
     val launcherForAudioFx = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -123,19 +118,34 @@ private fun SettingsScreen(
                 titleRes = R.string.preference_player_settings
             ) {
                 SettingSwitcher(
-                    titleRes = R.string.preference_player_settings_ignore_audio_focus,
-                    state = ignoreAudioFocus
+                    title = stringResource(R.string.preference_player_settings_ignore_audio_focus),
+                    onStateUpdate = { MPlayerKV.handleAudioFocus.value = !it },
+                    state = { !(MPlayerKV.handleAudioFocus.value ?: false) }
                 )
-                SettingProgressSeekBar(
-                    value = { volumeControl.value.toFloat() },
-                    onValueUpdate = { volumeControl.value = it.roundToInt() },
-                    title = "独立音量控制",
-                    valueRange = 0..100
+                SettingSwitcher(
+                    title = "当耳机断开连接时暂停播放",
+                    subTitle = "推荐开启，有效避免社死",
+                    onStateUpdate = { MPlayerKV.handleBecomeNoisy.value = it },
+                    state = { MPlayerKV.handleBecomeNoisy.value ?: true }
                 )
+                // TODO
+//                SettingProgressSeekBar(
+//                    value = { volumeControl.value.toFloat() },
+//                    onValueUpdate = { volumeControl.value = it.roundToInt() },
+//                    title = "独立音量控制",
+//                    valueRange = 0..100
+//                )
                 SettingStateSeekBar(
-                    state = playMode,
                     selection = listOf("列表循环", "单曲循环", "随机播放"),
-                    title = "播放模式"
+                    title = "播放模式",
+                    onStateUpdate = { MPlayerKV.playMode.value = PlayMode.indexOf(it).name },
+                    state = { PlayMode.from(MPlayerKV.playMode.value).index }
+                )
+                SettingSwitcher(
+                    title = "是否重启后自动续播",
+                    subTitle = "谨慎开启，避免社死",
+                    onStateUpdate = { MPlayerKV.autoPlayWhenRestart.value = it },
+                    state = { MPlayerKV.autoPlayWhenRestart.value ?: false }
                 )
                 SettingSwitcher(
                     state = enableSystemEq,

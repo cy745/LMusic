@@ -27,8 +27,12 @@ import com.lalilu.lplayer.service.getHistoryItems
 import com.lalilu.lplayer.service.saveHistoryIds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.guava.await
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.dsl.module
 import kotlin.coroutines.CoroutineContext
 
@@ -39,6 +43,7 @@ object MPlayer : CoroutineScope, Player.Listener {
         SessionToken(Utils.getApp(), ComponentName(Utils.getApp(), MService::class.java))
     }
 
+    private var loopJob: Job? = null
     private var browserInstance: MediaBrowser? = null
     private val browserFuture by lazy {
         MediaBrowser
@@ -82,14 +87,15 @@ object MPlayer : CoroutineScope, Player.Listener {
             browserInstance = browser
             browser.addListener(this@MPlayer)
 
+            val lastPosition = MPlayerKV.historyPlayPosition.value ?: 0L
             val items = getHistoryItems()
             if (items.isEmpty()) {
                 LogUtils.i("No songs found")
                 return@launch
             }
 
-            browser.playWhenReady = false
-            browser.setMediaItems(items)
+            browser.playWhenReady = MPlayerKV.autoPlayWhenRestart.value ?: false
+            browser.setMediaItems(items, 0, lastPosition)
             browser.prepare()
         }
     }
@@ -190,6 +196,18 @@ object MPlayer : CoroutineScope, Player.Listener {
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         this@MPlayer.isPlaying = isPlaying
+
+        loopJob?.cancel()
+        if (isPlaying) {
+            loopJob = launch {
+                while (isActive) {
+                    withContext(Dispatchers.Main) {
+                        MPlayerKV.historyPlayPosition.value = currentPosition
+                    }
+                    delay(1000)
+                }
+            }
+        }
     }
 
     @OptIn(UnstableApi::class)

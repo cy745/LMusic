@@ -355,11 +355,8 @@ fun PlayingLayout(
                         PlayerAction.SeekTo(position.toLong()).action()
                     },
                     onSwitchTo = { index ->
-                        val playMode = when (index) {
-                            1 -> PlayMode.RepeatOne
-                            2 -> PlayMode.Shuffle
-                            else -> PlayMode.ListRecycle
-                        }
+                        val playMode = PlayMode.indexOf(index)
+
                         PlayerAction.SetPlayMode(playMode)
                             .action()
                         DynamicTipsItem.Static(
