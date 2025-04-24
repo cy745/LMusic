@@ -113,9 +113,6 @@ fun BlurBackground(
                             .generate()
                             .getColorPair()
 
-//                        val luminance = it.calcAverageLuminance(minY = it.height - 200)
-//                        val contentColor = if (luminance > 0.5f) Color.Black else Color.White
-
                         onColorPairFetched(bgColor, contentColor)
                     }
                 }
