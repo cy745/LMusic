@@ -16,6 +16,10 @@ internal class PlaylistRepositoryImpl(
 ) : PlaylistRepository {
 
     override fun getPlaylistsFlow(): Flow<List<LPlaylist>> {
+        if (PlaylistKV.playlistList.value == null) {
+            checkFavouriteExist()
+        }
+
         return PlaylistKV.playlistList.flow()
             .mapLatest { playlists ->
                 playlists?.distinctBy { it.id } ?: emptyList()
@@ -159,22 +163,24 @@ internal class PlaylistRepositoryImpl(
     }
 
     override fun checkFavouriteExist(): Boolean {
-        val playlists = getPlaylists()
-        val exist = playlists.any { it.id == PlaylistRepository.FAVOURITE_PLAYLIST_ID }
-
-        if (!exist) {
-            save(
-                LPlaylist(
-                    id = PlaylistRepository.FAVOURITE_PLAYLIST_ID,
-                    title = context.getString(R.string.playlist_tips_favourite),
-                    subTitle = context.getString(R.string.playlist_tips_favourite_subTitle),
-                    coverUri = "",
-                    mediaIds = emptyList()
-                )
-            )
+        fun isActualExist(): Boolean {
+            val playlists = getPlaylists()
+            return playlists.any { it.id == PlaylistRepository.FAVOURITE_PLAYLIST_ID }
         }
 
-        return exist
+        if (isActualExist()) return true
+
+        save(
+            LPlaylist(
+                id = PlaylistRepository.FAVOURITE_PLAYLIST_ID,
+                title = context.getString(R.string.playlist_tips_favourite),
+                subTitle = context.getString(R.string.playlist_tips_favourite_subTitle),
+                coverUri = "",
+                mediaIds = emptyList()
+            )
+        )
+
+        return isActualExist()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
