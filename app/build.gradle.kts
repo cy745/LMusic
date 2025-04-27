@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -6,12 +5,11 @@ import java.util.Properties
 import java.util.TimeZone
 
 plugins {
-    id("com.android.application")
-    kotlin("android")
+    alias(libs.plugins.application)
+    alias(libs.plugins.kotlin)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
-    id("com.google.devtools.ksp")
-    id("android.aop")
+    alias(libs.plugins.ksp)
 }
 
 val keystoreProps = rootProject.file("keystore.properties")
@@ -21,23 +19,6 @@ val keystoreProps = rootProject.file("keystore.properties")
 fun releaseTime(pattern: String = "MMdd_HHmm"): String = SimpleDateFormat(pattern).run {
     timeZone = TimeZone.getTimeZone("Asia/Shanghai")
     format(Date())
-}
-
-
-androidAopConfig {
-    enabled = true
-    debug = true
-
-//    include 'com.flyjingfish'
-//    cutInfoJson = true
-//    increment = true
-    // 移除kotlin相关，减少编译错误并提升速度
-    exclude(
-        "kotlin.jvm",
-        "kotlin.internal",
-        "kotlinx.coroutines.internal",
-        "kotlinx.coroutines.android"
-    )
 }
 
 android {
@@ -144,30 +125,17 @@ android {
             versionNameSuffix = "-DEBUG_${releaseTime("yyyyMMdd")}"
             applicationIdSuffix = ".debug"
             signingConfig = signingConfigs.getByName("debug")
-            isProfileable = true
-            isDebuggable = true
-            isJniDebuggable = true
 
             resValue("string", "app_name", "@string/app_name_debug")
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
         isCoreLibraryDesugaringEnabled = true
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
     }
     lint {
         disable += "Instantiatable"
         abortOnError = false
     }
-}
-
-composeCompiler {
-    composeCompiler.featureFlags.add(ComposeFeatureFlag.StrongSkipping)
-    composeCompiler.featureFlags.add(ComposeFeatureFlag.PausableComposition)
 }
 
 dependencies {
@@ -224,9 +192,6 @@ dependencies {
 //    debugImplementation("com.github.cy745:wytrace:d0df4c2d15")
 //    debugImplementation("com.bytedance.android:shadowhook:1.0.10")
     implementation("io.github.theapache64:rebugger:1.0.0-rc03")
-
-    implementation(libs.bundles.flyjingfish.aop)
-    ksp(libs.flyjingfish.aop.ksp)
 
     implementation("com.google.accompanist:accompanist-adaptive:0.35.1-alpha")
     implementation("androidx.compose.material3.adaptive:adaptive:1.0.0-beta04")

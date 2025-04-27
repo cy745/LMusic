@@ -1,8 +1,8 @@
 plugins {
-    id("com.android.library")
-    kotlin("android")
+    alias(libs.plugins.library)
+    alias(libs.plugins.kotlin)
     alias(libs.plugins.compose.compiler)
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -26,17 +26,6 @@ android {
             consumerProguardFiles("proguard-rules.pro")
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-
-composeCompiler {
-    enableStrongSkippingMode = true
 }
 
 dependencies {

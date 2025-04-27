@@ -8,8 +8,8 @@ ksp_version = "2.1.0-1.0.29"
 
 koin_version = "4.0.1"
 koin_ksp_version = "1.4.0"
-compose_bom_alpha_version = "2025.03.00"
-compose_bom_version = "2025.03.00"
+compose_bom_alpha_version = "2025.04.01"
+compose_bom_version = "2025.04.01"
 accompanist_version = "0.32.0"
 voyager = "1.1.0-beta03"
 lottie-compose = "6.6.0"
@@ -21,24 +21,26 @@ utilcodex_version = "1.31.1"
 appcompat = "1.7.0"
 core-ktx = "1.15.0"
 palette-ktx = "1.0.0"
-dynamicanimation-ktx = "1.0.0-beta01"
+dynamicanimation-ktx = "1.1.0"
 startup-runtime = "1.2.0"
 activity-compose = "1.10.1"
 room_version = "2.6.1"
 media = "1.7.0"
-media3 = "1.6.0"
+media3 = "1.6.1"
 gson = "2.11.0"
 flyjingfish-aop = "1.9.7"
 paging_version = "3.3.6"
 krouter_version = "0.0.3"
 xmlutil = "0.90.3"
+ktorfit = "2.5.0"
+ktor = "3.1.2"
 
 [libraries]
 # kotlin
 kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin_version" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.3" }
-kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version = "1.9.0" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.6.1" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.8.0" }
+kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version = "1.10.1" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.6.2" }
 
 # compose
 compose-bom-alpha = { module = "androidx.compose:compose-bom-alpha", version.ref = "compose_bom_alpha_version" }
@@ -111,10 +113,16 @@ flyjingfish-aop-annotation = { module = "io.github.FlyJingFish.AndroidAop:androi
 flyjingfish-aop-ksp = { module = "io.github.FlyJingFish.AndroidAop:android-aop-ksp", version.ref = "flyjingfish-aop" }
 
 krouter-core = { module = "io.github.cy745.KRouter:core", version.ref = "krouter_version" }
-human-readable = { module = "nl.jacobras:Human-Readable", version = "1.10.0" }
+human-readable = { module = "nl.jacobras:Human-Readable", version = "1.11.0" }
 remixicon-kmp = { module = "io.github.cy745:remixicon-kmp", version = "0.0.2" }
 xmlutil-core = { module = "io.github.pdvrieze.xmlutil:core", version.ref = "xmlutil" }
 xmlutil-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
+ktorfit = { module = "de.jensklingenberg.ktorfit:ktorfit-lib", version.ref = "ktorfit" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktor" }
+ktor-client-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 
 [plugins]
 application = { id = "com.android.application", version.ref = "agp_version" }
@@ -126,6 +134,7 @@ flyjingfish-aop = { id = "io.github.FlyJingFish.AndroidAop.android-aop", version
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin_version" }
 krouter-plugin = { id = "io.github.cy745.KRouter.plugin", version.ref = "krouter_version" }
 lumo = { id = "com.nomanr.plugin.lumo", version = "1.2.1" }
+ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
 
 
 [bundles]
@@ -174,4 +183,12 @@ koin = [
     "koin-compose",
     "koin-startup",
     "koin-annotations"
+]
+ktor = [
+    "ktor-client-core",
+    "ktor-client-content-negotiation",
+    "ktor-client-serialization",
+    "ktor-client-serialization-json",
+    "ktor-client-logging",
+    "ktorfit"
 ]

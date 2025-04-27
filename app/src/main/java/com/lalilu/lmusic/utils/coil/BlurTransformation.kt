@@ -2,14 +2,9 @@ package com.lalilu.lmusic.utils.coil
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Paint
-import android.renderscript.Allocation
-import android.renderscript.Element
-import android.renderscript.RenderScript
-import android.renderscript.ScriptIntrinsicBlur
-import androidx.core.graphics.applyCanvas
 import coil3.size.Size
 import coil3.transform.Transformation
+import com.lalilu.lmusic.utils.StackBlurUtils
 
 /**
  * A [Transformation] that applies a Gaussian blur to an image.
@@ -52,40 +47,11 @@ class BlurTransformation @JvmOverloads constructor(
     }
 
     override suspend fun transform(input: Bitmap, size: Size): Bitmap {
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
-
         val scaledWidth = (input.width / sampling).toInt()
         val scaledHeight = (input.height / sampling).toInt()
-        val output = Bitmap.createBitmap(scaledWidth, scaledHeight, input.safeConfig)
-        output.applyCanvas {
-            scale(1 / sampling, 1 / sampling)
-            drawBitmap(input, 0f, 0f, paint)
-        }
-
-        var script: RenderScript? = null
-        var tmpInt: Allocation? = null
-        var tmpOut: Allocation? = null
-        var blur: ScriptIntrinsicBlur? = null
-        try {
-            script = RenderScript.create(context)
-            tmpInt = Allocation.createFromBitmap(
-                script,
-                output,
-                Allocation.MipmapControl.MIPMAP_NONE,
-                Allocation.USAGE_SCRIPT
-            )
-            tmpOut = Allocation.createTyped(script, tmpInt.type)
-            blur = ScriptIntrinsicBlur.create(script, Element.U8_4(script))
-            blur.setRadius(radius)
-            blur.setInput(tmpInt)
-            blur.forEach(tmpOut)
-            tmpOut.copyTo(output)
-        } finally {
-            script?.destroy()
-            tmpInt?.destroy()
-            tmpOut?.destroy()
-            blur?.destroy()
-        }
+        val scaled = Bitmap.createScaledBitmap(input, scaledWidth, scaledHeight, true)
+        val output = StackBlurUtils.blur(scaled, radius)
+        scaled.recycle()
 
         return output
     }
@@ -94,7 +60,4 @@ class BlurTransformation @JvmOverloads constructor(
         private const val DEFAULT_RADIUS = 10f
         private const val DEFAULT_SAMPLING = 1f
     }
-
-    private val Bitmap.safeConfig: Bitmap.Config
-        get() = config ?: Bitmap.Config.ARGB_8888
 }
