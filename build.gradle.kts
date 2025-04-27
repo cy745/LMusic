@@ -39,9 +39,7 @@ allprojects {
         if (project.plugins.hasPlugin("org.jetbrains.kotlin.plugin.compose")) {
             project.extensions.configure<ComposeCompilerGradlePluginExtension> {
                 featureFlags.add(ComposeFeatureFlag.PausableComposition)
-                featureFlags.add(ComposeFeatureFlag.StrongSkipping)
                 featureFlags.add(ComposeFeatureFlag.OptimizeNonSkippingGroups)
-                featureFlags.add(ComposeFeatureFlag.IntrinsicRemember)
             }
         }
     }
