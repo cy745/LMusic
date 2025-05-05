@@ -95,6 +95,39 @@ class MNotificationProvider(
             addNotificationActions(mediaSession, mediaButtons, builder, actionFactory)
         mediaStyle.setShowActionsInCompactView(*compactViewIndices)
 
+        val playbackStartTimeMs = getPlaybackStartTimeEpochMs(player)
+        val displayElapsedTimeWithChronometer = playbackStartTimeMs != C.TIME_UNSET
+
+        if (player.isCommandAvailable(Player.COMMAND_STOP) || Util.SDK_INT < 21) {
+            // We must include a cancel intent for pre-L devices.
+            mediaStyle.setCancelButtonIntent(
+                actionFactory.createMediaActionPendingIntent(
+                    mediaSession,
+                    Player.COMMAND_STOP.toLong()
+                )
+            )
+        }
+
+        builder.setOnlyAlertOnce(true)
+            .setSmallIcon(R.drawable.media3_notification_small_icon)
+            .setStyle(mediaStyle)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setOngoing(false)
+            .setGroup(GROUP_KEY)
+            .setWhen(if (displayElapsedTimeWithChronometer) playbackStartTimeMs else 0L)
+            .setShowWhen(displayElapsedTimeWithChronometer)
+            .setUsesChronometer(displayElapsedTimeWithChronometer)
+            .setContentIntent(mediaSession.sessionActivity)
+            .setDeleteIntent(
+                actionFactory.createMediaActionPendingIntent(
+                    mediaSession, Player.COMMAND_STOP.toLong()
+                )
+            )
+
+        if (Util.SDK_INT >= 31) {
+            builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+        }
+
         // Set metadata info in the notification.
         if (player.isCommandAvailable(Player.COMMAND_GET_METADATA)) {
             val metadata = player.mediaMetadata
@@ -123,43 +156,7 @@ class MNotificationProvider(
             }
         }
 
-        if (player.isCommandAvailable(Player.COMMAND_STOP) || Util.SDK_INT < 21) {
-            // We must include a cancel intent for pre-L devices.
-            mediaStyle.setCancelButtonIntent(
-                actionFactory.createMediaActionPendingIntent(
-                    mediaSession,
-                    Player.COMMAND_STOP.toLong()
-                )
-            )
-        }
-
-        val playbackStartTimeMs = getPlaybackStartTimeEpochMs(player)
-        val displayElapsedTimeWithChronometer = playbackStartTimeMs != C.TIME_UNSET
-        builder
-            .setWhen(if (displayElapsedTimeWithChronometer) playbackStartTimeMs else 0L)
-            .setShowWhen(displayElapsedTimeWithChronometer)
-            .setUsesChronometer(displayElapsedTimeWithChronometer)
-
-        if (Util.SDK_INT >= 31) {
-            builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
-        }
-        val smallIconResourceId = R.drawable.media3_notification_small_icon
-
-        val notification: Notification = builder
-            .setContentIntent(mediaSession.sessionActivity)
-            .setDeleteIntent(
-                actionFactory.createMediaActionPendingIntent(
-                    mediaSession, Player.COMMAND_STOP.toLong()
-                )
-            )
-            .setOnlyAlertOnce(true)
-            .setSmallIcon(smallIconResourceId)
-            .setStyle(mediaStyle)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setOngoing(false)
-            .setGroup(GROUP_KEY)
-            .build()
-        return MediaNotification(notificationId, notification)
+        return MediaNotification(notificationId, builder.build())
     }
 
     override fun handleCustomCommand(
