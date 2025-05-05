@@ -31,7 +31,6 @@ import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.toBitmap
 import com.google.common.collect.ImmutableList
-import com.lalilu.common.post
 import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.LyricSourceEmbedded
 import com.lalilu.lmedia.lyric.LyricUtils
@@ -113,13 +112,15 @@ class MNotificationProvider(
                 onNotificationChangedCallback = onNotificationChangedCallback
             )
 
-            loadLyricIntoNotification(
-                mediaSession = mediaSession,
-                mediaItem = mediaItem,
-                notificationId = notificationId,
-                builder = builder,
-                onNotificationChangedCallback = onNotificationChangedCallback
-            )
+            if (player.isPlaying) {
+                loadLyricIntoNotification(
+                    mediaSession = mediaSession,
+                    mediaItem = mediaItem,
+                    notificationId = notificationId,
+                    builder = builder,
+                    onNotificationChangedCallback = onNotificationChangedCallback
+                )
+            }
         }
 
         if (player.isCommandAvailable(Player.COMMAND_STOP) || Util.SDK_INT < 21) {
@@ -204,21 +205,19 @@ class MNotificationProvider(
                 val current = list.getOrNull(index)
 
                 if (current != null) {
-                    post {
-                        val text = when (current) {
-                            is LyricItem.NormalLyric -> current.content
-                            is LyricItem.WordsLyric -> current.getSentenceContent()
-                            else -> ""
-                        }
+                    val text = when (current) {
+                        is LyricItem.NormalLyric -> current.content
+                        is LyricItem.WordsLyric -> current.getSentenceContent()
+                        else -> ""
+                    }
 
-                        builder.setTicker(text)
-                        val notification = builder.build().apply {
-                            flags = flags or FLAG_ALWAYS_SHOW_TICKER or FLAG_ONLY_UPDATE_TICKER
-                        }
+                    builder.setTicker(text)
+                    val notification = MediaNotification(notificationId, builder.build().apply {
+                        flags = flags or FLAG_ALWAYS_SHOW_TICKER or FLAG_ONLY_UPDATE_TICKER
+                    })
 
-                        onNotificationChangedCallback.onNotificationChanged(
-                            MediaNotification(notificationId, notification)
-                        )
+                    withContext(Dispatchers.Main) {
+                        onNotificationChangedCallback.onNotificationChanged(notification)
                     }
                 }
                 delay(50)
@@ -258,12 +257,12 @@ class MNotificationProvider(
             }
 
             if (!isActive) return@launch
-            post {
-                loadedBitmap = result
-                builder.setLargeIcon(result)
-                onNotificationChangedCallback.onNotificationChanged(
-                    MediaNotification(notificationId, builder.build())
-                )
+            loadedBitmap = result
+            builder.setLargeIcon(result)
+            val newNotification = MediaNotification(notificationId, builder.build())
+
+            withContext(Dispatchers.Main) {
+                onNotificationChangedCallback.onNotificationChanged(newNotification)
             }
         }
     }
