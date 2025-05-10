@@ -213,9 +213,7 @@ class MNotificationProvider(
                         flags = flags or FLAG_ALWAYS_SHOW_TICKER or FLAG_ONLY_UPDATE_TICKER
                     })
 
-                    withContext(Dispatchers.Main) {
-                        onNotificationChangedCallback.onNotificationChanged(notification)
-                    }
+                    onNotificationChangedCallback.onNotificationChanged(notification)
                 }
                 delay(50)
             }
@@ -256,11 +254,9 @@ class MNotificationProvider(
             if (!isActive) return@launch
             loadedBitmap = result
             builder.setLargeIcon(result)
-            val newNotification = MediaNotification(notificationId, builder.build())
+            val notification = MediaNotification(notificationId, builder.build())
 
-            withContext(Dispatchers.Main) {
-                onNotificationChangedCallback.onNotificationChanged(newNotification)
-            }
+            onNotificationChangedCallback.onNotificationChanged(notification)
         }
     }
 
