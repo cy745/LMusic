@@ -24,7 +24,6 @@ import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.extension.DialogItem
 import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.smartbar.component.ActionItem
-import kotlin.collections.forEach
 
 
 @Composable
@@ -64,7 +63,8 @@ private fun MoreActionPanelDialogContent(
             .padding(bottom = 8.dp)
             .navigationBarsPadding(),
         border = BorderStroke(1.dp, MaterialTheme.colors.onBackground.copy(0.1f)),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colors.background,
         elevation = 10.dp
     ) {
         Column(

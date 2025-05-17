@@ -29,7 +29,7 @@ import com.lalilu.lmusic.utils.recomposeHighlighter
 fun RecommendTitle(
     modifier: Modifier = Modifier,
     title: String,
-    paddingValues: PaddingValues = PaddingValues(horizontal = 20.dp),
+    paddingValues: PaddingValues = PaddingValues(horizontal = 16.dp),
     onClick: () -> Unit = {},
     extraContent: @Composable RowScope.() -> Unit = {},
 ) {
@@ -86,7 +86,7 @@ fun <I> RecommendRow(
             .animateContentSize(animationSpec = SpringSpec(stiffness = Spring.StiffnessLow))
             .recomposeHighlighter(),
         horizontalArrangement = Arrangement.spacedBy(15.dp),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
     ) {
         items(items = items(), key = getId, itemContent = itemContent)
     }

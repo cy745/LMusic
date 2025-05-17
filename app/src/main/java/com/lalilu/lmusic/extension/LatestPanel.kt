@@ -42,7 +42,12 @@ object LatestPanel : LazyGridContent {
                     title = "最近添加",
                     onClick = { }
                 ) {
-                    Chip(onClick = { }) {
+                    Chip(
+                        onClick = {
+                            AppRouter.route("/pages/songs")
+                                .jump()
+                        }
+                    ) {
                         Text(
                             style = MaterialTheme.typography.caption,
                             text = "所有歌曲"

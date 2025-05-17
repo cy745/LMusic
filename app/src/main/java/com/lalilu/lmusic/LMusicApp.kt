@@ -10,6 +10,7 @@ import com.lalilu.lartist.ArtistModule
 import com.lalilu.lfolder.FolderModule
 import com.lalilu.lhistory.HistoryModule
 import com.lalilu.lmedia.LMedia
+import com.lalilu.lmedia.LMediaModule
 import com.lalilu.lmusic.utils.extension.ignoreSSLVerification
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplaylist.PlaylistModule
@@ -42,6 +43,7 @@ class LMusicApp : Application(), ViewModelStoreOwner, KoinStartup {
             AlbumModule.module,
             FolderModule,
             LMedia.module,
+            LMediaModule.module,
             MPlayer.module,
         )
 

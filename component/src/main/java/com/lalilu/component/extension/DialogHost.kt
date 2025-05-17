@@ -3,6 +3,7 @@ package com.lalilu.component.extension
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -179,7 +180,7 @@ object DialogWrapper : DialogHost, DialogContext {
                         ) + scaleOut(
                             animationSpec = spring(stiffness = Spring.StiffnessVeryLow),
                             targetScale = 0.6f
-                        )
+                        ) + fadeOut()
                     }
                 ) { dialog ->
                     dialog?.apply {
