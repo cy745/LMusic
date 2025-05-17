@@ -28,14 +28,44 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.component.extension.DialogItem
 import com.lalilu.component.extension.DialogWrapper
-import com.lalilu.lmedia.extension.GroupIdentity
+import com.lalilu.lmedia.extension.sortable.GroupId
+import com.lalilu.lmedia.extension.sortable.SortResult
+import com.lalilu.lmedia.extension.sortable.Sortable
+
+@Composable
+fun <T : Sortable> SongsHeaderJumperDialog(
+    isVisible: () -> Boolean,
+    onDismiss: () -> Unit,
+    sortResult: SortResult<T>,
+    onSelectItem: (item: GroupId) -> Unit = {}
+) {
+    val groupIds = remember(sortResult) {
+        (sortResult as? SortResult.Grouped)
+            ?.groups?.mapNotNull { it.groupId }
+            ?: emptyList()
+    }
+    val dialog = remember {
+        DialogItem.Dynamic(backgroundColor = Color.Transparent) {
+            SongsHeaderJumperDialogContent(
+                items = { groupIds },
+                onSelectItem = onSelectItem
+            )
+        }
+    }
+
+    DialogWrapper.register(
+        isVisible = isVisible,
+        onDismiss = onDismiss,
+        dialogItem = dialog
+    )
+}
 
 @Composable
 fun SongsHeaderJumperDialog(
     isVisible: () -> Boolean,
     onDismiss: () -> Unit,
-    items: () -> Collection<GroupIdentity>,
-    onSelectItem: (item: GroupIdentity) -> Unit = {}
+    items: () -> Collection<GroupId>,
+    onSelectItem: (item: GroupId) -> Unit = {}
 ) {
     val dialog = remember {
         DialogItem.Dynamic(backgroundColor = Color.Transparent) {
@@ -57,8 +87,8 @@ fun SongsHeaderJumperDialog(
 @Composable
 private fun SongsHeaderJumperDialogContent(
     modifier: Modifier = Modifier,
-    items: () -> Collection<GroupIdentity>,
-    onSelectItem: (item: GroupIdentity) -> Unit = {}
+    items: () -> Collection<GroupId>,
+    onSelectItem: (item: GroupId) -> Unit = {}
 ) {
     val navigationBarsPadding = WindowInsets.navigationBars.asPaddingValues()
     val charMapping = remember {

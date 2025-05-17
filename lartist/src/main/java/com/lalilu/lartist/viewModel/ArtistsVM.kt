@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.LogUtils
 import com.lalilu.common.MviWithIntent
+import com.lalilu.common.ext.requestFor
 import com.lalilu.common.mviImplWithIntent
 import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.ItemSelector
@@ -13,16 +14,16 @@ import com.lalilu.component.extension.toState
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.extension.GroupIdentity
-import com.lalilu.lmedia.extension.ListAction
-import com.lalilu.lmedia.extension.SortDynamicAction
-import com.lalilu.lmedia.extension.SortStaticAction
+import com.lalilu.lmedia.extension.sortable.GroupId
+import com.lalilu.lmedia.extension.sortable.SortAction
+import com.lalilu.lmedia.extension.sortable.SortConfig
+import com.lalilu.lmedia.extension.sortable.SortManager
+import com.lalilu.lmedia.extension.sortable.doSortState
 import com.lalilu.lplayer.MPlayer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -38,12 +39,11 @@ data class ArtistsState(
 
     // control params
     val searchKeyWord: String = "",
-    val selectedSortAction: ListAction = SortStaticAction.Normal,
 ) {
-    val distinctKey: Int = searchKeyWord.hashCode() + selectedSortAction.hashCode()
+    val distinctKey: Int = searchKeyWord.hashCode()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getArtistsFlow(): Flow<Map<GroupIdentity, List<LArtist>>> {
+    fun getArtistsFlow(): Flow<List<LArtist>> {
         val source = LMedia.getFlow<LArtist>()
 
         val keywords: List<String> = when {
@@ -52,17 +52,8 @@ data class ArtistsState(
             else -> listOf(searchKeyWord)
         }
 
-        val searchResult = source.mapLatest { flow ->
+        return source.mapLatest { flow ->
             flow.filter { item -> keywords.all { item.getMatchStr().contains(it) } }
-        }
-
-        return when (selectedSortAction) {
-            is SortStaticAction -> searchResult.mapLatest {
-                selectedSortAction.doSort(it, false)
-            }
-
-            is SortDynamicAction -> selectedSortAction.doSort(searchResult, false)
-            else -> flowOf(emptyMap())
         }
     }
 }
@@ -81,9 +72,10 @@ sealed interface ArtistsAction {
     data object HideJumperDialog : ArtistsAction
 
     data object LocaleToPlayingItem : ArtistsAction
-    data class LocaleToGroupItem(val item: GroupIdentity) : ArtistsAction
+    data class LocaleToGroupItem(val item: GroupId) : ArtistsAction
     data class SearchFor(val keyword: String) : ArtistsAction
-    data class SelectSortAction(val action: ListAction) : ArtistsAction
+    data class SelectSortAction(val action: SortAction) : ArtistsAction
+    data class UpdateSortConfig(val config: SortConfig) : ArtistsAction
 }
 
 @KoinViewModel
@@ -91,23 +83,25 @@ class ArtistsVM : ViewModel(),
     MviWithIntent<ArtistsState, ArtistsEvent, ArtistsAction> by mviImplWithIntent(ArtistsState()) {
     val selector = ItemSelector<LArtist>()
     val recorder = ItemRecorder()
+    val sorter = SortManager(
+        prefix = "artists_",
+        supportedActions = requestFor<SortAction>(
+            "sort_rule_normal",
+            "sort_rule_title",
+            "sort_rule_items_count",
+            "sort_rule_duration",
+            "sort_rule_add_time",
+            "sort_rule_shuffle"
+        )
+    )
+
+    val state = stateFlow().toState(ArtistsState(), viewModelScope)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val artists = stateFlow()
         .distinctUntilChangedBy { it.distinctKey }
         .flatMapLatest { it.getArtistsFlow() }
-        .toState(emptyMap(), viewModelScope)
-    val state = stateFlow().toState(ArtistsState(), viewModelScope)
-
-    val supportSortActions = setOf<ListAction?>(
-        SortStaticAction.Normal,
-        SortStaticAction.Title,
-        SortStaticAction.ItemsCount,
-        SortStaticAction.Duration,
-        SortStaticAction.AddTime,
-        SortStaticAction.Shuffle,
-    ).filterNotNull()
-        .toSet()
+        .doSortState(sorter, viewModelScope)
 
     override fun intent(intent: ArtistsAction) = viewModelScope.launch {
         when (intent) {
@@ -118,7 +112,9 @@ class ArtistsVM : ViewModel(),
             ArtistsAction.HideSearcherPanel -> reduce { it.copy(showSearcherPanel = false) }
             ArtistsAction.HideJumperDialog -> reduce { it.copy(showJumperDialog = false) }
             is ArtistsAction.SearchFor -> reduce { it.copy(searchKeyWord = intent.keyword) }
-            is ArtistsAction.SelectSortAction -> reduce { it.copy(selectedSortAction = intent.action) }
+            is ArtistsAction.SelectSortAction -> sorter.setAction(intent.action)
+            is ArtistsAction.UpdateSortConfig -> sorter.setConfig(intent.config)
+
             is ArtistsAction.LocaleToGroupItem -> postEvent { ArtistsEvent.ScrollToItem(intent.item) }
             is ArtistsAction.LocaleToPlayingItem -> {
                 val mediaId = MPlayer.currentMediaItem?.mediaId ?: run {

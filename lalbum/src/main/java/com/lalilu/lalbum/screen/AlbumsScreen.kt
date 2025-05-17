@@ -1,6 +1,7 @@
 package com.lalilu.lalbum.screen
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -91,13 +92,17 @@ data class AlbumsScreen(
         )
         val state by vm.state
         val albums by vm.albums
+        val sortAction = vm.sorter.selectedAction.collectAsState()
+        val sortConfig = vm.sorter.sortConfig.collectAsState()
 
         SongsSortPanelDialog(
             isVisible = { state.showSortPanel },
             onDismiss = { vm.intent(AlbumsAction.HideSortPanel) },
-            supportSortActions = vm.supportSortActions,
-            isSortActionSelected = { state.selectedSortAction == it },
-            onSelectSortAction = { vm.intent(AlbumsAction.SelectSortAction(it)) }
+            supportSortActions = vm.sorter.supportedActions,
+            selectedSortAction = { sortAction.value },
+            sortConfig = { sortConfig.value },
+            onSelectSortAction = { vm.intent(AlbumsAction.SelectSortAction(it)) },
+            onUpdateSortConfig = { vm.intent(AlbumsAction.UpdateSortConfig(it)) }
         )
 
         SongsSearcherPanel(
@@ -110,8 +115,8 @@ data class AlbumsScreen(
         AlbumsScreenContent(
             eventFlow = vm.eventFlow(),
             title = { "全部专辑" },
-            albums = { albums },
-            showText = { state.showText }
+            showText = { state.showText },
+            albums = albums,
         )
     }
 }

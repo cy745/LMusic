@@ -10,19 +10,17 @@ import com.lalilu.common.mviImplWithIntent
 import com.lalilu.component.extension.toState
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmedia.entity.LAlbum
-import com.lalilu.lmedia.extension.GroupIdentity
-import com.lalilu.lmedia.extension.ListAction
-import com.lalilu.lmedia.extension.SortDynamicAction
-import com.lalilu.lmedia.extension.SortStaticAction
+import com.lalilu.lmedia.extension.sortable.SortAction
+import com.lalilu.lmedia.extension.sortable.SortConfig
+import com.lalilu.lmedia.extension.sortable.SortManager
+import com.lalilu.lmedia.extension.sortable.doSortState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
-import org.koin.core.qualifier.named
 
 @Stable
 @Immutable
@@ -36,13 +34,12 @@ data class AlbumsState(
 
     // control params
     val searchKeyWord: String = "",
-    val selectedSortAction: ListAction = SortStaticAction.Normal,
 ) {
     val distinctKey: Int =
-        albumIds.hashCode() + searchKeyWord.hashCode() + selectedSortAction.hashCode()
+        albumIds.hashCode() + searchKeyWord.hashCode()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getAlbumsFlow(): Flow<Map<GroupIdentity, List<LAlbum>>> {
+    fun getAlbumsFlow(): Flow<List<LAlbum>> {
         val source = LMedia.getFlow<LAlbum>()
 
         val keywords: List<String> = when {
@@ -51,17 +48,8 @@ data class AlbumsState(
             else -> listOf(searchKeyWord)
         }
 
-        val searchResult = source.mapLatest { flow ->
+        return source.mapLatest { flow ->
             flow.filter { item -> keywords.all { item.getMatchStr().contains(it) } }
-        }
-
-        return when (selectedSortAction) {
-            is SortStaticAction -> searchResult.mapLatest {
-                selectedSortAction.doSort(it, false)
-            }
-
-            is SortDynamicAction -> selectedSortAction.doSort(searchResult, false)
-            else -> flowOf(emptyMap())
         }
     }
 }
@@ -81,7 +69,8 @@ sealed interface AlbumsAction {
 
     data object LocaleToPlayingItem : AlbumsAction
     data class SearchFor(val keyword: String) : AlbumsAction
-    data class SelectSortAction(val action: ListAction) : AlbumsAction
+    data class SelectSortAction(val action: SortAction) : AlbumsAction
+    data class UpdateSortConfig(val config: SortConfig) : AlbumsAction
 }
 
 @KoinViewModel
@@ -89,25 +78,26 @@ class AlbumsVM(
     val albumIds: List<String>
 ) : ViewModel(),
     MviWithIntent<AlbumsState, AlbumsEvent, AlbumsAction> by mviImplWithIntent(AlbumsState(albumIds)) {
+    val sorter = SortManager(
+        prefix = "albums_",
+        supportedActions = requestFor<SortAction>(
+            "sort_rule_normal",
+            "sort_rule_title",
+            "sort_rule_items_count",
+            "sort_rule_duration",
+            "sort_rule_shuffle",
+            "sort_rule_play_count",
+            "sort_rule_last_play_time"
+        )
+    )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val albums = stateFlow()
         .distinctUntilChangedBy { it.distinctKey }
         .flatMapLatest { it.getAlbumsFlow() }
-        .toState(emptyMap(), viewModelScope)
+        .doSortState(sorter, viewModelScope)
     val state = stateFlow()
         .toState(AlbumsState(), viewModelScope)
-
-    val supportSortActions: Set<ListAction> =
-        setOf<ListAction?>(
-            SortStaticAction.Normal,
-            SortStaticAction.Title,
-            SortStaticAction.Shuffle,
-            SortStaticAction.Duration,
-            requestFor(named("sort_rule_play_count")),
-            requestFor(named("sort_rule_last_play_time")),
-        ).filterNotNull()
-            .toSet()
 
     override fun intent(intent: AlbumsAction): Any = viewModelScope.launch {
         when (intent) {
@@ -120,7 +110,8 @@ class AlbumsVM(
             AlbumsAction.ToggleShowText -> reduce { it.copy(showText = !it.showText) }
 
             is AlbumsAction.SearchFor -> reduce { it.copy(searchKeyWord = intent.keyword) }
-            is AlbumsAction.SelectSortAction -> reduce { it.copy(selectedSortAction = intent.action) }
+            is AlbumsAction.SelectSortAction -> sorter.setAction(action = intent.action)
+            is AlbumsAction.UpdateSortConfig -> sorter.setConfig(config = intent.config)
 
             AlbumsAction.LocaleToPlayingItem -> {}
         }

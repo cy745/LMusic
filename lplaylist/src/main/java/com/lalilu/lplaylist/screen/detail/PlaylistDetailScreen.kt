@@ -1,6 +1,7 @@
 package com.lalilu.lplaylist.screen.detail
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -20,7 +21,7 @@ import com.lalilu.component.base.songs.SongsSelectorPanel
 import com.lalilu.component.base.songs.SongsSortPanelDialog
 import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.screenVM
-import com.lalilu.lmedia.extension.SortStaticAction
+import com.lalilu.lmedia.extension.SortRuleNormal
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.viewmodel.PlaylistDetailAction
 import com.lalilu.lplaylist.viewmodel.PlaylistDetailVM
@@ -109,19 +110,23 @@ data class PlaylistDetailScreen(
         val state by vm.state
         val songs by vm.songs
         val playlist by vm.playlist
+        val sortAction = vm.sorter.selectedAction.collectAsState()
+        val sortConfig = vm.sorter.sortConfig.collectAsState()
 
         SongsSortPanelDialog(
             isVisible = { state.showSortPanel },
             onDismiss = { vm.intent(PlaylistDetailAction.HideSortPanel) },
-            supportSortActions = vm.supportSortActions,
-            isSortActionSelected = { state.selectedSortAction == it },
+            supportSortActions = vm.sorter.supportedActions,
+            selectedSortAction = { sortAction.value },
+            sortConfig = { sortConfig.value },
+            onUpdateSortConfig = { vm.intent(PlaylistDetailAction.UpdateSortConfig(it)) },
             onSelectSortAction = { vm.intent(PlaylistDetailAction.SelectSortAction(it)) }
         )
 
         SongsHeaderJumperDialog(
             isVisible = { state.showJumperDialog },
             onDismiss = { vm.intent(PlaylistDetailAction.HideJumperDialog) },
-            items = { songs.keys },
+            sortResult = songs,
             onSelectItem = { vm.intent(PlaylistDetailAction.LocaleToGroupItem(it)) }
         )
 
@@ -140,7 +145,7 @@ data class PlaylistDetailScreen(
                     title = { "全选" },
                     color = { Color(0xFF00ACF0) },
                     icon = { RemixIcon.System.checkboxMultipleLine },
-                    onAction = { vm.selector.selectAll(vm.songs.value.values.flatten()) }
+                    onAction = { vm.selector.selectAll(songs.itemList) }
                 ),
                 ScreenAction.Static(
                     title = { "取消全选" },
@@ -172,7 +177,7 @@ data class PlaylistDetailScreen(
         PlaylistDetailScreenContent(
             songs = songs,
             playlist = playlist,
-            enableDraggable = state.selectedSortAction is SortStaticAction.Normal,
+            enableDraggable = sortAction.value is SortRuleNormal,
             keys = { vm.recorder.list().filterNotNull() },
             recorder = vm.recorder,
             eventFlow = vm.eventFlow(),

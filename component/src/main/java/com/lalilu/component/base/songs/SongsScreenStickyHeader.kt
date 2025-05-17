@@ -26,16 +26,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.component.extension.StickyHeaderOffsetHelper
-import com.lalilu.lmedia.extension.GroupIdentity
+import com.lalilu.lmedia.extension.sortable.GroupId
 
 
 @Composable
 fun SongsScreenStickyHeader(
     modifier: Modifier = Modifier,
     listState: LazyListState,
-    group: GroupIdentity,
+    group: GroupId,
     minOffset: () -> Int,
-    onClickGroup: (GroupIdentity) -> Unit
+    onClickGroup: (GroupId) -> Unit
 ) {
     StickyHeaderOffsetHelper(
         modifier = modifier,

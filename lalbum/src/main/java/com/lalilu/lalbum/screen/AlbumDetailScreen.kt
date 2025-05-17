@@ -1,6 +1,7 @@
 package com.lalilu.lalbum.screen
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -105,19 +106,23 @@ data class AlbumDetailScreen(
         val songs by vm.songs
         val state by vm.state
         val album by vm.album
+        val sortAction = vm.sorter.selectedAction.collectAsState()
+        val sortConfig = vm.sorter.sortConfig.collectAsState()
 
         SongsSortPanelDialog(
             isVisible = { state.showSortPanel },
             onDismiss = { vm.intent(AlbumDetailAction.HideSortPanel) },
-            supportSortActions = vm.supportSortActions,
-            isSortActionSelected = { state.selectedSortAction == it },
-            onSelectSortAction = { vm.intent(AlbumDetailAction.SelectSortAction(it)) }
+            supportSortActions = vm.sorter.supportedActions,
+            selectedSortAction = { sortAction.value },
+            sortConfig = { sortConfig.value },
+            onSelectSortAction = { vm.intent(AlbumDetailAction.SelectSortAction(it)) },
+            onUpdateSortConfig = { vm.intent(AlbumDetailAction.UpdateSortConfig(it)) }
         )
 
         SongsHeaderJumperDialog(
             isVisible = { state.showJumperDialog },
             onDismiss = { vm.intent(AlbumDetailAction.HideJumperDialog) },
-            items = { songs.keys },
+            sortResult = songs,
             onSelectItem = { vm.intent(AlbumDetailAction.LocaleToGroupItem(it)) }
         )
 
@@ -136,7 +141,7 @@ data class AlbumDetailScreen(
                     title = { "全选" },
                     color = { Color(0xFF00ACF0) },
                     icon = { RemixIcon.System.checkboxMultipleLine },
-                    onAction = { vm.selector.selectAll(songs.values.flatten()) }
+                    onAction = { vm.selector.selectAll(songs.itemList) }
                 ),
                 ScreenAction.Static(
                     title = { "取消全选" },

@@ -41,7 +41,8 @@ import com.lalilu.component.extension.startRecord
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.state
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.extension.GroupIdentity
+import com.lalilu.lmedia.extension.sortable.GroupId
+import com.lalilu.lmedia.extension.sortable.SortResult
 import com.lalilu.lplayer.action.MediaControl
 import com.lalilu.lplaylist.entity.LPlaylist
 import com.lalilu.lplaylist.viewmodel.PlaylistDetailEvent
@@ -56,7 +57,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 @Composable
 internal fun PlaylistDetailScreenContent(
     playlist: LPlaylist? = null,
-    songs: Map<GroupIdentity, List<LSong>> = emptyMap(),
+    songs: SortResult<LSong> = SortResult.empty(),
     enableDraggable: Boolean = false,
     eventFlow: Flow<PlaylistDetailEvent> = emptyFlow(),
     keys: () -> Collection<Any> = { emptyList() },
@@ -64,7 +65,7 @@ internal fun PlaylistDetailScreenContent(
     isSelecting: () -> Boolean = { false },
     isSelected: (LSong) -> Boolean = { false },
     onSelect: (LSong) -> Unit = {},
-    onClickGroup: (GroupIdentity) -> Unit = {},
+    onClickGroup: (GroupId) -> Unit = {},
     onUpdatePlaylist: (List<String>) -> Unit = {}
 ) {
     val density = LocalDensity.current
@@ -77,9 +78,7 @@ internal fun PlaylistDetailScreenContent(
         keys = keys
     )
 
-    val playlistState = remember(songs) {
-        songs.values.flatten().toMutableStateList()
-    }
+    val playlistState = remember(songs) { songs.itemList.toMutableStateList() }
 
     val reorderableState = rememberReorderableLazyListState(
         lazyListState = listState
@@ -227,54 +226,95 @@ internal fun PlaylistDetailScreenContent(
                     }
                 }
             } else {
-                songs.forEach { (group, list) ->
-                    if (group !is GroupIdentity.None) {
-                        stickyHeaderWithRecord(
-                            key = group,
-                            contentType = stickyHeaderContentType
-                        ) {
-                            SongsScreenStickyHeader(
+                when (songs) {
+                    is SortResult.Flat -> {
+                        itemsWithRecord(
+                            items = songs.items,
+                            key = { it.id },
+                            contentType = { it::class.java }
+                        ) { item ->
+                            SongCard(
                                 modifier = Modifier.animateItem(),
-                                listState = listState,
-                                group = group,
-                                minOffset = { statusBar.getTop(density) },
-                                onClickGroup = onClickGroup
+                                song = { item },
+                                isSelected = { isSelected(item) },
+                                isFavour = { favouriteIds.value.contains(item.id) },
+                                onClick = {
+                                    if (isSelecting()) {
+                                        onSelect(item)
+                                    } else {
+                                        MediaControl.playWithList(
+                                            mediaIds = playlistState.map(LSong::id),
+                                            mediaId = item.id
+                                        )
+                                    }
+                                },
+                                onLongClick = {
+                                    if (isSelecting()) {
+                                        onSelect(item)
+                                    } else {
+                                        AppRouter.route("/pages/songs/detail")
+                                            .with("mediaId", item.id)
+                                            .jump()
+                                    }
+                                },
+                                onEnterSelect = { onSelect(item) }
                             )
                         }
                     }
 
-                    itemsWithRecord(
-                        items = list,
-                        key = { it.id },
-                        contentType = { it::class.java }
-                    ) { item ->
-                        SongCard(
-                            modifier = Modifier.animateItem(),
-                            song = { item },
-                            isSelected = { isSelected(item) },
-                            isFavour = { favouriteIds.value.contains(item.id) },
-                            onClick = {
-                                if (isSelecting()) {
-                                    onSelect(item)
-                                } else {
-                                    MediaControl.playWithList(
-                                        mediaIds = playlistState.map(LSong::id),
-                                        mediaId = item.id
+                    is SortResult.Grouped -> {
+                        songs.groups.forEach { group ->
+                            group.groupId?.let { groupId ->
+                                stickyHeaderWithRecord(
+                                    key = groupId,
+                                    contentType = stickyHeaderContentType
+                                ) {
+                                    SongsScreenStickyHeader(
+                                        modifier = Modifier.animateItem(),
+                                        listState = listState,
+                                        group = groupId,
+                                        minOffset = { statusBar.getTop(density) },
+                                        onClickGroup = onClickGroup
                                     )
                                 }
-                            },
-                            onLongClick = {
-                                if (isSelecting()) {
-                                    onSelect(item)
-                                } else {
-                                    AppRouter.route("/pages/songs/detail")
-                                        .with("mediaId", item.id)
-                                        .jump()
-                                }
-                            },
-                            onEnterSelect = { onSelect(item) }
-                        )
+                            }
+
+                            itemsWithRecord(
+                                items = group.items,
+                                key = { it.id },
+                                contentType = { it::class.java }
+                            ) { item ->
+                                SongCard(
+                                    modifier = Modifier.animateItem(),
+                                    song = { item },
+                                    isSelected = { isSelected(item) },
+                                    isFavour = { favouriteIds.value.contains(item.id) },
+                                    onClick = {
+                                        if (isSelecting()) {
+                                            onSelect(item)
+                                        } else {
+                                            MediaControl.playWithList(
+                                                mediaIds = playlistState.map(LSong::id),
+                                                mediaId = item.id
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (isSelecting()) {
+                                            onSelect(item)
+                                        } else {
+                                            AppRouter.route("/pages/songs/detail")
+                                                .with("mediaId", item.id)
+                                                .jump()
+                                        }
+                                    },
+                                    onEnterSelect = { onSelect(item) }
+                                )
+                            }
+                        }
                     }
+
+                    else -> {}
                 }
             }
         }

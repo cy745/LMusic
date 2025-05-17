@@ -1,6 +1,7 @@
 package com.lalilu.lmusic.compose.screen.songs
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -103,19 +104,23 @@ data class SongsScreen(
         val vm = screenVM<SongsVM>(parameters = { parametersOf(mediaIds) })
         val songs by vm.songs
         val state by vm.state
+        val sortAction = vm.sorter.selectedAction.collectAsState()
+        val sortConfig = vm.sorter.sortConfig.collectAsState()
 
         SongsSortPanelDialog(
             isVisible = { state.showSortPanel },
             onDismiss = { vm.intent(SongsAction.HideSortPanel) },
-            supportSortActions = vm.supportSortActions,
-            isSortActionSelected = { state.selectedSortAction == it },
-            onSelectSortAction = { vm.intent(SongsAction.SelectSortAction(it)) }
+            supportSortActions = vm.sorter.supportedActions,
+            selectedSortAction = { sortAction.value },
+            sortConfig = { sortConfig.value },
+            onSelectSortAction = { vm.intent(SongsAction.SelectSortAction(it)) },
+            onUpdateSortConfig = { vm.intent(SongsAction.UpdateSortConfig(it)) }
         )
 
         SongsHeaderJumperDialog(
             isVisible = { state.showJumperDialog },
             onDismiss = { vm.intent(SongsAction.HideJumperDialog) },
-            items = { songs.keys },
+            sortResult = songs,
             onSelectItem = { vm.intent(SongsAction.LocaleToGroupItem(it)) }
         )
 
@@ -134,10 +139,7 @@ data class SongsScreen(
                     title = { "全选" },
                     color = { Color(0xFF00ACF0) },
                     icon = { RemixIcon.System.checkboxMultipleLine },
-                    onAction = {
-                        val list = songs.values.flatten()
-                        vm.selector.selectAll(list)
-                    }
+                    onAction = { vm.selector.selectAll(songs.itemList) }
                 ),
                 ScreenAction.Static(
                     title = { "取消全选" },

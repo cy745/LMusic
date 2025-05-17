@@ -40,7 +40,8 @@ import com.lalilu.lartist.component.ArtistCard
 import com.lalilu.lartist.viewModel.ArtistDetailEvent
 import com.lalilu.lmedia.entity.LArtist
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmedia.extension.GroupIdentity
+import com.lalilu.lmedia.extension.sortable.GroupId
+import com.lalilu.lmedia.extension.sortable.SortResult
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.action.MediaControl
 import kotlinx.coroutines.flow.Flow
@@ -50,14 +51,14 @@ import kotlinx.coroutines.flow.emptyFlow
 @Composable
 internal fun ArtistDetailScreenContent(
     artist: LArtist? = null,
-    songs: Map<GroupIdentity, List<LSong>> = emptyMap(),
+    songs: SortResult<LSong> = SortResult.empty(),
     eventFlow: Flow<ArtistDetailEvent> = emptyFlow(),
     keys: () -> Collection<Any> = { emptyList() },
     recorder: ItemRecorder = ItemRecorder(),
     isSelecting: () -> Boolean = { false },
     isSelected: (LSong) -> Boolean = { false },
     onSelect: (LSong) -> Unit = {},
-    onClickGroup: (GroupIdentity) -> Unit = {}
+    onClickGroup: (GroupId) -> Unit = {}
 ) {
     val listState = rememberLazyListState()
     val statusBar = WindowInsets.statusBars
@@ -152,52 +153,94 @@ internal fun ArtistDetailScreenContent(
                 }
             }
 
-            songs.forEach { (group, list) ->
-                if (group !is GroupIdentity.None) {
-                    stickyHeaderWithRecord(
-                        key = group,
-                        contentType = stickyHeaderContentType
+            when (songs) {
+                is SortResult.Flat -> {
+                    itemsWithRecord(
+                        items = songs.items,
+                        key = { it.id },
+                        contentType = { it::class.java }
                     ) {
-                        SongsScreenStickyHeader(
-                            modifier = Modifier.animateItem(),
-                            listState = listState,
-                            group = group,
-                            minOffset = { statusBar.getTop(density) },
-                            onClickGroup = onClickGroup
+                        SongCard(
+                            song = { it },
+                            isSelected = { isSelected(it) },
+                            isFavour = { favouriteIds.value.contains(it.id) },
+                            onClick = {
+                                if (isSelecting()) {
+                                    onSelect(it)
+                                } else {
+                                    MediaControl.playWithList(
+                                        mediaIds = songs.items.map(LSong::id),
+                                        mediaId = it.id
+                                    )
+                                }
+                            },
+                            onLongClick = {
+                                if (isSelecting()) {
+                                    onSelect(it)
+                                } else {
+                                    AppRouter.route("/pages/songs/detail")
+                                        .with("mediaId", it.id)
+                                        .jump()
+                                }
+                            },
+                            onEnterSelect = { onSelect(it) }
                         )
                     }
                 }
 
-                itemsWithRecord(
-                    items = list,
-                    key = { it.id },
-                    contentType = { it::class.java }
-                ) {
-                    SongCard(
-                        song = { it },
-                        isSelected = { isSelected(it) },
-                        isFavour = { favouriteIds.value.contains(it.id) },
-                        onClick = {
-                            if (isSelecting()) {
-                                onSelect(it)
-                            } else {
-                                MediaControl.playWithList(
-                                    mediaIds = list.map(LSong::id),
-                                    mediaId = it.id
+                is SortResult.Grouped -> {
+                    songs.groups.forEach { group ->
+                        group.groupId?.let { groupId ->
+                            stickyHeaderWithRecord(
+                                key = groupId,
+                                contentType = stickyHeaderContentType
+                            ) {
+                                SongsScreenStickyHeader(
+                                    modifier = Modifier.animateItem(),
+                                    listState = listState,
+                                    group = groupId,
+                                    minOffset = { statusBar.getTop(density) },
+                                    onClickGroup = onClickGroup
                                 )
                             }
-                        },
-                        onLongClick = {
-                            if (isSelecting()) {
-                                onSelect(it)
-                            } else {
-                                AppRouter.route("/pages/songs/detail")
-                                    .with("mediaId", it.id)
-                                    .jump()
-                            }
-                        },
-                        onEnterSelect = { onSelect(it) }
-                    )
+                        }
+
+                        itemsWithRecord(
+                            items = group.items,
+                            key = { it.id },
+                            contentType = { it::class.java }
+                        ) {
+                            SongCard(
+                                song = { it },
+                                isSelected = { isSelected(it) },
+                                isFavour = { favouriteIds.value.contains(it.id) },
+                                onClick = {
+                                    if (isSelecting()) {
+                                        onSelect(it)
+                                    } else {
+                                        MediaControl.playWithList(
+                                            mediaIds = songs.itemList.map(LSong::id),
+                                            mediaId = it.id
+                                        )
+                                    }
+                                },
+                                onLongClick = {
+                                    if (isSelecting()) {
+                                        onSelect(it)
+                                    } else {
+                                        AppRouter.route("/pages/songs/detail")
+                                            .with("mediaId", it.id)
+                                            .jump()
+                                    }
+                                },
+                                onEnterSelect = { onSelect(it) }
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+
                 }
             }
 

@@ -1,6 +1,7 @@
 package com.lalilu.lartist.screen
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -107,19 +108,23 @@ data class ArtistDetailScreen(
         val songs by vm.songs
         val state by vm.state
         val artist by vm.artist
+        val sortAction = vm.sorter.selectedAction.collectAsState()
+        val sortConfig = vm.sorter.sortConfig.collectAsState()
 
         SongsSortPanelDialog(
             isVisible = { state.showSortPanel },
             onDismiss = { vm.intent(ArtistDetailAction.HideSortPanel) },
-            supportSortActions = vm.supportSortActions,
-            isSortActionSelected = { state.selectedSortAction == it },
+            supportSortActions = vm.sorter.supportedActions,
+            selectedSortAction = { sortAction.value },
+            sortConfig = { sortConfig.value },
+            onUpdateSortConfig = { vm.intent(ArtistDetailAction.UpdateSortConfig(it)) },
             onSelectSortAction = { vm.intent(ArtistDetailAction.SelectSortAction(it)) }
         )
 
         SongsHeaderJumperDialog(
             isVisible = { state.showJumperDialog },
             onDismiss = { vm.intent(ArtistDetailAction.HideJumperDialog) },
-            items = { songs.keys },
+            sortResult = songs,
             onSelectItem = { vm.intent(ArtistDetailAction.LocaleToGroupItem(it)) }
         )
 
@@ -138,7 +143,7 @@ data class ArtistDetailScreen(
                     title = { "全选" },
                     color = { Color(0xFF00ACF0) },
                     icon = { RemixIcon.System.checkboxMultipleLine },
-                    onAction = { vm.selector.selectAll(songs.values.flatten()) }
+                    onAction = { vm.selector.selectAll(songs.itemList) }
                 ),
                 ScreenAction.Static(
                     title = { "取消全选" },

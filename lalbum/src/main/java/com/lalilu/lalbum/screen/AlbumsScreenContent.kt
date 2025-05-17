@@ -30,7 +30,7 @@ import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lalbum.component.AlbumCard
 import com.lalilu.lalbum.viewModel.AlbumsEvent
 import com.lalilu.lmedia.entity.LAlbum
-import com.lalilu.lmedia.extension.GroupIdentity
+import com.lalilu.lmedia.extension.sortable.SortResult
 import com.lalilu.lplayer.MPlayer
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -40,7 +40,7 @@ import kotlinx.coroutines.flow.collectLatest
 internal fun AlbumsScreenContent(
     eventFlow: SharedFlow<AlbumsEvent> = MutableSharedFlow(),
     title: () -> String = { "" },
-    albums: () -> Map<GroupIdentity, List<LAlbum>> = { emptyMap() },
+    albums: SortResult<LAlbum> = SortResult.empty(),
     showText: () -> Boolean = { false },
 ) {
     val isPad = LocalWindowSize.current.widthSizeClass != WindowWidthSizeClass.Compact
@@ -75,45 +75,73 @@ internal fun AlbumsScreenContent(
                 ) {
                     NavigatorHeader(
                         title = title(),
-                        subTitle = "共 ${albums().size} 张专辑"
+                        subTitle = "共 ${albums.itemList.size} 张专辑"
                     )
                 }
             }
         }
 
-        albums().forEach { (group, list) ->
-            if (group !is GroupIdentity.None) {
-                item(
-                    key = group,
-                    contentType = "group",
-                    span = StaggeredGridItemSpan.FullLine
-                ) {
-                    Text(
+        when (albums) {
+            is SortResult.Flat -> {
+                items(
+                    items = albums.items,
+                    key = { it.id },
+                    contentType = { LAlbum::class }
+                ) { item ->
+                    AlbumCard(
                         modifier = Modifier.animateItem(),
-                        text = group.text
+                        album = { item },
+                        isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
+                        showTitle = showText,
+                        onClick = {
+                            AppRouter.intent(
+                                NavIntent.Push(
+                                    AlbumDetailScreen(item.id)
+                                )
+                            )
+                        }
                     )
                 }
             }
 
-            items(
-                items = list,
-                key = { it.id },
-                contentType = { LAlbum::class }
-            ) { item ->
-                AlbumCard(
-                    modifier = Modifier.animateItem(),
-                    album = { item },
-                    isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
-                    showTitle = showText,
-                    onClick = {
-                        AppRouter.intent(
-                            NavIntent.Push(
-                                AlbumDetailScreen(item.id)
+            is SortResult.Grouped -> {
+                albums.groups.forEach { group ->
+                    group.groupId?.let { groupId ->
+                        item(
+                            key = groupId,
+                            contentType = "group",
+                            span = StaggeredGridItemSpan.FullLine
+                        ) {
+                            Text(
+                                modifier = Modifier.animateItem(),
+                                text = groupId.text
                             )
+                        }
+                    }
+
+                    items(
+                        items = group.items,
+                        key = { it.id },
+                        contentType = { LAlbum::class }
+                    ) { item ->
+                        AlbumCard(
+                            modifier = Modifier.animateItem(),
+                            album = { item },
+                            isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
+                            showTitle = showText,
+                            onClick = {
+                                AppRouter.intent(
+                                    NavIntent.Push(
+                                        AlbumDetailScreen(item.id)
+                                    )
+                                )
+                            }
                         )
                     }
-                )
+                }
             }
+
+            else -> {}
         }
 
         smartBarPadding()

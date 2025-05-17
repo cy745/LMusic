@@ -1,10 +1,15 @@
 package com.lalilu.lhistory
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.lalilu.lhistory.repository.HistoryRepository
-import com.lalilu.lmedia.extension.GroupIdentity
-import com.lalilu.lmedia.extension.ListAction
-import com.lalilu.lmedia.extension.SortDynamicAction
-import com.lalilu.lmedia.extension.Sortable
+import com.lalilu.lmedia.extension.sortable.ActionInfo
+import com.lalilu.lmedia.extension.sortable.ItemExtraData
+import com.lalilu.lmedia.extension.sortable.SortAction
+import com.lalilu.lmedia.extension.sortable.SortConfig
+import com.lalilu.lmedia.extension.sortable.SortResult
+import com.lalilu.lmedia.extension.sortable.Sortable
+import com.lalilu.lmedia.extension.sortable.SortedGroup
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import org.koin.core.annotation.Named
@@ -12,41 +17,75 @@ import org.koin.core.annotation.Single
 
 
 @Named("sort_rule_play_count")
-@Single(binds = [ListAction::class])
+@Single(binds = [SortAction::class])
 class SortRulePlayCount(
     private val historyRepo: HistoryRepository
-) : SortDynamicAction(titleRes = R.string.sort_preset_by_played_times) {
+) : SortAction {
+    override fun key(): String = "sort_rule_play_count"
+
+    @Composable
+    override fun getActionInfo(): ActionInfo = ActionInfo(
+        title = stringResource(R.string.sort_preset_by_played_times)
+    )
 
     override fun <T : Sortable> doSort(
         items: Flow<List<T>>,
-        reverse: Boolean
-    ): Flow<Map<GroupIdentity, List<T>>> {
+        config: SortConfig,
+    ): Flow<SortResult<T>> {
         return historyRepo
             .getHistoriesIdsMapWithCount()
             .combine(items) { map, sources ->
-                sources.sortedByDescending { song -> map[song.getValueBy(Sortable.COMPARE_KEY_ID)] }
-                    .let { if (reverse) it.reversed() else it }
-                    .let { mapOf(GroupIdentity.None to it) }
+                val sorted = sources
+                    .sortedByDescending { song -> map[song.getValueBy(Sortable.COMPARE_KEY_ID)] }
+                    .let { if (config.reverse) it.reversed() else it }
+
+                if (config.hideItemExtra) {
+                    SortResult.Flat(sorted)
+                } else {
+                    val extras = sorted.map {
+                        ItemExtraData.PlayedCount(
+                            count = map[it.getValueBy(Sortable.COMPARE_KEY_ID)] ?: 0
+                        )
+                    }
+
+                    SortResult.Grouped(
+                        groups = listOf(
+                            SortedGroup(
+                                groupId = null,
+                                extras = extras,
+                                items = sorted
+                            )
+                        )
+                    )
+                }
             }
     }
 }
 
 @Named("sort_rule_last_play_time")
-@Single(binds = [ListAction::class])
+@Single(binds = [SortAction::class])
 class SortRuleLastPlayTime(
     private val historyRepo: HistoryRepository
-) : SortDynamicAction(titleRes = R.string.sort_preset_by_last_play_time) {
+) : SortAction {
+    override fun key(): String = "sort_rule_last_play_time"
+
+    @Composable
+    override fun getActionInfo(): ActionInfo = ActionInfo(
+        title = stringResource(R.string.sort_preset_by_last_play_time)
+    )
 
     override fun <T : Sortable> doSort(
         items: Flow<List<T>>,
-        reverse: Boolean
-    ): Flow<Map<GroupIdentity, List<T>>> {
+        config: SortConfig,
+    ): Flow<SortResult<T>> {
         return historyRepo
             .getHistoriesIdsMapWithLastTime()
             .combine(items) { map, sources ->
-                sources.sortedByDescending { song -> map[song.getValueBy(Sortable.COMPARE_KEY_ID)] }
-                    .let { if (reverse) it.reversed() else it }
-                    .let { mapOf(GroupIdentity.None to it) }
+                val sorted = sources
+                    .sortedByDescending { song -> map[song.getValueBy(Sortable.COMPARE_KEY_ID)] }
+                    .let { if (config.reverse) it.reversed() else it }
+
+                SortResult.Flat(sorted)
             }
     }
 }

@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -28,7 +29,6 @@ import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.RomUtils
 import com.blankj.utilcode.util.ToastUtils
-import com.google.accompanist.flowlayout.FlowRow
 import com.lalilu.BuildConfig
 import com.lalilu.R
 import com.lalilu.RemixIcon
@@ -255,7 +255,8 @@ private fun SettingsScreen(
                 )
                 FlowRow(
                     modifier = Modifier.padding(horizontal = 20.dp),
-                    mainAxisSpacing = 10.dp
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     IconTextButton(
                         text = "新手引导",

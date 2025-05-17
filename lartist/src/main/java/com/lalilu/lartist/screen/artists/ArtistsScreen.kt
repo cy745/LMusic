@@ -1,6 +1,7 @@
 package com.lalilu.lartist.screen.artists
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -98,19 +99,23 @@ object ArtistsScreen : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBar
         val vm = screenVM<ArtistsVM>()
         val state by vm.state
         val artists by vm.artists
+        val sortAction = vm.sorter.selectedAction.collectAsState()
+        val sortConfig = vm.sorter.sortConfig.collectAsState()
 
         SongsSortPanelDialog(
             isVisible = { state.showSortPanel },
             onDismiss = { vm.intent(ArtistsAction.HideSortPanel) },
-            supportSortActions = vm.supportSortActions,
-            isSortActionSelected = { state.selectedSortAction == it },
+            supportSortActions = vm.sorter.supportedActions,
+            selectedSortAction = { sortAction.value },
+            sortConfig = { sortConfig.value },
+            onUpdateSortConfig = { vm.intent(ArtistsAction.UpdateSortConfig(it)) },
             onSelectSortAction = { vm.intent(ArtistsAction.SelectSortAction(it)) }
         )
 
         SongsHeaderJumperDialog(
             isVisible = { state.showJumperDialog },
             onDismiss = { vm.intent(ArtistsAction.HideJumperDialog) },
-            items = { artists.keys },
+            sortResult = artists,
             onSelectItem = { vm.intent(ArtistsAction.LocaleToGroupItem(it)) }
         )
 
@@ -129,7 +134,7 @@ object ArtistsScreen : Screen, ScreenInfoFactory, ScreenActionFactory, ScreenBar
                     title = { "全选" },
                     color = { Color(0xFF00ACF0) },
                     icon = { RemixIcon.System.checkboxMultipleLine },
-                    onAction = { vm.selector.selectAll(artists.values.flatten()) }
+                    onAction = { vm.selector.selectAll(artists.itemList) }
                 ),
                 ScreenAction.Static(
                     title = { "取消全选" },
