@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="group_identity_time_just_now">刚刚</string>
+    <string name="group_identity_time_minutes_ago">%d分钟前</string>
+    <string name="group_identity_time_hours_ago">%d小时前</string>
+    <string name="group_identity_time_exact_day_pattern">M月d日 HH:mm</string>
+
+    <string name="sort_preset_by_title">标题名称</string>
+    <string name="sort_preset_by_add_time">最近添加</string>
+    <string name="sort_preset_by_modify_time">最近修改</string>
+    <string name="sort_preset_by_song_duration">歌曲时长</string>
+    <string name="sort_preset_by_item_count">元素个数</string>
+    <string name="sort_preset_by_disk_and_track">碟号&amp;音轨号</string>
+    <string name="sort_preset_by_shuffle">随机排序</string>
+    <string name="sort_preset_by_normal">默认排序</string>
+</resources>

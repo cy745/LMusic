@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="group_identity_time_just_now">Just now</string>
+    <string name="group_identity_time_minutes_ago">%d minutes ago</string>
+    <string name="group_identity_time_hours_ago">%d hours ago</string>
+    <string name="group_identity_time_exact_day_pattern">MMM d, HH:mm</string>
+
+    <string name="sort_preset_by_normal">Normal</string>
+    <string name="sort_preset_by_title">Title</string>
+    <string name="sort_preset_by_add_time">Add Time</string>
+    <string name="sort_preset_by_modify_time">Modify Time</string>
+    <string name="sort_preset_by_song_duration">Duration</string>
+    <string name="sort_preset_by_shuffle">Shuffle</string>
+    <string name="sort_preset_by_item_count">Item Count</string>
+    <string name="sort_preset_by_disk_and_track">Disk &amp; Track Number</string>
+</resources>
