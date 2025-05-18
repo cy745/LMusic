@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
@@ -94,12 +95,12 @@ fun <T : Any> List<Item<T>>.diff(
 @Composable
 fun PlaylistLayout(
     modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState(),
     forceRefresh: () -> Boolean = { false },
     items: () -> List<MediaItem> = { emptyList() }
 ) {
     val view = LocalView.current
     val scope = rememberCoroutineScope()
-    val listState = rememberLazyListState()
     val favouriteIds = state("favourite_ids", emptyList<String>())
 
     var actualItems by remember { mutableStateOf(emptyList<Item<MediaItem>>()) }

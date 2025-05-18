@@ -27,6 +27,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +61,7 @@ import com.lalilu.lplayer.action.PlayerAction
 import com.lalilu.lplayer.extensions.PlayMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.compose.koinInject
 import kotlin.math.pow
@@ -74,6 +76,8 @@ fun PlayingLayout(
     val enhanceSheetState = LocalEnhanceSheetState.current
     val systemUiController = rememberSystemUiController()
     val listState = rememberLazyListState()
+    val playlistListState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     val isLyricScrollEnable = remember { mutableStateOf(false) }
     val backgroundColor = remember { mutableStateOf(Color.DarkGray) }
@@ -89,7 +93,6 @@ fun PlayingLayout(
         animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = ""
     )
-    val scrollToTopEvent = remember { mutableStateOf(0L) }
     val currentPosition = remember { mutableFloatStateOf(0f) }
     val animation = remember { Animatable(0f) }
 
@@ -191,9 +194,9 @@ fun PlayingLayout(
                 }
 
                 PlayingToolbar(
-                    isUserTouchEnable = { draggable.state.value == DragAnchor.Max },
+                    isUserTouchEnable = { draggable.state.value == DragAnchor.Min || draggable.state.value == DragAnchor.Max },
                     isExtraVisible = { draggable.state.value == DragAnchor.Max },
-                    onClick = { scrollToTopEvent.value = System.currentTimeMillis() },
+                    onClick = { scope.launch { playlistListState.animateScrollToItem(0) } },
                     contentColor = { actualContentColor.value },
                     extraContent = { LyricViewToolbar(contentColor = { actualContentColor.value }) }
                 )
@@ -317,6 +320,7 @@ fun PlayingLayout(
             Surface(color = MaterialTheme.colors.background) {
                 PlaylistLayout(
                     modifier = modifier.clipToBounds(),
+                    listState = playlistListState,
                     forceRefresh = { draggable.state.value != DragAnchor.Min },
                     items = { MPlayer.currentTimelineItems }
                 )
