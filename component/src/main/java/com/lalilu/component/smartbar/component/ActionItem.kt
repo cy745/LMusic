@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -58,39 +57,43 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun ActionItem(
     modifier: Modifier = Modifier,
     actionContext: ActionContext,
     action: ScreenAction
 ) {
-    when (action) {
-        is ScreenAction.Dynamic -> {
-            action.content(actionContext)
-        }
+    Surface(
+        modifier = modifier,
+        color = Color.Transparent
+    ) {
+        when (action) {
+            is ScreenAction.Dynamic -> {
+                action.content(actionContext)
+            }
 
-        is ScreenAction.Static -> {
-            if (action.longClick()) {
-                LongClickActionItemContent(
-                    modifier = modifier,
-                    color = action.color(),
-                    title = action.title(),
-                    subTitle = action.subTitle(),
-                    icon = action.icon(),
-                    dotColor = action.dotColor(),
-                    onAction = action.onAction
-                )
-            } else {
-                ActionItemContent(
-                    modifier = modifier,
-                    color = action.color(),
-                    title = action.title(),
-                    subTitle = action.subTitle(),
-                    icon = action.icon(),
-                    dotColor = action.dotColor(),
-                    onAction = action.onAction
-                )
+            is ScreenAction.Static -> {
+                if (action.longClick()) {
+                    LongClickActionItemContent(
+                        modifier = modifier,
+                        color = action.color(),
+                        title = action.title(),
+                        subTitle = action.subTitle(),
+                        icon = action.icon(),
+                        dotColor = action.dotColor(),
+                        onAction = action.onAction
+                    )
+                } else {
+                    ActionItemContent(
+                        modifier = modifier,
+                        color = action.color(),
+                        title = action.title(),
+                        subTitle = action.subTitle(),
+                        icon = action.icon(),
+                        dotColor = action.dotColor(),
+                        onAction = action.onAction
+                    )
+                }
             }
         }
     }
@@ -227,7 +230,6 @@ fun LongClickActionItemContent(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ActionItemContent(
     modifier: Modifier = Modifier,

@@ -74,16 +74,13 @@ private fun MoreActionPanelDialogContent(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             actions.forEach { action ->
-                Surface(
+                ActionItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(64.dp),
-                ) {
-                    ActionItem(
-                        action = action,
-                        actionContext = ActionContext(isFullyExpanded = true)
-                    )
-                }
+                    action = action,
+                    actionContext = ActionContext(isFullyExpanded = true)
+                )
             }
         }
     }
