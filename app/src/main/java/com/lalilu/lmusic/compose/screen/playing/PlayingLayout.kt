@@ -191,7 +191,7 @@ fun PlayingLayout(
                 }
 
                 PlayingToolbar(
-                    isUserTouchEnable = { draggable.state.value == DragAnchor.Min || draggable.state.value == DragAnchor.Max },
+                    isUserTouchEnable = { draggable.state.value == DragAnchor.Max },
                     isExtraVisible = { draggable.state.value == DragAnchor.Max },
                     onClick = { scrollToTopEvent.value = System.currentTimeMillis() },
                     contentColor = { actualContentColor.value },
@@ -339,9 +339,9 @@ fun PlayingLayout(
             ) {
                 SeekbarLayout(
                     modifier = Modifier
-                        .hideControl(enable = { hideComponent.value })
                         .padding(horizontal = 40.dp)
-                        .padding(bottom = 100.dp),
+                        .padding(bottom = 100.dp)
+                        .hideControl(enable = { hideComponent.value }),
                     animateColor = { bgAnimateColor.value },
                     maxValue = { MPlayer.currentDuration.toFloat() },
                     animation = animation,
