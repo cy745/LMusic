@@ -80,3 +80,5 @@ lint/tmp/
 # lint/reports/
 /app/mapping.txt
 /extension/mapping.txt
+mapping.txt
+.kotlin
