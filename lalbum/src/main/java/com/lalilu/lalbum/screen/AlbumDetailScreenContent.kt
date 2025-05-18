@@ -2,7 +2,6 @@ package com.lalilu.lalbum.screen
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +45,7 @@ import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.base.songs.SongsScreenStickyHeader
 import com.lalilu.component.card.SongCard
 import com.lalilu.component.extension.ItemRecorder
+import com.lalilu.component.extension.SortExtraPresetUI
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
 import com.lalilu.component.navigation.AppRouter
@@ -54,7 +54,6 @@ import com.lalilu.lalbum.viewModel.AlbumDetailEvent
 import com.lalilu.lmedia.entity.LAlbum
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.extension.sortable.GroupId
-import com.lalilu.lmedia.extension.sortable.ItemExtraData
 import com.lalilu.lmedia.extension.sortable.SortResult
 import com.lalilu.lplayer.action.MediaControl
 import kotlinx.coroutines.flow.Flow
@@ -186,135 +185,60 @@ fun AlbumDetailScreenContent(
                 }
             }
 
-            when (songs) {
-                is SortResult.Flat -> {
-                    itemsWithRecord(
-                        items = songs.items,
-                        key = { it.id },
-                        contentType = { it::class.java }
+            songs.draw {
+                groupId?.let { groupId ->
+                    stickyHeaderWithRecord(
+                        key = groupId,
+                        contentType = stickyHeaderContentType
                     ) {
-                        SongCard(
-                            song = { it },
-                            isSelected = { isSelected(it) },
-                            isFavour = { favouriteIds.value.contains(it.id) },
-                            onClick = {
-                                if (isSelecting()) {
-                                    onSelect(it)
-                                } else {
-                                    MediaControl.playWithList(
-                                        mediaIds = songs.itemList.map(LSong::id),
-                                        mediaId = it.id
-                                    )
-                                }
-                            },
-                            onLongClick = {
-                                if (isSelecting()) {
-                                    onSelect(it)
-                                } else {
-                                    AppRouter.route("/pages/songs/detail")
-                                        .with("mediaId", it.id)
-                                        .jump()
-                                }
-                            },
-                            onEnterSelect = { onSelect(it) }
+                        SongsScreenStickyHeader(
+                            modifier = Modifier.animateItem(),
+                            listState = listState,
+                            group = groupId,
+                            minOffset = { statusBar.getTop(density) },
+                            onClickGroup = onClickGroup
                         )
                     }
                 }
 
-                is SortResult.Grouped -> {
-                    songs.groups.forEach { group ->
-                        group.groupId?.let { groupId ->
-                            stickyHeaderWithRecord(
-                                key = groupId,
-                                contentType = stickyHeaderContentType
-                            ) {
-                                SongsScreenStickyHeader(
-                                    modifier = Modifier.animateItem(),
-                                    listState = listState,
-                                    group = groupId,
-                                    minOffset = { statusBar.getTop(density) },
-                                    onClickGroup = onClickGroup
+                itemsIndexedWithRecord(
+                    items = items,
+                    key = { index, item -> item.id },
+                    contentType = { index, item -> item::class.java }
+                ) { index, item ->
+                    val extra = extras.getOrNull(index)
+
+                    SongCard(
+                        modifier = Modifier.animateItem(),
+                        song = { item },
+                        onClick = {
+                            if (isSelecting()) {
+                                onSelect(item)
+                            } else {
+                                MediaControl.playWithList(
+                                    mediaIds = songs.itemList.map(LSong::id),
+                                    mediaId = item.id
                                 )
                             }
-                        }
-
-                        itemsIndexedWithRecord(
-                            items = group.items,
-                            key = { index, item -> item.id },
-                            contentType = { index, item -> item::class.java }
-                        ) { index, item ->
-                            val extra = group.extras.getOrNull(index)
-
-                            SongCard(
-                                song = { item },
-                                isSelected = { isSelected(item) },
-                                isFavour = { favouriteIds.value.contains(item.id) },
-                                onClick = {
-                                    if (isSelecting()) {
-                                        onSelect(item)
-                                    } else {
-                                        MediaControl.playWithList(
-                                            mediaIds = songs.itemList.map(LSong::id),
-                                            mediaId = item.id
-                                        )
-                                    }
-                                },
-                                onLongClick = {
-                                    if (isSelecting()) {
-                                        onSelect(item)
-                                    } else {
-                                        AppRouter.route("/pages/songs/detail")
-                                            .with("mediaId", item.id)
-                                            .jump()
-                                    }
-                                },
-                                onEnterSelect = { onSelect(item) },
-                                showPrefix = { extra != null },
-                                prefixContent = { SortExtraPresetUI.Show(extra) }
-                            )
-                        }
-                    }
-                }
-
-                else -> {
-
+                        },
+                        onLongClick = {
+                            if (isSelecting()) {
+                                onSelect(item)
+                            } else {
+                                AppRouter.route("/pages/songs/detail")
+                                    .with("mediaId", item.id)
+                                    .jump()
+                            }
+                        },
+                        onEnterSelect = { onSelect(item) },
+                        isFavour = { favouriteIds.value.contains(item.id) },
+                        isSelected = { isSelected(item) },
+                        prefixContent = { SortExtraPresetUI.Show(extra) }
+                    )
                 }
             }
         }
 
         smartBarPadding()
-    }
-}
-
-object SortExtraPresetUI {
-    @Composable
-    fun Show(extraData: ItemExtraData?) {
-        when (extraData) {
-            is ItemExtraData.TrackNumber -> {
-                Text(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .background(color = MaterialTheme.colors.surface)
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    text = extraData.number.toString(),
-                    color = MaterialTheme.colors.onBackground.copy(0.6f),
-                    fontSize = 12.sp,
-                    lineHeight = 12.sp,
-                )
-            }
-
-            is ItemExtraData.PlayedCount -> {
-                Text(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .background(color = MaterialTheme.colors.surface)
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    text = extraData.count.toString(),
-                    color = MaterialTheme.colors.onBackground.copy(0.6f),
-                    fontSize = 12.sp,
-                    lineHeight = 12.sp,
-                )
-            }
-        }
     }
 }

@@ -81,67 +81,39 @@ internal fun AlbumsScreenContent(
             }
         }
 
-        when (albums) {
-            is SortResult.Flat -> {
-                items(
-                    items = albums.items,
-                    key = { it.id },
-                    contentType = { LAlbum::class }
-                ) { item ->
-                    AlbumCard(
+        albums.draw {
+            groupId?.let { groupId ->
+                item(
+                    key = groupId,
+                    contentType = "group",
+                    span = StaggeredGridItemSpan.FullLine
+                ) {
+                    Text(
                         modifier = Modifier.animateItem(),
-                        album = { item },
-                        isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
-                        showTitle = showText,
-                        onClick = {
-                            AppRouter.intent(
-                                NavIntent.Push(
-                                    AlbumDetailScreen(item.id)
-                                )
-                            )
-                        }
+                        text = groupId.text
                     )
                 }
             }
 
-            is SortResult.Grouped -> {
-                albums.groups.forEach { group ->
-                    group.groupId?.let { groupId ->
-                        item(
-                            key = groupId,
-                            contentType = "group",
-                            span = StaggeredGridItemSpan.FullLine
-                        ) {
-                            Text(
-                                modifier = Modifier.animateItem(),
-                                text = groupId.text
+            items(
+                items = items,
+                key = { it.id },
+                contentType = { LAlbum::class }
+            ) { item ->
+                AlbumCard(
+                    modifier = Modifier.animateItem(),
+                    album = { item },
+                    isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
+                    showTitle = showText,
+                    onClick = {
+                        AppRouter.intent(
+                            NavIntent.Push(
+                                AlbumDetailScreen(item.id)
                             )
-                        }
-                    }
-
-                    items(
-                        items = group.items,
-                        key = { it.id },
-                        contentType = { LAlbum::class }
-                    ) { item ->
-                        AlbumCard(
-                            modifier = Modifier.animateItem(),
-                            album = { item },
-                            isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
-                            showTitle = showText,
-                            onClick = {
-                                AppRouter.intent(
-                                    NavIntent.Push(
-                                        AlbumDetailScreen(item.id)
-                                    )
-                                )
-                            }
                         )
                     }
-                }
+                )
             }
-
-            else -> {}
         }
 
         smartBarPadding()

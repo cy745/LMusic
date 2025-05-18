@@ -28,12 +28,12 @@ interface SortAction : Serializable {
         config: SortConfig = SortConfig()
     ): Flow<SortResult<T>> = items
         .mapLatest { doSortInternal(it, config) }
-        .mapLatest { if (config.hideGroup && it !is SortResult.Flat) SortResult.Flat(it.itemList) else it }
+        .mapLatest { if (config.hideGroup) SortResult.flat(it.itemList) else it }
 
     fun <T : Sortable> doSortInternal(
         items: List<T>,
         config: SortConfig = SortConfig()
     ): SortResult<T> = items.let {
-        SortResult.Flat(if (config.reverse) it.asReversed() else it)
+        SortResult.flat(if (config.reverse) it.asReversed() else it)
     }
 }

@@ -42,7 +42,8 @@ class AddTime : SortAction {
 
     @Composable
     override fun getActionInfo(): ActionInfo = ActionInfo(
-        title = stringResource(R.string.sort_preset_by_add_time)
+        title = stringResource(R.string.sort_preset_by_add_time),
+        subTitle = "会显示添加时间分组"
     )
 
     override fun <T : Sortable> doSortInternal(
@@ -66,14 +67,12 @@ class AddTime : SortAction {
                 }
             }
 
-        return grouped.let {
-            SortResult.Grouped(it.map { map ->
-                SortedGroup(
-                    groupId = GroupId.Time(map.key ?: "#"),
-                    items = map.value
-                )
-            })
-        }
+        return SortResult(grouped.map { map ->
+            SortedGroup(
+                groupId = GroupId.Time(map.key ?: "#"),
+                items = map.value
+            )
+        })
     }
 }
 
@@ -84,7 +83,8 @@ class Title : SortAction {
 
     @Composable
     override fun getActionInfo(): ActionInfo = ActionInfo(
-        title = stringResource(R.string.sort_preset_by_title)
+        title = stringResource(R.string.sort_preset_by_title),
+        subTitle = "标题首字符排序"
     )
 
     override fun <T : Sortable> doSortInternal(
@@ -103,14 +103,12 @@ class Title : SortAction {
             PinyinUtils.getPinyinFirstLetter(text)?.uppercase() ?: ""
         }
 
-        return grouped.let {
-            SortResult.Grouped(it.map { map ->
-                SortedGroup(
-                    groupId = GroupId.FirstLetter(map.key),
-                    items = map.value,
-                )
-            })
-        }
+        return SortResult(grouped.map { map ->
+            SortedGroup(
+                groupId = GroupId.FirstLetter(map.key),
+                items = map.value,
+            )
+        })
     }
 }
 
@@ -121,7 +119,8 @@ class Duration : SortAction {
 
     @Composable
     override fun getActionInfo(): ActionInfo = ActionInfo(
-        title = stringResource(R.string.sort_preset_by_song_duration)
+        title = stringResource(R.string.sort_preset_by_song_duration),
+        subTitle = "根据歌曲时长排序"
     )
 
     override fun <T : Sortable> doSortInternal(
@@ -132,7 +131,7 @@ class Duration : SortAction {
             .sortedByDescending { it.getValueBy(Sortable.COMPARE_KEY_DURATION) ?: -1L }
             .let { if (config.reverse) it.asReversed() else it }
 
-        return SortResult.Flat(sorted)
+        return SortResult.flat(sorted)
     }
 }
 
@@ -144,7 +143,8 @@ class Shuffle : SortAction {
 
     @Composable
     override fun getActionInfo(): ActionInfo = ActionInfo(
-        title = stringResource(R.string.sort_preset_by_shuffle)
+        title = stringResource(R.string.sort_preset_by_shuffle),
+        subTitle = "每次进入都会打乱顺序"
     )
 
     override fun <T : Sortable> doSortInternal(
@@ -154,7 +154,7 @@ class Shuffle : SortAction {
         val shuffled = items.shuffled()
             .let { if (config.reverse) it.asReversed() else it }
 
-        return SortResult.Flat(shuffled)
+        return SortResult.flat(shuffled)
     }
 }
 
@@ -168,7 +168,8 @@ class ItemsCount : SortAction {
 
     @Composable
     override fun getActionInfo(): ActionInfo = ActionInfo(
-        title = stringResource(R.string.sort_preset_by_item_count)
+        title = stringResource(R.string.sort_preset_by_item_count),
+        subTitle = "根据歌曲数量排序"
     )
 
     override fun <T : Sortable> doSortInternal(
@@ -179,7 +180,7 @@ class ItemsCount : SortAction {
             .sortedByDescending { it.getValueBy(Sortable.COMPARE_KEY_ITEMS_COUNT) ?: 0L }
             .let { if (config.reverse) it.asReversed() else it }
 
-        return SortResult.Flat(sorted)
+        return SortResult.flat(sorted)
     }
 }
 
@@ -191,7 +192,8 @@ class Album : SortAction {
 
     @Composable
     override fun getActionInfo(): ActionInfo = ActionInfo(
-        title = stringResource(R.string.sort_preset_by_disk_and_track)
+        title = stringResource(R.string.sort_preset_by_disk_and_track),
+        subTitle = "专辑的原始顺序"
     )
 
     override fun <T : Sortable> doSortInternal(
@@ -204,7 +206,7 @@ class Album : SortAction {
                 ?: -1
         }
 
-        return SortResult.Grouped(grouped.map { map ->
+        return SortResult(grouped.map { map ->
             val list = map.value.sortedBy {
                 it.getValueBy<String>(Sortable.COMPARE_KEY_TRACK_NUMBER)
                     ?.toIntOrNull()

@@ -183,9 +183,8 @@ private fun SongCardReverse(
     hasLyric: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
     isSelected: () -> Boolean = { false },
-    showPrefix: () -> Boolean = { false },
     fixedHeight: () -> Boolean = { false },
-    stickerContent: @Composable RowScope.() -> Unit = {
+    stickerContent: @Composable() (RowScope.() -> Unit) = {
         StickerRow(
             isFavour = isFavour,
             hasLyric = hasLyric,
@@ -212,7 +211,6 @@ private fun SongCardReverse(
         fixedHeight = fixedHeight,
         reverseLayout = { true },
         isSelected = isSelected,
-        showPrefix = showPrefix,
         stickerContent = stickerContent,
         prefixContent = prefixContent
     )

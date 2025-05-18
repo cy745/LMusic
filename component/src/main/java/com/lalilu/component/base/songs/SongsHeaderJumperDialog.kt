@@ -39,15 +39,10 @@ fun <T : Sortable> SongsHeaderJumperDialog(
     sortResult: SortResult<T>,
     onSelectItem: (item: GroupId) -> Unit = {}
 ) {
-    val groupIds = remember(sortResult) {
-        (sortResult as? SortResult.Grouped)
-            ?.groups?.mapNotNull { it.groupId }
-            ?: emptyList()
-    }
     val dialog = remember {
         DialogItem.Dynamic(backgroundColor = Color.Transparent) {
             SongsHeaderJumperDialogContent(
-                items = { groupIds },
+                items = { sortResult.groups.mapNotNull { it.groupId } },
                 onSelectItem = onSelectItem
             )
         }

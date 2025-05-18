@@ -147,76 +147,43 @@ internal fun ArtistsScreenContent(
                     }
                 }
 
-                when (artists) {
-                    is SortResult.Flat -> {
-                        itemsIndexedWithRecord(
-                            items = artists.items,
-                            key = { _, item -> item.id },
-                            contentType = { _, _ -> LArtist::class }
-                        ) { index, item ->
-                            ArtistCard(
+                artists.draw {
+                    groupId?.let { groupId ->
+                        stickyHeaderWithRecord(
+                            key = groupId,
+                            contentType = stickyHeaderContentType
+                        ) {
+                            SongsScreenStickyHeader(
                                 modifier = Modifier.animateItem(),
-                                title = item.name,
-                                subTitle = "#$index",
-                                isSelected = { isSelected(item) },
-                                songCount = item.songs.size.toLong(),
-                                imageSource = { item.songs.firstOrNull() },
-                                isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
-                                onClick = {
-                                    if (isSelecting()) {
-                                        onSelect(item)
-                                    } else {
-                                        AppRouter.intent(NavIntent.Push(ArtistDetailScreen(item.id)))
-                                    }
-                                }
+                                listState = listState,
+                                group = groupId,
+                                minOffset = { statusBar.getTop(density) },
+                                onClickGroup = onClickGroup
                             )
                         }
                     }
 
-                    is SortResult.Grouped -> {
-                        artists.groups.forEach { group ->
-                            group.groupId?.let { groupId ->
-                                stickyHeaderWithRecord(
-                                    key = groupId,
-                                    contentType = stickyHeaderContentType
-                                ) {
-                                    SongsScreenStickyHeader(
-                                        modifier = Modifier.animateItem(),
-                                        listState = listState,
-                                        group = groupId,
-                                        minOffset = { statusBar.getTop(density) },
-                                        onClickGroup = onClickGroup
-                                    )
+                    itemsIndexedWithRecord(
+                        items = items,
+                        key = { _, item -> item.id },
+                        contentType = { _, _ -> LArtist::class }
+                    ) { index, item ->
+                        ArtistCard(
+                            modifier = Modifier.animateItem(),
+                            title = item.name,
+                            subTitle = "#$index",
+                            isSelected = { isSelected(item) },
+                            songCount = item.songs.size.toLong(),
+                            imageSource = { item.songs.firstOrNull() },
+                            isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
+                            onClick = {
+                                if (isSelecting()) {
+                                    onSelect(item)
+                                } else {
+                                    AppRouter.intent(NavIntent.Push(ArtistDetailScreen(item.id)))
                                 }
                             }
-
-                            itemsIndexedWithRecord(
-                                items = group.items,
-                                key = { _, item -> item.id },
-                                contentType = { _, _ -> LArtist::class }
-                            ) { index, item ->
-                                ArtistCard(
-                                    modifier = Modifier.animateItem(),
-                                    title = item.name,
-                                    subTitle = "#$index",
-                                    isSelected = { isSelected(item) },
-                                    songCount = item.songs.size.toLong(),
-                                    imageSource = { item.songs.firstOrNull() },
-                                    isPlaying = { item.songs.any { MPlayer.isItemPlaying(it.id) } },
-                                    onClick = {
-                                        if (isSelecting()) {
-                                            onSelect(item)
-                                        } else {
-                                            AppRouter.intent(NavIntent.Push(ArtistDetailScreen(item.id)))
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    else -> {
-
+                        )
                     }
                 }
             }

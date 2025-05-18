@@ -25,7 +25,8 @@ class SortRulePlayCount(
 
     @Composable
     override fun getActionInfo(): ActionInfo = ActionInfo(
-        title = stringResource(R.string.sort_preset_by_played_times)
+        title = stringResource(R.string.sort_preset_by_played_times),
+        subTitle = "历史记录中播放次数排序"
     )
 
     override fun <T : Sortable> doSort(
@@ -40,7 +41,7 @@ class SortRulePlayCount(
                     .let { if (config.reverse) it.reversed() else it }
 
                 if (config.hideItemExtra) {
-                    SortResult.Flat(sorted)
+                    SortResult.flat(sorted)
                 } else {
                     val extras = sorted.map {
                         ItemExtraData.PlayedCount(
@@ -48,7 +49,7 @@ class SortRulePlayCount(
                         )
                     }
 
-                    SortResult.Grouped(
+                    SortResult(
                         groups = listOf(
                             SortedGroup(
                                 groupId = null,
@@ -71,7 +72,8 @@ class SortRuleLastPlayTime(
 
     @Composable
     override fun getActionInfo(): ActionInfo = ActionInfo(
-        title = stringResource(R.string.sort_preset_by_last_play_time)
+        title = stringResource(R.string.sort_preset_by_last_play_time),
+        subTitle = "历史记录播放排序"
     )
 
     override fun <T : Sortable> doSort(
@@ -85,7 +87,7 @@ class SortRuleLastPlayTime(
                     .sortedByDescending { song -> map[song.getValueBy(Sortable.COMPARE_KEY_ID)] }
                     .let { if (config.reverse) it.reversed() else it }
 
-                SortResult.Flat(sorted)
+                SortResult.flat(sorted)
             }
     }
 }

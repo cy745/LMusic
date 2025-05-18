@@ -36,19 +36,21 @@ data class SortedGroup<T : Sortable>(
     val extras: List<ItemExtraData?> = emptyList()
 )
 
-sealed interface SortResult<T : Sortable> {
-    val itemList: List<T>
+data class SortResult<T : Sortable>(
+    val groups: List<SortedGroup<T>>,
+) {
+    val itemList: List<T> by lazy { groups.flatMap { it.items } }
 
-    data class Grouped<T : Sortable>(val groups: List<SortedGroup<T>>) : SortResult<T> {
-        override val itemList: List<T> by lazy { groups.flatMap { it.items } }
-    }
-
-    data class Flat<T : Sortable>(val items: List<T>) : SortResult<T> {
-        override val itemList: List<T> = items
+    inline fun draw(onGroup: SortedGroup<T>.() -> Unit) {
+        groups.forEach { group -> group.onGroup() }
     }
 
     companion object {
         @Stable
-        inline fun <reified T : Sortable> empty(): SortResult<T> = Flat(emptyList())
+        fun <T : Sortable> flat(items: List<T>): SortResult<T> =
+            SortResult(listOf(SortedGroup(null, items)))
+
+        @Stable
+        inline fun <reified T : Sortable> empty(): SortResult<T> = SortResult(emptyList())
     }
 }

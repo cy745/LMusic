@@ -1,11 +1,6 @@
 package com.lalilu.component.card
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -21,10 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -66,10 +59,9 @@ fun SongCard(
     hasLyric: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
     isSelected: () -> Boolean = { false },
-    showPrefix: () -> Boolean = { false },
     fixedHeight: () -> Boolean = { false },
     reverseLayout: () -> Boolean = { false },
-    stickerContent: @Composable RowScope.() -> Unit = {
+    stickerContent: @Composable (RowScope.() -> Unit) = {
         StickerRow(
             isFavour = isFavour,
             hasLyric = hasLyric,
@@ -97,7 +89,6 @@ fun SongCard(
         fixedHeight = fixedHeight,
         reverseLayout = reverseLayout,
         isSelected = isSelected,
-        showPrefix = showPrefix,
         stickerContent = stickerContent,
         prefixContent = prefixContent
     )
@@ -123,8 +114,7 @@ fun SongCard(
     fixedHeight: () -> Boolean = { false },
     reverseLayout: () -> Boolean = { false },
     isSelected: () -> Boolean = { false },
-    showPrefix: () -> Boolean = { false },
-    stickerContent: @Composable RowScope.() -> Unit = {},
+    stickerContent: @Composable() (RowScope.() -> Unit) = {},
     prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     val bgColor by animateColorAsState(
@@ -165,11 +155,10 @@ fun SongCard(
             title = title,
             subTitle = subTitle,
             duration = duration,
-            isPlaying = isPlaying,
-            showPrefix = showPrefix,
             fixedHeight = fixedHeight,
-            prefixContent = prefixContent,
-            stickerContent = stickerContent
+            isPlaying = isPlaying,
+            stickerContent = stickerContent,
+            prefixContent = prefixContent
         )
 
         if (!reverseLayout()) {
@@ -192,8 +181,7 @@ fun SongCardContent(
     duration: () -> Long,
     fixedHeight: () -> Boolean = { false },
     isPlaying: () -> Boolean = { false },
-    showPrefix: () -> Boolean = { false },
-    stickerContent: @Composable RowScope.() -> Unit = {},
+    stickerContent: @Composable() (RowScope.() -> Unit) = {},
     prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
     Column(
@@ -223,19 +211,9 @@ fun SongCardContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             PlayingTipIcon(isPlaying = isPlaying)
-            AnimatedVisibility(
-                visible = showPrefix(),
-                modifier = Modifier.wrapContentWidth(),
-                enter = fadeIn() + expandHorizontally(),
-                exit = fadeOut() + shrinkHorizontally()
-            ) {
-                ProvideTextStyle(
-                    value = MaterialTheme.typography.caption
-                        .copy(color = MaterialTheme.colors.onBackground.copy(0.5f)),
-                ) {
-                    prefixContent(Modifier.padding(end = 5.dp))
-                }
-            }
+
+            prefixContent(Modifier.padding(end = 5.dp))
+
             Text(
                 modifier = Modifier.weight(1f),
                 text = subTitle(),
@@ -248,6 +226,7 @@ fun SongCardContent(
                 modifier = Modifier.padding(start = 5.dp),
                 text = durationMsToString(duration = duration()),
                 fontSize = 12.sp,
+                lineHeight = 12.sp,
                 letterSpacing = 0.05.em,
                 color = MaterialTheme.colors.onBackground.copy(0.7f)
             )

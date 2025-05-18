@@ -94,7 +94,7 @@ fun <T : Sortable> Flow<List<T>>.doSort(
 ): Flow<SortResult<T>> = sortManager.selectedAction.flatMapLatest { action ->
     sortManager.sortConfig.flatMapLatest { config ->
         action?.doSort(items = this@doSort, config)
-            ?: this@doSort.mapLatest { SortResult.Flat(it) }
+            ?: this@doSort.mapLatest { SortResult.flat(it) }
     }
 }
 
