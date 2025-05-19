@@ -80,6 +80,8 @@ class AddTime : SortAction {
 @Single(binds = [SortAction::class])
 class Title : SortAction {
     override fun key(): String = "sort_rule_title"
+    private val collator by lazy { Collator.getInstance() }
+    private val pinyinTransformMap = mutableMapOf<String, String>()
 
     @Composable
     override fun getActionInfo(): ActionInfo = ActionInfo(
@@ -92,15 +94,36 @@ class Title : SortAction {
         config: SortConfig
     ): SortResult<T> {
         val sorted = items.sortedWith { a, b ->
-            val aText = a.getValueBy<String>(Sortable.COMPARE_KEY_TITLE) ?: return@sortedWith 0
-            val bText = b.getValueBy<String>(Sortable.COMPARE_KEY_TITLE) ?: return@sortedWith 0
+            var aText = a.getValueBy<String>(Sortable.COMPARE_KEY_TITLE) ?: return@sortedWith 0
+            var bText = b.getValueBy<String>(Sortable.COMPARE_KEY_TITLE) ?: return@sortedWith 0
 
-            Collator.getInstance().compare(aText, bText)
+            if (aText.firstOrNull()?.category == CharCategory.OTHER_LETTER) {
+                aText = pinyinTransformMap.getOrPut(aText) {
+                    runCatching { PinyinUtils.getPinyinFirstLetter(aText.take(1)).uppercase() }
+                        .getOrNull()
+                        ?: aText
+                }
+            }
+
+            if (bText.firstOrNull()?.category == CharCategory.OTHER_LETTER) {
+                bText = pinyinTransformMap.getOrPut(bText) {
+                    runCatching { PinyinUtils.getPinyinFirstLetter(bText.take(1)).uppercase() }
+                        .getOrNull()
+                        ?: bText
+                }
+            }
+
+            collator.compare(aText, bText)
         }.let { if (config.reverse) it.asReversed() else it }
 
         val grouped = sorted.groupBy {
             val text = it.getValueBy<String>(Sortable.COMPARE_KEY_TITLE)
-            PinyinUtils.getPinyinFirstLetter(text)?.uppercase() ?: ""
+            val firstLetter = text?.firstOrNull()
+            if (firstLetter?.category == CharCategory.OTHER_LETTER) {
+                pinyinTransformMap[text] ?: ""
+            } else {
+                firstLetter?.uppercase() ?: ""
+            }
         }
 
         return SortResult(grouped.map { map ->
