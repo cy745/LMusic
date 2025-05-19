@@ -32,6 +32,10 @@ allprojects {
                     sourceCompatibility = JavaVersion.VERSION_21
                     targetCompatibility = JavaVersion.VERSION_21
                 }
+
+                lint {
+                    lintConfig = file("${project.rootDir}/lint.xml")
+                }
             }
         }
 

@@ -47,7 +47,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.currentKoinScope
-import org.koin.compose.koinInject
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.scope.Scope
@@ -265,11 +264,6 @@ fun rememberIsPadLandScape(): State<Boolean> {
         derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && isPad }
     }
 }
-
-@Deprecated(message = "弃用")
-@Composable
-inline fun <reified T : ViewModel> singleViewModel(): T =
-    koinViewModel(viewModelStoreOwner = koinInject())
 
 @Composable
 inline fun <reified T : ViewModel> Screen.screenVM(

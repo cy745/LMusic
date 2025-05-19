@@ -132,10 +132,6 @@ android {
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
     }
-    lint {
-        disable += "Instantiatable"
-        abortOnError = false
-    }
 }
 
 dependencies {

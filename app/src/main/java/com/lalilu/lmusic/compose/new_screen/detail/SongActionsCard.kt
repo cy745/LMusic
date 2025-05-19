@@ -19,10 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.IconTextButton
-import com.lalilu.component.navigation.AppRouter
-import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lmedia.entity.LSong
-import com.lalilu.lmusic.compose.new_screen.SearchLyricScreen
 import com.lalilu.lmusic.utils.extension.checkActivityIsExist
 
 @Composable
@@ -76,24 +73,6 @@ fun SongActionsCard(
                     }
                 )
             }
-            IconTextButton(
-                text = "搜索LrcShare",
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                shape = RoundedCornerShape(10.dp),
-                color = Color(0xFF3EA22C),
-                onClick = {
-                    AppRouter.intent(
-                        NavIntent.Push(
-                            SearchLyricScreen(
-                                mediaId = song.id,
-                                keywords = song.name
-                            )
-                        )
-                    )
-                }
-            )
         }
     }
 }

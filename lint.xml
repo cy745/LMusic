@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<lint>
+    <issue id="StateFlowValueCalledInComposition" severity="ignore" />
+    <issue id="FlowOperatorInvokedInComposition" severity="ignore" />
+    <issue id="CoroutineCreationDuringComposition" severity="ignore" />
+    <issue id="UnrememberedMutableState" severity="ignore" />
+    <!--    <issue id="UseOfNonLambdaOffsetOverload" severity="ignore" />-->
+    <!--    <issue id="ListIterator" severity="ignore" />-->
+    <!--    <issue id="Instantiatable" severity="ignore" />-->
+</lint>

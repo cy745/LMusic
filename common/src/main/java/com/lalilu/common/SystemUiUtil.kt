@@ -13,6 +13,7 @@ import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.core.view.WindowCompat
 
+@Suppress("DEPRECATION")
 object SystemUiUtil {
 
     private var fixedStatusBarHeight: Int = -1

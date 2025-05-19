@@ -3,7 +3,6 @@ package com.lalilu.lmusic.compose.component.card
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.lmusic.utils.recomposeHighlighter
 
 
@@ -35,7 +33,7 @@ fun ExpendableTextCard(
     maxWidth: () -> Dp = { Dp.Infinity },
     title: () -> String,
     subTitle: () -> String?,
-    titleColor: Color = dayNightTextColor(),
+    titleColor: Color = MaterialTheme.colors.onBackground,
     subTitleColor: Color = titleColor.copy(alpha = 0.5f),
     defaultState: Boolean = false
 ) {
@@ -49,7 +47,10 @@ fun ExpendableTextCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = maxWidth())
-                .clickable(MutableInteractionSource(), indication = null) {
+                .clickable(
+                    interactionSource = null,
+                    indication = null
+                ) {
                     expendedState = !expended
                 }
         ) {

@@ -22,10 +22,6 @@ android {
             consumerProguardFiles("proguard-rules.pro")
         }
     }
-    lint {
-        disable += "FlowOperatorInvokedInComposition"
-        disable += "CoroutineCreationDuringComposition"
-    }
     externalNativeBuild {
         cmake {
             path = File("src/main/cpp/CMakeLists.txt")
@@ -43,7 +39,7 @@ dependencies {
     implementation(libs.xmlutil.core)
     implementation(libs.xmlutil.serialization)
 
-    api("androidx.media3:media3-common:1.5.1")
+    api(libs.media3.common)
 
     // https://github.com/sachiotomita/kanhira
     // https://github.com/cy745/kanhira

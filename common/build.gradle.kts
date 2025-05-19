@@ -15,9 +15,6 @@ android {
             consumerProguardFiles("proguard-rules.pro")
         }
     }
-    lint {
-        disable += "UnrememberedMutableState"
-    }
 }
 
 dependencies {
