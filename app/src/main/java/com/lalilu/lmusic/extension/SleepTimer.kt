@@ -9,18 +9,21 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.LocalContentColor
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -215,8 +218,15 @@ fun SleepTimer(
 
     Surface(
         modifier = Modifier
-            .padding(15.dp),
-        shape = RoundedCornerShape(15.dp)
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 8.dp)
+            .navigationBarsPadding(),
+        border = BorderStroke(1.dp, MaterialTheme.colors.onBackground.copy(0.1f)),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colors.background,
+        elevation = 10.dp
     ) {
         Column(
             modifier = Modifier

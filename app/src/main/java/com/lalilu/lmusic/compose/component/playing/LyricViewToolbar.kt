@@ -1,11 +1,13 @@
 package com.lalilu.lmusic.compose.component.playing
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -15,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -67,9 +70,15 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
 
     Surface(
         modifier = Modifier
-            .padding(15.dp)
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 8.dp)
             .navigationBarsPadding(),
-        shape = RoundedCornerShape(15.dp)
+        border = BorderStroke(1.dp, MaterialTheme.colors.onBackground.copy(0.1f)),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colors.background,
+        elevation = 10.dp
     ) {
         Column(
             modifier = Modifier
