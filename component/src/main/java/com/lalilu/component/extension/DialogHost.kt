@@ -36,13 +36,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.melody.dialog.any_pop.AnyPopDialog
-import com.melody.dialog.any_pop.AnyPopDialogProperties
-import com.melody.dialog.any_pop.DirectionState
 import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.roundToInt
 
-private val DEFAULT_DIALOG_PROPERTIES = AnyPopDialogProperties(
+val DEFAULT_DIALOG_PROPERTIES = CustomDialogProperties(
     direction = DirectionState.BOTTOM
 )
 
@@ -51,7 +48,7 @@ sealed class DialogItem {
         val title: String,
         val message: String,
         val backgroundColor: Color? = null,
-        val properties: AnyPopDialogProperties = DEFAULT_DIALOG_PROPERTIES,
+        val properties: CustomDialogProperties = DEFAULT_DIALOG_PROPERTIES,
         val onConfirm: () -> Unit = {},
         val onCancel: () -> Unit = {},
         val onDismiss: () -> Unit = {},
@@ -59,7 +56,7 @@ sealed class DialogItem {
 
     data class Dynamic(
         val backgroundColor: Color? = null,
-        val properties: AnyPopDialogProperties = DEFAULT_DIALOG_PROPERTIES,
+        val properties: CustomDialogProperties = DEFAULT_DIALOG_PROPERTIES,
         val onDismiss: () -> Unit = {},
         val content: @Composable DialogContext.() -> Unit,
     ) : DialogItem()
@@ -150,14 +147,10 @@ object DialogWrapper : DialogHost, DialogContext {
             }
         }
 
-        AnyPopDialog(
-            modifier = Modifier
-                .wrapContentHeight()
-                .widthIn(max = 560.dp)
-                .background(color = backgroundColor ?: MaterialTheme.colors.background),
+        DialogFullScreen(
             isActiveClose = isActiveClose,
             properties = properties,
-            onDismiss = {
+            onDismissRequest = {
                 dialogItem?.let {
                     when (it) {
                         is DialogItem.Dynamic -> it.onDismiss.invoke()
@@ -168,6 +161,10 @@ object DialogWrapper : DialogHost, DialogContext {
             },
             content = {
                 AnimatedContent(
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .widthIn(max = 560.dp)
+                        .background(color = backgroundColor ?: MaterialTheme.colors.background),
                     targetState = dialogItem,
                     label = "",
                     transitionSpec = {

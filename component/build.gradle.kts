@@ -47,7 +47,6 @@ dependencies {
     // https://github.com/Calvin-LL/Reorderable
     // Apache-2.0 license
     api("sh.calvin.reorderable:reorderable:2.4.0")
-    api("com.github.cy745:AnyPopDialog-Compose:cb92c5b6dc")
     api("me.rosuh:AndroidFilePicker:1.0.1")
     api("com.cheonjaeung.compose.grid:grid:2.0.0")
     api("com.github.nanihadesuka:LazyColumnScrollbar:2.2.0")
