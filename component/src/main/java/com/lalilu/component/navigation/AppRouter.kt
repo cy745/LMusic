@@ -12,13 +12,40 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
-sealed interface NavIntent {
-    data class Jump(val screen: Screen) : NavIntent
-    data class Push(val screen: Screen) : NavIntent
-    data class Replace(val screen: Screen) : NavIntent
-    data class PopUtil(val screen: Screen) : NavIntent
-    data object Pop : NavIntent
-    data object None : NavIntent
+typealias NavParams = Map<String, Any?>
+typealias MutableNavParams = MutableMap<String, Any?>
+
+sealed class NavIntent(
+    open val screen: Screen? = null,
+    open val params: NavParams = emptyMap()
+) {
+    data class Jump(
+        override val screen: Screen,
+        override val params: NavParams = emptyMap()
+    ) : NavIntent(screen, params)
+
+    data class Push(
+        override val screen: Screen,
+        override val params: NavParams = emptyMap()
+    ) : NavIntent(screen, params)
+
+    data class Replace(
+        override val screen: Screen,
+        override val params: NavParams = emptyMap()
+    ) : NavIntent(screen, params)
+
+    data class PopUtil(
+        override val screen: Screen,
+        override val params: NavParams = emptyMap()
+    ) : NavIntent(screen, params)
+
+    data object Pop : NavIntent()
+    data object None : NavIntent()
+
+    companion object {
+        const val SINGLE_TOP = "singleTop"
+        const val SINGLE_INSTANCE = "singleInstance"
+    }
 }
 
 fun interface NavInterceptor {
@@ -54,6 +81,38 @@ val DefaultInterceptorForTabScreen = NavInterceptor { navigator, intent ->
     }
 }
 
+/**
+ * 当意图中有 [NavIntent.SINGLE_TOP] 时，当前显示页面如果和目标页面相同则不执行跳转操作
+ */
+val DefaultSingleTopInterceptor = NavInterceptor { navigator, intent ->
+    val screen = intent.screen ?: return@NavInterceptor intent
+    val singleTop = intent.params[NavIntent.SINGLE_TOP] as? Boolean ?: return@NavInterceptor intent
+    if (!singleTop) return@NavInterceptor intent
+
+    if (navigator.lastItemOrNull?.key == screen.key) {
+        return@NavInterceptor NavIntent.None
+    }
+
+    return@NavInterceptor intent
+}
+
+/**
+ * 当意图中有 [NavIntent.SINGLE_INSTANCE] 时，当前页面和目标页面属于同类型则替换
+ */
+val DefaultSingleInstanceInterceptor = NavInterceptor { navigator, intent ->
+    val lastScreen = navigator.lastItemOrNull ?: return@NavInterceptor intent
+    val screen = intent.screen ?: return@NavInterceptor intent
+    val singleInstance = intent.params[NavIntent.SINGLE_INSTANCE] as? Boolean
+        ?: return@NavInterceptor intent
+    if (!singleInstance) return@NavInterceptor intent
+
+    if (lastScreen::class == screen::class) {
+        return@NavInterceptor NavIntent.Replace(screen)
+    }
+
+    return@NavInterceptor intent
+}
+
 val DefaultHandler = NavHandler { navigator, intent ->
     when (intent) {
         NavIntent.Pop -> navigator.pop()
@@ -70,6 +129,8 @@ object AppRouter : CoroutineScope {
     private val sharedFlow = MutableSharedFlow<NavIntent>()
     private var handler: NavHandler = DefaultHandler
     private val interceptors = mutableListOf(
+        DefaultSingleTopInterceptor,
+        DefaultSingleInstanceInterceptor,
         DefaultInterceptorForTabScreen,
     )
 
@@ -95,13 +156,18 @@ object AppRouter : CoroutineScope {
 
     class Request internal constructor(
         private val baseUrl: String,
-        private val params: MutableMap<String, Any?> = mutableMapOf()
+        private val params: MutableNavParams = mutableMapOf()
     ) {
         fun <T : Any?> with(key: String, value: T) = apply { params[key] = value }
+        fun withSingleInstance(singleInstance: Boolean = true) =
+            apply { params[NavIntent.SINGLE_INSTANCE] = singleInstance }
 
-        fun jump() = requestResult()?.let { intent(NavIntent.Jump(it)) }
-        fun push() = requestResult()?.let { intent(NavIntent.Push(it)) }
-        fun replace() = requestResult()?.let { intent(NavIntent.Replace(it)) }
+        fun withSingleTop(singleTop: Boolean = true) =
+            apply { params[NavIntent.SINGLE_TOP] = singleTop }
+
+        fun jump() = requestResult()?.let { intent(NavIntent.Jump(it, params)) }
+        fun push() = requestResult()?.let { intent(NavIntent.Push(it, params)) }
+        fun replace() = requestResult()?.let { intent(NavIntent.Replace(it, params)) }
         fun get() = requestResult()
 
         private fun requestResult(): Screen? =

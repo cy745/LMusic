@@ -163,6 +163,8 @@ fun PlaylistLayout(
                 onLongClick = {
                     AppRouter.route("/pages/songs/detail")
                         .with("mediaId", item.data.mediaId)
+                        .withSingleTop()
+                        .withSingleInstance()
                         .jump()
                 }
             )
