@@ -39,7 +39,6 @@ fun SongActionsCard(
         }
     }
 
-
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
@@ -52,27 +51,25 @@ fun SongActionsCard(
             horizontalArrangement = Arrangement.spacedBy(15.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (context.checkActivityIsExist(intent)) {
-                IconTextButton(
-                    text = "音乐标签编辑",
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    color = Color(0xFF3EA22C),
-                    onClick = {
-                        if (context.checkActivityIsExist(intent)) {
-                            context.startActivity(intent)
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "未安装[音乐标签]",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
+            IconTextButton(
+                text = "音乐标签编辑",
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                shape = RoundedCornerShape(10.dp),
+                color = Color(0xFF3EA22C),
+                onClick = {
+                    if (context.checkActivityIsExist(intent)) {
+                        context.startActivity(intent)
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "未安装[音乐标签]",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                )
-            }
+                }
+            )
         }
     }
 }
