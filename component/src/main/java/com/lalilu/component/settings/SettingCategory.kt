@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
@@ -22,16 +21,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
 @Composable
 fun SettingCategory(
+    modifier: Modifier = Modifier,
     @DrawableRes iconRes: Int,
     @StringRes titleRes: Int,
     content: @Composable ColumnScope.() -> Unit = {}
 ) = SettingCategory(
+    modifier = modifier,
     icon = painterResource(id = iconRes),
     title = stringResource(id = titleRes),
     content = content
@@ -39,15 +41,19 @@ fun SettingCategory(
 
 @Composable
 fun SettingCategory(
+    modifier: Modifier = Modifier,
     icon: Painter,
     title: String,
+    gapHeight: Dp = 10.dp,
+    contentEnd: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit = {}
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .animateContentSize(),
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(gapHeight)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 20.dp),
@@ -68,9 +74,13 @@ fun SettingCategory(
                 fontSize = 14.sp,
                 color = color
             )
+
+            Spacer(
+                modifier = Modifier.weight(1f)
+            )
+
+            contentEnd()
         }
-        Spacer(modifier = Modifier.height(10.dp))
         content()
-        Spacer(modifier = Modifier.height(30.dp))
     }
 }

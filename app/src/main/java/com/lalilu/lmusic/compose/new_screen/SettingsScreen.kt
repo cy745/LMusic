@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -41,7 +40,6 @@ import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.extension.rememberFixedStatusBarHeightDp
 import com.lalilu.component.settings.SettingCategory
 import com.lalilu.component.settings.SettingFilePicker
-import com.lalilu.component.settings.SettingStateSeekBar
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.crash.CrashHelper
 import com.lalilu.lmedia.scanner.FileSystemScanner
@@ -50,7 +48,6 @@ import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lplayer.MPlayerKV
-import com.lalilu.lplayer.extensions.PlayMode
 import com.lalilu.remixicon.System
 import com.lalilu.remixicon.system.settings4Line
 import com.zhangke.krouter.annotation.Destination
@@ -114,6 +111,7 @@ private fun SettingsScreen(
 
         item {
             SettingCategory(
+                modifier = Modifier.padding(bottom = 30.dp),
                 iconRes = R.drawable.ic_settings_4_line,
                 titleRes = R.string.preference_player_settings
             ) {
@@ -135,12 +133,12 @@ private fun SettingsScreen(
 //                    title = "独立音量控制",
 //                    valueRange = 0..100
 //                )
-                SettingStateSeekBar(
-                    selection = listOf("列表循环", "单曲循环", "随机播放"),
-                    title = "播放模式",
-                    onStateUpdate = { MPlayerKV.playMode.value = PlayMode.indexOf(it).name },
-                    state = { PlayMode.from(MPlayerKV.playMode.value).index }
-                )
+//                SettingStateSeekBar(
+//                    selection = listOf("列表循环", "单曲循环", "随机播放"),
+//                    title = "播放模式",
+//                    onStateUpdate = { MPlayerKV.playMode.value = PlayMode.indexOf(it).name },
+//                    state = { PlayMode.from(MPlayerKV.playMode.value).index }
+//                )
                 SettingSwitcher(
                     title = "是否重启后自动续播",
                     subTitle = "谨慎开启，避免社死",
@@ -177,6 +175,7 @@ private fun SettingsScreen(
 
         item {
             SettingCategory(
+                modifier = Modifier.padding(bottom = 30.dp),
                 iconRes = com.lalilu.component.R.drawable.ic_lrc_fill,
                 titleRes = R.string.preference_lyric_settings
             ) {
@@ -202,11 +201,11 @@ private fun SettingsScreen(
                     subTitle = "请选择TTF格式的字体文件",
                     mimeType = "font/ttf"
                 )
-                SettingStateSeekBar(
-                    state = lyricGravity,
-                    selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
-                    titleRes = R.string.preference_lyric_settings_text_gravity
-                )
+//                SettingStateSeekBar(
+//                    state = lyricGravity,
+//                    selection = stringArrayResource(id = R.array.lyric_gravity_text).toList(),
+//                    titleRes = R.string.preference_lyric_settings_text_gravity
+//                )
 //                SettingProgressSeekBar(
 //                    state = lyricTextSize,
 //                    title = "歌词文字大小",
@@ -217,6 +216,7 @@ private fun SettingsScreen(
 
         item {
             SettingCategory(
+                modifier = Modifier.padding(bottom = 30.dp),
                 iconRes = R.drawable.ic_scan_line,
                 titleRes = R.string.preference_media_source_settings
             ) {
@@ -235,6 +235,7 @@ private fun SettingsScreen(
 
         item {
             SettingCategory(
+                modifier = Modifier.padding(bottom = 30.dp),
                 icon = painterResource(id = R.drawable.ic_loader_line),
                 title = "其他"
             ) {
@@ -243,11 +244,11 @@ private fun SettingsScreen(
                     subTitle = "简化界面显示效果",
                     state = forceHideStatusBar,
                 )
-                SettingStateSeekBar(
-                    state = darkModeOption,
-                    selection = stringArrayResource(id = R.array.dark_mode_options).toList(),
-                    titleRes = R.string.preference_dark_mode
-                )
+//                SettingStateSeekBar(
+//                    state = darkModeOption,
+//                    selection = stringArrayResource(id = R.array.dark_mode_options).toList(),
+//                    titleRes = R.string.preference_dark_mode
+//                )
                 SettingSwitcher(
                     state = enableDynamicTips,
                     titleRes = R.string.preference_media_source_settings_enable_dynamic_tips,

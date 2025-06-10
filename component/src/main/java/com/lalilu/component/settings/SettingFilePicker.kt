@@ -6,15 +6,8 @@ import android.provider.MediaStore
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -24,12 +17,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lalilu.component.R
 import okio.buffer
 import okio.sink
@@ -38,6 +28,7 @@ import java.io.File
 
 @Composable
 fun SettingFilePicker(
+    modifier: Modifier = Modifier,
     state: MutableState<String>,
     title: String,
     subTitle: String? = null,
@@ -46,36 +37,19 @@ fun SettingFilePicker(
     val textColor = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 
     FileSelectWrapper(state = state) { launcher, fileName ->
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = { launcher.launch(mimeType) })
-                .padding(horizontal = 20.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                Text(
-                    text = title,
-                    color = textColor,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = fileName.value.takeIf { it.isNotEmpty() } ?: subTitle ?: "",
-                    fontSize = 12.sp,
-                    color = textColor.copy(0.5f)
+        SettingBaseItem(
+            modifier = modifier,
+            title = title,
+            subTitle = fileName.value.takeIf { it.isNotEmpty() } ?: subTitle ?: "",
+            onContentStartClick = { launcher.launch(mimeType) },
+            contentEnd = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_right_s_line),
+                    tint = textColor,
+                    contentDescription = ""
                 )
             }
-
-            Icon(
-                painter = painterResource(id = R.drawable.ic_arrow_right_s_line),
-                tint = textColor,
-                contentDescription = ""
-            )
-        }
+        )
     }
 }
 
