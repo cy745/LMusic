@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -64,7 +65,11 @@ import com.lalilu.lmusic.compose.screen.playing.lyric.LyricSettings
 import com.lalilu.lmusic.compose.screen.playing.lyric.SerializableFont
 import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.extension.SleepTimerSmallEntry
+import com.lalilu.remixicon.Editor
 import com.lalilu.remixicon.System
+import com.lalilu.remixicon.editor.alignCenter
+import com.lalilu.remixicon.editor.alignLeft
+import com.lalilu.remixicon.editor.alignRight
 import com.lalilu.remixicon.system.closeLine
 import com.lalilu.remixicon.system.settingsFill
 import org.koin.compose.koinInject
@@ -162,12 +167,12 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                 index = 0,
                 groupState = accordionGroupState,
                 title = stringResource(R.string.preference_lyric_settings_text_gravity),
-                subTitle = "默认为 \"${gravityOptions.getOrNull(1)}\"",
+                subTitle = "当前为 \"${gravityOptions.getOrNull(settings.value.textAlign.toInt())}\"",
                 content = {
                     val selected =
                         remember { mutableIntStateOf(settings.value.textAlign.toInt()) }
 
-                    gravityOptions.forEachIndexed { index, it ->
+                    gravityOptions.forEachIndexed { index, option ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -180,11 +185,24 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                                 }
                                 .padding(start = 16.dp, end = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = remember {
+                                    when (index) {
+                                        0 -> RemixIcon.Editor.alignLeft
+                                        1 -> RemixIcon.Editor.alignCenter
+                                        else -> RemixIcon.Editor.alignRight
+                                    }
+                                },
+                                tint = MaterialTheme.colors.onBackground,
+                                contentDescription = null
+                            )
                             Text(
-                                text = it,
-                                fontSize = 14.sp,
+                                modifier = Modifier.weight(1f),
+                                text = option,
+                                fontSize = 12.sp,
                                 color = MaterialTheme.colors.onBackground
                             )
                             RadioButton(

@@ -177,6 +177,7 @@ private fun SettingsScreen(
                                                 else -> RemixIcon.Media.shuffleFill
                                             }
                                         },
+                                        tint = MaterialTheme.colors.onBackground,
                                         contentDescription = null
                                     )
                                     Text(
@@ -326,6 +327,7 @@ private fun SettingsScreen(
                                                     else -> RemixIcon.Weather.moonLine
                                                 }
                                             },
+                                            tint = MaterialTheme.colors.onBackground,
                                             contentDescription = null
                                         )
                                         Text(
