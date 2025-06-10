@@ -1,5 +1,6 @@
 package com.lalilu.lmusic.compose.component.playing
 
+import StatusBarLyric.API.StatusBarLyric
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,14 +42,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blankj.utilcode.util.RomUtils
 import com.funny.data_saver.core.DataSaverMutableState
 import com.lalilu.R
 import com.lalilu.RemixIcon
+import com.lalilu.common.CustomRomUtils
 import com.lalilu.component.extension.DialogItem
 import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.split
 import com.lalilu.component.extension.transform
 import com.lalilu.component.lumo.components.RadioButton
+import com.lalilu.component.lumo.components.card.CardDefaults
 import com.lalilu.component.lumo.components.card.OutlinedCard
 import com.lalilu.component.lumo.components.rememberAccordionGroupState
 import com.lalilu.component.settings.SettingBaseAccordion
@@ -168,7 +172,12 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(4.dp))
-                                .clickable { selected.intValue = index }
+                                .clickable {
+                                    selected.intValue = index
+                                    settings.value =
+                                        settings.value.copy(textAlign = index.toTextAlign())
+                                    settings.saveData()
+                                }
                                 .padding(start = 16.dp, end = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -305,6 +314,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
             OutlinedCard(
                 modifier = Modifier
                     .padding(horizontal = 16.dp),
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colors.surface)
             ) {
                 SettingProgressSeekBar(
                     value = { settings.value.timeOffset.toFloat() },
@@ -315,6 +325,14 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                     title = "歌词偏移时间(ms)",
                     valueRange = 0..500
                 )
+
+                val statusBarLyricExt: StatusBarLyric = koinInject()
+                if (RomUtils.isMeizu() || statusBarLyricExt.hasEnable() || CustomRomUtils.isFlyme) {
+                    SettingSwitcher(
+                        titleRes = R.string.preference_lyric_settings_status_bar_lyric,
+                        state = settingsSp.enableStatusLyric
+                    )
+                }
 
                 SettingSwitcher(
                     title = "歌词模糊效果",
@@ -329,6 +347,11 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                     title = "歌词页展开时隐藏其他组件",
                     subTitle = "简化界面显示效果",
                     state = settingsSp.autoHideSeekbar,
+                )
+                SettingSwitcher(
+                    title = "歌词页展开时屏幕常亮",
+                    subTitle = "小心烧屏",
+                    state = settingsSp.keepScreenOnWhenLyricExpanded,
                 )
                 SettingFilePicker(
                     state = lyricTypefacePath,

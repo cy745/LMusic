@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.rotate
 import com.lalilu.RemixIcon
 import com.lalilu.component.lumo.components.Accordion
 import com.lalilu.component.lumo.components.AccordionGroupState
+import com.lalilu.component.lumo.components.card.CardDefaults
 import com.lalilu.component.lumo.components.card.OutlinedCard
 import com.lalilu.remixicon.Arrows
 import com.lalilu.remixicon.arrows.arrowDownSLine
@@ -24,7 +25,10 @@ fun SettingBaseAccordion(
     subTitle: String? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    OutlinedCard(modifier = modifier) {
+    OutlinedCard(
+        modifier = modifier,
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colors.surface)
+    ) {
         val state = groupState.getState(index)
 
         Accordion(
