@@ -1,7 +1,7 @@
 package com.lalilu.lmedia.repository
 
-import com.lalilu.common.kv.BaseKV
+import com.lalilu.common.kv.KVContext
 
-object LMediaKV : BaseKV() {
+object LMediaKV : KVContext("lmedia") {
 
 }
