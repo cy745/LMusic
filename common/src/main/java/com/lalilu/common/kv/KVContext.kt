@@ -39,8 +39,10 @@ abstract class KVContext(
             val converter = converters.firstOrNull { it.accept(baseType, clazz, default) }
                     as? KVConverter
 
-            requireNotNull(converter) {
-                "No KVConverter found for ${clazz.simpleName} with baseType $baseType"
+            if (baseType != null) {
+                requireNotNull(converter) {
+                    "No KVConverter found for ${clazz.simpleName} with baseType $baseType"
+                }
             }
 
             return converter
