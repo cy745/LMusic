@@ -13,7 +13,6 @@ import com.lalilu.common.toUpdatableFlow
 import com.lalilu.lmedia.entity.FileInfo
 import com.lalilu.lmedia.entity.LSong
 import com.lalilu.lmedia.repository.LMediaKV
-import com.lalilu.lmedia.repository.LMediaSp
 import com.lalilu.lmedia.wrapper.Taglib
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -89,7 +88,6 @@ sealed class FileSource {
 @SuppressLint("FlowOperatorInvokedInComposition")
 class FileSystemScanner(
     private val context: Context,
-    lMediaSp: LMediaSp
 ) : MediaSource<LSong> {
 
     /**
@@ -104,7 +102,7 @@ class FileSystemScanner(
     override fun requireFlow(): Flow<List<LSong>> = resultFlow
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val resultFlow = lMediaSp.includePath.flow(true)
+    private val resultFlow = LMediaKV.includePath.flow()
         .mapLatest { uriStr -> FileSource.from(uriStr, context) }
         .mapLatest { fileSources ->
             // 先尝试从缓存加载，缓存无结果则尝试扫描读取
@@ -130,7 +128,7 @@ class FileSystemScanner(
             val md5ForDirectory = EncryptUtils.encryptMD5ToString(id).take(8)
 
             LMediaKV.obtainList<LSong>(md5ForDirectory)
-                .get()
+                .getData()
                 ?.takeIf { it.isNotEmpty() }
         }.flatten()
             .takeIf { it.isNotEmpty() }
@@ -147,7 +145,7 @@ class FileSystemScanner(
             val md5ForDirectory = EncryptUtils.encryptMD5ToString(entry.key).take(8)
 
             LMediaKV.obtainList<LSong>(md5ForDirectory)
-                .set(entry.value)
+                .value = entry.value
         }
 
         LogUtils.i("Cache Saved: songs: ${songs.size} directory: ${directoryMap.keys.size}")

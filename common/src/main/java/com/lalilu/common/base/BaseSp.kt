@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
+@Deprecated("弃用，转移使用KVContext")
 abstract class BaseSp {
     protected abstract fun obtainSourceSp(): SharedPreferences
     private val mapTypeClazz by lazy { mapOf<String, Any>()::class.java }

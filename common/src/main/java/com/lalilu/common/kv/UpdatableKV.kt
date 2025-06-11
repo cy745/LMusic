@@ -4,8 +4,10 @@ import kotlinx.coroutines.flow.Flow
 
 interface UpdatableKV<T> {
     fun flow(): Flow<T?>
-    fun get(): T?
-    fun set(value: T?)
+    fun getData(): T
+    fun setData(value: T)
+
+    fun remove()
     fun save()
     fun update()
     fun enableAutoSave()

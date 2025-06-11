@@ -37,7 +37,7 @@ import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.lfolder.R
-import com.lalilu.lmedia.repository.LMediaSp
+import com.lalilu.lmedia.repository.LMediaKV
 import com.lalilu.lmedia.scanner.FileSource
 import com.lalilu.remixicon.Document
 import com.lalilu.remixicon.System
@@ -55,25 +55,23 @@ import me.rosuh.filepicker.config.FilePickerManager
 @OptIn(ExperimentalCoroutinesApi::class)
 class DictionaryScreenModel(
     private val application: Application,
-    private val lMediaSp: LMediaSp,
 ) : ScreenModel {
-    val targetDirectory = lMediaSp.includePath
-        .flow(true)
+    val targetDirectory = LMediaKV.includePath.flow()
         .mapLatest { str -> FileSource.from(str, application) }
 
     fun saveTargetUri(uri: Uri) {
         val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
         application.contentResolver.takePersistableUriPermission(uri, flags)
 
-        lMediaSp.includePath.add(uri.toString())
+        LMediaKV.includePath.value += uri.toString()
     }
 
     fun savePaths(strList: List<String>) {
-        lMediaSp.includePath.add(strList)
+        LMediaKV.includePath.value += strList
     }
 
     fun remove(str: String) {
-        lMediaSp.includePath.remove(str)
+        LMediaKV.includePath.value -= str
     }
 }
 

@@ -15,25 +15,32 @@ class KVItemImpl<T>(
     private val converter by lazy { KVContext.findConverter(baseType, clazz, defaultValue) }
     private val convertedDefaultValue: String? by lazy { converter?.convert(defaultValue) }
 
-    override fun get(): T? {
+    override fun getData(): T {
         if (converter == null) {
             return saver.readData(key, defaultValue, baseType, clazz)
         }
 
         val data = saver.readData(key, convertedDefaultValue, baseType, clazz)
-        return converter!!.restore(data) as T
+        return (converter!!.restore(data) as? T)
+            ?: defaultValue
+            ?: throw IllegalStateException("convert failed, and default value not provided. key: $key, value: $data")
     }
 
-    override fun set(value: T?) {
-        if (converter == null || value == null) {
+    override fun setData(value: T) {
+        if (converter == null) {
             saver.saveData(key, value, baseType, clazz)
-            super.set(value)
+            super.setData(value)
             return
         }
 
         val data = converter!!.convert(value)
         saver.saveData(key, data, baseType, clazz)
-        super.set(value)
+        super.setData(value)
+    }
+
+    override fun remove() {
+        saver.saveData(key, null, baseType, clazz)
+        update()
     }
 }
 

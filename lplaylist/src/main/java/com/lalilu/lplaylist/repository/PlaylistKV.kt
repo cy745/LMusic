@@ -1,6 +1,7 @@
 package com.lalilu.lplaylist.repository
 
 import com.blankj.utilcode.util.GsonUtils
+import com.blankj.utilcode.util.LogUtils
 import com.google.gson.reflect.TypeToken
 import com.lalilu.common.kv.KVContext
 import com.lalilu.common.kv.KVConverter
@@ -25,11 +26,18 @@ class LPlaylistListKVConverter : KVConverter {
             ?.mapNotNull { it as? LPlaylist }
             ?: return ""
 
-        return GsonUtils.toJson(list, typeToken.type)
+        return runCatching { GsonUtils.toJson(list, typeToken.type) }
+            .getOrNull()
+            ?: ""
     }
 
     override fun restore(content: String): Any? {
-        return GsonUtils.fromJson(content, typeToken.type)
+        return try {
+            GsonUtils.fromJson(content, typeToken.type)
+        } catch (e: Exception) {
+            LogUtils.e(e)
+            emptyList<LPlaylist>()
+        }
     }
 
     override fun accept(baseType: KClass<*>?, clazz: KClass<*>, default: Any?): Boolean {

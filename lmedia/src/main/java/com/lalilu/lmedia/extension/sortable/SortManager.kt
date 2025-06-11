@@ -2,7 +2,7 @@ package com.lalilu.lmedia.extension.sortable
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import com.lalilu.lmedia.repository.LMediaSp
+import com.lalilu.lmedia.repository.LMediaKV
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -24,16 +24,16 @@ class SortActionPreference(
     prefix: String,
     private val defaultAction: SortAction? = null
 ) : SimplePreference<SortAction> {
-    private val lMediaSp: LMediaSp by KoinPlatform.getKoin().inject<LMediaSp>()
-    private val spItem = lMediaSp.obtain<String>("${prefix}sort_action")
+    private val kvItem = LMediaKV.obtain<String>("${prefix}sort_action")
 
     override fun get(): SortAction? = runCatching {
-        spItem.value.let { KoinPlatform.getKoin().getOrNull<SortAction>(named(it)) }
+        kvItem.value
+            .let { KoinPlatform.getKoin().getOrNull<SortAction>(named(it)) }
             ?: defaultAction
     }.getOrNull()
 
     override fun set(value: SortAction) {
-        spItem.value = value.key() ?: ""
+        kvItem.value = value.key() ?: ""
     }
 }
 
@@ -41,17 +41,16 @@ class SortConfigPreference(
     prefix: String,
     private val defaultConfig: SortConfig? = null
 ) : SimplePreference<SortConfig> {
-    private val lMediaSp: LMediaSp by KoinPlatform.getKoin().inject<LMediaSp>()
     private val json: Json by KoinPlatform.getKoin().inject<Json>()
-    private val spItem = lMediaSp.obtain<String>("${prefix}sort_config")
+    private val kvItem = LMediaKV.obtain<String>("${prefix}sort_config")
 
-    override fun get(): SortConfig? = spItem.value
+    override fun get(): SortConfig? = kvItem.value
         .runCatching { json.decodeFromString<SortConfig>(this) }
         .getOrNull()
         ?: defaultConfig
 
     override fun set(value: SortConfig) {
-        spItem.value = json.encodeToString(value)
+        kvItem.value = json.encodeToString(value)
     }
 }
 

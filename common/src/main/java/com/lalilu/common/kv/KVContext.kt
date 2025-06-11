@@ -11,14 +11,14 @@ abstract class KVContext(
 ) {
     inline fun <reified T : Serializable> obtain(
         key: String,
+        defaultValue: T? = null,
         prefix: String = _prefix,
-        defaultValue: T? = null
     ): KVItem<T> = obtainStatic(key, prefix, defaultValue)
 
     inline fun <reified T : Serializable> obtainList(
         key: String,
-        prefix: String = _prefix,
         defaultValue: List<T>? = null,
+        prefix: String = _prefix,
     ): KVItem<List<T>> = obtainListStatic(key, prefix, defaultValue)
 
     companion object {

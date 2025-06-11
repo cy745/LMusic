@@ -288,12 +288,12 @@ private fun Context.getLauncherPendingIntent(): PendingIntent {
 }
 
 internal fun getHistoryItems(): List<MediaItem> {
-    val history = MPlayerKV.historyPlaylistIds.get()
+    val history = MPlayerKV.historyPlaylistIds.getData()
 
-    return if (!history.isNullOrEmpty()) LMedia.mapItems(history)
+    return if (history.isNotEmpty()) LMedia.mapItems(history)
     else LMedia.getChildren(LMedia.ALL_SONGS)
 }
 
 internal fun saveHistoryIds(mediaIds: List<String>) {
-    MPlayerKV.historyPlaylistIds.set(mediaIds)
+    MPlayerKV.historyPlaylistIds.setData(mediaIds)
 }

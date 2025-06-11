@@ -12,7 +12,6 @@ import com.lalilu.lmedia.entity.toMediaItem
 import com.lalilu.lmedia.indexer.BaseLibrary
 import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmedia.indexer.Library
-import com.lalilu.lmedia.repository.LMediaSp
 import com.lalilu.lmedia.scanner.FileSystemScanner
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -81,7 +80,6 @@ object LMedia : BaseLibrary(), Library {
 
     @SuppressLint("ObsoleteSdkInt")
     val module = module {
-        singleOf(::LMediaSp)
         singleOf(::FileSystemScanner)
     }
 }

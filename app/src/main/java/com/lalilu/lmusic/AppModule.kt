@@ -15,8 +15,6 @@ import com.lalilu.R
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
 import com.lalilu.lmusic.datastore.SettingsSp
-import com.lalilu.lmusic.datastore.TempSp
-import com.lalilu.lmusic.utils.EQHelper
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.LAlbumFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.LSongFetcher
@@ -82,8 +80,6 @@ fun provideImageLoaderFactory(
 val AppModule = module {
     single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
     single { SettingsSp(androidApplication()) }
-    single { TempSp(androidApplication()) }
-    single { EQHelper(androidApplication()) }
     single {
         StatusBarLyric(
             androidContext(),

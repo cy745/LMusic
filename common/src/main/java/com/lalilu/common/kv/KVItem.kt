@@ -10,37 +10,37 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 @SuppressLint("UnrememberedMutableState")
-abstract class KVItem<T> : MutableState<T?>, ReadWriteProperty<KVItem<T>, T?>, UpdatableKV<T> {
+abstract class KVItem<T> : MutableState<T>, ReadWriteProperty<KVItem<T>, T>, UpdatableKV<T> {
     var autoSave = true
         private set
 
-    private val state: MutableState<T?> by lazy { mutableStateOf(get()) }
-    private val flowInternal: MutableStateFlow<T?> by lazy { MutableStateFlow(state.value) }
-    override var value: T?
+    private val state: MutableState<T> by lazy { mutableStateOf(getData()) }
+    private val flowInternal: MutableStateFlow<T> by lazy { MutableStateFlow(state.value) }
+    override var value: T
         get() = state.value
         set(value) {
             val oldValue = state.value
             state.value = value
             if (oldValue != value && autoSave) {
-                set(value)
+                setData(value)
             }
         }
 
-    override fun getValue(thisRef: KVItem<T>, property: KProperty<*>): T? = thisRef.value
-    override fun setValue(thisRef: KVItem<T>, property: KProperty<*>, value: T?) =
+    override fun getValue(thisRef: KVItem<T>, property: KProperty<*>): T = thisRef.value
+    override fun setValue(thisRef: KVItem<T>, property: KProperty<*>, value: T) =
         run { thisRef.value = value }
 
-    override fun component1(): T? = value
-    override fun component2(): (T?) -> Unit = { value = it }
+    override fun component1(): T = value
+    override fun component2(): (T) -> Unit = { value = it }
 
-    override fun save() = set(value)
-    override fun update() = run { value = get() }
-    override fun flow(): Flow<T?> = flowInternal
+    override fun save() = setData(value)
+    override fun update() = run { value = getData() }
+    override fun flow(): Flow<T> = flowInternal
     override fun enableAutoSave() = run { autoSave = true }
     override fun disableAutoSave() = run { autoSave = false }
 
     @CallSuper
-    override fun set(value: T?) {
+    override fun setData(value: T) {
         flowInternal.tryEmit(value)
     }
 }

@@ -16,18 +16,16 @@ internal class PlaylistRepositoryImpl(
 ) : PlaylistRepository {
 
     override fun getPlaylistsFlow(): Flow<List<LPlaylist>> {
-        if (PlaylistKV.playlistList.value == null) {
+        if (PlaylistKV.playlistList.value.isEmpty()) {
             checkFavouriteExist()
         }
 
         return PlaylistKV.playlistList.flow()
-            .mapLatest { playlists ->
-                playlists?.distinctBy { it.id } ?: emptyList()
-            }
+            .mapLatest { playlists -> playlists.distinctBy { it.id } }
     }
 
     override fun getPlaylists(): List<LPlaylist> {
-        return PlaylistKV.playlistList.value ?: emptyList()
+        return PlaylistKV.playlistList.value
     }
 
     override fun setPlaylists(playlists: List<LPlaylist>) {
