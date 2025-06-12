@@ -7,11 +7,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.MaterialTheme
@@ -36,6 +38,7 @@ import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
 import com.lalilu.component.base.screen.ScreenInfoFactory
+import com.lalilu.component.extension.fadeEdgeForStatusBar
 import com.lalilu.lfolder.R
 import com.lalilu.lmedia.repository.LMediaKV
 import com.lalilu.lmedia.scanner.FileSource
@@ -146,15 +149,19 @@ object FoldersScreen : Screen, ScreenInfoFactory, ScreenActionFactory {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DictionaryScreen(
     dictionarySM: DictionaryScreenModel
 ) {
     val directory by dictionarySM.targetDirectory.collectAsState(initial = emptyList())
+    val statusBar = WindowInsets.statusBarsIgnoringVisibility.asPaddingValues()
 
     LazyColumn(
-        modifier = Modifier,
-        contentPadding = WindowInsets.statusBars.asPaddingValues()
+        modifier = Modifier
+            .fillMaxSize()
+            .fadeEdgeForStatusBar(),
+        contentPadding = statusBar
     ) {
         item {
             NavigatorHeader(

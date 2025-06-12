@@ -1,13 +1,12 @@
 package com.lalilu.lplaylist.screen.detail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -25,11 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.gigamole.composefadingedges.FadingEdgesGravity
-import com.gigamole.composefadingedges.content.FadingEdgesContentType
-import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
-import com.gigamole.composefadingedges.fill.FadingEdgesFillType
-import com.gigamole.composefadingedges.verticalFadingEdges
 import com.lalilu.RemixIcon
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.smartBarPadding
@@ -37,8 +31,10 @@ import com.lalilu.component.base.songs.SongsScreenStickyHeader
 import com.lalilu.component.card.SongCard
 import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.SortExtraPresetUI
+import com.lalilu.component.extension.fadeEdgeForStatusBar
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
+import com.lalilu.component.extension.statusBarsIgnoringVisibilityPadding
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.state
 import com.lalilu.lmedia.entity.LSong
@@ -55,6 +51,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PlaylistDetailScreenContent(
     playlist: LPlaylist? = null,
@@ -70,7 +67,7 @@ internal fun PlaylistDetailScreenContent(
     onUpdatePlaylist: (List<String>) -> Unit = {}
 ) {
     val density = LocalDensity.current
-    val statusBar = WindowInsets.statusBars
+    val statusBar = WindowInsets.statusBarsIgnoringVisibility
     val listState: LazyListState = rememberLazyListState()
     val stickyHeaderContentType = remember { "group" }
     val favouriteIds = state("favourite_ids", emptyList<String>())
@@ -125,21 +122,7 @@ internal fun PlaylistDetailScreenContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .verticalFadingEdges(
-                length = statusBar
-                    .asPaddingValues()
-                    .calculateTopPadding(),
-                contentType = FadingEdgesContentType.Dynamic.Lazy.List(
-                    scrollConfig = FadingEdgesScrollConfig.Dynamic(),
-                    state = listState
-                ),
-                gravity = FadingEdgesGravity.Start,
-                fillType = remember {
-                    FadingEdgesFillType.FadeClip(
-                        fillStops = Triple(0f, 0.7f, 1f)
-                    )
-                }
-            ),
+            .fadeEdgeForStatusBar(),
         state = listState,
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.Start
@@ -148,8 +131,8 @@ internal fun PlaylistDetailScreenContent(
             itemWithRecord(key = "HEADER") {
                 NavigatorHeader(
                     modifier = Modifier
-                        .statusBarsPadding()
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .statusBarsIgnoringVisibilityPadding(),
                     rowExtraSpace = 8.dp,
                     paddingValues = PaddingValues(
                         top = 26.dp,

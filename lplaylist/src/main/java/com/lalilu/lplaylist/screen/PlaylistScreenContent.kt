@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -33,6 +32,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lalilu.RemixIcon
 import com.lalilu.component.base.NavigatorHeader
+import com.lalilu.component.extension.fadeEdgeForStatusBar
+import com.lalilu.component.extension.statusBarsIgnoringVisibilityPadding
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.lplaylist.R
 import com.lalilu.lplaylist.component.PlaylistCard
@@ -75,15 +76,17 @@ internal fun PlaylistScreenContent(
     }
 
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .fadeEdgeForStatusBar(),
         state = listState,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item(key = "HEADER") {
             NavigatorHeader(
                 modifier = Modifier
-                    .statusBarsPadding()
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .statusBarsIgnoringVisibilityPadding(),
                 rowExtraSpace = 8.dp,
                 paddingValues = PaddingValues(
                     top = 26.dp,

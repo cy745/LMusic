@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -28,6 +27,8 @@ import com.lalilu.RemixIcon
 import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.base.smartBarPadding
+import com.lalilu.component.extension.fadeEdgeForStatusBar
+import com.lalilu.component.extension.statusBarsIgnoringVisibilityPadding
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.lhistory.component.HistoryItemCard
 import com.lalilu.lhistory.entity.LHistory
@@ -71,7 +72,9 @@ private fun HistoryScreenContent(
     val listState = rememberLazyListState()
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .fadeEdgeForStatusBar(),
         state = listState
     ) {
         item(key = "历史记录") {
@@ -79,7 +82,7 @@ private fun HistoryScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .statusBarsPadding(),
+                    .statusBarsIgnoringVisibilityPadding(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(

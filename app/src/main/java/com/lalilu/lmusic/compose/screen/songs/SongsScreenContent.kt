@@ -3,13 +3,12 @@ package com.lalilu.lmusic.compose.screen.songs
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -24,11 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.gigamole.composefadingedges.FadingEdgesGravity
-import com.gigamole.composefadingedges.content.FadingEdgesContentType
-import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
-import com.gigamole.composefadingedges.fill.FadingEdgesFillType
-import com.gigamole.composefadingedges.verticalFadingEdges
 import com.lalilu.common.base.SourceType
 import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.base.songs.SongsScreenScrollBar
@@ -36,8 +30,10 @@ import com.lalilu.component.base.songs.SongsScreenStickyHeader
 import com.lalilu.component.card.SongCard
 import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.SortExtraPresetUI
+import com.lalilu.component.extension.fadeEdgeForStatusBar
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
+import com.lalilu.component.extension.statusBarsIgnoringVisibilityPadding
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.state
 import com.lalilu.lmedia.entity.FileInfo
@@ -53,6 +49,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun SongsScreenContent(
     recorder: ItemRecorder = ItemRecorder(),
@@ -66,7 +63,7 @@ internal fun SongsScreenContent(
 ) {
     val density = LocalDensity.current
     val listState: LazyListState = rememberLazyListState()
-    val statusBar = WindowInsets.statusBars
+    val statusBar = WindowInsets.statusBarsIgnoringVisibility
     val favouriteIds = state("favourite_ids", emptyList<String>())
     val scroller = rememberLazyListAnimateScroller(
         listState = listState,
@@ -107,21 +104,7 @@ internal fun SongsScreenContent(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalFadingEdges(
-                    length = statusBar
-                        .asPaddingValues()
-                        .calculateTopPadding(),
-                    contentType = FadingEdgesContentType.Dynamic.Lazy.List(
-                        scrollConfig = FadingEdgesScrollConfig.Dynamic(),
-                        state = listState
-                    ),
-                    gravity = FadingEdgesGravity.Start,
-                    fillType = remember {
-                        FadingEdgesFillType.FadeClip(
-                            fillStops = Triple(0f, 0.7f, 1f)
-                        )
-                    }
-                ),
+                .fadeEdgeForStatusBar(),
             state = listState,
         ) {
             startRecord(recorder) {
@@ -132,7 +115,7 @@ internal fun SongsScreenContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-                            .statusBarsPadding(),
+                            .statusBarsIgnoringVisibilityPadding(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(

@@ -6,14 +6,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,18 +35,15 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.gigamole.composefadingedges.FadingEdgesGravity
-import com.gigamole.composefadingedges.content.FadingEdgesContentType
-import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
-import com.gigamole.composefadingedges.fill.FadingEdgesFillType
-import com.gigamole.composefadingedges.verticalFadingEdges
 import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.base.songs.SongsScreenStickyHeader
 import com.lalilu.component.card.SongCard
 import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.SortExtraPresetUI
+import com.lalilu.component.extension.fadeEdgeForStatusBar
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
+import com.lalilu.component.extension.statusBarsIgnoringVisibilityPadding
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.state
 import com.lalilu.lalbum.viewModel.AlbumDetailEvent
@@ -60,6 +56,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AlbumDetailScreenContent(
     album: LAlbum? = null,
@@ -73,7 +70,7 @@ fun AlbumDetailScreenContent(
     onClickGroup: (GroupId) -> Unit = {}
 ) {
     val listState = rememberLazyListState()
-    val statusBar = WindowInsets.statusBars
+    val statusBar = WindowInsets.statusBarsIgnoringVisibility
     val density = LocalDensity.current
     val favouriteIds = state("favourite_ids", emptyList<String>())
     val stickyHeaderContentType = remember { "group" }
@@ -112,21 +109,7 @@ fun AlbumDetailScreenContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .verticalFadingEdges(
-                length = statusBar
-                    .asPaddingValues()
-                    .calculateTopPadding(),
-                contentType = FadingEdgesContentType.Dynamic.Lazy.List(
-                    scrollConfig = FadingEdgesScrollConfig.Dynamic(),
-                    state = listState
-                ),
-                gravity = FadingEdgesGravity.Start,
-                fillType = remember {
-                    FadingEdgesFillType.FadeClip(
-                        fillStops = Triple(0f, 0.7f, 1f)
-                    )
-                }
-            ),
+            .fadeEdgeForStatusBar(),
         state = listState,
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.Start
@@ -137,7 +120,7 @@ fun AlbumDetailScreenContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
-                        .statusBarsPadding(),
+                        .statusBarsIgnoringVisibilityPadding(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Box(

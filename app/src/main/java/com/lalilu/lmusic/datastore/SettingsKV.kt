@@ -8,14 +8,6 @@ object SettingsKV : KVContext("settings") {
         Config.KEY_SETTINGS_PLAY_MODE,
         Config.DEFAULT_SETTINGS_PLAY_MODE
     )
-    val lyricGravity = obtain<Int>(
-        Config.KEY_SETTINGS_LYRIC_GRAVITY,
-        Config.DEFAULT_SETTINGS_LYRIC_GRAVITY
-    )
-    val lyricTypefacePath = obtain<String>(
-        Config.KEY_SETTINGS_LYRIC_TYPEFACE_PATH,
-        Config.DEFAULT_SETTINGS_LYRIC_TYPEFACE_PATH
-    )
     val enableStatusLyric = obtain<Boolean>(
         Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE,
         Config.DEFAULT_SETTINGS_STATUS_LYRIC_ENABLE

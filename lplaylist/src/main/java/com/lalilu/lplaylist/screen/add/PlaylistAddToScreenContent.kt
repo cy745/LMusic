@@ -3,7 +3,6 @@ package com.lalilu.lplaylist.screen.add
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
@@ -15,6 +14,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.extension.ItemSelector
+import com.lalilu.component.extension.fadeEdgeForStatusBar
+import com.lalilu.component.extension.statusBarsIgnoringVisibilityPadding
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lplaylist.R
@@ -30,14 +31,16 @@ internal fun PlaylistAddToScreenContent(
     playlists: () -> List<LPlaylist>,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .fadeEdgeForStatusBar(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         item {
             NavigatorHeader(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .statusBarsPadding(),
+                    .statusBarsIgnoringVisibilityPadding(),
                 title = stringResource(id = R.string.playlist_action_add_to_playlist),
                 subTitle = "[S: ${mediaIds.size}] -> [P: ${selector.selected().size}]"
             ) {

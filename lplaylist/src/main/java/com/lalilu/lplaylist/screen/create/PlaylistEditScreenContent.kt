@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.component.base.NavigatorHeader
+import com.lalilu.component.extension.fadeEdgeForStatusBar
+import com.lalilu.component.extension.statusBarsIgnoringVisibilityPadding
 
 @Composable
 internal fun PlaylistEditScreenContent(
@@ -50,10 +51,14 @@ internal fun PlaylistEditScreenContent(
     val keyboard = LocalSoftwareKeyboardController.current
 
 
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .fadeEdgeForStatusBar()
+    ) {
         item {
             NavigatorHeader(
-                modifier = Modifier.statusBarsPadding(),
+                modifier = Modifier.statusBarsIgnoringVisibilityPadding(),
                 title = if (isEditing()) "更新歌单" else "创建歌单",
                 subTitle = if (isEditing()) "更新歌单" else "创建歌单",
             )

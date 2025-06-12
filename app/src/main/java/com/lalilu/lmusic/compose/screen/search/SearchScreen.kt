@@ -7,6 +7,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -14,7 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.Icon
@@ -73,12 +74,13 @@ data object SearchScreen : Screen, TabScreen, ScreenInfoFactory, ScreenBarFactor
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SearchScreenContent(
     searchVM: SearchVM = koinInject(),
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
-    val statusBar = WindowInsets.statusBars.asPaddingValues()
+    val statusBar = WindowInsets.statusBarsIgnoringVisibility.asPaddingValues()
     val state = searchVM.searchState.value
 
     DisposableEffect(Unit) {

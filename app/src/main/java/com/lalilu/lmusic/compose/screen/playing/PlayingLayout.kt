@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -47,6 +46,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.lalilu.component.base.LocalEnhanceSheetState
 import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.extension.hideControl
+import com.lalilu.component.extension.statusBarsIgnoringVisibilityPadding
 import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.LyricSourceEmbedded
 import com.lalilu.lmedia.lyric.LyricUtils
@@ -136,8 +136,9 @@ fun PlayingLayout() {
         }
     }
 
-    LaunchedEffect(hideComponent.value) {
-        systemUiController.isStatusBarVisible = !hideComponent.value
+    LaunchedEffect(hideComponent.value || SettingsKV.forceHideStatusBar.value) {
+        systemUiController.isStatusBarVisible =
+            !hideComponent.value && !SettingsKV.forceHideStatusBar.value
     }
 
     LaunchedEffect(Unit) {
@@ -167,7 +168,7 @@ fun PlayingLayout() {
                         intercept = { true }
                     )
                     .fillMaxWidth()
-                    .statusBarsPadding()
+                    .statusBarsIgnoringVisibilityPadding()
                     .padding(bottom = 10.dp)
                     .graphicsLayer {
                         translationY = lerp(

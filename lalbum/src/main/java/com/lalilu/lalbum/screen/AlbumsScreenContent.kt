@@ -2,12 +2,13 @@ package com.lalilu.lalbum.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
@@ -25,6 +26,7 @@ import com.blankj.utilcode.util.LogUtils
 import com.lalilu.component.base.LocalWindowSize
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.smartBarPadding
+import com.lalilu.component.extension.fadeEdgeForStatusBar
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lalbum.component.AlbumCard
@@ -36,6 +38,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun AlbumsScreenContent(
     eventFlow: SharedFlow<AlbumsEvent> = MutableSharedFlow(),
@@ -44,8 +47,9 @@ internal fun AlbumsScreenContent(
     showText: () -> Boolean = { false },
 ) {
     val isPad = LocalWindowSize.current.widthSizeClass != WindowWidthSizeClass.Compact
-    val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val gridState = rememberLazyStaggeredGridState()
+    val statusBarPadding = WindowInsets.statusBarsIgnoringVisibility
+        .asPaddingValues().calculateTopPadding()
 
     LaunchedEffect(Unit) {
         eventFlow.collectLatest { event ->
@@ -61,7 +65,7 @@ internal fun AlbumsScreenContent(
     LazyVerticalStaggeredGrid(
         state = gridState,
         columns = StaggeredGridCells.Fixed(if (isPad) 3 else 2),
-        modifier = Modifier,
+        modifier = Modifier.fadeEdgeForStatusBar(),
         contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = statusBarPadding),
         verticalItemSpacing = 10.dp,
         horizontalArrangement = Arrangement.spacedBy(10.dp),

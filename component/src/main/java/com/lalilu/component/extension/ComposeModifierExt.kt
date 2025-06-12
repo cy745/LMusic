@@ -8,7 +8,13 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +36,10 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.gigamole.composefadingedges.FadingEdgesGravity
+import com.gigamole.composefadingedges.content.FadingEdgesContentType
+import com.gigamole.composefadingedges.fill.FadingEdgesFillType
+import com.gigamole.composefadingedges.verticalFadingEdges
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -170,4 +180,33 @@ fun Modifier.clipFade(
                 }
             }
         }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun Modifier.fadeEdgeForStatusBar(
+    statusBar: WindowInsets = WindowInsets.statusBarsIgnoringVisibility
+): Modifier = run {
+    then(
+        Modifier.verticalFadingEdges(
+            length = statusBar
+                .asPaddingValues()
+                .calculateTopPadding(),
+            contentType = FadingEdgesContentType.Static,
+            gravity = FadingEdgesGravity.Start,
+            fillType = remember {
+                FadingEdgesFillType.FadeClip(
+                    fillStops = Triple(0f, 0.7f, 1f)
+                )
+            }
+        )
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun Modifier.statusBarsIgnoringVisibilityPadding(): Modifier = run {
+    val statusBar: WindowInsets = WindowInsets.statusBarsIgnoringVisibility
+
+    then(Modifier.padding(statusBar.asPaddingValues()))
 }

@@ -2,13 +2,12 @@ package com.lalilu.lartist.screen.artists
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
@@ -22,17 +21,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.gigamole.composefadingedges.FadingEdgesGravity
-import com.gigamole.composefadingedges.content.FadingEdgesContentType
-import com.gigamole.composefadingedges.content.scrollconfig.FadingEdgesScrollConfig
-import com.gigamole.composefadingedges.fill.FadingEdgesFillType
-import com.gigamole.composefadingedges.verticalFadingEdges
 import com.lalilu.component.base.smartBarPadding
 import com.lalilu.component.base.songs.SongsScreenScrollBar
 import com.lalilu.component.base.songs.SongsScreenStickyHeader
 import com.lalilu.component.extension.ItemRecorder
+import com.lalilu.component.extension.fadeEdgeForStatusBar
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
+import com.lalilu.component.extension.statusBarsIgnoringVisibilityPadding
 import com.lalilu.component.navigation.AppRouter
 import com.lalilu.component.navigation.NavIntent
 import com.lalilu.lartist.component.ArtistCard
@@ -47,6 +43,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ArtistsScreenContent(
     artists: SortResult<LArtist> = SortResult.empty(),
@@ -59,7 +56,7 @@ internal fun ArtistsScreenContent(
     onClickGroup: (GroupId) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
-    val statusBar = WindowInsets.statusBars
+    val statusBar = WindowInsets.statusBarsIgnoringVisibility
     val density = LocalDensity.current
     val stickyHeaderContentType = remember { "group" }
     val scroller = rememberLazyListAnimateScroller(
@@ -101,21 +98,7 @@ internal fun ArtistsScreenContent(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalFadingEdges(
-                    length = statusBar
-                        .asPaddingValues()
-                        .calculateTopPadding(),
-                    contentType = FadingEdgesContentType.Dynamic.Lazy.List(
-                        scrollConfig = FadingEdgesScrollConfig.Dynamic(),
-                        state = listState
-                    ),
-                    gravity = FadingEdgesGravity.Start,
-                    fillType = remember {
-                        FadingEdgesFillType.FadeClip(
-                            fillStops = Triple(0f, 0.7f, 1f)
-                        )
-                    }
-                ),
+                .fadeEdgeForStatusBar(),
             state = listState,
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalAlignment = Alignment.Start
@@ -128,7 +111,7 @@ internal fun ArtistsScreenContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-                            .statusBarsPadding(),
+                            .statusBarsIgnoringVisibilityPadding(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
