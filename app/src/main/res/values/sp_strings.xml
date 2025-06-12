@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="preference_lyric_experimental">实验性功能</string>
-    <string name="preference_media_source_tips">将重载曲库</string>
+    <string name="preference_media_source_tips">过滤掉&lt;unknown&gt;相关歌曲，将重载曲库</string>
     <string name="preference_extensions">扩展功能</string>
     <string name="preference_dynamic_tips">为部分操作提供一个反馈</string>
     <string name="preference_dark_mode">深色模式</string>
