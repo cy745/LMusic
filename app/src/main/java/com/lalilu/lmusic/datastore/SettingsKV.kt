@@ -20,10 +20,7 @@ object SettingsKV : KVContext("settings") {
         Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE,
         Config.DEFAULT_SETTINGS_STATUS_LYRIC_ENABLE
     )
-    val enableSystemEq = obtain<Boolean>(
-        Config.KEY_SETTINGS_ENABLE_SYSTEM_EQ,
-        Config.DEFAULT_SETTINGS_ENABLE_SYSTEM_EQ
-    )
+    val enableSystemEq = obtain<Boolean>("enable_system_eq", false)
     val enableDynamicTips = obtain<Boolean>(
         Config.KEY_SETTINGS_ENABLE_DYNAMIC_TIPS,
         Config.DEFAULT_SETTINGS_ENABLE_DYNAMIC_TIPS

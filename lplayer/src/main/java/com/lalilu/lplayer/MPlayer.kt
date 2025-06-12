@@ -25,6 +25,7 @@ import com.lalilu.lplayer.service.CustomCommand
 import com.lalilu.lplayer.service.MService
 import com.lalilu.lplayer.service.getHistoryItems
 import com.lalilu.lplayer.service.saveHistoryIds
+import com.lalilu.lplayer.utils.EQHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -33,6 +34,7 @@ import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 import kotlin.coroutines.CoroutineContext
 
@@ -52,6 +54,7 @@ object MPlayer : CoroutineScope, Player.Listener {
     }
 
     val module = module {
+        single { EQHelper(androidApplication()) }
     }
 
     var pauseWhenCompletion: Boolean by mutableStateOf(false)

@@ -12,13 +12,13 @@ abstract class KVContext(
         key: String,
         defaultValue: T? = null,
         prefix: String = _prefix,
-    ): KVItem<T> = obtainStatic(key, prefix, defaultValue)
+    ): KVItem<T> = obtainStatic(key, defaultValue, prefix)
 
     inline fun <reified T> obtainList(
         key: String,
         defaultValue: List<T> = emptyList<T>(),
         prefix: String = _prefix,
-    ): KVItem<List<T>> = obtainListStatic(key, prefix, defaultValue)
+    ): KVItem<List<T>> = obtainListStatic(key, defaultValue, prefix)
 
     companion object {
         val converters = mutableListOf<KVConverter>(StringListKVConverter())
@@ -49,8 +49,8 @@ abstract class KVContext(
 
         inline fun <reified T> obtainStatic(
             key: String,
+            defaultValue: T? = null,
             prefix: String = "",
-            defaultValue: T? = null
         ): KVItem<T> {
             val actualKey = if (prefix.isNotBlank()) "${prefix}_$key" else key
             return kvMap.getOrPut(actualKey) {
@@ -64,8 +64,8 @@ abstract class KVContext(
 
         inline fun <reified T> obtainListStatic(
             key: String,
-            prefix: String = "",
             defaultValue: List<T> = emptyList<T>(),
+            prefix: String = "",
         ): KVItem<List<T>> {
             val actualKey = if (prefix.isNotBlank()) "${prefix}_$key" else key
 

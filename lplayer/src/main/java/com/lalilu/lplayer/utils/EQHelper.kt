@@ -1,9 +1,9 @@
-package com.lalilu.lmusic.utils
+package com.lalilu.lplayer.utils
 
 import android.content.Context
 import android.content.Intent
 import android.media.audiofx.AudioEffect
-import com.blankj.utilcode.util.IntentUtils.isIntentAvailable
+import com.blankj.utilcode.util.IntentUtils
 
 class EQHelper(private val context: Context) {
     private var enable: Boolean = false
@@ -52,7 +52,7 @@ class EQHelper(private val context: Context) {
     }
 
     private fun isSystemEqAvailable(): Boolean =
-        isIntentAvailable(Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL))
+        IntentUtils.isIntentAvailable(Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL))
 
     private fun checkAudioSessionId(id: Int?): Boolean =
         id != null && id != AudioEffect.ERROR_BAD_VALUE

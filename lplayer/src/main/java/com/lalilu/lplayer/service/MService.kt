@@ -27,6 +27,7 @@ import com.blankj.utilcode.util.AppUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.lalilu.common.kv.KVContext
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lplayer.MPlayerKV
 import com.lalilu.lplayer.extensions.FadeTransitionRenderersFactory
@@ -35,6 +36,7 @@ import com.lalilu.lplayer.extensions.playMode
 import com.lalilu.lplayer.extensions.setUpQueueControl
 import com.lalilu.lplayer.service.CustomCommand.SeekToNext
 import com.lalilu.lplayer.service.CustomCommand.SeekToPrevious
+import com.lalilu.lplayer.utils.EQHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -45,6 +47,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.getKoin
 import org.koin.core.qualifier.named
+import org.koin.mp.KoinPlatform
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(UnstableApi::class)
@@ -55,6 +58,7 @@ class MService : MediaLibraryService(), CoroutineScope {
     private var player: Player? = null
     private var exoPlayer: ExoPlayer? = null
     private var mediaSession: MediaLibrarySession? = null
+    private var eqHelper: EQHelper? = null
     private val defaultAudioAttributes by lazy {
         AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
@@ -66,6 +70,7 @@ class MService : MediaLibraryService(), CoroutineScope {
 
     override fun onCreate() {
         super.onCreate()
+        eqHelper = KoinPlatform.getKoin().getOrNull<EQHelper>()
 
         setMediaNotificationProvider(
             MNotificationProvider(this)
@@ -80,7 +85,12 @@ class MService : MediaLibraryService(), CoroutineScope {
             .apply {
                 exoPlayer = this
                 historyAnalyticsListener?.let { addAnalyticsListener(it) }
-                addListener(MPlayerListener(this))
+                addListener(
+                    MPlayerListener(
+                        player = this,
+                        onSessionIdChange = { eqHelper?.audioSessionId = it }
+                    )
+                )
             }
             .setUpQueueControl()
 
@@ -124,10 +134,23 @@ class MService : MediaLibraryService(), CoroutineScope {
                 player?.playMode = PlayMode.from(it)
             }
         }.launchIn(this)
+
+        KVContext.obtainStatic<Boolean>("enable_system_eq", false, "settings").flow().onEach {
+            eqHelper?.setSystemEqEnable(it)
+        }.launchIn(this)
     }
 }
 
-private class MPlayerListener(val player: Player) : Player.Listener {
+private class MPlayerListener(
+    val player: Player,
+    val onSessionIdChange: (Int) -> Unit = {}
+) : Player.Listener {
+    @UnstableApi
+    override fun onAudioSessionIdChanged(audioSessionId: Int) {
+        super.onAudioSessionIdChanged(audioSessionId)
+        onSessionIdChange(audioSessionId)
+    }
+
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
         val playMode = PlayMode.of(
             repeatMode = player.repeatMode,
