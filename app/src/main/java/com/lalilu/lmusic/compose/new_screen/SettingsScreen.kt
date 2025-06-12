@@ -52,12 +52,13 @@ import com.lalilu.component.lumo.components.RadioButton
 import com.lalilu.component.lumo.components.card.CardDefaults
 import com.lalilu.component.lumo.components.card.OutlinedCard
 import com.lalilu.component.settings.SettingCategory
+import com.lalilu.component.settings.SettingProgressSeekBar
 import com.lalilu.component.settings.SettingStateAccordion
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.crash.CrashHelper
 import com.lalilu.lmedia.scanner.FileSystemScanner
 import com.lalilu.lmusic.GuidingActivity
-import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.datastore.SettingsKV
 import com.lalilu.lmusic.utils.extension.getActivity
 import com.lalilu.lplayer.MPlayerKV
 import com.lalilu.lplayer.extensions.PlayMode
@@ -100,16 +101,15 @@ object SettingsScreen : Screen, ScreenInfoFactory {
 @Composable
 private fun SettingsScreen(
     eqHelper: EQHelper = koinInject(),
-    settingsSp: SettingsSp = koinInject(),
     fileSystemScanner: FileSystemScanner = koinInject()
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val darkModeOption = settingsSp.darkModeOption
-    val enableUnknownFilter = settingsSp.enableUnknownFilter
-    val enableSystemEq = settingsSp.enableSystemEq
-    val enableDynamicTips = settingsSp.enableDynamicTips
-    val forceHideStatusBar = settingsSp.forceHideStatusBar
+    val darkModeOption = SettingsKV.darkModeOption
+    val enableUnknownFilter = SettingsKV.enableUnknownFilter
+    val enableSystemEq = SettingsKV.enableSystemEq
+    val enableDynamicTips = SettingsKV.enableDynamicTips
+    val forceHideStatusBar = SettingsKV.forceHideStatusBar
 
     val launcherForAudioFx = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -268,15 +268,17 @@ private fun SettingsScreen(
                     colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colors.surface)
                 ) {
                     Spacer(Modifier.height(12.dp))
-//                    SettingProgressSeekBar(
-//                        state = settingsSp.durationFilter,
-//                        title = "筛除小于时长的文件",
-//                        valueRange = 0..60
-//                    )
                     SettingSwitcher(
                         state = enableUnknownFilter,
                         titleRes = R.string.preference_media_source_settings_unknown_filter,
                         subTitleRes = R.string.preference_media_source_tips
+                    )
+                    SettingProgressSeekBar(
+                        value = { SettingsKV.durationFilter.value.toFloat() },
+                        onValueUpdate = { SettingsKV.durationFilter.value = it.toInt() },
+                        onFinishedUpdate = { SettingsKV.durationFilter.save() },
+                        title = "筛除小于时长的文件（秒）",
+                        valueRange = 0..120
                     )
                     Spacer(Modifier.height(12.dp))
                 }
@@ -323,8 +325,8 @@ private fun SettingsScreen(
                                             imageVector = remember {
                                                 when (index) {
                                                     0 -> RemixIcon.Design.contrastLine
-                                                    1 -> RemixIcon.Weather.sunLine
-                                                    else -> RemixIcon.Weather.moonLine
+                                                    1 -> RemixIcon.Weather.moonLine
+                                                    else -> RemixIcon.Weather.sunLine
                                                 }
                                             },
                                             tint = MaterialTheme.colors.onBackground,

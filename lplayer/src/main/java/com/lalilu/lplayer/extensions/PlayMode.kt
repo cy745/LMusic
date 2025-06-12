@@ -19,7 +19,9 @@ enum class PlayMode(val index: Int) {
         }
 
         fun from(string: String?): PlayMode {
-            return string?.let { valueOf(it) } ?: ListRecycle
+            return string?.runCatching { valueOf(this) }
+                ?.getOrNull()
+                ?: ListRecycle
         }
     }
 }

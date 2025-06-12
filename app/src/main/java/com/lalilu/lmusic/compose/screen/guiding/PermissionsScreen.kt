@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -21,9 +23,8 @@ import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.lmedia.LMedia
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.MainActivity
-import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.datastore.SettingsKV
 import com.lalilu.lmusic.utils.extension.getActivity
-import org.koin.compose.koinInject
 import kotlin.system.exitProcess
 
 class PermissionsScreen : Screen, ScreenInfoFactory {
@@ -43,11 +44,9 @@ class PermissionsScreen : Screen, ScreenInfoFactory {
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-private fun PermissionsPage(
-    settingsSp: SettingsSp = koinInject()
-) {
+private fun PermissionsPage() {
     val permission = rememberPermissionState(permission = REQUIRE_PERMISSIONS)
-    var isGuidingOver by settingsSp.isGuidingOver
+    var isGuidingOver by SettingsKV.isGuidingOver
     val context = LocalContext.current
 
     LaunchedEffect(permission.status) {

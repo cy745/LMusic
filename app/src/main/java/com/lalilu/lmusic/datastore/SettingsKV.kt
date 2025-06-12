@@ -1,15 +1,9 @@
 package com.lalilu.lmusic.datastore
 
-import android.app.Application
-import android.content.SharedPreferences
-import com.lalilu.common.base.BaseSp
+import com.lalilu.common.kv.KVContext
 import com.lalilu.lmusic.Config
 
-class SettingsSp(private val context: Application) : BaseSp() {
-    override fun obtainSourceSp(): SharedPreferences {
-        return context.getSharedPreferences(context.packageName, Application.MODE_PRIVATE)
-    }
-
+object SettingsKV : KVContext("settings") {
     val playMode = obtain<Int>(
         Config.KEY_SETTINGS_PLAY_MODE,
         Config.DEFAULT_SETTINGS_PLAY_MODE
@@ -57,7 +51,7 @@ class SettingsSp(private val context: Application) : BaseSp() {
     val durationFilter = obtain<Int>(
         Config.KEY_SETTINGS_DURATION_FILTER,
         Config.DEFAULT_SETTINGS_DURATION_FILTER
-    )
+    ).apply { disableAutoSave() }
     val isGuidingOver = obtain<Boolean>(
         Config.KEY_REMEMBER_IS_GUIDING_OVER,
         false

@@ -21,7 +21,11 @@ class KVItemImpl<T>(
         }
 
         val data = saver.readData(key, convertedDefaultValue, baseType, clazz)
-        return (converter!!.restore(data) as? T)
+        if (data.isBlank()) return defaultValue
+            ?: throw IllegalStateException("default value not provided. key: $key")
+
+        return runCatching { converter!!.restore(data) as? T }
+            .getOrNull()
             ?: defaultValue
             ?: throw IllegalStateException("convert failed, and default value not provided. key: $key, value: $data")
     }

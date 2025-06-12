@@ -9,12 +9,9 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.transitionFactory
-import com.funny.data_saver.core.DataSaverInterface
-import com.funny.data_saver.core.DataSaverPreferences
 import com.lalilu.R
 import com.lalilu.lmusic.Config.LRCSHARE_BASEURL
 import com.lalilu.lmusic.api.lrcshare.LrcShareApi
-import com.lalilu.lmusic.datastore.SettingsSp
 import com.lalilu.lmusic.utils.coil.CrossfadeTransitionFactory
 import com.lalilu.lmusic.utils.coil.fetcher.LAlbumFetcher
 import com.lalilu.lmusic.utils.coil.fetcher.LSongFetcher
@@ -39,14 +36,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 @Module
 @ComponentScan("com.lalilu.lmusic")
 object MainModule
-
-@Single
-fun provideDataSaverInterface(
-    application: Application
-): DataSaverInterface {
-    val sp = application.getSharedPreferences("settings", Application.MODE_PRIVATE)
-    return DataSaverPreferences(sp)
-}
 
 @Single
 fun provideJson(): Json {
@@ -79,7 +68,6 @@ fun provideImageLoaderFactory(
 
 val AppModule = module {
     single<ViewModelStoreOwner> { androidApplication() as ViewModelStoreOwner }
-    single { SettingsSp(androidApplication()) }
     single {
         StatusBarLyric(
             androidContext(),

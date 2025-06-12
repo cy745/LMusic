@@ -4,9 +4,9 @@ import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
 import android.view.MotionEvent
-import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
@@ -17,20 +17,17 @@ import com.lalilu.common.SystemUiUtil
 import com.lalilu.component.extension.collectWithLifeCycleOwner
 import com.lalilu.lmusic.Config.REQUIRE_PERMISSIONS
 import com.lalilu.lmusic.compose.App
-import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.datastore.SettingsKV
 import com.lalilu.lmusic.helper.LastTouchTimeHelper
 import com.lalilu.lmusic.utils.dynamicUpdateStatusBarColor
 import com.lalilu.lmusic.utils.setToMaxFreshRate
-import org.koin.android.ext.android.inject
 
-class MainActivity : ComponentActivity() {
-    private val settingsSp: SettingsSp by inject()
-
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // 判断是否已完成初次启动时的用户引导
-        val isGuidingOver = settingsSp.isGuidingOver.value
+        val isGuidingOver = SettingsKV.isGuidingOver.value
         val isPermissionsGranted = ActivityCompat.checkSelfPermission(this, REQUIRE_PERMISSIONS)
         if (!isGuidingOver || isPermissionsGranted != PackageManager.PERMISSION_GRANTED) {
             ActivityUtils.startActivity(GuidingActivity::class.java)
@@ -39,7 +36,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // 深色模式控制
-        settingsSp.darkModeOption.flow(true)
+        SettingsKV.darkModeOption.flow()
             .collectWithLifeCycleOwner(this) {
                 AppCompatDelegate.setDefaultNightMode(
                     when (it) {

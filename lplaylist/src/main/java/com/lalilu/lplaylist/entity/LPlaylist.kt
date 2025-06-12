@@ -1,9 +1,9 @@
 package com.lalilu.lplaylist.entity
 
 import com.lalilu.lmedia.extension.Searchable
-import java.io.Serializable
-import kotlin.String
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class LPlaylist(
     val id: String,
     val title: String,
@@ -12,6 +12,6 @@ data class LPlaylist(
     val mediaIds: List<String>,
     val createTime: Long = System.currentTimeMillis(),
     val modifyTime: Long = System.currentTimeMillis()
-) : Serializable, Searchable {
+) : Searchable {
     override fun getMatchSource(): String = "$title$subTitle"
 }

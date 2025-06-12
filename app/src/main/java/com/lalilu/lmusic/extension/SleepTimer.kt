@@ -57,11 +57,10 @@ import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.dayNightTextColor
 import com.lalilu.component.extension.enableFor
 import com.lalilu.component.settings.SettingSwitcher
-import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.datastore.SettingsKV
 import com.lalilu.lplayer.action.PlayerAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import org.koin.compose.koinInject
 import java.time.LocalTime
 import com.lalilu.component.R as ComponentR
 
@@ -145,13 +144,11 @@ fun SleepTimerSmallEntry(
 }
 
 @Composable
-fun SleepTimer(
-    settingsSp: SettingsSp = koinInject()
-) {
+fun SleepTimer() {
     val isRunning = remember { derivedStateOf { SleepTimerContext.isRunning() } }
-    val pauseWhenCompletion = remember { settingsSp.obtain<Boolean>("pauseWhenCompletion", false) }
+    val pauseWhenCompletion = remember { SettingsKV.obtain<Boolean>("pauseWhenCompletion", false) }
     val defaultSecondToCountDown =
-        remember { settingsSp.obtain<Int>("defaultSecondToCountDown", 0) }
+        remember { SettingsKV.obtain<Int>("defaultSecondToCountDown", 0) }
 
     SleepTimer(
         isRunning = isRunning,

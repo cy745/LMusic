@@ -1,31 +1,25 @@
 package com.lalilu.common.kv.impl
 
-import com.blankj.utilcode.util.GsonUtils
-import com.blankj.utilcode.util.LogUtils
-import com.google.gson.reflect.TypeToken
 import com.lalilu.common.kv.KVConverter
+import kotlinx.serialization.json.Json
+import org.koin.mp.KoinPlatform
 import kotlin.reflect.KClass
 
 class StringListKVConverter : KVConverter {
-    val typeToken = object : TypeToken<List<String>>() {}
+    private val json by KoinPlatform.getKoin().inject<Json>()
 
     override fun convert(value: Any?): String {
         val list = (value as? List<*>)
             ?.mapNotNull { it as? String }
             ?: return ""
 
-        return runCatching { GsonUtils.toJson(list, typeToken.type) }
+        return runCatching { json.encodeToString(list) }
             .getOrNull()
             ?: ""
     }
 
     override fun restore(content: String): Any? {
-        return try {
-            GsonUtils.fromJson(content, typeToken.type)
-        } catch (e: Exception) {
-            LogUtils.e(e)
-            emptyList<String>()
-        }
+        return json.decodeFromString<List<String>>(content)
     }
 
     override fun accept(baseType: KClass<*>?, clazz: KClass<*>, default: Any?): Boolean {

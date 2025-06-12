@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.library)
     alias(libs.plugins.kotlin)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -27,6 +28,8 @@ dependencies {
     api(libs.media)
 
     api(libs.kotlinx.coroutines.guava)
+    api(libs.kotlin.serialization)
+    api(libs.kotlinx.serialization.json)
 
     api(libs.bundles.koin)
     api(libs.krouter.core)

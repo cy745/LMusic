@@ -44,10 +44,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.blankj.utilcode.util.RomUtils
-import com.funny.data_saver.core.DataSaverMutableState
 import com.lalilu.R
 import com.lalilu.RemixIcon
 import com.lalilu.common.CustomRomUtils
+import com.lalilu.common.kv.KVItem
 import com.lalilu.component.extension.DialogItem
 import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.component.extension.split
@@ -63,7 +63,7 @@ import com.lalilu.component.settings.SettingProgressSeekBar
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricSettings
 import com.lalilu.lmusic.compose.screen.playing.lyric.SerializableFont
-import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.datastore.SettingsKV
 import com.lalilu.lmusic.extension.SleepTimerSmallEntry
 import com.lalilu.remixicon.Editor
 import com.lalilu.remixicon.System
@@ -96,8 +96,7 @@ private fun Int.toTextAlign(): TextAlign {
 }
 
 val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transparent) {
-    val settingsSp: SettingsSp = koinInject()
-    val settings: DataSaverMutableState<LyricSettings> = koinInject(named("LyricSettings"))
+    val settings: KVItem<LyricSettings> = koinInject(named("LyricSettings"))
     val lyricTypefacePath = settings.split(
         getValue = { it.mainFont },
         setValue = { value.copy(mainFont = it) },
@@ -181,7 +180,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                                     selected.intValue = index
                                     settings.value =
                                         settings.value.copy(textAlign = index.toTextAlign())
-                                    settings.saveData()
+                                    settings.save()
                                 }
                                 .padding(start = 16.dp, end = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -211,7 +210,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                                     selected.intValue = index
                                     settings.value =
                                         settings.value.copy(textAlign = index.toTextAlign())
-                                    settings.saveData()
+                                    settings.save()
                                 }
                             )
                         }
@@ -233,7 +232,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         onValueUpdate = {
                             settings.value = settings.value.copy(mainFontSize = it.sp)
                         },
-                        onFinishedUpdate = { settings.saveData() },
+                        onFinishedUpdate = { settings.save() },
                         title = "歌词文字大小",
                         valueRange = 14..64
                     )
@@ -242,7 +241,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         onValueUpdate = {
                             settings.value = settings.value.copy(mainLineHeight = it.sp)
                         },
-                        onFinishedUpdate = { settings.saveData() },
+                        onFinishedUpdate = { settings.save() },
                         title = "歌词行高大小",
                         valueRange = 14..72
                     )
@@ -252,7 +251,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                             settings.value =
                                 settings.value.copy(mainFontWeight = it.roundToInt())
                         },
-                        onFinishedUpdate = { settings.saveData() },
+                        onFinishedUpdate = { settings.save() },
                         title = "歌词字重",
                         valueRange = 50..900
                     )
@@ -272,7 +271,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                                 )
                             )
                         },
-                        onFinishedUpdate = { settings.saveData() },
+                        onFinishedUpdate = { settings.save() },
                         title = "横向边距",
                         valueRange = 0..50
                     )
@@ -293,7 +292,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         onValueUpdate = {
                             settings.value = settings.value.copy(translationFontSize = it.sp)
                         },
-                        onFinishedUpdate = { settings.saveData() },
+                        onFinishedUpdate = { settings.save() },
                         title = "翻译文字大小",
                         valueRange = 14..64
                     )
@@ -302,7 +301,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         onValueUpdate = {
                             settings.value = settings.value.copy(translationLineHeight = it.sp)
                         },
-                        onFinishedUpdate = { settings.saveData() },
+                        onFinishedUpdate = { settings.save() },
                         title = "翻译行高大小",
                         valueRange = 14..72
                     )
@@ -312,7 +311,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                             settings.value =
                                 settings.value.copy(translationFontWeight = it.roundToInt())
                         },
-                        onFinishedUpdate = { settings.saveData() },
+                        onFinishedUpdate = { settings.save() },
                         title = "翻译字重",
                         valueRange = 50..900
                     )
@@ -321,7 +320,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         onValueUpdate = {
                             settings.value = settings.value.copy(gapSize = it.dp)
                         },
-                        onFinishedUpdate = { settings.saveData() },
+                        onFinishedUpdate = { settings.save() },
                         title = "歌词翻译间距",
                         valueRange = 0..50
                     )
@@ -339,7 +338,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                     onValueUpdate = {
                         settings.value = settings.value.copy(timeOffset = it.roundToLong())
                     },
-                    onFinishedUpdate = { settings.saveData() },
+                    onFinishedUpdate = { settings.save() },
                     title = "歌词偏移时间(ms)",
                     valueRange = 0..500
                 )
@@ -348,7 +347,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                 if (RomUtils.isMeizu() || statusBarLyricExt.hasEnable() || CustomRomUtils.isFlyme) {
                     SettingSwitcher(
                         titleRes = R.string.preference_lyric_settings_status_bar_lyric,
-                        state = settingsSp.enableStatusLyric
+                        state = SettingsKV.enableStatusLyric
                     )
                 }
 
@@ -358,18 +357,18 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                     state = { settings.value.blurEffectEnable },
                     onStateUpdate = {
                         settings.value = settings.value.copy(blurEffectEnable = it)
-                        settings.saveData()
+                        settings.save()
                     }
                 )
                 SettingSwitcher(
                     title = "歌词页展开时隐藏其他组件",
                     subTitle = "简化界面显示效果",
-                    state = settingsSp.autoHideSeekbar,
+                    state = SettingsKV.autoHideSeekbar,
                 )
                 SettingSwitcher(
                     title = "歌词页展开时屏幕常亮",
                     subTitle = "小心烧屏",
-                    state = settingsSp.keepScreenOnWhenLyricExpanded,
+                    state = SettingsKV.keepScreenOnWhenLyricExpanded,
                 )
                 SettingFilePicker(
                     state = lyricTypefacePath,
@@ -386,7 +385,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
 fun LyricViewToolbar(
     contentColor: () -> Color
 ) {
-    val settings: DataSaverMutableState<LyricSettings> = koinInject(named("LyricSettings"))
+    val settings: KVItem<LyricSettings> = koinInject(named("LyricSettings"))
 
     Row(
         modifier = Modifier

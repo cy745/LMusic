@@ -55,7 +55,7 @@ import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricLayout
 import com.lalilu.lmusic.compose.screen.playing.seekbar.ClickPart
 import com.lalilu.lmusic.compose.screen.playing.seekbar.SeekbarLayout
-import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.datastore.SettingsKV
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.action.PlayerAction
 import com.lalilu.lplayer.extensions.PlayMode
@@ -63,13 +63,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.compose.koinInject
 import kotlin.math.pow
 
 @Composable
-fun PlayingLayout(
-    settingsSp: SettingsSp = koinInject(),
-) {
+fun PlayingLayout() {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val lifecycle = LocalLifecycleOwner.current
@@ -107,7 +104,7 @@ fun PlayingLayout(
 
     val hideComponent = remember {
         derivedStateOf {
-            settingsSp.autoHideSeekbar.value && draggable.state.value == DragAnchor.Max
+            SettingsKV.autoHideSeekbar.value && draggable.state.value == DragAnchor.Max
         }
     }
 

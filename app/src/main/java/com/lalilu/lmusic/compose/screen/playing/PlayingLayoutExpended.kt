@@ -31,9 +31,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,14 +61,13 @@ import com.lalilu.lmedia.lyric.LyricSourceEmbedded
 import com.lalilu.lmedia.lyric.LyricUtils
 import com.lalilu.lmusic.compose.component.playing.LyricViewActionDialog
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricLayout
-import com.lalilu.lmusic.datastore.SettingsSp
+import com.lalilu.lmusic.datastore.SettingsKV
 import com.lalilu.lmusic.utils.coil.BlurTransformation
 import com.lalilu.lplayer.MPlayer
 import com.lalilu.lplayer.action.PlayerAction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import org.koin.compose.koinInject
 
 /**
  * Expended 状态下的播放布局
@@ -266,18 +267,19 @@ private fun SongDetailPanel(
 
 
 @Composable
-private fun ControlPanel(
-    settingsSp: SettingsSp = koinInject()
-) {
+private fun ControlPanel() {
     val isPlaying = remember { derivedStateOf { MPlayer.isPlaying } }
-    var playMode by settingsSp.playMode
+    var playMode by SettingsKV.playMode
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 32.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp, alignment = Alignment.CenterHorizontally)
+        horizontalArrangement = Arrangement.spacedBy(
+            10.dp,
+            alignment = Alignment.CenterHorizontally
+        )
     ) {
         IconButton(onClick = { PlayerAction.SkipToPrevious.action() }) {
             Image(

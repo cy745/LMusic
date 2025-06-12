@@ -2,28 +2,27 @@ package com.lalilu.common.kv
 
 import com.lalilu.common.kv.impl.KVItemImpl
 import com.lalilu.common.kv.impl.StringListKVConverter
-import java.io.Serializable
 import kotlin.reflect.KClass
 
 @Suppress("UNCHECKED_CAST")
 abstract class KVContext(
     val _prefix: String = ""
 ) {
-    inline fun <reified T : Serializable> obtain(
+    inline fun <reified T> obtain(
         key: String,
         defaultValue: T? = null,
         prefix: String = _prefix,
     ): KVItem<T> = obtainStatic(key, prefix, defaultValue)
 
-    inline fun <reified T : Serializable> obtainList(
+    inline fun <reified T> obtainList(
         key: String,
-        defaultValue: List<T>? = null,
+        defaultValue: List<T> = emptyList<T>(),
         prefix: String = _prefix,
     ): KVItem<List<T>> = obtainListStatic(key, prefix, defaultValue)
 
     companion object {
         val converters = mutableListOf<KVConverter>(StringListKVConverter())
-        val kvMap = LinkedHashMap<String, KVItem<out Any>>()
+        val kvMap = LinkedHashMap<String, KVItem<*>>()
         var kvSaver: KVSaver? = KVSpSaver
             private set
 
@@ -48,7 +47,7 @@ abstract class KVContext(
             return converter
         }
 
-        inline fun <reified T : Serializable> obtainStatic(
+        inline fun <reified T> obtainStatic(
             key: String,
             prefix: String = "",
             defaultValue: T? = null
@@ -63,10 +62,10 @@ abstract class KVContext(
             } as KVItem<T>
         }
 
-        inline fun <reified T : Serializable> obtainListStatic(
+        inline fun <reified T> obtainListStatic(
             key: String,
             prefix: String = "",
-            defaultValue: List<T>? = null,
+            defaultValue: List<T> = emptyList<T>(),
         ): KVItem<List<T>> {
             val actualKey = if (prefix.isNotBlank()) "${prefix}_$key" else key
 

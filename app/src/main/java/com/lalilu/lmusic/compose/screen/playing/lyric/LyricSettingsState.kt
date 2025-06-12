@@ -1,30 +1,43 @@
 package com.lalilu.lmusic.compose.screen.playing.lyric
 
-import com.funny.data_saver.core.DataSaverConverter
-import com.funny.data_saver.core.DataSaverInterface
-import com.funny.data_saver.core.DataSaverMutableState
-import com.funny.data_saver.core.SavePolicy
-import com.funny.data_saver.core.mutableDataSaverStateOf
-import kotlinx.serialization.encodeToString
+import com.blankj.utilcode.util.LogUtils
+import com.lalilu.common.kv.KVContext
+import com.lalilu.common.kv.KVConverter
+import com.lalilu.common.kv.KVItem
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
+import kotlin.reflect.KClass
 
 @Named("LyricSettings")
 @Single(createdAtStart = true)
 fun provideLyricSettingsState(
-    dataSaverInterface: DataSaverInterface,
     json: Json
-): DataSaverMutableState<LyricSettings> {
-    DataSaverConverter.registerTypeConverters<LyricSettings>(
-        save = { json.encodeToString(it) },
-        restore = { json.decodeFromString<LyricSettings>(it) }
-    )
+): KVItem<LyricSettings> {
+    KVContext.registerConverter(object : KVConverter {
+        override fun convert(value: Any?): String {
+            return try {
+                json.encodeToString(LyricSettings.serializer(), value as LyricSettings)
+            } catch (e: Exception) {
+                LogUtils.e(e)
+                ""
+            }
+        }
 
-    return mutableDataSaverStateOf<LyricSettings>(
-        dataSaverInterface = dataSaverInterface,
+        @Suppress("USELESS_CAST")
+        override fun restore(content: String): Any? {
+            return json.decodeFromString(LyricSettings.serializer(), content) as? LyricSettings
+        }
+
+        override fun accept(
+            baseType: KClass<*>?,
+            clazz: KClass<*>,
+            default: Any?
+        ): Boolean = clazz == LyricSettings::class && baseType == null
+    })
+
+    return KVContext.obtainStatic<LyricSettings>(
         key = "LyricSettings",
-        initialValue = LyricSettings(),
-        savePolicy = SavePolicy.NEVER
-    )
+        defaultValue = LyricSettings()
+    ).apply { disableAutoSave() }
 }

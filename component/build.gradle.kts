@@ -53,8 +53,6 @@ dependencies {
     api("com.github.GIGAMOLE:ComposeFadingEdges:1.0.4")
     api("dev.chrisbanes.haze:haze:1.2.2")
     api("dev.chrisbanes.haze:haze-materials:1.2.2")
-
-    api("io.github.FunnySaltyFish:data-saver-core:1.2.2")
     api("com.nomanr:composables:1.1.0")
 
     // https://mvnrepository.com/artifact/org.jetbrains.androidx.navigation/navigation-compose

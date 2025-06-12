@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.funny.data_saver.core.DataSaverMutableState
+import com.lalilu.common.kv.KVItem
 import com.lalilu.component.extension.ItemRecorder
 import com.lalilu.component.extension.rememberLazyListAnimateScroller
 import com.lalilu.component.extension.startRecord
@@ -68,7 +68,7 @@ fun LyricLayout(
     onItemLongClick: (LyricItem) -> Unit = {},
 ) {
     val density = LocalDensity.current
-    val settings: DataSaverMutableState<LyricSettings> = koinInject(named("LyricSettings"))
+    val settings: KVItem<LyricSettings> = koinInject(named("LyricSettings"))
     val textMeasurer = rememberTextMeasurer()
     val isUserScrolling = remember { mutableStateOf(isUserScrollEnable()) }
         .also { it.value = isUserScrollEnable() }
