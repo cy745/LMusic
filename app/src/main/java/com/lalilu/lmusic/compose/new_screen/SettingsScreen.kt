@@ -206,15 +206,14 @@ private fun SettingsScreen(
                     SettingSwitcher(
                         title = stringResource(R.string.preference_player_settings_ignore_audio_focus),
                         onStateUpdate = { MPlayerKV.handleAudioFocus.value = !it },
-                        state = { !(MPlayerKV.handleAudioFocus.value ?: false) }
+                        state = { !MPlayerKV.handleAudioFocus.value }
                     )
                     SettingSwitcher(
                         title = "当耳机断开连接时暂停播放",
                         subTitle = "推荐开启，有效避免社死",
                         onStateUpdate = { MPlayerKV.handleBecomeNoisy.value = it },
-                        state = { MPlayerKV.handleBecomeNoisy.value ?: true }
+                        state = { MPlayerKV.handleBecomeNoisy.value }
                     )
-
                     SettingSwitcher(
                         title = "是否重启后自动续播",
                         subTitle = "谨慎开启，避免社死",
