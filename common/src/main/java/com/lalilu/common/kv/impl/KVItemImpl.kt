@@ -1,26 +1,30 @@
 package com.lalilu.common.kv.impl
 
 import com.lalilu.common.kv.KVContext
+import com.lalilu.common.kv.KVConverter
 import com.lalilu.common.kv.KVItem
 import com.lalilu.common.kv.KVSaver
 import kotlin.reflect.KClass
 
-class KVItemImpl<T>(
+class KVItemImpl<T : Any>(
     val key: String,
-    val clazz: KClass<*>,
-    val baseType: KClass<*>? = null,
+    val clazz: KClass<T>,
     val defaultValue: T? = null,
+    val converter: KVConverter? = null,
 ) : KVItem<T>() {
     private val saver: KVSaver by lazy { requireNotNull(KVContext.kvSaver) { "KvSaver is not set" } }
-    private val converter by lazy { KVContext.findConverter(baseType, clazz, defaultValue) }
-    private val convertedDefaultValue: String? by lazy { converter?.convert(defaultValue) }
+    private val convertedDefaultValue: String? by lazy {
+        defaultValue?.runCatching { converter?.convert(this) }
+            ?.getOrNull()
+    }
 
+    @Suppress("UNCHECKED_CAST")
     override fun getData(): T {
-        if (converter == null) {
-            return saver.readData(key, defaultValue, baseType, clazz)
+        if (converter == null || convertedDefaultValue == null) {
+            return saver.readData(key, defaultValue, clazz)
         }
 
-        val data = saver.readData(key, convertedDefaultValue, baseType, clazz)
+        val data = saver.readData(key, convertedDefaultValue, clazz)
         if (data.isBlank()) return defaultValue
             ?: throw IllegalStateException("default value not provided. key: $key")
 
@@ -32,18 +36,18 @@ class KVItemImpl<T>(
 
     override fun setData(value: T) {
         if (converter == null) {
-            saver.saveData(key, value, baseType, clazz)
+            saver.saveData(key, value, clazz)
             super.setData(value)
             return
         }
 
-        val data = converter!!.convert(value)
-        saver.saveData(key, data, baseType, clazz)
+        val data = converter.convert(value)
+        saver.saveData(key, data, clazz)
         super.setData(value)
     }
 
     override fun remove() {
-        saver.saveData(key, null, baseType, clazz)
+        saver.saveData(key, null, clazz)
         update()
     }
 }

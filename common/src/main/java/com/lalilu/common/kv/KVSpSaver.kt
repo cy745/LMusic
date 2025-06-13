@@ -10,7 +10,6 @@ object KVSpSaver : KVSaver {
     override fun <T> readData(
         key: String,
         defaultValue: T?,
-        baseType: KClass<*>?,
         clazz: KClass<*>,
     ): T = with(sp) {
         when {
@@ -36,7 +35,6 @@ object KVSpSaver : KVSaver {
     override fun <T> saveData(
         key: String,
         value: T?,
-        baseType: KClass<*>?,
         clazz: KClass<*>,
     ) = with(sp.edit()) {
         when (value) {

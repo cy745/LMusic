@@ -35,9 +35,10 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
+    }
+
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
     }
 
     buildFeatures {
@@ -146,8 +147,6 @@ dependencies {
 
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
-    implementation(libs.kotlin.serialization)
-    implementation(libs.kotlinx.serialization.json)
     ksp(libs.room.compiler)
 
     implementation(libs.xmlutil.core)
