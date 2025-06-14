@@ -1,8 +1,6 @@
 package com.lalilu.lfolder.screen
 
-import android.app.Application
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.combinedClickable
@@ -28,64 +26,39 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.koin.getScreenModel
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.LogUtils
 import com.lalilu.RemixIcon
 import com.lalilu.component.base.NavigatorHeader
 import com.lalilu.component.base.screen.ScreenAction
 import com.lalilu.component.base.screen.ScreenActionFactory
+import com.lalilu.component.base.screen.ScreenInfo
 import com.lalilu.component.base.screen.ScreenInfoFactory
 import com.lalilu.component.extension.fadeEdgeForStatusBar
+import com.lalilu.component.extension.screenVM
 import com.lalilu.lfolder.R
-import com.lalilu.lmedia.repository.LMediaKV
+import com.lalilu.lfolder.viewmodel.FolderVM
 import com.lalilu.lmedia.scanner.FileSource
 import com.lalilu.remixicon.Document
 import com.lalilu.remixicon.System
 import com.lalilu.remixicon.document.folderMusicLine
 import com.lalilu.remixicon.system.addLine
 import com.zhangke.krouter.annotation.Destination
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.mapLatest
 import me.rosuh.filepicker.FilePickerActivity
 import me.rosuh.filepicker.bean.FileItemBeanImpl
 import me.rosuh.filepicker.config.AbstractFileFilter
 import me.rosuh.filepicker.config.FilePickerManager
 
-@Deprecated("弃用")
-@OptIn(ExperimentalCoroutinesApi::class)
-class DictionaryScreenModel(
-    private val application: Application,
-) : ScreenModel {
-    val targetDirectory = LMediaKV.includePath.flow()
-        .mapLatest { str -> FileSource.from(str, application) }
-
-    fun saveTargetUri(uri: Uri) {
-        val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-        application.contentResolver.takePersistableUriPermission(uri, flags)
-
-        LMediaKV.includePath.value += uri.toString()
-    }
-
-    fun savePaths(strList: List<String>) {
-        LMediaKV.includePath.value += strList
-    }
-
-    fun remove(str: String) {
-        LMediaKV.includePath.value -= str
-    }
-}
 
 @Destination("/pages/folders")
 object FoldersScreen : Screen, ScreenInfoFactory, ScreenActionFactory {
     private fun readResolve(): Any = FoldersScreen
 
     @Composable
-    override fun provideScreenInfo(): com.lalilu.component.base.screen.ScreenInfo {
+    override fun provideScreenInfo(): ScreenInfo {
         return remember {
-            com.lalilu.component.base.screen.ScreenInfo(
+            ScreenInfo(
                 title = { stringResource(R.string.folder_screen_title) },
                 icon = RemixIcon.Document.folderMusicLine
             )
@@ -95,12 +68,12 @@ object FoldersScreen : Screen, ScreenInfoFactory, ScreenActionFactory {
     @Composable
     override fun provideScreenActions(): List<ScreenAction> {
         val context = LocalContext.current
-        val dictionarySM = getScreenModel<DictionaryScreenModel>()
+        val folderVM = screenVM<FolderVM>()
 
         val pickFileLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree()
         ) { treeUri ->
-            treeUri?.let { dictionarySM.saveTargetUri(it) }
+            treeUri?.let { folderVM.saveTargetUri(it) }
             LogUtils.i(treeUri)
         }
 
@@ -109,7 +82,7 @@ object FoldersScreen : Screen, ScreenInfoFactory, ScreenActionFactory {
             onResult = {
                 val result = FilePickerManager.obtainData(true)
 
-                dictionarySM.savePaths(result)
+                folderVM.savePaths(result)
                 LogUtils.i(it.data, it.resultCode, result)
             }
         )
@@ -143,18 +116,18 @@ object FoldersScreen : Screen, ScreenInfoFactory, ScreenActionFactory {
 
     @Composable
     override fun Content() {
-        val dictionarySM = getScreenModel<DictionaryScreenModel>()
+        val folderVM = screenVM<FolderVM>()
 
-        DictionaryScreen(dictionarySM = dictionarySM)
+        DictionaryScreen(folderVM = folderVM)
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DictionaryScreen(
-    dictionarySM: DictionaryScreenModel
+    folderVM: FolderVM
 ) {
-    val directory by dictionarySM.targetDirectory.collectAsState(initial = emptyList())
+    val folders by folderVM.targetDirectory.collectAsState(initial = emptyList())
     val statusBar = WindowInsets.statusBarsIgnoringVisibility.asPaddingValues()
 
     LazyColumn(
@@ -170,7 +143,7 @@ private fun DictionaryScreen(
             )
         }
 
-        items(items = directory) {
+        items(items = folders) {
             DirectoryCard(
                 title = it.name() ?: "unknown",
                 subTitle = it.path() ?: "unknown",
@@ -179,7 +152,7 @@ private fun DictionaryScreen(
                         is FileSource.Document -> it.id
                         is FileSource.IOFile -> it.id
                     }
-                    dictionarySM.remove(id)
+                    folderVM.remove(id)
                 }
             )
         }

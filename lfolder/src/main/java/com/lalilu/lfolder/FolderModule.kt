@@ -1,9 +1,8 @@
 package com.lalilu.lfolder
 
-import com.lalilu.lfolder.screen.DictionaryScreenModel
-import org.koin.core.module.dsl.factoryOf
-import org.koin.dsl.module
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
 
-val FolderModule = module {
-    factoryOf(::DictionaryScreenModel)
-}
+@Module
+@ComponentScan("com.lalilu.lfolder")
+object FolderModule
