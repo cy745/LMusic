@@ -3,6 +3,7 @@ package com.lalilu.lmedia
 import android.content.Context
 import androidx.startup.Initializer
 import com.lalilu.lmedia.extension.KanjiToHiraTransformer
+import org.koin.androix.startup.KoinInitializer
 
 class StartUp : Initializer<Unit> {
 
@@ -12,7 +13,7 @@ class StartUp : Initializer<Unit> {
     }
 
     override fun dependencies(): List<Class<out Initializer<*>>> {
-        return emptyList()
+        return mutableListOf(KoinInitializer::class.java)
     }
 
     companion object {

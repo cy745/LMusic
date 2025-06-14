@@ -41,8 +41,7 @@ class LMusicApp : Application(), ViewModelStoreOwner, KoinStartup {
             PlaylistModule.module,
             ArtistModule.module,
             AlbumModule.module,
-            FolderModule,
-            LMedia.module,
+            FolderModule.module,
             LMediaModule.module,
             MPlayer.module,
         )

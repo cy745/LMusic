@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.library)
     alias(libs.plugins.kotlin)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -25,4 +26,5 @@ android {
 
 dependencies {
     implementation(project(":component"))
+    ksp(libs.koin.compiler)
 }

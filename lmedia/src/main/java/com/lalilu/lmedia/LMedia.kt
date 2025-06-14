@@ -1,6 +1,5 @@
 package com.lalilu.lmedia
 
-import android.annotation.SuppressLint
 import android.content.Context
 import androidx.media3.common.MediaItem
 import com.lalilu.lmedia.entity.LAlbum
@@ -12,9 +11,6 @@ import com.lalilu.lmedia.entity.toMediaItem
 import com.lalilu.lmedia.indexer.BaseLibrary
 import com.lalilu.lmedia.indexer.Indexer
 import com.lalilu.lmedia.indexer.Library
-import com.lalilu.lmedia.scanner.FileSystemScanner
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.module
 
 object LMedia : BaseLibrary(), Library {
     const val ARTIST_PREFIX = "artist_"
@@ -76,10 +72,5 @@ object LMedia : BaseLibrary(), Library {
 
             else -> emptyList()
         } ?: emptyList()
-    }
-
-    @SuppressLint("ObsoleteSdkInt")
-    val module = module {
-        singleOf(::FileSystemScanner)
     }
 }

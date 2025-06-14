@@ -3,6 +3,7 @@ package com.lalilu.lplayer
 import android.content.Context
 import androidx.startup.Initializer
 import com.lalilu.lmedia.LMedia
+import org.koin.androix.startup.KoinInitializer
 
 
 class Startup : Initializer<Unit> {
@@ -13,6 +14,6 @@ class Startup : Initializer<Unit> {
     }
 
     override fun dependencies(): MutableList<Class<out Initializer<*>>> {
-        return mutableListOf()
+        return mutableListOf(KoinInitializer::class.java)
     }
 }
