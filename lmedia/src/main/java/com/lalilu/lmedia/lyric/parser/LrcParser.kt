@@ -1,23 +1,20 @@
 package com.lalilu.lmedia.lyric.parser
 
-import android.text.format.DateUtils
 import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.LyricParser
-import java.util.regex.Pattern
+import com.lalilu.lmedia.lyric.getSentenceContent
 
 /**
  * 解析Lrc歌词
  */
 object LrcParser : LyricParser {
-    private val PATTERN_LINE = Pattern.compile("((\\[\\d\\d:\\d\\d\\.\\d{2,3}])+)(.+)")
-    private val PATTERN_TIME = Pattern.compile("\\[(\\d\\d):(\\d\\d)\\.(\\d{2,3})]")
+    private val REGEX_TIME = Regex("\\[(\\d\\d):(\\d\\d)\\.(\\d{2,3})]")
 
     override fun parse(lyric: String): List<LyricItem> {
         if (lyric.isBlank()) return emptyList()
 
         // 首先将所有句子按单句进行解析
         val mainEntryList = parseLrc(lyric)
-            ?.mapNotNull { it as? LyricItem.NormalLyric }
             ?.takeIf(Collection<*>::isNotEmpty)
             ?: return emptyList()
 
@@ -27,10 +24,32 @@ object LrcParser : LyricParser {
             .mapValues { (time, list) ->
                 val first = list.getOrNull(0) ?: return@mapValues null
                 val second = list.getOrNull(1) ?: return@mapValues first
+                val translationText = when (second) {
+                    is LyricItem.WordsLyric -> second.getSentenceContent()
+                    is LyricItem.NormalLyric -> second.content
+                }
 
-                first.copy(translation = second.content)
+                when (first) {
+                    is LyricItem.WordsLyric -> first.copy(
+                        translation = listOf(
+                            LyricItem.WordsLyric.Translation(
+                                translationText,
+                                "unknown"
+                            )
+                        )
+                    )
+
+                    is LyricItem.NormalLyric -> first.copy(
+                        translation = translationText
+                    )
+                }
             }.values.mapIndexedNotNull { index, item ->
-                item?.copy(key = "$index${item.key}")
+                item ?: return@mapIndexedNotNull null
+
+                return@mapIndexedNotNull when (item) {
+                    is LyricItem.WordsLyric -> item.copy(key = "$index${item.key}")
+                    is LyricItem.NormalLyric -> item.copy(key = "$index${item.key}")
+                }
             }
     }
 
@@ -67,39 +86,105 @@ object LrcParser : LyricParser {
         lyricLine = lyricLine.trim { it <= ' ' }
 
         // [00:17.65]让我掉下眼泪的
-        val lineMatcher = PATTERN_LINE.matcher(lyricLine)
-        if (!lineMatcher.matches()) {
+        // [00:17.65]让我掉下眼泪的[00:19.66]
+        var findResult = REGEX_TIME
+            .findAll(lyricLine)
+            .toList()
+
+        // 若没有时间标签，则返回 null
+        if (findResult.isEmpty()) {
             return null
         }
 
-        val times = lineMatcher.group(1)!!
-        val text = lineMatcher.group(3)!!
-        val entryList: MutableList<LyricItem> = ArrayList()
+        // 拆分歌词和时间标签
+        val textSplits = mutableListOf<LrcContentItem>()
+        for (i in findResult.indices) {
+            val item = findResult[i]
+            textSplits.add(LrcContentItem.TimeTag(timeTagToTime(item.value)))
 
-        // [00:17.65]
-        val timeMatcher = PATTERN_TIME.matcher(times)
-        while (timeMatcher.find()) {
-            val min = timeMatcher.group(1)!!.toLong()
-            val sec = timeMatcher.group(2)!!.toLong()
-            val milString = timeMatcher.group(3)!!
-            var mil = milString.toLong()
-            // 如果毫秒是两位数，需要乘以 10，when 新增支持 1 - 6 位毫秒，很多获取的歌词存在不同的毫秒位数
-            when (milString.length) {
-                1 -> mil *= 100
-                2 -> mil *= 10
-                4 -> mil /= 10
-                5 -> mil /= 100
-                6 -> mil /= 1000
+            val endIndex = findResult.getOrNull(i + 1)?.range?.first ?: (lyricLine.lastIndex + 1)
+            val startIndex = item.range.last + 1
+
+            if (startIndex <= endIndex) {
+                val text = lyricLine.substring(startIndex, endIndex)
+                if (text.isNotEmpty()) {
+                    textSplits.add(LrcContentItem.Text(text))
+                }
             }
-            val time = min * DateUtils.MINUTE_IN_MILLIS + sec * DateUtils.SECOND_IN_MILLIS + mil
-            entryList.add(
+        }
+
+        // 为歌词单词文本添加开始时间和结束时间
+        val words = textSplits.mapIndexedNotNull { index, item ->
+            if (item is LrcContentItem.TimeTag) return@mapIndexedNotNull null
+            val text = item as? LrcContentItem.Text ?: return@mapIndexedNotNull null
+
+            val startTime = (textSplits.getOrNull(index - 1) as? LrcContentItem.TimeTag)
+                ?.time ?: return@mapIndexedNotNull null
+            val endTime = (textSplits.getOrNull(index + 1) as? LrcContentItem.TimeTag)
+                ?.time ?: startTime
+
+            LyricItem.WordsLyric.WordWithTiming(
+                content = text.text,
+                startTime = startTime,
+                endTime = endTime
+            )
+        }
+
+        // 若无结果则尽早返回
+        if (words.isEmpty()) return emptyList()
+        val firstWord = words[0]
+        val lastWord = words.last()
+
+        // 若只有一个词/句，且其开始时间等于其结束时间，则认为其就是一个普通句子
+        if (words.size == 1 && firstWord.startTime == firstWord.endTime) {
+            return listOf(
                 LyricItem.NormalLyric(
-                    content = text,
-                    time = time,
-                    key = "$time"
+                    content = firstWord.content,
+                    time = firstWord.startTime,
+                    key = "${firstWord.startTime}"
                 )
             )
         }
-        return entryList
+
+        // 否则将其输出为逐字歌词对象
+        return listOf(
+            LyricItem.WordsLyric(
+                words = words,
+                translation = emptyList(),
+                startTime = firstWord.startTime,
+                endTime = lastWord.endTime,
+                key = "${firstWord.startTime}"
+            )
+        )
+    }
+
+    /**
+     * 负责解析并转换[00:00.00]格式的时间标签
+     */
+    fun timeTagToTime(str: String): Long {
+        val timeMatcher = REGEX_TIME.matchEntire(str)
+            ?.groupValues
+        if (timeMatcher.isNullOrEmpty()) return -1L
+
+        val min = timeMatcher.getOrNull(1)!!.toLong()
+        val sec = timeMatcher.getOrNull(2)!!.toLong()
+        val milString = timeMatcher.getOrNull(3)!!
+
+        var mil = milString.toLong()
+        // 如果毫秒是两位数，需要乘以 10，when 新增支持 1 - 6 位毫秒，很多获取的歌词存在不同的毫秒位数
+        when (milString.length) {
+            1 -> mil *= 100
+            2 -> mil *= 10
+            4 -> mil /= 10
+            5 -> mil /= 100
+            6 -> mil /= 1000
+        }
+
+        return min * 60 * 1000 + sec * 1000 + mil
+    }
+
+    private sealed interface LrcContentItem {
+        data class TimeTag(val time: Long) : LrcContentItem
+        data class Text(val text: String) : LrcContentItem
     }
 }
