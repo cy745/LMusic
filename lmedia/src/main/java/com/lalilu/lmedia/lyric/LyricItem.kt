@@ -82,20 +82,8 @@ fun List<LyricItem>.findPlayingIndex(time: Long): Int {
 }
 
 fun List<LyricItem.WordsLyric.WordWithTiming>.findPlayingIndexForWords(time: Long): Int {
-    var left = 0
-    var right = size - 1
-
-    while (left <= right) {
-        val mid = left + (right - left) / 2
-        val midItem = this[mid]
-
-        if (midItem.startTime <= time && midItem.endTime >= time) {
-            return mid
-        } else if (midItem.endTime < time) {
-            left = mid + 1
-        } else {
-            right = mid - 1
-        }
+    for (i in lastIndex downTo 0) {
+        if (this[i].startTime < time) return i
     }
 
     return Int.MAX_VALUE

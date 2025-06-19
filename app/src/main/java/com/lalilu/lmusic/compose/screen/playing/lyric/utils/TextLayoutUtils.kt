@@ -23,11 +23,13 @@ fun TextLayoutResult.getLineWidth(lineIndex: Int): Float {
  * 获取指定行的矩形
  */
 fun TextLayoutResult.getLineRect(lineIndex: Int): Rect {
+    val top = getLineTop(lineIndex)
+    val bottom = (size.height / lineCount) + top
     return Rect(
         left = getLineLeft(lineIndex),
         right = getLineRight(lineIndex),
-        top = getLineTop(lineIndex),
-        bottom = getLineBottom(lineIndex)
+        top = top,
+        bottom = bottom
     )
 }
 
@@ -67,6 +69,7 @@ fun TextLayoutResult.getPathForProgress(
     offset: Int = 0,
     length: Int? = null
 ): WordsLayoutResult {
+    // TODO 待优化，可使用TextLayoutResult内方法简化获取数据逻辑
     val offsetWidth = getWidthForOffset(offset)
     val maxWidth = if (length == null) {
         sumWidthForLine(lineCount - 1)

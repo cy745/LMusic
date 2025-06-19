@@ -193,8 +193,8 @@ fun LyricContentWords(
             current = now
         )
 
-        // 若当前句的歌词已经播放完毕，则进度固定为1
-        if (lyric.words.maxOf { it.endTime } < context.currentTime()) {
+        // 若当前词已经播放完毕，则进度固定为1
+        if ((word?.endTime ?: Long.MAX_VALUE) < now) {
             progress = 1f
         }
 
