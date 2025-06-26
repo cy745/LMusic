@@ -136,7 +136,7 @@ class Indexer(
             .map {
                 LAlbum(
                     id = it.key,
-                    name = it.value[0].metadata.title,
+                    name = it.value[0].metadata.album,
                     artistName = it.value[0].metadata.albumArtist,
                     songs = it.value
                 )

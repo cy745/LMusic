@@ -23,6 +23,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,7 +71,7 @@ fun SongCard(
     },
     prefixContent: @Composable (Modifier) -> Unit = {}
 ) {
-    val item = remember { song() }
+    val item by rememberUpdatedState(song())
 
     SongCard(
         modifier = modifier,

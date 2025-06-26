@@ -6,9 +6,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import com.lalilu.common.base.SourceType
-import com.lalilu.lmedia.extension.sortable.Sortable
 import com.lalilu.lmedia.extension.albumCoverUri
-import java.io.Serializable
+import com.lalilu.lmedia.extension.sortable.Sortable
 
 data class Metadata(
     val title: String,
@@ -43,7 +42,7 @@ data class LSong(
     val uri: Uri,
     val sourceType: SourceType,
     val albumId: String? = null,
-) : Item, Serializable {
+) : Item {
     override val name = metadata.title
     override var blocked: Boolean = false
 

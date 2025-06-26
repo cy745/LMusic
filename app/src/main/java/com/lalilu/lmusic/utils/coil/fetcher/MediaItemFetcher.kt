@@ -28,9 +28,10 @@ class MediaItemFetcher(
 ) : Fetcher {
 
     override suspend fun fetch(): FetchResult? {
-        val songUri = EXTERNAL_CONTENT_URI.buildUpon()
-            .appendEncodedPath(item.mediaId)
-            .build()
+        val songUri = item.requestMetadata.mediaUri
+            ?: EXTERNAL_CONTENT_URI.buildUpon()
+                .appendEncodedPath(item.mediaId)
+                .build()
             ?: return null
 
         val stream = when (item.mediaMetadata.mediaType) {

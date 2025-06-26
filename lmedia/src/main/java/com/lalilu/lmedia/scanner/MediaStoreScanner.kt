@@ -133,7 +133,7 @@ open class MediaStoreScanner(
         }
 
         val genresMap = genresFetchJob.await()
-        songsFetchJob.await().toList().mapNotNull {
+        songsFetchJob.await().mapNotNull {
             it.toSong(genre = genresMap[it.id.toString()] ?: "")
         }
     }
