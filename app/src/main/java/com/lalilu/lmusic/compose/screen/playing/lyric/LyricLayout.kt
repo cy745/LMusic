@@ -45,6 +45,7 @@ import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.findPlayingIndex
 import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricContentNormal
 import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricContentWords
+import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricStartTips
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -203,6 +204,14 @@ fun LyricLayout(
                                 context = context,
                                 onLongClick = { if (isUserClickEnable()) onItemLongClick(item) },
                                 onClick = { if (isUserClickEnable()) onItemClick(item) }
+                            )
+
+                            is LyricItem.StartTips -> LyricStartTips(
+                                item = item,
+                                index = index,
+                                modifier = Modifier,
+                                settings = settings.value,
+                                context = context,
                             )
                         }
                     }

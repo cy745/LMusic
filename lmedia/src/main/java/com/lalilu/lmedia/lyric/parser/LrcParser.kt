@@ -1,6 +1,7 @@
 package com.lalilu.lmedia.lyric.parser
 
 import com.lalilu.lmedia.lyric.LyricItem
+import com.lalilu.lmedia.lyric.LyricItem.WordsLyric.Translation
 import com.lalilu.lmedia.lyric.LyricParser
 import com.lalilu.lmedia.lyric.getSentenceContent
 
@@ -27,12 +28,13 @@ object LrcParser : LyricParser {
                 val translationText = when (second) {
                     is LyricItem.WordsLyric -> second.getSentenceContent()
                     is LyricItem.NormalLyric -> second.content
+                    else -> return return@mapValues null
                 }
 
                 when (first) {
                     is LyricItem.WordsLyric -> first.copy(
                         translation = listOf(
-                            LyricItem.WordsLyric.Translation(
+                            Translation(
                                 translationText,
                                 "unknown"
                             )
@@ -42,6 +44,8 @@ object LrcParser : LyricParser {
                     is LyricItem.NormalLyric -> first.copy(
                         translation = translationText
                     )
+
+                    else -> return@mapValues null
                 }
             }.values.mapIndexedNotNull { index, item ->
                 item ?: return@mapIndexedNotNull null
@@ -49,6 +53,7 @@ object LrcParser : LyricParser {
                 return@mapIndexedNotNull when (item) {
                     is LyricItem.WordsLyric -> item.copy(key = "$index${item.key}")
                     is LyricItem.NormalLyric -> item.copy(key = "$index${item.key}")
+                    else -> null
                 }
             }
     }
