@@ -59,7 +59,8 @@ import com.lalilu.component.lumo.components.rememberAccordionGroupState
 import com.lalilu.component.settings.SettingBaseAccordion
 import com.lalilu.component.settings.SettingCategory
 import com.lalilu.component.settings.SettingFilePicker
-import com.lalilu.component.settings.SettingProgressSeekBar
+import com.lalilu.component.settings.SettingFloatProgressSeekBar
+import com.lalilu.component.settings.SettingIntProgressSeekBar
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricSettings
 import com.lalilu.lmusic.compose.screen.playing.lyric.SerializableFont
@@ -227,7 +228,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                 title = "歌词样式调整",
                 subTitle = "歌词样式",
                 content = {
-                    SettingProgressSeekBar(
+                    SettingIntProgressSeekBar(
                         value = { settings.value.mainFontSize.value },
                         onValueUpdate = {
                             settings.value = settings.value.copy(mainFontSize = it.sp)
@@ -236,7 +237,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         title = "歌词文字大小",
                         valueRange = 14..64
                     )
-                    SettingProgressSeekBar(
+                    SettingIntProgressSeekBar(
                         value = { settings.value.mainLineHeight.value },
                         onValueUpdate = {
                             settings.value = settings.value.copy(mainLineHeight = it.sp)
@@ -245,7 +246,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         title = "歌词行高大小",
                         valueRange = 14..72
                     )
-                    SettingProgressSeekBar(
+                    SettingIntProgressSeekBar(
                         value = { settings.value.mainFontWeight.toFloat() },
                         onValueUpdate = {
                             settings.value =
@@ -255,7 +256,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         title = "歌词字重",
                         valueRange = 50..900
                     )
-                    SettingProgressSeekBar(
+                    SettingIntProgressSeekBar(
                         value = {
                             settings.value.containerPadding.run {
                                 (calculateLeftPadding(LayoutDirection.Ltr) +
@@ -287,7 +288,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                 title = "翻译样式调整",
                 subTitle = "翻译样式",
                 content = {
-                    SettingProgressSeekBar(
+                    SettingIntProgressSeekBar(
                         value = { settings.value.translationFontSize.value },
                         onValueUpdate = {
                             settings.value = settings.value.copy(translationFontSize = it.sp)
@@ -296,7 +297,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         title = "翻译文字大小",
                         valueRange = 14..64
                     )
-                    SettingProgressSeekBar(
+                    SettingIntProgressSeekBar(
                         value = { settings.value.translationLineHeight.value },
                         onValueUpdate = {
                             settings.value = settings.value.copy(translationLineHeight = it.sp)
@@ -305,7 +306,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         title = "翻译行高大小",
                         valueRange = 14..72
                     )
-                    SettingProgressSeekBar(
+                    SettingIntProgressSeekBar(
                         value = { settings.value.translationFontWeight.toFloat() },
                         onValueUpdate = {
                             settings.value =
@@ -315,7 +316,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         title = "翻译字重",
                         valueRange = 50..900
                     )
-                    SettingProgressSeekBar(
+                    SettingIntProgressSeekBar(
                         value = { settings.value.gapSize.value },
                         onValueUpdate = {
                             settings.value = settings.value.copy(gapSize = it.dp)
@@ -333,7 +334,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                     .padding(horizontal = 16.dp),
                 colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colors.surface)
             ) {
-                SettingProgressSeekBar(
+                SettingIntProgressSeekBar(
                     value = { settings.value.timeOffset.toFloat() },
                     onValueUpdate = {
                         settings.value = settings.value.copy(timeOffset = it.roundToLong())
@@ -342,7 +343,26 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                     title = "歌词偏移时间(ms)",
                     valueRange = 0..500
                 )
-
+                SettingFloatProgressSeekBar(
+                    value = { settings.value.scrollSpringDampingRatio.toFloat() },
+                    onValueUpdate = {
+                        settings.value = settings.value.copy(scrollSpringDampingRatio = it)
+                    },
+                    onFinishedUpdate = { settings.save() },
+                    title = "歌词滚动阻尼（默认0.75）",
+                    subTitle = "阻尼比值越大，滚动衰减越快",
+                    valueRange = 0.3f..1f
+                )
+                SettingFloatProgressSeekBar(
+                    value = { settings.value.scrollSpringStiffness.toFloat() },
+                    onValueUpdate = {
+                        settings.value = settings.value.copy(scrollSpringStiffness = it)
+                    },
+                    onFinishedUpdate = { settings.save() },
+                    title = "歌词滚动刚度（默认100）",
+                    subTitle = "刚度数值越大，滚动速度越快",
+                    valueRange = 1f..400f
+                )
                 val statusBarLyricExt: StatusBarLyric = koinInject()
                 if (RomUtils.isMeizu() || statusBarLyricExt.hasEnable() || CustomRomUtils.isFlyme) {
                     SettingSwitcher(
@@ -350,7 +370,15 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         state = SettingsKV.enableStatusLyric
                     )
                 }
-
+                SettingSwitcher(
+                    title = "歌词翻译只显示当前行",
+                    subTitle = "随君喜好开启",
+                    state = { settings.value.onlyCurrentTranslationVisible },
+                    onStateUpdate = {
+                        settings.value = settings.value.copy(onlyCurrentTranslationVisible = it)
+                        settings.save()
+                    }
+                )
                 SettingSwitcher(
                     title = "歌词模糊效果",
                     subTitle = "为歌词添加一点模糊效果",

@@ -59,7 +59,12 @@ data class LyricSettings(
     // 特殊效果开关
     val blurEffectEnable: Boolean = true,
     val translationVisible: Boolean = true,
-    val variableFontWeightEnable: Boolean = false
+    val onlyCurrentTranslationVisible: Boolean = false,
+    val variableFontWeightEnable: Boolean = false,
+
+    // 歌词滚动效果配置
+    val scrollSpringStiffness: Float = 100f,
+    val scrollSpringDampingRatio: Float = 0.75f,
 ) {
     @Transient
     val mainTextStyle: TextStyle = TextStyle.Default.copy(

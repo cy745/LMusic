@@ -52,7 +52,7 @@ import com.lalilu.component.lumo.components.RadioButton
 import com.lalilu.component.lumo.components.card.CardDefaults
 import com.lalilu.component.lumo.components.card.OutlinedCard
 import com.lalilu.component.settings.SettingCategory
-import com.lalilu.component.settings.SettingProgressSeekBar
+import com.lalilu.component.settings.SettingIntProgressSeekBar
 import com.lalilu.component.settings.SettingStateAccordion
 import com.lalilu.component.settings.SettingSwitcher
 import com.lalilu.crash.CrashHelper
@@ -272,7 +272,7 @@ private fun SettingsScreen(
                         titleRes = R.string.preference_media_source_settings_unknown_filter,
                         subTitleRes = R.string.preference_media_source_tips
                     )
-                    SettingProgressSeekBar(
+                    SettingIntProgressSeekBar(
                         value = { SettingsKV.durationFilter.value.toFloat() },
                         onValueUpdate = { SettingsKV.durationFilter.value = it.toInt() },
                         onFinishedUpdate = { SettingsKV.durationFilter.save() },

@@ -2,6 +2,7 @@ package com.lalilu.lmusic.compose.screen.playing.lyric
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideIn
@@ -106,7 +107,14 @@ fun LyricLayout(
         snapshotFlow { currentItem.value }
             .collectLatest {
                 it ?: return@collectLatest
-                scroller.animateTo(it.key)
+                scroller.animateTo(
+                    key = it.key,
+                    animationSpec = spring(
+                        dampingRatio = settings.value.scrollSpringDampingRatio,
+                        stiffness = settings.value.scrollSpringStiffness,
+                        visibilityThreshold = 0.001f
+                    )
+                )
             }
     }
 
@@ -211,7 +219,7 @@ fun LyricLayout(
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 72.dp)
+                .padding(bottom = 120.dp)
                 .fillMaxWidth(),
             enter = fadeIn() + slideIn { IntOffset(0, 100) },
             exit = fadeOut() + slideOut { IntOffset(0, 100) },

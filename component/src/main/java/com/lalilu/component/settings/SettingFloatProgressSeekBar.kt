@@ -17,21 +17,19 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lalilu.component.lumo.components.Slider
 import com.lalilu.component.lumo.components.SliderDefaults
 
-
 @Composable
-fun SettingProgressSeekBar(
+fun SettingFloatProgressSeekBar(
     value: () -> Float,
     onValueUpdate: (Float) -> Unit = {},
     onFinishedUpdate: (Float) -> Unit = {},
     title: String,
     subTitle: String? = null,
-    valueRange: IntRange
+    valueRange: ClosedFloatingPointRange<Float>
 ) {
     val tempValue = remember { mutableFloatStateOf(value()) }
     val interactionSource = remember { MutableInteractionSource() }
@@ -59,7 +57,7 @@ fun SettingProgressSeekBar(
                 fontSize = 14.sp
             )
             Text(
-                text = "${tempValue.floatValue.toInt()} / [${valueRange.first}, ${valueRange.last}]",
+                text = "${tempValue.floatValue} / [${valueRange.start}, ${valueRange.endInclusive}]",
                 fontSize = 10.sp,
                 color = MaterialTheme.colors.onBackground.copy(0.5f)
             )
@@ -75,7 +73,7 @@ fun SettingProgressSeekBar(
                 activeTrackColor = MaterialTheme.colors.onBackground.copy(0.8f),
                 inactiveTrackColor = MaterialTheme.colors.onBackground.copy(0.2f)
             ),
-            valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
+            valueRange = valueRange,
             onValueChangeFinished = { onFinishedUpdate(tempValue.floatValue) }
         )
         Row {
@@ -88,17 +86,4 @@ fun SettingProgressSeekBar(
             }
         }
     }
-}
-
-@Preview(backgroundColor = 0xFFFFFFFF, showBackground = true)
-@Composable
-fun PreviewSettingProgressSeekBar() {
-    SettingProgressSeekBar(
-        value = { 50f },
-        onValueUpdate = {},
-        onFinishedUpdate = {},
-        title = "音量设置",
-        subTitle = "调节媒体音量",
-        valueRange = 0..10
-    )
 }

@@ -1,9 +1,11 @@
 package com.lalilu.lmusic.compose.screen.playing.lyric.impl
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically
@@ -74,12 +76,19 @@ fun LyricContentNormal(
     ) {
         if (context.isUserScrolling()) return@remember 0.dp
         if (!settings.blurEffectEnable) return@remember 0.dp
-        abs(index - context.currentIndex()).coerceAtMost(5).dp
+        abs(index - context.currentIndex()).times(3).coerceAtMost(10).dp
     }
     val animateBlurRadius = animateDpAsState(
         targetValue = blurRadius,
         label = ""
     )
+    val translationVisible = remember(settings, lyric, isCurrent) {
+        if (!settings.translationVisible) return@remember false
+        if (lyric.translation.isNullOrBlank()) return@remember false
+        if (settings.onlyCurrentTranslationVisible && !isCurrent) return@remember false
+
+        return@remember true
+    }
 
     Column(
         modifier = modifier
@@ -104,16 +113,25 @@ fun LyricContentNormal(
 
         AnimatedVisibility(
             modifier = Modifier.fillMaxWidth(),
-            visible = lyric.translation?.isNotBlank() == true && settings.translationVisible,
+            visible = translationVisible,
             enter = fadeIn() + expandVertically(clip = false),
             exit = fadeOut() + shrinkVertically(clip = false)
         ) {
             lyric.translation?.let {
+                val animateAlpha = transition.animateFloat {
+                    when (it) {
+                        EnterExitState.PreEnter -> 0f
+                        EnterExitState.Visible -> 1f
+                        EnterExitState.PostExit -> 0f
+                    }
+                }
+
                 Text(
                     text = it,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = settings.gapSize),
+                        .padding(top = settings.gapSize)
+                        .graphicsLayer { alpha = animateAlpha.value },
                     style = settings.translationTextStyle,
                     color = color.value
                 )
