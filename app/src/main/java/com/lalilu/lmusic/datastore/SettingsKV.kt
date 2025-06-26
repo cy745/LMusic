@@ -8,10 +8,7 @@ object SettingsKV : KVContext("settings") {
         Config.KEY_SETTINGS_PLAY_MODE,
         Config.DEFAULT_SETTINGS_PLAY_MODE
     )
-    val enableStatusLyric = obtain<Boolean>(
-        Config.KEY_SETTINGS_STATUS_LYRIC_ENABLE,
-        Config.DEFAULT_SETTINGS_STATUS_LYRIC_ENABLE
-    )
+    val enableStatusLyric = obtain<Boolean>("enable_status_lyric", false)
     val enableSystemEq = obtain<Boolean>("enable_system_eq", false)
     val enableDynamicTips = obtain<Boolean>(
         Config.KEY_SETTINGS_ENABLE_DYNAMIC_TIPS,

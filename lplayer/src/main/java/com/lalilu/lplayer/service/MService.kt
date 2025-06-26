@@ -59,6 +59,7 @@ class MService : MediaLibraryService(), CoroutineScope {
     private var exoPlayer: ExoPlayer? = null
     private var mediaSession: MediaLibrarySession? = null
     private var eqHelper: EQHelper? = null
+    private var notificationProvider: MNotificationProvider? = null
     private val defaultAudioAttributes by lazy {
         AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
@@ -71,10 +72,8 @@ class MService : MediaLibraryService(), CoroutineScope {
     override fun onCreate() {
         super.onCreate()
         eqHelper = KoinPlatform.getKoin().getOrNull<EQHelper>()
-
-        setMediaNotificationProvider(
-            MNotificationProvider(this)
-        )
+        notificationProvider = MNotificationProvider(this)
+            .also { setMediaNotificationProvider(it) }
 
         player = ExoPlayer.Builder(this)
             .setRenderersFactory(FadeTransitionRenderersFactory(this, this))
@@ -137,6 +136,10 @@ class MService : MediaLibraryService(), CoroutineScope {
 
         KVContext.obtainStatic<Boolean>("enable_system_eq", false, "settings").flow().onEach {
             eqHelper?.setSystemEqEnable(it)
+        }.launchIn(this)
+
+        KVContext.obtainStatic<Boolean>("enable_status_lyric", false, "settings").flow().onEach {
+            notificationProvider?.flymeStatusLyricHelper?.updateEnable(it)
         }.launchIn(this)
     }
 }

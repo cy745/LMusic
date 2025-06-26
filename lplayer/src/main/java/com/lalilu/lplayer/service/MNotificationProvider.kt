@@ -9,7 +9,6 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.media3.common.C
-import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.Assertions
@@ -31,19 +30,13 @@ import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.toBitmap
 import com.google.common.collect.ImmutableList
-import com.lalilu.lmedia.lyric.LyricItem
-import com.lalilu.lmedia.lyric.LyricSourceEmbedded
-import com.lalilu.lmedia.lyric.LyricUtils
-import com.lalilu.lmedia.lyric.findPlayingIndex
-import com.lalilu.lmedia.lyric.getSentenceContent
+import com.lalilu.lplayer.extensions.FlymeStatusLyricHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.Arrays
 import kotlin.coroutines.CoroutineContext
 
@@ -59,7 +52,7 @@ class MNotificationProvider(
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    private val lyricSource by lazy { LyricSourceEmbedded(context = context) }
+    val flymeStatusLyricHelper by lazy { FlymeStatusLyricHelper() }
     private val channelId: String = DefaultMediaNotificationProvider.DEFAULT_CHANNEL_ID
     private val channelName: String by lazy { getString(DefaultMediaNotificationProvider.DEFAULT_CHANNEL_NAME_RESOURCE_ID) }
     private val notificationIdProvider = NotificationIdProvider { session: MediaSession? ->
@@ -146,7 +139,7 @@ class MNotificationProvider(
             )
 
             if (player.isPlaying) {
-                loadLyricIntoNotification(
+                flymeStatusLyricHelper.loadLyricIntoNotification(
                     mediaSession = mediaSession,
                     mediaItem = mediaItem,
                     notificationId = notificationId,
@@ -165,59 +158,6 @@ class MNotificationProvider(
         extras: Bundle
     ): Boolean {
         return false
-    }
-
-    private var loadLyricJob: Job? = null
-    private var lyrics: Pair<String, List<LyricItem>>? = null
-    private fun loadLyricIntoNotification(
-        mediaSession: MediaSession,
-        mediaItem: MediaItem?,
-        notificationId: Int,
-        builder: NotificationCompat.Builder,
-        onNotificationChangedCallback: Callback
-    ) {
-        loadLyricJob?.cancel()
-        if (mediaItem == null) return
-
-        loadLyricJob = launch {
-            // 加载歌词
-            if (lyrics?.first != mediaItem.mediaId) {
-                lyrics = mediaItem.mediaId to (lyricSource.loadLyric(mediaItem)
-                    ?.let { LyricUtils.parseLrc(it.first, it.second) }
-                    ?: emptyList())
-            }
-
-            var lastIndex = -1
-            while (isActive) {
-                val list = lyrics?.second ?: break
-                val time = withContext(Dispatchers.Main) { mediaSession.player.currentPosition }
-
-                val index = list.findPlayingIndex(time)
-                if (lastIndex == index) {
-                    delay(50)
-                    continue
-                }
-
-                lastIndex = index
-                val current = list.getOrNull(index)
-
-                if (current != null) {
-                    val text = when (current) {
-                        is LyricItem.NormalLyric -> current.content
-                        is LyricItem.WordsLyric -> current.getSentenceContent()
-                        else -> ""
-                    }
-
-                    builder.setTicker(text)
-                    val notification = MediaNotification(notificationId, builder.build().apply {
-                        flags = flags or FLAG_ALWAYS_SHOW_TICKER or FLAG_ONLY_UPDATE_TICKER
-                    })
-
-                    onNotificationChangedCallback.onNotificationChanged(notification)
-                }
-                delay(50)
-            }
-        }
     }
 
     private var loadedKey: Any? = null

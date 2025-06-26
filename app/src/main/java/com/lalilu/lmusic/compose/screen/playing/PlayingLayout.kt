@@ -48,7 +48,7 @@ import com.lalilu.component.extension.DynamicTipsItem
 import com.lalilu.component.extension.hideControl
 import com.lalilu.component.extension.statusBarsIgnoringVisibilityPadding
 import com.lalilu.lmedia.lyric.LyricItem
-import com.lalilu.lmedia.lyric.LyricSourceEmbedded
+import com.lalilu.lmedia.lyric.LyricSource
 import com.lalilu.lmedia.lyric.LyricUtils
 import com.lalilu.lmusic.compose.component.playing.LyricViewToolbar
 import com.lalilu.lmusic.compose.component.playing.PlayingToolbar
@@ -63,6 +63,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.compose.koinInject
 import kotlin.math.pow
 
 @Composable
@@ -261,7 +262,7 @@ fun PlayingLayout() {
                     }
                 )
 
-                val lyricSource = remember { LyricSourceEmbedded(context = context) }
+                val lyricSource = koinInject<LyricSource>()
                 val lyrics = remember { mutableStateOf<List<LyricItem>>(emptyList()) }
 
                 LaunchedEffect(key1 = MPlayer.currentMediaItem) {

@@ -57,7 +57,7 @@ import coil3.request.transformations
 import com.lalilu.R
 import com.lalilu.component.extension.DialogWrapper
 import com.lalilu.lmedia.lyric.LyricItem
-import com.lalilu.lmedia.lyric.LyricSourceEmbedded
+import com.lalilu.lmedia.lyric.LyricSource
 import com.lalilu.lmedia.lyric.LyricUtils
 import com.lalilu.lmusic.compose.component.playing.LyricViewActionDialog
 import com.lalilu.lmusic.compose.screen.playing.lyric.LyricLayout
@@ -68,6 +68,7 @@ import com.lalilu.lplayer.action.PlayerAction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import org.koin.compose.koinInject
 
 /**
  * Expended 状态下的播放布局
@@ -175,9 +176,8 @@ private fun PlayerPanel(
 fun LyricPanel(
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current
-    val lyricSource = remember { LyricSourceEmbedded(context = context) }
+    val lyricSource = koinInject<LyricSource>()
     val lyrics = remember { mutableStateOf<List<LyricItem>>(emptyList()) }
     val isLyricScrollEnable = remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
