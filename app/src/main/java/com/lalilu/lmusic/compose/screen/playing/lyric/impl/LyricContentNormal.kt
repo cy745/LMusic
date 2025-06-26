@@ -1,11 +1,9 @@
 package com.lalilu.lmusic.compose.screen.playing.lyric.impl
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically
@@ -111,27 +109,18 @@ fun LyricContentNormal(
             color = color.value
         )
 
-        AnimatedVisibility(
-            modifier = Modifier.fillMaxWidth(),
-            visible = translationVisible,
-            enter = fadeIn() + expandVertically(clip = false),
-            exit = fadeOut() + shrinkVertically(clip = false)
-        ) {
-            lyric.translation?.let {
-                val animateAlpha = transition.animateFloat {
-                    when (it) {
-                        EnterExitState.PreEnter -> 0f
-                        EnterExitState.Visible -> 1f
-                        EnterExitState.PostExit -> 0f
-                    }
-                }
-
+        lyric.translation?.let { translation ->
+            AnimatedVisibility(
+                modifier = Modifier.fillMaxWidth(),
+                visible = translationVisible,
+                enter = fadeIn() + expandVertically(clip = false),
+                exit = fadeOut() + shrinkVertically(clip = false)
+            ) {
                 Text(
-                    text = it,
+                    text = translation,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = settings.gapSize)
-                        .graphicsLayer { alpha = animateAlpha.value },
+                        .padding(top = settings.gapSize),
                     style = settings.translationTextStyle,
                     color = color.value
                 )

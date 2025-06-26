@@ -57,7 +57,7 @@ fun SettingFloatProgressSeekBar(
                 fontSize = 14.sp
             )
             Text(
-                text = "${tempValue.floatValue} / [${valueRange.start}, ${valueRange.endInclusive}]",
+                text = "%.2f / [${valueRange.start}, ${valueRange.endInclusive}]".format(tempValue.floatValue),
                 fontSize = 10.sp,
                 color = MaterialTheme.colors.onBackground.copy(0.5f)
             )

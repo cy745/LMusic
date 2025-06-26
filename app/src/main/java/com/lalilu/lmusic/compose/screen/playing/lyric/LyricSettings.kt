@@ -42,17 +42,17 @@ data class LyricSettings(
     // 布局样式配置
     val textAlign: TextAlign = TextAlign.Start,
     val containerPadding: PaddingValues = PaddingValues(horizontal = 40.dp, vertical = 15.dp),
-    val gapSize: Dp = 10.dp,
+    val gapSize: Dp = 8.dp,
     val scaleRange: ClosedRange<Float> = 0.85f..1f,
     val timeOffset: Long = 50L,
 
     // 字体样式配置
-    val mainFontSize: TextUnit = 26.sp,
-    val mainLineHeight: TextUnit = 28.sp,
+    val mainFontSize: TextUnit = 36.sp,
+    val mainLineHeight: TextUnit = 48.sp,
     val mainFontWeight: Int = FontWeight.Black.weight,
     val mainFont: SerializableFont? = null,
-    val translationFontSize: TextUnit = 22.sp,
-    val translationLineHeight: TextUnit = 26.sp,
+    val translationFontSize: TextUnit = 18.sp,
+    val translationLineHeight: TextUnit = 32.sp,
     val translationFontWeight: Int = FontWeight.Bold.weight,
     val translationFont: SerializableFont? = null,
 

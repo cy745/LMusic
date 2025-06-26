@@ -341,7 +341,8 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                     },
                     onFinishedUpdate = { settings.save() },
                     title = "歌词偏移时间(ms)",
-                    valueRange = 0..500
+                    subTitle = "适合使用蓝牙耳机时针对耳机延迟调节",
+                    valueRange = -200..500
                 )
                 SettingFloatProgressSeekBar(
                     value = { settings.value.scrollSpringDampingRatio.toFloat() },
@@ -349,7 +350,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         settings.value = settings.value.copy(scrollSpringDampingRatio = it)
                     },
                     onFinishedUpdate = { settings.save() },
-                    title = "歌词滚动阻尼（默认0.75）",
+                    title = "歌词滚动阻尼(默认0.75)",
                     subTitle = "阻尼比值越大，滚动衰减越快",
                     valueRange = 0.3f..1f
                 )
@@ -359,7 +360,7 @@ val LyricViewActionDialog = DialogItem.Dynamic(backgroundColor = Color.Transpare
                         settings.value = settings.value.copy(scrollSpringStiffness = it)
                     },
                     onFinishedUpdate = { settings.save() },
-                    title = "歌词滚动刚度（默认100）",
+                    title = "歌词滚动刚度(默认100)",
                     subTitle = "刚度数值越大，滚动速度越快",
                     valueRange = 1f..400f
                 )
