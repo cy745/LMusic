@@ -96,12 +96,13 @@ fun LyricContentWords(
         targetValue = blurRadius,
         label = ""
     )
-    val translationVisible = remember(settings, lyric, isCurrent) {
+    val translationVisible = remember(settings, lyric, isCurrent, context.isUserScrolling()) {
         if (!settings.translationVisible) return@remember false
         if (lyric.translation.isEmpty()) return@remember false
         if (lyric.translation.firstOrNull()?.content?.isBlank() == true) return@remember false
-        if (settings.onlyCurrentTranslationVisible && !isCurrent) return@remember false
-
+        if (!context.isUserScrolling()) {
+            if (settings.onlyCurrentTranslationVisible && !isCurrent) return@remember false
+        }
         return@remember true
     }
 
