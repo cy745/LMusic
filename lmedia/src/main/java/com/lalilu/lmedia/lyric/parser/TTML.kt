@@ -45,6 +45,12 @@ import nl.adaptivity.xmlutil.serialization.XmlValue
 @Serializable
 @XmlSerialName(value = "tt", namespace = "http://www.w3.org/ns/ttml")
 class TTML(
+    @XmlSerialName(
+        value = "timing",
+        namespace = "http://music.apple.com/lyric-ttml-internal",
+        prefix = "itunes"
+    )
+    val timing: String? = null,
     val head: TTMLHead,
     val body: TTMLBody
 )

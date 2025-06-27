@@ -15,7 +15,7 @@ object LyricUtils {
 
         var result: List<LyricItem>? = null
 
-        if (mainLrcText.contains("xmlns:amll")) {
+        if (mainLrcText.contains("xmlns:amll") || mainLrcText.contains("xmlns:ttm")) {
             result = TtmlParser.parse(mainLrcText)
         }
 
@@ -23,7 +23,30 @@ object LyricUtils {
             result = LrcParser.parse(mainLrcText)
         }
 
-        return addStartingTips(result)
+        result = addStartingTips(result)
+
+//        if (AppUtils.isAppDebug()) {
+//            result.forEach {
+//                val startTime = when (it) {
+//                    is LyricItem.NormalLyric -> "[${it.time}]"
+//                    is LyricItem.WordsLyric -> "[${it.startTime}]"
+//                    is LyricItem.StartTips -> "[${it.focusTime}] -> [${it.startTime}]"
+//                }
+//                val content = when (it) {
+//                    is LyricItem.StartTips -> " * * * "
+//                    is LyricItem.NormalLyric -> it.content
+//                    is LyricItem.WordsLyric -> it.getSentenceContent()
+//                }
+//                val endTime = when (it) {
+//                    is LyricItem.NormalLyric -> ""
+//                    is LyricItem.WordsLyric -> "[${it.endTime}]"
+//                    is LyricItem.StartTips -> "[${it.endTime}]"
+//                }
+//                println("$startTime$content$endTime")
+//            }
+//        }
+
+        return result
     }
 
     fun addStartingTips(list: List<LyricItem>): MutableList<LyricItem> {

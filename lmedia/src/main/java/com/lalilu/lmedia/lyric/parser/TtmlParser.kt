@@ -5,11 +5,9 @@ import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.LyricParser
 import kotlinx.serialization.decodeFromString
 import nl.adaptivity.xmlutil.serialization.XML
-import java.util.regex.Pattern
 
 object TtmlParser : LyricParser {
-    private val PATTERN_TIME = Pattern.compile("(\\d\\d):(\\d\\d)\\.(\\d{2,3})")
-    private val PATTERN_SPACE_IN_LINE = Regex("""</span>(\s+)<span""")
+    private val REGEX_TIME = Regex("(?:(\\d+):)?(\\d+)\\.(\\d{3})")
 
     private val xml = XML {
         autoPolymorphic = true
@@ -20,15 +18,7 @@ object TtmlParser : LyricParser {
         if (lyric.isBlank()) return emptyList()
         var actualLyric = lyric
 
-        // 匹配span元素间（词与词之间）的空格
-        actualLyric = PATTERN_SPACE_IN_LINE.replace(actualLyric) {
-            val group = it.groups[1] ?: return@replace it.value
-            it.value.replace(
-                oldValue = group.value,
-                newValue = """<span begin="00:00.000" end="00:00.000">${group.value}</span>"""
-            )
-        }
-
+        val randomKeyPrefix = System.currentTimeMillis()
         val ttml = runCatching { xml.decodeFromString<TTML>(actualLyric) }.getOrNull()
             ?: return emptyList()
         val duration = parseTime(ttml.body.dur)
@@ -65,7 +55,7 @@ object TtmlParser : LyricParser {
             }
 
             LyricItem.WordsLyric(
-                key = sentence.key,
+                key = "${randomKeyPrefix}_${sentence.key}",
                 agent = sentence.agent,
                 startTime = sentenceStart,
                 endTime = sentenceEnd,
@@ -78,12 +68,12 @@ object TtmlParser : LyricParser {
     private fun parseTime(time: String?): Long {
         if (time.isNullOrBlank()) return 0
 
-        val matcher = PATTERN_TIME.matcher(time)
-        if (!matcher.matches()) return 0
+        val matcher = REGEX_TIME.matchEntire(time)
+        if (matcher == null) return 0
 
-        val minute = matcher.group(1)?.toLongOrNull() ?: 0L
-        val second = matcher.group(2)?.toLongOrNull() ?: 0L
-        val milString = matcher.group(3) ?: "0"
+        val minute = matcher.groups[1]?.value?.toLongOrNull() ?: 0L
+        val second = matcher.groups[2]?.value?.toLongOrNull() ?: 0L
+        val milString = matcher.groups[3]?.value ?: "0"
         var mil = milString.toLongOrNull() ?: 0L
         when (milString.length) {
             1 -> mil *= 100
