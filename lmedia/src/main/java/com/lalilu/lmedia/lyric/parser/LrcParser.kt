@@ -9,7 +9,8 @@ import com.lalilu.lmedia.lyric.getSentenceContent
  * 解析Lrc歌词
  */
 object LrcParser : LyricParser {
-    private val REGEX_TIME = Regex("\\[(\\d\\d):(\\d\\d)\\.(\\d{2,3})]")
+    private val REGEX_TIME = Regex("\\[(\\d\\d):(\\d\\d)\\.(\\d{1,5})]")
+    private val REGEX_TIME_EX = Regex("<(\\d\\d):(\\d\\d)\\.(\\d{1,5})>")
 
     override fun parse(lyric: String): List<LyricItem> {
         if (lyric.isBlank()) return emptyList()
@@ -96,6 +97,18 @@ object LrcParser : LyricParser {
             .findAll(lyricLine)
             .toList()
 
+        // 当歌词中有一个[00:00.000]类型的时间标签时尝试匹配<00:00.000>格式的时间标签
+        if (findResult.size == 1) {
+            val temp = REGEX_TIME_EX
+                .findAll(lyricLine)
+                .toList()
+
+            // 当存在<00:00.000>格式的时间标签时，则使用<00:00.000>格式的时间标签
+            if (temp.isNotEmpty()) {
+                findResult = temp
+            }
+        }
+
         // 若没有时间标签，则返回 null
         if (findResult.isEmpty()) {
             return null
@@ -164,12 +177,19 @@ object LrcParser : LyricParser {
     }
 
     /**
-     * 负责解析并转换[00:00.00]格式的时间标签
+     * 负责解析并转换`[00:00.000]`和`<00:00.000>`格式的时间标签
      */
     fun timeTagToTime(str: String): Long {
-        val timeMatcher = REGEX_TIME.matchEntire(str)
-            ?.groupValues
-        if (timeMatcher.isNullOrEmpty()) return -1L
+        val timeMatcher =
+            // 匹配[00:00.00]格式的时间标签
+            REGEX_TIME.matchEntire(str)
+                ?.groupValues
+                ?.takeIf { it.isNotEmpty() }
+            // 尝试匹配<00:00.00>格式的时间标签
+                ?: REGEX_TIME_EX.matchEntire(str)
+                    ?.groupValues
+                    ?.takeIf { it.isNotEmpty() }
+                ?: return -1L
 
         val min = timeMatcher.getOrNull(1)!!.toLong()
         val sec = timeMatcher.getOrNull(2)!!.toLong()
