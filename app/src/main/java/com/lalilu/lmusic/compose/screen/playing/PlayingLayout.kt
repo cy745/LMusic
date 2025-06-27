@@ -265,7 +265,7 @@ fun PlayingLayout() {
                 val lyricSource = koinInject<LyricSource>()
                 val lyrics = remember { mutableStateOf<List<LyricItem>>(emptyList()) }
 
-                LaunchedEffect(key1 = MPlayer.currentMediaItem) {
+                LaunchedEffect(key1 = MPlayer.currentMediaItem?.mediaId) {
                     withContext(Dispatchers.IO) {
                         MPlayer.currentMediaItem
                             ?.let { lyricSource.loadLyric(it) }
