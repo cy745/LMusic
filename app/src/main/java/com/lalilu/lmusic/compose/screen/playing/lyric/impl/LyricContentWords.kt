@@ -13,10 +13,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
@@ -31,11 +31,10 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.findPlayingIndexForWords
@@ -61,30 +60,8 @@ fun LyricContentWords(
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)?,
 ) {
-    val density = LocalDensity.current
-    val direction = LocalLayoutDirection.current
     val isCurrent = context.currentIndex() == index
-
     val fullSentence = remember { lyric.getSentenceContent() }
-    val actualConstraints = remember(context, settings) {
-        val paddingHorizontal = settings.containerPadding.calculateLeftPadding(direction) +
-                settings.containerPadding.calculateRightPadding(direction)
-        val paddingHorizontalPx = with(density) { paddingHorizontal.roundToPx() }
-        val width = context.screenConstraints.maxWidth - paddingHorizontalPx
-        Constraints(
-            maxWidth = width,
-            minWidth = width,
-            maxHeight = Int.MAX_VALUE
-        )
-    }
-
-    val textResult = remember(context, settings, lyric) {
-        context.textMeasurer.measure(
-            text = fullSentence,
-            constraints = actualConstraints,
-            style = settings.mainTextStyle
-        )
-    }
 
     val scale = animateFloatAsState(
         targetValue = when {
@@ -142,11 +119,31 @@ fun LyricContentWords(
                 scaleY = scaleX
             },
     ) {
+        val textResult = remember { mutableStateOf<TextLayoutResult?>(null) }
+
         Canvas(
             modifier = modifier
                 .fillMaxWidth()
-                .height(density.run { textResult.getLineBottom(textResult.lineCount - 1).toDp() })
+                .layout { measurable, constraints ->
+                    val textResult = context.textMeasurer.measure(
+                        text = fullSentence,
+                        constraints = constraints,
+                        style = settings.mainTextStyle
+                    ).also { textResult.value = it }
+
+                    val textHeight = textResult.getLineBottom(textResult.lineCount - 1)
+
+                    val placeable = measurable.measure(
+                        constraints.copy(
+                            maxHeight = textHeight.toInt(),
+                            minHeight = textHeight.toInt()
+                        )
+                    )
+
+                    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+                }
         ) {
+            val textLayout = textResult.value ?: return@Canvas
             val now = context.currentTime()
             val wordIndex = lyric.words.findPlayingIndexForWords(now)
             val word = lyric.words.getOrNull(wordIndex)
@@ -166,7 +163,7 @@ fun LyricContentWords(
             val offset = lyric.words.take(wordIndex)
                 .sumOf { it.content.length }
 
-            val (path, rect, position) = textResult.getPathForProgress(
+            val (path, rect, position) = textLayout.getPathForProgress(
                 progress = progress,
                 offset = offset,
                 length = word?.content?.length
@@ -179,7 +176,7 @@ fun LyricContentWords(
                 drawText(
                     color = Color(0x80FFFFFF),
                     shadow = DEFAULT_TEXT_SHADOW,
-                    textLayoutResult = textResult,
+                    textLayoutResult = textLayout,
                 )
 
                 if (progress > 0f) {
@@ -209,7 +206,7 @@ fun LyricContentWords(
                         withLayer {
                             drawText(
                                 color = Color.White,
-                                textLayoutResult = textResult,
+                                textLayoutResult = textLayout,
                             )
 
                             val gradient = Brush.horizontalGradient(
