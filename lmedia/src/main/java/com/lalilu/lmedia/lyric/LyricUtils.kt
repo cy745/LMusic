@@ -32,16 +32,19 @@ object LyricUtils {
                     is LyricItem.NormalLyric -> "[${it.time}]"
                     is LyricItem.WordsLyric -> "[${it.startTime}]"
                     is LyricItem.StartTips -> "[${it.focusTime}] -> [${it.startTime}]"
+                    else -> "[${it.time}]"
                 }
                 val content = when (it) {
                     is LyricItem.StartTips -> " * * * "
                     is LyricItem.NormalLyric -> it.content
                     is LyricItem.WordsLyric -> it.getSentenceContent()
+                    is LyricItem.FixedTips -> "[[${it.content}]]"
                 }
                 val endTime = when (it) {
                     is LyricItem.NormalLyric -> ""
                     is LyricItem.WordsLyric -> "[${it.endTime}]"
                     is LyricItem.StartTips -> "[${it.endTime}]"
+                    is LyricItem.FixedTips -> ""
                 }
                 println("$startTime$content$endTime")
             }
@@ -83,6 +86,7 @@ object LyricUtils {
             is LyricItem.NormalLyric -> time + 7000L
             is LyricItem.StartTips -> endTime
             is LyricItem.WordsLyric -> endTime
+            else -> time
         }
     }
 }

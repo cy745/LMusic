@@ -11,6 +11,7 @@ import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
+import nl.adaptivity.xmlutil.util.CompactFragment
 import org.junit.Test
 
 
@@ -374,6 +375,29 @@ class TTMLParserTest {
         }
     }
 
+    val text = "<tag>&amp;Content</tag>"
+
+    @XmlSerialName(value = "tag")
+    @Serializable
+    data class TAG(
+        @XmlValue
+        val content: String
+    )
+
+    @XmlSerialName(value = "tag")
+    @Serializable
+    data class TAG2(
+        @XmlValue
+        val content: List<Node> = emptyList()
+    )
+
+    @XmlSerialName(value = "tag")
+    @Serializable
+    data class TAG3(
+        @XmlValue
+        val content: List<CompactFragment> = emptyList()
+    )
+
     @Test
     fun testParser() {
         val ttml = xml.decodeFromString<TTML>(testTT)
@@ -402,5 +426,14 @@ class TTMLParserTest {
                     println("$it ${it.content()}")
                 }
             }
+
+        val ampTestResult = xml.decodeFromString<TAG>(text)
+        println(ampTestResult)
+
+        val amp3TestResult = xml.decodeFromString<TAG3>(text)
+        println(amp3TestResult) // TAG3(content=[{namespaces=[], content=&}, {namespaces=[], content=Content}])
+
+//        val amp2TestResult = xml.decodeFromString<TAG2>(text)
+//        println(amp2TestResult)
     }
 }

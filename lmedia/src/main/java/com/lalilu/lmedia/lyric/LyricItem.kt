@@ -49,6 +49,12 @@ sealed class LyricItem(
     ) : LyricItem() {
         override val time: Long = focusTime
     }
+
+    data class FixedTips(
+        val content: String,
+        override val time: Long,
+        override val key: String
+    ) : LyricItem()
 }
 
 fun List<LyricItem>.findPlayingIndex(time: Long): Int {

@@ -45,6 +45,7 @@ import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.findPlayingIndex
 import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricContentNormal
 import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricContentWords
+import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricFixedTips
 import com.lalilu.lmusic.compose.screen.playing.lyric.impl.LyricStartTips
 import com.lalilu.lmusic.utils.extension.edgeTransparent
 import kotlinx.coroutines.FlowPreview
@@ -185,6 +186,7 @@ fun LyricLayout(
                         key = { _, item -> item.key },
                         contentType = { _, _ -> LyricItem::class }
                     ) { index, item ->
+                        @Suppress("REDUNDANT_ELSE_IN_WHEN")
                         when (item) {
                             is LyricItem.NormalLyric -> LyricContentNormal(
                                 lyric = item,
@@ -213,6 +215,16 @@ fun LyricLayout(
                                 settings = settings.value,
                                 context = context,
                             )
+
+                            is LyricItem.FixedTips -> LyricFixedTips(
+                                item = item,
+                                index = index,
+                                modifier = Modifier,
+                                settings = settings.value,
+                                context = context,
+                            )
+
+                            else -> {}
                         }
                     }
                 }

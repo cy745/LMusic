@@ -1,6 +1,7 @@
 package com.lalilu.lmedia.lyric.parser
 
 import android.text.format.DateUtils
+import com.blankj.utilcode.util.LogUtils
 import com.lalilu.lmedia.lyric.LyricItem
 import com.lalilu.lmedia.lyric.LyricParser
 import kotlinx.serialization.builtins.serializer
@@ -15,6 +16,7 @@ import nl.adaptivity.xmlutil.serialization.XML
 object TtmlParser : LyricParser {
     private val REGEX_TIME = Regex("(?:(\\d+):)?(\\d+)\\.(\\d{3})")
     private val PATTERN_SPACE_IN_LINE = Regex("""</span>(\s+)<span""")
+    private val PATTERN_AND_IN_TTML = Regex("""&(?!(?:[a-zA-Z]+|#\d+|#[xX][a-fA-F0-9]+);)""")
 
     @OptIn(ExperimentalXmlUtilApi::class)
     private val xml = XML(
@@ -47,77 +49,91 @@ object TtmlParser : LyricParser {
             )
         }
 
+        // 替换所有单独的'&'为"__AND__"
+        actualLyric = PATTERN_AND_IN_TTML.replace(actualLyric) { "__AND__" }
+
         val randomKeyPrefix = System.currentTimeMillis()
-        val ttml = runCatching { xml.decodeFromString<TTML>(actualLyric) }.getOrNull()
+        val ttml = runCatching { xml.decodeFromString<TTML>(actualLyric) }
+            .getOrElse { LogUtils.e(it); null }
             ?: return emptyList()
 
-        val divs = ttml.body.div.firstOrNull()
+        val divs = ttml.body.div.takeIf { it.isNotEmpty() }
             ?: return emptyList()
 
-        return divs.p.map { sentence ->
-            val sentenceStart = parseTime(sentence.begin)
-            val sentenceEnd = parseTime(sentence.end)
-
-            val translations = sentence.span.filter { it.isTranslation() }.mapNotNull {
-                val content = it.content()
-                if (content.isNullOrBlank()) return@mapNotNull null
-
-                LyricItem.WordsLyric.Translation(
-                    content = content,
-                    lang = it.lang ?: "unknown"
+        return divs.map { div ->
+            val songPart = div.songPart?.takeIf { it.isNotBlank() }?.let {
+                LyricItem.FixedTips(
+                    content = it.replace("__AND__", "&"),
+                    time = parseTime(div.begin),
+                    key = "${randomKeyPrefix}_${it}_${div.begin}"
                 )
             }
 
-            val words = sentence.span.filter { !it.isTranslation() }.mapNotNull { word ->
-                val content = word.content()
-                if (content.isNullOrEmpty()) return@mapNotNull null
+            listOfNotNull<LyricItem>(songPart) + div.p.map { sentence ->
+                val sentenceStart = parseTime(sentence.begin)
+                val sentenceEnd = parseTime(sentence.end)
 
-                LyricItem.WordsLyric.WordWithTiming(
-                    startTime = parseTime(word.begin),
-                    endTime = parseTime(word.end),
-                    content = content
-                )
-            }
+                val translations = sentence.span.filter { it.isTranslation() }.mapNotNull {
+                    val content = it.content()
+                    if (content.isNullOrBlank()) return@mapNotNull null
 
-            val xBgWords = sentence.span.filter { it.role == "x-bg" }
-                .mapNotNull { it.children() }
-                .filter { it.isNotEmpty() }
-                .mapIndexed { index, spans ->
-                    val words = spans.mapNotNull { word ->
-                        val content = word.content()
-                        if (content.isNullOrEmpty()) return@mapNotNull null
-
-                        LyricItem.WordsLyric.WordWithTiming(
-                            startTime = parseTime(word.begin),
-                            endTime = parseTime(word.end),
-                            content = content
-                        )
-                    }
-                    val start = words
-                        .filter { it.startTime > 0 }
-                        .minOf { it.startTime }
-                    val end = words.maxOf { it.endTime }
-
-                    LyricItem.WordsLyric(
-                        key = "${randomKeyPrefix}_${sentence.key}_xbg_$index",
-                        agent = sentence.agent ?: "",
-                        startTime = start,
-                        endTime = end,
-                        translation = emptyList(),
-                        words = fixedWordsTime(start, end, words)
+                    LyricItem.WordsLyric.Translation(
+                        content = content.replace("__AND__", "&"),
+                        lang = it.lang ?: "unknown"
                     )
                 }
 
-            listOf(
-                LyricItem.WordsLyric(
-                    key = "${randomKeyPrefix}_${sentence.key}",
-                    agent = sentence.agent ?: "",
-                    startTime = sentenceStart,
-                    endTime = sentenceEnd,
-                    translation = translations,
-                    words = fixedWordsTime(sentenceStart, sentenceEnd, words)
-                )
-            ) + xBgWords
+                val words = sentence.span.filter { !it.isTranslation() }.mapNotNull { word ->
+                    val content = word.content()
+                    if (content.isNullOrEmpty()) return@mapNotNull null
+
+                    LyricItem.WordsLyric.WordWithTiming(
+                        startTime = parseTime(word.begin),
+                        endTime = parseTime(word.end),
+                        content = content.replace("__AND__", "&")
+                    )
+                }
+
+                val xBgWords = sentence.span.filter { it.role == "x-bg" }
+                    .mapNotNull { it.children() }
+                    .filter { it.isNotEmpty() }
+                    .mapIndexed { index, spans ->
+                        val words = spans.mapNotNull { word ->
+                            val content = word.content()
+                            if (content.isNullOrEmpty()) return@mapNotNull null
+
+                            LyricItem.WordsLyric.WordWithTiming(
+                                startTime = parseTime(word.begin),
+                                endTime = parseTime(word.end),
+                                content = content.replace("__AND__", "&")
+                            )
+                        }
+                        val start = words
+                            .filter { it.startTime > 0 }
+                            .minOf { it.startTime }
+                        val end = words.maxOf { it.endTime }
+
+                        LyricItem.WordsLyric(
+                            key = "${randomKeyPrefix}_${sentence.key}_xbg_$index",
+                            agent = sentence.agent ?: "",
+                            startTime = start,
+                            endTime = end,
+                            translation = emptyList(),
+                            words = fixedWordsTime(start, end, words)
+                        )
+                    }
+
+                listOf(
+                    LyricItem.WordsLyric(
+                        key = "${randomKeyPrefix}_${sentence.key}",
+                        agent = sentence.agent ?: "",
+                        startTime = sentenceStart,
+                        endTime = sentenceEnd,
+                        translation = translations,
+                        words = fixedWordsTime(sentenceStart, sentenceEnd, words)
+                    )
+                ) + xBgWords
+            }.flatten()
         }.flatten().sorted()
     }
 
