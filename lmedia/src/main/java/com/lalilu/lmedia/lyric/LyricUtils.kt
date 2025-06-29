@@ -1,5 +1,6 @@
 package com.lalilu.lmedia.lyric
 
+import com.blankj.utilcode.util.AppUtils
 import com.lalilu.lmedia.lyric.parser.LrcParser
 import com.lalilu.lmedia.lyric.parser.TtmlParser
 
@@ -25,26 +26,26 @@ object LyricUtils {
 
         result = addStartingTips(result)
 
-//        if (AppUtils.isAppDebug()) {
-//            result.forEach {
-//                val startTime = when (it) {
-//                    is LyricItem.NormalLyric -> "[${it.time}]"
-//                    is LyricItem.WordsLyric -> "[${it.startTime}]"
-//                    is LyricItem.StartTips -> "[${it.focusTime}] -> [${it.startTime}]"
-//                }
-//                val content = when (it) {
-//                    is LyricItem.StartTips -> " * * * "
-//                    is LyricItem.NormalLyric -> it.content
-//                    is LyricItem.WordsLyric -> it.getSentenceContent()
-//                }
-//                val endTime = when (it) {
-//                    is LyricItem.NormalLyric -> ""
-//                    is LyricItem.WordsLyric -> "[${it.endTime}]"
-//                    is LyricItem.StartTips -> "[${it.endTime}]"
-//                }
-//                println("$startTime$content$endTime")
-//            }
-//        }
+        if (AppUtils.isAppDebug()) {
+            result.forEach {
+                val startTime = when (it) {
+                    is LyricItem.NormalLyric -> "[${it.time}]"
+                    is LyricItem.WordsLyric -> "[${it.startTime}]"
+                    is LyricItem.StartTips -> "[${it.focusTime}] -> [${it.startTime}]"
+                }
+                val content = when (it) {
+                    is LyricItem.StartTips -> " * * * "
+                    is LyricItem.NormalLyric -> it.content
+                    is LyricItem.WordsLyric -> it.getSentenceContent()
+                }
+                val endTime = when (it) {
+                    is LyricItem.NormalLyric -> ""
+                    is LyricItem.WordsLyric -> "[${it.endTime}]"
+                    is LyricItem.StartTips -> "[${it.endTime}]"
+                }
+                println("$startTime$content$endTime")
+            }
+        }
 
         return result
     }

@@ -2,6 +2,9 @@ package com.lalilu.lmedia.lyric.parser
 
 
 import kotlinx.serialization.Serializable
+import nl.adaptivity.xmlutil.dom2.Element
+import nl.adaptivity.xmlutil.dom2.Node
+import nl.adaptivity.xmlutil.dom2.Text
 import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
@@ -44,125 +47,123 @@ import nl.adaptivity.xmlutil.serialization.XmlValue
  */
 @Serializable
 @XmlSerialName(value = "tt", namespace = "http://www.w3.org/ns/ttml")
-class TTML(
+data class TTML(
     @XmlSerialName(
         value = "timing",
         namespace = "http://music.apple.com/lyric-ttml-internal",
         prefix = "itunes"
     )
     val timing: String? = null,
+    @XmlSerialName(
+        value = "lang",
+        namespace = "http://www.w3.org/XML/1998/namespace",
+        prefix = "xml"
+    )
+    val lang: String? = null,
+    @XmlSerialName(value = "head")
     val head: TTMLHead,
+    @XmlSerialName(value = "body")
     val body: TTMLBody
 )
 
 @Serializable
-@XmlSerialName(value = "head")
-class TTMLHead(
-    @XmlChildrenName("metadata")
-    val metadata: List<MetadataItem>
+data class TTMLHead(
+    @XmlChildrenName(value = "metadata")
+    val metadata: List<Element> = emptyList()
 )
 
 @Serializable
-sealed class MetadataItem {
+data class TTMLBody(
+    @XmlSerialName(value = "dur")
+    val dur: String,
+    @XmlValue
+    @XmlSerialName(value = "div")
+    val div: List<TTMLDiv> = emptyList()
+)
 
-    @Serializable
+@Serializable
+data class TTMLDiv(
+    @XmlSerialName("begin")
+    val begin: String,
+    @XmlSerialName("end")
+    val end: String,
+    @XmlSerialName(
+        value = "songPart",
+        prefix = "itunes",
+        namespace = "http://music.apple.com/lyric-ttml-internal"
+    )
+    val songPart: String? = null,
     @XmlSerialName(
         value = "agent",
         namespace = "http://www.w3.org/ns/ttml#metadata",
         prefix = "ttm"
     )
-    data class TTMLMetadataAgent(
-        @XmlSerialName(value = "type")
-        val type: String,
-        @XmlSerialName(
-            value = "id",
-            namespace = "http://www.w3.org/XML/1998/namespace",
-            prefix = "xml"
-        )
-        val id: String
-    ) : MetadataItem()
-
-    @Serializable
-    @XmlSerialName(
-        value = "meta",
-        namespace = "http://www.example.com/ns/amll",
-        prefix = "amll"
-    )
-    data class TTMLMetadataItem(
-        val key: String,
-        val value: String
-    ) : MetadataItem()
-}
-
-@Serializable
-@XmlSerialName(value = "body")
-class TTMLBody(
-    @XmlSerialName(value = "dur")
-    val dur: String,
-    @XmlSerialName(value = "div")
-    val div: TTMLBodyDiv,
+    val agent: String? = null,
+    @XmlValue
+    val p: List<TTMLP> = emptyList()
 )
 
 @Serializable
-@XmlSerialName(value = "div")
-data class TTMLBodyDiv(
+data class TTMLP(
     @XmlSerialName("begin")
     val begin: String,
     @XmlSerialName("end")
     val end: String,
-    val p: List<TTMLBodyDivP>
-)
-
-@Serializable
-@XmlSerialName(value = "p")
-data class TTMLBodyDivP(
-    @XmlSerialName("begin")
-    val begin: String,
-
-    @XmlSerialName("end")
-    val end: String,
-
     @XmlSerialName(
         value = "key",
         prefix = "itunes",
         namespace = "http://music.apple.com/lyric-ttml-internal"
     )
-    val key: String,
-
+    val key: String? = null,
     @XmlSerialName(
         value = "agent",
         namespace = "http://www.w3.org/ns/ttml#metadata",
         prefix = "ttm"
     )
-    val agent: String,
-    val spans: List<TTMLSpan> = emptyList()
+    val agent: String? = null,
+    @XmlValue
+    val span: List<TTMLSpan> = emptyList()
 )
 
 @Serializable
-@XmlSerialName(value = "span")
 data class TTMLSpan(
     @XmlSerialName("begin")
     val begin: String? = null,
-
     @XmlSerialName("end")
     val end: String? = null,
-
     @XmlSerialName(
         value = "role",
         prefix = "ttm",
         namespace = "http://www.w3.org/ns/ttml#metadata",
     )
     val role: String? = null,
-
     @XmlSerialName(
         value = "lang",
         prefix = "xml",
         namespace = "http://www.w3.org/XML/1998/namespace",
     )
     val lang: String? = null,
-
     @XmlValue
-    val content: String = ""
+    private val value: List<Node>? = null,
 ) {
     fun isTranslation(): Boolean = role == "x-translation"
+
+    fun content(): String? {
+        return value?.firstOrNull()?.takeIf { it is Text }
+            ?.getTextContent()
+    }
+
+    fun children(): List<TTMLSpan>? {
+        return value?.mapNotNull {
+            if (it !is Element) return@mapNotNull null
+
+            TTMLSpan(
+                begin = it.getAttribute("begin"),
+                end = it.getAttribute("end"),
+                role = it.getAttribute("role"),
+                lang = it.getAttribute("lang"),
+                value = it.getChildNodes().toList()
+            )
+        }
+    }
 }
