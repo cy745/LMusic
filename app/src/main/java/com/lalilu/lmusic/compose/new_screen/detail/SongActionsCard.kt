@@ -38,6 +38,16 @@ fun SongActionsCard(
             data = song.uri
         }
     }
+    val lddcIntent = remember(song) {
+        Intent().apply {
+            component = ComponentName(
+                "com.lalilu.lddc",
+                "com.lalilu.lddc.FloatActivity"
+            )
+            action = "android.intent.action.VIEW"
+            data = song.uri
+        }
+    }
 
     Surface(
         modifier = modifier,
@@ -70,6 +80,27 @@ fun SongActionsCard(
                     }
                 }
             )
+            if (remember(lddcIntent) { context.checkActivityIsExist(lddcIntent) }) {
+                IconTextButton(
+                    text = "LDDC",
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color(0xFF3EA22C),
+                    onClick = {
+                        if (context.checkActivityIsExist(lddcIntent)) {
+                            context.startActivity(lddcIntent)
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "未安装[LDDC]",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                )
+            }
         }
     }
 }
