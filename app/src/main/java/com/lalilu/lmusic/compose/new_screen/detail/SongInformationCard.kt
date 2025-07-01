@@ -128,17 +128,21 @@ fun SongInformationCard(
 
             LaunchedEffect(Unit) {
                 withContext(Dispatchers.IO) {
-                    val fileDescriptor = context.contentResolver
-                        .openFileDescriptor(song.uri, "r")
+                    runCatching {
+                        val fileDescriptor = context.contentResolver
+                            .openFileDescriptor(song.uri, "r")
 
-                    fileDescriptor?.use {
-                        val result = Fpcalc.calc(
-                            FpcalcParams(
-                                targetFd = it.fd,
-                                targetFilePath = ""
+                        fileDescriptor?.use {
+                            val result = Fpcalc.calc(
+                                FpcalcParams(
+                                    targetFd = it.fd,
+                                    targetFilePath = ""
+                                )
                             )
-                        )
-                        chromaResult.value = result.fingerprint
+                            chromaResult.value = result.fingerprint
+                        }
+                    }.getOrElse {
+                        chromaResult.value = it.message
                     }
                 }
             }
